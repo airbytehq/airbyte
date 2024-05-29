@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static java.util.stream.Collectors.toSet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -33,6 +34,7 @@ import io.airbyte.workers.exception.TestHarnessException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedupingTest {
@@ -97,10 +99,13 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withSyncId(42L)
+            .withGenerationId(43L)
+            .withMinimumGenerationId(0L)
             .withStream(new AirbyteStream()
                 .withNamespace(getStreamNamespace())
                 .withName(getStreamName())
-                .withJsonSchema(SCHEMA))));
+                .withJsonSchema(BaseTypingDedupingTest.Companion.getSCHEMA()))));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
@@ -124,8 +129,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_v1v2_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_v1v2_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
@@ -135,11 +140,14 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withSyncId(42L)
+            .withGenerationId(43L)
+            .withMinimumGenerationId(0L)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
                 .withNamespace(getStreamNamespace())
                 .withName(getStreamName())
-                .withJsonSchema(SCHEMA))));
+                .withJsonSchema(BaseTypingDedupingTest.Companion.getSCHEMA()))));
 
     // First sync
     final List<AirbyteMessage> messages = readMessages("dat/sync_null_pk.jsonl");
@@ -152,6 +160,67 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     // Second sync
     runSync(catalog, messages); // does not throw with latest version
     assertEquals(1, dumpFinalTableRecords(getStreamNamespace(), getStreamName()).toArray().length);
+  }
+
+  @Test
+  public void testAirbyteMetaAndGenerationIdMigration() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withSyncId(42L)
+            .withGenerationId(43L)
+            .withMinimumGenerationId(0L)
+            .withStream(new AirbyteStream()
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(BaseTypingDedupingTest.Companion.getSCHEMA()))));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+    runSync(catalog, messages1, "airbyte/destination-bigquery:2.4.20");
+
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+    runSync(catalog, messages2);
+
+    // The first 5 records in these files were written by the old version, and have
+    // several differences with the new records:
+    // In raw tables: no _airbyte_meta or _airbyte_generation_id at all
+    // In final tables: no generation ID, and airbyte_meta still uses the old `{errors: [...]}`
+    // structure
+    // So modify the expected records to reflect those differences.
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
+    for (int i = 0; i < 5; i++) {
+      final ObjectNode record = (ObjectNode) expectedRawRecords2.get(i);
+      record.remove(JavaBaseConstants.COLUMN_NAME_AB_META);
+      record.remove(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID);
+    }
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    for (int i = 0; i < 5; i++) {
+      final ObjectNode record = (ObjectNode) expectedFinalRecords2.get(i);
+      record.set(
+          JavaBaseConstants.COLUMN_NAME_AB_META,
+          Jsons.deserialize("""
+                            {"errors": []}
+                            """));
+      record.remove(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID);
+    }
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+
+    // Verify that we didn't trigger a soft reset.
+    // There should be two unique loaded_at values in the raw table.
+    // (only do this if T+D is enabled to begin with; otherwise loaded_at will just be null)
+    if (!disableFinalTableComparison()) {
+      final List<JsonNode> actualRawRecords2 = dumpRawTableRecords(getStreamNamespace(), getStreamName());
+      final Set<JsonNode> loadedAtValues = actualRawRecords2.stream()
+          .map(record -> record.get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT))
+          .collect(toSet());
+      assertEquals(
+          2,
+          loadedAtValues.size(),
+          "Expected two different values for loaded_at. If there is only 1 value, then we incorrectly triggered a soft reset. If there are more than 2, then something weird happened?");
+    }
   }
 
   /**
