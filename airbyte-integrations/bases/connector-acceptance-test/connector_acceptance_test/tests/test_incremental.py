@@ -215,7 +215,8 @@ class TestIncremental(BaseTest):
 
                 assert (
                     # We assume that the output may be empty when we read the latest state, or it must produce some data if we are in the middle of our progression
-                    len(records_N) >= expected_records_count
+                    len(records_N)
+                    >= expected_records_count
                 ), f"Read {idx + 1} of {len(states_with_expected_record_count)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 1}: {records_N}"
 
                 diff = naive_diff_records(records_1, records_N)
@@ -300,7 +301,11 @@ class TestIncremental(BaseTest):
         # Calculates the expected record count per state based on the total record count and distribution across states.
         # The expected record count is the number of records we expect to receive when applying a specific state checkpoint.
         unique_non_zero_state_messages_with_record_count = zip(
-            unique_non_zero_state_messages, [total_record_count - sum(map(self._get_record_count, unique_non_zero_state_messages[: idx + 1])) for idx in range(len(unique_non_zero_state_messages))]
+            unique_non_zero_state_messages,
+            [
+                total_record_count - sum(map(self._get_record_count, unique_non_zero_state_messages[: idx + 1]))
+                for idx in range(len(unique_non_zero_state_messages))
+            ],
         )
 
         return list(unique_non_zero_state_messages_with_record_count)
