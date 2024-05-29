@@ -1,9 +1,7 @@
 import React from "react";
 import styles from "./HeaderDecoration.module.css";
-
-const capitalizeFirstLetter = (string) => {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-};
+import { Chip } from "./Chip";
+import { Callout } from "./Callout";
 
 const CHECK_ICON = (
   <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
@@ -24,6 +22,65 @@ const CROSS_ICON = (
   </svg>
 );
 
+
+const MetadataStat = ({ label, children }) => (
+  <div className={styles.metadataStat}>
+    <dt className={styles.metadataStatLabel}>{`${label}: `}</dt>
+    <dd className={styles.metadataStatValue}>{children}</dd>
+  </div>
+);
+
+const EnabledIcon = ({ isEnabled }) => {
+  return isEnabled ? CHECK_ICON : CROSS_ICON;
+};
+
+const ConnectorMetadataCallout = ({ isCloud, isOss, isPypiPublished, supportLevel, github_url, dockerImageTag }) => (
+  <Callout className={styles.connectorMetadataCallout}>
+    <dl className={styles.connectorMetadata}>
+      <MetadataStat label="Availability">
+        <div className={styles.availability}>
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Airbyte Cloud
+          </Chip>
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> Airbyte OSS
+          </Chip>
+          <Chip className={isPypiPublished ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isPypiPublished} /> PyAirbyte
+          </Chip>
+        </div>
+      </MetadataStat>
+      <MetadataStat label="Support Level">
+        <a href="/integrations/connector-support-levels/">
+          <Chip>{supportLevel}</Chip>
+        </a>
+      </MetadataStat>
+      {supportLevel !== "archived" && (
+        <MetadataStat label="Connector Version">
+          <a href={github_url} target="_blank">
+            {dockerImageTag}
+          </a>
+        </MetadataStat>
+      )}
+    </dl>
+  </Callout>
+);
+
+const ConnectorTitle = ({ iconUrl, originalTitle, originalId, isArchived }) => (
+  <div className={styles.header}>
+    <img src={iconUrl} alt="" className={styles.connectorIcon} />
+    <h1 id={originalId}>
+      {isArchived ? (
+        <span>
+          {originalTitle} <span style={{ color: "gray" }}>[ARCHIVED]</span>
+        </span>
+      ) : (
+        originalTitle
+      )}
+    </h1>
+  </div>
+);
+
 export const HeaderDecoration = ({
   isOss: isOssString,
   isCloud: isCloudString,
@@ -42,54 +99,20 @@ export const HeaderDecoration = ({
 
   return (
     <>
-      <dl className={styles.connectorMetadata}>
-        <div>
-          <dt>Availability</dt>
-          <dd className={styles.availability}>
-            <span className={isCloud ? styles.available : styles.unavailable}>
-              {isCloud ? CHECK_ICON : CROSS_ICON} Airbyte Cloud
-            </span>
-            <span className={isOss ? styles.available : styles.unavailable}>
-              {isOss ? CHECK_ICON : CROSS_ICON} Airbyte OSS
-            </span>
-            <span className={isPypiPublished ? styles.available : styles.unavailable}>
-              {isPypiPublished ? CHECK_ICON : CROSS_ICON} PyAirbyte
-            </span>
-          </dd>
-        </div>
-        <div>
-          <dt>Support Level</dt>
-          <dd>
-            <a href="/integrations/connector-support-levels/">
-              {capitalizeFirstLetter(supportLevel)}
-            </a>
-          </dd>
-        </div>
-        {supportLevel !== "archived" && (
-          <div>
-            <dt>Latest Version</dt>
-
-            <dd>
-              <a href={github_url} target="_blank">
-                {dockerImageTag}
-              </a>
-            </dd>
-          </div>
-        )}
-      </dl>
-
-      <div className={styles.header}>
-        <img src={iconUrl} alt="" className={styles.connectorIcon} />
-        <h1 id={originalId}>
-          {isArchived ? (
-            <span>
-              {originalTitle} <span style={{ color: "gray" }}>[ARCHIVED]</span>
-            </span>
-          ) : (
-            originalTitle
-          )}
-        </h1>
-      </div>
+      <ConnectorTitle
+        iconUrl={iconUrl}
+        originalTitle={originalTitle}
+        originalId={originalId}
+        isArchived={isArchived}
+      />
+      <ConnectorMetadataCallout
+        isCloud={isCloud}
+        isOss={isOss}
+        isPypiPublished={isPypiPublished}
+        supportLevel={supportLevel}
+        github_url={github_url}
+        dockerImageTag={dockerImageTag}
+      />
     </>
   );
 };

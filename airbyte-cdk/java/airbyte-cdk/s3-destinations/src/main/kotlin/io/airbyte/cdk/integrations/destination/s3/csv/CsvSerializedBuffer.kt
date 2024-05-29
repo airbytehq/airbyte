@@ -124,7 +124,6 @@ class CsvSerializedBuffer(
                 val csvSheetGenerator =
                     CsvSheetGenerator.Factory.create(
                         catalog.streams
-                            .stream()
                             .filter { s: ConfiguredAirbyteStream ->
                                 s.stream.name == stream.name &&
                                     StringUtils.equals(
@@ -132,18 +131,16 @@ class CsvSerializedBuffer(
                                         stream.namespace,
                                     )
                             }
-                            .findFirst()
-                            .orElseThrow {
-                                RuntimeException(
-                                    String.format(
-                                        "No such stream %s.%s",
-                                        stream.namespace,
-                                        stream.name,
-                                    ),
-                                )
-                            }
-                            .stream
-                            .jsonSchema,
+                            .firstOrNull()
+                            ?.stream
+                            ?.jsonSchema
+                            ?: throw RuntimeException(
+                                String.format(
+                                    "No such stream %s.%s",
+                                    stream.namespace,
+                                    stream.name,
+                                ),
+                            ),
                         config,
                     )
                 val csvSettings =
