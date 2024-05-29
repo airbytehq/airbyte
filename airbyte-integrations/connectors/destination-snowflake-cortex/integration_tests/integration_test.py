@@ -67,6 +67,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         )
 
     def _get_record_count(self, table_name):
+        """Return the number of records in the table."""
         conn = self._get_db_connection()
         cursor = conn.cursor()
         cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
@@ -76,6 +77,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         return result[0]
 
     def _get_all_records(self, table_name) -> list[dict[str, Any]]:
+        """Return all records from the table as a list of dictionaries."""
         conn = self._get_db_connection()
         cursor = conn.cursor()
         cursor.execute(f"SELECT * FROM {table_name};")
@@ -260,15 +262,15 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             "EMBEDDING",
         ]
         assert first_written_record.pop("EMBEDDING")
-        assert first_written_record.pop("METADATA")
+        assert first_written_record.pop("CHUNK_ID")
+        metadata = first_written_record.pop("METADATA")
+        assert isinstance(metadata, dict), f"METADATA should be a dict: {metadata}"
+        assert metadata["int_col"] == 0
         assert first_written_record == {
-            "DOCUMENT_ID": "1",
-            "CHUNK_ID": 0,
-            "METADATA": '{"int_col": 0}',
-            "DOCUMENT_CONTENT": "Dogs are number 1",
+            "DOCUMENT_ID": "Stream_mystream_Key_0",
+            "DOCUMENT_CONTENT": '"str_col: Dogs are number 0"',
         }
 
-        ["STR_COL"] == "Dogs are number 3"
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected

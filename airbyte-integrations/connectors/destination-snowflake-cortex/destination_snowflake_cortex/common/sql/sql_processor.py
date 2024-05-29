@@ -93,10 +93,7 @@ class SqlConfig(BaseModel, abc.ABC):
         ...
 
     def connect(self) -> None:
-        """Attempt to connect, and raise `AirbyteConnectionError` if the connection fails.
-
-        TODO: Move this method to the `SqlConfig` base class.
-        """
+        """Attempt to connect, and raise `AirbyteConnectionError` if the connection fails."""
         engine = self.get_sql_engine()
         try:
             connection = engine.connect()

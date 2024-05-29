@@ -162,6 +162,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
 
         Return the static static column definitions for cortex streams.
         """
+        _ = stream_name  # unused
         return {
             DOCUMENT_ID_COLUMN: self.type_converter_class.get_string_type(),
             CHUNK_ID_COLUMN: self.type_converter_class.get_string_type(),
@@ -208,7 +209,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
             f"$1:{col}{vector_suffix if 'embedding' in col else ''}" for col in columns_list
         ])
-        if self.sql_config.cortex_embedding_model:
+        if self.sql_config.cortex_embedding_model:  # Currently always false
             # WARNING: This is untested and may not work as expected.
             variant_cols_str += f"snowflake.cortex.embed('{self.sql_config.cortex_embedding_model}', $1:{DOCUMENT_CONTENT_COLUMN})"
 
@@ -306,18 +307,21 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         # TODO: Decide if we need to incorporate this into the final implementation:
         _ = id_to_delete
 
-        embeddings = self.embedder.embed_documents(
-            # TODO: Check this: Expects a list of documents, not chunks (docs are inconsistent)
-            documents=document_chunks
-        )
+        if not self.sql_config.cortex_embedding_model:
+            embeddings = self.embedder.embed_documents(
+                # TODO: Check this: Expects a list of documents, not chunks (docs are inconsistent)
+                documents=document_chunks,
+            )
         for i, chunk in enumerate(document_chunks, start=0):
             new_data: dict[str, Any] = {
                 DOCUMENT_ID_COLUMN: self._create_document_id(record_msg),
                 CHUNK_ID_COLUMN: str(uuid.uuid4().int),
                 METADATA_COLUMN: chunk.metadata,
                 DOCUMENT_CONTENT_COLUMN: chunk.page_content,
-                EMBEDDING_COLUMN: embeddings[i],
+                EMBEDDING_COLUMN: None,
             }
+            if not self.sql_config.cortex_embedding_model:
+                new_data[EMBEDDING_COLUMN] = embeddings[i]
 
         self.file_writer.process_record_message(
             record_msg=AirbyteRecordMessage(
@@ -352,15 +356,17 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
 
         Workaround: Until `VECTOR` type is supported by the Snowflake SQLAlchemy dialect, we will
         return a table with fixed columns. This is a temporary solution until the dialect is updated.
+
+        Tracking here: https://github.com/snowflakedb/snowflake-sqlalchemy/issues/499
         """
         table = sqlalchemy.Table(
             table_name,
             sqlalchemy.MetaData(),
             sqlalchemy.Column(DOCUMENT_ID_COLUMN, sqlalchemy.String, primary_key=True),
             sqlalchemy.Column(CHUNK_ID_COLUMN, sqlalchemy.String, primary_key=True),
-            sqlalchemy.Column(METADATA_COLUMN, self.type_converter_class.get_json_type()),
             sqlalchemy.Column(DOCUMENT_CONTENT_COLUMN, self.type_converter_class.get_json_type()),
-            sqlalchemy.Column(EMBEDDING_COLUMN, VARIANT),
+            sqlalchemy.Column(METADATA_COLUMN, self.type_converter_class.get_json_type()),
+            sqlalchemy.Column(EMBEDDING_COLUMN, "VECTOR"),
         )
         return table
 

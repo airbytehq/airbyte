@@ -175,12 +175,16 @@ class RecordProcessorBase(abc.ABC):
         messages: Iterable[AirbyteMessage],
         *,
         write_strategy: WriteStrategy,
-    ) -> Generator[AirbyteMessage, None, None]:
+    ) -> Iterable[AirbyteMessage]:
         """
         This is copied from PyAirbyte's RecordProcessorBase class.
 
         This version will _also_ yield `AirbyteMessage` objects which would otherwise only
         be pushed to STDOUT or sent to the state writer.
+
+        TODO:
+        - In the future, we should optimize this to emit STATE messages as soon as their records
+          are committed, rather than waiting until the end of the input stream.
         """
         # Save the original state writer
         state_writer_orig: StateWriterBase = self.state_writer

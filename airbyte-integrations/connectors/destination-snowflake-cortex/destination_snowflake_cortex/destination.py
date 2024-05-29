@@ -67,11 +67,7 @@ class DestinationSnowflakeCortex(Destination):
         yield from self.sql_processor.process_airbyte_messages_as_generator(
             messages=input_messages,
             write_strategy=WriteStrategy.AUTO,
-            # TODO: Ensure all of these are covered, then delete the commented-out lines:
-            # processing_config=parsed_config.processing,
-            # indexer=self.indexer,
-            # embedder=self.embedder,
-            # batch_size=BATCH_SIZE,
+            # TODO: Ensure this setting is covered, then delete the commented-out line:
             # omit_raw_text=parsed_config.omit_raw_text,
         )
 
