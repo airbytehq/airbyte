@@ -307,13 +307,17 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         # TODO: Decide if we need to incorporate this into the final implementation:
         _ = id_to_delete
 
-        for chunk in document_chunks:
+        embeddings = self.embedder.embed_documents(
+            # TODO: Check this: Expects a list of documents, not chunks (docs are inconsistent)
+            documents=document_chunks
+        )
+        for i, chunk in enumerate(document_chunks, start=0):
             new_data: dict[str, Any] = {
                 DOCUMENT_ID_COLUMN: self._create_document_id(record_msg),
                 CHUNK_ID_COLUMN: str(uuid.uuid4().int),
                 METADATA_COLUMN: chunk.metadata,
                 DOCUMENT_CONTENT_COLUMN: chunk.page_content,
-                EMBEDDING_COLUMN: chunk.embedding,
+                EMBEDDING_COLUMN: embeddings[i],
             }
 
         self.file_writer.process_record_message(
@@ -361,7 +365,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         pass
 
     @property
-    def embedder(self) -> embedder.EmbedderBase:
+    def embedder(self) -> embedder.Embedder:
         return embedder.create_from_config(
             embedding_config=self.embedder_config,
             processing_config=self.splitter_config,
