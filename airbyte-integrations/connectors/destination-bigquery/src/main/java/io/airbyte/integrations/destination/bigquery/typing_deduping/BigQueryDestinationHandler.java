@@ -33,6 +33,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
@@ -42,8 +44,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
-import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
-import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState.Impl;
+import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
+import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDestinationState;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,11 +60,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.text.StringSubstitutor;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO this stuff almost definitely exists somewhere else in our codebase.
-public class BigQueryDestinationHandler implements DestinationHandler<MinimumDestinationState.Impl> {
+public class BigQueryDestinationHandler implements DestinationHandler<BigQueryDestinationState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationHandler.class);
 
@@ -98,7 +100,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
             FROM ${raw_table}
             WHERE _airbyte_loaded_at IS NULL
             """))
-        .build()).iterateAll().iterator().next().get(0);
+        .build()).iterateAll().iterator().next().getFirst();
     // If this value is null, then there are no records with null loaded_at.
     // If it's not null, then we can return immediately - we've found some unprocessed records and their
     // timestamp.
@@ -112,7 +114,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
             SELECT MAX(_airbyte_extracted_at)
             FROM ${raw_table}
             """))
-        .build()).iterateAll().iterator().next().get(0);
+        .build()).iterateAll().iterator().next().getFirst();
     // We know (from the previous query) that all records have been processed by T+D already.
     // So we just need to get the timestamp of the most recent record.
     if (loadedRecordTimestamp.isNull()) {
@@ -192,8 +194,8 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
   }
 
   @Override
-  public List<DestinationInitialStatus<Impl>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
-    final List<DestinationInitialStatus<MinimumDestinationState.Impl>> initialStates = new ArrayList<>();
+  public List<DestinationInitialStatus<BigQueryDestinationState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+    final List<DestinationInitialStatus<BigQueryDestinationState>> initialStates = new ArrayList<>();
     for (final StreamConfig streamConfig : streamConfigs) {
       final StreamId id = streamConfig.getId();
       final Optional<TableDefinition> finalTable = findExistingTable(id);
@@ -205,13 +207,13 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
           finalTable.isPresent() && !existingSchemaMatchesStreamConfig(streamConfig, finalTable.get()),
           finalTable.isEmpty() || isFinalTableEmpty(id),
           // Return a default state blob since we don't actually track state.
-          new MinimumDestinationState.Impl(false)));
+          new BigQueryDestinationState(false)));
     }
     return initialStates;
   }
 
   @Override
-  public void commitDestinationStates(Map<StreamId, ? extends MinimumDestinationState.Impl> destinationStates) throws Exception {
+  public void commitDestinationStates(Map<StreamId, ? extends BigQueryDestinationState> destinationStates) throws Exception {
     // Intentionally do nothing. Bigquery doesn't actually support destination states.
   }
 
@@ -319,6 +321,24 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
   private static Set<String> getPks(final StreamConfig stream) {
     return stream.getPrimaryKey() != null ? stream.getPrimaryKey().stream().map(ColumnId::getName).collect(Collectors.toSet())
         : Collections.emptySet();
+  }
+
+  @Override
+  public void createNamespaces(@NotNull Set<String> schemas) {
+    schemas.forEach(this::createDataset);
+  }
+
+  private void createDataset(final String dataset) {
+    LOGGER.info("Creating dataset if not present {}", dataset);
+    try {
+      BigQueryUtils.getOrCreateDataset(bq, dataset, datasetLocation);
+    } catch (BigQueryException e) {
+      if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.getCode())) {
+        throw new ConfigErrorException(e.getMessage(), e);
+      } else {
+        throw e;
+      }
+    }
   }
 
 }

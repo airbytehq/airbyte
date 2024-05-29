@@ -94,7 +94,6 @@ class AvroSerializedBuffer(
                 val schema =
                     schemaConverter.getAvroSchema(
                         catalog.streams
-                            .stream()
                             .filter { s: ConfiguredAirbyteStream ->
                                 s.stream.name == stream.name &&
                                     StringUtils.equals(
@@ -102,14 +101,12 @@ class AvroSerializedBuffer(
                                         stream.namespace,
                                     )
                             }
-                            .findFirst()
-                            .orElseThrow {
-                                RuntimeException(
-                                    "No such stream ${stream.namespace}.${stream.name}"
-                                )
-                            }
-                            .stream
-                            .jsonSchema,
+                            .firstOrNull()
+                            ?.stream
+                            ?.jsonSchema
+                            ?: throw RuntimeException(
+                                "No such stream ${stream.namespace}.${stream.name}"
+                            ),
                         stream.name,
                         stream.namespace,
                     )
