@@ -175,7 +175,7 @@ This is to ensure that all connectors use a base image which is maintained and h
 
 ### Medium to High Use Connectors must enable acceptance tests
 
-_Applies to the following connector types: source, destination_
+_Applies to the following connector types: source_
 _Applies to the following connector languages: java, low-code, python_
 _Applies to connector with any support level_
 _Applies to connector with medium, high Airbyte usage level_
