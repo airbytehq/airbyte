@@ -86,7 +86,7 @@ class ShopifyRateLimiter:
     """
 
     on_unknown_load: float = 1.0
-    on_very_low_load: float = 0.1
+    on_very_low_load: float = 0.0
     on_low_load: float = 0.2
     on_mid_load: float = 1.5
     on_high_load: float = 5.0
