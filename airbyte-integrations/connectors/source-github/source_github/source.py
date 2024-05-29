@@ -1,13 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from os import getenv
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import FailureType, SyncMode
+
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
@@ -191,7 +191,7 @@ class SourceGithub(AbstractSource):
             )
         return user_message
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
