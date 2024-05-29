@@ -3,7 +3,7 @@
 
 from connector_ops.utils import Connector  # type: ignore
 from connectors_qa.models import Check, CheckCategory, CheckResult
-from pydash.collections import find # type: ignore
+from pydash.collections import find  # type: ignore
 
 
 class TestingCheck(Check):
