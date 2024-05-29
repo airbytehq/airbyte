@@ -26,6 +26,7 @@ from pydantic import Field
 from snowflake import connector
 from snowflake.sqlalchemy import URL, VARIANT
 from sqlalchemy.engine import Connection
+from sqlalchemy.sql.type_api import TypeEngine
 
 from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
 from destination_snowflake_cortex.common.sql.sql_processor import SqlConfig, SqlProcessorBase
@@ -359,15 +360,19 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
 
         Tracking here: https://github.com/snowflakedb/snowflake-sqlalchemy/issues/499
         """
+        _ = force_refresh, shallow_okay  # unused
         table = sqlalchemy.Table(
             table_name,
             sqlalchemy.MetaData(),
-            sqlalchemy.Column(DOCUMENT_ID_COLUMN, sqlalchemy.String, primary_key=True),
-            sqlalchemy.Column(CHUNK_ID_COLUMN, sqlalchemy.String, primary_key=True),
-            sqlalchemy.Column(DOCUMENT_CONTENT_COLUMN, self.type_converter_class.get_json_type()),
-            sqlalchemy.Column(METADATA_COLUMN, self.type_converter_class.get_json_type()),
-            sqlalchemy.Column(EMBEDDING_COLUMN, "VECTOR"),
         )
+        for column_name, column_type in self._get_sql_column_definitions(table_name).items():
+            table.append_column(
+                sqlalchemy.Column(
+                    column_name,
+                    column_type,
+                    primary_key=column_name in [DOCUMENT_ID_COLUMN, CHUNK_ID_COLUMN],
+                )
+            )
         return table
 
     def _add_missing_columns_to_table(
