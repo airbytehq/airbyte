@@ -31,10 +31,6 @@ from destination_snowflake_cortex.config import ConfigModel
 
 BATCH_SIZE = 150
 
-# Monkey-patch the FakeEmbedder classes to have the same dimensions as the OpenAIEmbeddings
-FakeEmbedder.dimensions = 1536
-FakeEmbeddingConfigModel.dimensions = 1536
-
 
 class DestinationSnowflakeCortex(Destination):
     embedder: Embedder
@@ -84,7 +80,6 @@ class DestinationSnowflakeCortex(Destination):
         try:
             parsed_config = ConfigModel.parse_obj(config)
             self._init_sql_processor(config=parsed_config)
-            _ = self.sql_processor.get_sql_engine()
             self.sql_processor.sql_config.connect()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:

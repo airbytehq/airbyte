@@ -14,10 +14,6 @@ from snowflake import connector
 
 from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
 
-# Monkey-patch the FakeEmbedder classes to have the same dimensions as the OpenAIEmbeddings
-FakeEmbedder.dimensions = 1536
-FakeEmbeddingConfigModel.dimensions = 1536
-
 
 class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
     def _init_snowflake_cortex(self):
