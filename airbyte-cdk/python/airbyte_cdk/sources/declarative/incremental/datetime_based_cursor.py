@@ -168,6 +168,11 @@ class DatetimeBasedCursor(DeclarativeCursor):
         start_datetime = self._calculate_earliest_possible_value(self._select_best_end_datetime())
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        # Datetime based cursors operate over slices made up of datetime ranges. Stream state is based on the progress
+        # through each slice and does not belong to a specific slice. We just return stream state as it is.
+        return self.get_stream_state()
+
     def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
         lookback_delta = self._parse_timedelta(self._lookback_window.eval(self.config) if self._lookback_window else "P0D")
         earliest_possible_start_datetime = min(self._start_datetime.get_datetime(self.config), end_datetime)
