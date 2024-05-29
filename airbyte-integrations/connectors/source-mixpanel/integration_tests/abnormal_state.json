@@ -35,7 +35,28 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "last_seen": "2030-01-01T00:00:00" },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": 4269289,
+              "parent_slice": {}
+            },
+            "cursor": {
+              "last_seen": "2030-01-01T00:00:00"
+            }
+          },
+          {
+            "partition": {
+              "id": 1343181,
+              "parent_slice": {}
+            },
+            "cursor": {
+              "last_seen": "2030-01-01T00:00:00"
+            }
+          }
+        ]
+      },
       "stream_descriptor": { "name": "cohort_members" }
     }
   },
