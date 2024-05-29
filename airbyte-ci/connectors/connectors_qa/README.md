@@ -108,6 +108,10 @@ poe lint
 
 ## Changelog
 
+### 1.4.0
+
+Added the `IntegrationTestsEnabledCheck` check that verifies if the integration tests are enabled for connectors with higher cloud usage.
+
 ### 1.3.2
 
 Removed documentation checks in `MedatadaCheck` since it's already verified in `DocumentationCheck`.
