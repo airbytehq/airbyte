@@ -12,6 +12,7 @@ class TestingCheck(Check):
 
 class AcceptanceTestsEnabledCheck(TestingCheck):
     applies_to_connector_cloud_usage = ["medium", "high"]
+    applies_to_connector_types = ["source"]
     name = "Medium to High Use Connectors must enable acceptance tests"
     description = "Medium to High Use Connectors must enable acceptance tests via the `connectorTestSuitesOptions.suite:acceptanceTests` in their respective metadata.yaml file to ensure that the connector is working as expected."
     test_suite_name = "acceptanceTests"
