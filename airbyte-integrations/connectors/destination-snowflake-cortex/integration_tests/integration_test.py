@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import logging
+from typing import Any
 
 from airbyte_cdk.destinations.vector_db_based.embedder import FakeEmbedder, FakeEmbeddingConfigModel
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
@@ -73,6 +74,18 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         cursor.close()
         conn.close()
         return result[0]
+
+    def _get_all_records(self, table_name) -> list[dict[str, Any]]:
+        conn = self._get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM {table_name};")
+        column_names = [desc[0] for desc in cursor.description]
+        result: list[dict[str, Any]] = []
+        for row in cursor.fetchall():
+            result.append(dict(zip(column_names, row)))
+        cursor.close()
+        conn.close()
+        return result
 
     def _delete_table(self, table_name):
         conn = self._get_db_connection()
@@ -220,6 +233,42 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             )
         )
         assert self._get_record_count("mystream") == 1
+
+    def test_record_write_fidelity(self):
+        self._delete_table("mystream")
+        catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
+        first_state_message = self._state({"state": "1"})
+        records = [
+            self._record(
+                stream="mystream",
+                str_value=f"Dogs are number {i}",
+                int_value=i,
+            )
+            for i in range(1)
+        ]
+
+        # initial sync with replace
+        destination = DestinationSnowflakeCortex()
+        list(destination.write(self.config, catalog, [*records, first_state_message]))
+        assert self._get_record_count("mystream") == 1
+        first_written_record = self._get_all_records("mystream")[0]
+        assert list(first_written_record.keys()) == [
+            "DOCUMENT_ID",
+            "CHUNK_ID",
+            "METADATA",
+            "DOCUMENT_CONTENT",
+            "EMBEDDING",
+        ]
+
+        assert first_written_record == {
+            "DOCUMENT_ID": "1",
+            "CHUNK_ID": 0,
+            "METADATA": '{"int_col": 0}',
+            "DOCUMENT_CONTENT": "Dogs are number 1",
+            "EMBEDDING": None,
+        }
+
+        ["STR_COL"] == "Dogs are number 3"
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected
