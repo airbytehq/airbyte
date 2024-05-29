@@ -1,23 +1,30 @@
 data:
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-plausible
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 603ba446-3d75-41d7-92f3-aba901f8b897
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-plausible
   githubIssueLabel: source-plausible
   icon: plausible.svg
   license: MIT
   name: Plausible
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-plausible
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
+  releaseDate: 2022-10-30
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/plausible
   tags:
     - language:python
@@ -25,5 +32,4 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
 metadataSpecVersion: "1.0"

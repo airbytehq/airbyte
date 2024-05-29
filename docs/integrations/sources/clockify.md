@@ -6,6 +6,7 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.4   | 2024-05-21 | [38146](https://github.com/airbytehq/airbyte/pull/38146) | Make connector compatible with the builder                                      |
 | 0.3.3   | 2024-04-19 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
 | 0.3.2   | 2024-04-15 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1   | 2024-04-12 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | schema descriptions                                                             |

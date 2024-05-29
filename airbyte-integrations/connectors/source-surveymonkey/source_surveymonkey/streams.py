@@ -150,7 +150,7 @@ class SurveyIDSliceMixin:
         if self._survey_ids:
             yield from [{"survey_id": id} for id in self._survey_ids]
         else:
-            survey_stream = SurveyIds(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
+            survey_stream = SurveyIds(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self._session.auth)
             for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
                 yield {"survey_id": survey["id"]}
 
