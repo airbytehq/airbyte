@@ -122,10 +122,10 @@
         "items": {
           "type": "object",
           "title": "Report Options",
-          "required": ["stream_name", "options_list"],
+          "required": ["report_name", "stream_name", "options_list"],
           "properties": {
-            "stream_name": {
-              "title": "Stream Name",
+            "report_name": {
+              "title": "Report Name",
               "type": "string",
               "order": 0,
               "enum": [
@@ -164,13 +164,20 @@
                 "GET_STRANDED_INVENTORY_UI_DATA",
                 "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE",
                 "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
-                "GET_XML_BROWSE_TREE_DATA"
+                "GET_XML_BROWSE_TREE_DATA",
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
               ]
+            },
+            "stream_name": {
+              "title": "Stream Name",
+              "type": "string",
+              "order": 1
             },
             "options_list": {
               "title": "List of options",
               "description": "List of options",
               "type": "array",
+              "order": 2,
               "items": {
                 "type": "object",
                 "required": ["option_name", "option_value"],
