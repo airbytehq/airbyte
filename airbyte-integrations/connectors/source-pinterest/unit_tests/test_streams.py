@@ -8,31 +8,12 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_pinterest.streams import (
-    AdAccountAnalytics,
-    AdAccounts,
-    AdAnalytics,
-    AdGroupAnalytics,
-    AdGroups,
-    Ads,
-    Audiences,
-    BoardPins,
-    Boards,
-    BoardSectionPins,
-    BoardSections,
-    CampaignAnalytics,
-    Campaigns,
-    Catalogs,
-    CatalogsFeeds,
-    CatalogsProductGroups,
-    ConversionTags,
-    CustomerLists,
-    Keywords,
-    PinterestStream,
-    PinterestSubStream,
-    RateLimitExceeded,
-    UserAccountAnalytics,
-)
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from source_pinterest.streams import PinterestAnalyticsStream, PinterestStream, PinterestSubStream, RateLimitExceeded
+from source_pinterest.utils import get_analytics_columns
+
+from .conftest import get_stream_by_name
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 
@@ -49,6 +30,12 @@ def patch_base_class(mocker):
     mocker.patch.object(PinterestSubStream, "next_page_token", None)
     mocker.patch.object(PinterestSubStream, "parse_response", {})
     mocker.patch.object(PinterestSubStream, "__abstractmethods__", set())
+    #
+    mocker.patch.object(PinterestAnalyticsStream, "path", "v0/example_endpoint")
+    mocker.patch.object(PinterestAnalyticsStream, "primary_key", "test_primary_key")
+    mocker.patch.object(PinterestAnalyticsStream, "next_page_token", None)
+    mocker.patch.object(PinterestAnalyticsStream, "parse_response", {})
+    mocker.patch.object(PinterestAnalyticsStream, "__abstractmethods__", set())
 
 
 def test_request_params(patch_base_class):
@@ -72,12 +59,17 @@ def test_parse_response(patch_base_class, test_response, test_current_stream_sta
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
-def test_parse_response_with_sensitive_data(patch_base_class):
+def test_parse_response_with_sensitive_data(requests_mock, test_config):
     """Test that sensitive data is removed"""
-    stream = CatalogsFeeds(config=MagicMock())
-    response = MagicMock()
-    response.json.return_value = {"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}], "bookmark": "string"}
-    actual_response = list(stream.parse_response(response=response, stream_state=None))
+    stream = get_stream_by_name("catalogs_feeds", test_config)
+    requests_mock.get(
+        url="https://api.pinterest.com/v5/catalogs/feeds",
+        json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
+    )
+    actual_response = [
+        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+    ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
 
 
@@ -96,12 +88,12 @@ def test_http_method(patch_base_class):
 
 @pytest.mark.parametrize(
     ("http_status", "should_retry"),
-    [
+    (
         (HTTPStatus.OK, False),
         (HTTPStatus.BAD_REQUEST, False),
         (HTTPStatus.TOO_MANY_REQUESTS, False),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
+    ),
 )
 def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
@@ -118,23 +110,23 @@ def test_backoff_time(patch_base_class):
 
 
 @pytest.mark.parametrize(
-    "test_response, status_code, expected",
-    [
+    ("test_response", "status_code", "expected"),
+    (
         ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, False),
         ({"code": 7, "message": "Some other error message"}, 429, False),
-    ],
+    ),
 )
-def test_should_retry_on_max_rate_limit_error(requests_mock, test_response, status_code, expected):
-    stream = Boards(config=MagicMock())
+def test_should_retry_on_max_rate_limit_error(requests_mock, test_config, test_response, status_code, expected):
+    stream = get_stream_by_name("boards", test_config)
     url = "https://api.pinterest.com/v5/boards"
     requests_mock.get("https://api.pinterest.com/v5/boards", json=test_response, status_code=status_code)
     response = requests.get(url)
-    result = stream.should_retry(response)
-    assert result == expected
+    result = stream.retriever.requester._should_retry(response)
+    assert result is expected
 
 
-def test_non_json_response(requests_mock):
-    stream = UserAccountAnalytics(parent=None, config=MagicMock())
+def test_non_json_response(requests_mock, patch_base_class):
+    stream = PinterestStream(config=MagicMock())
     url = "https://api.pinterest.com/v5/boards"
     requests_mock.get("https://api.pinterest.com/v5/boards", text="some response", status_code=200)
     response = requests.get(url)
@@ -146,19 +138,24 @@ def test_non_json_response(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "test_response, test_headers, status_code, expected",
-    [
+    ("test_response", "test_headers", "status_code", "expected"),
+    (
         ({"code": 7, "message": "Some other error message"}, {"X-RateLimit-Reset": "2"}, 429, 2.0),
         (
             {"code": 7, "message": "Some other error message"},
             {"X-RateLimit-Reset": "2000"},
             429,
-            (RateLimitExceeded, "Rate limit exceeded for stream boards. Waiting time is longer than 10 minutes: 2000.0s."),
+            (
+                RateLimitExceeded,
+                "Rate limit exceeded for stream pinterest_stream. Waiting time is longer than 10 minutes: 2000.0s.",
+            ),
         ),
-    ],
+    ),
 )
-def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, test_headers, expected):
-    stream = Boards(config=MagicMock())
+def test_backoff_on_rate_limit_error(
+    requests_mock, test_config, patch_base_class, test_response, status_code, test_headers, expected
+):
+    stream = PinterestStream(config=MagicMock())
     url = "https://api.pinterest.com/v5/boards"
     requests_mock.get(
         "https://api.pinterest.com/v5/boards",
@@ -177,54 +174,69 @@ def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, 
         assert result == expected
 
 
+@pytest.mark.parametrize(("response", "expected_backoff_time"), (({"code": 1}, 1), ({}, None)))
+def test_analytics_stream_backoff_time(patch_base_class, response, expected_backoff_time):
+    stream = PinterestAnalyticsStream(parent=None, config=MagicMock())
+    response_mock = MagicMock()
+    response_mock.status_code = 400
+    response_mock.json.return_value = response
+    assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+def test_analytics_stream_request_params(patch_base_class):
+    stream = PinterestAnalyticsStream(parent=None, config=MagicMock())
+    stream.analytics_target_ids = "target_id"
+    stream_slice = {"start_date": "2024-04-04", "end_date": "2024-04-05", "parent": {"id": "parent_id"}}
+    expected_params = {
+        "start_date": "2024-04-04",
+        "end_date": "2024-04-05",
+        "granularity": "DAY",
+        "columns": get_analytics_columns(),
+        "target_id": "parent_id",
+    }
+    assert stream.request_params(stream_state={}, stream_slice=stream_slice) == expected_params
+
+
 @pytest.mark.parametrize(
-    ("stream_cls, slice, expected"),
-    [
-        (Boards(MagicMock()), None, "boards"),
-        (AdAccounts(MagicMock()), None, "ad_accounts"),
-        (BoardSections(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "boards/123/sections"),
-        (BoardPins(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "boards/123/pins"),
+    ("stream_name", "stream_slice", "expected_path"),
+    (
+        ("boards", None, "boards"),
+        ("ad_accounts", None, "ad_accounts"),
+        ("board_sections", {"id": "123"}, "boards/123/sections"),
+        ("board_pins", {"id": "123"}, "boards/123/pins"),
+        ("board_section_pins", {"parent_slice": {"id": "234"}, "id": "123"}, "boards/234/sections/123/pins"),
+        ("ad_account_analytics", {"id": "123"}, "ad_accounts/123/analytics"),
+        ("campaigns", {"id": "123"}, "ad_accounts/123/campaigns"),
         (
-            BoardSectionPins(parent=None, config=MagicMock()),
-            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
-            "boards/234/sections/123/pins",
+            "campaign_analytics",
+            {"parent_slice": {"id": "234"}, "id": "123"},
+            "ad_accounts/234/campaigns/analytics?campaign_ids=123",
         ),
-        (AdAccountAnalytics(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/analytics"),
-        (Campaigns(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/campaigns"),
+        ("ad_groups", {"id": "123"}, "ad_accounts/123/ad_groups"),
         (
-            CampaignAnalytics(parent=None, config=MagicMock()),
-            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
-            "ad_accounts/234/campaigns/analytics",
+            "ad_group_analytics",
+            {"parent_slice": {"id": "234"}, "id": "123"},
+            "ad_accounts/234/ad_groups/analytics?ad_group_ids=123",
         ),
-        (AdGroups(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/ad_groups"),
+        ("ads", {"id": "123"}, "ad_accounts/123/ads"),
+        ("ad_analytics", {"parent_slice": {"id": "234"}, "id": "123"}, "ad_accounts/234/ads/analytics?ad_ids=123"),
+        ("catalogs", None, "catalogs"),
+        ("catalogs_feeds", None, "catalogs/feeds"),
+        ("catalogs_product_groups", None, "catalogs/product_groups"),
         (
-            AdGroupAnalytics(parent=None, config=MagicMock()),
-            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
-            "ad_accounts/234/ad_groups/analytics",
-        ),
-        (Ads(parent=None, config=MagicMock()), {"parent": {"id": "123"}}, "ad_accounts/123/ads"),
-        (
-            AdAnalytics(parent=None, config=MagicMock()),
-            {"sub_parent": {"parent": {"id": "234"}}, "parent": {"id": "123"}},
-            "ad_accounts/234/ads/analytics",
-        ),
-        (Catalogs(config=MagicMock()), None, "catalogs"),
-        (CatalogsFeeds(config=MagicMock()), None, "catalogs/feeds"),
-        (CatalogsProductGroups(config=MagicMock()), None, "catalogs/product_groups"),
-        (
-            Keywords(parent=None, config=MagicMock()),
-            {"parent": {"id": "234", "ad_account_id": "AD_ACCOUNT_1"}},
+            "keywords",
+            {"parent_slice": {"id": "AD_ACCOUNT_1"}, "id": "234"},
             "ad_accounts/AD_ACCOUNT_1/keywords?ad_group_id=234",
         ),
-        (Audiences(parent=None, config=MagicMock()), {"parent": {"id": "AD_ACCOUNT_1"}}, "ad_accounts/AD_ACCOUNT_1/audiences"),
-        (ConversionTags(parent=None, config=MagicMock()), {"parent": {"id": "AD_ACCOUNT_1"}}, "ad_accounts/AD_ACCOUNT_1/conversion_tags"),
-        (CustomerLists(parent=None, config=MagicMock()), {"parent": {"id": "AD_ACCOUNT_1"}}, "ad_accounts/AD_ACCOUNT_1/customer_lists"),
-    ],
+        ("audiences", {"id": "AD_ACCOUNT_1"}, "ad_accounts/AD_ACCOUNT_1/audiences"),
+        ("conversion_tags", {"id": "AD_ACCOUNT_1"}, "ad_accounts/AD_ACCOUNT_1/conversion_tags"),
+        ("customer_lists", {"id": "AD_ACCOUNT_1"}, "ad_accounts/AD_ACCOUNT_1/customer_lists"),
+    ),
 )
-def test_path(patch_base_class, stream_cls, slice, expected):
-    stream = stream_cls
-    if slice:
-        result = stream.path(stream_slice=slice)
-    else:
-        result = stream.path()
-    assert result == expected
+def test_path(test_config, stream_name, stream_slice, expected_path):
+    stream = get_stream_by_name(stream_name, test_config)
+    if stream_slice:
+        stream_slice = StreamSlice(partition=stream_slice, cursor_slice={})
+
+    result = stream.retriever.requester.get_path(stream_slice=stream_slice, stream_state=None, next_page_token=None)
+    assert result == expected_path
