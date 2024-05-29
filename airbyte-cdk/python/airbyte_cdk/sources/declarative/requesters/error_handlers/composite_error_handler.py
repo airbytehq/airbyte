@@ -43,12 +43,12 @@ class CompositeErrorHandler(ErrorHandler):
             raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
 
     @property
-    def max_retries(self) -> Union[int, None]:
-        return self.error_handlers[0].max_retries
+    def max_retries(self) -> Optional[int]:
+        return self.error_handlers[0].max_retries # type: ignore # property not defined in ErrorHandler
 
     @property
     def max_time(self) -> Union[int, None]:
-        return max([error_handler.max_time or 0 for error_handler in self.error_handlers])
+        return max([error_handler.max_time or 0 for error_handler in self.error_handlers]) # type: ignore # property not defined in ErrorHandler
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         matched_error_resolution = None

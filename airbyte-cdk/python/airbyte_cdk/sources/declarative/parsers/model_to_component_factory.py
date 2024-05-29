@@ -333,7 +333,7 @@ class ModelToComponentFactory:
         declarative_stream: DeclarativeStreamModel,
     ) -> LegacyToPerPartitionStateMigration:
         retriever = declarative_stream.retriever
-        partition_router = retriever.partition_router
+        partition_router = retriever.partition_router # type: ignore # CustomRetriever would inherit from SimpleRetriever and therefore have partition_router
 
         if not isinstance(retriever, SimpleRetrieverModel):
             raise ValueError(
@@ -792,7 +792,10 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_http_response_filter(model: HttpResponseFilterModel, config: Config, **kwargs: Any) -> HttpResponseFilter:
-        action = ResponseAction(model.action.value) or None
+        if model.action is not None:
+            action = ResponseAction(model.action.value)
+        else:
+            action =  None
         http_codes = (
             set(model.http_codes) if model.http_codes else set()
         )  # JSON schema notation has no set data type. The schema enforces an array of unique elements

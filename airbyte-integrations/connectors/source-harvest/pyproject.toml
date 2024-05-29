@@ -17,7 +17,7 @@ include = "source_harvest"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = { path = "../../../airbyte-cdk/python", develop = true }
 
 [tool.poetry.scripts]
 source-harvest = "source_harvest.run:run"

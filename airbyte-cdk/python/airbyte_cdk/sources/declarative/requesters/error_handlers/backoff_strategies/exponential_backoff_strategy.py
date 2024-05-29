@@ -32,7 +32,7 @@ class ExponentialBackoffStrategy(BackoffStrategy):
         else:
             self.factor = InterpolatedString.create(self.factor, parameters=parameters)
 
-    def backoff_time(
+    def backoff_time( # type: ignore # attempt_count maintained for compatibility with low code CDK
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int
     ) -> Optional[float]:
         return self.factor.eval(self.config) * 2**attempt_count  # type: ignore # factor is always cast to an interpolated string

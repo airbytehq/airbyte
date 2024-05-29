@@ -16,7 +16,7 @@ from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -205,7 +205,7 @@ class HttpRequester(Requester):
             return 0
         if self.error_handler is None:
             return self._DEFAULT_MAX_RETRY
-        return self.error_handler.max_retries
+        return self.error_handler.max_retries # type: ignore # parent class does not have max_retries
 
     @property
     def max_time(self) -> Union[int, None]:
@@ -214,7 +214,7 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return self._DEFAULT_MAX_TIME
-        return self.error_handler.max_time
+        return self.error_handler.max_time # type: ignore # parent class does not have max_time
 
     @property
     def logger(self) -> logging.Logger:
@@ -511,7 +511,7 @@ class HttpRequester(Requester):
             self.logger.info(error_resolution.error_message or log_message)
 
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self.error_handler.backoff_time(response) if self.error_handler is not None else None
+            custom_backoff_time = self.error_handler.backoff_time(response) if self.error_handler is not None else None # type: ignore # parent class does not have backoff_time
             error_message = f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action} with message: {error_resolution.error_message if error_resolution.error_message else None}"
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
