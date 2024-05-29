@@ -16,7 +16,6 @@ from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.streams.http.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -24,6 +23,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Req
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
@@ -205,7 +205,7 @@ class HttpRequester(Requester):
             return 0
         if self.error_handler is None:
             return self._DEFAULT_MAX_RETRY
-        return self.error_handler.max_retries # type: ignore # parent class does not have max_retries
+        return self.error_handler.max_retries  # type: ignore # parent class does not have max_retries
 
     @property
     def max_time(self) -> Union[int, None]:
@@ -214,7 +214,7 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return self._DEFAULT_MAX_TIME
-        return self.error_handler.max_time # type: ignore # parent class does not have max_time
+        return self.error_handler.max_time  # type: ignore # parent class does not have max_time
 
     @property
     def logger(self) -> logging.Logger:
@@ -511,7 +511,7 @@ class HttpRequester(Requester):
             self.logger.info(error_resolution.error_message or log_message)
 
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self.error_handler.backoff_time(response) if self.error_handler is not None else None # type: ignore # parent class does not have backoff_time
+            custom_backoff_time = self.error_handler.backoff_time(response) if self.error_handler is not None else None  # type: ignore # parent class does not have backoff_time
             error_message = f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action} with message: {error_resolution.error_message if error_resolution.error_message else None}"
             if custom_backoff_time:
                 raise UserDefinedBackoffException(

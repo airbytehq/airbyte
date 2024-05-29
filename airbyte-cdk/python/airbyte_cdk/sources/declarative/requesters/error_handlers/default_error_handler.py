@@ -9,9 +9,8 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.types import Config
 
@@ -138,7 +137,7 @@ class DefaultErrorHandler(ErrorHandler):
         backoff = None
         if self.backoff_strategies:
             for backoff_strategies in self.backoff_strategies:
-                backoff = backoff_strategies.backoff_time(response_or_exception, attempt_count) # type: ignore # attempt_count maintained for compatibility with low code CDK
+                backoff = backoff_strategies.backoff_time(response_or_exception, attempt_count)  # type: ignore # attempt_count maintained for compatibility with low code CDK
                 if backoff:
                     return backoff
         return backoff

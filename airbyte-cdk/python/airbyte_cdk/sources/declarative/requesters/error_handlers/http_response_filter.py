@@ -77,7 +77,7 @@ class HttpResponseFilter:
                 error_message=error_message,
             )
         elif default_mapped_error_resolution:
-                return default_mapped_error_resolution
+            return default_mapped_error_resolution
 
         return None
 
