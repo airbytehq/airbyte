@@ -69,7 +69,7 @@ class SnowflakeCortexIndexingModel(BaseModel):
     credentials: PasswordBasedAuthorizationModel
 
     class Config:
-        title = "Indexing"
+        title = "Snowflake Connection"
         schema_extra = {
             "description": "Snowflake can be used to store vector data and retrieve embeddings.",
             "group": "indexing",
