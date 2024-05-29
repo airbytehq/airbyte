@@ -198,7 +198,7 @@ def run_discover_test(source: SourceFauna, logger):
 def run_add_removes_test(source: SourceFauna, logger, stream: ConfiguredAirbyteStream):
     source._setup_client(FullConfig.localhost())
     source.client.query(q.create(ref(105, "foo"), {"data": {"a": 10}}))
-    deleted_ts = (
+    deleted_ts = datetime.utcfromtimestamp((
         source.client.query(
             q.do(
                 q.delete(ref(105, "foo")),
@@ -207,8 +207,7 @@ def run_add_removes_test(source: SourceFauna, logger, stream: ConfiguredAirbyteS
         )
         .to_datetime()
         .timestamp()
-        * 1_000_000
-    )
+    ))
 
     conf = CollectionConfig(
         deletions=DeletionsConfig.ignore(),
@@ -216,8 +215,8 @@ def run_add_removes_test(source: SourceFauna, logger, stream: ConfiguredAirbyteS
     results = list(source.read_removes(logger, stream, conf, state={}, deletion_column="my_deletion_col"))
     assert len(results) == 1
     assert results[0]["ref"] == "105"
-    assert results[0]["ts"] >= deleted_ts
-    assert datetime.fromisoformat(results[0]["my_deletion_col"]).timestamp() * 1_000_000 >= deleted_ts
+    assert results[0]["ts"] >= deleted_ts.timestamp() * 1_000_000
+    assert datetime.fromisoformat(results[0]["my_deletion_col"]) >= deleted_ts
 
 
 def run_removes_order_test(source: SourceFauna, logger, stream: ConfiguredAirbyteStream):
@@ -376,12 +375,12 @@ def run_general_remove_test(source: SourceFauna, logger):
     assert documents[0]["ref"] == "101"
     assert documents[0]["ts"] > db_data[0]["ts"]
     assert "data" not in documents[0]
-    assert datetime.fromisoformat(documents[0]["deleted_at"]).timestamp() * 1_000_000 > db_data[0]["ts"]
+    assert datetime.fromisoformat(documents[0]["deleted_at"]) > datetime.utcfromtimestamp(db_data[0]["ts"] / 1_000_000)
 
     assert documents[1]["ref"] == "103"
     assert documents[1]["ts"] > db_data[2]["ts"]
     assert "data" not in documents[1]
-    assert datetime.fromisoformat(documents[1]["deleted_at"]).timestamp() * 1_000_000 > db_data[2]["ts"]
+    assert datetime.fromisoformat(documents[1]["deleted_at"]) > datetime.utcfromtimestamp(db_data[2]["ts"] / 1_000_000)
 
     print("=== check: make sure we don't produce more deleted documents when nothing changed")
     documents, state = read_records(source.read(logger, conf, catalog, state), "deletions_test")
@@ -396,7 +395,7 @@ def run_general_remove_test(source: SourceFauna, logger):
     assert documents[0]["ref"] == "102"
     assert documents[0]["ts"] > db_data[1]["ts"]
     assert "data" not in documents[0]
-    assert datetime.fromisoformat(documents[0]["deleted_at"]).timestamp() * 1_000_000 > db_data[1]["ts"]
+    assert datetime.fromisoformat(documents[0]["deleted_at"]) > datetime.utcfromtimestamp(db_data[1]["ts"] / 1_000_000)
 
     print("=== check: make sure we don't produce more deleted documents when nothing changed")
     documents, state = read_records(source.read(logger, conf, catalog, state), "deletions_test")
