@@ -77,12 +77,12 @@ internal class DefaultDestStateLifecycleManagerTest {
 
     @Test
     fun testDelegatesLegacyMessages() {
-        mgr1!!.addState(UNSET_TYPE_MESSAGE)
-        mgr1!!.addState(LEGACY_MESSAGE)
-        mgr1!!.markPendingAsFlushed()
-        mgr1!!.markFlushedAsCommitted()
-        mgr1!!.listFlushed()
-        mgr1!!.listCommitted()
+        mgr1.addState(UNSET_TYPE_MESSAGE)
+        mgr1.addState(LEGACY_MESSAGE)
+        mgr1.markPendingAsFlushed()
+        mgr1.markFlushedAsCommitted()
+        mgr1.listFlushed()
+        mgr1.listCommitted()
         Mockito.verify(singleStateMgr).addState(UNSET_TYPE_MESSAGE)
         Mockito.verify(singleStateMgr).addState(LEGACY_MESSAGE)
         Mockito.verify(singleStateMgr).markPendingAsFlushed()
@@ -93,11 +93,11 @@ internal class DefaultDestStateLifecycleManagerTest {
 
     @Test
     fun testDelegatesGlobalMessages() {
-        mgr1!!.addState(GLOBAL_MESSAGE)
-        mgr1!!.markPendingAsFlushed()
-        mgr1!!.markFlushedAsCommitted()
-        mgr1!!.listFlushed()
-        mgr1!!.listCommitted()
+        mgr1.addState(GLOBAL_MESSAGE)
+        mgr1.markPendingAsFlushed()
+        mgr1.markFlushedAsCommitted()
+        mgr1.listFlushed()
+        mgr1.listCommitted()
         Mockito.verify(singleStateMgr).addState(GLOBAL_MESSAGE)
         Mockito.verify(singleStateMgr).markPendingAsFlushed()
         Mockito.verify(singleStateMgr).markFlushedAsCommitted()
@@ -107,11 +107,11 @@ internal class DefaultDestStateLifecycleManagerTest {
 
     @Test
     fun testDelegatesStreamMessages() {
-        mgr1!!.addState(STREAM_MESSAGE)
-        mgr1!!.markPendingAsFlushed()
-        mgr1!!.markFlushedAsCommitted()
-        mgr1!!.listFlushed()
-        mgr1!!.listCommitted()
+        mgr1.addState(STREAM_MESSAGE)
+        mgr1.markPendingAsFlushed()
+        mgr1.markFlushedAsCommitted()
+        mgr1.listFlushed()
+        mgr1.listCommitted()
 
         Mockito.verify(streamMgr).addState(STREAM_MESSAGE)
         Mockito.verify(streamMgr).markPendingAsFlushed()

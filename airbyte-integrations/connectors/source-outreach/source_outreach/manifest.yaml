@@ -1,0 +1,5717 @@
+version: "0.44.0"
+
+streams:
+  - $ref: "#/definitions/base_stream"
+    name: "accounts"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/accounts_schema"
+    $parameters:
+      path: "/accounts"
+
+  - $ref: "#/definitions/base_stream"
+    name: "calls"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/calls_schema"
+    $parameters:
+      path: "/calls"
+
+  - $ref: "#/definitions/base_stream"
+    name: "call_dispositions"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/call_dispositions_schema"
+    $parameters:
+      path: "/callDispositions"
+
+  - $ref: "#/definitions/base_stream"
+    name: "call_purposes"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/call_purposes_schema"
+    $parameters:
+      path: "/callPurposes"
+
+  - $ref: "#/definitions/base_stream"
+    name: "mailings"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/mailings_schema"
+    $parameters:
+      path: "/mailings"
+
+  - $ref: "#/definitions/base_stream"
+    name: "mailboxes"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/mailboxes_schema"
+    $parameters:
+      path: "/mailboxes"
+
+  - $ref: "#/definitions/base_stream"
+    name: "opportunities"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/opportunities_schema"
+    $parameters:
+      path: "/opportunities"
+
+  - $ref: "#/definitions/base_stream"
+    name: "personas"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/personas_schema"
+    $parameters:
+      path: "/personas"
+
+  - $ref: "#/definitions/base_stream"
+    name: "prospects"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/prospects_schema"
+    $parameters:
+      path: "/prospects"
+
+  - $ref: "#/definitions/base_stream"
+    name: "sequences"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/sequences_schema"
+    $parameters:
+      path: "/sequences"
+
+  - $ref: "#/definitions/base_stream"
+    name: "sequence_states"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/sequence_states_schema"
+    $parameters:
+      path: "/sequenceStates"
+
+  - $ref: "#/definitions/base_stream"
+    name: "sequence_steps"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/sequence_steps_schema"
+    $parameters:
+      path: "/sequenceSteps"
+
+  - $ref: "#/definitions/base_stream"
+    name: "snippets"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/snippets_schema"
+    $parameters:
+      path: "/snippets"
+
+  - $ref: "#/definitions/base_stream"
+    name: "stages"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/stages_schema"
+    $parameters:
+      path: "/stages"
+
+  - $ref: "#/definitions/base_stream"
+    name: "tasks"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/tasks_schema"
+    $parameters:
+      path: "/tasks"
+
+  - $ref: "#/definitions/base_stream"
+    name: "templates"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/templates_schema"
+    $parameters:
+      path: "/templates"
+
+  - $ref: "#/definitions/base_stream"
+    name: "users"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/users_schema"
+    $parameters:
+      path: "/users"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: CustomRecordExtractor
+      class_name: source_outreach.components.CustomExtractor
+
+  requester:
+    type: HttpRequester
+    url_base: https://api.outreach.io/api/v2
+    http_method: GET
+    request_parameters:
+      count: "false"
+      sort: updatedAt
+      page[size]: "1000"
+    request_headers: {}
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: "{{ config['refresh_token'] }}"
+      token_refresh_endpoint: https://api.outreach.io/oauth/token
+      grant_type: refresh_token
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestPath
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+        stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_outreach.components.CustomIncrementalSync
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_field: updatedAt
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  accounts_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      assignedTeams:
+        type:
+          - "null"
+          - array
+      assignedUsers:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      batches:
+        type:
+          - "null"
+          - array
+      buyerIntentScore:
+        type:
+          - "null"
+          - number
+      companyType:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      custom1:
+        type:
+          - "null"
+          - string
+      custom10:
+        type:
+          - "null"
+          - string
+      custom100:
+        type:
+          - "null"
+          - string
+      custom101:
+        type:
+          - "null"
+          - string
+      custom102:
+        type:
+          - "null"
+          - string
+      custom103:
+        type:
+          - "null"
+          - string
+      custom104:
+        type:
+          - "null"
+          - string
+      custom105:
+        type:
+          - "null"
+          - string
+      custom106:
+        type:
+          - "null"
+          - string
+      custom107:
+        type:
+          - "null"
+          - string
+      custom108:
+        type:
+          - "null"
+          - string
+      custom109:
+        type:
+          - "null"
+          - string
+      custom11:
+        type:
+          - "null"
+          - string
+      custom110:
+        type:
+          - "null"
+          - string
+      custom111:
+        type:
+          - "null"
+          - string
+      custom112:
+        type:
+          - "null"
+          - string
+      custom113:
+        type:
+          - "null"
+          - string
+      custom114:
+        type:
+          - "null"
+          - string
+      custom115:
+        type:
+          - "null"
+          - string
+      custom116:
+        type:
+          - "null"
+          - string
+      custom117:
+        type:
+          - "null"
+          - string
+      custom118:
+        type:
+          - "null"
+          - string
+      custom119:
+        type:
+          - "null"
+          - string
+      custom12:
+        type:
+          - "null"
+          - string
+      custom120:
+        type:
+          - "null"
+          - string
+      custom121:
+        type:
+          - "null"
+          - string
+      custom122:
+        type:
+          - "null"
+          - string
+      custom123:
+        type:
+          - "null"
+          - string
+      custom124:
+        type:
+          - "null"
+          - string
+      custom125:
+        type:
+          - "null"
+          - string
+      custom126:
+        type:
+          - "null"
+          - string
+      custom127:
+        type:
+          - "null"
+          - string
+      custom128:
+        type:
+          - "null"
+          - string
+      custom129:
+        type:
+          - "null"
+          - string
+      custom13:
+        type:
+          - "null"
+          - string
+      custom130:
+        type:
+          - "null"
+          - string
+      custom131:
+        type:
+          - "null"
+          - string
+      custom132:
+        type:
+          - "null"
+          - string
+      custom133:
+        type:
+          - "null"
+          - string
+      custom134:
+        type:
+          - "null"
+          - string
+      custom135:
+        type:
+          - "null"
+          - string
+      custom136:
+        type:
+          - "null"
+          - string
+      custom137:
+        type:
+          - "null"
+          - string
+      custom138:
+        type:
+          - "null"
+          - string
+      custom139:
+        type:
+          - "null"
+          - string
+      custom14:
+        type:
+          - "null"
+          - string
+      custom140:
+        type:
+          - "null"
+          - string
+      custom141:
+        type:
+          - "null"
+          - string
+      custom142:
+        type:
+          - "null"
+          - string
+      custom143:
+        type:
+          - "null"
+          - string
+      custom144:
+        type:
+          - "null"
+          - string
+      custom145:
+        type:
+          - "null"
+          - string
+      custom146:
+        type:
+          - "null"
+          - string
+      custom147:
+        type:
+          - "null"
+          - string
+      custom148:
+        type:
+          - "null"
+          - string
+      custom149:
+        type:
+          - "null"
+          - string
+      custom15:
+        type:
+          - "null"
+          - string
+      custom150:
+        type:
+          - "null"
+          - string
+      custom16:
+        type:
+          - "null"
+          - string
+      custom17:
+        type:
+          - "null"
+          - string
+      custom18:
+        type:
+          - "null"
+          - string
+      custom19:
+        type:
+          - "null"
+          - string
+      custom2:
+        type:
+          - "null"
+          - string
+      custom20:
+        type:
+          - "null"
+          - string
+      custom21:
+        type:
+          - "null"
+          - string
+      custom22:
+        type:
+          - "null"
+          - string
+      custom23:
+        type:
+          - "null"
+          - string
+      custom24:
+        type:
+          - "null"
+          - string
+      custom25:
+        type:
+          - "null"
+          - string
+      custom26:
+        type:
+          - "null"
+          - string
+      custom27:
+        type:
+          - "null"
+          - string
+      custom28:
+        type:
+          - "null"
+          - string
+      custom29:
+        type:
+          - "null"
+          - string
+      custom3:
+        type:
+          - "null"
+          - string
+      custom30:
+        type:
+          - "null"
+          - string
+      custom31:
+        type:
+          - "null"
+          - string
+      custom32:
+        type:
+          - "null"
+          - string
+      custom33:
+        type:
+          - "null"
+          - string
+      custom34:
+        type:
+          - "null"
+          - string
+      custom35:
+        type:
+          - "null"
+          - string
+      custom36:
+        type:
+          - "null"
+          - string
+      custom37:
+        type:
+          - "null"
+          - string
+      custom38:
+        type:
+          - "null"
+          - string
+      custom39:
+        type:
+          - "null"
+          - string
+      custom4:
+        type:
+          - "null"
+          - string
+      custom40:
+        type:
+          - "null"
+          - string
+      custom41:
+        type:
+          - "null"
+          - string
+      custom42:
+        type:
+          - "null"
+          - string
+      custom43:
+        type:
+          - "null"
+          - string
+      custom44:
+        type:
+          - "null"
+          - string
+      custom45:
+        type:
+          - "null"
+          - string
+      custom46:
+        type:
+          - "null"
+          - string
+      custom47:
+        type:
+          - "null"
+          - string
+      custom48:
+        type:
+          - "null"
+          - string
+      custom49:
+        type:
+          - "null"
+          - string
+      custom5:
+        type:
+          - "null"
+          - string
+      custom50:
+        type:
+          - "null"
+          - string
+      custom51:
+        type:
+          - "null"
+          - string
+      custom52:
+        type:
+          - "null"
+          - string
+      custom53:
+        type:
+          - "null"
+          - string
+      custom54:
+        type:
+          - "null"
+          - string
+      custom55:
+        type:
+          - "null"
+          - string
+      custom56:
+        type:
+          - "null"
+          - string
+      custom57:
+        type:
+          - "null"
+          - string
+      custom58:
+        type:
+          - "null"
+          - string
+      custom59:
+        type:
+          - "null"
+          - string
+      custom6:
+        type:
+          - "null"
+          - string
+      custom60:
+        type:
+          - "null"
+          - string
+      custom61:
+        type:
+          - "null"
+          - string
+      custom62:
+        type:
+          - "null"
+          - string
+      custom63:
+        type:
+          - "null"
+          - string
+      custom64:
+        type:
+          - "null"
+          - string
+      custom65:
+        type:
+          - "null"
+          - string
+      custom66:
+        type:
+          - "null"
+          - string
+      custom67:
+        type:
+          - "null"
+          - string
+      custom68:
+        type:
+          - "null"
+          - string
+      custom69:
+        type:
+          - "null"
+          - string
+      custom7:
+        type:
+          - "null"
+          - string
+      custom70:
+        type:
+          - "null"
+          - string
+      custom71:
+        type:
+          - "null"
+          - string
+      custom72:
+        type:
+          - "null"
+          - string
+      custom73:
+        type:
+          - "null"
+          - string
+      custom74:
+        type:
+          - "null"
+          - string
+      custom75:
+        type:
+          - "null"
+          - string
+      custom76:
+        type:
+          - "null"
+          - string
+      custom77:
+        type:
+          - "null"
+          - string
+      custom78:
+        type:
+          - "null"
+          - string
+      custom79:
+        type:
+          - "null"
+          - string
+      custom8:
+        type:
+          - "null"
+          - string
+      custom80:
+        type:
+          - "null"
+          - string
+      custom81:
+        type:
+          - "null"
+          - string
+      custom82:
+        type:
+          - "null"
+          - string
+      custom83:
+        type:
+          - "null"
+          - string
+      custom84:
+        type:
+          - "null"
+          - string
+      custom85:
+        type:
+          - "null"
+          - string
+      custom86:
+        type:
+          - "null"
+          - string
+      custom87:
+        type:
+          - "null"
+          - string
+      custom88:
+        type:
+          - "null"
+          - string
+      custom89:
+        type:
+          - "null"
+          - string
+      custom9:
+        type:
+          - "null"
+          - string
+      custom90:
+        type:
+          - "null"
+          - string
+      custom91:
+        type:
+          - "null"
+          - string
+      custom92:
+        type:
+          - "null"
+          - string
+      custom93:
+        type:
+          - "null"
+          - string
+      custom94:
+        type:
+          - "null"
+          - string
+      custom95:
+        type:
+          - "null"
+          - string
+      custom96:
+        type:
+          - "null"
+          - string
+      custom97:
+        type:
+          - "null"
+          - string
+      custom98:
+        type:
+          - "null"
+          - string
+      custom99:
+        type:
+          - "null"
+          - string
+      customId:
+        type:
+          - "null"
+          - string
+      defaultPluginMapping:
+        type:
+          - "null"
+          - array
+      description:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      externalSource:
+        type:
+          - "null"
+          - string
+      favorites:
+        type:
+          - "null"
+          - array
+      followers:
+        type:
+          - "null"
+          - integer
+      foundedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      industry:
+        type:
+          - "null"
+          - string
+      linkedInEmployees:
+        type:
+          - "null"
+          - integer
+      linkedInUrl:
+        type:
+          - "null"
+          - string
+      locality:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      named:
+        type:
+          - "null"
+          - boolean
+      naturalName:
+        type:
+          - "null"
+          - string
+      numberOfEmployees:
+        type:
+          - "null"
+          - integer
+      sharingTeamId:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      touchedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      trashedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      websiteUrl:
+        type:
+          - "null"
+          - string
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospects:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  call_dispositions_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      defaultForOutboundVoicemail:
+        type:
+          - "null"
+          - boolean
+      outcome:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  call_purposes_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  calls_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      batches:
+        type:
+          - "null"
+          - array
+      externalVendor:
+        type:
+          - "null"
+          - string
+      direction:
+        type:
+          - "null"
+          - string
+      from:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      outboundVoicemail:
+        type:
+          - "null"
+          - array
+      outcome:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - array
+      recordingUrl:
+        type:
+          - "null"
+          - string
+      sequenceAction:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      shouldRecordCall:
+        type:
+          - "null"
+          - boolean
+      to:
+        type:
+          - "null"
+          - string
+      uid:
+        type:
+          - "null"
+          - string
+      userCallType:
+        type:
+          - "null"
+          - string
+      vendorCallId:
+        type:
+          - "null"
+          - string
+      voicemailRecordingUrl:
+        type:
+          - "null"
+          - string
+      answeredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      completedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      dialedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      returnedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      stateChangedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      callDisposition:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      callPurpose:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      phoneNumber:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospect:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      recordingDeletionReason:
+        type:
+          - "null"
+          - string
+      sequence:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceState:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceStep:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      task:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      user:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  mailboxes_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      authId:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      editable:
+        type:
+          - "null"
+          - boolean
+      email:
+        type:
+          - "null"
+          - string
+      emailHash:
+        type:
+          - "null"
+          - string
+      emailProvider:
+        type:
+          - "null"
+          - string
+      emailSignature:
+        type:
+          - "null"
+          - string
+      ewsCustomSearchFolder:
+        type:
+          - "null"
+          - boolean
+      ewsDelegateSync:
+        type:
+          - "null"
+          - boolean
+      ewsEndpoint:
+        type:
+          - "null"
+          - string
+      ewsImpersonation:
+        type:
+          - "null"
+          - boolean
+      ewsSslVerifyMode:
+        type:
+          - "null"
+          - integer
+      exchangeVersion:
+        type:
+          - "null"
+          - string
+      imapHost:
+        type:
+          - "null"
+          - string
+      imapPort:
+        type:
+          - "null"
+          - integer
+      imapSsl:
+        type:
+          - "null"
+          - boolean
+      maxEmailsPerDay:
+        type:
+          - "null"
+          - integer
+      maxMailingsPerDay:
+        type:
+          - "null"
+          - integer
+      maxMailingsPerWeek:
+        type:
+          - "null"
+          - integer
+      optOutMessage:
+        type:
+          - "null"
+          - string
+      optOutSignature:
+        type:
+          - "null"
+          - string
+      prospectEmailExclusions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      providerId:
+        type:
+          - "null"
+          - integer
+      providerType:
+        type:
+          - "null"
+          - string
+      sendDisabled:
+        type:
+          - "null"
+          - boolean
+      sendErroredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      sendMaxRetries:
+        type:
+          - "null"
+          - integer
+      sendMethod:
+        type:
+          - "null"
+          - string
+      sendPeriod:
+        type:
+          - "null"
+          - integer
+      sendPermanentErrorAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      sendRequiresSync:
+        type:
+          - "null"
+          - boolean
+      sendSuccessAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      sendThreshold:
+        type:
+          - "null"
+          - integer
+      sendgridWebhookUrl:
+        type:
+          - "null"
+          - string
+      smtpHost:
+        type:
+          - "null"
+          - string
+      smtpPort:
+        type:
+          - "null"
+          - integer
+      smtpSsl:
+        type:
+          - "null"
+          - boolean
+      smtpUsername:
+        type:
+          - "null"
+          - string
+      syncActiveFrequency:
+        type:
+          - "null"
+          - integer
+      syncDisabled:
+        type:
+          - "null"
+          - boolean
+      syncErroredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      syncFinishedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      syncMethod:
+        type:
+          - "null"
+          - string
+      syncOutreachFolder:
+        type:
+          - "null"
+          - boolean
+      syncPassiveFrequency:
+        type:
+          - "null"
+          - integer
+      syncPermanentErrorAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      syncSuccessAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      userId:
+        type:
+          - "null"
+          - integer
+      username:
+        type:
+          - "null"
+          - string
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailAliases:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      user:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  mailings_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      attachments:
+        type:
+          - "null"
+          - array
+      attributableSequenceId:
+        type:
+          - "null"
+          - integer
+      attributableSequenceName:
+        type:
+          - "null"
+          - string
+      bodyHtml:
+        type:
+          - "null"
+          - string
+      bodyText:
+        type:
+          - "null"
+          - string
+      bouncedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      clickCount:
+        type:
+          - "null"
+          - integer
+      calendar:
+        type:
+          - "null"
+          - array
+      clickedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deliveredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      desiredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      errorBacktrace:
+        type:
+          - "null"
+          - string
+      errorReason:
+        type:
+          - "null"
+          - string
+      followUpTaskScheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      followUpTaskType:
+        type:
+          - "null"
+          - string
+      mailboxAddress:
+        type:
+          - "null"
+          - string
+      mailingType:
+        type:
+          - "null"
+          - string
+      markedAsSpamAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      meetingDescription:
+        type:
+          - "null"
+          - string
+      meetingDuration:
+        type:
+          - "null"
+          - integer
+      meetingLocation:
+        type:
+          - "null"
+          - string
+      meetingTitle:
+        type:
+          - "null"
+          - string
+      messageId:
+        type:
+          - "null"
+          - string
+      notifyThreadCondition:
+        type:
+          - "null"
+          - string
+      notifyThreadScheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      notifyThreadStatus:
+        type:
+          - "null"
+          - string
+      openCount:
+        type:
+          - "null"
+          - integer
+      openedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      optimizedScheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      overrideSafetySettings:
+        type:
+          - "null"
+          - boolean
+      references:
+        type:
+          - "null"
+          - array
+      repliedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      replySentiment:
+        type:
+          - "null"
+          - string
+      retryAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      retryCount:
+        type:
+          - "null"
+          - integer
+      retryInterval:
+        type:
+          - "null"
+          - integer
+      schedule:
+        type:
+          - "null"
+          - array
+      scheduleId:
+        type:
+          - "null"
+          - integer
+      scheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      state:
+        type:
+          - "null"
+          - string
+      stateChangedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      subject:
+        type:
+          - "null"
+          - string
+      trackLinks:
+        type:
+          - "null"
+          - boolean
+      trackOpens:
+        type:
+          - "null"
+          - boolean
+      unsubscribedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      followUpSequence:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      followUpSequenceId:
+        type:
+          - "null"
+          - integer
+      followUpSequenceName:
+        type:
+          - "null"
+          - string
+      followUpSequenceStartingDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      mailbox:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospect:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      recipients:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequence:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceState:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceStep:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      task:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      template:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      user:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  opportunities_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      assignedTeams:
+        type:
+          - "null"
+          - array
+      assignedUsers:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      amount:
+        type:
+          - "null"
+          - integer
+      closeDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currencyType:
+        type:
+          - "null"
+          - string
+      custom1:
+        type:
+          - "null"
+          - string
+      custom10:
+        type:
+          - "null"
+          - string
+      custom100:
+        type:
+          - "null"
+          - string
+      custom101:
+        type:
+          - "null"
+          - string
+      custom102:
+        type:
+          - "null"
+          - string
+      custom103:
+        type:
+          - "null"
+          - string
+      custom104:
+        type:
+          - "null"
+          - string
+      custom105:
+        type:
+          - "null"
+          - string
+      custom106:
+        type:
+          - "null"
+          - string
+      custom107:
+        type:
+          - "null"
+          - string
+      custom108:
+        type:
+          - "null"
+          - string
+      custom109:
+        type:
+          - "null"
+          - string
+      custom11:
+        type:
+          - "null"
+          - string
+      custom110:
+        type:
+          - "null"
+          - string
+      custom111:
+        type:
+          - "null"
+          - string
+      custom112:
+        type:
+          - "null"
+          - string
+      custom113:
+        type:
+          - "null"
+          - string
+      custom114:
+        type:
+          - "null"
+          - string
+      custom115:
+        type:
+          - "null"
+          - string
+      custom116:
+        type:
+          - "null"
+          - string
+      custom117:
+        type:
+          - "null"
+          - string
+      custom118:
+        type:
+          - "null"
+          - string
+      custom119:
+        type:
+          - "null"
+          - string
+      custom12:
+        type:
+          - "null"
+          - string
+      custom120:
+        type:
+          - "null"
+          - string
+      custom121:
+        type:
+          - "null"
+          - string
+      custom122:
+        type:
+          - "null"
+          - string
+      custom123:
+        type:
+          - "null"
+          - string
+      custom124:
+        type:
+          - "null"
+          - string
+      custom125:
+        type:
+          - "null"
+          - string
+      custom126:
+        type:
+          - "null"
+          - string
+      custom127:
+        type:
+          - "null"
+          - string
+      custom128:
+        type:
+          - "null"
+          - string
+      custom129:
+        type:
+          - "null"
+          - string
+      custom13:
+        type:
+          - "null"
+          - string
+      custom130:
+        type:
+          - "null"
+          - string
+      custom131:
+        type:
+          - "null"
+          - string
+      custom132:
+        type:
+          - "null"
+          - string
+      custom133:
+        type:
+          - "null"
+          - string
+      custom134:
+        type:
+          - "null"
+          - string
+      custom135:
+        type:
+          - "null"
+          - string
+      custom136:
+        type:
+          - "null"
+          - string
+      custom137:
+        type:
+          - "null"
+          - string
+      custom138:
+        type:
+          - "null"
+          - string
+      custom139:
+        type:
+          - "null"
+          - string
+      custom14:
+        type:
+          - "null"
+          - string
+      custom140:
+        type:
+          - "null"
+          - string
+      custom141:
+        type:
+          - "null"
+          - string
+      custom142:
+        type:
+          - "null"
+          - string
+      custom143:
+        type:
+          - "null"
+          - string
+      custom144:
+        type:
+          - "null"
+          - string
+      custom145:
+        type:
+          - "null"
+          - string
+      custom146:
+        type:
+          - "null"
+          - string
+      custom147:
+        type:
+          - "null"
+          - string
+      custom148:
+        type:
+          - "null"
+          - string
+      custom149:
+        type:
+          - "null"
+          - string
+      custom15:
+        type:
+          - "null"
+          - string
+      custom150:
+        type:
+          - "null"
+          - string
+      custom16:
+        type:
+          - "null"
+          - string
+      custom17:
+        type:
+          - "null"
+          - string
+      custom18:
+        type:
+          - "null"
+          - string
+      custom19:
+        type:
+          - "null"
+          - string
+      custom2:
+        type:
+          - "null"
+          - string
+      custom20:
+        type:
+          - "null"
+          - string
+      custom21:
+        type:
+          - "null"
+          - string
+      custom22:
+        type:
+          - "null"
+          - string
+      custom23:
+        type:
+          - "null"
+          - string
+      custom24:
+        type:
+          - "null"
+          - string
+      custom25:
+        type:
+          - "null"
+          - string
+      custom26:
+        type:
+          - "null"
+          - string
+      custom27:
+        type:
+          - "null"
+          - string
+      custom28:
+        type:
+          - "null"
+          - string
+      custom29:
+        type:
+          - "null"
+          - string
+      custom3:
+        type:
+          - "null"
+          - string
+      custom30:
+        type:
+          - "null"
+          - string
+      custom31:
+        type:
+          - "null"
+          - string
+      custom32:
+        type:
+          - "null"
+          - string
+      custom33:
+        type:
+          - "null"
+          - string
+      custom34:
+        type:
+          - "null"
+          - string
+      custom35:
+        type:
+          - "null"
+          - string
+      custom36:
+        type:
+          - "null"
+          - string
+      custom37:
+        type:
+          - "null"
+          - string
+      custom38:
+        type:
+          - "null"
+          - string
+      custom39:
+        type:
+          - "null"
+          - string
+      custom4:
+        type:
+          - "null"
+          - string
+      custom40:
+        type:
+          - "null"
+          - string
+      custom41:
+        type:
+          - "null"
+          - string
+      custom42:
+        type:
+          - "null"
+          - string
+      custom43:
+        type:
+          - "null"
+          - string
+      custom44:
+        type:
+          - "null"
+          - string
+      custom45:
+        type:
+          - "null"
+          - string
+      custom46:
+        type:
+          - "null"
+          - string
+      custom47:
+        type:
+          - "null"
+          - string
+      custom48:
+        type:
+          - "null"
+          - string
+      custom49:
+        type:
+          - "null"
+          - string
+      custom5:
+        type:
+          - "null"
+          - string
+      custom50:
+        type:
+          - "null"
+          - string
+      custom51:
+        type:
+          - "null"
+          - string
+      custom52:
+        type:
+          - "null"
+          - string
+      custom53:
+        type:
+          - "null"
+          - string
+      custom54:
+        type:
+          - "null"
+          - string
+      custom55:
+        type:
+          - "null"
+          - string
+      custom56:
+        type:
+          - "null"
+          - string
+      custom57:
+        type:
+          - "null"
+          - string
+      custom58:
+        type:
+          - "null"
+          - string
+      custom59:
+        type:
+          - "null"
+          - string
+      custom6:
+        type:
+          - "null"
+          - string
+      custom60:
+        type:
+          - "null"
+          - string
+      custom61:
+        type:
+          - "null"
+          - string
+      custom62:
+        type:
+          - "null"
+          - string
+      custom63:
+        type:
+          - "null"
+          - string
+      custom64:
+        type:
+          - "null"
+          - string
+      custom65:
+        type:
+          - "null"
+          - string
+      custom66:
+        type:
+          - "null"
+          - string
+      custom67:
+        type:
+          - "null"
+          - string
+      custom68:
+        type:
+          - "null"
+          - string
+      custom69:
+        type:
+          - "null"
+          - string
+      custom7:
+        type:
+          - "null"
+          - string
+      custom70:
+        type:
+          - "null"
+          - string
+      custom71:
+        type:
+          - "null"
+          - string
+      custom72:
+        type:
+          - "null"
+          - string
+      custom73:
+        type:
+          - "null"
+          - string
+      custom74:
+        type:
+          - "null"
+          - string
+      custom75:
+        type:
+          - "null"
+          - string
+      custom76:
+        type:
+          - "null"
+          - string
+      custom77:
+        type:
+          - "null"
+          - string
+      custom78:
+        type:
+          - "null"
+          - string
+      custom79:
+        type:
+          - "null"
+          - string
+      custom8:
+        type:
+          - "null"
+          - string
+      custom80:
+        type:
+          - "null"
+          - string
+      custom81:
+        type:
+          - "null"
+          - string
+      custom82:
+        type:
+          - "null"
+          - string
+      custom83:
+        type:
+          - "null"
+          - string
+      custom84:
+        type:
+          - "null"
+          - string
+      custom85:
+        type:
+          - "null"
+          - string
+      custom86:
+        type:
+          - "null"
+          - string
+      custom87:
+        type:
+          - "null"
+          - string
+      custom88:
+        type:
+          - "null"
+          - string
+      custom89:
+        type:
+          - "null"
+          - string
+      custom9:
+        type:
+          - "null"
+          - string
+      custom90:
+        type:
+          - "null"
+          - string
+      custom91:
+        type:
+          - "null"
+          - string
+      custom92:
+        type:
+          - "null"
+          - string
+      custom93:
+        type:
+          - "null"
+          - string
+      custom94:
+        type:
+          - "null"
+          - string
+      custom95:
+        type:
+          - "null"
+          - string
+      custom96:
+        type:
+          - "null"
+          - string
+      custom97:
+        type:
+          - "null"
+          - string
+      custom98:
+        type:
+          - "null"
+          - string
+      custom99:
+        type:
+          - "null"
+          - string
+      defaultPluginMapping:
+        type:
+          - "null"
+          - array
+      description:
+        type:
+          - "null"
+          - string
+      externalCreator:
+        type:
+          - "null"
+          - array
+      externalCreatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      favorites:
+        type:
+          - "null"
+          - array
+      healthCategory:
+        type:
+          - "null"
+          - string
+      healthScore:
+        type:
+          - "null"
+          - integer
+      mapLink:
+        type:
+          - "null"
+          - string
+      mapNextSteps:
+        type:
+          - "null"
+          - string
+      mapNumberOfOverdueTasks:
+        type:
+          - "null"
+          - integer
+      mapStatus:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      nextStep:
+        type:
+          - "null"
+          - string
+      opportunityHealthFactors:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      opportunityType:
+        type:
+          - "null"
+          - string
+      primaryProspect:
+        type:
+          - "null"
+          - array
+      probability:
+        type:
+          - "null"
+          - integer
+      prospectingRepId:
+        type:
+          - "null"
+          - string
+      sharingTeamId:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      touchedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunityStage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospects:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      stage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  personas_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      prospects:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  prospects_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      accountName:
+        type:
+          - "null"
+          - string
+      assignedTeams:
+        type:
+          - "null"
+          - array
+      assignedUsers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      addedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      addressCity:
+        type:
+          - "null"
+          - string
+      addressCountry:
+        type:
+          - "null"
+          - string
+      addressState:
+        type:
+          - "null"
+          - string
+      addressStreet:
+        type:
+          - "null"
+          - string
+      addressStreet2:
+        type:
+          - "null"
+          - string
+      addressZip:
+        type:
+          - "null"
+          - string
+      angelListUrl:
+        type:
+          - "null"
+          - string
+      availableAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      batches:
+        type:
+          - "null"
+          - array
+      callOptedOut:
+        type:
+          - "null"
+          - boolean
+      callsOptStatus:
+        type:
+          - "null"
+          - string
+      callsOptedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      campaignName:
+        type:
+          - "null"
+          - string
+      clickCount:
+        type:
+          - "null"
+          - integer
+      company:
+        type:
+          - "null"
+          - string
+      companyFollowers:
+        type:
+          - "null"
+          - integer
+      companyFoundedAt:
+        type:
+          - "null"
+          - string
+      companyIndustry:
+        type:
+          - "null"
+          - string
+      companyLinkedIn:
+        type:
+          - "null"
+          - string
+      companyLinkedInEmployees:
+        type:
+          - "null"
+          - string
+      companyLocality:
+        type:
+          - "null"
+          - string
+      companyNatural:
+        type:
+          - "null"
+          - string
+      companySize:
+        type:
+          - "null"
+          - integer
+      companyStartDate:
+        type:
+          - "null"
+          - string
+      companyType:
+        type:
+          - "null"
+          - string
+      contactHistogram:
+        type:
+          - "null"
+          - array
+        items:
+          type: array
+          items:
+            type: integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      custom1:
+        type:
+          - "null"
+          - string
+      custom10:
+        type:
+          - "null"
+          - string
+      custom100:
+        type:
+          - "null"
+          - string
+      custom101:
+        type:
+          - "null"
+          - string
+      custom102:
+        type:
+          - "null"
+          - string
+      custom103:
+        type:
+          - "null"
+          - string
+      custom104:
+        type:
+          - "null"
+          - string
+      custom105:
+        type:
+          - "null"
+          - string
+      custom106:
+        type:
+          - "null"
+          - string
+      custom107:
+        type:
+          - "null"
+          - string
+      custom108:
+        type:
+          - "null"
+          - string
+      custom109:
+        type:
+          - "null"
+          - string
+      custom11:
+        type:
+          - "null"
+          - string
+      custom110:
+        type:
+          - "null"
+          - string
+      custom111:
+        type:
+          - "null"
+          - string
+      custom112:
+        type:
+          - "null"
+          - string
+      custom113:
+        type:
+          - "null"
+          - string
+      custom114:
+        type:
+          - "null"
+          - string
+      custom115:
+        type:
+          - "null"
+          - string
+      custom116:
+        type:
+          - "null"
+          - string
+      custom117:
+        type:
+          - "null"
+          - string
+      custom118:
+        type:
+          - "null"
+          - string
+      custom119:
+        type:
+          - "null"
+          - string
+      custom12:
+        type:
+          - "null"
+          - string
+      custom120:
+        type:
+          - "null"
+          - string
+      custom121:
+        type:
+          - "null"
+          - string
+      custom122:
+        type:
+          - "null"
+          - string
+      custom123:
+        type:
+          - "null"
+          - string
+      custom124:
+        type:
+          - "null"
+          - string
+      custom125:
+        type:
+          - "null"
+          - string
+      custom126:
+        type:
+          - "null"
+          - string
+      custom127:
+        type:
+          - "null"
+          - string
+      custom128:
+        type:
+          - "null"
+          - string
+      custom129:
+        type:
+          - "null"
+          - string
+      custom13:
+        type:
+          - "null"
+          - string
+      custom130:
+        type:
+          - "null"
+          - string
+      custom131:
+        type:
+          - "null"
+          - string
+      custom132:
+        type:
+          - "null"
+          - string
+      custom133:
+        type:
+          - "null"
+          - string
+      custom134:
+        type:
+          - "null"
+          - string
+      custom135:
+        type:
+          - "null"
+          - string
+      custom136:
+        type:
+          - "null"
+          - string
+      custom137:
+        type:
+          - "null"
+          - string
+      custom138:
+        type:
+          - "null"
+          - string
+      custom139:
+        type:
+          - "null"
+          - string
+      custom14:
+        type:
+          - "null"
+          - string
+      custom140:
+        type:
+          - "null"
+          - string
+      custom141:
+        type:
+          - "null"
+          - string
+      custom142:
+        type:
+          - "null"
+          - string
+      custom143:
+        type:
+          - "null"
+          - string
+      custom144:
+        type:
+          - "null"
+          - string
+      custom145:
+        type:
+          - "null"
+          - string
+      custom146:
+        type:
+          - "null"
+          - string
+      custom147:
+        type:
+          - "null"
+          - string
+      custom148:
+        type:
+          - "null"
+          - string
+      custom149:
+        type:
+          - "null"
+          - string
+      custom15:
+        type:
+          - "null"
+          - string
+      custom150:
+        type:
+          - "null"
+          - string
+      custom16:
+        type:
+          - "null"
+          - string
+      custom17:
+        type:
+          - "null"
+          - string
+      custom18:
+        type:
+          - "null"
+          - string
+      custom19:
+        type:
+          - "null"
+          - string
+      custom2:
+        type:
+          - "null"
+          - string
+      custom20:
+        type:
+          - "null"
+          - string
+      custom21:
+        type:
+          - "null"
+          - string
+      custom22:
+        type:
+          - "null"
+          - string
+      custom23:
+        type:
+          - "null"
+          - string
+      custom24:
+        type:
+          - "null"
+          - string
+      custom25:
+        type:
+          - "null"
+          - string
+      custom26:
+        type:
+          - "null"
+          - string
+      custom27:
+        type:
+          - "null"
+          - string
+      custom28:
+        type:
+          - "null"
+          - string
+      custom29:
+        type:
+          - "null"
+          - string
+      custom3:
+        type:
+          - "null"
+          - string
+      custom30:
+        type:
+          - "null"
+          - string
+      custom31:
+        type:
+          - "null"
+          - string
+      custom32:
+        type:
+          - "null"
+          - string
+      custom33:
+        type:
+          - "null"
+          - string
+      custom34:
+        type:
+          - "null"
+          - string
+      custom35:
+        type:
+          - "null"
+          - string
+      custom36:
+        type:
+          - "null"
+          - string
+      custom37:
+        type:
+          - "null"
+          - string
+      custom38:
+        type:
+          - "null"
+          - string
+      custom39:
+        type:
+          - "null"
+          - string
+      custom4:
+        type:
+          - "null"
+          - string
+      custom40:
+        type:
+          - "null"
+          - string
+      custom41:
+        type:
+          - "null"
+          - string
+      custom42:
+        type:
+          - "null"
+          - string
+      custom43:
+        type:
+          - "null"
+          - string
+      custom44:
+        type:
+          - "null"
+          - string
+      custom45:
+        type:
+          - "null"
+          - string
+      custom46:
+        type:
+          - "null"
+          - string
+      custom47:
+        type:
+          - "null"
+          - string
+      custom48:
+        type:
+          - "null"
+          - string
+      custom49:
+        type:
+          - "null"
+          - string
+      custom5:
+        type:
+          - "null"
+          - string
+      custom50:
+        type:
+          - "null"
+          - string
+      custom51:
+        type:
+          - "null"
+          - string
+      custom52:
+        type:
+          - "null"
+          - string
+      custom53:
+        type:
+          - "null"
+          - string
+      custom54:
+        type:
+          - "null"
+          - string
+      custom55:
+        type:
+          - "null"
+          - string
+      custom56:
+        type:
+          - "null"
+          - string
+      custom57:
+        type:
+          - "null"
+          - string
+      custom58:
+        type:
+          - "null"
+          - string
+      custom59:
+        type:
+          - "null"
+          - string
+      custom6:
+        type:
+          - "null"
+          - string
+      custom60:
+        type:
+          - "null"
+          - string
+      custom61:
+        type:
+          - "null"
+          - string
+      custom62:
+        type:
+          - "null"
+          - string
+      custom63:
+        type:
+          - "null"
+          - string
+      custom64:
+        type:
+          - "null"
+          - string
+      custom65:
+        type:
+          - "null"
+          - string
+      custom66:
+        type:
+          - "null"
+          - string
+      custom67:
+        type:
+          - "null"
+          - string
+      custom68:
+        type:
+          - "null"
+          - string
+      custom69:
+        type:
+          - "null"
+          - string
+      custom7:
+        type:
+          - "null"
+          - string
+      custom70:
+        type:
+          - "null"
+          - string
+      custom71:
+        type:
+          - "null"
+          - string
+      custom72:
+        type:
+          - "null"
+          - string
+      custom73:
+        type:
+          - "null"
+          - string
+      custom74:
+        type:
+          - "null"
+          - string
+      custom75:
+        type:
+          - "null"
+          - string
+      custom76:
+        type:
+          - "null"
+          - string
+      custom77:
+        type:
+          - "null"
+          - string
+      custom78:
+        type:
+          - "null"
+          - string
+      custom79:
+        type:
+          - "null"
+          - string
+      custom8:
+        type:
+          - "null"
+          - string
+      custom80:
+        type:
+          - "null"
+          - string
+      custom81:
+        type:
+          - "null"
+          - string
+      custom82:
+        type:
+          - "null"
+          - string
+      custom83:
+        type:
+          - "null"
+          - string
+      custom84:
+        type:
+          - "null"
+          - string
+      custom85:
+        type:
+          - "null"
+          - string
+      custom86:
+        type:
+          - "null"
+          - string
+      custom87:
+        type:
+          - "null"
+          - string
+      custom88:
+        type:
+          - "null"
+          - string
+      custom89:
+        type:
+          - "null"
+          - string
+      custom9:
+        type:
+          - "null"
+          - string
+      custom90:
+        type:
+          - "null"
+          - string
+      custom91:
+        type:
+          - "null"
+          - string
+      custom92:
+        type:
+          - "null"
+          - string
+      custom93:
+        type:
+          - "null"
+          - string
+      custom94:
+        type:
+          - "null"
+          - string
+      custom95:
+        type:
+          - "null"
+          - string
+      custom96:
+        type:
+          - "null"
+          - string
+      custom97:
+        type:
+          - "null"
+          - string
+      custom98:
+        type:
+          - "null"
+          - string
+      custom99:
+        type:
+          - "null"
+          - string
+      dateOfBirth:
+        type:
+          - "null"
+          - string
+        format: date-time
+      defaultPluginMapping:
+        type:
+          - "null"
+          - array
+      degree:
+        type:
+          - "null"
+          - string
+      emailOptedOut:
+        type:
+          - "null"
+          - boolean
+      emails:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      emailContacts:
+        items:
+          additionalProperties: true
+          properties:
+            bounced_at:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+            domain_hash:
+              type:
+                - "null"
+                - string
+            email:
+              type:
+                - "null"
+                - string
+            email_hash:
+              type:
+                - "null"
+                - string
+            email_type:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            order:
+              type:
+                - "null"
+                - integer
+            prospect_id:
+              type:
+                - "null"
+                - integer
+            status:
+              type:
+                - "null"
+                - string
+            status_changed_at:
+              type:
+                - "null"
+                - string
+            unsubscribed_at:
+              type:
+                - "null"
+                - string
+            updated_at:
+              type:
+                - "null"
+                - string
+          type:
+            - "null"
+            - object
+        type:
+          - "null"
+          - array
+      emailsOptStatus:
+        type:
+          - "null"
+          - string
+      emailsOptedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      engagedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      engagedScore:
+        type:
+          - "null"
+          - number
+      eventName:
+        type:
+          - "null"
+          - string
+      externalId:
+        type:
+          - "null"
+          - string
+      externalOwner:
+        type:
+          - "null"
+          - string
+      externalSource:
+        type:
+          - "null"
+          - string
+      facebookUrl:
+        type:
+          - "null"
+          - string
+      firstName:
+        type:
+          - "null"
+          - string
+      gender:
+        type:
+          - "null"
+          - string
+      githubUrl:
+        type:
+          - "null"
+          - string
+      githubUsername:
+        type:
+          - "null"
+          - string
+      googlePlusUrl:
+        type:
+          - "null"
+          - string
+      graduationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      homePhones:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      jobStartDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastName:
+        type:
+          - "null"
+          - string
+      linkedInConnections:
+        type:
+          - "null"
+          - integer
+      linkedInId:
+        type:
+          - "null"
+          - string
+      linkedInSlug:
+        type:
+          - "null"
+          - string
+      linkedInUrl:
+        type:
+          - "null"
+          - string
+      middleName:
+        type:
+          - "null"
+          - string
+      mobilePhones:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      name:
+        type:
+          - "null"
+          - string
+      nickname:
+        type:
+          - "null"
+          - string
+      occupation:
+        type:
+          - "null"
+          - string
+      openCount:
+        type:
+          - "null"
+          - integer
+      optedOut:
+        type:
+          - "null"
+          - boolean
+      optedOutAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      otherPhones:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      personaName:
+        type: "null"
+      personalNote1:
+        type:
+          - "null"
+          - string
+      personalNote2:
+        type:
+          - "null"
+          - string
+      preferredContact:
+        type:
+          - "null"
+          - string
+      quoraUrl:
+        type:
+          - "null"
+          - string
+      region:
+        type:
+          - "null"
+          - string
+      replyCount:
+        type:
+          - "null"
+          - integer
+      school:
+        type:
+          - "null"
+          - string
+      score:
+        type:
+          - "null"
+          - number
+      sharingTeamId:
+        type:
+          - "null"
+          - string
+      smsOptStatus:
+        type:
+          - "null"
+          - string
+      smsOptedAt:
+        type:
+          - "null"
+          - string
+      smsOptedOut:
+        type:
+          - "null"
+          - boolean
+      source:
+        type:
+          - "null"
+          - string
+      specialties:
+        type:
+          - "null"
+          - string
+      stackOverflowId:
+        type:
+          - "null"
+          - string
+      stackOverflowUrl:
+        type:
+          - "null"
+          - string
+      stageName:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      timeZone:
+        type:
+          - "null"
+          - string
+      timeZoneIana:
+        type:
+          - "null"
+          - string
+      timeZoneInferred:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      touchedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      trashedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      trashedByAccount:
+        type:
+          - "null"
+          - array
+      twitterUrl:
+        type:
+          - "null"
+          - string
+      twitterUsername:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updaterId:
+        type:
+          - "null"
+          - integer
+      updaterType:
+        type:
+          - "null"
+          - string
+      voipPhones:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      websiteUrl1:
+        type:
+          - "null"
+          - string
+      websiteUrl2:
+        type:
+          - "null"
+          - string
+      websiteUrl3:
+        type:
+          - "null"
+          - string
+      workPhones:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      activeSequenceStates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      emailAddresses:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      favorites:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunities:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunityProspectRoles:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      persona:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      phoneNumbers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceStates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      stage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  sequence_states_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      activeAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      bounceCount:
+        type:
+          - "null"
+          - integer
+      callCompletedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      clickCount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deliverCount:
+        type:
+          - "null"
+          - integer
+      errorReason:
+        type:
+          - "null"
+          - string
+      failureCount:
+        type:
+          - "null"
+          - integer
+      negativeReplyCount:
+        type:
+          - "null"
+          - integer
+      neutralReplyCount:
+        type:
+          - "null"
+          - integer
+      openCount:
+        type:
+          - "null"
+          - integer
+      optOutCount:
+        type:
+          - "null"
+          - integer
+      pauseReason:
+        type:
+          - "null"
+          - string
+      positiveReplyCount:
+        type:
+          - "null"
+          - integer
+      repliedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      replyCount:
+        type:
+          - "null"
+          - integer
+      scheduleCount:
+        type:
+          - "null"
+          - integer
+      state:
+        type:
+          - "null"
+          - string
+      stateChangedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      activeStepMailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      activeStepTasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailbox:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospect:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequence:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceStep:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  sequence_steps_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      bounceCount:
+        type:
+          - "null"
+          - integer
+      clickCount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      date:
+        type:
+          - "null"
+          - string
+        format: date
+      deliverCount:
+        type:
+          - "null"
+          - integer
+      displayName:
+        type:
+          - "null"
+          - string
+      failureCount:
+        type:
+          - "null"
+          - integer
+      interval:
+        type:
+          - "null"
+          - integer
+      negativeReplyCount:
+        type:
+          - "null"
+          - integer
+      neutralReplyCount:
+        type:
+          - "null"
+          - integer
+      openCount:
+        type:
+          - "null"
+          - integer
+      optOutCount:
+        type:
+          - "null"
+          - integer
+      order:
+        type:
+          - "null"
+          - integer
+      positiveReplyCount:
+        type:
+          - "null"
+          - integer
+      replyCount:
+        type:
+          - "null"
+          - integer
+      scheduleCount:
+        type:
+          - "null"
+          - integer
+      stepType:
+        type:
+          - "null"
+          - string
+      taskAutoDisplay:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      callPurpose:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      sequence:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      sequenceTemplates:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      taskPriority:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+
+  sequences_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      automationPercentage:
+        type:
+          - "null"
+          - number
+      bounceCount:
+        type:
+          - "null"
+          - integer
+      clickCount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deliverCount:
+        type:
+          - "null"
+          - integer
+      description:
+        type:
+          - "null"
+          - string
+      durationInDays:
+        type:
+          - "null"
+          - integer
+      enabled:
+        type:
+          - "null"
+          - boolean
+      enabledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      failureCount:
+        type:
+          - "null"
+          - integer
+      finishOnReply:
+        type:
+          - "null"
+          - boolean
+      lastUsedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      locked:
+        type:
+          - "null"
+          - boolean
+      lockedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      maxActivations:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      negativeReplyCount:
+        type:
+          - "null"
+          - integer
+      neutralReplyCount:
+        type:
+          - "null"
+          - integer
+      numContactedProspects:
+        type:
+          - "null"
+          - integer
+      numRepliedProspects:
+        type:
+          - "null"
+          - integer
+      openCount:
+        type:
+          - "null"
+          - integer
+      optOutCount:
+        type:
+          - "null"
+          - integer
+      positiveReplyCount:
+        type:
+          - "null"
+          - integer
+      primaryReplyAction:
+        type:
+          - "null"
+          - string
+      primaryReplyPauseDuration:
+        type:
+          - "null"
+          - integer
+      replyCount:
+        type:
+          - "null"
+          - integer
+      schedule:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      scheduleCount:
+        type:
+          - "null"
+          - integer
+      scheduleIntervalType:
+        type:
+          - "null"
+          - string
+      secondaryReplyAction:
+        type:
+          - "null"
+          - string
+      secondaryReplyPauseDuration:
+        type:
+          - "null"
+          - integer
+      sequenceStepCount:
+        type:
+          - "null"
+          - integer
+      sequenceType:
+        type:
+          - "null"
+          - string
+      shareType:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      throttleCapacity:
+        type:
+          - "null"
+          - integer
+      throttleMaxAddsPerDay:
+        type:
+          - "null"
+          - integer
+      throttlePaused:
+        type:
+          - "null"
+          - boolean
+      throttlePausedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      transactional:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      contentCategoryMemberships:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      ruleset:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceStates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceSteps:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  snippets_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      bodyHtml:
+        type:
+          - "null"
+          - string
+      bodyText:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        type:
+          - "null"
+          - string
+      shareType:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      contentCategoryMemberships:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  stages_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      color:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospects:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  tasks_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      action:
+        type:
+          - "null"
+          - string
+      autoskipAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      compiledSequenceTemplateHtml:
+        type:
+          - "null"
+          - string
+      completed:
+        type:
+          - "null"
+          - boolean
+      completedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      defaultPluginMapping:
+        type:
+          - "null"
+          - array
+      dueAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      note:
+        type:
+          - "null"
+          - string
+      opportunityAssociation:
+        type:
+          - "null"
+          - string
+      scheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      state:
+        type:
+          - "null"
+          - string
+      stateChangedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      taskType:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      call:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      completer:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailing:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospect:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospectAccount:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      prospectContacts:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      prospectOwner:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      prospectPhoneNumbers:
+        type:
+          - "null"
+          - array
+      prospectStage:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      sequence:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceSequenceSteps:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceState:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceStateSequenceStep:
+        type:
+          - "null"
+          - array
+      sequenceStateSequenceStepOverrides:
+        type:
+          - "null"
+          - array
+      sequenceStateStartingTemplate:
+        type:
+          - "null"
+          - array
+      sequenceStepOverrideTemplates:
+        type:
+          - "null"
+          - array
+      sequenceStep:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceTemplate:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceTemplateTemplate:
+        type:
+          - "null"
+          - array
+      subject:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      taskPriority:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      taskTheme:
+        items:
+          type:
+            - "null"
+            - integer
+        type:
+          - "null"
+          - array
+      template:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  templates_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      archived:
+        type:
+          - "null"
+          - boolean
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      bccRecipients:
+        type:
+          - "null"
+          - string
+      bodyHtml:
+        type:
+          - "null"
+          - string
+      bodyText:
+        type:
+          - "null"
+          - string
+      bounceCount:
+        type:
+          - "null"
+          - integer
+      ccRecipients:
+        type:
+          - "null"
+          - string
+      clickCount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deliverCount:
+        type:
+          - "null"
+          - integer
+      failureCount:
+        type:
+          - "null"
+          - integer
+      lastUsedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        type:
+          - "null"
+          - string
+      negativeReplyCount:
+        type:
+          - "null"
+          - integer
+      neutralReplyCount:
+        type:
+          - "null"
+          - integer
+      openCount:
+        type:
+          - "null"
+          - integer
+      optOutCount:
+        type:
+          - "null"
+          - integer
+      positiveReplyCount:
+        type:
+          - "null"
+          - integer
+      replyCount:
+        type:
+          - "null"
+          - integer
+      scheduleCount:
+        type:
+          - "null"
+          - integer
+      shareType:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - string
+      toRecipients:
+        type:
+          - "null"
+          - string
+      trackLinks:
+        type:
+          - "null"
+          - boolean
+      trackOpens:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      contentCategoryMemberships:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      recipients:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceTemplates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+  users_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      accountsViewId:
+        type:
+          - "null"
+          - integer
+      activityNotificationsDisabled:
+        type:
+          - "null"
+          - boolean
+      activeProspectsCount:
+        type:
+          - "null"
+          - integer
+      batches:
+        type:
+          - "null"
+          - array
+      batchesViewId:
+        type:
+          - "null"
+          - integer
+      bounceWarningEmailEnabled:
+        type:
+          - "null"
+          - boolean
+      bridgePhone:
+        type:
+          - "null"
+          - string
+      bridgePhoneExtension:
+        type:
+          - "null"
+          - string
+      buyerLanguagePreference:
+        type:
+          - "null"
+          - string
+      calendar:
+        type:
+          - "null"
+          - array
+      calendarEventsViewId:
+        type:
+          - "null"
+          - integer
+      callsViewId:
+        type:
+          - "null"
+          - integer
+      contentCategoryOwnerships:
+        type:
+          - "null"
+          - array
+      controlledTabDefault:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currentSignInAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      custom1:
+        type:
+          - "null"
+          - string
+      custom2:
+        type:
+          - "null"
+          - string
+      custom3:
+        type:
+          - "null"
+          - string
+      custom4:
+        type:
+          - "null"
+          - string
+      custom5:
+        type:
+          - "null"
+          - string
+      dailyDigestEmailEnabled:
+        type:
+          - "null"
+          - boolean
+      defaultScheduleId:
+        type:
+          - "null"
+          - integer
+      defaultRulesetId:
+        type:
+          - "null"
+          - integer
+      duties:
+        items:
+          properties:
+            duty_type:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+          type: object
+        type:
+          - "null"
+          - array
+      dutiesSetAt:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      enableVoiceRecordings:
+        type:
+          - "null"
+          - boolean
+      engagementEmailsEnabled:
+        type:
+          - "null"
+          - boolean
+      favorites:
+        type:
+          - "null"
+          - array
+      firstName:
+        type:
+          - "null"
+          - string
+      globalId:
+        type:
+          - "null"
+          - string
+      importsViewId:
+        type: "null"
+      inboundBridgePhone:
+        type:
+          - "null"
+          - string
+      inboundBridgePhoneExtension:
+        type:
+          - "null"
+          - string
+      inboundCallBehavior:
+        type:
+          - "null"
+          - string
+      inboundPhoneType:
+        type:
+          - "null"
+          - string
+      inboundVoicemailCustomMessageText:
+        type:
+          - "null"
+          - string
+      inboundVoicemailMessageTextVoice:
+        type:
+          - "null"
+          - string
+      inboundVoicemailPromptType:
+        type:
+          - "null"
+          - string
+      jobRole:
+        type:
+          - "null"
+          - array
+      kaiaRecordingsViewId:
+        type:
+          - "null"
+          - integer
+      keepBridgePhoneConnected:
+        type:
+          - "null"
+          - boolean
+      languagePreference:
+        type:
+          - "null"
+          - string
+      lastName:
+        type:
+          - "null"
+          - string
+      linkToSequenceStateInTaskFlow:
+        type:
+          - "null"
+          - boolean
+      liveListenViewId:
+        type:
+          - "null"
+          - integer
+      lastSignInAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      locked:
+        type:
+          - "null"
+          - boolean
+      mailboxErrorEmailEnabled:
+        type:
+          - "null"
+          - boolean
+      mailingsDeliveredCount:
+        type:
+          - "null"
+          - integer
+      mailingsRepliedCount:
+        type:
+          - "null"
+          - integer
+      mailingsViewId:
+        type:
+          - "null"
+          - integer
+      meetingEngagementNotificationEnabled:
+        type:
+          - "null"
+          - boolean
+      meetingTypesViewId:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      notificationsEnabled:
+        type:
+          - "null"
+          - boolean
+      oceClickToDialEverywhere:
+        type:
+          - "null"
+          - boolean
+      oceGmailToolbar:
+        type:
+          - "null"
+          - boolean
+      oceGmailTrackingState:
+        type:
+          - "null"
+          - string
+      oceSalesforceEmailDecorating:
+        type:
+          - "null"
+          - boolean
+      oceSalesforcePhoneDecorating:
+        type:
+          - "null"
+          - boolean
+      oceUniversalTaskFlow:
+        type:
+          - "null"
+          - boolean
+      oceWindowMode:
+        type:
+          - "null"
+          - boolean
+      onboardedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      opportunitiesViewId:
+        type:
+          - "null"
+          - integer
+      orcaStandaloneEnabled:
+        type:
+          - "null"
+          - boolean
+      outboundVoicemails:
+        type:
+          - "null"
+          - array
+      passwordExpiresAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      phone:
+        type:
+          - "null"
+          - array
+      phoneCountryCode:
+        type:
+          - "null"
+          - string
+      phoneNumber:
+        type:
+          - "null"
+          - string
+      phoneType:
+        type:
+          - "null"
+          - string
+      phones:
+        type:
+          - "null"
+          - array
+      phonesViewId:
+        type:
+          - "null"
+          - integer
+      prospectDetailDefault:
+        type:
+          - "null"
+          - string
+      pluginAlertNotificationEnabled:
+        type:
+          - "null"
+          - boolean
+      preferredVoiceRegion:
+        type:
+          - "null"
+          - string
+      prefersLocalPresence:
+        type:
+          - "null"
+          - boolean
+      primaryTimezone:
+        type:
+          - "null"
+          - string
+      prospectsViewId:
+        type:
+          - "null"
+          - integer
+      reportsSequencePerformanceViewId:
+        type:
+          - "null"
+          - integer
+      reportsTeamPerfViewId:
+        type:
+          - "null"
+          - integer
+      reportsTeamPerformanceIntradayViewId:
+        type:
+          - "null"
+          - integer
+      reportsTeamPerformanceViewId:
+        type:
+          - "null"
+          - integer
+      reportsViewId:
+        type:
+          - "null"
+          - integer
+      scimExternalId:
+        type:
+          - "null"
+          - string
+      scimSource:
+        type:
+          - "null"
+          - string
+      secondaryTimezone:
+        type:
+          - "null"
+          - string
+      sendInviteFallback:
+        type:
+          - "null"
+          - boolean
+      senderNotificationsExcluded:
+        type:
+          - "null"
+          - boolean
+      sequenceStatesViewId:
+        type:
+          - "null"
+          - integer
+      sequencesViewId:
+        type:
+          - "null"
+          - integer
+      smsPhone:
+        type:
+          - "null"
+          - array
+      snippetsViewId:
+        type:
+          - "null"
+          - integer
+      tasksDueCount:
+        type:
+          - "null"
+          - integer
+      tasksViewId:
+        type:
+          - "null"
+          - integer
+      teamsViewId:
+        type:
+          - "null"
+          - integer
+      templatesViewId:
+        type:
+          - "null"
+          - integer
+      tertiaryTimezone:
+        type:
+          - "null"
+          - string
+      textingEmailNotifications:
+        type:
+          - "null"
+          - boolean
+      title:
+        type:
+          - "null"
+          - string
+      unknownReplyEmailEnabled:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      userGuid:
+        type:
+          - "null"
+          - string
+      username:
+        type:
+          - "null"
+          - string
+      usersViewId:
+        type:
+          - "null"
+          - integer
+      voicemailPrompts:
+        type:
+          - "null"
+          - array
+      voicemailNotificationEnabled:
+        type:
+          - "null"
+          - boolean
+      weeklyDigestEmailEnabled:
+        type:
+          - "null"
+          - boolean
+      contentCategories:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailbox:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailboxes:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      profile:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      recipients:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      role:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      teams:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      useSalesNavigatorForLinkedInTasks:
+        type:
+          - "null"
+          - boolean
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+
+check:
+  type: CheckStream
+  stream_names:
+    - "accounts"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/outreach
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Source Outreach Spec
+    type: object
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+      - redirect_uri
+      - start_date
+    additionalProperties: true
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        description: The Client ID of your Outreach developer application.
+      client_secret:
+        type: string
+        title: Client Secret
+        description: The Client Secret of your Outreach developer application.
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        title: Refresh Token
+        description: The token for obtaining the new access token.
+        airbyte_secret: true
+      redirect_uri:
+        type: string
+        title: Redirect URI
+        description:
+          A Redirect URI is the location where the authorization server sends
+          the user once the app has been successfully authorized and granted an authorization
+          code or access token.
+      start_date:
+        type: string
+        title: Start Date
+        description:
+          The date from which you'd like to replicate data for Outreach API,
+          in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will
+          be replicated.
+        examples:
+          - "2020-11-16T00:00:00Z"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
