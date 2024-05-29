@@ -61,7 +61,7 @@ Optional parameters:
 - **S3 Filename pattern**
    - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
     `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
-    The pattern you supply will apply to anyting under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+    The pattern you supply will apply to anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Please, don't use empty space and not supportable placeholders, as they won't recognized.
 - **Purge Staging Data**
   - Whether to delete the staging files from S3 after completing the sync. Specifically, the
     connector will create CSV files named
