@@ -12,11 +12,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
-    DEFAULT_ERROR_RESOLUTION,
-    SUCCESS_RESOLUTION,
-    ErrorResolution,
-)
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.types import Config
 
 
