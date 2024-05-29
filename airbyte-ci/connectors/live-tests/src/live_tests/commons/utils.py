@@ -84,12 +84,14 @@ async def get_container_from_dockerhub_image(dagger_client: dagger.Client, docke
         pytest.exit(f"Failed to import connector image from DockerHub: {e}")
 
 
-async def get_connector_container(dagger_client: dagger.Client, image_name_with_tag: str) -> dagger.Container:
+async def get_connector_container(dagger_client: dagger.Client, image_name_with_tag: str, is_ci: bool, is_target: bool) -> dagger.Container:
     """Get a dagger container for the connector image to test.
 
     Args:
         dagger_client (dagger.Client): The dagger client to use to import the connector image
         image_name_with_tag (str): The docker image name and tag of the connector image to test
+        is_ci (bool): Whether the tests are being run with airbyte-ci (locally or in GHA)
+        is_target (bool): Whether the container to get is the target container
 
     Returns:
         dagger.Container: The dagger container for the connector image to test
@@ -97,9 +99,10 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
     # If a container_id.txt file is available, we'll use it to load the connector container
     # We use a txt file as container ids can be too long to be passed as env vars
     # It's used for dagger-in-dagger use case with airbyte-ci, when the connector container is built via an upstream dagger operation
-    container_id_path = Path("/tmp/container_id.txt")
-    if container_id_path.exists():
-        return await get_container_from_id(dagger_client, container_id_path.read_text())
+    if is_ci and is_target:
+        container_id_path = Path("/tmp/container_id.txt")
+        if container_id_path.exists():
+            return await get_container_from_id(dagger_client, container_id_path.read_text())
 
     # If the CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH env var is set, we'll use it to import the connector image from the tarball
     if connector_image_tarball_path := os.environ.get("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"):
