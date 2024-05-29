@@ -32,23 +32,23 @@ object Jsons {
     // allow jackson to deserialize anything under 50 MiB
     // (the default, at time of writing 2024-05-29, with jackson 2.15.2, is 20 MiB)
     private const val JSON_MAX_LENGTH = 50 * 1024 * 1024
-    private val STREAM_READ_CONSTRAINTS = StreamReadConstraints
-        .builder()
-        .maxStringLength(JSON_MAX_LENGTH)
-        .build()
+    private val STREAM_READ_CONSTRAINTS =
+        StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
 
     // Object Mapper is thread-safe
-    private val OBJECT_MAPPER: ObjectMapper = MoreMappers.initMapper().also {
-        it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
-    }
+    private val OBJECT_MAPPER: ObjectMapper =
+        MoreMappers.initMapper().also {
+            it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
+        }
 
     // sort of a hotfix; I don't know how bad the performance hit is so not turning this on by
     // default
     // at time of writing (2023-08-18) this is only used in tests, so we don't care.
-    private val OBJECT_MAPPER_EXACT: ObjectMapper = MoreMappers.initMapper().also {
-        it.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-        it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
-    }
+    private val OBJECT_MAPPER_EXACT: ObjectMapper =
+        MoreMappers.initMapper().also {
+            it.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+            it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
+        }
 
     private val YAML_OBJECT_MAPPER: ObjectMapper = MoreMappers.initYamlMapper(YAMLFactory())
     private val OBJECT_WRITER: ObjectWriter = OBJECT_MAPPER.writer(JsonPrettyPrinter())
