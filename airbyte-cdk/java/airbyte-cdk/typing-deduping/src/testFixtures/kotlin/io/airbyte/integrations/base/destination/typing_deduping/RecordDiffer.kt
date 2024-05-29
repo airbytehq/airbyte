@@ -90,14 +90,8 @@ constructor(
     fun diffRawTableRecords(expectedRecords: List<JsonNode>, actualRecords: List<JsonNode>) {
         val diff =
             diffRecords(
-                expectedRecords
-                    .stream()
-                    .map { record: JsonNode -> this.copyWithLiftedData(record) }
-                    .collect(Collectors.toList()),
-                actualRecords
-                    .stream()
-                    .map { record: JsonNode -> this.copyWithLiftedData(record) }
-                    .collect(Collectors.toList()),
+                expectedRecords.map { record: JsonNode -> this.copyWithLiftedData(record) },
+                actualRecords.map { record: JsonNode -> this.copyWithLiftedData(record) },
                 rawRecordIdentityComparator,
                 rawRecordSortComparator,
                 rawRecordIdentityExtractor,
@@ -138,7 +132,7 @@ constructor(
         if (airbyteData.isTextual) {
             airbyteData = Jsons.deserializeExact(airbyteData.asText())
         }
-        Streams.stream(airbyteData.fields()).forEach { field: Map.Entry<String, JsonNode?> ->
+        Streams.stream(airbyteData.fields()).forEach { field: Map.Entry<String, JsonNode> ->
             if (!copy.has(field.key)) {
                 copy.set<JsonNode>(field.key, field.value)
             } else {
@@ -219,8 +213,8 @@ constructor(
         recordIdExtractor: Function<JsonNode, String>,
         columnNames: Map<String, String>
     ): String {
-        val expectedRecords = originalExpectedRecords.stream().sorted(sortComparator).toList()
-        val actualRecords = originalActualRecords.stream().sorted(sortComparator).toList()
+        val expectedRecords = originalExpectedRecords.sortedWith(sortComparator)
+        val actualRecords = originalActualRecords.sortedWith(sortComparator)
 
         // Iterate through both lists in parallel and compare each record.
         // Build up an error message listing any incorrect, missing, or unexpected records.
@@ -281,7 +275,7 @@ constructor(
             "Row had incorrect data: " + recordIdExtractor.apply(expectedRecord) + "\n"
         // Iterate through each column in the expected record and compare it to the actual record's
         // value.
-        for (column in Streams.stream<String>(expectedRecord.fieldNames()).sorted().toList()) {
+        for (column in Streams.stream<String>(expectedRecord.fieldNames()).sorted()) {
             // For all other columns, we can just compare their values directly.
             val expectedValue = expectedRecord[column]
             val actualValue = actualRecord[column]
@@ -321,7 +315,7 @@ constructor(
         columnNames: Map<String, String>
     ): LinkedHashMap<String, JsonNode> {
         val extraFields = LinkedHashMap<String, JsonNode>()
-        for (column in Streams.stream<String>(actualRecord.fieldNames()).sorted().toList()) {
+        for (column in Streams.stream<String>(actualRecord.fieldNames()).sorted()) {
             // loaded_at and raw_id are generated dynamically, so we just ignore them.
             val isLoadedAt = getMetadataColumnName(columnNames, "_airbyte_loaded_at") == column
             val isRawId = getMetadataColumnName(columnNames, "_airbyte_raw_id") == column
@@ -367,7 +361,7 @@ constructor(
                 expectedValue.size() == actualValue.size() &&
                     Stream.generate { expectedValue.fieldNames().next() }
                         .limit(expectedValue.size().toLong())
-                        .allMatch { field: String? ->
+                        .allMatch { field: String ->
                             areJsonNodesEquivalent(expectedValue[field], actualValue[field])
                         }
             } else {
