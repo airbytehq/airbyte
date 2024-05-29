@@ -26,7 +26,7 @@ class LoggedRetry(Retry):
             sleep_time = kwargs["backoff_factor"] * (2 ** ((7 - kwargs["total"]) - 1))
             logger.info(
                 f"Retry on {latest_attempt.method} {latest_attempt.url}. Status code {latest_attempt.status}."
-                f" Exception: {latest_attempt.error}."
+                # f" Exception: {latest_attempt.error}."
                 f" Sleep for {sleep_time} seconds and try again..."
             )
         super().__init__(*args, **kwargs)
@@ -154,7 +154,7 @@ class YandexMetrikaStreamPreprocessor:
             return response_data.json()["requests"]
         except:
             raise Exception(
-                f"API Error on clean_all_log_requests (URL: {url} Headers: {headers}): {response_data.text}",
+                f"API Error on get_available_log_requests (URL: {url} Headers: {headers}): {response_data.text}",
             )
 
     def clean_all_log_requests(self):

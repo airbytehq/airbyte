@@ -85,7 +85,6 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
                                 }
                             )
                         df = pd.DataFrame(records)
-                        print(df.to_json(orient="records", lines=True))
                         self.records_count += len(df.index)
                         print("self.records_count", self.records_count, filename)
                         del df
@@ -94,10 +93,10 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
 
             self.completed_chunks_observer.add_actually_loaded_chunk_id(self.stream_slice["part"]["part_number"])
         except AirbyteTracedException as e:
-            logger.info(self.name, "exception", e)
+            # logger.info(self.name, "exception", e)
             raise e
         except Exception as e:
-            logger.info(self.name, "exception", e)
+            # logger.info(self.name, "exception", e)
             logger.exception(f"Encountered an exception while reading stream {self.stream_instance.name}")
             display_message = self.stream_instance.get_error_display_message(e)
             if display_message:

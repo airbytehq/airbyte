@@ -51,7 +51,7 @@ class SourceYandexMetrika(AbstractSource):
         stream_name: str,
         stream_slice: Mapping[str, any],
         check_log_request_ability: bool = False,
-    ) -> list[Mapping[str, any]]:
+    ) -> tuple[list[Mapping[str, any]], str]:
         logger.info(f"Preprocessing raw stream slice {stream_slice} for stream {stream_name}...")
         preprocessor = getattr(self, self.raw_data_stream_to_field_map[stream_name]["preprocessor_field_name"])
         is_request_on_server, request_id = preprocessor.check_if_log_request_already_on_server(stream_slice)
@@ -74,14 +74,14 @@ class SourceYandexMetrika(AbstractSource):
                 "part": part,
             }
             for part in preprocessed_slice["processed_parts"]
-        ]
+        ], preprocessed_slice["log_request_id"]
 
-    def postprocess_raw_stream_slice(self, stream_name: str, stream_slice):
+    def postprocess_raw_stream_slice(self, stream_name: str, stream_slice, log_request_id: str):
         stream_instance_kwargs = getattr(self, self.raw_data_stream_to_field_map[stream_name]["kwargs_field_name"])
         preprocessor = getattr(self, self.raw_data_stream_to_field_map[stream_name]["preprocessor_field_name"])
         if stream_instance_kwargs["clean_slice_after_successfully_loaded"]:
             logger.info(f"clean_slice_after_successfully_loaded {stream_slice}")
-            preprocessor.clean_log_request(stream_slice["log_request_id"])
+            preprocessor.clean_log_request(log_request_id=log_request_id)
 
     def read(
         self,
@@ -186,7 +186,7 @@ class SourceYandexMetrika(AbstractSource):
             with create_timer(self.name) as timer:
                 for raw_slice in raw_slices:
                     logger.info(f"Current raw slice: {raw_slice}")
-                    preprocessed_slices = self.preprocess_raw_stream_slice(
+                    preprocessed_slices, log_request_id = self.preprocess_raw_stream_slice(
                         stream_name=stream_instance.name,
                         stream_slice=raw_slice,
                         check_log_request_ability=stream_instance.check_log_requests_ability,
@@ -223,8 +223,7 @@ class SourceYandexMetrika(AbstractSource):
                         )
 
                     self.postprocess_raw_stream_slice(
-                        stream_name=stream_instance.name,
-                        stream_slice=raw_slice,
+                        stream_name=stream_instance.name, stream_slice=raw_slice, log_request_id=log_request_id
                     )
             yield from []
         else:
@@ -232,7 +231,6 @@ class SourceYandexMetrika(AbstractSource):
 
     def check_connection(self, logger, config) -> tuple[bool, any]:
         raw_hits_config: dict = config.get("raw_data_hits_report")
-        print(raw_hits_config)
         if raw_hits_config.get("is_enabled") == "enabled":
             for f in raw_hits_config.get("fields", []):
                 if f not in HITS_AVAILABLE_FIELDS.get_all_fields_names_list():
