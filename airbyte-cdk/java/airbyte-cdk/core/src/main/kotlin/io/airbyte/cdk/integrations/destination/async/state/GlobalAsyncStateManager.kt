@@ -154,7 +154,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         var bytesFlushed: Long = 0L
         logger.info { "Flushing states" }
         synchronized(lock) {
-            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in
+            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>> in
                 descToStateIdQ.entries) {
                 // Remove all states with 0 counters.
                 // Per-stream synchronized is required to make sure the state (at the head of the
@@ -196,7 +196,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                         bytesFlushed += oldestState.second
 
                         // cleanup
-                        entry.value!!.poll()
+                        entry.value.poll()
                         stateIdToState.remove(oldestStateId)
                         stateIdToCounter.remove(oldestStateId)
                         stateIdToCounterForPopulatingDestinationStats.remove(oldestStateId)
@@ -281,10 +281,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             // into the non-STREAM world for correctness.
             synchronized(lock) {
                 aliasIds.addAll(
-                    descToStateIdQ.values
-                        .stream()
-                        .flatMap { obj: LinkedBlockingDeque<Long> -> obj.stream() }
-                        .toList(),
+                    descToStateIdQ.values.flatMap { obj: LinkedBlockingDeque<Long> -> obj },
                 )
                 descToStateIdQ.clear()
                 retroactiveGlobalStateId = StateIdProvider.nextId
@@ -292,19 +289,12 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                 descToStateIdQ[SENTINEL_GLOBAL_DESC] = LinkedBlockingDeque()
                 descToStateIdQ[SENTINEL_GLOBAL_DESC]!!.add(retroactiveGlobalStateId)
 
-                val combinedCounter: Long =
-                    stateIdToCounter.values
-                        .stream()
-                        .mapToLong { obj: AtomicLong -> obj.get() }
-                        .sum()
+                val combinedCounter: Long = stateIdToCounter.values.sumOf { it.get() }
                 stateIdToCounter.clear()
                 stateIdToCounter[retroactiveGlobalStateId] = AtomicLong(combinedCounter)
 
                 val statsCounter: Long =
-                    stateIdToCounterForPopulatingDestinationStats.values
-                        .stream()
-                        .mapToLong { obj: AtomicLong -> obj.get() }
-                        .sum()
+                    stateIdToCounterForPopulatingDestinationStats.values.sumOf { it.get() }
                 stateIdToCounterForPopulatingDestinationStats.clear()
                 stateIdToCounterForPopulatingDestinationStats.put(
                     retroactiveGlobalStateId,

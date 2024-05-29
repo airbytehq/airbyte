@@ -102,7 +102,7 @@ enum class ConfigSchema : AirbyteConfig {
     constructor(schemaFilename: String, className: Class<*>) {
         this.schemaFilename = schemaFilename
         this.className = className
-        extractId = Function { _: Any? ->
+        extractId = Function { _: Any ->
             throw RuntimeException(className.getSimpleName() + " doesn't have an id")
         }
         idFieldName = null

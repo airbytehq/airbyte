@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, Dict, Optional
 
 import dpath.util
+from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.utils import is_cloud_environment
 from pydantic import AnyUrl, Field, ValidationError, root_validator
 
 
