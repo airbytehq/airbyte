@@ -50,8 +50,11 @@ have been merged.
 
 ## Changelog
 
+### 0.1.2
+Set merge method to `squash`.
+
 ### 0.1.1
 Consider skipped check runs as successful.
 
 ### 0.1.0
-Initial release
+Initial release.
