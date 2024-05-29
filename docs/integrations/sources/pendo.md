@@ -48,7 +48,7 @@ Currently, the aggregation endpoint is not supported. Please [create an issue](h
 
 The Pendo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh
+- Full Refresh.
 
 ## Supported Streams
 
