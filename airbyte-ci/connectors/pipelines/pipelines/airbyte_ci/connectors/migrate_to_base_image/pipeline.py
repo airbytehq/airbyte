@@ -6,7 +6,6 @@ import textwrap
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-import yaml  # type: ignore
 from base_images import version_registry  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
@@ -15,6 +14,7 @@ from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEn
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
+from pipelines.helpers.connectors.yaml import read_dagger_yaml, write_dagger_yaml
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
@@ -68,7 +68,7 @@ class UpgradeBaseImageMetadata(Step):
             )
 
         metadata_path = self.context.connector.metadata_file_path
-        current_metadata = yaml.safe_load(await self.repo_dir.file(str(metadata_path)).contents())
+        current_metadata = await read_dagger_yaml(self.repo_dir, metadata_path)
         current_base_image_address = current_metadata.get("data", {}).get("connectorBuildOptions", {}).get("baseImage")
 
         if current_base_image_address is None and not self.set_if_not_exists:
@@ -87,7 +87,7 @@ class UpgradeBaseImageMetadata(Step):
                 output=self.repo_dir,
             )
         updated_metadata = self.update_base_image_in_metadata(current_metadata, latest_base_image_address)
-        updated_repo_dir = self.repo_dir.with_new_file(str(metadata_path), contents=yaml.safe_dump(updated_metadata))
+        updated_repo_dir = write_dagger_yaml(self.repo_dir, updated_metadata, metadata_path)
 
         return StepResult(
             step=self,
@@ -284,7 +284,7 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
 
 
 async def run_connector_migration_to_base_image_pipeline(
-    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str | None
+    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str | None, changelog: bool, bump: str | None
 ) -> Report:
     async with semaphore:
         steps_results = []
@@ -324,14 +324,19 @@ async def run_connector_migration_to_base_image_pipeline(
 
             latest_repo_dir_state = update_base_image_in_metadata_result.output
             # BUMP CONNECTOR VERSION IN METADATA
-            new_version = get_bumped_version(context.connector.version, "patch")
-            bump_version_in_metadata = SetConnectorVersion(context, new_version, latest_repo_dir_state, False)
-            bump_version_in_metadata_result = await bump_version_in_metadata.run()
-            steps_results.append(bump_version_in_metadata_result)
+            if bump:
+                new_version = get_bumped_version(context.connector.version, bump)
+            else:
+                new_version = None
 
-            latest_repo_dir_state = bump_version_in_metadata_result.output
+            if new_version:
+                bump_version_in_metadata = SetConnectorVersion(context, new_version, latest_repo_dir_state, False)
+                bump_version_in_metadata_result = await bump_version_in_metadata.run()
+                steps_results.append(bump_version_in_metadata_result)
+                latest_repo_dir_state = bump_version_in_metadata_result.output
+
             # ADD CHANGELOG ENTRY only if the PR number is provided.
-            if pull_request_number is not None:
+            if new_version and changelog and pull_request_number is not None:
                 add_changelog_entry = AddChangelogEntry(
                     context,
                     new_version,
