@@ -43,7 +43,7 @@ def get_source(args: List[str]):
 
 
 def run():
-    _args = sys.argv[1:]
+    _args = ['read', '--config', 'secrets/spec.json', '--catalog', 'integration_tests/configured_catalogs/catalog_purchases.json']
     source = get_source(_args)
 
     if source:

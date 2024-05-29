@@ -237,6 +237,8 @@ class AbstractSource(Source, ABC):
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.RUNNING)
             yield from self._emit_queued_messages()
             yield record
+            if record_counter == 100000:
+                break
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 

@@ -194,6 +194,7 @@ class CsvParser(FileTypeParser):
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         line_no = 0
+        data_generator = None
         try:
             config_format = _extract_format(config)
             if discovered_schema:
@@ -201,17 +202,24 @@ class CsvParser(FileTypeParser):
                 deduped_property_types = CsvParser._pre_propcess_property_types(property_types)
             else:
                 deduped_property_types = {}
+
             cast_fn = CsvParser._get_cast_function(deduped_property_types, config_format, logger, config.schemaless)
             data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
+
+            null_values = config_format.null_values
+            strings_can_be_null = config_format.strings_can_be_null
             for row in data_generator:
                 line_no += 1
-                yield CsvParser._to_nullable(
-                    cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null
-                )
+                cast_row = cast_fn(row)
+                yield {
+                    k: None if v in null_values and (strings_can_be_null or deduped_property_types.get(k) != "string") else v
+                    for k, v in cast_row.items()
+                }
         except RecordParseError as parse_err:
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no) from parse_err
         finally:
-            data_generator.close()
+            if data_generator:
+                data_generator.close()
 
     @property
     def file_read_mode(self) -> FileReadMode:
@@ -228,19 +236,17 @@ class CsvParser(FileTypeParser):
             # If no schema is provided, yield the rows as they are
             return _no_cast
 
-    @staticmethod
     def _to_nullable(
         row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
     ) -> Dict[str, Optional[str]]:
-        nullable = {
-            k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
-            for k, v in row.items()
-        }
+        nullable = {}
+        for k, v in row.items():
+            prop_type = deduped_property_types.get(k)
+            if v in null_values and (strings_can_be_null or prop_type != "string"):
+                nullable[k] = None
+            else:
+                nullable[k] = v
         return nullable
-
-    @staticmethod
-    def _value_is_none(value: Any, deduped_property_type: Optional[str], null_values: Set[str], strings_can_be_null: bool) -> bool:
-        return value in null_values and (strings_can_be_null or deduped_property_type != "string")
 
     @staticmethod
     def _pre_propcess_property_types(property_types: Dict[str, Any]) -> Mapping[str, str]:
