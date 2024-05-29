@@ -3,24 +3,38 @@
 
 from __future__ import annotations
 
+import uuid
 from pathlib import Path
 from textwrap import dedent, indent
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+import dpath
 import sqlalchemy
 from airbyte._processors.file.jsonl import JsonlWriter
 from airbyte.secrets import SecretString
 from airbyte.types import SQLTypeConverter
+from airbyte_cdk.destinations.vector_db_based import embedder
+from airbyte_cdk.destinations.vector_db_based.document_processor import (
+    DocumentProcessor as DocumentSplitter,
+)
+from airbyte_cdk.destinations.vector_db_based.document_processor import (
+    ProcessingConfigModel as DocumentSplitterConfig,
+)
+from airbyte_protocol.models import AirbyteRecordMessage
 from overrides import overrides
 from pydantic import Field
 from snowflake import connector
 from snowflake.sqlalchemy import URL, VARIANT
 from sqlalchemy.engine import Connection
 
+from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
 from destination_snowflake_cortex.common.sql.sql_processor import SqlConfig, SqlProcessorBase
 from destination_snowflake_cortex.globals import (
+    CHUNK_ID_COLUMN,
     DOCUMENT_CONTENT_COLUMN,
     DOCUMENT_ID_COLUMN,
+    EMBEDDING_COLUMN,
+    METADATA_COLUMN,
 )
 
 if TYPE_CHECKING:
@@ -111,14 +125,52 @@ class SnowflakeTypeConverter(SQLTypeConverter):
 class SnowflakeCortexSqlProcessor(SqlProcessorBase):
     """A Snowflake implementation for use with Cortex functions."""
 
-    # Use the "emulated merge" code path because each primary key has multiple rows (chunks)
     supports_merge_insert = False
+    """We use the emulated merge code path because each primary key has multiple rows (chunks)."""
 
-    # Custom config type includes the vector_length parameter
     sql_config: SnowflakeCortexConfig
+    """The configuration for the Snowflake processor, including the vector length."""
+
+    splitter_config: DocumentSplitterConfig
+    """The configuration for the document splitter."""
 
     file_writer_class = JsonlWriter
     type_converter_class: type[SnowflakeTypeConverter] = SnowflakeTypeConverter
+
+    def __init__(
+        self,
+        sql_config: SnowflakeCortexConfig,
+        splitter_config: DocumentSplitterConfig,
+        embedder_config: embedder.EmbeddingConfig,
+        catalog_provider: CatalogProvider,
+        temp_dir: Path,
+        temp_file_cleanup: bool = True,
+    ) -> None:
+        """Initialize the Snowflake processor."""
+        self.splitter_config = splitter_config
+        self.embedder_config = embedder_config
+        super().__init__(
+            sql_config=sql_config,
+            catalog_provider=catalog_provider,
+            temp_dir=temp_dir,
+            temp_file_cleanup=temp_file_cleanup,
+        )
+
+    def _get_sql_column_definitions(
+        self,
+        stream_name: str,
+    ) -> dict[str, sqlalchemy.types.TypeEngine]:
+        """Return the column definitions for the given stream.
+
+        Return the static static column definitions for cortex streams.
+        """
+        return {
+            DOCUMENT_ID_COLUMN: self.type_converter_class.get_string_type(),
+            CHUNK_ID_COLUMN: self.type_converter_class.get_string_type(),
+            METADATA_COLUMN: self.type_converter_class.get_json_type(),
+            DOCUMENT_CONTENT_COLUMN: self.type_converter_class.get_json_type(),
+            EMBEDDING_COLUMN: f"VECTOR(FLOAT, {self.sql_config.vector_length})",
+        }
 
     @overrides
     def _write_files_to_new_table(
@@ -230,7 +282,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             f"""
             INSERT INTO {final_table_name}
                 ({", ".join(columns_list)})
-            SELECT ({", ".join(columns_list)})
+            SELECT {", ".join(columns_list)}
             FROM {temp_table_name};
             """
         )
@@ -241,30 +293,111 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             conn.execute(delete_statement)
             conn.execute(append_statement)
 
-    # TODO: Fix this:
-    # def process_record_message(
-    #     self,
-    #     record_msg: AirbyteRecordMessage,
-    #     stream_schema: dict,
-    # ) -> None:
-    #     """Write a record to the cache.
+    def process_record_message(
+        self,
+        record_msg: AirbyteRecordMessage,
+        stream_schema: dict,
+    ) -> None:
+        """Write a record to the cache.
 
-    #     We override the SQLProcessor implementation in order to handle chunking, embedding, etc.
+        We override the SQLProcessor implementation in order to handle chunking, embedding, etc.
 
-    #     This method is called for each record message, before the record is written to local file.
-    #     """
-    #     airbyte_messages = []
-    #     for i, chunk in enumerate(document_chunks):
-    #         chunk = document_chunks[i]
-    #         message = AirbyteMessage(type=Type.RECORD, record=chunk.record)
-    #         new_data = {}
-    #         new_data[DOCUMENT_ID_COLUMN] = self._create_document_id(message)
-    #         new_data[CHUNK_ID_COLUMN] = str(uuid.uuid4().int)
-    #         new_data[METADATA_COLUMN] = chunk.metadata
-    #         new_data[DOCUMENT_CONTENT_COLUMN] = chunk.page_content
-    #         new_data[EMBEDDING_COLUMN] = chunk.embedding
+        This method is called for each record message, before the record is written to local file.
+        """
+        document_chunks, id_to_delete = self.splitter.process(record_msg)
 
-    #     self.file_writer.process_record_message(
-    #         record_msg,
-    #         stream_schema=stream_schema,
-    #     )
+        # TODO: Decide if we need to incorporate this into the final implementation:
+        _ = id_to_delete
+
+        for chunk in document_chunks:
+            new_data: dict[str, Any] = {
+                DOCUMENT_ID_COLUMN: self._create_document_id(record_msg),
+                CHUNK_ID_COLUMN: str(uuid.uuid4().int),
+                METADATA_COLUMN: chunk.metadata,
+                DOCUMENT_CONTENT_COLUMN: chunk.page_content,
+                EMBEDDING_COLUMN: chunk.embedding,
+            }
+
+        self.file_writer.process_record_message(
+            record_msg=AirbyteRecordMessage(
+                namespace=record_msg.namespace,
+                stream=record_msg.stream,
+                data=new_data,
+                emitted_at=record_msg.emitted_at,
+            ),
+            stream_schema=stream_schema,
+        )
+
+    def _get_table_by_name(
+        self,
+        table_name: str,
+        *,
+        force_refresh: bool = False,
+        shallow_okay: bool = False,
+    ) -> sqlalchemy.Table:
+        """Return a table object from a table name.
+
+        Workaround: Until `VECTOR` type is supported by the Snowflake SQLAlchemy dialect, we will
+        return a table with fixed columns. This is a temporary solution until the dialect is updated.
+        """
+        table = sqlalchemy.Table(
+            table_name,
+            sqlalchemy.MetaData(),
+            sqlalchemy.Column(DOCUMENT_ID_COLUMN, sqlalchemy.String, primary_key=True),
+            sqlalchemy.Column(CHUNK_ID_COLUMN, sqlalchemy.String, primary_key=True),
+            sqlalchemy.Column(METADATA_COLUMN, self.type_converter_class.get_json_type()),
+            sqlalchemy.Column(DOCUMENT_CONTENT_COLUMN, self.type_converter_class.get_json_type()),
+            sqlalchemy.Column(EMBEDDING_COLUMN, VARIANT),
+        )
+        return table
+
+    def _add_missing_columns_to_table(
+        self,
+        stream_name: str,
+        table_name: str,
+    ) -> None:
+        """Add missing columns to the table.
+
+        This is a no-op because metadata scans do not work with the `VECTOR` data type.
+        """
+        pass
+
+    @property
+    def embedder(self) -> embedder.EmbedderBase:
+        return embedder.create_from_config(
+            embedding_config=self.embedder_config,
+            processing_config=self.splitter_config,
+        )
+
+    @property
+    def splitter(self) -> DocumentSplitter:
+        return DocumentSplitter(
+            config=self.splitter_config,
+            catalog=self.catalog_provider.configured_catalog,
+        )
+
+    def _create_document_id(self, record_msg: AirbyteRecordMessage) -> str:
+        """Create document id based on the primary key values. Returns a random uuid if no primary key is found"""
+        stream_name = record_msg.stream
+        primary_key = self._get_record_primary_key(record_msg=record_msg)
+        if primary_key is not None:
+            return f"Stream_{stream_name}_Key_{primary_key}"
+        return str(uuid.uuid4().int)
+
+    def _get_record_primary_key(self, record_msg: AirbyteRecordMessage) -> str | None:
+        """Create primary key for the record by appending the primary keys."""
+        stream_name = record_msg.stream
+        primary_keys = self._get_primary_keys(stream_name)
+
+        if not primary_keys:
+            return None
+
+        primary_key = []
+        for key in primary_keys:
+            try:
+                primary_key.append(str(dpath.util.get(record_msg.data, key)))
+            except KeyError:
+                primary_key.append("__not_found__")
+        # return a stringified version of all primary keys
+        stringified_primary_key = "_".join(primary_key)
+        return stringified_primary_key

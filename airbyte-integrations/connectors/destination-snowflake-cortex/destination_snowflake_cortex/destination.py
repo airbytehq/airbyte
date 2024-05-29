@@ -3,13 +3,19 @@
 #
 
 
+import tempfile
 from logging import Logger
+from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional
 
+from airbyte.secrets import SecretString
+from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
-from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.writer import Writer
+from airbyte_cdk.destinations.vector_db_based.embedder import (
+    Embedder,
+    FakeEmbedder,
+    FakeEmbeddingConfigModel,
+)
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -19,27 +25,40 @@ from airbyte_cdk.models import (
     Status,
 )
 
+from destination_snowflake_cortex import cortex_processor
+from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
 from destination_snowflake_cortex.config import ConfigModel
-from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
 
 BATCH_SIZE = 150
 
+# Monkey-patch the FakeEmbedder classes to have the same dimensions as the OpenAIEmbeddings
+FakeEmbedder.dimensions = 1536
+FakeEmbeddingConfigModel.dimensions = 1536
+
 
 class DestinationSnowflakeCortex(Destination):
-    indexer: Indexer
     embedder: Embedder
+    sql_processor: cortex_processor.SnowflakeCortexSqlProcessor
 
-    def _init_indexer(
+    def _init_sql_processor(
         self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None
     ):
-        self.embedder = create_from_config(
-            embedding_config=config.embedding,
-            processing_config=config.processing,
-        )
-        self.indexer = SnowflakeCortexIndexer(
-            config=config.indexing,
-            embedding_dimensions=self.embedder.embedding_dimensions,
-            configured_catalog=configured_catalog,
+        self.sql_processor = cortex_processor.SnowflakeCortexSqlProcessor(
+            sql_config=cortex_processor.SnowflakeCortexConfig(
+                host=config.indexing.host,
+                role=config.indexing.role,
+                warehouse=config.indexing.warehouse,
+                database=config.indexing.database,
+                schema_name=config.indexing.default_schema,
+                username=config.indexing.username,
+                password=SecretString(config.indexing.credentials.password),
+                vector_length=config.embedding.dimensions,
+            ),
+            splitter_config=config.processing,
+            embedder_config=config.embedding,
+            catalog_provider=CatalogProvider(configured_catalog),
+            temp_dir=Path(tempfile.mkdtemp()),
+            temp_file_cleanup=True,
         )
 
     def write(
@@ -49,22 +68,25 @@ class DestinationSnowflakeCortex(Destination):
         input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         parsed_config = ConfigModel.parse_obj(config)
-        self._init_indexer(parsed_config, configured_catalog)
-        writer = Writer(
-            parsed_config.processing,
-            self.indexer,
-            self.embedder,
-            batch_size=BATCH_SIZE,
-            omit_raw_text=parsed_config.omit_raw_text,
+        self._init_sql_processor(config=parsed_config, configured_catalog=configured_catalog)
+        yield from self.sql_processor.process_airbyte_messages_as_generator(
+            messages=input_messages,
+            write_strategy=WriteStrategy.AUTO,
+            # TODO: Ensure all of these are covered, then delete the commented-out lines:
+            # processing_config=parsed_config.processing,
+            # indexer=self.indexer,
+            # embedder=self.embedder,
+            # batch_size=BATCH_SIZE,
+            # omit_raw_text=parsed_config.omit_raw_text,
         )
-        yield from writer.write(configured_catalog, input_messages)
 
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         _ = logger  # Unused
         try:
             parsed_config = ConfigModel.parse_obj(config)
-            self._init_indexer(parsed_config)
-            self.indexer.check()
+            self._init_sql_processor(config=parsed_config)
+            _ = self.sql_processor.get_sql_engine()
+            # self.indexer.check()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(

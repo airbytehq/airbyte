@@ -7,7 +7,6 @@ import copy
 import tempfile
 import uuid
 from pathlib import Path
-from tempfile import tempdir
 from typing import TYPE_CHECKING, Any, Optional
 
 import dpath.util
@@ -26,7 +25,6 @@ from airbyte_cdk.models import (
     Type,
 )
 
-from destination_snowflake_cortex.common import catalog
 from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from destination_snowflake_cortex.cortex_processor import (
@@ -45,6 +43,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
+# TODO: Delete this class.
 class SnowflakeCortexIndexer(Indexer):
     config: SnowflakeCortexIndexingModel
 
@@ -75,9 +74,10 @@ class SnowflakeCortexIndexer(Indexer):
         Initialize default snowflake connection for checking the connection. We are not initializing the cortex
         process here because that needs a catalog.
         """
-        self.default_processor = SnowflakeSqlProcessor(
+        self.default_processor = SnowflakeCortexSqlProcessor(
             sql_config=self.sql_config,
-            catalog_provider=CatalogProvider(configured_catalog=catalog),
+            splitter_config=self.config.processing,
+            catalog_provider=CatalogProvider(configured_catalog=self.catalog),
             temp_file_cleanup=True,
             temp_dir=Path(tempfile.mkdtemp()),
         )
@@ -102,28 +102,29 @@ class SnowflakeCortexIndexer(Indexer):
             airbyte_messages.append(message)
         return airbyte_messages
 
-    def _get_updated_catalog(self) -> ConfiguredAirbyteCatalog:
-        """Adds following columns to catalog
-        document_id (primary key) -> unique per record/document
-        chunk_id -> unique per chunk
-        document_content -> text content of the document
-        metadata -> metadata of the record
-        embedding -> embedding of the document content
-        """
-        updated_catalog = copy.deepcopy(self.catalog)
-        # update each stream in the catalog
-        for stream in updated_catalog.streams:
-            # TO-DO: Revisit this - Clear existing properties, if anys, since we are not entirely sure what's in the configured catalog.
-            stream.stream.json_schema["properties"] = {}
-            stream.stream.json_schema["properties"][DOCUMENT_ID_COLUMN] = {"type": "string"}
-            stream.stream.json_schema["properties"][CHUNK_ID_COLUMN] = {"type": "string"}
-            stream.stream.json_schema["properties"][DOCUMENT_CONTENT_COLUMN] = {"type": "string"}
-            stream.stream.json_schema["properties"][METADATA_COLUMN] = {"type": "object"}
-            stream.stream.json_schema["properties"][EMBEDDING_COLUMN] = {"type": "vector_array"}
-            # set primary key only if there are existing primary keys
-            if stream.primary_key:
-                stream.primary_key = [[DOCUMENT_ID_COLUMN]]
-        return updated_catalog
+    # TODO: Remove this method
+    # def _get_updated_catalog(self) -> ConfiguredAirbyteCatalog:
+    #     """Adds following columns to catalog
+    #     document_id (primary key) -> unique per record/document
+    #     chunk_id -> unique per chunk
+    #     document_content -> text content of the document
+    #     metadata -> metadata of the record
+    #     embedding -> embedding of the document content
+    #     """
+    #     updated_catalog = copy.deepcopy(self.catalog)
+    #     # update each stream in the catalog
+    #     for stream in updated_catalog.streams:
+    #         # TO-DO: Revisit this - Clear existing properties, if anys, since we are not entirely sure what's in the configured catalog.
+    #         stream.stream.json_schema["properties"] = {}
+    #         stream.stream.json_schema["properties"][DOCUMENT_ID_COLUMN] = {"type": "string"}
+    #         stream.stream.json_schema["properties"][CHUNK_ID_COLUMN] = {"type": "string"}
+    #         stream.stream.json_schema["properties"][DOCUMENT_CONTENT_COLUMN] = {"type": "string"}
+    #         stream.stream.json_schema["properties"][METADATA_COLUMN] = {"type": "object"}
+    #         stream.stream.json_schema["properties"][EMBEDDING_COLUMN] = {"type": "vector_array"}
+    #         # set primary key only if there are existing primary keys
+    #         if stream.primary_key:
+    #             stream.primary_key = [[DOCUMENT_ID_COLUMN]]
+    #     return updated_catalog
 
     def _get_primary_keys(self, stream_name: str) -> Optional[str]:
         for stream in self.catalog.streams:
@@ -184,21 +185,21 @@ class SnowflakeCortexIndexer(Indexer):
                     return WriteStrategy.MERGE
         return WriteStrategy.AUTO
 
-    def index(self, document_chunks: Iterable[Any], namespace: str, stream: str):
+    def index(
+        self,
+        document_chunks: Iterable[Any],
+        namespace: str,
+        stream: str,
+    ) -> None:
         # get list of airbyte messages from the document chunks
-        airbyte_messages = self._get_airbyte_messages_from_chunks(document_chunks)
+        airbyte_messages = list(self._get_airbyte_messages_from_chunks(document_chunks))
         # todo: remove state messages and see if things still work
         airbyte_messages.append(self._create_state_message(stream, namespace, {}))
 
         # update catalog to match all columns in the airbyte messages
         if airbyte_messages is not None and len(airbyte_messages) > 0:
-            updated_catalog = self._get_updated_catalog()
-            cortex_processor = SnowflakeCortexSqlProcessor(
-                sql_config=self.sql_config,
-                catalog_provider=updated_catalog,
-                stream_names=[stream],
-            )
-            cortex_processor.process_airbyte_messages(
+            # updated_catalog = self._get_updated_catalog()
+            self.default_processor.process_airbyte_messages(
                 messages=airbyte_messages,
                 write_strategy=self.get_write_strategy(
                     stream,

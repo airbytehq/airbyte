@@ -6,11 +6,16 @@ from __future__ import annotations
 import json
 import logging
 
+from airbyte_cdk.destinations.vector_db_based.embedder import FakeEmbedder, FakeEmbeddingConfigModel
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
 from snowflake import connector
 
 from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
+
+# Monkey-patch the FakeEmbedder classes to have the same dimensions as the OpenAIEmbeddings
+FakeEmbedder.dimensions = 1536
+FakeEmbeddingConfigModel.dimensions = 1536
 
 
 class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
@@ -102,11 +107,59 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         self._delete_table("mystream")
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
         first_state_message = self._state({"state": "1"})
-        first_record_chunk = [self._record("mystream", f"Dogs are number {i}", i) for i in range(5)]
+        first_record = [
+            self._record(
+                stream="mystream",
+                str_value=f"Dogs are number {i}",
+                int_value=i,
+            )
+            for i in range(5)
+        ]
 
         # initial sync with replace
         destination = DestinationSnowflakeCortex()
-        list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
+        _ = list(
+            destination.write(
+                config=self.config,
+                configured_catalog=catalog,
+                input_messages=[*first_record, first_state_message],
+            )
+        )
+        assert self._get_record_count("mystream") == 5
+
+        # subsequent sync with append
+        append_catalog = self._get_configured_catalog(DestinationSyncMode.append)
+        list(
+            destination.write(
+                config=self.config,
+                configured_catalog=append_catalog,
+                input_messages=[self._record("mystream", "Cats are nice", 6), first_state_message],
+            )
+        )
+        assert self._get_record_count("mystream") == 6
+
+    def test_write_and_replace(self):
+        self._delete_table("mystream")
+        catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
+        first_state_message = self._state({"state": "1"})
+        first_record = [
+            self._record(
+                stream="mystream",
+                str_value=f"Dogs are number {i}",
+                int_value=i,
+            )
+            for i in range(5)
+        ]
+
+        # initial sync with replace
+        destination = DestinationSnowflakeCortex()
+        list(
+            destination.write(
+                config=self.config,
+                configured_catalog=catalog,
+                input_messages=[*first_record, first_state_message],
+            )
+        )
         assert self._get_record_count("mystream") == 5
 
         # subsequent sync with append

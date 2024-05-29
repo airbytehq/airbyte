@@ -85,25 +85,26 @@ def test_get_airbyte_messages_from_chunks():
         i += 1
 
 
-def test_add_columns_to_catalog():
-    indexer = _create_snowflake_cortex_indexer(generate_catalog())
-    updated_catalog = indexer._get_updated_catalog()
-    # test all streams in catalog have the new columns
-    for stream in updated_catalog.streams:
-        assert all(
-            column in stream.stream.json_schema["properties"]
-            for column in [
-                DOCUMENT_ID_COLUMN,
-                CHUNK_ID_COLUMN,
-                DOCUMENT_CONTENT_COLUMN,
-                METADATA_COLUMN,
-                EMBEDDING_COLUMN,
-            ]
-        )
-        if stream.stream.name in ["example_stream", "example_stream2"]:
-            assert stream.primary_key == [[DOCUMENT_ID_COLUMN]]
-        if stream.stream.name == "example_stream3":
-            assert stream.primary_key == []
+# TODO: Remove this test or replace with an updated version
+# def test_add_columns_to_catalog():
+#     indexer = _create_snowflake_cortex_indexer(generate_catalog())
+#     updated_catalog = indexer._get_updated_catalog()
+#     # test all streams in catalog have the new columns
+#     for stream in updated_catalog.streams:
+#         assert all(
+#             column in stream.stream.json_schema["properties"]
+#             for column in [
+#                 DOCUMENT_ID_COLUMN,
+#                 CHUNK_ID_COLUMN,
+#                 DOCUMENT_CONTENT_COLUMN,
+#                 METADATA_COLUMN,
+#                 EMBEDDING_COLUMN,
+#             ]
+#         )
+#         if stream.stream.name in ["example_stream", "example_stream2"]:
+#             assert stream.primary_key == [[DOCUMENT_ID_COLUMN]]
+#         if stream.stream.name == "example_stream3":
+#             assert stream.primary_key == []
 
 
 def test_get_primary_keys():

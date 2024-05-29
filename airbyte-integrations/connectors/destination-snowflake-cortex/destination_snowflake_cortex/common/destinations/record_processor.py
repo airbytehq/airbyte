@@ -8,10 +8,13 @@ from __future__ import annotations
 
 import abc
 import io
+import queue
 import sys
 from collections import defaultdict
-from typing import TYPE_CHECKING, cast, final
+from typing import TYPE_CHECKING, Generator, cast, final
 
+from airbyte import exceptions as exc
+from airbyte.strategies import WriteStrategy
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -21,16 +24,16 @@ from airbyte_protocol.models import (
     Type,
 )
 
-from airbyte import exceptions as exc
-from airbyte.strategies import WriteStrategy
-
-from destination_snowflake_cortex.common.state.state_writers import StdOutStateWriter
-
+from destination_snowflake_cortex.common.state.state_writers import (
+    StateWriterBase,
+    StdOutStateWriter,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
 
     from airbyte._batch_handles import BatchHandle
+
     from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
     from destination_snowflake_cortex.common.state.state_writers import StateWriterBase
 
@@ -166,6 +169,38 @@ class RecordProcessorBase(abc.ABC):
         In most cases, the SQL processor will not perform any action, but will pass this along to to
         the file processor.
         """
+
+    def process_airbyte_messages_as_generator(
+        self,
+        messages: Iterable[AirbyteMessage],
+        *,
+        write_strategy: WriteStrategy,
+    ) -> Generator[AirbyteMessage, None, None]:
+        """
+        This is copied from PyAirbyte's RecordProcessorBase class.
+
+        This version will _also_ yield `AirbyteMessage` objects which would otherwise only
+        be pushed to STDOUT or sent to the state writer.
+        """
+        # Save the original state writer
+        state_writer_orig: StateWriterBase = self.state_writer
+        # Create a queue to store output messages
+        output_queue: queue.Queue[AirbyteMessage] = queue.Queue()
+
+        class WrappedStateWriter(StateWriterBase):
+            def write_state(self, state_message: AirbyteStateMessage) -> None:
+                """First add state message to output queue, then call the original state writer."""
+                output_queue.put(state_message)
+                return super().write_state(state_message)
+
+        self._state_writer = WrappedStateWriter()
+        self.process_airbyte_messages(
+            messages=messages,
+            write_strategy=write_strategy,
+        )
+        # Restore the original state writer
+        self._state_writer = state_writer_orig
+        yield from output_queue.queue
 
     @final
     def process_airbyte_messages(

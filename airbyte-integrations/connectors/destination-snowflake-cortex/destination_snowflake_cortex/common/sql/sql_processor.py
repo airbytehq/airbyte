@@ -441,7 +441,6 @@ class SqlProcessorBase(RecordProcessorBase):
         """
         _ = self._execute_sql(cmd)
 
-    @final
     def _get_sql_column_definitions(
         self,
         stream_name: str,
