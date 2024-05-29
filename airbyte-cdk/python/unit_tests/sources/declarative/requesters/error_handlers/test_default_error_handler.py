@@ -109,7 +109,7 @@ def test_default_error_handler_with_default_response_filter(test_name, http_stat
             ),
             (
                 "_with_http_response_status_200_fail_with_contained_error_message",
-                200,
+                418,
                 HttpResponseFilter(
                     action=ResponseAction.FAIL,
                     error_message_contains="test",
@@ -122,7 +122,7 @@ def test_default_error_handler_with_default_response_filter(test_name, http_stat
             ),
             (
                 "_fail_with_predicate",
-                200,
+                418,
                 HttpResponseFilter(
                     action=ResponseAction.FAIL,
                     predicate="{{ 'error' in response }}",
@@ -137,7 +137,7 @@ def test_default_error_handler_with_default_response_filter(test_name, http_stat
 )
 def test_default_error_handler_with_custom_response_filter(test_name, http_status_code, test_response_filter, response_action, failure_type, error_message):
     response_mock = create_response(http_status_code)
-    if http_status_code == 200:
+    if http_status_code == 418:
         response_mock.json.return_value = {"error": "test"}
 
     response_filter = test_response_filter
@@ -146,6 +146,66 @@ def test_default_error_handler_with_custom_response_filter(test_name, http_statu
     assert actual_error_resolution.response_action == response_action
     assert actual_error_resolution.failure_type == failure_type
     assert actual_error_resolution.error_message == error_message
+
+@pytest.mark.parametrize(
+        "http_status_code, expected_response_action",
+        [
+            (400, ResponseAction.RETRY),
+            (402, ResponseAction.FAIL),
+        ],
+)
+def test_default_error_handler_with_multiple_response_filters(http_status_code, expected_response_action):
+    response_filter_one = HttpResponseFilter(
+        http_codes=[400],
+        action=ResponseAction.RETRY,
+        config={},
+        parameters={},
+    )
+    response_filter_two = HttpResponseFilter(
+        http_codes=[402],
+        action=ResponseAction.FAIL,
+        config={},
+        parameters={},
+    )
+
+    response_mock = create_response(http_status_code)
+    error_handler = DefaultErrorHandler(config={}, parameters={}, response_filters=[response_filter_one, response_filter_two])
+    actual_error_resolution = error_handler.interpret_response(response_mock)
+    assert actual_error_resolution.response_action == expected_response_action
+
+
+@pytest.mark.parametrize(
+        "first_response_filter_action, second_response_filter_action, expected_response_action",
+        [
+            (ResponseAction.RETRY, ResponseAction.FAIL, ResponseAction.RETRY),
+            (ResponseAction.FAIL, ResponseAction.RETRY, ResponseAction.RETRY),
+            (ResponseAction.IGNORE, ResponseAction.IGNORE, ResponseAction.IGNORE),
+            (ResponseAction.SUCCESS, ResponseAction.IGNORE, ResponseAction.SUCCESS),
+            (ResponseAction.IGNORE, ResponseAction.SUCCESS, ResponseAction.SUCCESS),
+            (ResponseAction.FAIL, ResponseAction.SUCCESS, ResponseAction.SUCCESS),
+            (ResponseAction.FAIL, ResponseAction.RETRY, ResponseAction.RETRY),
+            (ResponseAction.RETRY, ResponseAction.SUCCESS, ResponseAction.SUCCESS),
+        ]
+)
+def test_default_error_handler_with_conflicting_response_filters(first_response_filter_action, second_response_filter_action, expected_response_action):
+    response_filter_one = HttpResponseFilter(
+        http_codes=[400],
+        action=first_response_filter_action,
+        config={},
+        parameters={},
+    )
+    response_filter_two = HttpResponseFilter(
+        http_codes=[400],
+        action=second_response_filter_action,
+        config={},
+        parameters={},
+    )
+
+    response_mock = create_response(400)
+    error_handler = DefaultErrorHandler(config={}, parameters={}, response_filters=[response_filter_one, response_filter_two])
+    actual_error_resolution = error_handler.interpret_response(response_mock)
+    assert actual_error_resolution.response_action == expected_response_action
+
 
 def test_default_error_handler_with_constant_backoff_strategy():
     response_mock = create_response(429)
