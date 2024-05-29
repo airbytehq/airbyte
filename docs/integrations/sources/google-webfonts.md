@@ -64,7 +64,8 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.1.4   | 2024-05-28 | [38684](https://github.com/airbytehq/airbyte/pull/38684) | Make connector compatible with Builder                                          |
 | 0.1.3   | 2024-04-19 | [37172](https://github.com/airbytehq/airbyte/pull/37172) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
 | 0.1.2   | 2024-04-15 | [37172](https://github.com/airbytehq/airbyte/pull/37172) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1   | 2024-04-12 | [37172](https://github.com/airbytehq/airbyte/pull/37172) | schema descriptions                                                             |
