@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import os
 from json import dumps
 from typing import Any, List, Mapping
 
 import pytest
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
@@ -25,7 +25,7 @@ def records_per_slice(parent_records: List[Mapping[str, Any]], state_checkpoint_
 
 @pytest.fixture
 def logger():
-    return AirbyteLogger()
+    return logging.getLogger("airbyte")
 
 
 @pytest.fixture
@@ -511,8 +511,14 @@ def filfillment_order_jsonl_content_example():
 
 
 @pytest.fixture
+def order_risks_jsonl_content_example():
+    return """{"__typename":"Order","updatedAt":"2023-09-09T09:57:43Z","order_id":"gid:\/\/shopify\/Order\/3944273805501","risk":{"recommendation":"NONE","assessments":[{"risk_level":"NONE","facts":[{"description":"Card Verification Value (CVV) isn't available","sentiment":"NEUTRAL"},{"description":"Billing address or credit card's address wasn't available","sentiment":"NEUTRAL"},{"description":"Billing address ZIP or postal code isn't available to match with credit card's registered address","sentiment":"NEUTRAL"},{"description":"The payment method used isn't available","sentiment":"NEUTRAL"},{"description":"Location of IP address used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Distance between shipping address and location of IP address isn't available","sentiment":"NEUTRAL"},{"description":"The billing country or the country of the IP used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Can't determine if a high risk internet connection was used because the IP address isn't available","sentiment":"NEUTRAL"},{"description":"There was 1 payment attempt","sentiment":"POSITIVE"}],"provider":null}]}}
+{"__typename":"Order","updatedAt":"2023-09-19T14:29:22Z","order_id":"gid:\/\/shopify\/Order\/3945528492221","risk":{"recommendation":"CANCEL","assessments":[{"risk_level":"NONE","facts":[{"description":"Card Verification Value (CVV) isn't available","sentiment":"NEUTRAL"},{"description":"Billing address or credit card's address wasn't available","sentiment":"NEUTRAL"},{"description":"Billing address ZIP or postal code isn't available to match with credit card's registered address","sentiment":"NEUTRAL"},{"description":"The payment method used isn't available","sentiment":"NEUTRAL"},{"description":"Location of IP address used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Distance between shipping address and location of IP address isn't available","sentiment":"NEUTRAL"},{"description":"The billing country or the country of the IP used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Can't determine if a high risk internet connection was used because the IP address isn't available","sentiment":"NEUTRAL"},{"description":"There was 1 payment attempt","sentiment":"POSITIVE"}],"provider":null},{"risk_level":"HIGH","facts":[{"description":"This order came from an anonymous proxy","sentiment":"NEGATIVE"}],"provider":{"features":[],"description":null,"handle":null,"embedded":false,"title":"Airbyte Test","published":false,"developer_name":"app developer","developer_type":"MERCHANT","app_store_app_url":null,"install_url":null,"app_store_developer_url":null,"is_post_purchase_app_in_use":false,"previously_installed":false,"pricing_details_summary":"Free","pricing_details":null,"privacy_policy_url":null,"public_category":"CUSTOM","uninstall_message":"You won't be able to view or access features for this app anymore. Discounts that use this app will also be deleted.","webhook_api_version":"2023-04","shopify_developed":false,"provider_id":"gid:\/\/shopify\/App\/5505221","failed_requirements":[],"feedback":null}}]}}\n"""
+
+
+@pytest.fixture
 def products_jsonl_content_example():
-    return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123","publishedAt":"2021-06-23T01:09:29Z","createdAt":"2021-06-23T01:09:29Z","status":"ACTIVE","vendor":"Blanda, O'Kon and Bartell","updatedAt":"2023-04-20T11:12:26Z","bodyHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","productType":"Music","tags":["developer-tools-generator"],"handle":"gold-silver-iphone-7-case","templateSuffix":null,"title":"Gold Silver iPhone 7 Case","options":[{"id":"gid:\/\/shopify\/ProductOption\/444","name":"Title","values":["Plastic","indigo"],"position":1}]}
+    return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123","publishedAt":"2021-06-23T01:09:29Z","createdAt":"2021-06-23T01:09:29Z","status":"ACTIVE","vendor":"Blanda, O'Kon and Bartell","updatedAt":"2023-04-20T11:12:26Z","bodyHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","productType":"Music","tags":["developer-tools-generator"],"handle":"gold-silver-iphone-7-case","templateSuffix":null,"title":"Gold Silver iPhone 7 Case","description":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","descriptionHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","isGiftCard":false,"legacyResourceId":"6796218335421","onlineStorePreviewUrl":"https:\/\/airbyte-integration-test.myshopify.com\/products\/gold-silver-iphone-7-case","onlineStoreUrl":null,"totalInventory":58,"tracksInventory":true,"total_variants":{"total_variants":2},"media_count":{"media_count":1},"options":[{"id":"gid:\/\/shopify\/ProductOption\/444","name":"Title","values":["Plastic","indigo"],"position":1}]}
 {"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
 {"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
 {"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/222","__parentId":"gid:\/\/shopify\/Product\/123"}\n"""
@@ -551,8 +557,8 @@ def customer_address_jsonl_content_example():
 @pytest.fixture
 def inventory_levels_jsonl_content_example():
     return """{"__typename":"Location","id":"gid:\/\/shopify\/Location\/63590301885"}
-{"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185200631997","available":15,"item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185200631997"},"updatedAt":"2023-04-13T12:00:55Z","__parentId":"gid:\/\/shopify\/Location\/63590301885"}
-{"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185218719933","available":8,"item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185218719933"},"updatedAt":"2023-04-13T12:09:45Z","__parentId":"gid:\/\/shopify\/Location\/63590301885"}\n"""
+{"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185200631997","item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185200631997"},"updatedAt":"2023-04-13T12:00:55Z","quantities":[{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=available","name":"available","quantity":15,"updatedAt":"2023-04-13T12:00:55Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=incoming","name":"incoming","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=committed","name":"committed","quantity":0,"updatedAt":"2022-03-17T10:05:08Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=damaged","name":"damaged","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=on_hand","name":"on_hand","quantity":15,"updatedAt":"2023-04-13T12:00:52Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=quality_control","name":"quality_control","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=reserved","name":"reserved","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=safety_stock","name":"safety_stock","quantity":0,"updatedAt":null}],"__parentId":"gid:\/\/shopify\/Location\/63590301885"}
+{"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185218719933","item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185218719933"},"updatedAt":"2023-04-13T12:09:45Z","quantities":[{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=available","name":"available","quantity":8,"updatedAt":"2023-04-13T12:09:45Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=incoming","name":"incoming","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=committed","name":"committed","quantity":2,"updatedAt":"2023-04-13T12:09:45Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=damaged","name":"damaged","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=on_hand","name":"on_hand","quantity":10,"updatedAt":"2023-04-13T12:09:45Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=quality_control","name":"quality_control","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=reserved","name":"reserved","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=safety_stock","name":"safety_stock","quantity":0,"updatedAt":null}],"__parentId":"gid:\/\/shopify\/Location\/63590301885"}\n"""
 
 
 @pytest.fixture
@@ -564,11 +570,11 @@ def discount_codes_jsonl_content_example():
 
 @pytest.fixture
 def collections_jsonl_content_example():
-    return """{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/270889287869","handle":"frontpage","title":"Home page","updatedAt":"2023-09-05T14:06:59Z","bodyHtml":"updated_mon_24.04.2023","sortOrder":"BEST_SELLING","templateSuffix":"","productsCount":1}
+    return """{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/270889287869","handle":"frontpage","title":"Home page","updatedAt":"2023-09-05T14:06:59Z","bodyHtml":"updated_mon_24.04.2023","sortOrder":"BEST_SELLING","templateSuffix":"","productsCount":{"products_count": 1}}
 {"__typename":"CollectionPublication","publishedAt":"2021-06-23T01:00:25Z","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
 {"__typename":"CollectionPublication","publishedAt":"2021-08-18T09:39:34Z","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
 {"__typename":"CollectionPublication","publishedAt":"2023-04-20T11:12:24Z","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
-{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/273278566589","handle":"test-collection","title":"Test Collection","updatedAt":"2023-09-05T14:12:04Z","bodyHtml":"updated_mon_24.04.2023","sortOrder":"BEST_SELLING","templateSuffix":"","productsCount":26}
+{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/273278566589","handle":"test-collection","title":"Test Collection","updatedAt":"2023-09-05T14:12:04Z","bodyHtml":"updated_mon_24.04.2023","sortOrder":"BEST_SELLING","templateSuffix":"","productsCount":{"products_count": 26}}
 {"__typename":"CollectionPublication","publishedAt":"2021-07-19T14:02:54Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}
 {"__typename":"CollectionPublication","publishedAt":"2021-08-18T09:39:34Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}
 {"__typename":"CollectionPublication","publishedAt":"2023-04-20T11:12:24Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}\n"""
@@ -688,6 +694,99 @@ def fulfillment_orders_response_expected_result():
 
 
 @pytest.fixture
+def order_risks_response_expected_result():
+    return [
+        {
+            "updated_at": "2023-09-19T14:29:22+00:00",
+            "id": 3945528492221,
+            "order_id": 3945528492221,
+            "admin_graphql_api_id": "gid://shopify/Order/3945528492221",
+            "recommendation": "CANCEL",
+            "assessments": [
+                {
+                    "risk_level": "NONE",
+                    "facts": [
+                        {
+                            "description": "Card Verification Value (CVV) isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Billing address or credit card's address wasn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Billing address ZIP or postal code isn't available to match with credit card's registered address",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "The payment method used isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Location of IP address used to place the order isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Distance between shipping address and location of IP address isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "The billing country or the country of the IP used to place the order isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Can't determine if a high risk internet connection was used because the IP address isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "There was 1 payment attempt",
+                            "sentiment": "POSITIVE"
+                        }
+                    ],
+                    "provider": None
+                },
+                {
+                    "risk_level": "HIGH",
+                    "facts": [
+                        {
+                            "description": "This order came from an anonymous proxy",
+                            "sentiment": "NEGATIVE"
+                        }
+                    ],
+                    "provider": {
+                        "features": [],
+                        "description": None,
+                        "handle": None,
+                        "embedded": False,
+                        "title": "Airbyte Test",
+                        "published": False,
+                        "developer_name": "app developer",
+                        "developer_type": "MERCHANT",
+                        "app_store_app_url": None,
+                        "install_url": None,
+                        "app_store_developer_url": None,
+                        "is_post_purchase_app_in_use": False,
+                        "previously_installed": False,
+                        "pricing_details_summary": "Free",
+                        "pricing_details": None,
+                        "privacy_policy_url": None,
+                        "public_category": "CUSTOM",
+                        "uninstall_message": "You won't be able to view or access features for this app anymore. Discounts that use this app will also be deleted.",
+                        "webhook_api_version": "2023-04",
+                        "shopify_developed": False,
+                        "provider_id": 5505221,
+                        "failed_requirements": [],
+                        "feedback": None,
+                        "admin_graphql_api_id": "gid://shopify/App/5505221"
+                    }
+                }
+            ],
+            "shop_url": "test_shop"
+        }
+    ]
+
+
+@pytest.fixture
 def products_response_expected_result():
     return {
             "id": 123,
@@ -702,6 +801,16 @@ def products_response_expected_result():
             "handle": "gold-silver-iphone-7-case",
             "template_suffix": None,
             "title": "Gold Silver iPhone 7 Case",
+            "description": "Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked",
+            "description_html": "Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked",
+            "is_gift_card": False,
+            "legacy_resource_id": "6796218335421",
+            "online_store_preview_url": "https://airbyte-integration-test.myshopify.com/products/gold-silver-iphone-7-case",
+            "online_store_url": None,
+            "total_inventory": 58,
+            "tracks_inventory": True,
+            "total_variants": 2,
+            "media_count": 1,
             "options": [
                 {
                     "id": 444,
@@ -932,22 +1041,136 @@ def inventory_levels_response_expected_result():
     return [
         {
             "id": "63590301885|42185200631997",
-            "available": 15,
             "updated_at": "2023-04-13T12:00:55+00:00",
+            "quantities": [
+                {
+                    "id": 97912455357,
+                    "name": "available",
+                    "quantity": 15,
+                    "updatedAt": "2023-04-13T12:00:55+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=available"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "incoming",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=incoming"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "committed",
+                    "quantity": 0,
+                    "updatedAt": "2022-03-17T10:05:08+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=committed"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "damaged",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=damaged"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "on_hand",
+                    "quantity": 15,
+                    "updatedAt": "2023-04-13T12:00:52+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=on_hand"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "quality_control",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=quality_control"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "reserved",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=reserved"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "safety_stock",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=safety_stock"
+                }
+            ],
             "admin_graphql_api_id": "gid://shopify/InventoryLevel/97912455357?inventory_item_id=42185200631997",
             "inventory_item_id": 42185200631997,
             "location_id": 63590301885,
-            "shop_url": "test_shop",
+            "shop_url": "test_shop"
         },
         {
             "id": "63590301885|42185218719933",
-            "available": 8,
             "updated_at": "2023-04-13T12:09:45+00:00",
+            "quantities": [
+                {
+                    "id": 97912455357,
+                    "name": "available",
+                    "quantity": 8,
+                    "updatedAt": "2023-04-13T12:09:45+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=available"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "incoming",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=incoming"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "committed",
+                    "quantity": 2,
+                    "updatedAt": "2023-04-13T12:09:45+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=committed"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "damaged",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=damaged"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "on_hand",
+                    "quantity": 10,
+                    "updatedAt": "2023-04-13T12:09:45+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=on_hand"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "quality_control",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=quality_control"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "reserved",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=reserved"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "safety_stock",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=safety_stock"
+                }
+            ],
             "admin_graphql_api_id": "gid://shopify/InventoryLevel/97912455357?inventory_item_id=42185218719933",
             "inventory_item_id": 42185218719933,
             "location_id": 63590301885,
-            "shop_url": "test_shop",
-        },
+            "shop_url": "test_shop"
+        }
     ]
 
 

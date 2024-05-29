@@ -57,7 +57,6 @@ def connector_context(sample_connector, dagger_client, current_platform):
         git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
-        use_remote_secrets=True,
         targeted_platforms=[current_platform],
     )
     context.dagger_client = dagger_client

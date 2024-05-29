@@ -11,16 +11,14 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Contains utilities and helper classes for discovering schemas in database sources. */
 object DbSourceDiscoverUtil {
-    private val LOGGER: Logger = LoggerFactory.getLogger(DbSourceDiscoverUtil::class.java)
+
     private val AIRBYTE_METADATA: List<String> =
         mutableListOf("_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at")
 
@@ -31,7 +29,7 @@ object DbSourceDiscoverUtil {
      */
     @JvmStatic
     fun <DataType> logSourceSchemaChange(
-        fullyQualifiedTableNameToInfo: Map<String?, TableInfo<CommonField<DataType>>>,
+        fullyQualifiedTableNameToInfo: Map<String, TableInfo<CommonField<DataType>>>,
         catalog: ConfiguredAirbyteCatalog,
         airbyteTypeConverter: Function<DataType, JsonSchemaType>
     ) {
@@ -44,12 +42,11 @@ object DbSourceDiscoverUtil {
             val table = fullyQualifiedTableNameToInfo[fullyQualifiedTableName]!!
             val fields =
                 table.fields
-                    .stream()
                     .map { commonField: CommonField<DataType> ->
                         toField(commonField, airbyteTypeConverter)
                     }
                     .distinct()
-                    .collect(Collectors.toList())
+
             val currentJsonSchema = CatalogHelpers.fieldsToJsonSchema(fields)
             val catalogSchema = stream.jsonSchema
             val currentSchemaProperties = currentJsonSchema["properties"]
@@ -71,13 +68,10 @@ object DbSourceDiscoverUtil {
             }
 
             if (!mismatchedFields.isEmpty()) {
-                LOGGER.warn(
-                    "Source schema changed for table {}! Potential mismatches: {}. Actual schema: {}. Catalog schema: {}",
-                    fullyQualifiedTableName,
-                    java.lang.String.join(", ", mismatchedFields.toString()),
-                    currentJsonSchema,
-                    catalogSchema
-                )
+                LOGGER.warn {
+                    "Source schema changed for table $fullyQualifiedTableName! Potential mismatches: " +
+                        "${mismatchedFields.joinToString(", ")}. Actual schema: $currentJsonSchema. Catalog schema: $catalogSchema"
+                }
             }
         }
     }
@@ -88,50 +82,44 @@ object DbSourceDiscoverUtil {
         airbyteTypeConverter: Function<DataType, JsonSchemaType>
     ): AirbyteCatalog {
         val tableInfoFieldList =
-            tableInfos
-                .stream()
-                .map { t: TableInfo<CommonField<DataType>> ->
-                    // some databases return multiple copies of the same record for a column (e.g.
-                    // redshift) because
-                    // they have at least once delivery guarantees. we want to dedupe these, but
-                    // first we check that the
-                    // records are actually the same and provide a good error message if they are
-                    // not.
-                    assertColumnsWithSameNameAreSame(t.nameSpace, t.name, t.fields)
-                    val fields =
-                        t.fields
-                            .stream()
-                            .map { commonField: CommonField<DataType> ->
-                                toField(commonField, airbyteTypeConverter)
-                            }
-                            .distinct()
-                            .collect(Collectors.toList())
-                    val fullyQualifiedTableName = getFullyQualifiedTableName(t.nameSpace, t.name)
-                    val primaryKeys =
-                        fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
-                            fullyQualifiedTableName,
-                            emptyList()
-                        )
-                    TableInfo(
-                        nameSpace = t.nameSpace,
-                        name = t.name,
-                        fields = fields,
-                        primaryKeys = primaryKeys,
-                        cursorFields = t.cursorFields
+            tableInfos.map { t: TableInfo<CommonField<DataType>> ->
+                // some databases return multiple copies of the same record for a column (e.g.
+                // redshift) because
+                // they have at least once delivery guarantees. we want to dedupe these, but
+                // first we check that the
+                // records are actually the same and provide a good error message if they are
+                // not.
+                assertColumnsWithSameNameAreSame(t.nameSpace, t.name, t.fields)
+                val fields =
+                    t.fields
+                        .map { commonField: CommonField<DataType> ->
+                            toField(commonField, airbyteTypeConverter)
+                        }
+                        .distinct()
+
+                val fullyQualifiedTableName = getFullyQualifiedTableName(t.nameSpace, t.name)
+                val primaryKeys =
+                    fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
+                        fullyQualifiedTableName,
+                        emptyList()
                     )
-                }
-                .collect(Collectors.toList())
+                TableInfo(
+                    nameSpace = t.nameSpace,
+                    name = t.name,
+                    fields = fields,
+                    primaryKeys = primaryKeys,
+                    cursorFields = t.cursorFields
+                )
+            }
 
         val streams =
             tableInfoFieldList
-                .stream()
                 .map { tableInfo: TableInfo<Field> ->
                     val primaryKeys =
                         tableInfo.primaryKeys
-                            .stream()
-                            .filter { obj: String? -> Objects.nonNull(obj) }
+                            .filter { obj: String -> Objects.nonNull(obj) }
                             .map { listOf(it) }
-                            .toList()
+
                     CatalogHelpers.createAirbyteStream(
                             tableInfo.name,
                             tableInfo.nameSpace,
@@ -144,7 +132,8 @@ object DbSourceDiscoverUtil {
                         )
                         .withSourceDefinedPrimaryKey(primaryKeys)
                 }
-                .collect(Collectors.toList())
+                .toMutableList() // This is ugly, but we modify this list in
+        // JdbcSourceAcceptanceTest.testDiscoverWithMultipleSchemas
         return AirbyteCatalog().withStreams(streams)
     }
 
@@ -163,12 +152,10 @@ object DbSourceDiscoverUtil {
                 !commonField.properties.isEmpty()
         ) {
             val properties =
-                commonField.properties
-                    .stream()
-                    .map { commField: CommonField<DataType> ->
-                        toField(commField, airbyteTypeConverter)
-                    }
-                    .toList()
+                commonField.properties.map { commField: CommonField<DataType> ->
+                    toField(commField, airbyteTypeConverter)
+                }
+
             return Field.of(
                 commonField.name,
                 airbyteTypeConverter.apply(commonField.type),
@@ -185,28 +172,23 @@ object DbSourceDiscoverUtil {
         columns: List<CommonField<DataType>>
     ) {
         columns
-            .stream()
-            .collect(Collectors.groupingBy(Function { obj: CommonField<DataType> -> obj.name }))
+            .groupBy { obj: CommonField<DataType> -> obj.name }
             .values
-            .forEach(
-                Consumer { columnsWithSameName: List<CommonField<DataType>> ->
-                    val comparisonColumn = columnsWithSameName[0]
-                    columnsWithSameName.forEach(
-                        Consumer { column: CommonField<DataType> ->
-                            if (column != comparisonColumn) {
-                                throw RuntimeException(
-                                    String.format(
-                                        "Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
-                                        comparisonColumn.name,
-                                        nameSpace,
-                                        tableName,
-                                        columns
-                                    )
-                                )
-                            }
-                        }
-                    )
+            .forEach { columnsWithSameName: List<CommonField<DataType>> ->
+                val comparisonColumn = columnsWithSameName[0]
+                columnsWithSameName.forEach { column: CommonField<DataType> ->
+                    if (column != comparisonColumn) {
+                        throw RuntimeException(
+                            String.format(
+                                "Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
+                                comparisonColumn.name,
+                                nameSpace,
+                                tableName,
+                                columns
+                            )
+                        )
+                    }
                 }
-            )
+            }
     }
 }
