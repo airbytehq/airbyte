@@ -60,6 +60,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.airbyte.protocol.models.v0.SyncMode.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -126,31 +127,45 @@ abstract class AbstractJdbcSource<Datatype>(
         syncMode: SyncMode,
         cursorField: Optional<String>
     ): AutoCloseableIterator<AirbyteMessage> {
-        if (
-            supportResumableFullRefresh(database, airbyteStream) &&
-                syncMode == SyncMode.FULL_REFRESH
-        ) {
+        if (supportResumableFullRefresh(database, airbyteStream) && syncMode == FULL_REFRESH) {
             val initialLoadHandler =
                 getInitialLoadHandler(database, airbyteStream, catalog, stateManager)
                     ?: throw IllegalStateException(
                         "Must provide initialLoadHandler for resumable full refresh."
                     )
-            return initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
+            return augmentWithStreamStatus(
+                airbyteStream,
+                initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
+            )
         }
 
         // If flag is off, fall back to legacy non-resumable refresh
-        return super.getFullRefreshStream(
-            database,
-            airbyteStream,
-            catalog,
-            stateManager,
-            namespace,
-            selectedDatabaseFields,
-            table,
-            emittedAt,
-            syncMode,
-            cursorField,
-        )
+        var iterator =
+            super.getFullRefreshStream(
+                database,
+                airbyteStream,
+                catalog,
+                stateManager,
+                namespace,
+                selectedDatabaseFields,
+                table,
+                emittedAt,
+                syncMode,
+                cursorField,
+            )
+
+        return when (airbyteStream.syncMode) {
+            FULL_REFRESH -> augmentWithStreamStatus(airbyteStream, iterator)
+            else -> iterator
+        }
+    }
+
+    open fun augmentWithStreamStatus(
+        airbyteStream: ConfiguredAirbyteStream,
+        streamItrator: AutoCloseableIterator<AirbyteMessage>
+    ): AutoCloseableIterator<AirbyteMessage> {
+        // no-op
+        return streamItrator
     }
 
     override fun queryTableFullRefresh(
@@ -192,9 +207,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
                                 // field
-                                if (
-                                    syncMode == SyncMode.INCREMENTAL && stateEmissionFrequency > 0
-                                ) {
+                                if (syncMode == INCREMENTAL && stateEmissionFrequency > 0) {
                                     val quotedCursorField: String =
                                         enquoteIdentifier(cursorField.get(), quoteString)
                                     sql.append(" ORDER BY $quotedCursorField ASC")
@@ -704,7 +717,7 @@ abstract class AbstractJdbcSource<Datatype>(
             HashSet(Sets.difference(allStreams, alreadySyncedStreams))
 
         return catalog.streams
-            .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
+            .filter { c: ConfiguredAirbyteStream -> c.syncMode == INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 newlyAddedStreams.contains(
                     AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
@@ -735,6 +748,29 @@ abstract class AbstractJdbcSource<Datatype>(
                     result[entry.streamName]!!.add(entry.primaryKey)
                 }
             return result
+        }
+    }
+
+    override fun createReadIterator(
+        database: JdbcDatabase,
+        airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        table: TableInfo<CommonField<Datatype>>,
+        stateManager: StateManager?,
+        emittedAt: Instant
+    ): AutoCloseableIterator<AirbyteMessage> {
+        val iterator =
+            super.createReadIterator(
+                database,
+                airbyteStream,
+                catalog,
+                table,
+                stateManager,
+                emittedAt
+            )
+        return when (airbyteStream.syncMode) {
+            INCREMENTAL -> augmentWithStreamStatus(airbyteStream, iterator)
+            else -> iterator
         }
     }
 }

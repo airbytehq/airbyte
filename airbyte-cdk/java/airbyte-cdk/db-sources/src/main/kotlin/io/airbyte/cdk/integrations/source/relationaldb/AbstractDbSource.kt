@@ -401,7 +401,7 @@ protected constructor(driverClassName: String) :
      * @param emittedAt Time when data was emitted from the Source database
      * @return
      */
-    private fun createReadIterator(
+    protected open fun createReadIterator(
         database: Database,
         airbyteStream: ConfiguredAirbyteStream,
         catalog: ConfiguredAirbyteCatalog?,
