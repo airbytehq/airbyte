@@ -179,6 +179,7 @@ class TestMigrateSecretsPathInConnector:
         with open(config_path, "r") as test_config:
             config = json.load(test_config)
             credentials = config.pop("credentials",{})
+            credentials.pop("auth_type", None)
             with open(config_path, "w") as updated_config:
                 config = json.dumps({**config, **credentials})
                 updated_config.write(config)

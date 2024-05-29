@@ -27,7 +27,7 @@ class ConfigBuilder:
             "account_ids": [ACCOUNT_ID],
             "credentials": {
                 "auth_type": "Service",
-                "ACCESS_TOKEN": ACCESS_TOKEN,
+                "access_token": ACCESS_TOKEN,
             },
             "start_date": START_DATE,
             "end_date": END_DATE,

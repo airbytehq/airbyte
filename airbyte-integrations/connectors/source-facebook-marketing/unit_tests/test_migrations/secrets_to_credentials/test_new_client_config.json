@@ -11,6 +11,7 @@
   ],
   "account_ids": ["01234567890"],
   "credentials": {
+    "auth_type": "Client",
     "client_id": "client_id",
     "client_secret": "client_secret"
   }

@@ -44,6 +44,14 @@ class OAuthCredentials(BaseModel):
         description="Client Secret for the Facebook Marketing API",
         airbyte_secret=True,
     )
+    access_token: Optional[str] = Field(
+        title="Access Token",
+        description="The value of the generated access token. "
+        'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+        'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+        'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.',
+        airbyte_secret=True,
+    )
 
 
 class ServiceAccountCredentials(BaseModel):

@@ -11,6 +11,7 @@
   ],
   "account_ids": ["01234567890"],
   "credentials": {
+    "auth_type": "Service",
     "access_token": "access_token"
   }
 }

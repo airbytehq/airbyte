@@ -129,10 +129,7 @@ class SourceFacebookMarketing(AbstractSource):
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        if config.credentials.auth_type == "Client":
-            api = API(access_token=config.credentials.access_token, page_size=config.page_size)
-        if config.credentials.auth_type == "Service":
-            api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+        api = API(access_token=config.credentials.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
@@ -254,6 +251,10 @@ class SourceFacebookMarketing(AbstractSource):
                             "access_token": {
                                 "type": "string",
                                 "path_in_connector_config": ["credentials", "access_token"],
+                            },
+                            "auth_type": {
+                                "type": "string",
+                                "path_in_connector_config": ["credentials", "auth_type"],
                             }
                         },
                     },
@@ -276,6 +277,10 @@ class SourceFacebookMarketing(AbstractSource):
                                 "type": "string",
                                 "path_in_connector_config": ["credentials", "client_secret"],
                             },
+                            "auth_type": {
+                                "type": "string",
+                                "path_in_connector_config": ["credentials", "auth_type"],
+                            }
                         },
                     },
                 ),
