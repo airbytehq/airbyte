@@ -85,7 +85,7 @@ With the advent of Refresh and Retain History Syncs, Airbyte has provided a way 
 
 ### Example: Understanding and Recovering from a Flaky Source
 
-Consider the following example. You are extracting data into your data warehouse and notice that data for April, 2023 is missing. You are using an append sync mode.
+Consider the following example. You are extracting data into your data warehouse and notice that data for April, 2024 is missing. You are using an append sync mode.
 
 | year_month (pk) | total_sales | \_airbyte_extracted_at | \_airbyte_generation_id | \_airbyte_meta                 | \_airbyte_raw_id |
 | --------------- | ----------- | ---------------------- | ----------------------- | ------------------------------ | ---------------- |
