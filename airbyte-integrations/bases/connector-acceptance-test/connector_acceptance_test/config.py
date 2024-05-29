@@ -203,27 +203,6 @@ class FutureStateConfig(BaseConfig):
     bypass_reason: Optional[str]
 
 
-class CheckpointingStrategies(str, Enum):
-    use_state_variation = "use_state_variation"
-    use_latest_state = "use_latest_state"
-
-
-class CheckpointingStrategyPerStreamConfiguration(BaseConfig):
-    name: str
-    strategy: CheckpointingStrategies = Field(
-        description="Depending on the stream configuration and the amount of data, we can select a strategy for testing state progression."
-    )
-
-
-class CheckpointingStrategyConfiguration(BaseConfig):
-    strategy: CheckpointingStrategies = Field(
-        default=CheckpointingStrategies.use_state_variation, description="Define what state to use during test checkpointing."
-    )
-    streams: List[CheckpointingStrategyPerStreamConfiguration] = Field(
-        default_factory=list, description="Define what state to use during test checkpointing per stream."
-    )
-
-
 class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
@@ -232,15 +211,6 @@ class IncrementalConfig(BaseConfig):
     deployment_mode: Optional[str] = deployment_mode
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
-    )
-    checkpointing_strategy: CheckpointingStrategyConfiguration = Field(
-        default_factory=CheckpointingStrategyConfiguration,
-        description=(
-            "Select a strategy for testing connector checkpointing. "
-            "There are two available options: we can decide whether to use only the last state message or more. "
-            "When selecting `use_state_variation`, it's important to note that in order to prevent spamming APIs, "
-            "we test only a subset of batches, excluding the first and last states to mitigate potential corner cases."
-        ),
     )
 
     class Config:

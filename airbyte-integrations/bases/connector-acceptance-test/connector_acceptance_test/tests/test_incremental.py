@@ -3,8 +3,6 @@
 #
 
 import json
-import logging
-import operator
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -19,10 +17,13 @@ from airbyte_protocol.models import (
     Type,
 )
 from connector_acceptance_test import BaseTest
-from connector_acceptance_test.config import CheckpointingStrategies, Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
 from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 from deepdiff import DeepDiff
+
+
+MIN_BATCHES_TO_TEST: int = 5
 
 
 @pytest.fixture(name="future_state_configuration")
@@ -180,9 +181,7 @@ class TestIncremental(BaseTest):
             pytest.skip("Skipping new incremental test based on acceptance-test-config.yml")
             return
 
-        checkpoint_testing_strategies = {stream.name: stream for stream in inputs.checkpointing_strategy.streams}
         for stream in configured_catalog_for_incremental.streams:
-            checkpoint_testing_strategy = checkpoint_testing_strategies.get(stream.stream.name, inputs.checkpointing_strategy).strategy
             configured_catalog_for_incremental_per_stream = ConfiguredAirbyteCatalog(streams=[stream])
 
             output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental_per_stream)
@@ -194,56 +193,17 @@ class TestIncremental(BaseTest):
                 continue
 
             states_1 = filter_output(output_1, type_=Type.STATE)
-            # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
-            unique_state_messages = self.get_unique_state_messages(states_1)
-            if checkpoint_testing_strategy == CheckpointingStrategies.use_latest_state:
-                unique_state_messages = unique_state_messages[-1:]
-
-            # Important!
-
-            # There is only a small subset of assertions we can make
-            # in the absense of enforcing that all connectors return 3 or more state messages
-            # during the first read.
 
             # To learn more: https://github.com/airbytehq/airbyte/issues/29926
-            if len(unique_state_messages) == 0:
+            if len(states_1) == 0:
                 continue
 
-            if checkpoint_testing_strategy == CheckpointingStrategies.use_state_variation:
-                if len(unique_state_messages) < 3:
-                    logging.warning(f"Skipping stream {stream.stream.name}. Not enough unique state messages to proceed")
-                    continue
-
-            # To avoid spamming APIs we only test a fraction of batches (4 or 5 states by default)
-            min_batches_to_test = 5
-            sample_rate = (len(unique_state_messages) // min_batches_to_test) or 1
-
+            states_with_expected_record_count = self._state_messages_selector(states_1)
             mutating_stream_name_to_per_stream_state = dict()
-            for idx, state_message_data in enumerate(unique_state_messages):
+
+            for idx, state_message_data in enumerate(states_with_expected_record_count):
                 state_message, expected_records_count = state_message_data
                 assert state_message.type == Type.STATE
-
-                is_first_state_message = idx == 0
-                is_last_state_message = idx == len(unique_state_messages) - 1
-
-                if checkpoint_testing_strategy == CheckpointingStrategies.use_state_variation:
-                    # if first state message, skip
-                    # this is because we cannot assert if the first state message will result in new records
-                    # as in this case it is possible for a connector to return an empty state message when it first starts.
-                    # e.g. if the connector decides it wants to let the caller know that it has started with an empty state.
-                    if is_first_state_message:
-                        continue
-
-                    # if batching required, and not a sample, skip
-                    if idx % sample_rate != 0:
-                        continue
-
-                    # if last state message, skip
-                    # this is because we cannot assert if the last state message will result in new records
-                    # as in this case it is possible for a connector to return a previous state message.
-                    # e.g. if the connector is using pagination and the last page is only partially full
-                    if is_last_state_message:
-                        continue
 
                 state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
                     state_message, mutating_stream_name_to_per_stream_state
@@ -257,8 +217,8 @@ class TestIncremental(BaseTest):
                 assert (
                     # We assume that the output may be empty when we read the latest state, or it must produce some data if we are in the middle of our progression
                     len(records_N) >= expected_records_count
-                    or is_last_state_message
-                ), f"Read {idx + 1} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 1}: {records_N}"
+                    or idx == len(states_with_expected_record_count) - 1
+                ), f"Read {idx + 1} of {len(states_with_expected_record_count)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 1}: {records_N}"
 
                 diff = naive_diff_records(records_1, records_N)
                 assert (
@@ -296,7 +256,17 @@ class TestIncremental(BaseTest):
         ]
         return state_input, stream_name_to_per_stream_state
 
-    def get_unique_state_messages(self, states: List[AirbyteStateMessage]) -> List[AirbyteStateMessage]:
+    @staticmethod
+    def _get_state(airbyte_message: AirbyteMessage) -> AirbyteStateMessage:
+        if not airbyte_message.state.stream:
+            return airbyte_message.state
+        return airbyte_message.state.stream.stream_state
+
+    @staticmethod
+    def _get_record_count(airbyte_message: AirbyteMessage) -> float:
+        return airbyte_message.state.sourceStats.recordCount
+
+    def _get_unique_state_messages(self, states: List[AirbyteMessage]) -> List[AirbyteMessage]:
         """
         Validates a list of state messages to ensure that consecutive messages with the same stream state are represented by only the first message, while subsequent duplicates are ignored.
         """
@@ -304,49 +274,42 @@ class TestIncremental(BaseTest):
         if len(states) <= 1:
             return states
 
-        stream_state_attr = "state.stream.stream_state"
-        record_count_attr = "state.sourceStats.recordCount"
-
-        # Define a function to get the stream state attribute from an AirbyteStateMessage object
-        get_state = operator.attrgetter(stream_state_attr)
-
-        # Define a function to get the record count attribute from an AirbyteStateMessage object
-        get_record_count = operator.attrgetter(record_count_attr)
-
         current_idx = 0
-        result = []
+        unique_state_messages = []
 
         # Iterate through the list of state messages
         while current_idx < len(states) - 1:
             next_idx = current_idx + 1
             # Check if consecutive messages have the same stream state
-            while get_state(states[current_idx]) == get_state(states[next_idx]) and next_idx < len(states) - 1:
+            while self._get_state(states[current_idx]) == self._get_state(states[next_idx]) and next_idx < len(states) - 1:
                 next_idx += 1
 
-            states[current_idx].state.sourceStats = AirbyteStateStats(recordCount=sum(map(get_record_count, states[current_idx:next_idx])))
+            states[current_idx].state.sourceStats = AirbyteStateStats(
+                recordCount=sum(map(self._get_record_count, states[current_idx:next_idx]))
+            )
             # Append the first message with a unique stream state to the result list
-            result.append(states[current_idx])
+            unique_state_messages.append(states[current_idx])
             # If the last message has a different stream state than the previous one, append it to the result list
-            if next_idx == len(states) - 1 and get_state(states[current_idx]) != get_state(states[next_idx]):
-                result.append(states[next_idx])
+            if next_idx == len(states) - 1 and self._get_state(states[current_idx]) != self._get_state(states[next_idx]):
+                unique_state_messages.append(states[next_idx])
             current_idx = next_idx
 
-        return list(self.get_expected_record_count_per_state(result))
+        return unique_state_messages
 
-    def get_expected_record_count_per_state(self, states: List[AirbyteStateMessage]) -> Iterator[Tuple[AirbyteStateMessage, float]]:
+    def _get_states_with_expected_record_count_per_state(self, states: List[AirbyteMessage]) -> List[Tuple[AirbyteMessage, float]]:
         """
         Calculates the expected record count per state based on the total record count and distribution across states.
         The expected record count is the number of records we expect to receive when applying a specific state checkpoint.
 
         This function takes a list of state objects, calculates the total record count, and then
-        yields the expected record count for each state in reverse cumulative order. The expected
+        returns the expected record count for each state in reverse cumulative order. The expected
         record count for each state is the total record count minus the sum of record counts of all
         previous states in the list.
 
         Args:
             states (list): A non-empty list of state objects.
 
-        Yields:
+        Returns:
             tuple: A tuple containing a state object and its expected record count.
 
         Raises:
@@ -356,21 +319,23 @@ class TestIncremental(BaseTest):
             # Raise an exception if the 'states' list is empty
             raise Exception("`states` expected to be a non empty list.")
 
-        # Function to extract the record count from a state object
-        get_record_count = operator.attrgetter("state.sourceStats.recordCount")
-
         # Calculate the total record count from all states
-        total_count = sum(map(get_record_count, states))
+        total_record_count = sum(map(self._get_record_count, states))
 
         # Create an iterator of states and their reverse cumulative expected record counts
-        expected_record_count_per_state = zip(
-            states, [total_count - sum(map(get_record_count, states[: idx + 1])) for idx in range(len(states))]
+        states_with_expected_record_count = zip(
+            states, [total_record_count - sum(map(self._get_record_count, states[: idx + 1])) for idx in range(len(states))]
         )
 
-        # Yield expected record counts using the helper function
-        yield from self._get_expected_record_count_per_state(expected_record_count_per_state, total_count)
+        # Return expected record counts using the helper function
+        return list(self._get_states_with_expected_record_count_per_state_helper(states_with_expected_record_count, total_record_count))
 
-    def _get_expected_record_count_per_state(self, expected_record_count_per_state, total_count, current_record_count_and_state=None):
+    def _get_states_with_expected_record_count_per_state_helper(
+        self,
+        states_with_expected_record_count: Iterator[Tuple[AirbyteMessage, float]],
+        total_count: float,
+        current_state_with_expected_record_count: Optional[Tuple[AirbyteMessage, float]] = None,
+    ) -> Iterator[Tuple[AirbyteMessage, float]]:
         """
         Helper generator function to yield the expected record count per state.
 
@@ -391,17 +356,17 @@ class TestIncremental(BaseTest):
         Yields:
             tuple: A tuple containing a state object and its expected record count.
         """
-        if current_record_count_and_state is None:
+        if current_state_with_expected_record_count is None:
             # Initialize the current record count and state if not provided
-            current_record_count_and_state = next(expected_record_count_per_state)
+            current_state_with_expected_record_count = next(states_with_expected_record_count)
 
-        state, record_count = current_record_count_and_state
+        state, record_count = current_state_with_expected_record_count
 
         while record_count == total_count:
             # Loop until the record count is different from the total count
             try:
                 # Get the next state and its record count
-                next_state, next_record_count = next(expected_record_count_per_state)
+                next_state, next_record_count = next(states_with_expected_record_count)
             except StopIteration:
                 # If there are no more states, yield the current state and record count and return
                 yield state, record_count
@@ -414,4 +379,51 @@ class TestIncremental(BaseTest):
                 state, record_count = next_state, next_record_count
 
         # Recursively call the function to yield the next expected record counts
-        yield from self._get_expected_record_count_per_state(expected_record_count_per_state, record_count, (state, record_count))
+        yield from self._get_states_with_expected_record_count_per_state_helper(
+            states_with_expected_record_count, record_count, (state, record_count)
+        )
+
+    def _states_with_expected_record_count_batch_selector(
+        self, unique_state_messages_with_record_count: List[Tuple[AirbyteMessage, float]]
+    ) -> List[Tuple[AirbyteMessage, float]]:
+        # Important!
+
+        # There is only a small subset of assertions we can make
+        # in the absense of enforcing that all connectors return 3 or more state messages
+        # during the first read.
+        if len(unique_state_messages_with_record_count) < 3:
+            return unique_state_messages_with_record_count[-1:]
+
+        # To avoid spamming APIs we only test a fraction of batches (4 or 5 states by default)
+        sample_rate = (len(unique_state_messages_with_record_count) // MIN_BATCHES_TO_TEST) or 1
+
+        states_with_expected_record_count_batch = []
+
+        for idx, state_message_data in enumerate(unique_state_messages_with_record_count):
+            # if first state message, skip
+            # this is because we cannot assert if the first state message will result in new records
+            # as in this case it is possible for a connector to return an empty state message when it first starts.
+            # e.g. if the connector decides it wants to let the caller know that it has started with an empty state.
+            if idx == 0:
+                continue
+
+            # if batching required, and not a sample, skip
+            if idx % sample_rate != 0:
+                continue
+
+            # if last state message, skip
+            # this is because we cannot assert if the last state message will result in new records
+            # as in this case it is possible for a connector to return a previous state message.
+            # e.g. if the connector is using pagination and the last page is only partially full
+            if idx == len(unique_state_messages_with_record_count) - 1:
+                continue
+
+            states_with_expected_record_count_batch.append(state_message_data)
+
+        return states_with_expected_record_count_batch
+
+    def _state_messages_selector(self, state_messages: List[AirbyteMessage]) -> List[Tuple[AirbyteMessage, float]]:
+        unique_state_messages = self._get_unique_state_messages(state_messages)
+        unique_state_messages_with_record_count = self._get_states_with_expected_record_count_per_state(unique_state_messages)
+
+        return self._states_with_expected_record_count_batch_selector(unique_state_messages_with_record_count)
