@@ -60,5 +60,5 @@ def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, mi
         parameters={"wait_until": "wait_until", "regex": REGEX, "min_wait": SOME_BACKOFF_TIME},
         config={"wait_until": "wait_until", "regex": REGEX, "min_wait": SOME_BACKOFF_TIME},
     )
-    backoff = backoff_stratery.backoff(response_mock, 1)
+    backoff = backoff_stratery.backoff_time(response_mock, 1)
     assert backoff == expected_backoff_time

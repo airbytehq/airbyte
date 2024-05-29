@@ -31,5 +31,5 @@ def test_wait_time_from_header(test_name, header, header_value, regex, expected_
     backoff_stratery = WaitTimeFromHeaderBackoffStrategy(
         header=header, regex=regex, parameters={"wait_time": "wait_time"}, config={"wait_time": "wait_time"}
     )
-    backoff = backoff_stratery.backoff(response_mock, 1)
+    backoff = backoff_stratery.backoff_time(response_mock, 1)
     assert backoff == expected_backoff_time
