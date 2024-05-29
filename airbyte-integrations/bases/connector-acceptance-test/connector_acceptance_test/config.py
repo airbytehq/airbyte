@@ -83,6 +83,7 @@ class DiscoveryTestConfig(BaseConfig):
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
+    skip_primary_keys_data_type_validation: Optional[bool] = Field(False, description="Skip primary keys data type validation")
 
 
 class ExpectedRecordsConfig(BaseModel):

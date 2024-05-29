@@ -832,7 +832,10 @@ class TestDiscovery(BaseTest):
                             f"Found unsupported type/format combination {type_format_combination} in {stream_name} stream on property {parent_path}"
                         )
 
-    def test_primary_keys_data_type(self, discovered_catalog: Mapping[str, Any]):
+    def test_primary_keys_data_type(self, inputs: DiscoveryTestConfig, discovered_catalog: Mapping[str, Any]):
+        if inputs.skip_primary_keys_data_type_validation:
+            pytest.skip("Primary keys data type validation is disabled in config.")
+
         forbidden_primary_key_data_types: Set[str] = {"object", "array"}
         errors: List[str] = []
 
@@ -840,7 +843,6 @@ class TestDiscovery(BaseTest):
             if not stream.source_defined_primary_key:
                 continue
 
-            non_nullable_primary_key_found = False
             for primary_key_part in stream.source_defined_primary_key:
                 primary_key_path = "/properties/".join(primary_key_part)
                 try:
@@ -851,14 +853,8 @@ class TestDiscovery(BaseTest):
 
                 data_type = set(primary_key_definition.get("type", []))
 
-                if "null" not in data_type:
-                    non_nullable_primary_key_found = True
-
                 if data_type.intersection(forbidden_primary_key_data_types):
                     errors.append(f"Stream {stream_name} contains primary key with forbidden type of {data_type}")
-
-            if not non_nullable_primary_key_found:
-                errors.append(f"Stream {stream_name} contains nullable primary key")
 
         assert not errors, "\n".join(errors)
 

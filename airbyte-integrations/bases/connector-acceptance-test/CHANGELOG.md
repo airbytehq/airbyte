@@ -2,7 +2,7 @@
 
 ## 3.8.0
 
-Add `test_primary_keys_data_type` to `TestDiscovery`, which validates that primary keys are not of type `array` or `object` and are not nullable.
+Add `TestDiscovery.test_primary_keys_data_type`, which validates that primary keys are not of type `array` or `object`.
 
 ## 3.7.0
 

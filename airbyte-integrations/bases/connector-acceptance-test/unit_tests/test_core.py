@@ -31,6 +31,7 @@ from airbyte_protocol.models import (
 from connector_acceptance_test.config import (
     BasicReadTestConfig,
     Config,
+    DiscoveryTestConfig,
     ExpectedRecordsConfig,
     FileTypesConfig,
     IgnoredFieldsConfiguration,
@@ -729,69 +730,6 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                 "stream_1": AirbyteStream.parse_obj(
                     {
                         "name": "stream_1",
-                        "json_schema": {"properties": {"id": {"type": ["null", "string"]}}},
-                        "supported_sync_modes": ["full_refresh"],
-                        "source_defined_primary_key": [["id"]],
-                    },
-                ),
-            },
-            pytest.raises(AssertionError, match="Stream stream_1 contains nullable primary key"),
-        ),
-        (
-            {
-                "stream_1": AirbyteStream.parse_obj(
-                    {
-                        "name": "stream_1",
-                        "json_schema": {
-                            "properties": {
-                                "data": {"type": ["object"], "properties": {"id": {"type": ["null", "string"]}}},
-                            },
-                        },
-                        "supported_sync_modes": ["full_refresh"],
-                        "source_defined_primary_key": [["data", "id"]],
-                    },
-                ),
-            },
-            pytest.raises(AssertionError, match="Stream stream_1 contains nullable primary key"),
-        ),
-        (
-            {
-                "stream_1": AirbyteStream.parse_obj(
-                    {
-                        "name": "stream_1",
-                        "json_schema": {
-                            "properties": {
-                                "id": {"type": ["null", "string"]},
-                                "timestamp": {"type": ["null", "integer"]},
-                            },
-                        },
-                        "supported_sync_modes": ["full_refresh"],
-                        "source_defined_primary_key": [["timestamp"], ["id"]],
-                    },
-                ),
-            },
-            pytest.raises(AssertionError, match="Stream stream_1 contains nullable primary key"),
-        ),
-        (
-            {
-                "stream_1": AirbyteStream.parse_obj(
-                    {
-                        "name": "stream_1",
-                        "json_schema": {
-                            "properties": {"id": {"type": ["string"]}, "timestamp": {"type": ["null", "integer"]}}
-                        },
-                        "supported_sync_modes": ["full_refresh"],
-                        "source_defined_primary_key": [["timestamp"], ["id"]],
-                    },
-                ),
-            },
-            does_not_raise(),
-        ),
-        (
-            {
-                "stream_1": AirbyteStream.parse_obj(
-                    {
-                        "name": "stream_1",
                         "json_schema": {"properties": {"id": {"type": ["object", "null"]}}},
                         "supported_sync_modes": ["full_refresh"],
                         "source_defined_primary_key": [["timestamp"], ["id"]],
@@ -800,7 +738,7 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                 "stream_2": AirbyteStream.parse_obj(
                     {
                         "name": "stream_2",
-                        "json_schema": {"properties": {"id": {"type": ["null", "string"]}}},
+                        "json_schema": {"properties": {"id": {"type": ["array"]}}},
                         "supported_sync_modes": ["full_refresh"],
                         "source_defined_primary_key": [["id"]],
                     },
@@ -811,8 +749,7 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                 match=(
                     "Stream stream_1 does not have defined primary key in schema\n  "
                     "Stream stream_1 contains primary key with forbidden type of .*\n  "
-                    "Stream stream_1 contains nullable primary key\n  "
-                    "Stream stream_2 contains nullable primary key"
+                    "Stream stream_2 contains primary key with forbidden type of {'array'}"
                 ),
             ),
         ),
@@ -829,17 +766,14 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
         "when_data_type_is_array_then_fail",
         "when_nested_key_data_type_is_array_then_fail",
         "when_composite_key_data_type_is_array_then_fail",
-        "when_data_type_is_nullable_then_fail",
-        "when_nested_key_data_type_is_nullable_then_fail",
-        "when_composite_key_data_type_all_keys_nullable_then_fail",
-        "when_composite_key_data_type_one_key_nullable_then_pass",
         "when_multiple_errors_found_then_fail_all_errors_reported"
     ],
 )
 def test_primary_keys_data_type(discovered_catalog, expectation):
     t = test_core.TestDiscovery()
+    inputs = DiscoveryTestConfig()
     with expectation:
-        t.test_primary_keys_data_type(discovered_catalog)
+        t.test_primary_keys_data_type(inputs, discovered_catalog)
 
 
 @pytest.mark.parametrize(

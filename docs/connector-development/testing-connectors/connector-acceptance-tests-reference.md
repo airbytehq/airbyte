@@ -170,13 +170,14 @@ Verifies when a `discover` operation is run on the connector using the given con
 Additional tests are validating the backward compatibility of the discovered catalog compared to the catalog of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped.
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 
-| Input                                                            | Type   | Default                                     | Note                                                                                                                  |
-| :--------------------------------------------------------------- | :----- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- |
-| `config_path`                                                    | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                    |
-| `configured_catalog_path`                                        | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                            |
-| `timeout_seconds`                                                | int    | 30                                          | Test execution timeout in seconds                                                                                     |
-| `backward_compatibility_tests_config.previous_connector_version` | string | `latest`                                    | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
-| `backward_compatibility_tests_config.disable_for_version`        | string | None                                        | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
+| Input                                                            | Type    | Default                                     | Note                                                                                                                  |
+|:-----------------------------------------------------------------|:--------|:--------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
+| `config_path`                                                    | string  | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                    |
+| `configured_catalog_path`                                        | string  | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                            |
+| `timeout_seconds`                                                | int     | 30                                          | Test execution timeout in seconds                                                                                     |
+| `backward_compatibility_tests_config.previous_connector_version` | string  | `latest`                                    | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
+| `backward_compatibility_tests_config.disable_for_version`        | string  | None                                        | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
+| `skip_primary_keys_data_type_validation`                         | boolean | False                                       | Disable primary keys data type validation                                                                             |
 
 ## Test Basic Read
 
