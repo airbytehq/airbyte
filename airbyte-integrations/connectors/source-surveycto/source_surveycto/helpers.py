@@ -59,7 +59,7 @@ class Helpers(object):
     @staticmethod
     def get_json_schema(schema):
         json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": schema,
         }
