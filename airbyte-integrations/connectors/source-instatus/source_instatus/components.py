@@ -85,7 +85,9 @@ class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
                 parent_field = parent_stream_config.parent_key.eval(self.config)
                 partition_field = parent_stream_config.partition_field.eval(self.config)
 
-                for parent_stream_slice in parent_stream.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None):
+                for parent_stream_slice in parent_stream.stream_slices(
+                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
+                ):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
 
@@ -104,7 +106,8 @@ class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
 
                         for stream_state_value in stream_state_values:
                             yield StreamSlice(
-                                partition={partition_field: stream_state_value, "parent_slice": parent_slice}, cursor_slice={"updates_object_id": updates_object_id}
+                                partition={partition_field: stream_state_value, "parent_slice": parent_slice},
+                                cursor_slice={"updates_object_id": updates_object_id},
                             )
 
                     # If the parent slice contains no records,
