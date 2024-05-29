@@ -13,8 +13,6 @@ from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.destinations.vector_db_based.embedder import (
     Embedder,
-    FakeEmbedder,
-    FakeEmbeddingConfigModel,
 )
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -50,7 +48,7 @@ class DestinationSnowflakeCortex(Destination):
                 password=SecretString(config.indexing.credentials.password),
             ),
             splitter_config=config.processing,
-            embedder_config=config.embedding,
+            embedder_config=config.embedding,  # type: ignore [arg-type]  # No common base class
             catalog_provider=CatalogProvider(configured_catalog),
             temp_dir=Path(tempfile.mkdtemp()),
             temp_file_cleanup=True,

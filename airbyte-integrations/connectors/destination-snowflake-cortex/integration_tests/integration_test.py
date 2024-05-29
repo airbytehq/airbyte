@@ -7,10 +7,8 @@ import json
 import logging
 from typing import Any
 
-from airbyte_cdk.destinations.vector_db_based.embedder import FakeEmbedder, FakeEmbeddingConfigModel
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
-from airbyte_protocol.models.airbyte_protocol import AirbyteMessage
 from snowflake import connector
 
 from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
@@ -264,6 +262,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         assert first_written_record.pop("EMBEDDING")
         assert first_written_record.pop("CHUNK_ID")
         metadata = first_written_record.pop("METADATA")
+        _ = metadata
 
         # TODO: Fix the data type issue here (currently stringified):
         # assert isinstance(metadata, dict), f"METADATA should be a dict: {metadata}"
@@ -273,7 +272,6 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             "DOCUMENT_ID": "Stream_mystream_Key_0",
             "DOCUMENT_CONTENT": '"str_col: Dogs are number 0"',
         }
-
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected

@@ -26,7 +26,7 @@ from pydantic import Field
 from snowflake import connector
 from snowflake.sqlalchemy import URL, VARIANT
 from sqlalchemy.engine import Connection
-from sqlalchemy.sql.type_api import TypeEngine
+from typing_extensions import Protocol
 
 from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
 from destination_snowflake_cortex.common.sql.sql_processor import SqlConfig, SqlProcessorBase
@@ -121,6 +121,15 @@ class SnowflakeTypeConverter(SQLTypeConverter):
         return VARIANT()
 
 
+class EmbeddingConfig(Protocol):
+    """A protocol for embedding configuration.
+
+    This is necessary because embedding configs do not have a shared base class.
+    """
+
+    mode: str
+
+
 class SnowflakeCortexSqlProcessor(SqlProcessorBase):
     """A Snowflake implementation for use with Cortex functions."""
 
@@ -140,7 +149,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         self,
         sql_config: SnowflakeCortexConfig,
         splitter_config: DocumentSplitterConfig,
-        embedder_config: embedder.EmbeddingConfig,
+        embedder_config: EmbeddingConfig,
         catalog_provider: CatalogProvider,
         temp_dir: Path,
         temp_file_cleanup: bool = True,
@@ -389,7 +398,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
     @property
     def embedder(self) -> embedder.Embedder:
         return embedder.create_from_config(
-            embedding_config=self.embedder_config,
+            embedding_config=self.embedder_config,  # type: ignore [arg-type]  # No common base class
             processing_config=self.splitter_config,
         )
 

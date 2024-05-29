@@ -11,7 +11,7 @@ import io
 import queue
 import sys
 from collections import defaultdict
-from typing import TYPE_CHECKING, Generator, cast, final
+from typing import TYPE_CHECKING, cast, final
 
 from airbyte import exceptions as exc
 from airbyte.strategies import WriteStrategy
@@ -186,24 +186,30 @@ class RecordProcessorBase(abc.ABC):
         - In the future, we should optimize this to emit STATE messages as soon as their records
           are committed, rather than waiting until the end of the input stream.
         """
-        # Save the original state writer
-        state_writer_orig: StateWriterBase = self.state_writer
         # Create a queue to store output messages
         output_queue: queue.Queue[AirbyteMessage] = queue.Queue()
 
         class WrappedStateWriter(StateWriterBase):
-            def write_state(self, state_message: AirbyteStateMessage) -> None:
-                """First add state message to output queue, then call the original state writer."""
-                output_queue.put(state_message)
-                return super().write_state(state_message)
+            def __init__(self, wrapped: StateWriterBase | None) -> None:
+                self.wrapped = wrapped
+                super().__init__()
 
-        self._state_writer = WrappedStateWriter()
+            def write_state(self, state_message: AirbyteStateMessage) -> None:
+                """First add state message to output queue, then call the wrapped state writer."""
+                output_queue.put(state_message)
+                if self.wrapped:
+                    return self.wrapped.write_state(state_message)
+
+        self._state_writer = WrappedStateWriter(self._state_writer)
         self.process_airbyte_messages(
             messages=messages,
             write_strategy=write_strategy,
         )
+
         # Restore the original state writer
-        self._state_writer = state_writer_orig
+        self._state_writer = self._state_writer.wrapped
+
+        # Yield all messages from the output queue
         yield from output_queue.queue
 
     @final
