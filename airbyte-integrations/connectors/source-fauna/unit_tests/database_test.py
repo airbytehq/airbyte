@@ -121,7 +121,7 @@ def stop_container(container):
 
 def setup_container():
     """Starts and stops a local fauna container"""
-    client = docker.from_env()
+    client = docker.from_env(version="1.35")
     # Bind to port 9000, so that we can run these tests without stopping a local container
     container = client.containers.run(
         "fauna/faunadb",
