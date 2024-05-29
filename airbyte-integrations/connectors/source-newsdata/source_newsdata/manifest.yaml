@@ -1,214 +1,440 @@
-version: "0.29.0"
+version: 0.79.1
 
-definitions:
-  selector:
-    extractor:
-      field_path: ["results"]
-  base_requester:
-    url_base: "https://newsdata.io/api/1"
-    http_method: "GET"
-    authenticator:
-      type: ApiKeyAuthenticator
-      header: "X-ACCESS-KEY"
-      api_token: "{{ config['api_key'] }}"
-  base_retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-  base_stream:
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-  cursor_paginator:
-    type: "DefaultPaginator"
-    pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ response['nextPage'] }}"
-      page_size: 10
-      # TODO: make page_size dynamic, depending on free or paid tier. See https://github.com/airbytehq/airbyte/issues/18783
-    page_token_option:
-      type: RequestOption
-      field_name: "page"
-      inject_into: "request_parameter"
-    page_size_option: # This is useless, only there because it is required, but page sizes are managed automatically by API subscription type
-      field_name: "X-Pagination-Page-Size"
-      inject_into: "header"
-  latest_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "latest"
-      primary_key: "link"
-      path: "/news"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        request_parameters:
-          country: "{{ ','.join(config['country']) }}"
-          language: "{{ ','.join(config['language']) }}"
-          category: "{{ ','.join(config['category']) }}"
-          q: "{{ config['query'] | urlencode }}"
-          qInTitle: "{{ config['query_in_title'] | urlencode }}"
-          domain: "{{ ','.join(config['domain']) }}"
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        properties:
-          title:
-            description: The title or headline of the news article
-            type:
-              - "null"
-              - string
-          link:
-            description: URL link to the full news article
-            type:
-              - "null"
-              - string
-          source_id:
-            description: Unique identifier of the news source
-            type:
-              - "null"
-              - string
-          keywords:
-            description: Keywords or tags associated with the news article
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-          creator:
-            description: The creator or author of the news article
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-          image_url:
-            description: URL of the image associated with the news article
-            type:
-              - "null"
-              - string
-          video_url:
-            description: URL of any video associated with the news article
-            type:
-              - "null"
-              - string
-          description:
-            description: A brief summary or description of the news article
-            type:
-              - "null"
-              - string
-          pubDate:
-            description: The publication date of the news article
-            type:
-              - "null"
-              - string
-          content:
-            description: The main content or text of the news article
-            type:
-              - "null"
-              - string
-          country:
-            description: The country where the news article originated
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-          category:
-            description: The category or topic of the news article
-            type:
-              - "null"
-              - array
-            items:
-              type: string
-          language:
-            description: The language in which the news article is written
-            type:
-              - "null"
-              - string
-  sources_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "sources"
-      primary_key: "id"
-      path: "/sources"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        request_parameters:
-          country: "{{ config['country'][0] }}"
-          language: "{{ config['language'][0] }}"
-          category: "{{ config['category'][0] }}"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        properties:
-          id:
-            description: The unique identifier of the news source.
-            type:
-              - "null"
-              - string
-          name:
-            description: The name of the news source.
-            type:
-              - "null"
-              - string
-          url:
-            description: The URL of the news source.
-            type:
-              - "null"
-              - string
-          category:
-            description:
-              The category of the news source, e.g., business, entertainment,
-              general, health, science, sports, technology, etc.
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-          language:
-            description:
-              The language in which the news source publishes its content,
-              e.g., en, fr, de, es, etc.
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-          country:
-            description: The country in which the news source is based or covers primarily.
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-streams:
-  - "#/definitions/latest_stream"
-  - "#/definitions/sources_stream"
+type: DeclarativeSource
 
 check:
+  type: CheckStream
   stream_names:
-    - "latest"
-    - "sources"
+    - latest
+    - sources
+
+definitions:
+  streams:
+    latest:
+      type: DeclarativeStream
+      name: latest
+      primary_key:
+        - link
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /news
+          http_method: GET
+          request_parameters:
+            country: "{{ ','.join(config['country']) }}"
+            language: "{{ ','.join(config['language']) }}"
+            category: "{{ ','.join(config['category']) }}"
+            q: "{{ config['query'] | urlencode }}"
+            qInTitle: "{{ config['query_in_title'] | urlencode }}"
+            domain: "{{ ','.join(config['domain']) }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: X-Pagination-Page-Size
+            inject_into: header
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ response['nextPage'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/latest"
+    sources:
+      type: DeclarativeStream
+      name: sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sources
+          http_method: GET
+          request_parameters:
+            country: "{{ config['country'][0] }}"
+            language: "{{ config['language'][0] }}"
+            category: "{{ config['category'][0] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sources"
+  base_requester:
+    type: HttpRequester
+    url_base: https://newsdata.io/api/1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-ACCESS-KEY
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/latest"
+  - $ref: "#/definitions/streams/sources"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        description: API Key
+        order: 0
+      domain:
+        type: array
+        description: >-
+          Domains (maximum 5) to restrict the search to. Use the sources stream
+          to find top sources id.
+        maxitems: 5
+        items:
+          type: string
+        order: 1
+      country:
+        type: array
+        description: 2-letter ISO 3166-1 countries (maximum 5) to restrict the search to.
+        maxitems: 5
+        order: 2
+        items:
+          type: string
+          enum:
+            - ar
+            - au
+            - at
+            - bd
+            - by
+            - be
+            - br
+            - bg
+            - ca
+            - cl
+            - cn
+            - co
+            - cr
+            - cu
+            - cz
+            - dk
+            - do
+            - ec
+            - eg
+            - ee
+            - et
+            - fi
+            - fr
+            - de
+            - gr
+            - hk
+            - hu
+            - in
+            - id
+            - iq
+            - ie
+            - il
+            - it
+            - jp
+            - kz
+            - kw
+            - lv
+            - lb
+            - lt
+            - my
+            - mx
+            - ma
+            - mm
+            - nl
+            - nz
+            - ng
+            - kp
+            - "no"
+            - pk
+            - pe
+            - ph
+            - pl
+            - pt
+            - pr
+            - ro
+            - ru
+            - sa
+            - rs
+            - sg
+            - sk
+            - si
+            - za
+            - kr
+            - es
+            - se
+            - ch
+            - tw
+            - tz
+            - th
+            - tr
+            - ua
+            - ae
+            - gb
+            - us
+            - ve
+            - vi
+      category:
+        type: array
+        description: Categories (maximum 5) to restrict the search to.
+        maxitems: 5
+        order: 3
+        items:
+          type: string
+          enum:
+            - business
+            - entertainment
+            - environment
+            - food
+            - health
+            - politics
+            - science
+            - sports
+            - technology
+            - top
+            - world
+      language:
+        type: array
+        description: Languages (maximum 5) to restrict the search to.
+        maxitems: 5
+        order: 4
+        items:
+          type: string
+          enum:
+            - be
+            - am
+            - ar
+            - bn
+            - bs
+            - bg
+            - my
+            - ckb
+            - zh
+            - hr
+            - cs
+            - da
+            - nl
+            - en
+            - et
+            - fi
+            - fr
+            - de
+            - el
+            - he
+            - hi
+            - hu
+            - in
+            - it
+            - jp
+            - ko
+            - lv
+            - lt
+            - ms
+            - "no"
+            - pl
+            - pt
+            - ro
+            - ru
+            - sr
+            - sk
+            - sl
+            - es
+            - sw
+            - sv
+            - th
+            - tr
+            - uk
+            - ur
+            - vi
+      OneOf:
+        query:
+          type: string
+          description: >-
+            Keywords or phrases to search for in the news title and content.
+            Advanced Search options:
+              - Search `Social`: query = "social"
+              - Search `Social Pizza`: query = "social pizza"
+              - Search `Social` but not with `pizza`: query = "social -pizza"
+              - Search `Social` but not with `pizza` and `wildfire`: query = "social -pizza -wildfire"
+              - Search `Social` and `pizza`: query = "social AND pizza"
+              - Search `Social` and `pizza` and `pasta`: query = "social AND pizza AND pasta"
+              - Search `Social` or `pizza`: query = "social OR pizza"
+              - Search `Social` or `pizza` but not `pasta`: query = "social OR pizza -pasta"
+              - Search `Social` or `pizza` or `pasta`: query = "social OR pizza OR pasta"
+            Note: You can't use AND and OR in the same query.
+          order: 1
+        query_in_title:
+          type: string
+          description: >-
+            Same as `query`, but restricting the search to only the news title.
+            It cannot be used along with `query`.
+          order: 1
+        order: 5
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    latest: false
+    sources: false
+
+schemas:
+  latest:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      category:
+        type:
+          - "null"
+          - array
+        description: The category or topic of the news article
+        items:
+          type: string
+      content:
+        type:
+          - "null"
+          - string
+        description: The main content or text of the news article
+      country:
+        type:
+          - "null"
+          - array
+        description: The country where the news article originated
+        items:
+          type:
+            - "null"
+            - string
+      creator:
+        type:
+          - "null"
+          - array
+        description: The creator or author of the news article
+        items:
+          type:
+            - "null"
+            - string
+      description:
+        type:
+          - "null"
+          - string
+        description: A brief summary or description of the news article
+      image_url:
+        type:
+          - "null"
+          - string
+        description: URL of the image associated with the news article
+      keywords:
+        type:
+          - "null"
+          - array
+        description: Keywords or tags associated with the news article
+        items:
+          type:
+            - "null"
+            - string
+      language:
+        type:
+          - "null"
+          - string
+        description: The language in which the news article is written
+      link:
+        type:
+          - "null"
+          - string
+        description: URL link to the full news article
+      pubDate:
+        type:
+          - "null"
+          - string
+        description: The publication date of the news article
+      source_id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier of the news source
+      title:
+        type:
+          - "null"
+          - string
+        description: The title or headline of the news article
+      video_url:
+        type:
+          - "null"
+          - string
+        description: URL of any video associated with the news article
+    additionalProperties: true
+  sources:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      category:
+        type:
+          - "null"
+          - array
+        description: >-
+          The category of the news source, e.g., business, entertainment,
+          general, health, science, sports, technology, etc.
+        items:
+          type:
+            - "null"
+            - string
+      country:
+        type:
+          - "null"
+          - array
+        description: The country in which the news source is based or covers primarily.
+        items:
+          type:
+            - "null"
+            - string
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the news source.
+      language:
+        type:
+          - "null"
+          - array
+        description: >-
+          The language in which the news source publishes its content, e.g., en,
+          fr, de, es, etc.
+        items:
+          type:
+            - "null"
+            - string
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the news source.
+      url:
+        type:
+          - "null"
+          - string
+        description: The URL of the news source.
+    additionalProperties: true
