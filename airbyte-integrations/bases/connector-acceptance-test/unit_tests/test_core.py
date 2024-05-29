@@ -6,7 +6,6 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
-from _pytest.outcomes import Failed
 from airbyte_protocol.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
@@ -553,6 +552,294 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
     t = test_core.TestDiscovery()
     with expectation:
         t.test_catalog_has_supported_data_types(discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": None,
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "data": {"type": ["object"], "properties": {"id": {"type": ["string"]}}},
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["data", "id"]],
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["string"]}, "timestamp": {"type": ["integer"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"]],
+                    },
+                ),
+            },
+            pytest.raises(AssertionError, match="Stream stream_1 does not have defined primary key in schema"),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["object"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "data": {"type": ["object"], "properties": {"id": {"type": ["object"]}}},
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["data", "id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["object"]}, "timestamp": {"type": ["integer"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["array"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "data": {"type": ["object"], "properties": {"id": {"type": ["array"]}}},
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["data", "id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["array"]}, "timestamp": {"type": ["integer"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["null", "string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            pytest.raises(AssertionError, match="Stream stream_1 contains nullable primary key"),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "data": {"type": ["object"], "properties": {"id": {"type": ["null", "string"]}}},
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["data", "id"]],
+                    },
+                ),
+            },
+            pytest.raises(AssertionError, match="Stream stream_1 contains nullable primary key"),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "id": {"type": ["null", "string"]},
+                                "timestamp": {"type": ["null", "integer"]},
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+            },
+            pytest.raises(AssertionError, match="Stream stream_1 contains nullable primary key"),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {"id": {"type": ["string"]}, "timestamp": {"type": ["null", "integer"]}}
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["object", "null"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+                "stream_2": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_2",
+                        "json_schema": {"properties": {"id": {"type": ["null", "string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError,
+                match=(
+                    "Stream stream_1 does not have defined primary key in schema\n  "
+                    "Stream stream_1 contains primary key with forbidden type of .*\n  "
+                    "Stream stream_1 contains nullable primary key\n  "
+                    "Stream stream_2 contains nullable primary key"
+                ),
+            ),
+        ),
+    ],
+    ids=[
+        "when_no_source_defined_primary_key_then_pass",
+        "when_correct_data_type_then_pass",
+        "when_nested_key_correct_data_type_then_pass",
+        "when_composite_key_correct_data_type_then_pass",
+        "when_no_key_found_in_schema_then_fail",
+        "when_data_type_is_object_then_fail",
+        "when_nested_key_data_type_is_object_then_fail",
+        "when_composite_key_data_type_is_object_then_fail",
+        "when_data_type_is_array_then_fail",
+        "when_nested_key_data_type_is_array_then_fail",
+        "when_composite_key_data_type_is_array_then_fail",
+        "when_data_type_is_nullable_then_fail",
+        "when_nested_key_data_type_is_nullable_then_fail",
+        "when_composite_key_data_type_all_keys_nullable_then_fail",
+        "when_composite_key_data_type_one_key_nullable_then_pass",
+        "when_multiple_errors_found_then_fail_all_errors_reported"
+    ],
+)
+def test_primary_keys_data_type(discovered_catalog, expectation):
+    t = test_core.TestDiscovery()
+    with expectation:
+        t.test_primary_keys_data_type(discovered_catalog)
 
 
 @pytest.mark.parametrize(

@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import functools
 import json
 import logging
 import re
@@ -39,7 +38,6 @@ from airbyte_protocol.models import (
 )
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
-    AllowedHostsConfiguration,
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
@@ -834,6 +832,36 @@ class TestDiscovery(BaseTest):
                             f"Found unsupported type/format combination {type_format_combination} in {stream_name} stream on property {parent_path}"
                         )
 
+    def test_primary_keys_data_type(self, discovered_catalog: Mapping[str, Any]):
+        forbidden_primary_key_data_types: Set[str] = {"object", "array"}
+        errors: List[str] = []
+
+        for stream_name, stream in discovered_catalog.items():
+            if not stream.source_defined_primary_key:
+                continue
+
+            non_nullable_primary_key_found = False
+            for primary_key_part in stream.source_defined_primary_key:
+                primary_key_path = "/properties/".join(primary_key_part)
+                try:
+                    primary_key_definition = dpath.util.get(stream.json_schema["properties"], primary_key_path)
+                except KeyError:
+                    errors.append(f"Stream {stream_name} does not have defined primary key in schema")
+                    continue
+
+                data_type = set(primary_key_definition.get("type", []))
+
+                if "null" not in data_type:
+                    non_nullable_primary_key_found = True
+
+                if data_type.intersection(forbidden_primary_key_data_types):
+                    errors.append(f"Stream {stream_name} contains primary key with forbidden type of {data_type}")
+
+            if not non_nullable_primary_key_found:
+                errors.append(f"Stream {stream_name} contains nullable primary key")
+
+        assert not errors, "\n".join(errors)
+
 
 def primary_keys_for_records(streams, records):
     streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
@@ -1289,7 +1317,7 @@ class TestBasicRead(BaseTest):
 
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestConnectorAttributes(BaseTest):
-    # Overide from BaseTest!
+    # Override from BaseTest!
     # Used so that this is not part of the mandatory high strictness test suite yet
     MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []
 
