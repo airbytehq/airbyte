@@ -16,6 +16,7 @@ import static org.jooq.impl.DSL.quotedName;
 import static org.jooq.impl.DSL.rowNumber;
 import static org.jooq.impl.DSL.val;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
@@ -49,8 +50,20 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   private static final String AIRBYTE_META_COLUMN_CHANGES_KEY = "changes";
 
-  public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
-    super(namingTransformer);
+  private final boolean dropCascade;
+
+  private static boolean isDropCascade(JsonNode config) {
+    final JsonNode dropCascadeNode = config.get(RedshiftDestinationConstants.DROP_CASCADE_OPTION);
+    return dropCascadeNode != null && dropCascadeNode.asBoolean();
+  }
+
+  public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer, JsonNode config) {
+    this(namingTransformer, isDropCascade(config));
+  }
+
+  public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer, boolean dropCascade) {
+    super(namingTransformer, dropCascade);
+    this.dropCascade = dropCascade;
   }
 
   /**

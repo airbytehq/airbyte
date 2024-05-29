@@ -11,7 +11,6 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
-from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import backoff
@@ -23,18 +22,24 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import codes, exceptions
+from requests import JSONDecodeError, exceptions
 from requests.models import PreparedRequest
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
-from .rate_limiting import TRANSIENT_EXCEPTIONS, default_backoff_handler
+from .rate_limiting import (
+    RESPONSE_CONSUMPTION_EXCEPTIONS,
+    TRANSIENT_EXCEPTIONS,
+    BulkNotSupportedException,
+    SalesforceErrorHandler,
+    default_backoff_handler,
+)
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -68,6 +73,12 @@ class SalesforceStream(HttpStream, ABC):
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
         self.start_date = self.format_start_date(start_date)
+        self._http_client = HttpClient(
+            self.stream_name,
+            self.logger,
+            session=self._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
+            error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options),
+        )
 
     @staticmethod
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
@@ -298,7 +309,7 @@ class RestSalesforceStream(SalesforceStream):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
-    @default_backoff_handler(max_tries=5, backoff_method=backoff.constant, backoff_params={"interval": 5})
+    @default_backoff_handler(max_tries=5)  # FIXME remove once HttpStream relies on the HttpClient
     def _fetch_next_page_for_chunk(
         self,
         stream_slice: Mapping[str, Any] = None,
@@ -356,27 +367,24 @@ class BulkSalesforceStream(SalesforceStream):
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
-    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 15})
     def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
         """
         This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
         the response buffer (which is either by calling `json` or `iter_content`)
         """
-        return self._non_retryable_send_http_request(method, url, json, headers, stream)
+        headers = (
+            self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
+        )  # FIXME can we remove this?
+        return self._http_client.send_request(method, url, headers=headers, json=json, request_kwargs={})[1]
 
-    def _non_retryable_send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
-        response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
-        if response.status_code not in [200, 204]:
-            self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
-        response.raise_for_status()
-        return response
-
-    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 15})
+    @default_backoff_handler(max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS)
     def _create_stream_job(self, query: str, url: str) -> Optional[str]:
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
-        response = self._non_retryable_send_http_request("POST", url, json=json)
-        job_id: str = response.json()["id"]
-        return job_id
+        try:
+            response = self._send_http_request("POST", url, json=json)
+            return response.json().get("id")  # type: ignore  # based on the API, `id` will be a string
+        except BulkNotSupportedException:
+            return None
 
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
@@ -385,60 +393,7 @@ class BulkSalesforceStream(SalesforceStream):
         Note that we want to retry during connection issues as well. Those can occur when calling `.json()`. Even in the case of a
         connection error during a HTTPError, we will retry as else, we won't be able to take the right action.
         """
-        try:
-            return self._create_stream_job(query, url)
-        except exceptions.HTTPError as error:
-            if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
-                # A part of streams can't be used by BULK API. Every API version can have a custom list of
-                # these sobjects. Another part of them can be generated dynamically. That's why we can't track
-                # them preliminarily and there is only one way is to except error with necessary messages about
-                # their limitations. Now we know about 3 different reasons of similar errors:
-                # 1) some SaleForce sobjects(streams) is not supported by the BULK API simply (as is).
-                # 2) Access to a sobject(stream) is not available
-                # 3) sobject is not queryable. It means this sobject can't be called directly.
-                #    We can call it as part of response from another sobject only.  E.g.:
-                #        initial query: "Select Id, Subject from ActivityHistory" -> error
-                #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
-                #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
-                #    And the main problem is these subqueries doesn't support CSV response format.
-                error_code, error_message = self._extract_error_code_and_message(error.response)
-                if error_message == "Selecting compound data not supported in Bulk Query" or (
-                    error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
-                ):
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' using BULK API, "
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, Error message: '{error_message}'"
-                    )
-                elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
-                    self.logger.error(
-                        f"The stream '{self.name}' is not queryable, "
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                elif (
-                    error.response.status_code == codes.BAD_REQUEST
-                    and error_code == "API_ERROR"
-                    and error_message.startswith("Implementation restriction")
-                ):
-                    message = f"Unable to sync '{self.name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
-                    raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
-                elif error.response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
-                    message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
-                    self.logger.error(message)
-                else:
-                    raise error
-            else:
-                raise error
-        return None
+        return self._create_stream_job(query, url)
 
     def wait_for_job(self, url: str) -> str:
         expiration_time: DateTime = pendulum.now().add(seconds=self.DEFAULT_WAIT_TIMEOUT_SECONDS)
@@ -553,7 +508,9 @@ class BulkSalesforceStream(SalesforceStream):
 
         return self.encoding
 
-    @default_backoff_handler(max_tries=5, backoff_method=backoff.constant, backoff_params={"interval": 5})
+    @default_backoff_handler(
+        max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS
+    )  # We need the default_backoff_handler here because the HttpClient does not handle errors during the streaming of the response
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
@@ -563,9 +520,10 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
-        with closing(self._non_retryable_send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
-            tmp_file, "wb"
-        ) as data_file:
+        _, streamed_response = self._http_client.send_request(
+            "GET", url, headers={"Accept-Encoding": "gzip"}, request_kwargs={"stream": True}
+        )
+        with closing(streamed_response) as response, open(tmp_file, "wb") as data_file:
             response_headers = response.headers
             response_encoding = self.get_response_encoding(response_headers)
             for chunk in response.iter_content(chunk_size=chunk_size):
@@ -681,6 +639,9 @@ class BulkSalesforceStream(SalesforceStream):
             try:
                 tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
             except TRANSIENT_EXCEPTIONS as exception:
+                # We have seen some cases where pulling the job result's data would simply not work even with the retry on `download_data`.
+                # Those cases have unfortunately not been documented and we are unsure of the efficacy of retrying the whole job as we have
+                # done multiple reliability change without tracking the efficacy of each.
                 if call_count >= _JOB_TRANSIENT_ERRORS_MAX_RETRY:
                     self.logger.error(f"Downloading data failed even after {call_count} retries. Stopping retry and raising exception")
                     raise exception

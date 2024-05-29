@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b8c917bc-7d1b-4828-995f-6726820266d0
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-zapier-supported-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/zapier-supported-storage
   githubIssueLabel: source-zapier-supported-storage
@@ -28,4 +28,12 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZAPIER-SUPPORTED-STORAGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

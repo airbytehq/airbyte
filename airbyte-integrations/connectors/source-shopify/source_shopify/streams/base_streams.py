@@ -28,7 +28,7 @@ class ShopifyStream(HttpStream, ABC):
     logger = logging.getLogger("airbyte")
 
     # Latest Stable Release
-    api_version = "2023-07"
+    api_version = "2024-04"
     # Page size
     limit = 250
 
@@ -748,7 +748,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             return self.config.get("start_date")
 
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
-        slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
+        slice_size_message = f"Slice size: `P{round(self.job_manager.job_size, 1)}D`"
         self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}")
 
     @stream_state_cache.cache_stream_state
@@ -772,7 +772,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self,
         response: requests.Response,
         stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    ) -> Optional[Iterable[Mapping[str, Any]]]:
         # process the CREATED Job prior to other actions
         self.job_manager.job_process_created(response)
         # get results fetched from COMPLETED BULK Job

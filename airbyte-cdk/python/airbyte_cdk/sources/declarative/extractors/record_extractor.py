@@ -1,10 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Mapping
+from typing import Any, Iterable, Mapping
 
 import requests
 
@@ -19,7 +18,7 @@ class RecordExtractor:
     def extract_records(
         self,
         response: requests.Response,
-    ) -> List[Mapping[str, Any]]:
+    ) -> Iterable[Mapping[str, Any]]:
         """
         Selects records from the response
         :param response: The response to extract the records from

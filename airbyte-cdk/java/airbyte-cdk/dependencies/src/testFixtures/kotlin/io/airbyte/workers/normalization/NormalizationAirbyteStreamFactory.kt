@@ -10,11 +10,12 @@ import io.airbyte.commons.logging.MdcScope
 import io.airbyte.protocol.models.AirbyteLogMessage
 import io.airbyte.protocol.models.AirbyteMessage
 import io.airbyte.workers.internal.AirbyteStreamFactory
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.util.stream.Stream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
  * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory
  */
 class NormalizationAirbyteStreamFactory
 internal constructor(
-    private val logger: Logger,
+    private val logger: KLogger,
     private val containerLogMdcBuilder: MdcScope.Builder
 ) : AirbyteStreamFactory {
     val dbtErrors: MutableList<String> = ArrayList()
@@ -109,10 +110,5 @@ internal constructor(
             AirbyteLogMessage.Level.TRACE -> logger.trace(logMessage.message)
             else -> logger.info(logMessage.message)
         }
-    }
-
-    companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(NormalizationAirbyteStreamFactory::class.java)
     }
 }

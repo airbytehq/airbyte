@@ -28,7 +28,13 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
-from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    CursorFactory,
+    DatetimeBasedCursor,
+    DeclarativeCursor,
+    PerPartitionCursor,
+    ResumableFullRefreshCursor,
+)
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
@@ -126,8 +132,8 @@ from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic import BaseModel
@@ -668,6 +674,10 @@ class ModelToComponentFactory:
             )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
+        elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
+            # To incrementally deliver RFR for low-code we're first implementing this for streams that do not use
+            # nested state like substreams or those using list partition routers
+            return ResumableFullRefreshCursor(parameters={})
         elif stream_slicer:
             return stream_slicer
         else:
@@ -705,7 +715,12 @@ class ModelToComponentFactory:
         )
 
     def create_default_paginator(
-        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None
+        self,
+        model: DefaultPaginatorModel,
+        config: Config,
+        *,
+        url_base: str,
+        cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
@@ -1029,7 +1044,7 @@ class ModelToComponentFactory:
         record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
-        cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None
+        cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
 
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (

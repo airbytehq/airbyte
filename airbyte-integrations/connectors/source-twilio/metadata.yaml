@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.11.2
+  dockerImageTag: 0.11.4
   dockerRepository: airbyte/source-twilio
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   githubIssueLabel: source-twilio
@@ -35,4 +35,18 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TWILIO_LOOKBACK_WINDOW__CREDS
+          fileName: config_with_lookback.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TWILIO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

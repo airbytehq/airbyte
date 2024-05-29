@@ -304,19 +304,21 @@ def test_programs_normalize_datetime(config, requests_mock):
 def test_programs_next_page_token(config):
     page_size = 200
     records = [{"id": i} for i in range(page_size)]
+    last_record = {"id": page_size - 1}
     mocked_response = MagicMock()
     mocked_response.json.return_value = {"result": records}
     stream = get_stream_by_name("programs", config)
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(mocked_response, records) == page_size
+    assert stream.retriever.paginator.pagination_strategy.next_page_token(mocked_response, len(records), last_record) == page_size
 
 
 def test_segmentations_next_page_token(config):
     page_size = 200
     records = [{"id": i} for i in range(page_size)]
+    last_record = {"id": page_size - 1}
     mocked_response = MagicMock()
     mocked_response.json.return_value = {"result": records}
     stream = get_stream_by_name("segmentations", config)
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(mocked_response, records) == page_size
+    assert stream.retriever.paginator.pagination_strategy.next_page_token(mocked_response, len(records), last_record) == page_size
 
 
 today = pendulum.now()
