@@ -1,167 +1,930 @@
-version: "0.29.0"
+version: 0.78.1
 
-definitions:
-  selector:
-    extractor:
-      field_path: ["data"]
-
-  air_quality_current_stream:
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        url_base: "https://api.breezometer.com"
-        http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-    $parameters:
-      name: "air_quality_current"
-      primary_key: "datetime"
-      path: "/air-quality/v2/current-conditions"
-
-  air_quality_forecast_stream:
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        url_base: "https://api.breezometer.com"
-        http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          hours: "{{ config['hours_to_forecast'] }}"
-    $parameters:
-      name: "air_quality_forecast"
-      primary_key: "datetime"
-      path: "/air-quality/v2/forecast/hourly"
-
-  air_quality_historical_stream:
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        url_base: "https://api.breezometer.com"
-        http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          hours: "{{ config['historic_hours'] }}"
-    $parameters:
-      name: "air_quality_historical"
-      primary_key: "datetime"
-      path: "/air-quality/v2/historical/hourly"
-
-  pollen_forecast_stream:
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        url_base: "https://api.breezometer.com"
-        http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          days: "{{ config['days_to_forecast'] }}"
-    $parameters:
-      name: "pollen_forecast"
-      primary_key: "index_id"
-      path: "/pollen/v2/forecast/daily"
-
-  weather_current_stream:
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        url_base: "https://api.breezometer.com"
-        http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-    $parameters:
-      name: "weather_current"
-      primary_key: "datetime"
-      path: "/weather/v1/current-conditions"
-
-  weather_forecast_stream:
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        url_base: "https://api.breezometer.com"
-        http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          days: "{{ config['days_to_forecast'] }}"
-    $parameters:
-      name: "weather_forecast"
-      path: "/weather/v1/forecast/daily"
-
-  wildfire_burnt_area_stream:
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        url_base: "https://api.breezometer.com"
-        http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          radius: "{{ config['radius'] }}"
-    $parameters:
-      name: "wildfire_burnt_area"
-      path: "/fires/v1/burnt-area"
-
-  wildfire_locate_stream:
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        url_base: "https://api.breezometer.com"
-        http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          radius: "{{ config['radius'] }}"
-    $parameters:
-      name: "wildfire_locate"
-      path: "/fires/v1/locate-and-track"
-
-streams:
-  - "#/definitions/air_quality_current_stream"
-  - "#/definitions/air_quality_forecast_stream"
-  - "#/definitions/air_quality_historical_stream"
-  - "#/definitions/pollen_forecast_stream"
-  - "#/definitions/weather_current_stream"
-  - "#/definitions/weather_forecast_stream"
-  - "#/definitions/wildfire_burnt_area_stream"
-  - "#/definitions/wildfire_locate_stream"
+type: DeclarativeSource
 
 check:
+  type: CheckStream
   stream_names:
-    - "pollen_forecast"
+    - pollen_forecast
+
+definitions:
+  streams:
+    air_quality_current:
+      type: DeclarativeStream
+      name: air_quality_current
+      primary_key:
+        - datetime
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /air-quality/v2/current-conditions
+          http_method: GET
+          request_parameters:
+            key: '{{ config[''api_key''] }}'
+            lat: '{{ config[''latitude''] }}'
+            lon: '{{ config[''longitude''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/air_quality_current'
+    air_quality_forecast:
+      type: DeclarativeStream
+      name: air_quality_forecast
+      primary_key:
+        - datetime
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /air-quality/v2/forecast/hourly
+          http_method: GET
+          request_parameters:
+            key: '{{ config[''api_key''] }}'
+            lat: '{{ config[''latitude''] }}'
+            lon: '{{ config[''longitude''] }}'
+            hours: '{{ config[''hours_to_forecast''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/air_quality_forecast'
+    air_quality_historical:
+      type: DeclarativeStream
+      name: air_quality_historical
+      primary_key:
+        - datetime
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /air-quality/v2/historical/hourly
+          http_method: GET
+          request_parameters:
+            key: '{{ config[''api_key''] }}'
+            lat: '{{ config[''latitude''] }}'
+            lon: '{{ config[''longitude''] }}'
+            hours: '{{ config[''historic_hours''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/air_quality_historical'
+    pollen_forecast:
+      type: DeclarativeStream
+      name: pollen_forecast
+      primary_key:
+        - index_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /pollen/v2/forecast/daily
+          http_method: GET
+          request_parameters:
+            key: '{{ config[''api_key''] }}'
+            lat: '{{ config[''latitude''] }}'
+            lon: '{{ config[''longitude''] }}'
+            days: '{{ config[''days_to_forecast''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/pollen_forecast'
+    weather_current:
+      type: DeclarativeStream
+      name: weather_current
+      primary_key:
+        - datetime
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /weather/v1/current-conditions
+          http_method: GET
+          request_parameters:
+            key: '{{ config[''api_key''] }}'
+            lat: '{{ config[''latitude''] }}'
+            lon: '{{ config[''longitude''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/weather_current'
+    weather_forecast:
+      type: DeclarativeStream
+      name: weather_forecast
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /weather/v1/forecast/daily
+          http_method: GET
+          request_parameters:
+            key: '{{ config[''api_key''] }}'
+            lat: '{{ config[''latitude''] }}'
+            lon: '{{ config[''longitude''] }}'
+            days: '{{ config[''days_to_forecast''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/weather_forecast'
+    wildfire_burnt_area:
+      type: DeclarativeStream
+      name: wildfire_burnt_area
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /fires/v1/burnt-area
+          http_method: GET
+          request_parameters:
+            key: '{{ config[''api_key''] }}'
+            lat: '{{ config[''latitude''] }}'
+            lon: '{{ config[''longitude''] }}'
+            radius: '{{ config[''radius''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/wildfire_burnt_area'
+    wildfire_locate:
+      type: DeclarativeStream
+      name: wildfire_locate
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /fires/v1/locate-and-track
+          http_method: GET
+          request_parameters:
+            key: '{{ config[''api_key''] }}'
+            lat: '{{ config[''latitude''] }}'
+            lon: '{{ config[''longitude''] }}'
+            radius: '{{ config[''radius''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/wildfire_locate'
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.breezometer.com
+
+streams:
+  - $ref: '#/definitions/streams/air_quality_current'
+  - $ref: '#/definitions/streams/air_quality_forecast'
+  - $ref: '#/definitions/streams/air_quality_historical'
+  - $ref: '#/definitions/streams/pollen_forecast'
+  - $ref: '#/definitions/streams/weather_current'
+  - $ref: '#/definitions/streams/weather_forecast'
+  - $ref: '#/definitions/streams/wildfire_burnt_area'
+  - $ref: '#/definitions/streams/wildfire_locate'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - latitude
+      - longitude
+    properties:
+      api_key:
+        type: string
+        tittle: API Key
+        description: >-
+          Your API Access Key. See <a
+          href="https://docs.breezometer.com/api-documentation/introduction/#authentication/">here</a>.
+        airbyte_secret: true
+        order: 0
+      days_to_forecast:
+        type: integer
+        tittle: Days to Forecast
+        description: >-
+          Number of days to forecast. Minimum 1, maximum 3. Valid for Polen and
+          Weather Forecast streams.
+        examples:
+          - 3
+        order: 1
+      historic_hours:
+        type: integer
+        tittle: Historic Hours
+        description: >-
+          Number of hours retireve from Air Quality History stream. Minimum 1,
+          maximum 720.
+        examples:
+          - 30
+        order: 2
+      hours_to_forecast:
+        type: integer
+        tittle: Hours to Forecast
+        description: >-
+          Number of hours to forecast. Minimum 1, maximum 96. Valid for Air
+          Quality Forecast stream.
+        examples:
+          - 30
+        order: 3
+      latitude:
+        type: string
+        tittle: Latitude
+        description: Latitude of the monitored location.
+        examples:
+          - '54.675003'
+        order: 4
+      longitude:
+        type: string
+        tittle: Longitude
+        description: Longitude of the monitored location.
+        examples:
+          - '-113.550282'
+        order: 5
+      radius:
+        type: integer
+        tittle: Radius
+        description: >-
+          Desired radius from the location provided. Minimum 5, maximum 100.
+          Valid for Wildfires streams.
+        examples:
+          - 50
+        order: 6
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    air_quality_current: false
+    air_quality_forecast: false
+    air_quality_historical: false
+    pollen_forecast: false
+    weather_current: false
+    weather_forecast: false
+    wildfire_burnt_area: false
+    wildfire_locate: false
+
+schemas:
+  air_quality_current:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      data_available:
+        type:
+          - 'null'
+          - boolean
+      datetime:
+        type:
+          - 'null'
+          - string
+      indexes:
+        type:
+          - 'null'
+          - object
+        properties:
+          baqi:
+            type:
+              - 'null'
+              - object
+            properties:
+              aqi:
+                type:
+                  - 'null'
+                  - integer
+              aqi_display:
+                type:
+                  - 'null'
+                  - string
+              category:
+                type:
+                  - 'null'
+                  - string
+              color:
+                type:
+                  - 'null'
+                  - string
+              display_name:
+                type:
+                  - 'null'
+                  - string
+              dominant_pollutant:
+                type:
+                  - 'null'
+                  - string
+  air_quality_forecast:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      data_available:
+        type:
+          - 'null'
+          - boolean
+      datetime:
+        type:
+          - 'null'
+          - string
+      indexes:
+        type:
+          - 'null'
+          - object
+        properties:
+          baqi:
+            type:
+              - 'null'
+              - object
+            properties:
+              aqi:
+                type:
+                  - 'null'
+                  - integer
+              aqi_display:
+                type:
+                  - 'null'
+                  - string
+              category:
+                type:
+                  - 'null'
+                  - string
+              color:
+                type:
+                  - 'null'
+                  - string
+              display_name:
+                type:
+                  - 'null'
+                  - string
+              dominant_pollutant:
+                type:
+                  - 'null'
+                  - string
+  air_quality_historical:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      data_available:
+        type:
+          - 'null'
+          - boolean
+      datetime:
+        type:
+          - 'null'
+          - string
+      indexes:
+        type:
+          - 'null'
+          - object
+        properties:
+          baqi:
+            type:
+              - 'null'
+              - object
+            properties:
+              aqi:
+                type:
+                  - 'null'
+                  - integer
+              aqi_display:
+                type:
+                  - 'null'
+                  - string
+              category:
+                type:
+                  - 'null'
+                  - string
+              color:
+                type:
+                  - 'null'
+                  - string
+              display_name:
+                type:
+                  - 'null'
+                  - string
+              dominant_pollutant:
+                type:
+                  - 'null'
+                  - string
+  pollen_forecast:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - 'null'
+          - string
+      index_display_name:
+        type:
+          - 'null'
+          - string
+      index_id:
+        type:
+          - 'null'
+          - string
+      types:
+        type:
+          - 'null'
+          - object
+        properties:
+          grass:
+            type:
+              - 'null'
+              - object
+            properties:
+              data_available:
+                type:
+                  - 'null'
+                  - boolean
+              display_name:
+                type:
+                  - 'null'
+                  - string
+              in_season:
+                type:
+                  - 'null'
+                  - boolean
+              index:
+                type:
+                  - 'null'
+                  - object
+                properties:
+                  category:
+                    type:
+                      - 'null'
+                      - string
+                  color:
+                    type:
+                      - 'null'
+                      - string
+                  value:
+                    type:
+                      - 'null'
+                      - integer
+          tree:
+            type:
+              - 'null'
+              - object
+            properties:
+              data_available:
+                type:
+                  - 'null'
+                  - boolean
+              display_name:
+                type:
+                  - 'null'
+                  - string
+              in_season:
+                type:
+                  - 'null'
+                  - boolean
+              index:
+                type:
+                  - 'null'
+                  - object
+                properties:
+                  category:
+                    type:
+                      - 'null'
+                      - string
+                  color:
+                    type:
+                      - 'null'
+                      - string
+                  value:
+                    type:
+                      - 'null'
+                      - integer
+          weed:
+            type:
+              - 'null'
+              - object
+            properties:
+              data_available:
+                type:
+                  - 'null'
+                  - boolean
+              display_name:
+                type:
+                  - 'null'
+                  - string
+              in_season:
+                type:
+                  - 'null'
+                  - boolean
+              index:
+                type:
+                  - 'null'
+                  - object
+                properties:
+                  category:
+                    type:
+                      - 'null'
+                      - string
+                  color:
+                    type:
+                      - 'null'
+                      - string
+                  value:
+                    type:
+                      - 'null'
+                      - integer
+  weather_current:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      cloud_cover:
+        type:
+          - 'null'
+          - integer
+      datetime:
+        type:
+          - 'null'
+          - string
+      dew_point:
+        type:
+          - 'null'
+          - object
+        properties:
+          units:
+            type:
+              - 'null'
+              - string
+          value:
+            type:
+              - 'null'
+              - number
+      feels_like_temperature:
+        type:
+          - 'null'
+          - object
+        properties:
+          units:
+            type:
+              - 'null'
+              - string
+          value:
+            type:
+              - 'null'
+              - number
+      icon_code:
+        type:
+          - 'null'
+          - integer
+      is_day_time:
+        type:
+          - 'null'
+          - boolean
+      precipitation:
+        type:
+          - 'null'
+          - object
+        properties:
+          precipitation_probability:
+            type:
+              - 'null'
+              - integer
+          total_precipitation:
+            type:
+              - 'null'
+              - object
+            properties:
+              units:
+                type:
+                  - 'null'
+                  - string
+              value:
+                type:
+                  - 'null'
+                  - number
+      pressure:
+        type:
+          - 'null'
+          - object
+        properties:
+          units:
+            type:
+              - 'null'
+              - string
+          value:
+            type:
+              - 'null'
+              - number
+      relative_humidity:
+        type:
+          - 'null'
+          - integer
+      temperature:
+        type:
+          - 'null'
+          - object
+        properties:
+          units:
+            type:
+              - 'null'
+              - string
+          value:
+            type:
+              - 'null'
+              - number
+      visibility:
+        type:
+          - 'null'
+          - object
+        properties:
+          units:
+            type:
+              - 'null'
+              - string
+          value:
+            type:
+              - 'null'
+              - integer
+      weather_text:
+        type:
+          - 'null'
+          - string
+      wind:
+        type:
+          - 'null'
+          - object
+        properties:
+          direction:
+            type:
+              - 'null'
+              - integer
+          speed:
+            type:
+              - 'null'
+              - object
+            properties:
+              units:
+                type:
+                  - 'null'
+                  - string
+              value:
+                type:
+                  - 'null'
+                  - number
+      wind_gust:
+        type:
+          - 'null'
+          - object
+        properties:
+          units:
+            type:
+              - 'null'
+              - string
+          value:
+            type:
+              - 'null'
+              - number
+  weather_forecast:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      max_uv_index:
+        type:
+          - 'null'
+          - integer
+      moon:
+        type:
+          - 'null'
+          - object
+        properties:
+          moon_age:
+            type:
+              - 'null'
+              - number
+          moon_phase:
+            type:
+              - 'null'
+              - string
+          moonrise_time:
+            type:
+              - 'null'
+              - string
+          moonset_time:
+            type:
+              - 'null'
+              - string
+      start_date:
+        type:
+          - 'null'
+          - string
+      sun:
+        type:
+          - 'null'
+          - object
+        properties:
+          sunrise_time:
+            type:
+              - 'null'
+              - string
+          sunset_time:
+            type:
+              - 'null'
+              - string
+  wildfire_burnt_area:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      features:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            type:
+              type:
+                - 'null'
+                - string
+            geometry:
+              type:
+                - 'null'
+                - object
+              properties:
+                type:
+                  type:
+                    - 'null'
+                    - string
+                coordinates:
+                  type:
+                    - 'null'
+                    - array
+                  items:
+                    type:
+                      - 'null'
+                      - array
+                    items:
+                      type:
+                        - 'null'
+                        - array
+                      items:
+                        type:
+                          - 'null'
+                          - array
+                        items:
+                          type:
+                            - 'null'
+                            - number
+            id:
+              type:
+                - 'null'
+                - string
+            properties:
+              type:
+                - 'null'
+                - object
+              properties:
+                CurrentLat:
+                  type:
+                    - 'null'
+                    - number
+                CurrentLon:
+                  type:
+                    - 'null'
+                    - number
+                DiscoveryDateTime:
+                  type:
+                    - 'null'
+                    - string
+                EventDescription:
+                  type:
+                    - 'null'
+                    - string
+                LastUpdated:
+                  type:
+                    - 'null'
+                    - string
+  wildfire_locate:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      features:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            type:
+              type:
+                - 'null'
+                - string
+            geometry:
+              type:
+                - 'null'
+                - object
+              properties:
+                type:
+                  type:
+                    - 'null'
+                    - string
+                coordinates:
+                  type:
+                    - 'null'
+                    - array
+                  items:
+                    type:
+                      - 'null'
+                      - array
+                    items:
+                      type:
+                        - 'null'
+                        - array
+                      items:
+                        type:
+                          - 'null'
+                          - array
+                        items:
+                          type:
+                            - 'null'
+                            - number
+            id:
+              type:
+                - 'null'
+                - string
+            properties:
+              type:
+                - 'null'
+                - object
+              properties:
+                CurrentLat:
+                  type:
+                    - 'null'
+                    - number
+                CurrentLon:
+                  type:
+                    - 'null'
+                    - number
+                DiscoveryDateTime:
+                  type:
+                    - 'null'
+                    - string
+                EventDescription:
+                  type:
+                    - 'null'
+                    - string
+                LastUpdated:
+                  type:
+                    - 'null'
+                    - string
