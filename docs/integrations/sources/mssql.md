@@ -419,6 +419,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.25  | 2024-05-29 | [38775](https://github.com/airbytehq/airbyte/pull/38775) | Publish CDK                                                                                                                                                                |
 | 4.0.24  | 2024-05-23  | [38640](https://github.com/airbytehq/airbyte/pull/38640)   | Sync sending trace status messages indicating progress.                                                                                         |
 | 4.0.23  | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208)   | disable counts in full refresh stream in state message.                                                                                         |
 | 4.0.22  | 2024-05-14 | [38196](https://github.com/airbytehq/airbyte/pull/38196) | Bump jdbc driver version to 12.6.1.jre11 |
