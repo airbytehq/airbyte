@@ -100,6 +100,8 @@
   to: /using-airbyte/workspaces
 - from: /operator-guides/locating-files-local-destination
   to: /integrations/locating-files-local-destination
+- from: /operator-guides/reset
+  to: /operator-guides/clear
 # End November 2023 restructure
 - from:
     - /enterprise-setup/self-managed/sso
