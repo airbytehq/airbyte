@@ -482,6 +482,9 @@ class HttpRequester(Requester):
 
         response: requests.Response = self._session.send(request)
 
+        if self.error_handler is None:
+            return response
+
         error_resolution: ErrorResolution = self.interpret_response_status(response)
 
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})

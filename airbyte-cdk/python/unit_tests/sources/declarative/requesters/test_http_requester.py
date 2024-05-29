@@ -192,7 +192,7 @@ def create_requester(
 def test_basic_send_request():
     options_provider = MagicMock()
     options_provider.get_request_headers.return_value = {"my_header": "my_value"}
-    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
+    requester = create_requester()
     requester._request_options_provider = options_provider
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
@@ -244,7 +244,7 @@ def test_send_request_data_json(
     authenticator = MagicMock()
     authenticator.get_request_body_data.return_value = authenticator_data
     authenticator.get_request_body_json.return_value = authenticator_json
-    requester = create_requester(authenticator=authenticator, error_handler=DefaultErrorHandler(parameters={}, config={}))
+    requester = create_requester(authenticator=authenticator)
     requester._request_options_provider = options_provider
     if expected_exception is not None:
         with pytest.raises(expected_exception):
@@ -279,7 +279,7 @@ def test_send_request_string_data(provider_data, param_data, authenticator_data,
     options_provider.get_request_body_data.return_value = provider_data
     authenticator = MagicMock()
     authenticator.get_request_body_data.return_value = authenticator_data
-    requester = create_requester(authenticator=authenticator, error_handler=DefaultErrorHandler(parameters={}, config={}))
+    requester = create_requester(authenticator=authenticator)
     requester._request_options_provider = options_provider
     if expected_exception is not None:
         with pytest.raises(expected_exception):
@@ -317,7 +317,7 @@ def test_send_request_headers(provider_headers, param_headers, authenticator_hea
     options_provider.get_request_headers.return_value = provider_headers
     authenticator = MagicMock()
     authenticator.get_auth_header.return_value = authenticator_headers or {}
-    requester = create_requester(authenticator=authenticator, error_handler=DefaultErrorHandler(parameters={}, config={}))
+    requester = create_requester(authenticator=authenticator)
     requester._request_options_provider = options_provider
     if expected_exception is not None:
         with pytest.raises(expected_exception):
@@ -346,7 +346,7 @@ def test_send_request_params(provider_params, param_params, authenticator_params
     options_provider.get_request_params.return_value = provider_params
     authenticator = MagicMock()
     authenticator.get_request_params.return_value = authenticator_params
-    requester = create_requester(authenticator=authenticator, error_handler=DefaultErrorHandler(parameters={}, config={}))
+    requester = create_requester(authenticator=authenticator)
     requester._request_options_provider = options_provider
     if expected_exception is not None:
         with pytest.raises(expected_exception):
@@ -579,7 +579,7 @@ def test_request_body_interpolation(request_body_data, config, expected_request_
     ],
 )
 def test_send_request_path(requester_path, param_path, expected_path):
-    requester = create_requester(config={"config_key": "config_value"}, path=requester_path, parameters={"param_key": "param_value"}, error_handler=DefaultErrorHandler(parameters={}, config={}))
+    requester = create_requester(config={"config_key": "config_value"}, path=requester_path, parameters={"param_key": "param_value"})
     requester.send_request(stream_slice={"start": "2012"}, next_page_token={"next_page_token": "pagetoken"}, path=param_path)
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
     parsed_url = urlparse(sent_request.url)
@@ -968,7 +968,7 @@ def test_caching_session_with_enable_use_cache(http_requester_factory):
 
 
 def test_response_caching_with_enable_use_cache(http_requester_factory, requests_mock):
-    http_requester = http_requester_factory(use_cache=True, error_handler=DefaultErrorHandler(parameters={}, config={}))
+    http_requester = http_requester_factory(use_cache=True)
 
     requests_mock.register_uri("GET", http_requester.url_base, json=[{"id": 12, "title": "test_record"}])
     http_requester.clear_cache()
