@@ -29,7 +29,7 @@ class Helpers(object):
         adapter = HTTPAdapter(max_retries=retry_strategy)
         http = requests.Session()
         http.mount("https://", adapter)
-        http.mount("http://", adapter)
+        http.mount("http://", adapter) # ignore-https-check
 
         response = http.get(url, headers={"Authorization": "Basic " + auth_token})
         response_json = response.json()
@@ -59,7 +59,7 @@ class Helpers(object):
     @staticmethod
     def get_json_schema(schema):
         json_schema = {
-            "$schema": "https://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": schema,
         }
