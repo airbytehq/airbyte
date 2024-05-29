@@ -98,7 +98,7 @@ object GeneralStagingFunctions {
         database: JdbcDatabase?,
         stageName: String?,
         stagingPath: String?,
-        stagedFiles: List<String?>?,
+        stagedFiles: List<String>?,
         tableName: String?,
         schemaName: String?,
         stagingOperations: StagingOperations,
