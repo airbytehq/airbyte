@@ -26,4 +26,5 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
+        timeout_seconds: 7200
         configured_catalog_path: "integration_tests/configured_catalog.json"
