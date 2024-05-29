@@ -130,6 +130,16 @@ object ConnectorExceptionUtil {
         return eithers.map { obj: Either<out T, Result> -> obj.right!! }
     }
 
+    private val TRANSIENT_SQL_EXCEPTION_MESSAGE: Array<String> =
+        arrayOf(
+            "an i/o error occurred while sending to the backend",
+            "temporary file size exceeds temp_file_limit"
+        )
+    private val TRANSIENT_EOF_EXCEPTION_MESSAGE: Array<String> =
+        arrayOf("connection was unexpectedly lost")
+    private val RECOVERY_CONNECTION_EXCEPTION_MESSAGE: Array<String> =
+        arrayOf("due to conflict with recovery")
+
     private fun isTransientErrorException(e: Throwable?): Boolean {
         return e is TransientErrorException
     }
@@ -142,19 +152,30 @@ object ConnectorExceptionUtil {
         return e is ConnectionErrorException
     }
 
+    private fun containsOneOfTheErrorMessages(
+        e: Throwable?,
+        errorMessages: Array<String>
+    ): Boolean {
+        val msg = e?.message!!.lowercase()
+        for (errorMessage in errorMessages) {
+            if (msg.contains(errorMessage)) return true
+        }
+        return false
+    }
+
     private fun isTransientEOFException(e: Throwable?): Boolean {
         return (e is EOFException) &&
-            e.message!!.lowercase().contains("connection was unexpectedly lost")
+            containsOneOfTheErrorMessages(e, TRANSIENT_EOF_EXCEPTION_MESSAGE)
     }
 
     private fun isTransientSQLException(e: Throwable?): Boolean {
         return (e is SQLException) &&
-            e.message!!.lowercase().contains("An I/O error occurred while sending to the backend")
+            containsOneOfTheErrorMessages(e, TRANSIENT_SQL_EXCEPTION_MESSAGE)
     }
 
     private fun isRecoveryConnectionException(e: Throwable?): Boolean {
-        return e is SQLException &&
-            e.message!!.lowercase().contains("due to conflict with recovery")
+        return (e is SQLException) &&
+            containsOneOfTheErrorMessages(e, RECOVERY_CONNECTION_EXCEPTION_MESSAGE)
     }
 
     private fun isUnknownColumnInFieldListException(e: Throwable?): Boolean {
