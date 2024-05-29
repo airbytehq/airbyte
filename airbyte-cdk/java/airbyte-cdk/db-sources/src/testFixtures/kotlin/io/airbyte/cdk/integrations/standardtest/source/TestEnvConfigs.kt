@@ -6,12 +6,12 @@ package io.airbyte.cdk.integrations.standardtest.source
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.map.MoreMaps
 import io.airbyte.commons.version.AirbyteVersion
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
-import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * This class passes environment variable to the DockerProcessFactory that runs the source in the
@@ -69,33 +69,16 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
             val jobPrefixedEnvMap =
                 getAllEnvKeys
                     .get()
-                    .stream()
-                    .filter { key: String -> key.startsWith(JOB_DEFAULT_ENV_PREFIX) }
-                    .collect(
-                        Collectors.toMap(
-                            Function { key: String -> key.replace(JOB_DEFAULT_ENV_PREFIX, "") },
-                            getEnv
-                        )
-                    )
+                    .filter { it.startsWith(JOB_DEFAULT_ENV_PREFIX) }
+                    .associate { it.replace(JOB_DEFAULT_ENV_PREFIX, "") to getEnv(it) }
+
             // This method assumes that these shared env variables are not critical to the execution
             // of the jobs, and only serve as metadata. So any exception is swallowed and default to
             // an empty string. Change this logic if this assumption no longer holds.
             val jobSharedEnvMap =
-                JOB_SHARED_ENVS.entries
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            Function { obj: Map.Entry<String, Function<TestEnvConfigs, String>> ->
-                                obj.key
-                            },
-                            Function { entry: Map.Entry<String, Function<TestEnvConfigs, String>> ->
-                                Exceptions.swallowWithDefault(
-                                    { Objects.requireNonNullElse(entry.value.apply(this), "") },
-                                    ""
-                                )
-                            }
-                        )
-                    )
+                JOB_SHARED_ENVS.entries.associate {
+                    it.key to Exceptions.swallowWithDefault({ it.value.apply(this) ?: "" }, "")
+                }
             return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap)
         }
 
@@ -130,11 +113,10 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         val value = getEnv(name)
         checkNotNull(value != null) { "$name environment variable cannot be null" }
 
-        return value!!
+        return value
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(TestEnvConfigs::class.java)
 
         // env variable names
         const val AIRBYTE_ROLE: String = "AIRBYTE_ROLE"

@@ -5,46 +5,54 @@
   margin-right: 10px;
 }
 
-.connectorMetadata {
-  background: var(--ifm-color-info-contrast-background);
-  border-radius: 2px;
-  width: 100%;
-  font-size: smaller;
-  margin: 0;
-  padding: 5px;
+div.connectorMetadataCallout  {
   margin-bottom: 15px;
 }
 
-.connectorMetadata > div {
+.connectorMetadata {
+  width: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: 2px;
+}
+
+.metadataStat {
   display: flex;
   align-items: center;
-  gap: 0.2em;
+  font-size: 0.75rem;
+  font-weight: var(--ifm-font-weight-normal);
 }
 
-.connectorMetadata dt {
-  display: inline;
-  font-weight: bold;
+.metadataStatLabel {
+  display: inline-flex;
+  align-items: center;
+
+  font-weight: var(--ifm-font-weight-semibold);
+  margin-right: 10px;
 }
 
-.connectorMetadata dd {
-  display: inline;
+.metadataStatValue {
+  display: inline-flex;
+  align-items: center;
   margin: 0;
 }
 
-.connectorMetadata dt::after {
-  content: ": ";
+.metadataStatValue > * {
+  display: inline-flex;
+  align-items: center;
 }
 
 .connectorMetadata .availability {
   display: inline-flex;
-  gap: 8px;
-  margin-left: 2px;
+  align-items: center;
+  column-gap: 8px;
 }
 
 .connectorMetadata .availability > span {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  column-gap: 2px;
 }
 
 .connectorMetadata .availability .unavailable {
