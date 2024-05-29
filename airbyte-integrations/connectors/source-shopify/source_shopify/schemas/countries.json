@@ -50,7 +50,7 @@
           },
           "tax_percentage": {
             "description": "Percentage value of tax applicable in the province.",
-            "type": ["null", "integer"]
+            "type": ["null", "number"]
           }
         }
       }
