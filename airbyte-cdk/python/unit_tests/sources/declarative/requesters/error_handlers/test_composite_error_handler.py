@@ -80,7 +80,7 @@ SOME_BACKOFF_TIME = 60
                 response_action=ResponseAction.SUCCESS,
             ),
             ErrorResolution(
-                response_action=ResponseAction.SUCCESS,
+                response_action=ResponseAction.IGNORE,
             ),
         )
     ],

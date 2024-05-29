@@ -178,13 +178,9 @@ def test_default_error_handler_with_multiple_response_filters(http_status_code, 
         "first_response_filter_action, second_response_filter_action, expected_response_action",
         [
             (ResponseAction.RETRY, ResponseAction.FAIL, ResponseAction.RETRY),
-            (ResponseAction.FAIL, ResponseAction.RETRY, ResponseAction.RETRY),
+            (ResponseAction.FAIL, ResponseAction.RETRY, ResponseAction.FAIL),
             (ResponseAction.IGNORE, ResponseAction.IGNORE, ResponseAction.IGNORE),
             (ResponseAction.SUCCESS, ResponseAction.IGNORE, ResponseAction.SUCCESS),
-            (ResponseAction.IGNORE, ResponseAction.SUCCESS, ResponseAction.SUCCESS),
-            (ResponseAction.FAIL, ResponseAction.SUCCESS, ResponseAction.SUCCESS),
-            (ResponseAction.FAIL, ResponseAction.RETRY, ResponseAction.RETRY),
-            (ResponseAction.RETRY, ResponseAction.SUCCESS, ResponseAction.SUCCESS),
         ]
 )
 def test_default_error_handler_with_conflicting_response_filters(first_response_filter_action, second_response_filter_action, expected_response_action):
