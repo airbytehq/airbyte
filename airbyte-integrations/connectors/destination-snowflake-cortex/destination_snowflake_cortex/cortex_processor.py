@@ -206,8 +206,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         # following block is different from SnowflakeSqlProcessor
         vector_suffix = f"::Vector(Float, {self.embedding_dimensions})"
         variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
-            f"$1:{self.normalizer.normalize(col)}{vector_suffix if 'embedding' in col else ''}"
-            for col in columns_list
+            f"$1:{col}{vector_suffix if 'embedding' in col else ''}" for col in columns_list
         ])
         if self.sql_config.cortex_embedding_model:
             # WARNING: This is untested and may not work as expected.
