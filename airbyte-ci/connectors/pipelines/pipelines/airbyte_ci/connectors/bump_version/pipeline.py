@@ -45,12 +45,23 @@ class RestoreVersionState(Step):
         connector = context.connector
         if connector.metadata_file_path.is_file():
             self.metadata_content = connector.metadata_file_path.read_text()
+        else:
+            self.metadata_content = None
+
         if connector.dockerfile_file_path.is_file():
             self.dockerfile_content = connector.dockerfile_file_path.read_text()
+        else:
+            self.dockerfile_content = None
+
         if connector.pyproject_file_path.is_file():
             self.poetry_content = connector.pyproject_file_path.read_text()
+        else:
+            self.poetry_content = None
+
         if connector.documentation_file_path and connector.documentation_file_path.is_file():
             self.documentation_content = connector.documentation_file_path.read_text()
+        else:
+            self.documentation_content = None
 
     async def _run(self) -> StepResult:
         connector = self.context.connector
@@ -142,14 +153,17 @@ class SetConnectorVersion(Step):
 
     async def get_repo_dir(self) -> Directory:
         if not self.repo_dir:
-            self.repo_dir = await self.context.get_connector_dir()
-        return self.repo_dir
+            repo_dir = await self.context.get_repo_dir()
+            self.repo_dir = repo_dir
+        return repo_dir
 
     async def _run(self) -> StepResult:
         result = await self.update_metadata()
         if result.status is not StepStatus.SUCCESS:
             return result
 
+        # Update the version of the connector in the Dockerfile.
+        # TODO: This can be removed once we ditch all Dockerfiles from connectors.
         if self.context.connector.dockerfile_file_path.is_file():
             result = await self.update_dockerfile()
             if result.status is not StepStatus.SUCCESS:
@@ -241,7 +255,7 @@ class SetConnectorVersion(Step):
             )
 
         content = await dagger_read_file(repo_dir, file_path)
-        new_content = re.sub(r"(?<=\bversion = \")(.*)(?=\")", self.new_version, content)
+        new_content = re.sub(r"(?<=^version = \")(.*)(?=\")", self.new_version, content)
         self.repo_dir = await dagger_write_file(repo_dir, file_path, new_content)
 
         if self.export:
