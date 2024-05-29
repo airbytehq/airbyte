@@ -33,17 +33,15 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.CommonField
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.SQLException
 import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
-import java.util.function.Function
-import java.util.stream.Collectors
 import java.util.stream.Stream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a DB
  * source of both non-relational and relational type
@@ -73,7 +71,7 @@ protected constructor(driverClassName: String) :
                 .withMessage(message)
         } catch (e: Exception) {
             addExceptionToTrace(e)
-            LOGGER.info("Exception while checking connection: ", e)
+            LOGGER.info { "Exception while checking connection: $e" }
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
@@ -137,16 +135,9 @@ protected constructor(driverClassName: String) :
         logPreSyncDebugData(database, catalog)
 
         val fullyQualifiedTableNameToInfo =
-            discoverWithoutSystemTables(database)
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function { t: TableInfo<CommonField<DataType>> ->
-                            String.format("%s.%s", t.nameSpace, t.name)
-                        },
-                        Function.identity()
-                    )
-                )
+            discoverWithoutSystemTables(database).associateBy {
+                String.format("%s.%s", it.nameSpace, it.name)
+            }
 
         validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database)
 
@@ -176,7 +167,7 @@ protected constructor(driverClassName: String) :
         val iteratorList =
             Stream.of(incrementalIterators, fullRefreshIterators)
                 .flatMap(Collection<AutoCloseableIterator<AirbyteMessage>>::stream)
-                .collect(Collectors.toList())
+                .toList()
 
         return AutoCloseableIterators.appendOnClose(
             AutoCloseableIterators.concatWithEagerClose(
@@ -184,9 +175,9 @@ protected constructor(driverClassName: String) :
                 AirbyteTraceMessageUtility::emitStreamStatusTrace
             )
         ) {
-            LOGGER.info("Closing database connection pool.")
+            LOGGER.info { "Closing database connection pool." }
             Exceptions.toRuntime { this.close() }
-            LOGGER.info("Closed database connection pool.")
+            LOGGER.info { "Closed database connection pool." }
         }
     }
 
@@ -195,13 +186,13 @@ protected constructor(driverClassName: String) :
     protected open fun initializeForStateManager(
         database: Database,
         catalog: ConfiguredAirbyteCatalog,
-        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager
     ) {}
 
     @Throws(SQLException::class)
     protected fun validateCursorFieldForIncrementalTables(
-        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         catalog: ConfiguredAirbyteCatalog,
         database: Database
     ) {
@@ -229,11 +220,9 @@ protected constructor(driverClassName: String) :
             }
             val cursorType =
                 table.fields
-                    .stream()
                     .filter { info: CommonField<DataType> -> info.name == cursorField.get() }
                     .map { obj: CommonField<DataType> -> obj.type }
-                    .findFirst()
-                    .orElseThrow()
+                    .first()
 
             if (!isCursorType(cursorType)) {
                 tablesWithInvalidCursor.add(
@@ -313,18 +302,15 @@ protected constructor(driverClassName: String) :
         val discoveredTables = discoverInternal(database)
         return (if (systemNameSpaces.isEmpty()) discoveredTables
         else
-            discoveredTables
-                .stream()
-                .filter { table: TableInfo<CommonField<DataType>> ->
-                    !systemNameSpaces.contains(table.nameSpace) && !systemViews.contains(table.name)
-                }
-                .collect(Collectors.toList()))
+            discoveredTables.filter { table: TableInfo<CommonField<DataType>> ->
+                !systemNameSpaces.contains(table.nameSpace) && !systemViews.contains(table.name)
+            })
     }
 
     protected fun getFullRefreshIterators(
         database: Database,
         catalog: ConfiguredAirbyteCatalog,
-        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
         emittedAt: Instant
     ): List<AutoCloseableIterator<AirbyteMessage>> {
@@ -341,7 +327,7 @@ protected constructor(driverClassName: String) :
     protected open fun getIncrementalIterators(
         database: Database,
         catalog: ConfiguredAirbyteCatalog,
-        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
         emittedAt: Instant
     ): List<AutoCloseableIterator<AirbyteMessage>> {
@@ -370,7 +356,7 @@ protected constructor(driverClassName: String) :
     private fun getSelectedIterators(
         database: Database,
         catalog: ConfiguredAirbyteCatalog?,
-        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
         emittedAt: Instant,
         syncMode: SyncMode
@@ -382,10 +368,9 @@ protected constructor(driverClassName: String) :
                 val fullyQualifiedTableName =
                     DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.namespace, stream.name)
                 if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
-                    LOGGER.info(
-                        "Skipping stream {} because it is not in the source",
-                        fullyQualifiedTableName
-                    )
+                    LOGGER.info {
+                        "Skipping stream $fullyQualifiedTableName because it is not in the source"
+                    }
                     continue
                 }
 
@@ -416,7 +401,7 @@ protected constructor(driverClassName: String) :
      * @param emittedAt Time when data was emitted from the Source database
      * @return
      */
-    private fun createReadIterator(
+    protected open fun createReadIterator(
         database: Database,
         airbyteStream: ConfiguredAirbyteStream,
         catalog: ConfiguredAirbyteCatalog?,
@@ -431,10 +416,8 @@ protected constructor(driverClassName: String) :
         val selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream)
         val selectedDatabaseFields =
             table.fields
-                .stream()
                 .map { obj: CommonField<DataType> -> obj.name }
                 .filter { o: String -> selectedFieldsInCatalog.contains(o) }
-                .collect(Collectors.toList())
 
         val iterator: AutoCloseableIterator<AirbyteMessage>
         // checks for which sync mode we're using based on the configured airbytestream
@@ -527,7 +510,7 @@ protected constructor(driverClassName: String) :
         ) { r: AirbyteMessage ->
             val count = recordCount.incrementAndGet()
             if (count % 10000 == 0L) {
-                LOGGER.info("Reading stream {}. Records read: {}", streamName, count)
+                LOGGER.info { "Reading stream $streamName. Records read: $count" }
             }
             r
         }
@@ -555,14 +538,12 @@ protected constructor(driverClassName: String) :
         val cursorField = getCursorField(airbyteStream)
         val cursorType =
             table.fields
-                .stream()
                 .filter { info: CommonField<DataType> -> info.name == cursorField }
                 .map { obj: CommonField<DataType> -> obj.type }
-                .findFirst()
-                .orElseThrow()
+                .first()
 
         Preconditions.checkState(
-            table.fields.stream().anyMatch { f: CommonField<DataType> -> f.name == cursorField },
+            table.fields.any { f: CommonField<DataType> -> f.name == cursorField },
             String.format("Could not find cursor field %s in table %s", cursorField, table.name)
         )
 
@@ -815,8 +796,6 @@ protected constructor(driverClassName: String) :
         const val READ_TRACE_OPERATION_NAME: String = "read-operation"
 
         @JvmStatic
-        protected val LOGGER: Logger = LoggerFactory.getLogger(AbstractDbSource::class.java)
-
         private fun getMessageIterator(
             recordIterator: AutoCloseableIterator<AirbyteRecordData>,
             streamName: String,

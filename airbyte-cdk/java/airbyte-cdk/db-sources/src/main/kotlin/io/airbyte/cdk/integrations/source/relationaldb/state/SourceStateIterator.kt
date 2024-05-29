@@ -11,8 +11,6 @@ import io.airbyte.protocol.models.v0.SyncMode
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 open class SourceStateIterator<T>(
     private val messageIterator: Iterator<T>,
@@ -107,7 +105,5 @@ open class SourceStateIterator<T>(
         return false
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(SourceStateIterator::class.java)
-    }
+    companion object {}
 }

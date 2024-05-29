@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.3.3"
+version = "2.0.0"
 name = "source-pinterest"
 description = "Source implementation for Pinterest."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -18,7 +18,7 @@ include = "source_pinterest"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 pendulum = "==2.1.2"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "0.86.3"
 
 [tool.poetry.scripts]
 source-pinterest = "source_pinterest.run:run"

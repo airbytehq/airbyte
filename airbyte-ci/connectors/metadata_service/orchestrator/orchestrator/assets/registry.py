@@ -11,11 +11,51 @@ from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
 from google.cloud import storage
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from metadata_service.models.transform import to_json_sanitized_dict
-from orchestrator.assets.registry_entry import read_registry_entry_blob
+from orchestrator.assets.registry_entry import ConnectorTypePrimaryKey, ConnectorTypes, read_registry_entry_blob
 from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
+from orchestrator.utils.object_helpers import default_none_to_dict
+from pydash.objects import set_with
 
 GROUP_NAME = "registry"
+
+
+def _get_registry_entry_id(registry_entry: dict, connector_type: ConnectorTypes) -> str:
+    """Get the registry entry ID.
+
+    A function is needed to get the registry entry ID because the primary key field is different for each connector type.
+
+    e.g. for sources, the primary key field is "sourceDefinitionId", and for destinations, the primary key field is "destinationDefinitionId".
+
+    Args:
+        registry_entry (dict): The registry entry.
+        connector_type (ConnectorTypes): The connector type.
+
+    Returns:
+        str: The registry entry ID.
+    """
+    pk_field = ConnectorTypePrimaryKey[connector_type.value]
+    return registry_entry[pk_field]
+
+
+@sentry_sdk.trace
+def apply_metrics_to_registry_entry(registry_entry_dict: dict, connector_type: ConnectorTypes, latest_metrics_dict: dict) -> dict:
+    """Apply the metrics to the registry entry.
+
+    Args:
+        registry_entry_dict (dict): The registry entry.
+        latest_metrics_dict (dict): The metrics.
+
+    Returns:
+        dict: The registry entry with metrics.
+    """
+    connector_id = _get_registry_entry_id(registry_entry_dict, connector_type)
+    metrics = latest_metrics_dict.get(connector_id, {})
+
+    # Safely add metrics to ["generated"]["metrics"], knowing that the key may not exist, or might be None
+    registry_entry_dict = set_with(registry_entry_dict, "generated.metrics", metrics, default_none_to_dict)
+
+    return registry_entry_dict
 
 
 @sentry_sdk.trace
@@ -45,6 +85,7 @@ def generate_and_persist_registry(
     registry_entry_file_blobs: List[storage.Blob],
     registry_directory_manager: GCSFileManager,
     registry_name: str,
+    latest_connnector_metrics: dict,
 ) -> Output[ConnectorRegistryV0]:
     """Generate the selected registry from the metadata files, and persist it to GCS.
 
@@ -61,16 +102,18 @@ def generate_and_persist_registry(
         StageStatus.IN_PROGRESS,
         f"Generating {registry_name} registry...",
     )
+
     registry_dict = {"sources": [], "destinations": []}
     for blob in registry_entry_file_blobs:
-        registry_entry, connector_type = read_registry_entry_blob(blob)
+        connector_type, registry_entry = read_registry_entry_blob(blob)
         plural_connector_type = f"{connector_type}s"
 
         # We santiize the registry entry to ensure its in a format
         # that can be parsed by pydantic.
         registry_entry_dict = to_json_sanitized_dict(registry_entry)
+        enriched_registry_entry_dict = apply_metrics_to_registry_entry(registry_entry_dict, connector_type, latest_connnector_metrics)
 
-        registry_dict[plural_connector_type].append(registry_entry_dict)
+        registry_dict[plural_connector_type].append(enriched_registry_entry_dict)
 
     registry_model = ConnectorRegistryV0.parse_obj(registry_dict)
 
@@ -93,9 +136,12 @@ def generate_and_persist_registry(
 # Registry Generation
 
 
-@asset(required_resource_keys={"slack", "registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@asset(
+    required_resource_keys={"slack", "registry_directory_manager", "latest_oss_registry_entries_file_blobs", "latest_metrics_gcs_blob"},
+    group_name=GROUP_NAME,
+)
 @sentry.instrument_asset_op
-def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
+def persisted_oss_registry(context: OpExecutionContext, latest_connnector_metrics: dict) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the oss registry from the registry entries.
     """
@@ -108,12 +154,16 @@ def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegis
         registry_entry_file_blobs=latest_oss_registry_entries_file_blobs,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
+        latest_connnector_metrics=latest_connnector_metrics,
     )
 
 
-@asset(required_resource_keys={"slack", "registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@asset(
+    required_resource_keys={"slack", "registry_directory_manager", "latest_cloud_registry_entries_file_blobs", "latest_metrics_gcs_blob"},
+    group_name=GROUP_NAME,
+)
 @sentry.instrument_asset_op
-def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
+def persisted_cloud_registry(context: OpExecutionContext, latest_connnector_metrics: dict) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the cloud registry from the registry entries.
     """
@@ -126,6 +176,7 @@ def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorReg
         registry_entry_file_blobs=latest_cloud_registry_entries_file_blobs,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
+        latest_connnector_metrics=latest_connnector_metrics,
     )
 
 
