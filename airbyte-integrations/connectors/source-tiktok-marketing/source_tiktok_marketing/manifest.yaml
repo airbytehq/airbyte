@@ -4185,8 +4185,8 @@ spec:
         order: 3
         type: integer
       include_deleted:
-        title: Include Deleted Data in Reports
-        description: Set to active if you want to include deleted data in reports.
+        title: Include Deleted Data in Reports and Ads, Ad Groups and Campaign streams.
+        description: Set to active if you want to include deleted data in report based streams and Ads, Ad Groups and Campaign streams.
         default: false
         order: 4
         type: boolean
