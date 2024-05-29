@@ -22,7 +22,6 @@ from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_
 from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 from deepdiff import DeepDiff
 
-
 MIN_BATCHES_TO_TEST: int = 5
 
 
