@@ -152,10 +152,8 @@ class SetConnectorVersion(Step):
         self.export = export
 
     async def get_repo_dir(self) -> Directory:
-        if not self.repo_dir:
+        if self.repo_dir is None:
             self.repo_dir = await self.context.get_repo_dir()
-            if self.repo_dir is None:
-                raise ValueError("Failed to set the repo directory from the ConnectorContext.")
         return self.repo_dir
 
     async def _run(self) -> StepResult:
