@@ -9,17 +9,15 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.functional.Either
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.EOFException
 import java.sql.SQLException
 import java.sql.SQLSyntaxErrorException
-import java.util.stream.Collectors
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Utility class defining methods for handling configuration exceptions in connectors. */
 object ConnectorExceptionUtil {
-    private val LOGGER: Logger = LoggerFactory.getLogger(ConnectorExceptionUtil::class.java)
 
     const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
         "Could not connect with provided configuration. Error: %s"
@@ -111,11 +109,10 @@ object ConnectorExceptionUtil {
     fun <T : Throwable> logAllAndThrowFirst(initialMessage: String, throwables: Collection<T>) {
         if (!throwables.isEmpty()) {
             val stacktraces =
-                throwables
-                    .stream()
-                    .map { throwable: Throwable? -> ExceptionUtils.getStackTrace(throwable) }
-                    .collect(Collectors.joining("\n"))
-            LOGGER.error("$initialMessage$stacktraces\nRethrowing first exception.")
+                throwables.joinToString("\n") { throwable: Throwable ->
+                    ExceptionUtils.getStackTrace(throwable)
+                }
+            LOGGER.error { "$initialMessage$stacktraces\nRethrowing first exception." }
             throw throwables.iterator().next()
         }
     }
@@ -125,12 +122,12 @@ object ConnectorExceptionUtil {
         initialMessage: String,
         eithers: List<Either<out T, Result>>
     ): List<Result> {
-        val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }.toList()
+        val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }
         if (throwables.isNotEmpty()) {
             logAllAndThrowFirst(initialMessage, throwables)
         }
         // No need to filter on isRight since isLeft will throw before reaching this line.
-        return eithers.stream().map { obj: Either<out T, Result> -> obj.right!! }.toList()
+        return eithers.map { obj: Either<out T, Result> -> obj.right!! }
     }
 
     private fun isTransientErrorException(e: Throwable?): Boolean {

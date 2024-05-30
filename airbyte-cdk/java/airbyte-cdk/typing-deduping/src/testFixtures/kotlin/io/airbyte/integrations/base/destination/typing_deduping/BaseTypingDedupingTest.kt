@@ -18,6 +18,7 @@ import io.airbyte.workers.internal.DefaultAirbyteDestination
 import io.airbyte.workers.process.AirbyteIntegrationLauncher
 import io.airbyte.workers.process.DockerProcessFactory
 import io.airbyte.workers.process.ProcessFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -28,8 +29,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
-import java.util.stream.Stream
 import kotlin.test.assertFails
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.*
@@ -37,9 +36,8 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This is loosely based on standard-destination-tests's DestinationAcceptanceTest class. The
  * sync-running code is copy-pasted from there.
@@ -576,11 +574,10 @@ abstract class BaseTypingDedupingTest {
         val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
-                .stream()
-                .peek { record: JsonNode ->
-                    (record as ObjectNode).remove(sqlGenerator.buildColumnId("name").name)
-                }
-                .toList()
+        expectedFinalRecords2.forEach { record: JsonNode ->
+            (record as ObjectNode).remove(sqlGenerator.buildColumnId("name").name)
+        }
+
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
@@ -655,11 +652,8 @@ abstract class BaseTypingDedupingTest {
 
         // First sync
         val messages1 =
-            Stream.concat(
-                    readMessages("dat/sync1_messages.jsonl", namespace1, streamName).stream(),
-                    readMessages("dat/sync1_messages2.jsonl", namespace2, streamName).stream()
-                )
-                .toList()
+            readMessages("dat/sync1_messages.jsonl", namespace1, streamName) +
+                readMessages("dat/sync1_messages2.jsonl", namespace2, streamName)
 
         runSync(catalog, messages1)
 
@@ -680,12 +674,8 @@ abstract class BaseTypingDedupingTest {
 
         // Second sync
         val messages2 =
-            Stream.concat(
-                    readMessages("dat/sync2_messages.jsonl", namespace1, streamName).stream(),
-                    readMessages("dat/sync2_messages2.jsonl", namespace2, streamName).stream()
-                )
-                .toList()
-
+            readMessages("dat/sync2_messages.jsonl", namespace1, streamName) +
+                readMessages("dat/sync2_messages2.jsonl", namespace2, streamName)
         runSync(catalog, messages2)
 
         verifySyncResult(
@@ -950,10 +940,7 @@ abstract class BaseTypingDedupingTest {
     }
 
     private fun <T> repeatList(n: Int, list: List<T>): List<T> {
-        return Collections.nCopies(n, list)
-            .stream()
-            .flatMap { obj: List<T> -> obj.stream() }
-            .collect(Collectors.toList())
+        return Collections.nCopies(n, list).flatMap { obj: List<T> -> obj }
     }
 
     @Throws(Exception::class)
@@ -1018,8 +1005,8 @@ abstract class BaseTypingDedupingTest {
     ): CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> {
         val outputFuture = CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>>()
         Executors.newSingleThreadExecutor()
-            .submit<Void?>(
-                Callable<Void?> {
+            .submit<Void>(
+                Callable<Void> {
                     val destinationMessages:
                         MutableList<io.airbyte.protocol.models.AirbyteMessage> =
                         ArrayList()
@@ -1127,7 +1114,6 @@ abstract class BaseTypingDedupingTest {
     protected val schema: JsonNode = SCHEMA
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BaseTypingDedupingTest::class.java)
         @JvmField protected val SCHEMA: JsonNode
 
         init {
@@ -1145,8 +1131,7 @@ abstract class BaseTypingDedupingTest {
                 .map { obj: String -> obj.trim { it <= ' ' } }
                 .filter { line: String -> !line.isEmpty() }
                 .filter { line: String -> !line.startsWith("//") }
-                .map { jsonString: String? -> Jsons.deserializeExact(jsonString) }
-                .toList()
+                .map { jsonString: String -> Jsons.deserializeExact(jsonString) }
         }
 
         @Throws(IOException::class)
@@ -1156,13 +1141,11 @@ abstract class BaseTypingDedupingTest {
             streamName: String?
         ): List<AirbyteMessage> {
             return readRecords(filename)
-                .stream()
-                .map { record: JsonNode? -> Jsons.convertValue(record, AirbyteMessage::class.java) }
-                .peek { message: AirbyteMessage ->
+                .map { record: JsonNode -> Jsons.convertValue(record, AirbyteMessage::class.java) }
+                .onEach { message: AirbyteMessage ->
                     message.record.namespace = streamNamespace
                     message.record.stream = streamName
                 }
-                .toList()
         }
 
         protected fun pushMessages(

@@ -62,7 +62,7 @@ class GcsDestinationConfig(
             }
             else ->
                 throw IllegalArgumentException(
-                    "Unsupported credential type: " + gcsCredentialConfig.credentialType!!.name
+                    "Unsupported credential type: " + gcsCredentialConfig.credentialType.name
                 )
         }
     }
