@@ -914,6 +914,82 @@ list_stream:
     assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
 
 
+def test_client_side_incremental_with_partition_router():
+    content = """
+selector:
+  type: RecordSelector
+  extractor:
+      type: DpathExtractor
+      field_path: ["extractor_path"]
+requester:
+  type: HttpRequester
+  name: "{{ parameters['name'] }}"
+  url_base: "https://api.sendgrid.com/v3/"
+  http_method: "GET"
+schema_loader:
+  file_path: "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml"
+  name: "{{ parameters['stream_name'] }}"
+retriever:
+  requester:
+    type: "HttpRequester"
+    path: "kek"
+  record_selector:
+    extractor:
+      field_path: []
+stream_A:
+  type: DeclarativeStream
+  name: "A"
+  primary_key: "id"
+  $parameters:
+    retriever: "#/retriever"
+    url_base: "https://airbyte.io"
+    schema_loader: "#/schema_loader"
+list_stream:
+  type: DeclarativeStream
+  incremental_sync:
+    type: DatetimeBasedCursor
+    $parameters:
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    cursor_field: "created"
+    is_client_side_incremental: true
+  retriever:
+    type: SimpleRetriever
+    name: "{{ parameters['name'] }}"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - stream: "#/stream_A"
+          parent_key: id
+          partition_field: id
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response._metadata.next }}"
+        page_size: 10
+    requester:
+      $ref: "#/requester"
+      path: "/"
+    record_selector:
+      $ref: "#/selector"
+  $parameters:
+    name: "lists"
+    """
+
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["list_stream"], {})
+
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
+
+    assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
+    assert isinstance(stream.retriever.record_selector.record_filter._per_partition_cursor, PerPartitionCursor)
+
+
 def test_given_data_feed_and_client_side_incremental_then_raise_error():
     content = """
 incremental_sync:
