@@ -8,7 +8,6 @@ from itertools import chain
 from typing import Any, Generator, List, Mapping, Optional, Tuple
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests import HTTPError
@@ -73,7 +72,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 
 
 class SourceHubspot(AbstractSource):
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
@@ -197,11 +196,12 @@ class SourceHubspot(AbstractSource):
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams
 
-        available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
+        custom_object_streams = list(self.get_custom_object_streams(api=api, common_params=common_params))
+        available_streams.extend(custom_object_streams)
 
         if enable_experimental_streams:
             custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(
-                custom_object_stream_instances=self.get_custom_object_streams(api=api, common_params=common_params),
+                custom_object_stream_instances=custom_object_streams,
                 common_params=common_params,
             )
             available_streams.extend(custom_objects_web_analytics_streams)

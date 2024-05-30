@@ -35,8 +35,10 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject         |
-| :------ | :--------- | :----------------------------------------------------- | :-------------- |
-| 0.2.0   | 2023-08-14 | [29406](https://github.com/airbytehq/airbyte/pull/29406)    | Migrated to LowCode Cdk  |
-| 0.1.1   | Unknown    | Unknown                                                | Bump Version             |
-| 0.1.0   | 2021-10-14 | [7062](https://github.com/airbytehq/airbyte/pull/7062) | Initial Release          |
+| Version | Date       | Pull Request                                             | Subject                  |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------- |
+| 0.2.2   | 2024-05-13 | [38119](https://github.com/airbytehq/airbyte/pull/38119) | Add builder compatability  |
+| 0.2.1   | 2024-05-15 | [37100](https://github.com/airbytehq/airbyte/pull/37100) | Add new A/B test columns |
+| 0.2.0   | 2023-08-14 | [29406](https://github.com/airbytehq/airbyte/pull/29406) | Migrated to LowCode Cdk  |
+| 0.1.1   | Unknown    | Unknown                                                  | Bump Version             |
+| 0.1.0   | 2021-10-14 | [7062](https://github.com/airbytehq/airbyte/pull/7062)   | Initial Release          |

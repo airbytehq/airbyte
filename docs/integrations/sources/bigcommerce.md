@@ -54,7 +54,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
 | 0.2.0   | 2023-08-16 | [29469](https://github.com/airbytehq/airbyte/pull/29469) | Migrate Python CDK to Low Code                              |
 | 0.1.10  | 2022-12-16 | [20518](https://github.com/airbytehq/airbyte/pull/20518) | Add brands and categories streams                           |
 | 0.1.9   | 2022-12-15 | [20540](https://github.com/airbytehq/airbyte/pull/20540) | Rebuild on CDK 0.15.0                                       |

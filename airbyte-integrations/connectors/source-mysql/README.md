@@ -1,13 +1,16 @@
 # MySQL Source
 
 ## Documentation
+
 This is the repository for the MySQL only source connector in Java.
 For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/mysql)
 
 ## Local development
 
 #### Building via Gradle
+
 From the Airbyte repository root, run:
+
 ```
 ./gradlew :airbyte-integrations:connectors:source-mysql:build
 ```
@@ -15,19 +18,24 @@ From the Airbyte repository root, run:
 ### Locally running the connector docker image
 
 #### Build
+
 Build the connector image via Gradle:
 
 ```
 ./gradlew :airbyte-integrations:connectors:source-mysql:buildConnectorImage
 ```
+
 Once built, the docker image name and tag on your host will be `airbyte/source-mysql:dev`.
 the Dockerfile.
 
 ## Testing
+
 We use `JUnit` for Java tests.
 
 ### Acceptance Tests
+
 To run acceptance and custom integration tests:
+
 ```
 ./gradlew :airbyte-integrations:connectors:source-mysql:integrationTest
 ```
@@ -35,11 +43,13 @@ To run acceptance and custom integration tests:
 ### Performance Tests
 
 To run performance tests in commandline:
+
 ```shell
 ./gradlew :airbyte-integrations:connectors:source-mysql:performanceTest [--cpulimit=cpulimit/<limit>] [--memorylimit=memorylimit/<limit>]
 ```
 
 In pull request:
+
 ```shell
 /test-performance connector=connectors/source-mysql [--cpulimit=cpulimit/<limit>] [--memorylimit=memorylimit/<limit>]
 ```
@@ -59,5 +69,5 @@ you need to follow a few simple steps.
    ```shell
    cd airbyte-integrations/connectors/source-mysql
    mysql -h hostname -u user database < src/test-performance/sql/create_mysql_benchmarks.sql
-   ```   
-4. After the script finishes its work, you will receive the number of tables specified in the script, with names starting with **test_0** and ending with **test_(the number of tables minus 1)**.
+   ```
+4. After the script finishes its work, you will receive the number of tables specified in the script, with names starting with **test_0** and ending with **test\_(the number of tables minus 1)**.

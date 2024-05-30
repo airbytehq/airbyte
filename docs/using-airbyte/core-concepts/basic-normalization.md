@@ -18,7 +18,7 @@ The high-level overview contains all the information you need to use Basic Norma
 
 :::
 
-For every connection, you can choose between two options: 
+For every connection, you can choose between two options:
 
 - Basic Normalization: Airbyte converts the raw JSON blob version of your data to the format of your destination. _Note: Not all destinations support normalization._
 - Raw data (no normalization): Airbyte places the JSON blob version of your data in a table called `_airbyte_raw_<stream name>`
@@ -140,14 +140,14 @@ Airbyte tracks types using JsonSchema's primitive types. Here is how these types
 
 Airbyte uses the types described in the catalog to determine the correct type for each column. It does not try to use the values themselves to infer the type.
 
-| JsonSchema Type                        | Resulting Type          | Notes                                         |
-| :------------------------------------- | :---------------------- | :-------------------------------------------- |
-| `number`                               | float                   |                                               |
-| `integer`                              | integer                 |                                               |
-| `string`                               | string                  |                                               |
-| `bit`                                  | boolean                 |                                               |
-| `boolean`                              | boolean                 |                                               |
-| `string` with format label `date-time` | timestamp with timezone |                                               |
+| JsonSchema Type                        | Resulting Type          | Notes                   |
+| :------------------------------------- | :---------------------- | :---------------------- |
+| `number`                               | float                   |                         |
+| `integer`                              | integer                 |                         |
+| `string`                               | string                  |                         |
+| `bit`                                  | boolean                 |                         |
+| `boolean`                              | boolean                 |                         |
+| `string` with format label `date-time` | timestamp with timezone |                         |
 | `array`                                | new table               | see [nesting](#Nesting) |
 | `object`                               | new table               | see [nesting](#Nesting) |
 

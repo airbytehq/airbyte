@@ -6,18 +6,18 @@ This source can sync data from the [Omnisend API](https://api-docs.omnisend.com/
 
 ## This Source Supports the Following Streams
 
-* contacts
-* campaigns
-* carts
-* orders
-* products
+- contacts
+- campaigns
+- carts
+- orders
+- products
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -27,10 +27,10 @@ The connector has a rate limit of 400 requests per 1 minute.
 
 ### Requirements
 
-* Omnisend API Key
+- Omnisend API Key
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                    |
-|:--------|:-----------| :----------- |:-----------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject        |
+| :------ | :--------- | :------------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-10-25 | [18577](https://github.com/airbytehq/airbyte/pull/18577) | Initial commit |

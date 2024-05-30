@@ -169,3 +169,79 @@ open http://localhost:3000
 ```
 
 And run the `generate_registry` job
+
+## Additional Notes
+### How to publish to Dagster Cloud Dev
+Pre-requisites:
+- You need to have `airbyte-ci` installed. You can install it by running `make tools.airbyte-ci-dev.install` from the root of the repository.
+- You need to have the `DAGSTER_CLOUD_METADATA_API_TOKEN` environment variable set to an API token from the Airbyte Dagster Cloud account.
+
+```sh
+DAGSTER_CLOUD_METADATA_API_TOKEN=<SECRET> DAGSTER_CLOUD_DEPLOYMENT="dev" airbyte-ci metadata deploy orchestrator
+```
+
+### Testing Slack Notifications
+You will need to add the following environment variables to your `.env` file:
+
+- `SLACK_TOKEN`: Set to an OAuth token for the [Connector Ops Dagster Bot](https://airbytehq-team.slack.com/apps/A05K845HBE0-connector-ops-dagster-bot?settings=1)
+- `PUBLISH_UPDATE_CHANNEL`: Set to `#test-ci-slack-intergrations`
+- `SLACK_NOTIFICATIONS_DISABLED`: Set to `False`
+
+### Resource Trees
+We use a concept of resource trees to organize our resources in the [orchestrator/__init__.py file](orchestrator/__init__.py).
+
+Each resource tree is a dictionary that contains the resources for a specific functionality or service. The resources are organized in a hierarchical structure that allows for easy access, management, and most importantly reuse.
+
+
+**RESOURCE TREE STRUCTURE EXAMPLE:**
+
+_💡 Note that we expand the `GCS_RESOURCE_TREE` inside the `METADATA_RESOURCE_TREE`. This is so that we can keep our primary resource trees independently usable in tests while preventing them from getting too verbose._
+
+```python
+GCS_RESOURCE_TREE = {
+    "gcp_gcs_client": gcp_gcs_client.configured(
+        {
+            "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
+        }
+    ),
+    "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
+    "registry_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
+    "root_metadata_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": ""}),
+}
+
+METADATA_RESOURCE_TREE = {
+    **SLACK_RESOURCE_TREE,
+    **GCS_RESOURCE_TREE,
+    "all_metadata_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*/{METADATA_FILE_NAME}$"}
+    ),
+    "latest_metadata_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
+    ),
+}
+
+# ...
+
+RESOURCES = {
+    **METADATA_RESOURCE_TREE,
+    **DATA_WAREHOUSE_RESOURCE_TREE,
+    **REGISTRY_RESOURCE_TREE,
+    **REGISTRY_ENTRY_RESOURCE_TREE,
+    **CONNECTOR_TEST_REPORT_RESOURCE_TREE,
+}
+```
+
+**RESOURCE TREES:**
+
+The resource tree is a hierarchical structure that defines the available resources for the orchestrator.
+Each resource represents a specific functionality or service that can be used by the jobs and assets.
+
+- SLACK_RESOURCE_TREE: Contains the Slack resource, which provides access to the Slack messaging platform.
+- GITHUB_RESOURCE_TREE: Contains the GitHub resources, including the GitHub client and various GitHub repositories.
+- GCS_RESOURCE_TREE: Contains the Google Cloud Storage (GCS) resources, including the GCS client and various GCS file managers.
+- METADATA_RESOURCE_TREE: Contains resources related to metadata management.
+- DATA_WAREHOUSE_RESOURCE_TREE: Contains resources for handling connector metrics.
+- REGISTRY_RESOURCE_TREE: Contains resources for managing registries.
+- REGISTRY_ENTRY_RESOURCE_TREE: Contains resources for managing registry entries.
+- CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE: Contains resources for handling connector test reports.
+- CONNECTOR_TEST_REPORT_RESOURCE_TREE: Contains resources for generating connector test reports.

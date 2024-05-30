@@ -59,8 +59,8 @@ https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                             | Subject                                         |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | 0.1.2   | 2023-08-24 | [29732](https://github.com/airbytehq/airbyte/pull/29732) | 🐛 Source Microsoft Dataverse: Adjust source_default_cursor when modifiedon not exists |
-| 0.1.1   | 2023-03-16 | [22805](https://github.com/airbytehq/airbyte/pull/22805) | Fixed deduped cursor field value update |
-| 0.1.0   | 2022-11-14 | [18646](https://github.com/airbytehq/airbyte/pull/18646) | 🎉 New Source: Microsoft Dataverse [python cdk] |
+| 0.1.1   | 2023-03-16 | [22805](https://github.com/airbytehq/airbyte/pull/22805) | Fixed deduped cursor field value update                                                |
+| 0.1.0   | 2022-11-14 | [18646](https://github.com/airbytehq/airbyte/pull/18646) | 🎉 New Source: Microsoft Dataverse [python cdk]                                        |

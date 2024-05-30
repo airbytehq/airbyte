@@ -8,9 +8,7 @@ import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -100,38 +98,20 @@ object GeneralStagingFunctions {
         database: JdbcDatabase?,
         stageName: String?,
         stagingPath: String?,
-        stagedFiles: List<String?>?,
+        stagedFiles: List<String>?,
         tableName: String?,
         schemaName: String?,
         stagingOperations: StagingOperations,
-        streamNamespace: String?,
-        streamName: String?,
-        typerDeduperValve: TypeAndDedupeOperationValve,
-        typerDeduper: TyperDeduper
     ) {
         try {
-            val rawTableInsertLock =
-                typerDeduper.getRawTableInsertLock(streamNamespace!!, streamName!!)
-            rawTableInsertLock.lock()
-            try {
-                stagingOperations.copyIntoTableFromStage(
-                    database,
-                    stageName,
-                    stagingPath,
-                    stagedFiles,
-                    tableName,
-                    schemaName
-                )
-            } finally {
-                rawTableInsertLock.unlock()
-            }
-
-            val streamId = AirbyteStreamNameNamespacePair(streamName, streamNamespace)
-            typerDeduperValve.addStreamIfAbsent(streamId)
-            if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
-                typerDeduper.typeAndDedupe(streamId.namespace, streamId.name, false)
-                typerDeduperValve.updateTimeAndIncreaseInterval(streamId)
-            }
+            stagingOperations.copyIntoTableFromStage(
+                database,
+                stageName,
+                stagingPath,
+                stagedFiles,
+                tableName,
+                schemaName
+            )
         } catch (e: Exception) {
             throw RuntimeException("Failed to upload data from stage $stagingPath", e)
         }
@@ -155,7 +135,7 @@ object GeneralStagingFunctions {
         typerDeduper: TyperDeduper
     ): OnCloseFunction {
         return OnCloseFunction {
-            hasFailed: Boolean,
+            _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             // After moving data from staging area to the target table (airybte_raw) clean up the
             // staging

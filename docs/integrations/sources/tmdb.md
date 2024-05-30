@@ -29,9 +29,9 @@ Just pass the generated API key and Movie ID for establishing the connection.
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-4. Enter your `api_key`.
-5. Enter params `movie_id, query, language` (if needed).
-6. Click **Set up source**.
+3. Enter your `api_key`.
+4. Enter params `movie_id, query, language` (if needed).
+5. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -81,7 +81,6 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 - Search_people
 - Search_tv_shows
 
-
 ## API method example
 
 GET https://api.themoviedb.org/3/movie/{movie_id}/alternative_titles?api_key={api_key}
@@ -92,6 +91,6 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561)| Initial commit |
+| Version | Date       | Pull Request                                            | Subject        |
+| :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561) | Initial commit |

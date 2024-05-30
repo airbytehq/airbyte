@@ -1,7 +1,10 @@
 {
   "azure_blob_storage_endpoint": "http://localhost:10000/account1",
   "azure_blob_storage_account_name": "account1",
-  "azure_blob_storage_account_key": "key1",
+  "credentials": {
+    "auth_type": "storage_account_key",
+    "azure_blob_storage_account_key": "key1"
+  },
   "azure_blob_storage_container_name": "testcontainer",
   "streams": [
     {

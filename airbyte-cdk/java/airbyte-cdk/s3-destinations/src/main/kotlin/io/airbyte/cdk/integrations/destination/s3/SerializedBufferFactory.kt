@@ -8,11 +8,11 @@ import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunctio
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroSerializedBuffer
-import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.avro.UploadAvroFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer
-import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.csv.UploadCsvFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.jsonl.JsonLSerializedBuffer
-import io.airbyte.cdk.integrations.destination.s3.jsonl.S3JsonlFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.jsonl.UploadJsonlFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.parquet.ParquetSerializedBuffer
 import io.airbyte.commons.json.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -36,7 +36,7 @@ class SerializedBufferFactory {
          * configured by composition with another function to create a new [BufferStorage] where to
          * store it.
          *
-         * This factory determines which [S3FormatConfig] to use depending on the user provided
+         * This factory determines which [UploadFormatConfig] to use depending on the user provided
          * @param config, The @param createStorageFunctionWithoutExtension is the constructor
          * function to call when creating a new buffer where to store data. Note that we typically
          * associate which format is being stored in the storage object thanks to its file
@@ -50,40 +50,40 @@ class SerializedBufferFactory {
             val formatConfig = config.formatConfig!!
             logger.info { "S3 format config: $formatConfig" }
             when (formatConfig.format) {
-                S3Format.AVRO -> {
+                FileUploadFormat.AVRO -> {
                     val createStorageFunctionWithExtension = Callable {
                         createStorageFunctionWithoutExtension.apply(
                             formatConfig.fileExtension,
                         )
                     }
                     return AvroSerializedBuffer.createFunction(
-                        formatConfig as S3AvroFormatConfig,
+                        formatConfig as UploadAvroFormatConfig,
                         createStorageFunctionWithExtension,
                     )
                 }
-                S3Format.CSV -> {
+                FileUploadFormat.CSV -> {
                     val createStorageFunctionWithExtension = Callable {
                         createStorageFunctionWithoutExtension.apply(
                             formatConfig.fileExtension,
                         )
                     }
                     return CsvSerializedBuffer.createFunction(
-                        formatConfig as S3CsvFormatConfig,
+                        formatConfig as UploadCsvFormatConfig,
                         createStorageFunctionWithExtension,
                     )
                 }
-                S3Format.JSONL -> {
+                FileUploadFormat.JSONL -> {
                     val createStorageFunctionWithExtension = Callable {
                         createStorageFunctionWithoutExtension.apply(
                             formatConfig.fileExtension,
                         )
                     }
                     return JsonLSerializedBuffer.createBufferFunction(
-                        formatConfig as S3JsonlFormatConfig,
+                        formatConfig as UploadJsonlFormatConfig,
                         createStorageFunctionWithExtension,
                     )
                 }
-                S3Format.PARQUET -> {
+                FileUploadFormat.PARQUET -> {
                     // we can't choose the type of buffer storage with parquet because of how the
                     // underlying hadoop
                     // library is imposing file usage.

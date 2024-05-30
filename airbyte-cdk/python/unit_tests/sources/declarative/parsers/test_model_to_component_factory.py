@@ -3,13 +3,13 @@
 #
 
 # mypy: ignore-errors
-
 import datetime
 from typing import Any, Mapping
 
+import freezegun
 import pytest
 from airbyte_cdk.models import Level
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -22,7 +22,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -33,6 +33,7 @@ from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as Dateti
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
 from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequesterModel
+from airbyte_cdk.sources.declarative.models import JwtAuthenticator as JwtAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
@@ -228,7 +229,7 @@ spec:
 
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
     assert isinstance(stream.retriever.record_selector.extractor.decoder, JsonDecoder)
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_path] == ["lists"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor._field_path] == ["lists"]
 
     assert isinstance(stream.retriever.record_selector.record_filter, RecordFilter)
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
@@ -658,6 +659,137 @@ list_stream:
     assert list_stream_slicer._cursor_field.string == "a_key"
 
 
+def test_resumable_full_refresh_stream():
+    content = """
+decoder:
+  type: JsonDecoder
+extractor:
+  type: DpathExtractor
+  decoder: "#/decoder"
+selector:
+  type: RecordSelector
+  record_filter:
+    type: RecordFilter
+    condition: "{{ record['id'] > stream_state['id'] }}"
+metadata_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page_size
+    page_token_option:
+      type: RequestPath
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response._metadata.next }}"
+      page_size: 10
+requester:
+  type: HttpRequester
+  url_base: "https://api.sendgrid.com/v3/"
+  http_method: "GET"
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['apikey'] }}"
+  request_parameters:
+    unit: "day"
+retriever:
+  paginator:
+    type: NoPagination
+partial_stream:
+  type: DeclarativeStream
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
+list_stream:
+  $ref: "#/partial_stream"
+  $parameters:
+    name: "lists"
+    extractor:
+      $ref: "#/extractor"
+      field_path: ["{{ parameters['name'] }}"]
+  name: "lists"
+  primary_key: "id"
+  retriever:
+    $ref: "#/retriever"
+    requester:
+      $ref: "#/requester"
+      path: "{{ next_page_token['next_page_url'] }}"
+    paginator:
+      $ref: "#/metadata_paginator"
+    record_selector:
+      $ref: "#/selector"
+  transformations:
+    - type: AddFields
+      fields:
+      - path: ["extra"]
+        value: "{{ response.to_add }}"
+check:
+  type: CheckStream
+  stream_names: ["list_stream"]
+spec:
+  type: Spec
+  documentation_url: https://airbyte.com/#yaml-from-manifest
+  connection_specification:
+    title: Test Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: false
+    properties:
+      api_key:
+        type: string
+        airbyte_secret: true
+        title: API Key
+        description: Test API Key
+        order: 0
+  advanced_auth:
+    auth_flow_type: "oauth2.0"
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    resolved_manifest["type"] = "DeclarativeSource"
+    manifest = transformer.propagate_types_and_parameters("", resolved_manifest, {})
+
+    stream_manifest = manifest["list_stream"]
+    assert stream_manifest["type"] == "DeclarativeStream"
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
+
+    assert isinstance(stream, DeclarativeStream)
+    assert stream.primary_key == "id"
+    assert stream.name == "lists"
+    assert stream._stream_cursor_field.string == ""
+
+    assert isinstance(stream.retriever, SimpleRetriever)
+    assert stream.retriever.primary_key == stream.primary_key
+    assert stream.retriever.name == stream.name
+
+    assert isinstance(stream.retriever.record_selector, RecordSelector)
+
+    assert isinstance(stream.retriever.stream_slicer, ResumableFullRefreshCursor)
+    assert isinstance(stream.retriever.cursor, ResumableFullRefreshCursor)
+
+    assert isinstance(stream.retriever.paginator, DefaultPaginator)
+    assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
+    assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
+    assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
+    assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
+    assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com/v3/"
+    assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
+
+    assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
+    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
+    assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
+    assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
+    assert stream.retriever.paginator.pagination_strategy.page_size == 10
+
+    checker = factory.create_component(model_type=CheckStreamModel, component_definition=manifest["check"], config=input_config)
+
+    assert isinstance(checker, CheckStream)
+    streams_to_check = checker.stream_names
+    assert len(streams_to_check) == 1
+    assert list(streams_to_check)[0] == "list_stream"
+
+
 def test_incremental_data_feed():
     content = """
 selector:
@@ -759,7 +891,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in selector.extractor.field_path] == [expected_runtime_selector]
+    assert [fp.eval(input_config) for fp in selector.extractor._field_path] == [expected_runtime_selector]
     assert isinstance(selector.record_filter, RecordFilter)
     assert selector.record_filter.condition == "{{ record['id'] > stream_state['id'] }}"
 
@@ -856,7 +988,7 @@ requester:
     assert selector._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
 
 
-def test_create_request_with_leacy_session_authenticator():
+def test_create_request_with_legacy_session_authenticator():
     content = """
 requester:
   type: HttpRequester
@@ -1093,7 +1225,7 @@ def test_config_with_defaults():
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_path] == ["result"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor._field_path] == ["result"]
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
@@ -1845,3 +1977,159 @@ def test_create_custom_schema_loader():
     }
     component = factory.create_component(CustomSchemaLoaderModel, definition, {})
     assert isinstance(component, MyCustomSchemaLoader)
+
+
+@freezegun.freeze_time("2021-01-01 00:00:00")
+@pytest.mark.parametrize(
+    "config, manifest, expected",
+    [
+        (
+            {
+                "secret_key": "secret_key",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                algorithm: HS256
+            """,
+            {
+                "secret_key": "secret_key",
+                "algorithm": "HS256",
+                "base64_encode_secret_key": False,
+                "token_duration": 1200,
+                "jwt_headers": {
+                    "typ": "JWT",
+                    "alg": "HS256"
+                },
+                "jwt_payload": {}
+            }
+        ),
+        (
+            {
+                "secret_key": "secret_key",
+                "kid": "test kid",
+                "iss": "test iss",
+                "test": "test custom header",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                base64_encode_secret_key: True
+                algorithm: RS256
+                token_duration: 3600
+                header_prefix: Bearer
+                jwt_headers:
+                    kid: "{{ config['kid'] }}"
+                    cty: "JWT"
+                    typ: "Alt"
+                additional_jwt_headers:
+                    test: "{{ config['test']}}"
+                jwt_payload:
+                    iss: "{{ config['iss'] }}"
+                    sub: "test sub"
+                    aud: "test aud"
+                additional_jwt_payload:
+                    test: "test custom payload"
+            """,
+            {
+                "secret_key": "secret_key",
+                "algorithm": "RS256",
+                "base64_encode_secret_key": True,
+                "token_duration": 3600,
+                "header_prefix": "Bearer",
+                "jwt_headers": {
+                    "kid": "test kid",
+                    "typ": "Alt",
+                    "alg": "RS256",
+                    "cty": "JWT",
+                    "test": "test custom header",
+
+                },
+                "jwt_payload": {
+                    "iss": "test iss",
+                    "sub": "test sub",
+                    "aud": "test aud",
+                    "test": "test custom payload",
+                },
+            }
+        ),
+        (
+            {
+                "secret_key": "secret_key",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                algorithm: HS256
+                additional_jwt_headers:
+                    custom_header: "custom header value"
+                additional_jwt_payload:
+                    custom_payload: "custom payload value"
+            """,
+            {
+                "secret_key": "secret_key",
+                "algorithm": "HS256",
+                "base64_encode_secret_key": False,
+                "token_duration": 1200,
+                "jwt_headers": {
+                    "typ": "JWT",
+                    "alg": "HS256",
+                    "custom_header": "custom header value",
+
+                },
+                "jwt_payload": {
+                    "custom_payload": "custom payload value",
+                },
+            }
+        ),
+        (
+            {
+                "secret_key": "secret_key",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                algorithm: invalid_algorithm
+            """,
+            {
+                "expect_error": True,
+            }
+        ),
+    ],
+)
+def test_create_jwt_authenticator(config, manifest, expected):
+    parsed_manifest = YamlDeclarativeSource._parse(manifest)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+
+    authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
+
+    if expected.get("expect_error"):
+        with pytest.raises(ValueError):
+            authenticator = factory.create_component(
+                model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config
+            )
+        return
+
+    authenticator = factory.create_component(
+        model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config
+    )
+
+    assert isinstance(authenticator, JwtAuthenticator)
+    assert authenticator._secret_key.eval(config) == expected["secret_key"]
+    assert authenticator._algorithm == expected["algorithm"]
+    assert authenticator._base64_encode_secret_key == expected["base64_encode_secret_key"]
+    assert authenticator._token_duration == expected["token_duration"]
+    if "header_prefix" in expected:
+        assert authenticator._header_prefix.eval(config) == expected["header_prefix"]
+    assert authenticator._get_jwt_headers() == expected["jwt_headers"]
+    jwt_payload = expected["jwt_payload"]
+    jwt_payload.update({
+        "iat": int(datetime.datetime.now().timestamp()),
+        "nbf": int(datetime.datetime.now().timestamp()),
+        "exp": int(datetime.datetime.now().timestamp()) + expected["token_duration"]
+    })
+    assert authenticator._get_jwt_payload() == jwt_payload

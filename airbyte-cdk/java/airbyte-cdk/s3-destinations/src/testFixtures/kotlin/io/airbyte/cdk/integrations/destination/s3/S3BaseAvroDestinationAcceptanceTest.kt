@@ -17,7 +17,7 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericDatumReader
 
 abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
-    S3AvroParquetDestinationAcceptanceTest(S3Format.AVRO) {
+    S3AvroParquetDestinationAcceptanceTest(FileUploadFormat.AVRO) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(

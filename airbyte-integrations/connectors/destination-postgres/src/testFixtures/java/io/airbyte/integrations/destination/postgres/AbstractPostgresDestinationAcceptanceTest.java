@@ -40,6 +40,8 @@ public abstract class AbstractPostgresDestinationAcceptanceTest extends JdbcDest
   }
 
   @Override
+  // namingResolver.getRawTableName is deprecated
+  @SuppressWarnings("deprecation")
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
                                            final String streamName,
                                            final String namespace,

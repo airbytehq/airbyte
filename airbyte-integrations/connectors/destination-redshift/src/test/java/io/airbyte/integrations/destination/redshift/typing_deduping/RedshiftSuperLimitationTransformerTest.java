@@ -26,7 +26,6 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -43,7 +42,7 @@ import org.junit.jupiter.api.Test;
 public class RedshiftSuperLimitationTransformerTest {
 
   private RedshiftSuperLimitationTransformer transformer;
-  private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer());
+  private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false);
 
   @BeforeEach
   public void setup() {
@@ -57,11 +56,10 @@ public class RedshiftSuperLimitationTransformerTest {
     final StreamId streamId = new StreamId("test_schema", "users_final", "test_schema", "users_raw", "test_schema", "users_final");
     StreamConfig streamConfig = new StreamConfig(
         streamId,
-        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         primaryKey,
         Optional.empty(),
-        columns);
+        columns, 0, 0, 0);
     final ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(streamConfig));
     transformer = new RedshiftSuperLimitationTransformer(parsedCatalog, "test_schema");
   }

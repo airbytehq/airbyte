@@ -12,9 +12,17 @@ import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
  */
 object DbAnalyticsUtils {
     const val CDC_CURSOR_INVALID_KEY: String = "db-sources-cdc-cursor-invalid"
+    const val DATA_TYPES_SERIALIZATION_ERROR_KEY = "db-sources-data-serialization-error"
 
     @JvmStatic
     fun cdcCursorInvalidMessage(): AirbyteAnalyticsTraceMessage {
         return AirbyteAnalyticsTraceMessage().withType(CDC_CURSOR_INVALID_KEY).withValue("1")
+    }
+
+    @JvmStatic
+    fun dataTypesSerializationErrorMessage(): AirbyteAnalyticsTraceMessage {
+        return AirbyteAnalyticsTraceMessage()
+            .withType(DATA_TYPES_SERIALIZATION_ERROR_KEY)
+            .withValue("1")
     }
 }

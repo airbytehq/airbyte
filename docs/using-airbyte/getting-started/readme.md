@@ -20,7 +20,6 @@ Airbyte Cloud offers a 14-day free trial that begins after your first successful
 
 To start setting up a data pipeline, see how to [set up a source](./add-a-source.md).
 
-
 ## Deploy Airbyte (Self-Managed)
 
 When self-managing Airbyte, your data never leaves your premises. Get started immediately by deploying locally using Docker.
@@ -29,7 +28,7 @@ When self-managing Airbyte, your data never leaves your premises. Get started im
 
 With Airbyte Self-Managed Community (Open Source), you can use one of the following options in your infrastructure:
 
-- [Local Deployment](/deploying-airbyte/local-deployment.md) (recommended when trying out Airbyte)
+- [Local Deployment](/deploying-airbyte/quickstart.md) (recommended when trying out Airbyte)
 - [On AWS](/deploying-airbyte/on-aws-ec2.md)
 - [On Azure VM Cloud Shell](/deploying-airbyte/on-azure-vm-cloud-shell.md)
 - [On Digital Ocean Droplet](/deploying-airbyte/on-digitalocean-droplet.md)
@@ -41,6 +40,7 @@ With Airbyte Self-Managed Community (Open Source), you can use one of the follow
 - [On AWS ECS](/deploying-airbyte/on-aws-ecs.md) (Spoiler alert: it doesn't work)
 
 ### Self-Managed Enterprise
+
 Airbyte Self-Managed Enterprise is the best way to run Airbyte yourself. You get all 300+ pre-built connectors, data never leaves your environment, and Airbyte becomes self-serve in your organization with new tools to manage multiple users, and multiple teams using Airbyte all in one place.
 
 To start with Self-Managed Enterprise, navigate to our [Enterprise setup guide](/enterprise-setup/README.md).

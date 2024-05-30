@@ -57,7 +57,8 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
-| 0.5.1 | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0 |
+| 0.5.2   | 2024-05-02 | [37770](https://github.com/airbytehq/airbyte/pull/37770) | Add Selective Authenticator. Migrate to poetry                          |
+| 0.5.1   | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0               |
 | 0.5.0   | 2023-10-11 | [30467](https://github.com/airbytehq/airbyte/pull/30467) | Use Python base image                                                   |
 | 0.4.1   | 2023-08-24 | [29804](https://github.com/airbytehq/airbyte/pull/29804) | Fix low code migration bugs                                             |
 | 0.4.0   | 2023-08-03 | [28972](https://github.com/airbytehq/airbyte/pull/28972) | Migrate to Low-Code CDK                                                 |

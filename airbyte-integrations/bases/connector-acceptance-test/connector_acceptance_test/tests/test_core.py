@@ -868,7 +868,7 @@ class TestBasicRead(BaseTest):
         therefore any arbitrary object would pass schema validation.
         This method is here to catch those cases by extracting all the paths
         from the object and compare it to paths expected from jsonschema. If
-        there no common pathes then raise an alert.
+        there no common paths then raise an alert.
 
         :param records: List of airbyte record messages gathered from connector instances.
         :param configured_catalog: Testcase parameters parsed from yaml file
@@ -878,15 +878,15 @@ class TestBasicRead(BaseTest):
             schemas[stream.stream.name] = set(get_expected_schema_structure(stream.stream.json_schema))
 
         for record in records:
-            schema_pathes = schemas.get(record.stream)
-            if not schema_pathes:
+            schema_paths = schemas.get(record.stream)
+            if not schema_paths:
                 continue
             record_fields = set(get_object_structure(record.data))
-            common_fields = set.intersection(record_fields, schema_pathes)
+            common_fields = set.intersection(record_fields, schema_paths)
 
             assert (
                 common_fields
-            ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
+            ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_paths}"
 
     @staticmethod
     def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):

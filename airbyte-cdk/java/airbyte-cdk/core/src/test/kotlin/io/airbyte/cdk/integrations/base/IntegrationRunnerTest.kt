@@ -14,6 +14,7 @@ import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.commons.util.MoreIterators
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.validation.json.JsonSchemaValidator
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -24,7 +25,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import org.apache.commons.lang3.ThreadUtils
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
@@ -33,8 +33,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 internal class IntegrationRunnerTest {
     private lateinit var cliParser: IntegrationCliParser
@@ -66,7 +66,6 @@ internal class IntegrationRunnerTest {
 
         val testName = Thread.currentThread().name
         ThreadUtils.getAllThreads()
-            .stream()
             .filter { runningThread: Thread -> !runningThread.isDaemon }
             .forEach { runningThread: Thread -> runningThread.name = testName }
     }
@@ -77,8 +76,8 @@ internal class IntegrationRunnerTest {
         val intConfig = IntegrationConfig.spec()
         val output = ConnectorSpecification().withDocumentationUrl(URI("https://docs.airbyte.io/"))
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source!!.spec()).thenReturn(output)
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(source.spec()).thenReturn(output)
 
         IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS)
 
@@ -93,8 +92,8 @@ internal class IntegrationRunnerTest {
         val intConfig = IntegrationConfig.spec()
         val output = ConnectorSpecification().withDocumentationUrl(URI("https://docs.airbyte.io/"))
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(destination!!.spec()).thenReturn(output)
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(destination.spec()).thenReturn(output)
 
         IntegrationRunner(cliParser, stdoutConsumer, destination, null).run(ARGS)
 
@@ -112,11 +111,11 @@ internal class IntegrationRunnerTest {
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage("it failed")
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source!!.check(CONFIG)).thenReturn(output)
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(source.check(CONFIG)).thenReturn(output)
 
         val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(source!!.spec()).thenReturn(expectedConnSpec)
+        Mockito.`when`(source.spec()).thenReturn(expectedConnSpec)
         Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
         val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
         IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS)
@@ -140,11 +139,11 @@ internal class IntegrationRunnerTest {
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage("it failed")
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(destination!!.check(CONFIG)).thenReturn(output)
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(destination.check(CONFIG)).thenReturn(output)
 
         val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(destination!!.spec()).thenReturn(expectedConnSpec)
+        Mockito.`when`(destination.spec()).thenReturn(expectedConnSpec)
         Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
 
         val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
@@ -169,11 +168,11 @@ internal class IntegrationRunnerTest {
         val output =
             AirbyteCatalog().withStreams(Lists.newArrayList(AirbyteStream().withName("oceans")))
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source!!.discover(CONFIG)).thenReturn(output)
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(source.discover(CONFIG)).thenReturn(output)
 
         val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(source!!.spec()).thenReturn(expectedConnSpec)
+        Mockito.`when`(source.spec()).thenReturn(expectedConnSpec)
         Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
 
         val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
@@ -204,12 +203,12 @@ internal class IntegrationRunnerTest {
                         .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald")))
                 )
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source!!.read(CONFIG, CONFIGURED_CATALOG, STATE))
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(source.read(CONFIG, CONFIGURED_CATALOG, STATE))
             .thenReturn(AutoCloseableIterators.fromIterator(MoreIterators.of(message1, message2)))
 
         val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(source!!.spec()).thenReturn(expectedConnSpec)
+        Mockito.`when`(source.spec()).thenReturn(expectedConnSpec)
         Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
 
         val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
@@ -228,12 +227,12 @@ internal class IntegrationRunnerTest {
         val intConfig = IntegrationConfig.read(configPath, configuredCatalogPath, statePath)
         val configErrorException = ConfigErrorException("Invalid configuration")
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source!!.read(CONFIG, CONFIGURED_CATALOG, STATE))
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(source.read(CONFIG, CONFIGURED_CATALOG, STATE))
             .thenThrow(configErrorException)
 
         val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(source!!.spec()).thenReturn(expectedConnSpec)
+        Mockito.`when`(source.spec()).thenReturn(expectedConnSpec)
         Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
 
         val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
@@ -259,11 +258,11 @@ internal class IntegrationRunnerTest {
         val configErrorException = ConfigErrorException("Invalid configuration")
         val runtimeException = RuntimeException(RuntimeException(configErrorException))
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source!!.check(CONFIG)).thenThrow(runtimeException)
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(source.check(CONFIG)).thenThrow(runtimeException)
 
         val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(source!!.spec()).thenReturn(expectedConnSpec)
+        Mockito.`when`(source.spec()).thenReturn(expectedConnSpec)
         Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
         val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
         IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS)
@@ -293,11 +292,11 @@ internal class IntegrationRunnerTest {
                 )
         val runtimeException = RuntimeException("Runtime Error")
 
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source!!.check(CONFIG)).thenThrow(runtimeException)
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(source.check(CONFIG)).thenThrow(runtimeException)
 
         val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(source!!.spec()).thenReturn(expectedConnSpec)
+        Mockito.`when`(source.spec()).thenReturn(expectedConnSpec)
         Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
         val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
         IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS)
@@ -317,18 +316,14 @@ internal class IntegrationRunnerTest {
     fun testWrite() {
         val intConfig = IntegrationConfig.write(configPath, configuredCatalogPath)
         val consumerMock = Mockito.mock(SerializedAirbyteMessageConsumer::class.java)
-        Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
+        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
         Mockito.`when`(
-                destination!!.getSerializedMessageConsumer(
-                    CONFIG,
-                    CONFIGURED_CATALOG,
-                    stdoutConsumer
-                )
+                destination.getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)
             )
             .thenReturn(consumerMock)
 
         val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(destination!!.spec()).thenReturn(expectedConnSpec)
+        Mockito.`when`(destination.spec()).thenReturn(expectedConnSpec)
         Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
 
         val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
@@ -475,10 +470,8 @@ ${Jsons.serialize(message2)}""".toByteArray(
             throw RuntimeException(e)
         }
         val runningThreads =
-            ThreadUtils.getAllThreads()
-                .stream()
-                .filter(IntegrationRunner.ORPHANED_THREAD_FILTER)
-                .collect(Collectors.toList())
+            ThreadUtils.getAllThreads().filter(IntegrationRunner::filterOrphanedThread)
+
         // all threads should be interrupted
         Assertions.assertEquals(listOf<Any>(), runningThreads)
         Assertions.assertEquals(1, caughtExceptions.size)
@@ -503,10 +496,8 @@ ${Jsons.serialize(message2)}""".toByteArray(
         }
 
         val runningThreads =
-            ThreadUtils.getAllThreads()
-                .stream()
-                .filter(IntegrationRunner.ORPHANED_THREAD_FILTER)
-                .collect(Collectors.toList())
+            ThreadUtils.getAllThreads().filter(IntegrationRunner::filterOrphanedThread)
+
         // a thread that refuses to be interrupted should remain
         Assertions.assertEquals(1, runningThreads.size)
         Assertions.assertEquals(1, caughtExceptions.size)
@@ -518,7 +509,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
         ignoreInterrupt: Boolean
     ) {
         val executorService =
-            Executors.newFixedThreadPool(1) { r: Runnable? ->
+            Executors.newFixedThreadPool(1) { r: Runnable ->
                 // Create a thread that should be identified as orphaned if still running during
                 // shutdown
                 val thread = Thread(r)
@@ -620,7 +611,6 @@ ${Jsons.serialize(message2)}""".toByteArray(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(IntegrationRunnerTest::class.java)
 
         private const val CONFIG_FILE_NAME = "config.json"
         private const val CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json"

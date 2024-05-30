@@ -23,11 +23,11 @@ You can find or create a Workable access token within the [Workable Integrations
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
-4. Enter your `api_token` - Workable Access Token.
-5. Enter your `account_subdomain` - Sub-domain for your organization on Workable, e.g. https://YOUR_ACCOUNT_SUBDOMAIN.workable.com.
-6. Enter your `created_after_date` - The earliest created at date from which you want to sync your Workable data.
-7. Click **Set up source**.
+2. Set the name for your source.
+3. Enter your `api_token` - Workable Access Token.
+4. Enter your `account_subdomain` - Sub-domain for your organization on Workable, e.g. https://YOUR_ACCOUNT_SUBDOMAIN.workable.com.
+5. Enter your `created_after_date` - The earliest created at date from which you want to sync your Workable data.
+6. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -42,14 +42,13 @@ The Workable source connector supports the following [sync modes](https://docs.a
 
 ## Supported Streams
 
-* [Jobs](https://workable.readme.io/reference/jobs)
-* [Candidates](https://workable.readme.io/reference/job-candidates-index)
-* [Stages](https://workable.readme.io/reference/stages)
-* [Recruiters](https://workable.readme.io/reference/recruiters)
+- [Jobs](https://workable.readme.io/reference/jobs)
+- [Candidates](https://workable.readme.io/reference/job-candidates-index)
+- [Stages](https://workable.readme.io/reference/stages)
+- [Recruiters](https://workable.readme.io/reference/recruiters)
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                           |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.1.0   | 2022-10-15 | [18033](https://github.com/airbytehq/airbyte/pull/18033)   | New Source: Workable                                |
-
+| Version | Date       | Pull Request                                             | Subject              |
+| :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.1.0   | 2022-10-15 | [18033](https://github.com/airbytehq/airbyte/pull/18033) | New Source: Workable |

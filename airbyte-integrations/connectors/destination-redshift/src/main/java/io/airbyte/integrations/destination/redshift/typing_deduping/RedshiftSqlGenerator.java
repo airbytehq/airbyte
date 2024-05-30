@@ -16,6 +16,7 @@ import static org.jooq.impl.DSL.quotedName;
 import static org.jooq.impl.DSL.rowNumber;
 import static org.jooq.impl.DSL.val;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
@@ -49,8 +50,20 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   private static final String AIRBYTE_META_COLUMN_CHANGES_KEY = "changes";
 
-  public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
-    super(namingTransformer);
+  private final boolean dropCascade;
+
+  private static boolean isDropCascade(JsonNode config) {
+    final JsonNode dropCascadeNode = config.get(RedshiftDestinationConstants.DROP_CASCADE_OPTION);
+    return dropCascadeNode != null && dropCascadeNode.asBoolean();
+  }
+
+  public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer, JsonNode config) {
+    this(namingTransformer, isDropCascade(config));
+  }
+
+  public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer, boolean dropCascade) {
+    super(namingTransformer, dropCascade);
+    this.dropCascade = dropCascade;
   }
 
   /**
@@ -98,17 +111,17 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    */
 
   @Override
-  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias, final boolean useExpensiveSaferCasting) {
+  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
       switch (airbyteProtocolType) {
         case STRING -> {
           return field(CASE_STATEMENT_SQL_TEMPLATE,
               jsonTypeOf(field).ne("string").and(field.isNotNull()),
               jsonSerialize(field),
-              castedField(field, airbyteProtocolType, useExpensiveSaferCasting)).as(quotedName(alias));
+              castedField(field, airbyteProtocolType, useExpensiveSaferCasting));
         }
         default -> {
-          return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
+          return castedField(field, airbyteProtocolType, useExpensiveSaferCasting);
         }
       }
 
@@ -117,12 +130,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
           jsonTypeOf(field).eq("object"),
-          cast(field, getStructType())).as(quotedName(alias));
+          cast(field, getStructType()));
       case Array.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
           jsonTypeOf(field).eq("array"),
-          cast(field, getArrayType())).as(quotedName(alias));
+          cast(field, getArrayType()));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
@@ -135,8 +148,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .map(column -> castedField(
             field(quotedName(COLUMN_NAME_DATA, column.getKey().getOriginalName())),
             column.getValue(),
-            column.getKey().getName(),
-            useExpensiveSaferCasting))
+            useExpensiveSaferCasting).as(column.getKey().getName()))
         .collect(Collectors.toList());
   }
 
@@ -176,7 +188,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // TODO: Timestamp format issues can result in null values when cast, add regex check if destination
     // supports regex functions.
     return field(CASE_STATEMENT_SQL_TEMPLATE,
-        field.isNotNull().and(castedField(field, type, column.getName(), true).isNull()),
+        field.isNotNull().and(castedField(field, type, true).as(column.getName()).isNull()),
         function("ARRAY", getSuperType(),
             function("JSON_PARSE", getSuperType(), val(
                 "{\"field\": \"" + column.getName() + "\", "

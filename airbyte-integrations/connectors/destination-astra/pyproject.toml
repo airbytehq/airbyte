@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "airbyte-destination-astra"
+version = "0.1.3"
+description = "Airbyte destination implementation for Astra DB."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/astra"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[[tool.poetry.packages]]
+include = "destination_astra"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2"
+ruff = "^0.3.2"
+mypy = "^1.9.0"
+
+[tool.poetry.scripts]
+destination-astra = "destination_astra.run:run"

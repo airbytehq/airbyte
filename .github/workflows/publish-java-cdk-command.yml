@@ -40,6 +40,10 @@ on:
       comment-id:
         description: "Optional comment-id of the slash command. Ignore if not applicable."
         required: false
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
 
 concurrency:
   group: publish-java-cdk
@@ -49,7 +53,7 @@ env:
   # Use the provided GITREF or default to the branch triggering the workflow.
   GITREF: ${{ github.event.inputs.gitref || github.ref }}
   FORCE: "${{ github.event_name == 'push' || github.event.inputs.force == null && 'false' ||  github.event.inputs.force }}"
-  DRY_RUN: "${{ github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
+  DRY_RUN: "${{ github.event_name == 'push' && 'false' || github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
   CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
   S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -77,6 +81,9 @@ jobs:
         id: read-target-java-cdk-version
         run: |
           cdk_version=$(cat $CDK_VERSION_FILE_PATH | tr -d '\n')
+          echo "CDK_VERSION=$CDK_VERSION"
+          echo "FORCE=$FORCE"
+          echo "DRY_RUN=$DRY_RUN"
           if [[ -z "$cdk_version" ]]; then
             echo "Failed to retrieve CDK version from $CDK_VERSION_FILE_PATH"
             exit 1

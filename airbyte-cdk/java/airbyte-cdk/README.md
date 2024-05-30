@@ -3,21 +3,21 @@
 This page will walk through the process of developing with the Java CDK.
 
 * [Developing with the Java CDK](#developing-with-the-java-cdk)
-   * [Intro to the Java CDK](#intro-to-the-java-cdk)
-      * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-      * [How is the CDK published?](#how-is-the-cdk-published)
-   * [Using the Java CDK](#using-the-java-cdk)
-      * [Building the CDK](#building-the-cdk)
-      * [Bumping the CDK version](#bumping-the-cdk-version)
-      * [Publishing the CDK](#publishing-the-cdk)
-   * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-      * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-      * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-      * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-      * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-      * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-   * [Changelog](#changelog)
-      * [Java CDK](#java-cdk)
+  * [Intro to the Java CDK](#intro-to-the-java-cdk)
+    * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    * [How is the CDK published?](#how-is-the-cdk-published)
+  * [Using the Java CDK](#using-the-java-cdk)
+    * [Building the CDK](#building-the-cdk)
+    * [Bumping the CDK version](#bumping-the-cdk-version)
+    * [Publishing the CDK](#publishing-the-cdk)
+  * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  * [Changelog](#changelog)
+    * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -31,15 +31,23 @@ The java CDK is comprised of separate modules, among which:
 
 Each CDK submodule may contain these elements:
 
-- `src/main` - (Required.) The classes that will ship with the connector, providing capabilities to the connectors.
-- `src/test` - (Required.) These are unit tests that run as part of every build of the CDK. They help ensure that CDK `main` code is in a healthy state.
-- `src/testFixtures` - (Optional.) These shared classes are exported for connectors for use in the connectors' own test implementations. Connectors will have access to these classes within their unit and integration tests, but the classes will not be shipped with connectors when they are published.
+- `src/main` - (Required.) The classes that will ship with the connector, providing capabilities to
+  the connectors.
+- `src/test` - (Required.) These are unit tests that run as part of every build of the CDK. They
+  help ensure that CDK `main` code is in a healthy state.
+- `src/testFixtures` - (Optional.) These shared classes are exported for connectors for use in the
+  connectors' own test implementations. Connectors will have access to these classes within their
+  unit and integration tests, but the classes will not be shipped with connectors when they are
+  published.
 
 ### How is the CDK published?
 
-The CDK is published as a set of jar files sharing a version number. Every submodule generates one runtime jar for the main classes. If the submodule contains test fixtures, a second jar will be published with the test fixtures classes.
+The CDK is published as a set of jar files sharing a version number. Every submodule generates one
+runtime jar for the main classes. If the submodule contains test fixtures, a second jar will be
+published with the test fixtures classes.
 
-Note: Connectors do not have to manage which jars they should depend on, as this is handled automatically by the `airbyte-java-connector` plugin. See example below.
+Note: Connectors do not have to manage which jars they should depend on, as this is handled
+automatically by the `airbyte-java-connector` plugin. See example below.
 
 ## Using the Java CDK
 
@@ -55,7 +63,8 @@ To build and test the Java CDK, execute the following:
 
 You will need to bump this version manually whenever you are making changes to code inside the CDK.
 
-While under development, the next version number for the CDK is tracked in the file: `airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties`.
+While under development, the next version number for the CDK is tracked in the file:
+`airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties`.
 
 If the CDK is not being modified, this file will contain the most recently published version number.
 
@@ -63,9 +72,11 @@ If the CDK is not being modified, this file will contain the most recently publi
 
 _⚠️ These steps should only be performed after all testing and approvals are in place on the PR. ⚠️_
 
-The CDK can be published with a GitHub Workflow and a slash command which can be run by Airbyte personnel.
+The CDK can be published with a GitHub Workflow and a slash command which can be run by Airbyte
+personnel.
 
-To invoke via slash command (recommended), use the following syntax in a comment on the PR that contains your changes:
+To invoke via slash command (recommended), use the following syntax in a comment on the PR that
+contains your changes:
 
 ```bash
 /publish-java-cdk                # Run with the defaults (dry-run=false, force=false)
@@ -77,12 +88,18 @@ Note:
 
 - Remember to **document your changes** in the Changelog section below.
 - After you publish the CDK, remember to toggle `useLocalCdk` back to `false` in all connectors.
-- Unless you specify `force=true`, the pipeline should fail if the version you are trying to publish already exists.
-- By running the publish with `dry-run=true`, you can confirm the process is working as expected, without actually publishing the changes.
-- In dry-run mode, you can also view and download the jars that are generated. To do so, navigate to the job status in GitHub Actions and navigate to the 'artifacts' section.
-- You can also invoke manually in the GitHub Web UI. To do so: go to `Actions` tab, select the `Publish Java CDK` workflow, and click `Run workflow`.
-- You can view and administer published CDK versions here: https://admin.cloudrepo.io/repository/airbyte-public-jars/io/airbyte/cdk
-- The public endpoint for published CDK versions is here: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/
+- Unless you specify `force=true`, the pipeline should fail if the version you are trying to publish
+  already exists.
+- By running the publish with `dry-run=true`, you can confirm the process is working as expected,
+  without actually publishing the changes.
+- In dry-run mode, you can also view and download the jars that are generated. To do so, navigate to
+  the job status in GitHub Actions and navigate to the 'artifacts' section.
+- You can also invoke manually in the GitHub Web UI. To do so: go to `Actions` tab, select the
+  `Publish Java CDK` workflow, and click `Run workflow`.
+- You can view and administer published CDK versions here:
+  https://admin.cloudrepo.io/repository/airbyte-public-jars/io/airbyte/cdk
+- The public endpoint for published CDK versions is here:
+  https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/
 
 ## Developing Connectors with the Java CDK
 
@@ -104,20 +121,26 @@ airbyteJavaConnector {
 
 ```
 
-Replace `0.1.0` with the CDK version you are working with. If you're actively developing the CDK and want to use the latest version locally, use the `useLocalCdk` flag to use the live CDK code during builds and tests.
+Replace `0.1.0` with the CDK version you are working with. If you're actively developing the CDK and
+want to use the latest version locally, use the `useLocalCdk` flag to use the live CDK code during
+builds and tests.
 
 ### Developing a connector alongside the CDK
 
-You can iterate on changes in the CDK local and test them in the connector without needing to publish the CDK changes publicly.
+You can iterate on changes in the CDK local and test them in the connector without needing to
+publish the CDK changes publicly.
 
 When modifying the CDK and a connector in the same PR or branch, please use the following steps:
 
-1. Set the version of the CDK in `version.properties` to the next appropriate version number and add a description in the `Changelog` at the bottom of this readme file.
+1. Set the version of the CDK in `version.properties` to the next appropriate version number and add
+   a description in the `Changelog` at the bottom of this readme file.
 2. Modify your connector's build.gradle file as follows:
-   1. Set `useLocalCdk` to `true` in the connector you are working on. This will ensure the connector always uses the local CDK definitions instead of the published version.
+   1. Set `useLocalCdk` to `true` in the connector you are working on. This will ensure the
+      connector always uses the local CDK definitions instead of the published version.
    2. Set `cdkVersionRequired` to use the new _to-be-published_ CDK version.
 
-After the above, you can build and test your connector as usual. Gradle will automatically use the local CDK code files while you are working on the connector.
+After the above, you can build and test your connector as usual. Gradle will automatically use the
+local CDK code files while you are working on the connector.
 
 ### Publishing the CDK and switching to a pinned CDK reference
 
@@ -128,15 +151,22 @@ Once you are done developing and testing your CDK changes:
 
 ### Troubleshooting CDK Dependency Caches
 
-Note: after switching between a local and a pinned CDK reference, you may need to refresh dependency caches in Gradle and/or your IDE.
+Note: after switching between a local and a pinned CDK reference, you may need to refresh dependency
+caches in Gradle and/or your IDE.
 
-In Gradle, you can use the CLI arg `--refresh-dependencies` the next time you build or test your connector, which will ensure that the correct version of the CDK is used after toggling the `useLocalCdk` value.
+In Gradle, you can use the CLI arg `--refresh-dependencies` the next time you build or test your
+connector, which will ensure that the correct version of the CDK is used after toggling the
+`useLocalCdk` value.
 
 ### Developing a connector against a pinned CDK version
 
-You can always pin your connector to a prior stable version of the CDK, which may not match what is the latest version in the `airbyte` repo. For instance, your connector can be pinned to `0.1.1` while the latest version may be `0.2.0`.
+You can always pin your connector to a prior stable version of the CDK, which may not match what is
+the latest version in the `airbyte` repo. For instance, your connector can be pinned to `0.1.1`
+while the latest version may be `0.2.0`.
 
-Maven and Gradle will automatically reference the correct (pinned) version of the CDK for your connector, and you can use your local IDE to browse the prior version of the codebase that corresponds to that version.
+Maven and Gradle will automatically reference the correct (pinned) version of the CDK for your
+connector, and you can use your local IDE to browse the prior version of the codebase that
+corresponds to that version.
 
 ## Changelog
 
@@ -144,6 +174,58 @@ Maven and Gradle will automatically reference the correct (pinned) version of th
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.35.14 | 2024-05-28 | [\#38738](https://github.com/airbytehq/airbyte/pull/38738) | make ThreadCreationInfo cast as nullable                                                                                                                       |
+| 0.35.13 | 2024-05-28 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | minor changes to allow conversion of snowflake tests to kotlin                                                                                                 |
+| 0.35.12 | 2024-05-23 | [\#38638](https://github.com/airbytehq/airbyte/pull/38638) | Minor change to support Snowflake conversion to Kotlin                                                                                                         |
+| 0.35.11 | 2024-05-23 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | This release fixes an error on the previous release.                                                                                                           |
+| 0.35.10 | 2024-05-23 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | Add shared code for db sources stream status trace messages and testing.                                                                                       |
+| 0.35.9  | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37583](https://github.com/airbytehq/airbyte/pull/37583) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37555](https://github.com/airbytehq/airbyte/pull/37555) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37540](https://github.com/airbytehq/airbyte/pull/37540) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37539](https://github.com/airbytehq/airbyte/pull/37539) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37538](https://github.com/airbytehq/airbyte/pull/37538) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37537](https://github.com/airbytehq/airbyte/pull/37537) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37518](https://github.com/airbytehq/airbyte/pull/37518) | code cleanup                                                                                                                                                   |
+| 0.35.8  | 2024-05-22 | [\#38572](https://github.com/airbytehq/airbyte/pull/38572) | Add a temporary static method to decouple SnowflakeDestination from AbstractJdbcDestination                                                                    |
+| 0.35.7  | 2024-05-20 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | Decouple create namespace from per stream operation interface.                                                                                                 |
+| 0.35.6  | 2024-05-17 | [\#38107](https://github.com/airbytehq/airbyte/pull/38107) | New interfaces for Destination connectors to plug into AsyncStreamConsumer                                                                                     |
+| 0.35.5  | 2024-05-17 | [\#38204](https://github.com/airbytehq/airbyte/pull/38204) | add assume-role authentication to s3                                                                                                                           |
+| 0.35.2  | 2024-05-13 | [\#38104](https://github.com/airbytehq/airbyte/pull/38104) | Handle transient error messages                                                                                                                                |
+| 0.35.0  | 2024-05-13 | [\#38127](https://github.com/airbytehq/airbyte/pull/38127) | Destinations: Populate generation/sync ID on StreamConfig                                                                                                      |
+| 0.34.4  | 2024-05-10 | [\#37712](https://github.com/airbytehq/airbyte/pull/37712) | make sure the exceptionHandler always terminates                                                                                                               |
+| 0.34.3  | 2024-05-10 | [\#38095](https://github.com/airbytehq/airbyte/pull/38095) | Minor changes for databricks connector                                                                                                                         |
+| 0.34.1  | 2024-05-07 | [\#38030](https://github.com/airbytehq/airbyte/pull/38030) | Add support for transient errors                                                                                                                               |
+| 0.34.0  | 2024-05-01 | [\#37712](https://github.com/airbytehq/airbyte/pull/37712) | Destinations: Remove incremental T+D                                                                                                                           |
+| 0.33.2  | 2024-05-03 | [\#37824](https://github.com/airbytehq/airbyte/pull/37824) | improve source acceptance tests                                                                                                                                |
+| 0.33.1  | 2024-05-03 | [\#37824](https://github.com/airbytehq/airbyte/pull/37824) | Add a unit test for cursor based sync                                                                                                                          |
+| 0.33.0  | 2024-05-03 | [\#36935](https://github.com/airbytehq/airbyte/pull/36935) | Destinations: Enable non-safe-casting DV2 tests                                                                                                                |
+| 0.32.0  | 2024-05-03 | [\#36929](https://github.com/airbytehq/airbyte/pull/36929) | Destinations: Assorted DV2 changes for mysql                                                                                                                   |
+| 0.31.7  | 2024-05-02 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | changes for destination-snowflake                                                                                                                              |
+| 0.31.6  | 2024-05-02 | [\#37746](https://github.com/airbytehq/airbyte/pull/37746) | debuggability improvements.                                                                                                                                    |
+| 0.31.5  | 2024-04-30 | [\#37758](https://github.com/airbytehq/airbyte/pull/37758) | Set debezium max retries to zero                                                                                                                               |
+| 0.31.4  | 2024-04-30 | [\#37754](https://github.com/airbytehq/airbyte/pull/37754) | Add DebeziumEngine notification log                                                                                                                            |
+| 0.31.3  | 2024-04-30 | [\#37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                        |
+| 0.31.2  | 2024-04-30 | [\#37507](https://github.com/airbytehq/airbyte/pull/37507) | Better error messages when switching between global/per-stream modes.                                                                                          |
+| 0.31.0  | 2024-04-26 | [\#37584](https://github.com/airbytehq/airbyte/pull/37584) | Update S3 destination deps to exclude zookeeper and hadoop-yarn-common                                                                                         |
+| 0.30.11 | 2024-04-25 | [\#36899](https://github.com/airbytehq/airbyte/pull/36899) | changes for bigQuery destination.                                                                                                                              |
+| 0.30.10 | 2024-04-24 | [\#37541](https://github.com/airbytehq/airbyte/pull/37541) | remove excessive logging                                                                                                                                       |
+| 0.30.9  | 2024-04-24 | [\#37477](https://github.com/airbytehq/airbyte/pull/37477) | remove unnecessary logs                                                                                                                                        |
+| 0.30.7  | 2024-04-23 | [\#37477](https://github.com/airbytehq/airbyte/pull/37477) | fix kotlin warnings in core CDK submodule                                                                                                                      |
+| 0.30.7  | 2024-04-23 | [\#37484](https://github.com/airbytehq/airbyte/pull/37484) | fix kotlin warnings in dependencies CDK submodule                                                                                                              |
+| 0.30.7  | 2024-04-23 | [\#37479](https://github.com/airbytehq/airbyte/pull/37479) | fix kotlin warnings in azure-destination, datastore-{bigquery,mongo,postgres} CDK submodules                                                                   |
+| 0.30.7  | 2024-04-23 | [\#37481](https://github.com/airbytehq/airbyte/pull/37481) | fix kotlin warnings in destination CDK submodules                                                                                                              |
+| 0.30.7  | 2024-04-23 | [\#37482](https://github.com/airbytehq/airbyte/pull/37482) | fix kotlin warnings in db-sources CDK submodule                                                                                                                |
+| 0.30.6  | 2024-04-19 | [\#37442](https://github.com/airbytehq/airbyte/pull/37442) | Destinations: Rename File format related classes to be agnostic of S3                                                                                          |
+| 0.30.3  | 2024-04-12 | [\#37106](https://github.com/airbytehq/airbyte/pull/37106) | Destinations: Simplify constructors in `AsyncStreamConsumer`                                                                                                   |
+| 0.30.2  | 2024-04-12 | [\#36926](https://github.com/airbytehq/airbyte/pull/36926) | Destinations: Remove `JdbcSqlOperations#formatData`; misc changes for java interop                                                                             |
+| 0.30.1  | 2024-04-11 | [\#36919](https://github.com/airbytehq/airbyte/pull/36919) | Fix regression in sources conversion of null values                                                                                                            |
+| 0.30.0  | 2024-04-11 | [\#36974](https://github.com/airbytehq/airbyte/pull/36974) | Destinations: Pass config to jdbc sqlgenerator; allow cascade drop                                                                                             |
+| 0.29.13 | 2024-04-10 | [\#36981](https://github.com/airbytehq/airbyte/pull/36981) | DB sources : Emit analytics for data type serialization errors.                                                                                                |
+| 0.29.12 | 2024-04-10 | [\#36973](https://github.com/airbytehq/airbyte/pull/36973) | Destinations: Make flush batch size configurable for JdbcInsertFlush                                                                                           |
+| 0.29.11 | 2024-04-10 | [\#36865](https://github.com/airbytehq/airbyte/pull/36865) | Sources : Remove noisy log line.                                                                                                                               |
+| 0.29.10 | 2024-04-10 | [\#36805](https://github.com/airbytehq/airbyte/pull/36805) | Destinations: Enhance CatalogParser name collision handling; add DV2 tests for long identifiers                                                                |
+| 0.29.9  | 2024-04-09 | [\#36047](https://github.com/airbytehq/airbyte/pull/36047) | Destinations: CDK updates for raw-only destinations                                                                                                            |
 | 0.29.8  | 2024-04-08 | [\#36868](https://github.com/airbytehq/airbyte/pull/36868) | Destinations: s3-destinations Compilation fixes for connector                                                                                                  |
 | 0.29.7  | 2024-04-08 | [\#36768](https://github.com/airbytehq/airbyte/pull/36768) | Destinations: Make destination state fetch/commit logic more resilient to errors                                                                               |
 | 0.29.6  | 2024-04-05 | [\#36577](https://github.com/airbytehq/airbyte/pull/36577) | Do not send system_error trace message for config exceptions.                                                                                                  |

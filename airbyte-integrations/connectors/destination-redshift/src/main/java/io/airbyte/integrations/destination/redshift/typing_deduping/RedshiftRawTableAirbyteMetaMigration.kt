@@ -64,7 +64,7 @@ class RedshiftRawTableAirbyteMetaMigration(
             "Executing RawTableAirbyteMetaMigration for ${stream.id.originalNamespace}.${stream.id.originalName} for real"
         )
         destinationHandler.execute(
-            getRawTableMetaColumnAddDdl(stream.id.rawNamespace!!, stream.id.rawName!!)
+            getRawTableMetaColumnAddDdl(stream.id.rawNamespace, stream.id.rawName)
         )
 
         // Update the state. We didn't modify the table in a relevant way, so don't invalidate the

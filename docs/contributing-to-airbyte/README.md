@@ -1,5 +1,5 @@
 ---
-description: 'We love contributions to Airbyte, big or small.'
+description: "We love contributions to Airbyte, big or small."
 ---
 
 # Contributing to Airbyte
@@ -19,12 +19,13 @@ A great place to start looking will be our GitHub projects for:
 
 Due to project priorities, we may not be able to accept all contributions at this time.
 We are prioritizing the following contributions:
-* Bug fixes, features, and enhancements to existing API source connectors.
-* Migrating Python CDK to Low-code or No-Code Framework.
-* New connector sources built with the Low-Code CDK or Connector Builder, as these connectors are easier to maintain.
-* Bug fixes, features, and enhancements to the following database sources: Postgres, MySQL, MSSQL.
-* Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres.
-* Helm Charts features, bug fixes, and other platform bug fixes.
+
+- Bug fixes, features, and enhancements to existing API source connectors.
+- Migrating Python CDK to Low-code or No-Code Framework.
+- New connector sources built with the Low-Code CDK or Connector Builder, as these connectors are easier to maintain.
+- Bug fixes, features, and enhancements to the following database sources: Postgres, MySQL, MSSQL.
+- Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres.
+- Helm Charts features, bug fixes, and other platform bug fixes.
 
 :::warning
 Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in 2024.
@@ -37,6 +38,7 @@ Contributions outside of these will be evaluated on a case-by-case basis by our 
 :::
 
 The usual workflow of code contribution is:
+
 1. Fork the Airbyte repository.
 2. Clone the repository locally.
 3. Create a branch for your feature/bug fix with the format `{YOUR_USERNAME}/{FEATURE/BUG}` (e.g. `jdoe/source-stock-api-stream-fix`)
@@ -58,6 +60,7 @@ Pull Requests without updates will be closed due inactivity.
 :::
 
 Guidelines to common code contributions:
+
 - [Submit code change to existing Source Connector](change-cdk-connector.md)
 - [Submit a New Connector](submit-new-connector.md)
 

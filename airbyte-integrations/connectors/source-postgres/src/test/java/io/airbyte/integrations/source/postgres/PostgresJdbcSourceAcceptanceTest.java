@@ -48,6 +48,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<PostgresSource, PostgresTestDatabase> {
 
   private static final String DATABASE = "new_db";
@@ -77,9 +78,15 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
         .build();
   }
 
+  private PostgresSource postgresSource = null;
+
   @Override
   protected PostgresSource source() {
-    return new PostgresSource();
+    if (postgresSource != null) {
+      postgresSource.close();
+    }
+    postgresSource = new PostgresSource();
+    return postgresSource;
   }
 
   @Override

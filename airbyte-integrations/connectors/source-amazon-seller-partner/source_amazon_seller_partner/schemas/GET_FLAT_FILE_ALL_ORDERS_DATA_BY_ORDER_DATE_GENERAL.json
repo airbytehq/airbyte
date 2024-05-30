@@ -5,107 +5,141 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "amazon-order-id": {
+      "description": "Unique identifier for the order on Amazon platform",
       "type": ["null", "string"]
     },
     "merchant-order-id": {
+      "description": "Identifier for the order set by the merchant",
       "type": ["null", "string"]
     },
     "purchase-date": {
+      "description": "Timestamp of the order purchase date",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "last-updated-date": {
+      "description": "Timestamp of the last update for the order",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "order-status": {
+      "description": "Status of the order (e.g., Pending, Shipped)",
       "type": ["null", "string"]
     },
     "fulfillment-channel": {
+      "description": "Channel through which the order is fulfilled (e.g., FBA, Seller Fulfilled)",
       "type": ["null", "string"]
     },
     "sales-channel": {
+      "description": "Channel through which the sale was made",
       "type": ["null", "string"]
     },
     "order-channel": {
+      "description": "Channel through which the order was placed",
       "type": ["null", "string"]
     },
     "ship-service-level": {
+      "description": "Service level of shipping (e.g., Standard, Expedited)",
       "type": ["null", "string"]
     },
     "product-name": {
+      "description": "Name of the product in the order",
       "type": ["null", "string"]
     },
     "sku": {
+      "description": "Stock Keeping Unit for the product in the order",
       "type": ["null", "string"]
     },
     "asin": {
+      "description": "Amazon Standard Identification Number for the product",
       "type": ["null", "string"]
     },
     "item-status": {
+      "description": "Status of the item in the order",
       "type": ["null", "string"]
     },
     "quantity": {
+      "description": "Number of units ordered",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "Currency used for the order",
       "type": ["null", "string"]
     },
     "item-price": {
+      "description": "Price of each item in the order",
       "type": ["null", "string"]
     },
     "item-tax": {
+      "description": "Tax charged on the item price",
       "type": ["null", "string"]
     },
     "shipping-price": {
+      "description": "Price of shipping for the order",
       "type": ["null", "string"]
     },
     "shipping-tax": {
+      "description": "Tax applied on the shipping price",
       "type": ["null", "string"]
     },
     "gift-wrap-price": {
+      "description": "Price of gift wrapping for the order",
       "type": ["null", "string"]
     },
     "gift-wrap-tax": {
+      "description": "Tax applied on the gift wrapping price",
       "type": ["null", "string"]
     },
     "item-promotion-discount": {
+      "description": "Discount applied on the item price due to promotion",
       "type": ["null", "string"]
     },
     "ship-promotion-discount": {
+      "description": "Discount applied to the shipping cost due to promotions",
       "type": ["null", "string"]
     },
     "ship-city": {
+      "description": "City to which the order is being shipped",
       "type": ["null", "string"]
     },
     "ship-state": {
+      "description": "State to which the order is being shipped",
       "type": ["null", "string"]
     },
     "ship-postal-code": {
+      "description": "Postal code of the shipping address",
       "type": ["null", "string"]
     },
     "ship-country": {
+      "description": "Country to which the order is being shipped",
       "type": ["null", "string"]
     },
     "promotion-ids": {
+      "description": "Identifiers for promotions applied to the order",
       "type": ["null", "string"]
     },
     "cpf": {
+      "description": "Cadastro de Pessoas F\u00edsicas - Brazilian individual taxpayer registry identification number",
       "type": ["null", "string"]
     },
     "is-business-order": {
+      "description": "Indicator if the order is a business order",
       "type": ["null", "string"]
     },
     "purchase-order-number": {
+      "description": "Number associated with the order for purchase tracking",
       "type": ["null", "string"]
     },
     "price-designation": {
+      "description": "Price designation for the order (e.g., Regular price, Discounted price)",
       "type": ["null", "string"]
     },
     "signature-confirmation-recommended": {
+      "description": "Indicator if signature confirmation is recommended for the order",
       "type": ["null", "string"]
     },
     "dataEndTime": {
+      "description": "End timestamp of the data",
       "type": ["null", "string"],
       "format": "date"
     }

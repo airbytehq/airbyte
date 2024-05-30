@@ -9,8 +9,49 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "float_ts": 7270247822 },
-      "stream_descriptor": { "name": "channel_messages" }
+      "stream_descriptor": {
+        "name": "channel_messages"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "channel_id": "C04LTCM2Y56",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "float_ts": "2534945416"
+            }
+          },
+          {
+            "partition": {
+              "channel": "C04KX3KEZ54",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "float_ts": "2534945416"
+            }
+          },
+          {
+            "partition": {
+              "channel": "C04L3M4PTJ6",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "float_ts": "2534945416"
+            }
+          },
+          {
+            "partition": {
+              "channel": "C04LTCM2Y56",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "float_ts": "2534945416"
+            }
+          }
+        ]
+      }
     }
   }
 ]

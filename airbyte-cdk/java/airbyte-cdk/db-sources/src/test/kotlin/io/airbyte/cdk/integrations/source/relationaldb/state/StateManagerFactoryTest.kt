@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.source.relationaldb.state
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.List
@@ -160,7 +161,7 @@ class StateManagerFactoryTest {
                         .withStreamState(Jsons.jsonNode(DbStreamState()))
                 )
 
-        Assertions.assertThrows(IllegalArgumentException::class.java) {
+        Assertions.assertThrows(ConfigErrorException::class.java) {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
@@ -280,7 +281,7 @@ class StateManagerFactoryTest {
                 .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                 .withGlobal(globalState)
 
-        Assertions.assertThrows(IllegalArgumentException::class.java) {
+        Assertions.assertThrows(ConfigErrorException::class.java) {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),

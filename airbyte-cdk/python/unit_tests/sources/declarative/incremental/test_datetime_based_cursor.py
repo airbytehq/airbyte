@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.types import Record, StreamSlice
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 cursor_granularity = "PT0.000001S"
@@ -541,10 +541,10 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         parameters={},
     )
     stream_slice = {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"}
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+    assert slicer.get_request_params(stream_slice=stream_slice) == expected_req_params
+    assert slicer.get_request_headers(stream_slice=stream_slice) == expected_headers
+    assert slicer.get_request_body_json(stream_slice=stream_slice) == expected_body_json
+    assert slicer.get_request_body_data(stream_slice=stream_slice) == expected_body_data
 
 
 @pytest.mark.parametrize(
@@ -607,7 +607,7 @@ def test_parse_date_legacy_merge_datetime_format_in_cursor_datetime_format(
         parameters={},
     )
     output_date = slicer.parse_date(input_date)
-    assert expected_output_date == output_date
+    assert output_date == expected_output_date
 
 
 @pytest.mark.parametrize(
@@ -674,7 +674,7 @@ def test_format_datetime(test_name, input_dt, datetimeformat, datetimeformat_gra
     )
 
     output_date = slicer._format_datetime(input_dt)
-    assert expected_output == output_date
+    assert output_date == expected_output
 
 
 def test_step_but_no_cursor_granularity():

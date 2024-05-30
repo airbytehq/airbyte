@@ -347,7 +347,7 @@ class StreamFacadeTest(unittest.TestCase):
 
         display_message = facade.get_error_display_message(e)
 
-        assert expected_display_message == display_message
+        assert display_message == expected_display_message
 
     def test_get_error_display_message_with_display_message(self):
         self._stream.get_error_display_message.return_value = "display_message"
@@ -359,7 +359,7 @@ class StreamFacadeTest(unittest.TestCase):
 
         display_message = facade.get_error_display_message(e)
 
-        assert expected_display_message == display_message
+        assert display_message == expected_display_message
 
 
 @pytest.mark.parametrize(

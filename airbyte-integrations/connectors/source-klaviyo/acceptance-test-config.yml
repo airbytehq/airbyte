@@ -25,6 +25,7 @@ acceptance_tests:
         configured_catalog_path: integration_tests/configured_catalog.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
+        skip_comprehensive_incremental_tests: true
   spec:
     tests:
       - spec_path: source_klaviyo/spec.json

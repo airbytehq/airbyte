@@ -4,9 +4,9 @@ This page contains the setup guide and reference information for the Pipedrive c
 
 ## Prerequisites
 
-* A Pipedrive account;
-* An `API token`;
-* A `client_id`, `client_secret`, and `refresh_token`. 
+- A Pipedrive account;
+- An `API token`;
+- A `client_id`, `client_secret`, and `refresh_token`.
 
 ## Setup guide
 
@@ -19,7 +19,6 @@ Step 1 - Enable API Token:
 If you don't see API next to the `Your companies` section, it's due to the permission sets handled by the company's admin. The company's admin can give you access to your API token by enabling it for you from the Settings in Pipedrive web app.
 
 For more information, access [enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users).
-
 
 Step 2 - Find the API Token:
 
@@ -53,58 +52,57 @@ The Pipedrive connector supports the following sync modes:
 | SSL connection                | Yes        |
 | Namespaces                    | No         |
 
-
 ## Supported Streams
 
 Apart from `Fields` streams, all other streams support incremental.
 
-* [Activities](https://developers.pipedrive.com/docs/api/v1/Activities#getActivities)
+- [Activities](https://developers.pipedrive.com/docs/api/v1/Activities#getActivities)
 
-* [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)
+- [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)
 
-* [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)
+- [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)
 
-* [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)
+- [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)
 
-* [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)
+- [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)
 
-* [DealProducts](https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts)
+- [DealProducts](https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts)
 
-* [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals)
+- [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals)
 
-* [Files](https://developers.pipedrive.com/docs/api/v1/Files#getFiles)
+- [Files](https://developers.pipedrive.com/docs/api/v1/Files#getFiles)
 
-* [Filters](https://developers.pipedrive.com/docs/api/v1/Filters#getFilters)
+- [Filters](https://developers.pipedrive.com/docs/api/v1/Filters#getFilters)
 
-* [Goals](https://developers.pipedrive.com/docs/api/v1/Goals#getGoals)
+- [Goals](https://developers.pipedrive.com/docs/api/v1/Goals#getGoals)
 
-* [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)
+- [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)
 
-* [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
+- [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
 
-* [Notes](https://developers.pipedrive.com/docs/api/v1/Notes#getNotes)
+- [Notes](https://developers.pipedrive.com/docs/api/v1/Notes#getNotes)
 
-* [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)
+- [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)
 
-* [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations)
+- [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations)
 
-* [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)
+- [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)
 
-* [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)
+- [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)
 
-* [Persons](https://developers.pipedrive.com/docs/api/v1/Persons#getPersons)
+- [Persons](https://developers.pipedrive.com/docs/api/v1/Persons#getPersons)
 
-* [Pipelines](https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines)
+- [Pipelines](https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines)
 
-* [ProductFields](https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields)
+- [ProductFields](https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields)
 
-* [Products](https://developers.pipedrive.com/docs/api/v1/Products#getProducts)
+- [Products](https://developers.pipedrive.com/docs/api/v1/Products#getProducts)
 
-* [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)
+- [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)
 
-* [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages)
+- [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages)
 
-* [Users](https://developers.pipedrive.com/docs/api/v1/Users#getUsers)
+- [Users](https://developers.pipedrive.com/docs/api/v1/Users#getUsers)
 
 ## Performance considerations
 
@@ -113,8 +111,8 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
-| 2.2.2   | 2024-01-11 | [34153](https://github.com/airbytehq/airbyte/pull/34153) | prepare for airbyte-lib                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------- |
+| 2.2.2   | 2024-01-11 | [34153](https://github.com/airbytehq/airbyte/pull/34153) | prepare for airbyte-lib                                                    |
 | 2.2.1   | 2023-11-06 | [31147](https://github.com/airbytehq/airbyte/pull/31147) | Bugfix: handle records with a null data field                              |
 | 2.2.0   | 2023-10-25 | [31707](https://github.com/airbytehq/airbyte/pull/31707) | Add new stream mail                                                        |
 | 2.1.0   | 2023-10-10 | [31184](https://github.com/airbytehq/airbyte/pull/31184) | Add new stream goals                                                       |

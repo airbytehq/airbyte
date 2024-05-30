@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
@@ -153,6 +154,7 @@ class MongoDbCdcInitializerTest {
     when(mongoCollection.find()).thenReturn(findIterable);
     when(findIterable.filter(any())).thenReturn(findIterable);
     when(findIterable.projection(any())).thenReturn(findIterable);
+    when(findIterable.limit(anyInt())).thenReturn(findIterable);
     when(findIterable.sort(any())).thenReturn(findIterable);
     when(findIterable.cursor()).thenReturn(findCursor);
     when(findCursor.hasNext()).thenReturn(true);

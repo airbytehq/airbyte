@@ -12,6 +12,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mongodb.MongoUtil.CollectionStatistics;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
@@ -22,8 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.bson.*;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,41 +68,13 @@ public class InitialSnapshotHandler {
           final Optional<MongoDbStreamState> existingState =
               stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
 
-          // The filter determines the starting point of this iterator based on the state of this collection.
-          // If a state exists, it will use that state to create a query akin to
-          // "where _id > [last saved state] order by _id ASC".
-          // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
-          final Bson filter = existingState
-              // Full refresh streams that finished set their id to null
-              // This tells us to start over
-              .filter(state -> state.id() != null)
-              .map(state -> Filters.gt(MongoConstants.ID_FIELD,
-                  switch (state.idType()) {
-            case STRING -> new BsonString(state.id());
-            case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
-            case INT -> new BsonInt32(Integer.parseInt(state.id()));
-            case LONG -> new BsonInt64(Long.parseLong(state.id()));
-          }))
-              // if nothing was found, return a new BsonDocument
-              .orElseGet(BsonDocument::new);
-
-          // When schema is enforced we query for the selected fields
-          // Otherwise we retreive the entire set of fields
-          final var cursor = isEnforceSchema ? collection.find()
-              .filter(filter)
-              .projection(fields)
-              .sort(Sorts.ascending(MongoConstants.ID_FIELD))
-              .allowDiskUse(true)
-              .cursor()
-              : collection.find()
-                  .filter(filter)
-                  .sort(Sorts.ascending(MongoConstants.ID_FIELD))
-                  .allowDiskUse(true)
-                  .cursor();
+          final Optional<CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(database, airbyteStream);
+          final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema,
+              MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream));
           final var stateIterator =
-              new SourceStateIterator<>(cursor, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
+              new SourceStateIterator<>(recordIterator, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
                   MongoConstants.CHECKPOINT_DURATION));
-          return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
+          return AutoCloseableIterators.fromIterator(stateIterator, recordIterator::close, null);
         })
         .toList();
   }

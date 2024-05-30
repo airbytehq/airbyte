@@ -1,12 +1,14 @@
 # Metabase
+
 This page contains the setup guide and reference information for the Metabase source connector.
 
 ## Prerequisites
 
 To set up Metabase you need:
-  * `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary. An email from Metabase may be sent to the owner's account every time this is being used to open a new session.
-  * `session_token` - Credential token to authenticate requests sent to Metabase API. Usually expires after 14 days.
-  * `instance_api_url` - URL to interact with Metabase instance API, that uses https.
+
+- `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary. An email from Metabase may be sent to the owner's account every time this is being used to open a new session.
+- `session_token` - Credential token to authenticate requests sent to Metabase API. Usually expires after 14 days.
+- `instance_api_url` - URL to interact with Metabase instance API, that uses https.
 
 ## Setup guide
 
@@ -37,22 +39,23 @@ authenticated query is running, which might trigger security alerts on the user'
 
 The Metabase source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 
 ## Supported Streams
-* [Card](https://www.metabase.com/docs/latest/api/card.html#get-apicard)
-* [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
-* [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
-* [User](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
-* [Databases](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
-* [Native Query Snippet](https://www.metabase.com/docs/latest/api/native-query-snippet#get-apinative-query-snippetid)
+
+- [Card](https://www.metabase.com/docs/latest/api/card.html#get-apicard)
+- [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
+- [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
+- [User](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
+- [Databases](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
+- [Native Query Snippet](https://www.metabase.com/docs/latest/api/native-query-snippet#get-apinative-query-snippetid)
 
 ## Tutorials
 
 ### Data type mapping
 
 | Integration Type    | Airbyte Type | Notes |
-|:--------------------|:-------------|:------|
+| :------------------ | :----------- | :---- |
 | `string`            | `string`     |       |
 | `integer`, `number` | `number`     |       |
 | `array`             | `array`      |       |
@@ -61,22 +64,21 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 ### Features
 
 | Feature           | Supported?\(Yes/No\) | Notes |
-|:------------------|:---------------------|:------|
+| :---------------- | :------------------- | :---- |
 | Full Refresh Sync | Yes                  |       |
 | Incremental Sync  | No                   |       |
 | SSL connection    | Yes                  |       |
 | Namespaces        | No                   |       |
 
-
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                    |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------|
-| 2.0.0   | 2024-03-01 | [35680](https://github.com/airbytehq/airbyte/pull/35680) | Updates `dashboards` stream, Base image migration: remove Dockerfile and use the python-connector-base image, migrated to poetry       |
-| 1.1.0   | 2023-10-31 | [31909](https://github.com/airbytehq/airbyte/pull/31909) | Add `databases` and `native_query_snippets` streams       |
-| 1.0.1   | 2023-07-20 | [28470](https://github.com/airbytehq/airbyte/pull/27777) | Update CDK to 0.47.0       |
-| 1.0.0   | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Remove Activity Stream     |
-| 0.3.1   | 2022-12-15 | [20535](https://github.com/airbytehq/airbyte/pull/20535) | Run on CDK 0.15.0          |
-| 0.3.0   | 2022-12-13 | [19236](https://github.com/airbytehq/airbyte/pull/19236) | Migrate to YAML.           |
-| 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs |
-| 0.1.0   | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752)  | Initial (alpha) release    |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                          |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.0   | 2024-03-01 | [35680](https://github.com/airbytehq/airbyte/pull/35680) | Updates `dashboards` stream, Base image migration: remove Dockerfile and use the python-connector-base image, migrated to poetry |
+| 1.1.0   | 2023-10-31 | [31909](https://github.com/airbytehq/airbyte/pull/31909) | Add `databases` and `native_query_snippets` streams                                                                              |
+| 1.0.1   | 2023-07-20 | [28470](https://github.com/airbytehq/airbyte/pull/27777) | Update CDK to 0.47.0                                                                                                             |
+| 1.0.0   | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Remove Activity Stream                                                                                                           |
+| 0.3.1   | 2022-12-15 | [20535](https://github.com/airbytehq/airbyte/pull/20535) | Run on CDK 0.15.0                                                                                                                |
+| 0.3.0   | 2022-12-13 | [19236](https://github.com/airbytehq/airbyte/pull/19236) | Migrate to YAML.                                                                                                                 |
+| 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs                                                                                                       |
+| 0.1.0   | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752)  | Initial (alpha) release                                                                                                          |

@@ -65,7 +65,22 @@
             "type": ["null", "number"]
           },
           "DepositLineDetail": {
+            "additionalProperties": true,
             "properties": {
+              "Entity": {
+                "properties": {
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
               "PaymentMethodRef": {
                 "properties": {
                   "value": {

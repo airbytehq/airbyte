@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
+import static io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
@@ -25,6 +27,7 @@ import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedupingTest {
@@ -48,7 +51,7 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   @Override
   protected SqlGenerator getSqlGenerator() {
-    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false) {
 
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
       // to save bytes.
@@ -61,6 +64,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
   public void testRawTableMetaMigration_append() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
@@ -84,6 +90,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
   public void testRawTableMetaMigration_incrementalDedupe() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
@@ -138,8 +147,8 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
                              }
                            }
                            """;
-    final String largeString1 = generateBigString(0);
-    final String largeString2 = generateBigString(2);
+    final String largeString1 = generateRandomString(REDSHIFT_VARCHAR_MAX_BYTE_SIZE);
+    final String largeString2 = generateRandomString(REDSHIFT_VARCHAR_MAX_BYTE_SIZE + 2);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
@@ -170,11 +179,10 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   }
 
-  private String generateBigString(final int additionalChars) {
-    final int length = RedshiftSuperLimitationTransformer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE + additionalChars;
+  protected String generateRandomString(final int totalLength) {
     return RANDOM
         .ints('a', 'z' + 1)
-        .limit(length)
+        .limit(totalLength)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
   }

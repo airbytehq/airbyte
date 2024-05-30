@@ -74,6 +74,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 @Order(1)
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, PostgresTestDatabase> {
 
   protected BaseImage postgresImage;
@@ -98,6 +99,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   @Override
   protected PostgresSource source() {
     return new PostgresSource();
+  }
+
+  @Override
+  protected boolean supportResumableFullRefresh() {
+    return true;
   }
 
   @Override
@@ -239,6 +245,15 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       }
     }
   }
+
+  @Override
+  protected void validateStreamStateInResumableFullRefresh(final JsonNode streamStateToBeTested) {
+    assertEquals("ctid", streamStateToBeTested.get("state_type").asText());
+  }
+
+  @Override
+  @Test
+  protected void testCdcAndNonResumableFullRefreshInSameSync() throws Exception {}
 
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
@@ -554,8 +569,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     // The stream that does not have an associated publication should not have support for
     // source-defined incremental sync.
     assertEquals(streamNotInPublication.getSupportedSyncModes(), List.of(SyncMode.FULL_REFRESH));
-    assertTrue(streamNotInPublication.getSourceDefinedPrimaryKey().isEmpty());
-    assertFalse(streamNotInPublication.getSourceDefinedCursor());
+    assertFalse(streamNotInPublication.getSourceDefinedPrimaryKey().isEmpty());
+    assertTrue(streamNotInPublication.getSourceDefinedCursor());
     testdb.query(ctx -> ctx.execute("DROP PUBLICATION " + testdb.getPublicationName() + ";"));
     testdb.query(ctx -> ctx.execute("CREATE PUBLICATION " + testdb.getPublicationName() + " FOR ALL TABLES"));
   }

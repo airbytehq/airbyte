@@ -12,7 +12,7 @@ A Tyntec SMS API Key and SMS message request ID are required for this connector 
 
 ### Step 1: Set up a Tyntec SMS connection
 
-1. Create a new Tyntec account [here](https://www.tyntec.com/create-account). 
+1. Create a new Tyntec account [here](https://www.tyntec.com/create-account).
 2. In the left navigation bar, click **API Settings** and navigate to **API Keys** to access your API key.
 
 ### Step 2: Set up a Tyntec SMS connector in Airbyte
@@ -39,7 +39,7 @@ A Tyntec SMS API Key and SMS message request ID are required for this connector 
 The Tyntec SMS source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
-|:------------------|:-----------|
+| :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
 
@@ -60,6 +60,6 @@ The Tyntec SMS connector should not run into limitations under normal usage. Ple
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                         |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.1.0   | 2022-11-02 | [18883](https://github.com/airbytehq/airbyte/pull/18883) | 🎉 New Source: Tyntec SMS                   |
+| Version | Date       | Pull Request                                             | Subject                   |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------ |
+| 0.1.0   | 2022-11-02 | [18883](https://github.com/airbytehq/airbyte/pull/18883) | 🎉 New Source: Tyntec SMS |

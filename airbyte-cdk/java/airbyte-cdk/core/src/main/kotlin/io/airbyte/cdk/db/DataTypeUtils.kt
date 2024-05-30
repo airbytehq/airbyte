@@ -49,13 +49,13 @@ object DataTypeUtils {
 
     @JvmStatic
     fun <T> returnNullIfInvalid(valueProducer: DataTypeSupplier<T>): T? {
-        return returnNullIfInvalid(valueProducer, Function { _: T? -> true })
+        return returnNullIfInvalid(valueProducer, Function { _: T -> true })
     }
 
     @JvmStatic
     fun <T> returnNullIfInvalid(
         valueProducer: DataTypeSupplier<T>,
-        isValidFn: Function<T?, Boolean>
+        isValidFn: Function<T, Boolean>
     ): T? {
         // Some edge case values (e.g: Infinity, NaN) have no java or JSON equivalent, and will
         // throw an
@@ -65,6 +65,30 @@ object DataTypeUtils {
         try {
             val value = valueProducer.apply()
             return if (isValidFn.apply(value)) value else null
+        } catch (e: SQLException) {
+            return null
+        }
+    }
+
+    @JvmStatic
+    fun <T> throwExceptionIfInvalid(valueProducer: DataTypeSupplier<T>): T? {
+        return throwExceptionIfInvalid(valueProducer, Function { _: T -> true })
+    }
+
+    @JvmStatic
+    fun <T> throwExceptionIfInvalid(
+        valueProducer: DataTypeSupplier<T>,
+        isValidFn: Function<T, Boolean>
+    ): T? {
+        // Some edge case values (e.g: Infinity, NaN) have no java or JSON equivalent, and will
+        // throw an
+        // exception when parsed. We want to parse those
+        // values as null.
+        // This method reduces error handling boilerplate.
+        try {
+            val value = valueProducer.apply()
+            return if (isValidFn.apply(value)) value
+            else throw SQLException("Given value is not valid.")
         } catch (e: SQLException) {
             return null
         }

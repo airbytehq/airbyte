@@ -8,11 +8,12 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addStr
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import java.util.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.Optional
 import java.util.function.Consumer
 import org.apache.commons.codec.digest.DigestUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class CatalogParser
 @JvmOverloads
@@ -30,119 +31,149 @@ constructor(
             val actualStreamConfig: StreamConfig
             // Use empty string quote because we don't really care
             if (
-                streamConfigs.stream().anyMatch { s: StreamConfig ->
+                streamConfigs.any { s: StreamConfig ->
                     s.id.finalTableId("") == originalStreamConfig.id.finalTableId("")
                 } ||
-                    streamConfigs.stream().anyMatch { s: StreamConfig ->
+                    streamConfigs.any { s: StreamConfig ->
                         s.id.rawTableId("") == originalStreamConfig.id.rawTableId("")
                     }
             ) {
                 val originalNamespace = stream.stream.namespace
                 val originalName = stream.stream.name
 
-                LOGGER.info(
-                    "Detected table name collision for {}.{}",
-                    originalNamespace,
-                    originalName
-                )
+                LOGGER.info { "Detected table name collision for $originalNamespace.$originalName" }
 
                 // ... this logic is ported from legacy normalization, and maybe should change?
                 // We're taking a hash of the quoted namespace and the unquoted stream name
                 val hash =
                     DigestUtils.sha1Hex(
-                            originalStreamConfig.id!!.finalNamespace + "&airbyte&" + originalName
+                            "${originalStreamConfig.id.finalNamespace}&airbyte&$originalName"
                         )
                         .substring(0, 3)
-                val newName = originalName + "_" + hash
+                val newName = "${originalName}_$hash"
                 actualStreamConfig =
-                    StreamConfig(
-                        sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
-                        originalStreamConfig.syncMode,
-                        originalStreamConfig.destinationSyncMode,
-                        originalStreamConfig.primaryKey,
-                        originalStreamConfig.cursor,
-                        originalStreamConfig.columns
+                    originalStreamConfig.copy(
+                        id =
+                            sqlGenerator.buildStreamId(
+                                originalNamespace,
+                                newName,
+                                rawNamespace,
+                            ),
                     )
             } else {
                 actualStreamConfig = originalStreamConfig
             }
-            streamConfigs.add(actualStreamConfig)
+            streamConfigs.add(
+                actualStreamConfig.copy(
+                    // If we had collisions, we modified the stream name.
+                    // Revert those changes.
+                    id =
+                        actualStreamConfig.id.copy(
+                            originalName = stream.stream.name,
+                            originalNamespace = stream.stream.namespace,
+                        ),
+                ),
+            )
 
             // Populate some interesting strings into the exception handler string deinterpolator
-            addStringForDeinterpolation(actualStreamConfig.id!!.rawNamespace)
-            addStringForDeinterpolation(actualStreamConfig.id!!.rawName)
-            addStringForDeinterpolation(actualStreamConfig.id!!.finalNamespace)
-            addStringForDeinterpolation(actualStreamConfig.id!!.finalName)
-            addStringForDeinterpolation(actualStreamConfig.id!!.originalNamespace)
-            addStringForDeinterpolation(actualStreamConfig.id!!.originalName)
-            actualStreamConfig.columns!!
-                .keys
-                .forEach(
-                    Consumer { columnId: ColumnId? ->
-                        addStringForDeinterpolation(columnId!!.name)
-                        addStringForDeinterpolation(columnId.originalName)
-                    }
-                )
+            addStringForDeinterpolation(actualStreamConfig.id.rawNamespace)
+            addStringForDeinterpolation(actualStreamConfig.id.rawName)
+            addStringForDeinterpolation(actualStreamConfig.id.finalNamespace)
+            addStringForDeinterpolation(actualStreamConfig.id.finalName)
+            addStringForDeinterpolation(actualStreamConfig.id.originalNamespace)
+            addStringForDeinterpolation(actualStreamConfig.id.originalName)
+            actualStreamConfig.columns.keys.forEach(
+                Consumer { columnId: ColumnId ->
+                    addStringForDeinterpolation(columnId.name)
+                    addStringForDeinterpolation(columnId.originalName)
+                }
+            )
             // It's (unfortunately) possible for a cursor/PK to be declared that don't actually
             // exist in the
             // schema.
             // Add their strings explicitly.
-            actualStreamConfig.cursor!!.ifPresent { cursor: ColumnId ->
+            actualStreamConfig.cursor.ifPresent { cursor: ColumnId ->
                 addStringForDeinterpolation(cursor.name)
                 addStringForDeinterpolation(cursor.originalName)
             }
-            actualStreamConfig.primaryKey!!.forEach(
+            actualStreamConfig.primaryKey.forEach(
                 Consumer { pk: ColumnId ->
                     addStringForDeinterpolation(pk.name)
                     addStringForDeinterpolation(pk.originalName)
                 }
             )
         }
+        LOGGER.info { "Running sync with stream configs: $streamConfigs" }
         return ParsedCatalog(streamConfigs)
     }
 
-    // TODO maybe we should extract the column collision stuff to a separate method, since that's
-    // the
-    // interesting bit
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
-        val schema: AirbyteType = AirbyteType.Companion.fromJsonSchema(stream.stream.jsonSchema)
+        if (stream.generationId == null) {
+            stream.generationId = 0
+            stream.minimumGenerationId = 0
+            stream.syncId = 0
+        }
+        if (
+            stream.minimumGenerationId != 0.toLong() &&
+                stream.minimumGenerationId != stream.generationId
+        ) {
+            throw UnsupportedOperationException("Hybrid refreshes are not yet supported.")
+        }
+
         val airbyteColumns =
-            if (schema is Struct) {
-                schema.properties
-            } else if (schema is Union) {
-                schema.asColumns()
-            } else {
-                throw IllegalArgumentException("Top-level schema must be an object")
+            when (
+                val schema: AirbyteType =
+                    AirbyteType.Companion.fromJsonSchema(stream.stream.jsonSchema)
+            ) {
+                is Struct -> schema.properties
+                is Union -> schema.asColumns()
+                else -> throw IllegalArgumentException("Top-level schema must be an object")
             }
 
-        require(!stream.primaryKey.stream().anyMatch { key: List<String?> -> key.size > 1 }) {
+        require(!stream.primaryKey.any { key: List<String> -> key.size > 1 }) {
             "Only top-level primary keys are supported"
         }
         val primaryKey =
-            stream.primaryKey
-                .stream()
-                .map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
-                .toList()
+            stream.primaryKey.map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
 
         require(stream.cursorField.size <= 1) { "Only top-level cursors are supported" }
-        val cursor: Optional<ColumnId>
-        if (stream.cursorField.size > 0) {
-            cursor = Optional.of(sqlGenerator.buildColumnId(stream.cursorField[0])!!)
-        } else {
-            cursor = Optional.empty()
-        }
+        val cursor: Optional<ColumnId> =
+            if (stream.cursorField.isNotEmpty()) {
+                Optional.of(sqlGenerator.buildColumnId(stream.cursorField[0]))
+            } else {
+                Optional.empty()
+            }
 
-        // this code is really bad and I'm not convinced we need to preserve this behavior.
-        // as with the tablename collisions thing above - we're trying to preserve legacy
-        // normalization's
-        // naming conventions here.
+        val columns = resolveColumnCollisions(airbyteColumns, stream)
+
+        return StreamConfig(
+            sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
+            stream.destinationSyncMode,
+            primaryKey,
+            cursor,
+            columns,
+            stream.generationId,
+            stream.minimumGenerationId,
+            stream.syncId,
+        )
+    }
+
+    /**
+     * This code is really bad and I'm not convinced we need to preserve this behavior. As with the
+     * tablename collisions thing above - we're trying to preserve legacy normalization's naming
+     * conventions here.
+     */
+    private fun resolveColumnCollisions(
+        airbyteColumns: LinkedHashMap<String, AirbyteType>,
+        stream: ConfiguredAirbyteStream
+    ): LinkedHashMap<ColumnId, AirbyteType> {
         val columns = LinkedHashMap<ColumnId, AirbyteType>()
         for ((key, value) in airbyteColumns) {
             val originalColumnId = sqlGenerator.buildColumnId(key)
-            var columnId: ColumnId?
+            var columnId: ColumnId
             if (
-                columns.keys.stream().noneMatch { c: ColumnId ->
+                columns.keys.none { c: ColumnId ->
                     c.canonicalName == originalColumnId.canonicalName
                 }
             ) {
@@ -150,23 +181,33 @@ constructor(
                 // as-is.
                 columnId = originalColumnId
             } else {
-                LOGGER.info(
-                    "Detected column name collision for {}.{}.{}",
-                    stream.stream.namespace,
-                    stream.stream.name,
-                    key
-                )
+                LOGGER.info {
+                    "Detected column name collision for ${stream.stream.namespace}.${stream.stream.name}.$key"
+                }
                 // One of the existing columns has the same name. We need to handle this collision.
                 // Append _1, _2, _3, ... to the column name until we find one that doesn't collide.
                 var i = 1
                 while (true) {
                     columnId = sqlGenerator.buildColumnId(key, "_$i")
-                    val canonicalName = columnId!!.canonicalName
-                    if (
-                        columns.keys.stream().noneMatch { c: ColumnId ->
-                            c.canonicalName == canonicalName
-                        }
-                    ) {
+
+                    // Verify that we're making progress, e.g. we haven't immediately truncated away
+                    // the suffix.
+                    if (columnId.canonicalName == originalColumnId.canonicalName) {
+                        // If we're not making progress, do a more powerful mutation instead of
+                        // appending numbers.
+                        // Assume that we're being truncated, and that the column ID's name is the
+                        // maximum length.
+                        columnId =
+                            superResolveColumnCollisions(
+                                originalColumnId,
+                                columns,
+                                originalColumnId.name.length
+                            )
+                        break
+                    }
+
+                    val canonicalName = columnId.canonicalName
+                    if (columns.keys.none { c: ColumnId -> c.canonicalName == canonicalName }) {
                         break
                     } else {
                         i++
@@ -176,26 +217,61 @@ constructor(
                 // JSON records.
                 columnId =
                     ColumnId(
-                        columnId!!.name,
-                        originalColumnId!!.originalName,
-                        columnId.canonicalName
+                        columnId.name,
+                        originalColumnId.originalName,
+                        columnId.canonicalName,
                     )
             }
 
             columns[columnId] = value
         }
-
-        return StreamConfig(
-            sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
-            stream.syncMode,
-            stream.destinationSyncMode,
-            primaryKey,
-            cursor,
-            columns
-        )
+        return columns
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CatalogParser::class.java)
+    /**
+     * Generate a name of the format `<prefix><length><suffix>`. E.g. for affixLength=3:
+     * "veryLongName" -> "ver6ame" This is based on the "i18n"-ish naming convention.
+     *
+     * @param columnId The column that we're trying to add
+     * @param columns The columns that we've already added
+     */
+    private fun superResolveColumnCollisions(
+        columnId: ColumnId,
+        columns: LinkedHashMap<ColumnId, AirbyteType>,
+        maximumColumnNameLength: Int
+    ): ColumnId {
+        val originalColumnName = columnId.originalName
+
+        var newColumnId = columnId
+        // Assume that the <length> portion can be expressed in at most 5 characters.
+        // If someone is giving us a column name that's longer than 99999 characters,
+        // that's just being silly.
+        val affixLength = (maximumColumnNameLength - 5) / 2
+        // If, after reserving 5 characters for the length, we can't fit the affixes,
+        // just give up. That means the destination is trying to restrict us to a
+        // 6-character column name, which is just silly.
+        if (affixLength <= 0) {
+            throw IllegalArgumentException(
+                "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing."
+            )
+        }
+        val prefix = originalColumnName.substring(0, affixLength)
+        val suffix =
+            originalColumnName.substring(
+                originalColumnName.length - affixLength,
+                originalColumnName.length
+            )
+        val length = originalColumnName.length - 2 * affixLength
+        newColumnId = sqlGenerator.buildColumnId("$prefix$length$suffix")
+        // if there's _still_ a collision after this, just give up.
+        // we could try to be more clever, but this is already a pretty rare case.
+        if (columns.keys.any { c: ColumnId -> c.canonicalName == newColumnId.canonicalName }) {
+            throw IllegalArgumentException(
+                "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing."
+            )
+        }
+        return newColumnId
     }
+
+    companion object {}
 }

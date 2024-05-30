@@ -143,7 +143,7 @@ def _verify_state_record_counts(records: List[AirbyteMessage], states: List[Airb
         )
 
     for stream, actual_count in actual_record_counts.items():
-        assert state_record_count_sums.get(stream) == actual_count
+        assert actual_count == state_record_count_sums.get(stream)
 
     # We can have extra keys in state_record_count_sums if we processed a stream and reported 0 records
     extra_keys = state_record_count_sums.keys() - actual_record_counts.keys()

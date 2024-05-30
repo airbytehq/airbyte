@@ -3,172 +3,228 @@
   "type": "object",
   "properties": {
     "TimePeriod": {
+      "description": "Time period for the data",
       "type": ["null", "string"],
       "format": "date"
     },
     "AccountId": {
+      "description": "Unique identifier for the account",
       "type": ["null", "integer"]
     },
     "AccountNumber": {
+      "description": "Account number associated with the account",
       "type": ["null", "string"]
     },
     "AccountName": {
+      "description": "Name of the account",
       "type": ["null", "string"]
     },
     "AdId": {
+      "description": "ID of the ad",
       "type": ["null", "integer"]
     },
     "AdGroupId": {
+      "description": "ID of the ad group",
       "type": ["null", "integer"]
     },
     "AdGroupName": {
+      "description": "Name of the ad group",
       "type": ["null", "string"]
     },
     "CampaignId": {
+      "description": "ID of the campaign",
       "type": ["null", "integer"]
     },
     "CampaignName": {
+      "description": "Name of the campaign",
       "type": ["null", "string"]
     },
     "DestinationUrl": {
+      "description": "URL of the landing page",
       "type": ["null", "string"]
     },
     "DeviceType": {
+      "description": "Type of device",
       "type": ["null", "string"]
     },
     "DeviceOS": {
+      "description": "Operating system of the device",
       "type": ["null", "string"]
     },
     "Language": {
+      "description": "Language targeting of the ad",
       "type": ["null", "string"]
     },
     "SearchQuery": {
+      "description": "Search query that triggered the ad",
       "type": ["null", "string"]
     },
     "Network": {
+      "description": "Network where the ad was displayed",
       "type": ["null", "string"]
     },
     "MerchantProductId": {
+      "description": "ID of the merchant product",
       "type": ["null", "string"]
     },
     "Title": {
+      "description": "Title of the ad",
       "type": ["null", "string"]
     },
     "ClickTypeId": {
+      "description": "ID of the click type",
       "type": ["null", "string"]
     },
     "TotalClicksOnAdElements": {
+      "description": "Total clicks on ad elements (e.g., sitelinks)",
       "type": ["null", "number"]
     },
     "ClickType": {
+      "description": "Type of click (e.g., headline, sitelink)",
       "type": ["null", "string"]
     },
     "AdGroupCriterionId": {
+      "description": "ID of the ad group criterion",
       "type": ["null", "string"]
     },
     "ProductGroup": {
+      "description": "Grouping of products",
       "type": ["null", "string"]
     },
     "PartitionType": {
+      "description": "Type of the partition",
       "type": ["null", "string"]
     },
     "Impressions": {
+      "description": "Total number of impressions",
       "type": ["null", "integer"]
     },
     "Clicks": {
+      "description": "Total number of clicks",
       "type": ["null", "integer"]
     },
     "Ctr": {
+      "description": "Click-through rate",
       "type": ["null", "number"]
     },
     "AverageCpc": {
+      "description": "Average cost per click",
       "type": ["null", "number"]
     },
     "Spend": {
+      "description": "Total spend on the ad",
       "type": ["null", "number"]
     },
     "Conversions": {
+      "description": "Total number of conversions",
       "type": ["null", "integer"]
     },
     "ConversionRate": {
+      "description": "Percentage of conversions over clicks",
       "type": ["null", "number"]
     },
     "Assists": {
+      "description": "Total number of assists",
       "type": ["null", "integer"]
     },
     "CostPerAssist": {
+      "description": "Average cost per assist",
       "type": ["null", "number"]
     },
     "Revenue": {
+      "description": "Total revenue generated",
       "type": ["null", "number"]
     },
     "CostPerConversion": {
+      "description": "Average cost per conversion",
       "type": ["null", "number"]
     },
     "RevenuePerConversion": {
+      "description": "Average revenue generated per conversion",
       "type": ["null", "number"]
     },
     "RevenuePerAssist": {
+      "description": "Average revenue generated per assist",
       "type": ["null", "number"]
     },
     "CustomerId": {
+      "description": "Unique identifier for the customer",
       "type": ["null", "integer"]
     },
     "CustomerName": {
+      "description": "Name of the customer",
       "type": ["null", "string"]
     },
     "AssistedImpressions": {
+      "description": "Number of impressions in which the ad was assisted",
       "type": ["null", "integer"]
     },
     "AssistedClicks": {
+      "description": "Number of assisted clicks",
       "type": ["null", "integer"]
     },
     "AssistedConversions": {
+      "description": "Number of assisted conversions",
       "type": ["null", "integer"]
     },
     "AllConversions": {
+      "description": "Total number of conversions",
       "type": ["null", "integer"]
     },
     "AllRevenue": {
+      "description": "Total revenue generated",
       "type": ["null", "number"]
     },
     "AllConversionRate": {
+      "description": "Percentage of conversions over all clicks",
       "type": ["null", "number"]
     },
     "AllCostPerConversion": {
+      "description": "Average cost per conversion",
       "type": ["null", "number"]
     },
     "AllRevenuePerConversion": {
+      "description": "Average revenue generated per conversion",
       "type": ["null", "number"]
     },
     "Goal": {
+      "description": "Specific goal targeted by the ad",
       "type": ["null", "string"]
     },
     "GoalType": {
+      "description": "Type of goal",
       "type": ["null", "string"]
     },
     "AbsoluteTopImpressionRatePercent": {
+      "description": "The percentage of times the ad showed at the absolute top of the search results",
       "type": ["null", "number"]
     },
     "AverageCpm": {
+      "description": "Average cost per thousand impressions",
       "type": ["null", "number"]
     },
     "ConversionsQualified": {
+      "description": "Number of conversions that meet specific criteria",
       "type": ["null", "number"]
     },
     "AssistedConversionsQualified": {
+      "description": "Number of assisted conversions that meet specific criteria",
       "type": ["null", "number"]
     },
     "AllConversionsQualified": {
+      "description": "Number of conversions that meet specific criteria",
       "type": ["null", "number"]
     },
     "CampaignType": {
+      "description": "Type of the campaign",
       "type": ["null", "string"]
     },
     "AssetGroupId": {
+      "description": "ID of the asset group",
       "type": ["null", "integer"]
     },
     "AssetGroupName": {
+      "description": "Name of the asset group",
       "type": ["null", "string"]
     }
   }

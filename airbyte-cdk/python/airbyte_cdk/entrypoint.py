@@ -235,7 +235,7 @@ def launch(source: Source, args: List[str]) -> None:
     for message in source_entrypoint.run(parsed_args):
         # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
         # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
-        print(f"{message}\n", end="")
+        print(f"{message}\n", end="", flush=True)
 
 
 def _init_internal_request_filter() -> None:

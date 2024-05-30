@@ -6,20 +6,20 @@ This source can sync data from the [Statuspage.io API](https://developer.statusp
 
 ## This Source Supports the Following Streams
 
- * pages
- * subscribers
- * subscribers_histogram_by_state
- * incident_templates
- * incidents
- * components
- * metrics
+- pages
+- subscribers
+- subscribers_histogram_by_state
+- incident_templates
+- incidents
+- components
+- metrics
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -29,10 +29,10 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 ### Requirements
 
-* Statuspage.io API KEY
+- Statuspage.io API KEY
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| Version | Date       | Pull Request                                              | Subject                                         |
+| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
 | 0.1.0   | 2022-10-30 | [#18664](https://github.com/airbytehq/airbyte/pull/18664) | 🎉 New Source: Statuspage.io API [low-code CDK] |

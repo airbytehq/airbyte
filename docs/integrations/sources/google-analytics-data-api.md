@@ -17,6 +17,7 @@ The [Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.c
 ### For Airbyte Cloud
 
 <!-- env:cloud -->
+
 For **Airbyte Cloud** users, we highly recommend using OAuth for authentication, as this significantly simplifies the setup process by allowing you to authenticate your Google Analytics account directly in the Airbyte UI. Please follow the steps below to set up the connector using this method.
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
@@ -25,9 +26,9 @@ For **Airbyte Cloud** users, we highly recommend using OAuth for authentication,
 4. In the **Source name** field, enter a name to help you identify this source.
 5. Select **Authenticate via Google (Oauth)** from the dropdown menu and click **Authenticate your Google Analytics 4 (GA4) account**. This will open a pop-up window where you can log in to your Google account and grant Airbyte access to your Google Analytics account.
 6. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
-:::note
-If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on using this connector. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
-:::
+   :::note
+   If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on using this connector. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
+   :::
 
 7. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
@@ -37,7 +38,7 @@ If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denot
 
 It's important to consider how dimensions like `month` or `yearMonth` are specified. These dimensions organize the data according to your preferences.
 However, keep in mind that the data presentation is also influenced by the chosen date range for the report. In cases where a very specific date range is selected, such as a single day (**Data Request Interval (Days)** set to one day), duplicated data entries for each day might appear.
-To mitigate this, we recommend adjusting the **Data Request Interval (Days)** value to 364. By doing so, you can obtain more precise results and prevent the occurrence of duplicated data. 
+To mitigate this, we recommend adjusting the **Data Request Interval (Days)** value to 364. By doing so, you can obtain more precise results and prevent the occurrence of duplicated data.
 
 :::
 
@@ -77,9 +78,9 @@ Before you can use the service account to access Google Analytics data, you need
 3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
 4. Select **Service Account Key Authenication** dropdown list and enter **Service Account JSON Key** from Step 1.
 5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
-:::note
-If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
-:::
+   :::note
+   If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
+   :::
 
 6. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
 
@@ -99,7 +100,7 @@ Many analyses and data investigations may require 24-48 hours to process informa
 
 It's important to consider how dimensions like `month` or `yearMonth` are specified. These dimensions organize the data according to your preferences.
 However, keep in mind that the data presentation is also influenced by the chosen date range for the report. In cases where a very specific date range is selected, such as a single day (**Data Request Interval (Days)** set to one day), duplicated data entries for each day might appear.
-To mitigate this, we recommend adjusting the **Data Request Interval (Days)** value to 364. By doing so, you can obtain more precise results and prevent the occurrence of duplicated data. 
+To mitigate this, we recommend adjusting the **Data Request Interval (Days)** value to 364. By doing so, you can obtain more precise results and prevent the occurrence of duplicated data.
 
 :::
 
@@ -193,7 +194,6 @@ Custom reports in Google Analytics allow for flexibility in querying specific da
 
 A full list of dimensions and metrics supported in the API can be found [here](https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema). To ensure your dimensions and metrics are compatible for your GA4 property, you can use the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/).
 
-
 The following is an example of a basic User Engagement report to track sessions and bounce rate, segmented by city:
 
 ```json
@@ -263,8 +263,8 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
-|:--------|:-----------| :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| 2.4.2   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field                                                       |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 2.4.2   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field       |
 | 2.4.1   | 2024-02-09 | [35073](https://github.com/airbytehq/airbyte/pull/35073) | Manage dependencies with Poetry.                                                       |
 | 2.4.0   | 2024-02-07 | [34951](https://github.com/airbytehq/airbyte/pull/34951) | Replace the spec parameter from previous version to convert all `conversions:*` fields |
 | 2.3.0   | 2024-02-06 | [34907](https://github.com/airbytehq/airbyte/pull/34907) | Add new parameter to spec to convert `conversions:purchase` field to float             |

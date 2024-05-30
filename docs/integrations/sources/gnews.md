@@ -8,13 +8,13 @@ The GNews source supports full refresh syncs
 
 Two output streams are available from this source:
 
-*[Search](https://gnews.io/docs/v4?shell#search-endpoint).
-*[Top Headlines](https://gnews.io/docs/v4?shell#top-headlines-endpoint).
+_[Search](https://gnews.io/docs/v4?shell#search-endpoint).
+_[Top Headlines](https://gnews.io/docs/v4?shell#top-headlines-endpoint).
 
 ### Features
 
 | Feature           | Supported? |
-|:------------------|:-----------|
+| :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
 
@@ -26,7 +26,7 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 
 ### Requirements
 
-* GNews API Key.
+- GNews API Key.
 
 ### Connect using `API Key`:
 
@@ -36,7 +36,7 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                          |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
 | 0.1.3   | 2022-12-16 | [21322](https://github.com/airbytehq/airbyte/pull/21322) | Reorganize manifest inline stream schemas        |
 | 0.1.2   | 2022-12-16 | [20405](https://github.com/airbytehq/airbyte/pull/20405) | Update the manifest to use inline stream schemas |
 | 0.1.1   | 2022-12-13 | [20460](https://github.com/airbytehq/airbyte/pull/20460) | Update source acceptance test config             |

@@ -66,7 +66,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws InterruptedException {
+  public List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws InterruptedException {
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
@@ -91,41 +91,33 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     return new BigQuerySqlGenerator(getConfig().get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), null);
   }
 
-  /**
-   * Run a sync using 1.9.0 (which is the highest version that still creates v2 raw tables with JSON
-   * _airbyte_data). Then run a sync using our current version.
-   */
   @Test
-  public void testRawTableJsonToStringMigration() throws Exception {
+  public void testV1V2Migration() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
                 .withJsonSchema(SCHEMA))));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
-    runSync(catalog, messages1, "airbyte/destination-bigquery:1.9.0", config -> {
+    runSync(catalog, messages1, "airbyte/destination-bigquery:1.10.2", config -> {
       // Defensive to avoid weird behaviors or test failures if the original config is being altered by
       // another thread, thanks jackson for a mutable JsonNode
       JsonNode copiedConfig = Jsons.clone(config);
       if (config instanceof ObjectNode) {
-        // Add opt-in T+D flag for older version. this is removed in newer version of the spec.
-        ((ObjectNode) copiedConfig).put("use_1s1t_format", true);
+        // Opt out of T+D to run old V1 sync
+        ((ObjectNode) copiedConfig).put("use_1s1t_format", false);
       }
       return copiedConfig;
     });
 
-    // 1.9.0 is known-good, but we might as well check that we're in good shape before continuing.
-    // If this starts erroring out because we added more test records and 1.9.0 had a latent bug,
-    // just delete these three lines :P
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+    // The record differ code is already adapted to V2 columns format, use the post V2 sync
+    // to verify that append mode preserved all the raw records and final records.
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
@@ -145,8 +137,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
                 .withJsonSchema(SCHEMA))));
 
     // First sync
@@ -159,7 +151,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
 
     // Second sync
     runSync(catalog, messages); // does not throw with latest version
-    assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
+    assertEquals(1, dumpFinalTableRecords(getStreamNamespace(), getStreamName()).toArray().length);
   }
 
   /**

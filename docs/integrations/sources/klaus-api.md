@@ -18,7 +18,7 @@ This Source is capable of syncing the following core Streams:
 ### Features
 
 | Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ |:---------------------| :---- |
+| :------------------------ | :------------------- | :---- |
 | Full Refresh Sync         | Yes                  |       |
 | Incremental - Append Sync | Yes                  |       |
 | Namespaces                | No                   |       |
@@ -30,5 +30,5 @@ This Source is capable of syncing the following core Streams:
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                        |
-| :------ |:-----------| :------------------------------------------------------- |:-------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
 | 0.1.0   | 2023-05-04 | [25790](https://github.com/airbytehq/airbyte/pull/25790) | Add Klaus API Source Connector |

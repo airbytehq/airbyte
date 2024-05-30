@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-* Trustpilot API Token or Zendesk OAuth 2.0 redentials
-* Trustpilot Business Unit URLs
+- Trustpilot API Token or Zendesk OAuth 2.0 redentials
+- Trustpilot Business Unit URLs
 
 ## Authentication methods
 
@@ -21,7 +21,7 @@ Enter the API key in the Airbyte source configuration "API key". In case you wan
 
 Request the OAuth 2.0 request token by sending the following HTTP request:
 
-``` http
+```http
 GET https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/accesstoken
 Authorization: Basic base64(apikey:secret)
 Content-Type: application/x-www-form-urlencoded
@@ -36,16 +36,17 @@ Fill now the missing configuration fields in the Airbyte source configuration. A
 ## Supported sync modes
 
 The **Trustpilot** source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
-* Full Refresh
-* Incremental Sync
+
+- Full Refresh
+- Incremental Sync
 
 ## Supported Streams
 
 This Source is capable of syncing the following Streams:
 
-* [Configured Business Units](https://documentation-apidocumentation.trustpilot.com/business-units-api-(public)#find-a-business-unit) - loads business units defined in the configuration
-* [Business Units](https://documentation-apidocumentation.trustpilot.com/business-units-api-(public)#get-a-list-of-all-business-units) - loads **all** business units
-* [Private Reviews](https://documentation-apidocumentation.trustpilot.com/business-units-api#business-unit-private-reviews) \(Incremental sync\)
+- [Configured Business Units](<https://documentation-apidocumentation.trustpilot.com/business-units-api-(public)#find-a-business-unit>) - loads business units defined in the configuration
+- [Business Units](<https://documentation-apidocumentation.trustpilot.com/business-units-api-(public)#get-a-list-of-all-business-units>) - loads **all** business units
+- [Private Reviews](https://documentation-apidocumentation.trustpilot.com/business-units-api#business-unit-private-reviews) \(Incremental sync\)
 
 ## Performance considerations
 
@@ -53,11 +54,8 @@ The connector is restricted by Trustpilot [rate limit guidelines](https://docume
 
 The Trustpilot connector should not run into any limits under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-
 ## Changelog
 
-
-| Version | Date       | Pull Request | Subject                           |
-|:--------|:-----------| :-----       |:----------------------------------|
+| Version | Date       | Pull Request                                             | Subject         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------- |
 | `0.1.0` | 2023-03-16 | [24009](https://github.com/airbytehq/airbyte/pull/24009) | Initial version |
-

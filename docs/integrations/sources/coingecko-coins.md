@@ -9,13 +9,13 @@ This source can sync market chart and historical data for a single coin listed o
 
 This source is capable of syncing the following streams:
 
-* `market_chart`
-* `history`
+- `market_chart`
+- `history`
 
 ### Features
 
 | Feature           | Supported? \(Yes/No\) | Notes                                                  |
-|:------------------|:----------------------|:-------------------------------------------------------|
+| :---------------- | :-------------------- | :----------------------------------------------------- |
 | Full Refresh Sync | Yes                   |                                                        |
 | Incremental Sync  | No                    |                                                        |
 | CoinGecko Pro API | Yes                   | Will default to free API unless an API key is provided |
@@ -29,7 +29,6 @@ CoinGecko also request that free users provide attribution when using CoinGecko 
 this [here](https://www.coingecko.com/en/branding).
 
 ## Getting started
-
 
 ### Requirements
 
@@ -48,8 +47,7 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
+| Version | Date       | Pull Request                                             | Subject                                       |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
 | 0.1.1   | 2023-04-30 | [25558](https://github.com/airbytehq/airbyte/pull/25558) | Make manifest.yaml connector builder-friendly |
-| 0.1.0   | 2022-10-20 | [18248](https://github.com/airbytehq/airbyte/pull/18248) | New source |
-
+| 0.1.0   | 2022-10-20 | [18248](https://github.com/airbytehq/airbyte/pull/18248) | New source                                    |

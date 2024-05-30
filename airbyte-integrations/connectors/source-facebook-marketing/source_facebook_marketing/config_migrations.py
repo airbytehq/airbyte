@@ -38,7 +38,7 @@ class MigrateAccountIdToArray:
             > False, otherwise.
             > Raises the Exception if the structure could not be migrated.
         """
-        return False if config.get(cls.migrate_to_key) else True
+        return cls.migrate_from_key in config and cls.migrate_to_key not in config
 
     @classmethod
     def transform(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:

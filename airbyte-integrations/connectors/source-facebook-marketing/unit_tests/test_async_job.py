@@ -369,7 +369,7 @@ class TestInsightAsyncJob:
     @freezegun.freeze_time("2023-10-29")
     def test_split_job(self, mocker, api, edge_class, next_edge_class, id_field):
         """Test that split will correctly downsize edge_object"""
-        today = pendulum.today().date()
+        today = pendulum.today(tz=pendulum.tz.UTC).date()
         start, end = today - pendulum.duration(days=365 * 3 + 20), today - pendulum.duration(days=365 * 3 + 10)
         params = {"time_increment": 1, "breakdowns": []}
         job = InsightAsyncJob(

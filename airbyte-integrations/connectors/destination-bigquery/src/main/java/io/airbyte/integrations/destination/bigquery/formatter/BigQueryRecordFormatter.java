@@ -4,82 +4,47 @@
 
 package io.airbyte.integrations.destination.bigquery.formatter;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import com.google.cloud.bigquery.StandardSQLTypeName;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage;
+import io.airbyte.commons.json.Jsons;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The class formats incoming JsonSchema and AirbyteRecord in order to be inline with a
  * corresponding uploader.
  */
-public abstract class BigQueryRecordFormatter {
+public class BigQueryRecordFormatter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordFormatter.class);
+  public static final Schema SCHEMA_V2 = Schema.of(
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP),
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
+      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
-  protected Schema bigQuerySchema;
-  protected final Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
-  protected final StandardNameTransformer namingResolver;
-  protected final JsonNode originalJsonSchema;
-  protected JsonNode jsonSchema;
-
-  /**
-   * These parameters are required for the correct operation of denormalize version of the connector.
-   */
-  protected final Set<String> invalidKeys = new HashSet<>();
-  protected final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
-
-  public BigQueryRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
-    this.namingResolver = namingResolver;
-    this.originalJsonSchema = jsonSchema.deepCopy();
-    this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
-  }
-
-  protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
-    // Do nothing by default
-    return jsonSchema;
-  };
-
-  public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
+  public BigQueryRecordFormatter() {}
 
   public String formatRecord(PartialAirbyteMessage recordMessage) {
-    return "";
+    // Map.of has a @NonNull requirement, so creating a new Hash map
+    final HashMap<String, Object> destinationV2record = new HashMap<>();
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage.getRecord()));
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getSerialized());
+    return Jsons.serialize(destinationV2record);
   }
 
-  public Schema getBigQuerySchema() {
-    if (bigQuerySchema == null) {
-      bigQuerySchema = getBigQuerySchema(jsonSchema);
-    }
-    return bigQuerySchema;
-  }
-
-  public JsonNode getJsonSchema() {
-    return jsonSchema;
-  }
-
-  protected abstract Schema getBigQuerySchema(JsonNode jsonSchema);
-
-  protected void logFieldFail(final String error, final String fieldName) {
-    mapOfFailedFields.putIfAbsent(error, new HashSet<>());
-    mapOfFailedFields.get(error).add(fieldName);
-  }
-
-  public void printAndCleanFieldFails() {
-    if (!mapOfFailedFields.isEmpty()) {
-      mapOfFailedFields.forEach(
-          (error, fieldNames) -> LOGGER.warn(
-              "Field(s) fail with error {}. Fields : {} ",
-              error,
-              String.join(", ", fieldNames)));
-      mapOfFailedFields.clear();
-    }
+  private Object getEmittedAtField(final PartialAirbyteRecordMessage recordMessage) {
+    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
+    // use BQ helpers to string-format correctly.
+    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    return QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
   }
 
 }
