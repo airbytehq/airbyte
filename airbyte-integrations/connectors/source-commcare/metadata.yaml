@@ -5,6 +5,7 @@ data:
   dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-commcare
   githubIssueLabel: source-commcare
+  icon: commcare.svg
   license: MIT
   name: Commcare
   remoteRegistries:
