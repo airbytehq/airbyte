@@ -128,7 +128,8 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 4.2.1   | 2024-05-29 | [38765](https://github.com/airbytehq/airbyte/pull/38765) | Fix next_page_token() to correctly adhere to HttpStream interface                      |
 | 4.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                        |
 | 4.1.6   | 2024-02-12 | [35149](https://github.com/airbytehq/airbyte/pull/35149) | Manage dependencies with Poetry.                                                       |
 | 4.1.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image        |
