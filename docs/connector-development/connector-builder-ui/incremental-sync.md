@@ -94,24 +94,13 @@ In some cases, it's helpful to reference the start and end date of the interval 
 
 ## Incremental sync without time filtering
 
-Some APIs do not allow filtering records by a date field, but instead only provide a paginated "feed" of all available. In these cases, the "API time filtering capabilities" option needs to be set to "No filter (data feed)". As they can't be applied in this situation, the "Inject start time into outgoing HTTP request" and "Inject end time into outgoing HTTP request" options as well as the "Split up interval" option are disabled automatically.
+Some APIs do not allow filtering records by a date field, but instead only provide a paginated "feed" of data that is ordered from newest to oldest. In these cases, the "API time filtering capabilities" option needs to be set to "No filter". As they can't be applied in this situation, the "Inject start time into outgoing HTTP request" and "Inject end time into outgoing HTTP request" options as well as the "Split up interval" option are disabled automatically.
 
-### No filter (data feed)
-
-Select (data feed) if data is ordered from newest to oldest.
 The `/new` endpoint of the [Reddit API](https://www.reddit.com/dev/api/#GET_new) is such an API. By configuring pagination and setting time filtering capabilities to the "No filter" option, the connector will automatically request the next page of records until the cutoff datetime is encountered. This is done by comparing the cursor value of the records with the either the configured start date or the latest cursor value that was encountered in a previous sync - if the cursor value is less than or equal to that cutoff date, the sync is finished. The latest cursor value is saved as part of the connection and used as the cutoff date for the next sync.
 
 :::warning
-The "No filter (data feed)" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records too late or too early. In these cases it's better to disable incremental syncs and sync the full set of records on a regular schedule.
+The "No filter" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records too late or too early. In these cases it's better to disable incremental syncs and sync the full set of records on a regular schedule.
 :::
-
-### No filter (client side)
-
-Select (client side) if data is ordered from oldest to newest.
-All Data is loaded into the source, but older records are filtered out.
-
-The `/events` endpoint of the [GitHub API](https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events) is an example of such API.
-By configuring pagination and setting time filtering capabilities to the "No filter (client side)" option, the connector will automatically read all records and emit only new data from the Source. This is done by comparing the cursor value of the records with the either the configured start date or the latest cursor value that was encountered in a previous sync. The latest cursor value is saved as part of the connection and used as the cutoff date for the next sync.
 
 ## Advanced settings
 
