@@ -40,7 +40,9 @@ Each instance of the connector must be updated separately. If you have created m
 
 1. Select **Connections** in the main nav bar.
    1. Select the connection(s) affected by the update.
-2. Select the **Replication** tab. 1. Select **Refresh source schema**. 2. Select **OK**.
+2. Select the **Replication** tab. 
+    1. Select **Refresh source schema**. 
+    2. Select **OK**.
    :::note
    Any detected schema changes will be listed for your review.
    :::
