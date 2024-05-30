@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/Workspaces
           http_method: GET
         record_selector:
@@ -37,11 +37,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{response[''meta''][''next_page_url'']}}'
+            cursor_value: "{{response['meta']['next_page_url']}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspaces'
+          $ref: "#/schemas/workspaces"
     workers:
       type: DeclarativeStream
       name: workers
@@ -50,7 +50,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/Workspaces/{{ stream_slice.id }}/Workers
           http_method: GET
         record_selector:
@@ -70,7 +70,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{response[''meta''][''next_page_url'']}}'
+            cursor_value: "{{response['meta']['next_page_url']}}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -78,22 +78,22 @@ definitions:
                 parent_key: sid
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/workspaces'
+                  $ref: "#/definitions/streams/workspaces"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workers'
+          $ref: "#/schemas/workers"
   base_requester:
     type: HttpRequester
     url_base: https://taskrouter.twilio.com
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''account_sid''] }}'
-      password: '{{ config[''auth_token''] }}'
+      username: "{{ config['account_sid'] }}"
+      password: "{{ config['auth_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/workspaces'
-  - $ref: '#/definitions/streams/workers'
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/workers"
 
 spec:
   type: Spec
@@ -130,76 +130,76 @@ schemas:
     properties:
       account_sid:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier for the account associated with the workspace.
       date_created:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the workspace was created.
         format: date-time
       date_updated:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the workspace was last updated.
         format: date-time
       default_acitvity_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the default activity for the workspace.
       default_activity_sid:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier for the default activity of the workspace.
       event_callback_url:
         type:
-          - 'null'
+          - "null"
           - string
         description: The URL to which taskrouter events will be sent.
       events_filter:
         type:
-          - 'null'
+          - "null"
           - string
         description: Filter for specifying which events should be sent to the callback URL.
       friendly_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: A user-friendly name for the workspace.
       links:
         type:
-          - 'null'
+          - "null"
           - object
         description: Links related to the workspace.
       multi_task_enabled:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether multitasking is enabled for the workspace.
       sid:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier for the workspace.
       timeout_activity_sid:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The unique identifier for the activity that tasks are routed to on
           timeout.
       timeout_actvity_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the activity that tasks are routed to on timeout.
       url:
         type:
-          - 'null'
+          - "null"
           - string
         description: The URL of the workspace.
   workers:
@@ -208,69 +208,69 @@ schemas:
     properties:
       account_sid:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier for the account that this worker belongs to.
       activity_sid:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier of the current activity of the worker.
       actvity_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the current activity of the worker.
       attributes:
         type:
-          - 'null'
+          - "null"
           - string
         description: Custom attributes or metadata associated with the worker.
       available:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the worker is available for tasks.
       date_created:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the worker was created.
         format: date-time
       date_status_changed:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the worker's status was last changed.
         format: date-time
       date_updated:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the worker was last updated.
         format: date-time
       friendly_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: A friendly name or label for the worker.
       links:
         type:
-          - 'null'
+          - "null"
           - object
         description: Related resource URIs for the worker.
       sid:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier for the worker.
       url:
         type:
-          - 'null'
+          - "null"
           - string
         description: The resource URL for accessing details of the worker.
       workspace_sid:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier for the workspace that this worker belongs to.
