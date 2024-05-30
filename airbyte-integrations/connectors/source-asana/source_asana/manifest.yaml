@@ -28,7 +28,8 @@ definitions:
       "PAT Credentials": "#/definitions/pat_authenticator"
 
   requester:
-    type: HttpRequester
+    type: CustomRequester
+    class_name: source_asana.components.CustomAsanaRequester
     url_base: https://app.asana.com/api/1.0/
     http_method: GET
     authenticator:

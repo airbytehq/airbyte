@@ -9,39 +9,30 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 
 @dataclass
-class CustomAsanaRequester(HttpRequester):
-    """
-    This class is created to add call throttling using the optional requests_per_minute parameter
-    """
-
-    request_parameters: Optional[RequestInput] = None
-
-    # def _validate_response(
+class CustomAsanaRequester(HttpRequester, SchemaLoader):
+    # def get_request_params(
     #     self,
-    #     response: requests.Response,
-    # ) -> Optional[requests.Response]:
-    #     # if fail -> raise exception
-    #     # if ignore -> ignore response and return None
-    #     # else -> delegate to caller
+    #     *,
+    #     stream_state: Optional[StreamState] = None,
+    #     stream_slice: Optional[StreamSlice] = None,
+    #     next_page_token: Optional[Mapping[str, Any]] = None,
+    # ) -> MutableMapping[str, Any]:
+    #     params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+    #     # params.update(self.get_opt_fields(self))
+    #     return params
 
-    #     return response
-
-    def get_request_params(
+    def _request_params(
         self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {"limit": self.page_size}
-        params.update(self.request_parameters)
-        params.update(self.get_opt_fields())
-        if next_page_token:
-            params.update(next_page_token)
-
-        return params
+        stream_state: Optional[StreamState],
+        stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
+        extra_params: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        extra_params = super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
+        return extra_params
 
     def get_opt_fields(self) -> MutableMapping[str, str]:
         """
