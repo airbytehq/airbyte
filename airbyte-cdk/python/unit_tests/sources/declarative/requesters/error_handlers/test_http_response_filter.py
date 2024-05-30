@@ -31,7 +31,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "",
             {"status_code": 403},
-            ErrorResolution(response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message="Forbidden. You don't have permission to access this resource."),
+            ErrorResolution(response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message=""),
             id="test_http_code_matches_ignore_action",
         ),
         pytest.param(
@@ -41,7 +41,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "",
             {"status_code": 429},
-            ErrorResolution(response_action=ResponseAction.RETRY, failure_type=FailureType.transient_error, error_message="Too many requests."),
+            ErrorResolution(response_action=ResponseAction.RETRY, failure_type=FailureType.transient_error, error_message=""),
             id="test_http_code_matches_retry_action",
         ),
         pytest.param(
@@ -74,7 +74,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             ErrorResolution(
                 response_action=ResponseAction.FAIL,
                 failure_type=FailureType.config_error,
-                error_message="Forbidden. You don't have permission to access this resource."
+                error_message=""
             ),
             id="test_predicate_matches_headers",
         ),
