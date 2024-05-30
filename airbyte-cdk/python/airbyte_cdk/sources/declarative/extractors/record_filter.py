@@ -3,7 +3,7 @@
 #
 import datetime
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
