@@ -41,7 +41,7 @@ Refresh and Remove Records Syncs will only display data in the destination’s f
 
 :::warning
 
-Not all sources keep their history forever. If you perform a Refresh and Remove Records Sync, and your source does not retain all of its records, this may lead to data loss.
+Not all sources keep their history forever. If you perform a Refresh and Remove Records Sync, and your source does not retain all of its records, this may lead to data loss. If you need to keep all history, then we recommend using `Refresh and Retain Records`. If that is not an option, then you should back up the data in your destination before running the Refresh and Remove Records.
 
 :::
 
