@@ -27,6 +27,7 @@ from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
+from slugify import slugify
 
 
 class VersionCheck(Step, ABC):
@@ -344,6 +345,7 @@ class RegressionTests(Step):
         (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
         """
         run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
+        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
         run_pytest = " ".join(
             [
                 "poetry",
@@ -365,6 +367,7 @@ class RegressionTests(Step):
                 "--should-read-with-state",
                 str(self.should_read_with_state),
             ]
+            + selected_streams
         )
         run_pytest_with_proxy = dedent(
             f"""
@@ -398,6 +401,7 @@ class RegressionTests(Step):
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", True)
+        self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
@@ -456,7 +460,9 @@ class RegressionTests(Step):
             # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
             # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
             # build their own.
-            .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
+            .with_new_file(
+                f"/tmp/{slugify(self.connector_image + ':' + self.target_version)}_container_id.txt", contents=str(target_container_id)
+            )
         )
 
         if self.context.is_ci:
