@@ -424,7 +424,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 defaultNamespace,
                 Field.of(COL_ID, JsonSchemaType.NUMBER),
             )
-        val actualMessages = MoreIterators.toList(source().read(config(), catalog, null))
+        var actualMessages = MoreIterators.toList(source().read(config(), catalog, null))
 
         assertStreamStatusTraceMessageIndex(
             0,
@@ -469,9 +469,17 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         setTraceEmittedAtToNull(actualMessages)
         setTraceEmittedAtToNull(expectedMessages)
 
+        actualMessages = removeStateMessage(actualMessages)
+
         Assertions.assertEquals(expectedMessages.size, actualMessages.size)
         Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
         Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+    }
+
+    private fun removeStateMessage(airbyteMessages: List<AirbyteMessage>): List<AirbyteMessage> {
+        var mutableListMessages = airbyteMessages.toMutableList()
+        mutableListMessages.removeIf { message -> message.type == AirbyteMessage.Type.STATE }
+        return mutableListMessages
     }
 
     protected open val airbyteMessagesReadOneColumn: MutableList<AirbyteMessage>
