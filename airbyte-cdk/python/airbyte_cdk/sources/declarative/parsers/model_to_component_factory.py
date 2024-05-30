@@ -559,8 +559,6 @@ class ModelToComponentFactory:
         end_datetime: Union[str, MinMaxDatetime, None] = None
         if model.is_data_feed and model.end_datetime:
             raise ValueError("Data feed does not support end_datetime")
-        if model.is_data_feed and model.is_client_side_incremental:
-            raise ValueError("`Client side incremental` cannot be applied with `data feed`. Choose only 1 from them.")
         if model.end_datetime:
             end_datetime = (
                 model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
@@ -603,6 +601,26 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
+    def get_client_side_incremental(self, model: DeclarativeStreamModel, config: Config, slicer: StreamSlicer | None) -> Optional[dict]:
+        if model.incremental_sync:
+            model_incremental_sync = model.incremental_sync
+            if model_incremental_sync.is_data_feed or model_incremental_sync.start_time_option:
+                return None
+            if not model_incremental_sync.start_time_option and not model_incremental_sync.end_time_option:
+                if slicer and not isinstance(slicer, (DatetimeBasedCursor, PerPartitionCursor)):
+                    raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
+                return {
+                    "date_time_based_cursor": self._create_component_from_model(model=model_incremental_sync, config=config),
+                    "per_partition_cursor": slicer if isinstance(slicer, PerPartitionCursor) else None,
+                }
+            if (
+                not model_incremental_sync.start_time_option
+                and not model_incremental_sync.start_datetime
+                and model_incremental_sync.end_time_option
+                and model_incremental_sync.end_datetime
+            ):
+                raise ValueError("Data Feed option should be selected")
+
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs: Any) -> DeclarativeStream:
         # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
         # components if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
@@ -614,18 +632,7 @@ class ModelToComponentFactory:
         stop_condition_on_cursor = (
             model.incremental_sync and hasattr(model.incremental_sync, "is_data_feed") and model.incremental_sync.is_data_feed
         )
-        client_side_incremental_sync = None
-        if (
-            model.incremental_sync
-            and hasattr(model.incremental_sync, "is_client_side_incremental")
-            and model.incremental_sync.is_client_side_incremental
-        ):
-            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, PerPartitionCursor)):
-                raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
-            client_side_incremental_sync = {
-                "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
-                "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
-            }
+        client_side_incremental_sync = self.get_client_side_incremental(model=model, config=config, slicer=combined_slicers)
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:

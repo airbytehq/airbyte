@@ -886,7 +886,6 @@ list_stream:
       datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: "created"
-    is_client_side_incremental: true
   retriever:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
@@ -955,7 +954,6 @@ list_stream:
       datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: "created"
-    is_client_side_incremental: true
   retriever:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
@@ -988,29 +986,6 @@ list_stream:
 
     assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
     assert isinstance(stream.retriever.record_selector.record_filter._per_partition_cursor, PerPartitionCursor)
-
-
-def test_given_data_feed_and_client_side_incremental_then_raise_error():
-    content = """
-incremental_sync:
-  type: DatetimeBasedCursor
-  $parameters:
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-  start_datetime: "{{ config['start_time'] }}"
-  cursor_field: "created"
-  is_data_feed: true
-  is_client_side_incremental: true
-  """
-
-    parsed_incremental_sync = YamlDeclarativeSource._parse(content)
-    resolved_incremental_sync = resolver.preprocess_manifest(parsed_incremental_sync)
-    datetime_based_cursor_definition = transformer.propagate_types_and_parameters("", resolved_incremental_sync["incremental_sync"], {})
-
-    with pytest.raises(ValueError) as e:
-        factory.create_component(
-            model_type=DatetimeBasedCursorModel, component_definition=datetime_based_cursor_definition, config=input_config
-        )
-    assert e.value.args[0] == "`Client side incremental` cannot be applied with `data feed`. Choose only 1 from them."
 
 
 @pytest.mark.parametrize(
