@@ -5,7 +5,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
@@ -56,7 +56,7 @@ class EventsSimpleRetriever(SimpleRetriever):
 
 
 @dataclass
-class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
+class EventsCartesianProductStreamSlicer(DeclarativeCursor, CartesianProductStreamSlicer):
     """Connector requires support of nested state - each project should have own timestamp value, like:
     {
         "project_id1": {
@@ -80,6 +80,11 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
 
     def get_stream_state(self) -> Mapping[str, Any]:
         return self._cursor or {}
+
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        # Datetime based cursors operate over slices made up of datetime ranges. Stream state is based on the progress
+        # through each slice and does not belong to a specific slice. We just return stream state as it is.
+        return self.get_stream_state()
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         self._cursor = stream_state
