@@ -65,7 +65,7 @@ class HttpResponseFilter:
 
         if filter_action is not None:
             default_error_message = default_mapped_error_resolution.error_message if default_mapped_error_resolution is not None else ""
-            error_message = ""
+            error_message = None
             if isinstance(response_or_exception, requests.Response):
                 error_message = self._create_error_message(response_or_exception)
             error_message = error_message if len(error_message) else default_error_message
