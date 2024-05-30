@@ -44,6 +44,7 @@ data:
     ql: 100
   supportLevel: community
   # Disable the acceptanceTests suite for now
+  # Low/No Airbyte Cloud usage
   #
   # connectorTestSuitesOptions:
   #   - suite: unitTests
