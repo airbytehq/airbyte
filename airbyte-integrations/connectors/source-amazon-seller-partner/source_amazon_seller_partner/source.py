@@ -58,7 +58,15 @@ from source_amazon_seller_partner.streams import (
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
     FBALongTermStorageFeeChargesReport,
-    FBAReimbursementsReport
+    FBAReimbursementsReport,
+    OpenListingsReport,
+    OpenListingsReportLite,
+    OpenListingsReportLiter,
+    ReferralFeeDiscountsReport,
+    ActiveListingsReport,
+    InactiveListingsReport,
+    CanceledListingsReport,
+    ReferralFeePreviewReport
 )
 
 
@@ -125,8 +133,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         try:
             config = AmazonSellerPartnerConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
             stream_kwargs = self._get_stream_kwargs(config)
-            #orders_stream = Orders(**stream_kwargs)
-            #next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
+            # orders_stream = Orders(**stream_kwargs)
+            # next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             if isinstance(e, StopIteration):
@@ -175,6 +183,14 @@ class SourceAmazonSellerPartner(AbstractSource):
             GetXmlBrowseTreeData(**stream_kwargs),
             ListFinancialEventGroups(**stream_kwargs),
             ListFinancialEvents(**stream_kwargs),
+            OpenListingsReport(**stream_kwargs),
+            OpenListingsReportLite(**stream_kwargs),
+            OpenListingsReportLiter(**stream_kwargs),
+            ReferralFeeDiscountsReport(**stream_kwargs),
+            ActiveListingsReport(**stream_kwargs),
+            InactiveListingsReport(**stream_kwargs),
+            CanceledListingsReport(**stream_kwargs),
+            ReferralFeePreviewReport(**stream_kwargs)
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
@@ -192,7 +208,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             connectionSpecification=schema,
             advanced_auth=advanced_auth,
         )
-        
+
     def read(
         self,
         logger: AirbyteLogger,
@@ -201,9 +217,9 @@ class SourceAmazonSellerPartner(AbstractSource):
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-protocol."""
-        #state_manager = ConnectorStateManager(state=state)
-        #connector_state = state_manager.get_legacy_state()
-        
+        # state_manager = ConnectorStateManager(state=state)
+        # connector_state = state_manager.get_legacy_state()
+
         connector_state = copy.deepcopy(state or {})
 
         logger.info(f"*********** Starting syncing {self.name}")
@@ -234,8 +250,8 @@ class SourceAmazonSellerPartner(AbstractSource):
                     display_message = stream_instance.get_error_display_message(e)
                     if display_message:
                         logger.exception("display message: {}".format(repr(e)))
-                        #raise AirbyteTracedException.from_exception(e, message=display_message) from e
-                    #raise e
+                        # raise AirbyteTracedException.from_exception(e, message=display_message) from e
+                    # raise e
                     logger.exception("unknown exception message: {}".format(repr(e)))
                 finally:
                     timer.finish_event()
