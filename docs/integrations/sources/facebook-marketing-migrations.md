@@ -26,7 +26,10 @@ Custom Insights Reports now have updated schema for following breakdowns:
 
 1. Select **Connections** in the main navbar.
    1. Select the connection(s) affected by the update.
-2. Select the **Schema** tab. 1. Select **Refresh source schema**. 2. Select **OK\* 3. Select **Save changes\*\* at the bottom of the page.
+2. Select the **Schema** tab. 
+    1. Select **Refresh source schema**. 
+    2. Select **OK** 
+    3. Select **Save changes** at the bottom of the page.
    :::note
    Any detected schema changes will be listed for your review.
    :::
