@@ -387,12 +387,12 @@ async def dagger_client(
 
 
 @pytest.fixture(scope="session")
-async def control_connector(dagger_client: dagger.Client, is_ci: bool, connector_image: str, control_version: str) -> ConnectorUnderTest:
+async def control_connector(dagger_client: dagger.Client, connector_image: str, control_version: str) -> ConnectorUnderTest:
     return await ConnectorUnderTest.from_image_name(dagger_client, f"{connector_image}:{control_version}", TargetOrControl.CONTROL)
 
 
 @pytest.fixture(scope="session")
-async def target_connector(dagger_client: dagger.Client, is_ci: bool, connector_image: str, target_version: str) -> ConnectorUnderTest:
+async def target_connector(dagger_client: dagger.Client, connector_image: str, target_version: str) -> ConnectorUnderTest:
     return await ConnectorUnderTest.from_image_name(dagger_client, f"{connector_image}:{target_version}", TargetOrControl.TARGET)
 
 
