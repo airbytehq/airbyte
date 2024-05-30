@@ -25,5 +25,5 @@ MailerSend has a default [rate limit](https://developers.mailersend.com/general.
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
-| 0.1.1   | 2024-05-31 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Make compatible with the builder         |
+| 0.1.1   | 2024-05-31 | [38791](https://github.com/airbytehq/airbyte/pull/38791) | Make compatible with the builder         |
 | 0.1.0   | 2022-11-13 | [18669](https://github.com/airbytehq/airbyte/pull/18669) | 🎉 New Source: Mailersend [low-code CDK] |
