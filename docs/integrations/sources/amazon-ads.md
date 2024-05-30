@@ -129,6 +129,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 5.0.2   | 2024-05-29 | [38737](https://github.com/airbytehq/airbyte/pull/38737) | Update authenticator to `requests_native_auth` package                                                          |
 | 5.0.1   | 2024-04-29 | [37655](https://github.com/airbytehq/airbyte/pull/37655) | Update error messages and spec with info about `agency` profile type.                                           |
 | 5.0.0   | 2024-03-22 | [36169](https://github.com/airbytehq/airbyte/pull/36169) | Update `SponsoredBrand` and `SponsoredProduct` streams due to API endpoint deprecation                          |
 | 4.1.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                 |

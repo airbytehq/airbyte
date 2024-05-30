@@ -21,6 +21,7 @@ import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.RangePartitioning;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
@@ -28,7 +29,6 @@ import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
-import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
@@ -178,26 +178,34 @@ public class BigQueryUtils {
    */
   public static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
-      final var chunkingColumn = JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
-      final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
-          .setField(chunkingColumn)
+      // Partition by generation ID. This will be useful for when we want to build
+      // hybrid refreshes.
+      final RangePartitioning partitioning = RangePartitioning.newBuilder()
+          .setField(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+          .setRange(RangePartitioning.Range.newBuilder()
+              .setStart(0L)
+              // Bigquery allows a table to have up to 10_000 partitions.
+              .setEnd(10_000L)
+              // Somewhat conservative estimate. This should avoid issues with
+              // users running many merge refreshes.
+              .setInterval(5L)
+              .build())
           .build();
 
       final Clustering clustering = Clustering.newBuilder()
-          .setFields(ImmutableList.of(chunkingColumn))
+          .setFields(ImmutableList.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
           .build();
 
       final StandardTableDefinition tableDefinition =
           StandardTableDefinition.newBuilder()
               .setSchema(schema)
-              .setTimePartitioning(partitioning)
+              .setRangePartitioning(partitioning)
               .setClustering(clustering)
               .build();
       final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
       final Table table = bigquery.getTable(tableInfo.getTableId());
       if (table != null && table.exists()) {
-        // TODO: Handle migration from v1 -> v2
         LOGGER.info("Partitioned table ALREADY EXISTS: {}", tableId);
       } else {
         bigquery.create(tableInfo);

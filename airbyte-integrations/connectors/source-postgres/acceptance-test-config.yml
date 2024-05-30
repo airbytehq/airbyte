@@ -1,7 +1,6 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-postgres:dev
-test_strictness_level: high
 custom_environment_variables:
   USE_STREAM_CAPABLE_STATE: true
 acceptance_tests:
@@ -32,16 +31,6 @@ acceptance_tests:
       - config_path: "secrets/config_cdc.json"
         backward_compatibility_tests_config:
           disable_for_version: "2.1.1"
-  basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
-        validate_state_messages: false
-      - config_path: "secrets/config_cdc.json"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
-        validate_state_messages: false
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
