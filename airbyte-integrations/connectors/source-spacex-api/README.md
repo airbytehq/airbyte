@@ -48,7 +48,6 @@ airbyte-ci connectors --name=source-spacex-api build
 
 An image will be available on your host with the tag `airbyte/source-spacex-api:dev`.
 
-
 ### Running as a docker container
 Then run any of the connector commands as follows:
 ```
