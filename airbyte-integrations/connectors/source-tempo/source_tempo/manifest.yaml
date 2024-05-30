@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: accounts
           http_method: GET
           error_handler:
@@ -47,12 +47,12 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response[''metadata''][''next''] }}'
-            stop_condition: '{{ ''next'' not in response[''metadata''] }}'
+            cursor_value: "{{ response['metadata']['next'] }}"
+            stop_condition: "{{ 'next' not in response['metadata'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/accounts'
+          $ref: "#/schemas/accounts"
     customers:
       type: DeclarativeStream
       name: customers
@@ -61,7 +61,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: customers
           http_method: GET
           error_handler:
@@ -91,12 +91,12 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response[''metadata''][''next''] }}'
-            stop_condition: '{{ ''next'' not in response[''metadata''] }}'
+            cursor_value: "{{ response['metadata']['next'] }}"
+            stop_condition: "{{ 'next' not in response['metadata'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customers'
+          $ref: "#/schemas/customers"
     worklogs:
       type: DeclarativeStream
       name: worklogs
@@ -105,7 +105,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: worklogs
           http_method: GET
           error_handler:
@@ -135,20 +135,20 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response[''metadata''][''next''] }}'
-            stop_condition: '{{ ''next'' not in response[''metadata''] }}'
+            cursor_value: "{{ response['metadata']['next'] }}"
+            stop_condition: "{{ 'next' not in response['metadata'] }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: startDate
         name: worklogs
         path: worklogs
         cursor_datetime_formats:
-          - '%Y-%m-%d'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '2020-01-01'
-          datetime_format: '%Y-%m-%d'
+          datetime: "2020-01-01"
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           field_name: from
@@ -159,14 +159,14 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/worklogs'
+          $ref: "#/schemas/worklogs"
     workload-schemes:
       type: DeclarativeStream
       name: workload-schemes
@@ -175,7 +175,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workload-schemes
           http_method: GET
           error_handler:
@@ -205,24 +205,24 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response[''metadata''][''next''] }}'
-            stop_condition: '{{ ''next'' not in response[''metadata''] }}'
+            cursor_value: "{{ response['metadata']['next'] }}"
+            stop_condition: "{{ 'next' not in response['metadata'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workload-schemes'
+          $ref: "#/schemas/workload-schemes"
   base_requester:
     type: HttpRequester
     url_base: https://api.tempo.io/4/
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''api_token''] }}'
+      api_token: "{{ config['api_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/accounts'
-  - $ref: '#/definitions/streams/customers'
-  - $ref: '#/definitions/streams/worklogs'
-  - $ref: '#/definitions/streams/workload-schemes'
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/worklogs"
+  - $ref: "#/definitions/streams/workload-schemes"
 
 spec:
   type: Spec
@@ -282,7 +282,7 @@ schemas:
             type: string
       customer:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
@@ -306,7 +306,7 @@ schemas:
             type: string
           self:
             type:
-              - 'null'
+              - "null"
               - string
       links:
         type: object
@@ -315,7 +315,7 @@ schemas:
             type: string
       monthlyBudget:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type: string
@@ -349,7 +349,7 @@ schemas:
             type: string
           values:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
@@ -358,7 +358,7 @@ schemas:
                   type: string
                 value:
                   type:
-                    - 'null'
+                    - "null"
                     - string
         readOnly: true
       author:
@@ -369,12 +369,12 @@ schemas:
             type: string
           self:
             type:
-              - 'null'
+              - "null"
               - string
         readOnly: true
       billableSeconds:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Billable time spent working
       createdAt:
@@ -383,7 +383,7 @@ schemas:
         readOnly: true
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Description of the worklog
         readOnly: true
@@ -407,7 +407,7 @@ schemas:
         readOnly: true
       startTime:
         type:
-          - 'null'
+          - "null"
           - string
         description: Start time of the worklog
         readOnly: true
