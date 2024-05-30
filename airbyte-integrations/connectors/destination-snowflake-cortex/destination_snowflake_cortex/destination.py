@@ -11,9 +11,6 @@ from typing import Any, Iterable, Mapping, Optional
 from airbyte.secrets import SecretString
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import (
-    Embedder,
-)
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -31,7 +28,6 @@ BATCH_SIZE = 150
 
 
 class DestinationSnowflakeCortex(Destination):
-    embedder: Embedder
     sql_processor: cortex_processor.SnowflakeCortexSqlProcessor
 
     def _init_sql_processor(
