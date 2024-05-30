@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.3
+Removed experimental suffix for unstructured file type
+
 ## 1.1.2
 CDK: upgrade dpath
 
