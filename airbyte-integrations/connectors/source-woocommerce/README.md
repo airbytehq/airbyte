@@ -6,7 +6,6 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ## Local development
 
-
 ### Prerequisites
 * Python (~=3.9)
 * Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
@@ -34,7 +33,6 @@ poetry run source-woocommerce discover --config secrets/config.json
 poetry run source-woocommerce read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
-
 ### Running unit tests
 To run unit tests locally, from the connector directory run:
 ```
@@ -44,7 +42,6 @@ poetry run pytest unit_tests
 ### Building the docker image
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
-
 ```bash
 airbyte-ci connectors --name=source-woocommerce build
 ```
@@ -53,9 +50,7 @@ An image will be available on your host with the tag `airbyte/source-woocommerce
 
 
 ### Running as a docker container
-
 Then run any of the connector commands as follows:
-
 ```
 docker run --rm airbyte/source-woocommerce:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-woocommerce:dev check --config /secrets/config.json
@@ -64,12 +59,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ```
 
 ### Running our CI test suite
-
-## Testing
-
-
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
-
 ```bash
 airbyte-ci connectors --name=source-woocommerce test
 ```
@@ -88,12 +78,10 @@ poetry add <package-name>
 Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
 ## Publishing a new version of the connector
-
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-woocommerce test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
-    - bump the `dockerImageTag` value in `metadata.yaml`
+    - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/woocommerce.md`).

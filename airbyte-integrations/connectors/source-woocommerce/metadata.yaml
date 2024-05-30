@@ -18,17 +18,17 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 5400
   name: WooCommerce
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-woocommerce
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-woocommerce
-  supportLevel: certified
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
