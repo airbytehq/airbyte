@@ -6,10 +6,10 @@ data:
       - oauth.platform.intuit.com
   connectorSubtype: api
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorType: source
   definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
-  dockerImageTag: 3.0.3
+  dockerImageTag: 3.0.4
   dockerRepository: airbyte/source-quickbooks
   githubIssueLabel: source-quickbooks
   icon: quickbooks.svg
@@ -28,7 +28,12 @@ data:
   releases:
     breakingChanges:
       3.0.0:
-        message: "Some fields in `bills`, `credit_memos`, `items`, `refund_receipts`, and `sales_receipts` streams have been changed from `integer` to `number` to fix normalization. You may need to refresh the connection schema for those streams (skipping the reset), and running a sync. Alternatively, you can just run a reset."
+        message:
+          "Some fields in `bills`, `credit_memos`, `items`, `refund_receipts`,
+          and `sales_receipts` streams have been changed from `integer` to `number`
+          to fix normalization. You may need to refresh the connection schema for
+          those streams (skipping the reset), and running a sync. Alternatively, you
+          can just run a reset."
         upgradeDeadline: 2023-10-04
   documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
   tags:
@@ -38,13 +43,16 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-QUICKBOOKS__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  # Disable the acceptanceTests suite for now
+  # Low/No Airbyte Cloud usage
+  #
+  # connectorTestSuitesOptions:
+  #   - suite: unitTests
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-QUICKBOOKS__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
