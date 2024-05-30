@@ -44,6 +44,7 @@ You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
 - Deploy Airbyte behind a reverse proxy and handle the access control and SSL encryption on the reverse proxy side.
+
   ```
   # Example nginx reverse proxy config
   server {
@@ -60,6 +61,7 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
+
 - _Only for docker compose deployments:_ Change the default username and password in your environment's `.env` file:
   ```
   	# Proxy Configuration
@@ -100,7 +102,7 @@ Only certain Airbyte staff can access Airbyte infrastructure and technical logs 
 
 ### Network security
 
-Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+Depending on your [data residency](/cloud/managing-airbyte-cloud/manage-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 #### United States and Airbyte Default
 

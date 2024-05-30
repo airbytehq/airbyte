@@ -38,10 +38,10 @@ The **Start date** will only apply to the `Activities` stream. The `Customers` e
 
 ## Supported sync modes
 
-The Chartmogul source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Chartmogul source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
 
 ## Supported streams
 
@@ -61,7 +61,7 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
-|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0.1   | 2024-05-14 | [38145](https://github.com/airbytehq/airbyte/pull/38145) | Make connector compatible with builder                                                                                           |
 | 1.0.0   | 2023-11-09 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Refactor CustomerCount stream into CustomerCountDaily, CustomerCountWeekly, CustomerCountMonthly, CustomerCountQuarterly Streams |
 | 0.2.1   | 2023-02-15 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Specified date formatting in specification                                                                                       |

@@ -4,7 +4,7 @@
 
 This version removes the option to use "normalization" with Oracle. It also changes
 the schema and database of Airbyte's "raw" tables to be compatible with the new
-[Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
+[Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
 format. These changes will likely require updates to downstream dbt / SQL models. After this update,
 Airbyte will only produce the "raw" v2 tables, which store all content in JSON. These changes remove
 the ability to do deduplicated syncs with Oracle.

@@ -70,10 +70,10 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 ## Supported sync modes
 
-The airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The airtable source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
 
 ## Supported Tables
 
@@ -128,7 +128,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
-|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | 4.2.1   | 2024-05-29 | [38765](https://github.com/airbytehq/airbyte/pull/38765) | Fix next_page_token() to correctly adhere to HttpStream interface                      |
 | 4.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                        |
 | 4.1.6   | 2024-02-12 | [35149](https://github.com/airbytehq/airbyte/pull/35149) | Manage dependencies with Poetry.                                                       |

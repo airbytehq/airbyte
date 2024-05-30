@@ -58,7 +58,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 
 ## Supported sync modes
 
-The Okta source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Okta source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -82,7 +82,7 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
 | 0.2.0   | 2024-05-16 | [36509](https://github.com/airbytehq/airbyte/pull/36509) | Migrate to Low Code                                                            |
 | 0.1.16  | 2023-07-07 | [20833](https://github.com/airbytehq/airbyte/pull/20833) | Fix infinite loop for GroupMembers stream                                      |
 | 0.1.15  | 2023-06-20 | [27533](https://github.com/airbytehq/airbyte/pull/27533) | Fixed group member stream and resource sets stream pagination                  |

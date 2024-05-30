@@ -29,12 +29,12 @@ This page contains the setup guide and reference information for the Jira source
 
 ## Supported sync modes
 
-The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Jira source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -98,7 +98,7 @@ This connector outputs the following incremental streams:
 - [Issue worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get)
 - [Issues](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get)
 - [Sprint issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get)
-- [PullRequests](https://docs.airbyte.com/integrations/sources/jira#experimental-tables)
+- [PullRequests](/integrations/sources/jira#experimental-tables)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -123,8 +123,8 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                          |
-|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.1   | 2024-05-20 | [38341](https://github.com/airbytehq/airbyte/pull/38341)   | Update CDK authenticator package                                                                                                  |
+| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.1   | 2024-05-20 | [38341](https://github.com/airbytehq/airbyte/pull/38341)   | Update CDK authenticator package                                                                                                                                 |
 | 2.0.0   | 2024-04-20 | [37374](https://github.com/airbytehq/airbyte/pull/37374)   | Migrate to low-code and fix `Project Avatars` stream                                                                                                             |
 | 1.2.2   | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | Updating to 0.80.0 CDK                                                                                                                                           |
 | 1.2.1   | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | schema descriptions                                                                                                                                              |

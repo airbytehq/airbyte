@@ -29,7 +29,7 @@ Go to [My account](https://serpstat.com/users/profile/) page and click **Copy** 
 
 ## Supported sync modes
 
-The Serpstat source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Serpstat source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full refresh
 

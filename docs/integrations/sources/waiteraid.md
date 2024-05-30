@@ -30,7 +30,7 @@ You can find or create authentication tokens within [Waiteraid](https://app.wait
 
 ## Supported sync modes
 
-The Waiteraid source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Waiteraid source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -56,8 +56,8 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject               |
-| :------ | :--------- | :----------------------------------------------------- | :-------------------- |
-| 0.1.2 | 2024-05-28 | [38697](https://github.com/airbytehq/airbyte/pull/38697) | Make connector compatible with builder |
-| 0.1.1 | 2024-05-20 | [38433](https://github.com/airbytehq/airbyte/pull/38433) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2022-10-QQ | [QQQQ](https://github.com/airbytehq/airbyte/pull/QQQQ) | New Source: Waiteraid |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.1.2   | 2024-05-28 | [38697](https://github.com/airbytehq/airbyte/pull/38697) | Make connector compatible with builder      |
+| 0.1.1   | 2024-05-20 | [38433](https://github.com/airbytehq/airbyte/pull/38433) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-QQ | [QQQQ](https://github.com/airbytehq/airbyte/pull/QQQQ)   | New Source: Waiteraid                       |

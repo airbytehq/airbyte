@@ -123,10 +123,10 @@ You can use the [Access Token Tool](https://developers.facebook.com/tools/access
 
 The Facebook Marketing source connector supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives and AdAccount tables)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
+- [Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives and AdAccount tables)
 
 ## Supported streams
 
@@ -201,7 +201,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 3.0.0   | 2024-04-30 | [36608](https://github.com/airbytehq/airbyte/pull/36608) | Update `body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset, video_asset` breakdowns schema.                                                                                                                                                            |
 | 2.1.9   | 2024-05-17 | [38301](https://github.com/airbytehq/airbyte/pull/38301) | Fix data inaccuracies when `wish_bid` is requested                                                                                                                                                                                                                                                |
 | 2.1.8   | 2024-05-07 | [37771](https://github.com/airbytehq/airbyte/pull/37771) | Handle errors without API error codes/messages                                                                                                                                                                                                                                                    |

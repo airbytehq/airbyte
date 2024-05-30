@@ -30,14 +30,14 @@ curl --header 'Authorization: Bearer API_KEY' 'https://dash.adjust.com/control-c
 
 ## Supported sync modes
 
-The source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject          |
-| ------- | ---------- | -------------------------------------------------------- | ---------------- |
-| 0.1.1 | 2024-05-20 | [38373](https://github.com/airbytehq/airbyte/pull/38373) | [autopull] base image + poetry + up_to_date |
-| 0.1.0 | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version. |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| ------- | ---------- | -------------------------------------------------------- | ------------------------------------------- |
+| 0.1.1   | 2024-05-20 | [38373](https://github.com/airbytehq/airbyte/pull/38373) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version.                            |

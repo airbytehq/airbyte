@@ -36,7 +36,7 @@ A Tyntec SMS API Key and SMS message request ID are required for this connector 
 
 ## Supported Sync Modes
 
-The Tyntec SMS source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Tyntec SMS source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |

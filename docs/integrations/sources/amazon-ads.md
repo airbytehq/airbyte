@@ -63,7 +63,7 @@ If you have only agency profile, please use accounts associated with the profile
 
 ## Supported sync modes
 
-The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Amazon Ads source connector supports the following [sync modes](/cloud/core-concepts/#connection-sync-mode):
 
 - Full Refresh
 - Incremental

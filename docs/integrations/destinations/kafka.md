@@ -6,7 +6,7 @@ The Airbyte Kafka destination allows you to sync data to Kafka. Each stream is w
 
 ## Prerequisites
 
-- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Kafka connector to version `0.1.10` or newer
+- For Airbyte Open Source users using the [Postgres](/integrations/sources/postgres) source connector, [upgrade](/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Kafka connector to version `0.1.10` or newer
 
 ### Sync overview
 
@@ -54,7 +54,7 @@ Note that if you choose to use dynamic topic names, you will probably need to en
 
 #### Target topics
 
-You can determine the topics to which messages are written via the `topic_pattern` configuration parameter. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](https://docs.airbyte.com/understanding-airbyte/namespaces) or stream they came from.
+You can determine the topics to which messages are written via the `topic_pattern` configuration parameter. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](/understanding-airbyte/namespaces) or stream they came from.
 
 To write all messages to a single hardcoded topic, enter its name in the `topic_pattern` field e.g: setting `topic_pattern` to `my-topic-name` will write all messages from all streams and namespaces to that topic.
 

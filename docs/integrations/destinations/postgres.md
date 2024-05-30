@@ -174,7 +174,7 @@ Mode**; otherwise, the connection will fail.
 ## Supported sync modes
 
 The Postgres destination connector supports the
-following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following[ sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                        | Supported?\(Yes/No\) | Notes |
 | :----------------------------- | :------------------- | :---- |

@@ -33,7 +33,7 @@ Api key and project UID are mandate for this connector to work, It could be gene
 
 ## Supported sync modes
 
-The Captain Data source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Captain Data source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -60,7 +60,7 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 ## Changelog
 
-| Version | Date       | Pull Request                                            | Subject        |
-| :------ | :--------- | :------------------------------------------------------ | :------------- |
-| 0.1.1 | 2024-05-20 | [38374](https://github.com/airbytehq/airbyte/pull/38374) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2023-04-15 | [Init](https://github.com/airbytehq/airbyte/pull/25230) | Initial commit |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.1.1   | 2024-05-20 | [38374](https://github.com/airbytehq/airbyte/pull/38374) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2023-04-15 | [Init](https://github.com/airbytehq/airbyte/pull/25230)  | Initial commit                              |

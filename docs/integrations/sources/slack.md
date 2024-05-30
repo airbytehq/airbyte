@@ -112,7 +112,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ## Supported sync modes
 
-The Slack source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Slack source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -167,7 +167,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
-|:--------| :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
 | 1.1.2   | 2024-05-23 | [38619](https://github.com/airbytehq/airbyte/pull/38619) | Fix cursor granularity for the `channel_messages` stream                             |
 | 1.1.1   | 2024-05-02 | [36661](https://github.com/airbytehq/airbyte/pull/36661) | Schema descriptions                                                                  |
 | 1.1.0   | 2024-04-18 | [37332](https://github.com/airbytehq/airbyte/pull/37332) | Add the capability to sync from private channels                                     |

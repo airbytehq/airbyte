@@ -7,7 +7,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 ### New features
 
 - Added the low-code connector development kit (early access). This low-code framework is a declarative approach based on YAML with the goal of significantly reducing the time and complexity of building and maintaining connectors. [#11582](https://github.com/airbytehq/airbyte/issues/11582)
-  - Added a [guide](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview/) for using the low-code framework. [#17534](https://github.com/airbytehq/airbyte/pull/17534)
+  - Added a [guide](/connector-development/config-based/low-code-cdk-overview/) for using the low-code framework. [#17534](https://github.com/airbytehq/airbyte/pull/17534)
 - Added support for large schema discovery. [#17394](https://github.com/airbytehq/airbyte/pull/17394)
 
 ### Improvements

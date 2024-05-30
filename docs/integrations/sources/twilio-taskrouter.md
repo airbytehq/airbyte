@@ -34,7 +34,7 @@ See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 
 ## Supported sync modes
 
-The Twilio source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Twilio source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

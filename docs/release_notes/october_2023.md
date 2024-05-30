@@ -16,7 +16,7 @@ This month, we also held our annual Hacktoberfest, from which we have already me
 
 ## Platform Releases
 
-- **Enhanced payment options:** Cloud customers can now sign up for [auto-recharging of their balance](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-credits#automatic-reload-of-credits-beta) and can purchase up to 6,000 credits within our application.
+- **Enhanced payment options:** Cloud customers can now sign up for [auto-recharging of their balance](/cloud/managing-airbyte-cloud/manage-credits#automatic-reload-of-credits-beta) and can purchase up to 6,000 credits within our application.
 - **Free historical syncs:** Cloud customers can have more predictability around pricing with free historical syncs for any new connector. Reach out to our Sales team if interested.
 - **Email Notification Recipient** Cloud customers can now designate the recipient of important email notifications about their connectors and syncs.
 

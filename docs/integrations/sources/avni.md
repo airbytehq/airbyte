@@ -28,13 +28,13 @@ This page contains the setup guide and reference information for the Avni source
 
 ## Supported sync modes
 
-The Avni source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Avni source connector supports the following[ sync modes](/cloud/core-concepts#connection-sync-modes):
 ​
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append)
+- (Recommended)[ Incremental Sync - Deduped History](/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 

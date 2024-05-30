@@ -63,7 +63,7 @@ More information on HubSpot authentication methods can be found
 
 ### Step 2: Configure the scopes for your streams
 
-Unless you are authenticating via OAuth on **Airbyte Cloud**, you must manually configure scopes to ensure Airbyte can sync all available data. To see a breakdown of the specific scopes each stream uses, see our full [Hubspot documentation](https://docs.airbyte.com/integrations/sources/hubspot/).
+Unless you are authenticating via OAuth on **Airbyte Cloud**, you must manually configure scopes to ensure Airbyte can sync all available data. To see a breakdown of the specific scopes each stream uses, see our full [Hubspot documentation](/integrations/sources/hubspot/).
 
 Next, you need to configure the appropriate scopes for the following streams. Please refer to [Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
 
@@ -157,7 +157,7 @@ Then, go to the replication settings of your connection and click **refresh sour
 
 ## Supported sync modes
 
-The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The HubSpot source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -333,10 +333,10 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
-|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.2.0   | 2024-05-24 | [38049](https://github.com/airbytehq/airbyte/pull/38049) | Add resumable full refresh support to `contacts_form_submissions` and `contacts_merged_audit` streams                                                                            |
 | 4.1.5   | 2024-05-17 | [38243](https://github.com/airbytehq/airbyte/pull/38243) | Replace AirbyteLogger with logging.Logger                                                                                                                                        |
-| 4.1.4   | 2024-05-16 | [38286](https://github.com/airbytehq/airbyte/pull/38286) | Added default schema normalization for the  `Tickets` stream, to ensure the data types                                                                                           |
+| 4.1.4   | 2024-05-16 | [38286](https://github.com/airbytehq/airbyte/pull/38286) | Added default schema normalization for the `Tickets` stream, to ensure the data types                                                                                            |
 | 4.1.3   | 2024-05-13 | [38128](https://github.com/airbytehq/airbyte/pull/38128) | contacts_list_memberships as semi-incremental stream                                                                                                                             |
 | 4.1.2   | 2024-04-24 | [36642](https://github.com/airbytehq/airbyte/pull/36642) | Schema descriptions and CDK 0.80.0                                                                                                                                               |
 | 4.1.1   | 2024-04-11 | [35945](https://github.com/airbytehq/airbyte/pull/35945) | Add integration tests                                                                                                                                                            |

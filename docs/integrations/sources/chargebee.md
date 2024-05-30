@@ -33,19 +33,19 @@ All Chargebee sites created from May 5, 2021 onward will have [Product Catalog 2
 
 ## Supported sync modes
 
-The Chargebee source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Chargebee source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported streams
 
 Most streams are supported regardless of your Chargebee site's [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html), with a few version-specific exceptions.
 
 | Stream                                                                                                 | Product Catalog 1.0 | Product Catalog 2.0 |
-|:-------------------------------------------------------------------------------------------------------|:--------------------|:--------------------|
+| :----------------------------------------------------------------------------------------------------- | :------------------ | :------------------ |
 | [Addons](https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1)                                 | ✔                   |                     |
 | [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2)                 |                     | ✔                   |
 | [Comments](https://apidocs.chargebee.com/docs/api/comments?prod_cat_ver=2)                             | ✔                   | ✔                   |
@@ -99,7 +99,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.5.1   | 2024-04-24 | [36633](https://github.com/airbytehq/airbyte/pull/36633) | Schema descriptions and CDK 0.80.0                                                                                                             |
 | 0.5.0   | 2024-03-28 | [36518](https://github.com/airbytehq/airbyte/pull/36518) | Updates CDK to ^0, updates IncrementalSingleSliceCursor                                                                                        |
 | 0.4.2   | 2024-03-14 | [36037](https://github.com/airbytehq/airbyte/pull/36037) | Adds fields: `coupon_constraints` to `coupon` stream, `billing_month` to `customer stream`, and `error_detail` to `transaction` stream schemas |

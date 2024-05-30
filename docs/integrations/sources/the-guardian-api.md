@@ -94,7 +94,7 @@ The source is capable of syncing the content stream.
 
 ## Supported sync modes
 
-The Guardian API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Guardian API source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |

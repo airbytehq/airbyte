@@ -243,10 +243,10 @@ to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/u
 
 The Snowflake destination supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append)
+- [Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Snowflake tutorials
 
@@ -275,9 +275,9 @@ desired namespace.
 ## Changelog
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
-|:----------------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                            |
-| 3.8.3           | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | Bump CDK version                                                                            |
+| :-------------- | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                                                                                      |
+| 3.8.3           | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | Bump CDK version                                                                                                                                                 |
 | 3.8.2           | 2024-05-22 | [\#38553](https://github.com/airbytehq/airbyte/pull/38553) | Remove `SwitchingDestination` and `AbstractJdbcDestination` dependency in destination                                                                            |
 | 3.8.1           | 2024-05-22 | [\#38568](https://github.com/airbytehq/airbyte/pull/38568) | Adopt latest CDK                                                                                                                                                 |
 | 3.8.0           | 2024-05-08 | [\#37715](https://github.com/airbytehq/airbyte/pull/37715) | Remove option for incremental typing and deduping                                                                                                                |

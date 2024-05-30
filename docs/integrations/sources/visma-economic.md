@@ -38,7 +38,7 @@ In sort your options are:
 
 For more information about the api see the [E-conomic REST API Documentation](https://restdocs.e-conomic.com/#tl-dr).
 
-### [Sync models](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes)
+### [Sync models](/cloud/core-concepts/#connection-sync-modes)
 
 | Feature           | Supported?\(Yes/No\) | Notes |
 | :---------------- | :------------------- | :---- |

@@ -6,7 +6,7 @@ however the steps could be applied to another IDE or debugger.
 
 ## Prerequisites
 
-You should have the airbyte repo downloaded and should be able to [run the platform locally](https://docs.airbyte.com/deploying-airbyte/local-deployment).
+You should have the airbyte repo downloaded and should be able to [run the platform locally](/deploying-airbyte/local-deployment).
 Also, if you're on macOS you will need to follow the installation steps for [Docker Mac Connect](https://github.com/chipmk/docker-mac-net-connect).
 
 ## Connecting your debugger
@@ -24,7 +24,7 @@ By default, the `docker compose` command will look for a `docker-compose.yaml` f
 provide multiple files to the `docker compose` command with the `-f` option. You can read more about how Docker compose combines or overrides values when
 you provide multiple files [on Docker's Website](https://docs.docker.com/compose/extends/).
 
-In the Airbyte repo, there is already another file `docker-compose.debug.yaml` which extends the `docker-compose.yaml` file. Our goal is to set the  
+In the Airbyte repo, there is already another file `docker-compose.debug.yaml` which extends the `docker-compose.yaml` file. Our goal is to set the
 `JAVA_TOOL_OPTIONS` environment variable in the environment of the container we wish to debug. If you look at the `server` configuration under `services`
 in the `docker-compose.debug.yaml` file, it should look like this:
 

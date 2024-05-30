@@ -24,7 +24,7 @@ You'll need the following information to configure the Teradata source:
 
 ## Supported sync modes
 
-The Teradata source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Teradata source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported?                                                 |
 | :--------------------------------------------- | :--------------------------------------------------------- |

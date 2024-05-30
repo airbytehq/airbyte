@@ -34,7 +34,7 @@ No prerequisites, but a dummy api_key is required as it enhances security in fut
 
 ## Supported sync modes
 
-The SpaceX-API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SpaceX-API source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

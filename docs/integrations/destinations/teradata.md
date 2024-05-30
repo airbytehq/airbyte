@@ -33,7 +33,7 @@ Each stream will be output into its own table in Teradata. Each table will conta
 ### Features
 
 The Teradata destination connector supports the
-following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following[ sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                        | Supported?\(Yes/No\) | Notes |
 | :----------------------------- | :------------------- | :---- |
@@ -42,7 +42,7 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 | Incremental - Append + Deduped | No                   |       |
 | Namespaces                     | Yes                  |       |
 
-The Teradata destination connector supports [ DBT custom transformation](https://docs.airbyte.com/operator-guides/transformation-and-normalization/transformations-with-airbyte/) type. Teradata DBT Docker image is available at https://hub.docker.com/r/teradata/dbt-teradata.
+The Teradata destination connector supports [ DBT custom transformation](/operator-guides/transformation-and-normalization/transformations-with-airbyte/) type. Teradata DBT Docker image is available at https://hub.docker.com/r/teradata/dbt-teradata.
 
 ### Performance considerations
 

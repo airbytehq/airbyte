@@ -20,7 +20,7 @@ This Copper source uses the [Copper API](https://developer.copper.com/).
 
 ## Supported sync modes
 
-The Copper source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Copper source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

@@ -30,7 +30,7 @@ Also check our [privacy policy](https://airbyte.com/privacy-policy) for more det
 
   </TabItem>
   <TabItem value="pyairbyte" label="PyAirbyte">
-    When running [PyAirbyte](https://docs.airbyte.com/pyairbyte) for the first time on a new machine, you'll be informed that anonymous
+    When running [PyAirbyte](/pyairbyte) for the first time on a new machine, you'll be informed that anonymous
     usage data is collected, along with a link to this page for more information.
 
     Anonymous usage tracking ("telemetry") helps us understand how PyAirbyte is being used,

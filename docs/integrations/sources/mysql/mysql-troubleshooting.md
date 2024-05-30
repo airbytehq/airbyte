@@ -3,7 +3,7 @@
 ### General Limitations
 
 - Use MySQL Server versions `8.0`, `5.7`, or `5.6`.
-- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
+- For Airbyte Open Source users, [upgrade](/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ### CDC Requirements
@@ -107,7 +107,7 @@ Starting with version 0.6.9, `replication_method` configuration parameter is sav
 ```
 
 After upgrading MySQL Source connector from 0.6.8 or older version to 0.6.9 or newer version you need to fix source configurations in the `actor` table
-in Airbyte database. To do so, you need to run the following two SQL queries. Follow the instructions in [Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db) to
+in Airbyte database. To do so, you need to run the following two SQL queries. Follow the instructions in [Airbyte documentation](/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db) to
 run SQL queries on Airbyte database.
 
 If you have connections with MySQL Source using _Standard_ replication method, run this SQL:

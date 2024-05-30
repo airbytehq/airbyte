@@ -45,7 +45,7 @@ We're working with the PokeAPI, so we need to define our input schema to reflect
 `spec.yaml` file here and replace it with:
 
 ```yaml
-documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
+documentationUrl: /integrations/sources/pokeapi
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Pokeapi Spec
@@ -180,7 +180,7 @@ defining the output of the endpoint exactly. This is really important, as Airbyt
 clear expectations for what the stream will output. Note that the name of this stream will be
 consistent in the naming of the JSON schema and the `HttpStream` class, as `pokemon.json` and
 `Pokemon` respectively in this case. Learn more about schema creation
-[here](https://docs.airbyte.com/connector-development/cdk-python/full-refresh-stream#defining-the-streams-schema).
+[here](/connector-development/cdk-python/full-refresh-stream#defining-the-streams-schema).
 
 Test your discover function. You should receive a fairly large JSON object in return.
 
@@ -243,8 +243,8 @@ that file [here](./cdk-speedrun-assets/configured_catalog_pokeapi.json). Place i
 named as `configured_catalog.json`. More clearly, this is where we tell Airbyte all the
 streams/endpoints we support for the connector and in which sync modes Airbyte can run the connector
 on. Learn more about the AirbyteCatalog
-[here](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog) and learn more
-about sync modes [here](https://docs.airbyte.com/understanding-airbyte/connections#sync-modes).
+[here](/understanding-airbyte/beginners-guide-to-catalog) and learn more
+about sync modes [here](/understanding-airbyte/connections#sync-modes).
 
 Let's read some data.
 

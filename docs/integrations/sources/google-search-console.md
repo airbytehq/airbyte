@@ -109,12 +109,12 @@ For more information on this topic, please refer to [this Google article](https:
 
 ## Supported sync modes
 
-The Google Search Console Source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Search Console Source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
 
 :::note
 The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.

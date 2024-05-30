@@ -15,14 +15,14 @@ This page contains the setup guide and reference information for the [GitHub](ht
 **For Airbyte Cloud:**
 
 - OAuth
-- Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+- Personal Access Token (see [Permissions and scopes](/integrations/sources/github#permissions-and-scopes))
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-- Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+- Personal Access Token (see [Permissions and scopes](/integrations/sources/github#permissions-and-scopes))
 <!-- /env:oss -->
 
 ## Setup guide
@@ -77,12 +77,12 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 ## Supported sync modes
 
-The GitHub source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The GitHub source connector supports the following [sync modes](/cloud/core-concepts/#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append)
+- [Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 

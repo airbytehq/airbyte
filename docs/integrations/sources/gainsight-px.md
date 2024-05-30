@@ -38,7 +38,7 @@ Api key is mandate for this connector to work, It could be generated from the da
 
 ## Supported sync modes
 
-The Gainsight-API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Gainsight-API source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -70,7 +70,7 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                 |
-| :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
 | 0.1.2   | 2024-05-28 | [38669](https://github.com/airbytehq/airbyte/pull/38669) | Make connector compatible with Builder  |
 | 0.1.1   | 2024-05-03 | [37593](https://github.com/airbytehq/airbyte/pull/37593) | Changed `last_records` to `last_record` |
 | 0.1.0   | 2023-05-10 | [26998](https://github.com/airbytehq/airbyte/pull/26998) | Initial PR                              |

@@ -5,7 +5,7 @@ import TabItem from "@theme/TabItem";
 
 We welcome contributions to the Airbyte documentation!
 
-Our docs are written in [Markdown](https://guides.github.com/features/mastering-markdown/) following the [Google developer documentation style guide](https://developers.google.com/style/highlights) and the files are stored in our [Github repository](https://github.com/airbytehq/airbyte/tree/master/docs). The docs are published at [docs.airbyte.com](https://docs.airbyte.com/) using [Docusaurus](https://docusaurus.io/) and [GitHub Pages](https://pages.github.com/).
+Our docs are written in [Markdown](https://guides.github.com/features/mastering-markdown/) following the [Google developer documentation style guide](https://developers.google.com/style/highlights) and the files are stored in our [Github repository](https://github.com/airbytehq/airbyte/tree/master/docs). The docs are published at [docs.airbyte.com](/) using [Docusaurus](https://docusaurus.io/) and [GitHub Pages](https://pages.github.com/).
 
 ## Finding good first issues
 
@@ -28,7 +28,7 @@ You can contribute to Airbyte docs in two ways:
 
 To make minor changes (example: fixing typos) or edit a single file, you can edit the file directly on GitHub:
 
-1. Click **Edit this page** at the bottom of any published document on [docs.airbyte.com](https://docs.airbyte.com/). You'll be taken to the GitHub editor.
+1. Click **Edit this page** at the bottom of any published document on [docs.airbyte.com](/). You'll be taken to the GitHub editor.
 2. [Edit the file directly on GitHub and open a Pull Request](https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files).
 
 ### Editing on your local machine
@@ -111,7 +111,7 @@ Airbyte's markdown documentation—particularly connector-specific documentation
 Please familiarize yourself with all the tools available to you when writing documentation for a connector, so that you can provide appropriately tailored information to your readers in whichever context they see it.
 
 :::note
-As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/resources/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
+As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](/contributing-to-airbyte/resources/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
 :::
 
 #### Select between mutually-exclusive content options with `<Tabs>`

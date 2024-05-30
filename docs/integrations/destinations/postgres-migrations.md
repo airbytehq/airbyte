@@ -10,6 +10,6 @@ Worthy of specific mention, this version includes:
 - Clearer table structure
 - Removal of sub-tables for nested properties
 - Removal of SCD tables
-- Preserving [upper case column names](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#destinations-v2-implementation-differences)
+- Preserving [upper case column names](/release_notes/upgrading_to_destinations_v2/#destinations-v2-implementation-differences)
 
 Learn more about what's new in Destinations V2 [here](/using-airbyte/core-concepts/typing-deduping).

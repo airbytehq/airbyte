@@ -20,7 +20,7 @@ You should see an output similar to the one below:
 ```
 
 This is a simple sanity check to make sure everything is wired up correctly.
-More details on the `spec` operation can be found in [Basic Concepts](https://docs.airbyte.com/connector-development/cdk-python/basic-concepts) and [Defining Stream Schemas](https://docs.airbyte.com/connector-development/cdk-python/schemas).
+More details on the `spec` operation can be found in [Basic Concepts](/connector-development/cdk-python/basic-concepts) and [Defining Stream Schemas](/connector-development/cdk-python/schemas).
 
 For now, note that the `main.py` file is a convenience wrapper to help run the connector.
 Its invocation format is `python main.py <command> [args]`.
@@ -32,6 +32,6 @@ Next, we'll [connect to the API source](3-connecting-to-the-API-source.md)
 
 ## More readings
 
-- [Basic Concepts](https://docs.airbyte.com/connector-development/cdk-python/basic-concepts)
-- [Defining Stream Schemas](https://docs.airbyte.com/connector-development/cdk-python/schemas)
+- [Basic Concepts](/connector-development/cdk-python/basic-concepts)
+- [Defining Stream Schemas](/connector-development/cdk-python/schemas)
 - The module's generated `README.md` contains more details on the supported commands.

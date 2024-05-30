@@ -32,7 +32,7 @@ You'll need the following information to configure the Kafka source:
 
 ## Supported sync modes
 
-The Kafka source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Kafka source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                   | Supported?\(Yes/No\) | Notes |
 | :------------------------ | :------------------- | :---- |

@@ -82,7 +82,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 ## Supported sync modes
 
-The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Amazon Seller Partner source connector supports the following [sync modes](/cloud/core-concepts/#connection-sync-mode):
 
 - Full Refresh
 - Incremental
@@ -174,7 +174,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
-|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.3.0   | 2024-05-24 | [#00000](https://github.com/airbytehq/airbyte/pull/00000) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
 | 4.2.4   | 2024-05-15 | [#38210](https://github.com/airbytehq/airbyte/pull/38210) | Fix `GET_VENDOR_TRAFFIC_REPORT` stream with report option `reportPeriod=DAY`                                                                                                        |
 | 4.2.3   | 2024-05-09 | [#38078](https://github.com/airbytehq/airbyte/pull/38078) | Hide OSS-only streams in report options config for cloud users                                                                                                                      |

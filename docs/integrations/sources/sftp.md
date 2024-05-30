@@ -89,7 +89,7 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 ## Supported sync modes
 
-The SFTP source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SFTP source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                        | Support | Notes                                                                                |
 | :----------------------------- | :-----: | :----------------------------------------------------------------------------------- |

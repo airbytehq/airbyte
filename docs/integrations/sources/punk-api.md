@@ -34,7 +34,7 @@ Api key is not required for this connector to work,But a dummy key need to be pa
 
 ## Supported sync modes
 
-The Punk-API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Punk-API source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -59,7 +59,7 @@ Punk API's [API reference](https://punkapi.com/documentation/v2) has v2 at prese
 
 ## Changelog
 
-| Version | Date       | Pull Request                                            | Subject        |
-| :------ | :--------- | :------------------------------------------------------ | :------------- |
-| 0.1.1 | 2024-05-20 | [38441](https://github.com/airbytehq/airbyte/pull/38441) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2022-10-31 | [Init](https://github.com/airbytehq/airbyte/pull/<yet>) | Initial commit |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.1.1   | 2024-05-20 | [38441](https://github.com/airbytehq/airbyte/pull/38441) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-31 | [Init](https://github.com/airbytehq/airbyte/pull/<yet>)  | Initial commit                              |

@@ -89,12 +89,12 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 ## Supported sync modes
 
 The Pinterest source connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+[sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -199,7 +199,7 @@ The connector is restricted by the Pinterest
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 2.0.0   | 2024-05-20 | [37698](https://github.com/airbytehq/airbyte/pull/37698) | Migrate to low-code                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | 1.3.3   | 2024-04-24 | [36655](https://github.com/airbytehq/airbyte/pull/36655) | Schema descriptions and CDK 0.80.0                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | 1.3.2   | 2024-04-08 | [36912](https://github.com/airbytehq/airbyte/pull/36912) | Fix icon                                                                                                                                                                                                                                                                                                                                                                                                                                                |
