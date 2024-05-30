@@ -21,7 +21,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.api import API
-from source_facebook_marketing.spec import ConnectorConfig, LookupConfig
+from source_facebook_marketing.spec import ConnectorConfig, LookupConfig, MultipleActSources
 from source_facebook_marketing.streams import (
     Activities,
     AdAccounts,
@@ -62,20 +62,30 @@ logger = logging.getLogger("airbyte")
 UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
+class AccountLookupFailed(Exception):
+    pass
+
+
 def fetch(lookup: LookupConfig):
-    res = (
-        requests
-        .request(
-            method=lookup.method,
-            url=lookup.url,
-            headers={
-                "Authorization": f"Bearer {lookup.bearer_token}",
-                **lookup.headers.dict()
-            },
-            json=lookup.payload.dict(),
+    try:
+        res = (
+            requests
+            .request(
+                method=lookup.method,
+                url=lookup.url,
+                headers={
+                    "Authorization": f"Bearer {lookup.bearer_token}",
+                    **lookup.headers.dict()
+                },
+                json=lookup.payload.dict(),
+            )
         )
-    )
-    res.raise_for_status()
+    except requests.exceptions.RequestException as err:
+        raise AccountLookupFailed() from err
+    try:
+        res.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        raise AccountLookupFailed(res.text) from err
     return list(set(res.json()[lookup.path]))
 
 
@@ -129,6 +139,12 @@ class SourceFacebookMarketing(AbstractSource):
                 # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
                 for stream in self.get_custom_insights_streams(api, config):
                     stream.check_breakdowns(account_id=account_id)
+
+        except MultipleActSources as e:
+            return False, *e.args
+
+        except AccountLookupFailed as e:
+            return False, "Ad Accounts ID lookup error: " + " ".join(str(a) for a in (e.args + e.__cause__.args))
 
         except facebook_business.exceptions.FacebookRequestError as e:
             return False, e._api_error_message

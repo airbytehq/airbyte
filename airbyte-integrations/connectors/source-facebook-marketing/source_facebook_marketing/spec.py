@@ -153,6 +153,10 @@ class InsightConfig(BaseModel):
     )
 
 
+class MultipleActSources(Exception):
+    """Both explicit accounts list and lookup endpoint specified in the config."""
+
+
 class ConnectorConfig(BaseConfig):
     """Connector config"""
 
@@ -161,9 +165,7 @@ class ConnectorConfig(BaseConfig):
         is_static = len(values["account_ids"]) > 0
         is_dynamic = values["account_id_lookup"] is not None
         if is_static and is_dynamic:
-            raise ValueError("Only one of Ad Account ID(s) or Account IDs lookup config can be set")
-        if not is_static and not is_dynamic:
-            raise ValueError("Ad Account ID(s) or Account IDs lookup config must be set")
+            raise MultipleActSources("Only one of Ad Account ID(s) or Account IDs lookup config can be set")
         return values
 
     class Config:
