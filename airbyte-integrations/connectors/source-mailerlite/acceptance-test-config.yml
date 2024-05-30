@@ -20,9 +20,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams:
-          - name: "campaigns"
-            bypass_reason: "No data in sandbox account"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
