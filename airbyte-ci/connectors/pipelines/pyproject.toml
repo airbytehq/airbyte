@@ -18,7 +18,7 @@ more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
 airbyte-protocol-models = "*"
-jinja2 = "^3.0.2"
+jinja2 = "^3.1.4"
 requests = "^2.31"
 airbyte-connectors-base-images = {path = "../base_images", develop = true}
 connector-ops = {path = "../connector_ops", develop = true}
