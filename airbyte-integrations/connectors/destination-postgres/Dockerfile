@@ -1,0 +1,1 @@
+FROM airbyte/destination-postgres:2.0.10

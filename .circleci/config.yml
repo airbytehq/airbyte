@@ -63,6 +63,13 @@ jobs:
     steps:
       - checkout
 
+  dependencies_destination_postgres:
+    working_directory: ~/airbyte/airbyte-integrations/connectors/destination-postgres
+    machine:
+      image: ubuntu-2004:202201-02
+    steps:
+      - checkout
+
 workflows:
   version: 2
   deployment:
@@ -103,6 +110,11 @@ workflows:
             - VOODOO_INFRA_TOOLS
 
       - dependencies_unity:
+          context:
+            - github-voodoo-bender
+            - VOODOO_INFRA_TOOLS
+
+      - dependencies_destination_postgres:
           context:
             - github-voodoo-bender
             - VOODOO_INFRA_TOOLS
@@ -248,6 +260,24 @@ workflows:
           skip-when-tags-exist: true
           requires:
             - dependencies_unity
+          filters:
+            branches:
+              only:
+                - voodoo_master
+
+      - aws-ecr/build-and-push-image:
+          path: airbyte-integrations/connectors/destination-postgres/
+          executor:
+            name: aws-ecr/default
+            use-docker-layer-caching: true
+          context: VOODOO_INFRA_TOOLS
+          create-repo: false
+          no-output-timeout: 20m
+          repo: "data-core/vgp-data-airbyte-destination-postgres"
+          tag: << pipeline.git.revision >>
+          skip-when-tags-exist: true
+          requires:
+            - dependencies_destination_postgres
           filters:
             branches:
               only:
