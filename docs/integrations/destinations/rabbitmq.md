@@ -45,7 +45,6 @@ To use the RabbitMQ destination, you'll need:
 
 | Version | Date             | Pull Request                                              | Subject                                         |
 | :------ | :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
-| 0.1.5 | 2024-05-22 | [38532](https://github.com/airbytehq/airbyte/pull/38532) | [autopull] base image + poetry + up_to_date |
 | 0.1.4 | 2024-05-21 | [38532](https://github.com/airbytehq/airbyte/pull/38532) | [autopull] base image + poetry + up_to_date |
 | 0.1.3   | 2024-04-02       | [#36749](https://github.com/airbytehq/airbyte/pull/36749) | Un-archive connector (again)                    |
 | 0.1.2   | 2024-03-05       | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                            |
