@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.2
+CDK: upgrade dpath
+
 ## 1.1.1
 Fix bug so that RFR streams don't resync successful streams on subsequent attempts
 
