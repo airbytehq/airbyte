@@ -335,6 +335,10 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
     }
 
+    protected open fun supportResumeableFullRefreshWithoutPk(): Boolean? {
+        return false
+    }
+
     @Test
     @Throws(Exception::class)
     protected fun testDiscoverWithMultipleSchemas() {
@@ -379,7 +383,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 )
                 .withSupportedSyncModes(
                     java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-                ),
+                )
+                .withIsResumable(supportResumeableFullRefreshWithoutPk()),
         )
         expected.streams = catalogStreams
         // sort streams by name so that we are comparing lists with the same order.
