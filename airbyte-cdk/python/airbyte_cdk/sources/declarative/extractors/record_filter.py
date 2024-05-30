@@ -91,6 +91,17 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
         yield from records
 
     def _get_state_value(self, stream_state: StreamState, stream_slice: StreamSlice) -> Optional[str]:
+        """
+        Return cursor_value or None in case it was not found.
+        Cursor_value may be empty if:
+            1. It is an initial sync => no stream_state exist at all.
+            2. In Parent-child stream, and we already make initial sync, so stream_state is present.
+               During the second read, we receive one extra record from parent and therefore no stream_state for this record will be found.
+
+        :param StreamState stream_state: State
+        :param StreamSlice stream_slice: Current Stream slice
+        :return Optional[str]: cursor_value in case it was found, otherwise None.
+        """
         if self._per_partition_cursor:
             # self._per_partition_cursor is the same object that DeclarativeStream uses to save/update stream_state
             partition_state = self._per_partition_cursor.select_state(stream_slice=stream_slice)
