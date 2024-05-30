@@ -54,7 +54,7 @@ Please follow the instructions below to migrate to version 3.0.0:
 3. Select **Save changes** at the bottom of the page.
    3.1 Ensure the **Reset affected streams** option is checked.
    `note
-     Depending on destination type you may not be prompted to reset your data
+     Depending on destination type, you may not be prompted to reset your data.
      `
 4. Select **Save connection**.
    `note
