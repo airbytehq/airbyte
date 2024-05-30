@@ -296,7 +296,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                     "No table from schema $schema is accessible for the user."
                                 }
                                 throw ConfigErrorException(
-                                    "User can not perform select to any table from schema: $schema"
+                                    "User lacks privileges to SELECT from any of the tables in schema '$schema"
                                 )
                             }
                         } else {
