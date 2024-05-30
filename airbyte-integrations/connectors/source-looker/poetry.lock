@@ -1005,7 +1005,7 @@ files = [
 [[package]]
 name = "semver"
 version = "2.13.0"
-description = "Python helper for Semantic Versioning (http://semver.org/)"
+description = "Python helper for Semantic Versioning (https://semver.org/)"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
