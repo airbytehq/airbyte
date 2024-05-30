@@ -365,7 +365,8 @@ class RegressionTests(Step):
                 self.run_id or "",
                 "--should-read-with-state",
                 str(self.should_read_with_state),
-            ] + selected_streams
+            ]
+            + selected_streams
         )
         run_pytest_with_proxy = dedent(
             f"""
