@@ -456,7 +456,7 @@ class RegressionTests(Step):
             # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
             # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
             # build their own.
-            .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
+            .with_new_file(f"/tmp/{self.context.docker_image}_container_id.txt", contents=str(target_container_id))
         )
 
         if self.context.is_ci:
