@@ -102,14 +102,14 @@ def test_client_side_record_filter_decorator_no_parent_stream(stream_state: Opti
 
 
 @pytest.mark.parametrize(
-    "stream_state, count_expected_records",
+    "stream_state, expected_record_ids",
     [
-        ({},  2),
-        ({"states": [{"some_parent_id": {"created_at": "2021-01-03"}}]},  1),
+        ({},  [2, 3]),
+        ({"states": [{"some_parent_id": {"created_at": "2021-01-03"}}]},  [3]),
     ],
     ids=["no_stream_state_no_record_filter", "with_stream_state_no_record_filter"]
 )
-def test_client_side_record_filter_decorator_with_parent_stream(stream_state: Optional[Mapping], count_expected_records: int):
+def test_client_side_record_filter_decorator_with_parent_stream(stream_state: Optional[Mapping], expected_record_ids: List[int]):
     records_to_filter = [
         {"id": 1, "created_at": "2020-01-03"},
         {"id": 2, "created_at": "2021-01-03"},
@@ -161,4 +161,4 @@ def test_client_side_record_filter_decorator_with_parent_stream(stream_state: Op
                                                next_page_token=None)
     )
 
-    assert len(filtered_records) == count_expected_records
+    assert [x.get("id") for x in filtered_records] == expected_record_ids
