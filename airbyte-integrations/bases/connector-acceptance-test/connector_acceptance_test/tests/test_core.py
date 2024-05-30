@@ -1325,10 +1325,10 @@ class TestBasicRead(BaseTest):
 
                 assert not isinstance(primary_key_value, (list, dict)), (
                     f"Stream {stream_name} contains primary key with forbidden type "
-                    f"of {data_types_mapping.get(primary_key_value.__class__.__name__)}"
+                    f"of '{data_types_mapping.get(primary_key_value.__class__.__name__)}'"
                 )
 
-            assert non_nullable_key_part_found, f"Stream {stream_name} contains primary key with null values for all sub-keys"
+            assert non_nullable_key_part_found, f"Stream {stream_name} contains primary key with null values in all its parts"
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)
