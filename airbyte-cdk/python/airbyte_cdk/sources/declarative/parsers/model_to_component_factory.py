@@ -622,6 +622,8 @@ class ModelToComponentFactory:
                 and model_incremental_sync.end_datetime
             ):
                 raise ValueError("Data Feed option should be selected")
+        else:
+            return None
 
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs: Any) -> DeclarativeStream:
         # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
@@ -634,7 +636,9 @@ class ModelToComponentFactory:
         stop_condition_on_cursor = (
             model.incremental_sync and hasattr(model.incremental_sync, "is_data_feed") and model.incremental_sync.is_data_feed
         )
-        client_side_incremental_sync = self.get_client_side_incremental(model=model, config=config, slicer=combined_slicers)
+        client_side_incremental_sync: Optional[dict[str, Any]] = self.get_client_side_incremental(
+            model=model, config=config, slicer=combined_slicers
+        )
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:
