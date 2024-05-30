@@ -29,9 +29,9 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     # Disabled acceptance tests as:
-    # - They are failing 
+    # - They are failing
     # - Cloud usage is low
-    # See https://github.com/airbytehq/airbyte/pull/38545 
+    # See https://github.com/airbytehq/airbyte/pull/38545
     #
     # - suite: acceptanceTests
     #   testSecrets:
