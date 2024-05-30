@@ -35,7 +35,8 @@ class MssqlSourceTest {
       Field.of("name", JsonSchemaType.STRING),
       Field.of("born", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-      .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+      .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+      .withIsResumable(true)));
 
   private MsSQLTestDatabase testdb;
 
@@ -69,12 +70,19 @@ class MssqlSourceTest {
   // the column twice. we now de-duplicate it (pr: https://github.com/airbytehq/airbyte/pull/983).
   // this tests that this de-duplication is successful.
   @Test
-  void testDiscoverWithPk() throws Exception {
+  void testDiscoverWithPk() {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY CLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);");
     final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
+  }
+
+  @Test
+  void testDiscoverWithoutPk() {
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(STREAM_NAME, actual.getStreams().get(0).getName());
+    assertEquals(false, actual.getStreams().get(0).getIsResumable());
   }
 
   @Test

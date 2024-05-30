@@ -79,14 +79,16 @@ class PostgresSourceTest {
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
@@ -94,21 +96,24 @@ class PostgresSourceTest {
           Field.of("last_name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME_PRIVILEGES_TEST_CASE,
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW,
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true)));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final ConfiguredAirbyteCatalog CONFIGURED_INCR_CATALOG = toIncrementalConfiguredCatalog(CATALOG);
 
@@ -295,6 +300,17 @@ class PostgresSourceTest {
       assertTrue(expectedStream.isPresent());
       assertEquals(expectedStream.get(), actualStream);
     });
+  }
+
+  @Test
+  void testDiscoverWithViewShouldNotBeResumeable() throws Exception {
+    final ConfiguredAirbyteStream viewStream = createViewWithNullValueCursor(testdb.getDatabase());
+    final AirbyteCatalog actual = source().discover(getConfig());
+
+    final Optional<AirbyteStream> actualStream =
+        actual.getStreams().stream().filter(stream -> stream.getName().equals(viewStream.getStream().getName())).findAny();
+    assertTrue(actualStream.isPresent());
+    assertEquals(actualStream.get().getIsResumable(), false);
   }
 
   @Test
@@ -897,7 +913,8 @@ class PostgresSourceTest {
             SCHEMA_NAME,
             Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+            .withIsResumable(false));
 
   }
 

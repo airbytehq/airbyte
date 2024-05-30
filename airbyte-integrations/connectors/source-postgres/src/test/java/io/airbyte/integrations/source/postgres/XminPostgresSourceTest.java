@@ -59,7 +59,8 @@ class XminPostgresSourceTest {
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true)
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
@@ -67,7 +68,8 @@ class XminPostgresSourceTest {
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedCursor(true),
+          .withSourceDefinedCursor(true)
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
@@ -76,7 +78,8 @@ class XminPostgresSourceTest {
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true)
-          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
+          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))
+          .withIsResumable(true)));
 
   protected static final ConfiguredAirbyteCatalog CONFIGURED_XMIN_CATALOG = toConfiguredXminCatalog(CATALOG);
 

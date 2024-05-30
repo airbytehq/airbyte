@@ -245,6 +245,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     return true;
   }
 
+  @Override
+  protected void addIsResumableFlagForNonPkTable(final AirbyteStream stream) {
+    stream.setIsResumable(false);
+  }
+
   @Test
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
     testdb.with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", testdb.getUserName());

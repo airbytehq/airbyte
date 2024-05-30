@@ -216,7 +216,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final JsonNode config) {
     final AirbyteCatalog catalog = super.discover(config);
 
     if (MssqlCdcHelper.isCdc(config)) {
