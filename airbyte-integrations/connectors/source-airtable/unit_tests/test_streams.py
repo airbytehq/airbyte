@@ -57,13 +57,13 @@ class TestBases:
         url = "https://api.airtable.com/v0/meta/bases/"
         requests_mock.get(url, status_code=200, json={"offset": "xyz"})
         response = requests.get(url)
-        assert self.bases_instance.next_page_token(response) == "xyz"
+        assert self.bases_instance.next_page_token(response) == {"offset": "xyz"}
 
     @pytest.mark.parametrize(
         ("next_page", "expected"),
         [
             (None, {}),
-            ("xyz", {"offset": "xyz"}),
+            ({"offset": "xyz"}, {"offset": "xyz"}),
         ],
     )
     def test_request_params(self, next_page, expected):
@@ -143,13 +143,13 @@ class TestAirtableStream:
         url = "https://api.airtable.com/v0/meta/bases/"
         requests_mock.get(url, status_code=200, json={"offset": "xyz"})
         response = requests.get(url)
-        assert self.stream_instance(prepared_stream).next_page_token(response) == "xyz"
+        assert self.stream_instance(prepared_stream).next_page_token(response) == {"offset": "xyz"}
 
     @pytest.mark.parametrize(
         ("next_page", "expected"),
         [
             (None, {}),
-            ("xyz", {"offset": "xyz"}),
+            ({"offset": "xyz"}, {"offset": "xyz"}),
         ],
     )
     def test_streams_request_params(self, next_page, expected, prepared_stream):
