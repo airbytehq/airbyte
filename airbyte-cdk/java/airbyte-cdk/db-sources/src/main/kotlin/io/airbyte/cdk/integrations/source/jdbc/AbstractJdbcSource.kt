@@ -47,6 +47,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons
@@ -270,9 +271,44 @@ abstract class AbstractJdbcSource<Datatype>(
                     CheckedFunction { connection: Connection -> connection.metaData.catalogs },
                     CheckedFunction { queryResult: ResultSet ->
                         sourceOperations.rowToJson(queryResult)
-                    }
+                    },
                 )
-            }
+            },
+            CheckedConsumer { database: JdbcDatabase ->
+                var schemas = ArrayList<String>()
+                if (config!!.has(JdbcUtils.SCHEMAS_KEY) && config[JdbcUtils.SCHEMAS_KEY].isArray) {
+                    for (schema in config[JdbcUtils.SCHEMAS_KEY]) {
+                        schemas.add(schema.asText())
+                    }
+                }
+                // if UI has schemas specified, check if the user has select access to any table
+                if (schemas.isNotEmpty()) {
+                    for (schema in schemas) {
+                        LOGGER.info {
+                            "Checking if the user can perform select to any table in schema: $schema"
+                        }
+                        val tablesOfSchema = database.metaData.getTables(null, schema, "%", null)
+                        if (tablesOfSchema.next()) {
+                            var privileges =
+                                getPrivilegesTableForCurrentUser<JdbcPrivilegeDto>(database, schema)
+                            if (privileges.isEmpty()) {
+                                LOGGER.info {
+                                    "No table from schema $schema is accessible for the user."
+                                }
+                                throw ConfigErrorException(
+                                    "User can not perform select to any table from schema: $schema"
+                                )
+                            }
+                        } else {
+                            LOGGER.info { "Schema $schema does not contain any table." }
+                        }
+                    }
+                } else {
+                    LOGGER.info {
+                        "No schema has been provided at the moment, skip table permission check."
+                    }
+                }
+            },
         )
     }
 
