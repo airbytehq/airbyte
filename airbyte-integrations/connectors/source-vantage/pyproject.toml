@@ -17,7 +17,7 @@ include = "source_vantage"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "v1"
 
 [tool.poetry.scripts]
 source-vantage = "source_vantage.run:run"
