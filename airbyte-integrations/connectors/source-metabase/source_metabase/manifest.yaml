@@ -142,8 +142,6 @@ definitions:
     collections_items_dashboards:
       type: DeclarativeStream
       name: collections_items_dashboards
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
