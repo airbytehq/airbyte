@@ -17,12 +17,12 @@ From time-to-time, you may want to erase all of the data that Airbyte has create
 Note that there is no way to recover from a clear sync, so please be certain that you wish to erase all the data in your destination.
 
 :::warning
+
 Not all sources keep their history forever. If you perform a Clear Sync, and your source does not retain all of its records, this may lead to data loss.
+
 :::
 
 A Clear can be triggered either from the UI or Airbyte API. Airbyte allows you to clear all streams in the connection or only a single stream through the UI. You may also be prompted to clear some streams when making configuration changes that apply to multiple streams. Airbyte additionally supports the clearing of multiple streams through the API.
-
-Clear syncs create data downtime, meaning that your final tables will be empty once the Clear Sync is complete. Clear Syncs also block the running of regularly-scheduled syncs until they are complete. If you choose to run a Clear Sync while another sync is running, it will enqueue, and start at the end of the currently running sync.
 
 ## Steps to Clear Data
 
