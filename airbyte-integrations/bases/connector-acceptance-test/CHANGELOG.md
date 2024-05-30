@@ -2,7 +2,9 @@
 
 ## 3.8.0
 
-Add `TestDiscovery.test_primary_keys_data_type`, which validates that primary keys are not of type `array` or `object`.
+Add `TestDiscovery.test_primary_keys_data_type`, which validates that primary keys are not of type `array` or `object` in discovered catalog.
+Add `validate_primary_keys_data_type` to `TestBasicRead.test_read`, which validates that primary keys are not of type `array` or `object` in records
+and ensures that at least one primary key is non-null when there is a composite primary key.
 
 ## 3.7.0
 
