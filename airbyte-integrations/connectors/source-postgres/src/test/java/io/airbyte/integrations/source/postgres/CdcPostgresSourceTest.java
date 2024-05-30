@@ -119,6 +119,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
+  protected void addIsResumableFlagForNonPkTable(final AirbyteStream stream) {
+    stream.setIsResumable(true);
+  }
+
+  @Override
   @BeforeEach
   protected void setup() {
     super.setup();
