@@ -7,7 +7,7 @@ This page guides you through the process of setting up the [Snowflake](https://w
 There are three parts to this:
 * Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
 * Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported. Coming soon: Hugging Face's `e5-base-v2`).
-* Snowflake Connection - where to store the vectors the Snowflake table with the `VECTOR` data type.
+* Snowflake Connection - where to store the vectors. This configures a vector store using Snowflake tables having the `VECTOR` data type.
 
 ## Prerequisites
 
