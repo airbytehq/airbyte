@@ -72,8 +72,8 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 The airtable source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
 ## Supported Tables
 

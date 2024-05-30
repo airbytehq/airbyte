@@ -26,10 +26,10 @@ This page contains the setup guide and reference information for the Apple Searc
 
 The Apple Search Ads source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
 ## Supported Streams
 
