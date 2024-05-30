@@ -88,8 +88,6 @@
   to: /using-airbyte/core-concepts/sync-modes/incremental-append
 - from: /understanding-airbyte/connections/incremental-append-deduped
   to: /using-airbyte/core-concepts/sync-modes/incremental-append-deduped
-- from: /understanding-airbyte/basic-normalization
-  to: /using-airbyte/core-concepts/basic-normalization
 - from: /understanding-airbyte/typing-deduping
   to: /using-airbyte/core-concepts/typing-deduping
 - from:

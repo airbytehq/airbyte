@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: df38991e-f35b-4af2-996d-36817f614587
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-news-api
   githubIssueLabel: source-news-api
   icon: newsapi.svg
@@ -26,12 +26,18 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-NEWS-API__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  # Disabling acceptance tests for now
+  # - They are not passing
+  # - The connector has low/no Cloud usage
+  #
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-NEWS-API__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
 metadataSpecVersion: "1.0"
