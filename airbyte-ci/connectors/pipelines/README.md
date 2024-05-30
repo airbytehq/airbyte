@@ -747,8 +747,10 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 4.15.4  | [#38646](https://github.com/airbytehq/airbyte/pull/38646)      | Make airbyte-ci able to test external repos.                                                                                 |
+|---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| 4.15.6  | [#38783](https://github.com/airbytehq/airbyte/pull/38783)  | Fix a variable access error with `repo_dir` in the `bump_version` command.                                                   |
+| 4.15.5  | [#38732](https://github.com/airbytehq/airbyte/pull/38732)  | Update metadata deploy pipeline to 3.10                                                                                      |
+| 4.15.4  | [#38646](https://github.com/airbytehq/airbyte/pull/38646)  | Make airbyte-ci able to test external repos.                                                                                 |
 | 4.15.3  | [#38645](https://github.com/airbytehq/airbyte/pull/38645)  | Fix typo preventing correct secret mounting on Python connectors integration tests.                                          |
 | 4.15.2  | [#38628](https://github.com/airbytehq/airbyte/pull/38628)  | Introduce ConnectorTestContext to avoid trying fetching connector secret in the PublishContext.                              |
 | 4.15.1  | [#38615](https://github.com/airbytehq/airbyte/pull/38615)  | Do not eagerly fetch connector secrets.                                                                                      |

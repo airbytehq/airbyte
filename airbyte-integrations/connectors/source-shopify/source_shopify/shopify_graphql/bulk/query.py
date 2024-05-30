@@ -1672,11 +1672,11 @@ class Product(ShopifyBulkQuery):
             option["product_id"] = product_id if product_id else None
         return options
 
-    def _unnest_tags(self, record: MutableMapping[str, Any]) -> str:
+    def _unnest_tags(self, record: MutableMapping[str, Any]) -> Optional[str]:
         # we keep supporting 1 tag only, as it was for the REST stream,
         # to avoid breaking change.
         tags = record.get("tags", [])
-        return tags[0] if len(tags) > 0 else None
+        return ", ".join(tags) if tags else None
 
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
