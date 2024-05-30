@@ -87,7 +87,7 @@ Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.
 
 ## Typing and Deduping
 
-Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns and only contains unique records. Typing and deduping is only relevant for the following relational database & warehouse destinations. For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
+Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns, and if deduplication is selected, only contains unique records. Typing and deduping is only relevant for relational database & warehouse destinations. For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
 
 ## Custom Transformations
 
