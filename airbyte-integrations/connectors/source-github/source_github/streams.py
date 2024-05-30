@@ -42,7 +42,7 @@ class GithubStreamABC(HttpStream, ABC):
 
     def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
         if kwargs.get("authenticator"):
-            kwargs["authenticator"].max_time = self.max_time
+            kwargs["authenticator"].max_time = kwargs.pop("max_waiting_time", self.max_time)
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
