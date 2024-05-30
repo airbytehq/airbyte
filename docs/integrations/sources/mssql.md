@@ -3,13 +3,13 @@
 Airbyte's certified MSSQL connector offers the following features:
 
 - Multiple methods of keeping your data fresh, including
-  [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the
+  [Change Data Capture (CDC)](/understanding-airbyte/cdc) using the
   [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
 - Incremental as well as Full Refresh
-  [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing
+  [sync modes](/cloud/core-concepts#connection-sync-modes), providing
   flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with
-  [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
+  [checkpointing](/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
 > ⚠️ **Please note the minimum required platform version is v0.58.0 to run source-mssql 4.0.18 and above.**
@@ -397,7 +397,7 @@ Starting with version 0.4.18, `replication_method` configuration parameter is sa
 After upgrading Microsoft SQL Source connector from 0.4.17 or older version to 0.4.18 or newer
 version you need to fix source configurations in the `actor` table in Airbyte database. To do so,
 you need to run two SQL queries. Follow the instructions in
-[Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db)
+[Airbyte documentation](/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db)
 to run SQL queries on Airbyte database.
 
 If you have connections with Microsoft SQL Source using _Standard_ replication method, run this SQL:

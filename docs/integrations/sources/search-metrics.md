@@ -10,7 +10,7 @@ This connector does not support new per-stream features which are vital for ensu
 
 ### Recommended Actions
 
-Users who still wish to sync data from this connector are advised to explore creating a custom connector as an alternative to continue their data synchronization needs. For guidance, please visit our [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
+Users who still wish to sync data from this connector are advised to explore creating a custom connector as an alternative to continue their data synchronization needs. For guidance, please visit our [Custom Connector documentation](/connector-development/).
 
 :::
 

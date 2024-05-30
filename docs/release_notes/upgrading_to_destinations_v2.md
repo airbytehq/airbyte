@@ -157,7 +157,7 @@ As a user previously not running Normalization, Upgrading to Destinations V2 wil
 
 ### Upgrade Paths for Connections using CDC
 
-For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) source connector, we recommend the following:
+For each [CDC-supported](/understanding-airbyte/cdc) source connector, we recommend the following:
 
 | CDC Source | Recommendation                                               | Notes                                                                                                                                                                                                                                                |
 | ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -200,7 +200,7 @@ In addition to the changes which apply for all destinations described above, the
 
 ### BigQuery
 
-#### [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns
+#### [Object and array properties](/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns
 
 Previously, we had used TEXT, which made querying sub-properties more difficult.
 In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).

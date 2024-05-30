@@ -164,7 +164,7 @@ To format your local `airbyte` repository, run `airbyte-ci format fix all`.
 BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up
 ```
 
-Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
+Note: [basic auth](/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
 
 - Install [`nvm`](https://github.com/nvm-sh/nvm) (Node Version Manager) if not installed
 - Use `nvm` to install the required node version:

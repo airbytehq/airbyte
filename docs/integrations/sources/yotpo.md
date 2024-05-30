@@ -37,7 +37,7 @@ Access Token (which acts as bearer token) is mandate for this connector to work,
 
 ## Supported sync modes
 
-The Yotpo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Yotpo source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

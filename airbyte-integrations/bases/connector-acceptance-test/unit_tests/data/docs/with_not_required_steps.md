@@ -101,7 +101,7 @@ Also you have properly **Configured Account** with **Correct Permissions** and *
 
 ## Supported sync modes
 
-The NetSuite source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The NetSuite source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
  - Full Refresh
  - Incremental
 

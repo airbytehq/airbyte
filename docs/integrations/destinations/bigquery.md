@@ -9,8 +9,8 @@ This page guides you through setting up the BigQuery destination connector.
 ## Prerequisites
 
 - For Airbyte Open Source users using the
-  [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector,
-  [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to
+  [Postgres](/integrations/sources/postgres) source connector,
+  [upgrade](/operator-guides/upgrading-airbyte/) your Airbyte platform to
   version `v0.40.0-alpha` or newer and upgrade your BigQuery connector to version `1.1.14` or newer
 - [A Google Cloud project with BigQuery enabled](https://cloud.google.com/bigquery/docs/quickstarts/query-public-dataset-console)
 - [A BigQuery dataset](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset)
@@ -119,7 +119,7 @@ concurrent rate limit, making it easier to start many queries at once.
 ## Supported sync modes
 
 The BigQuery destination connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+[sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh Sync
 - Incremental - Append Sync

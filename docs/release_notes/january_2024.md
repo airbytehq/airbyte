@@ -14,5 +14,5 @@ In addition to our Redshift V2 destination, we also released a few notable Conne
 
 - Our S3 Source now supports [IAM role-based authentication](https://github.com/airbytehq/airbyte/pull/33818), allowing users to utilize IAM roles for more granular control over permissions and to eliminate the need for managing static access keys.
 - Our [Salesforce](https://github.com/airbytehq/airbyte/issues/30819) source now supports syncing the object ContentDocumentLink, which enables reporting for files within Content Documents.
-- [OneDrive](https://docs.airbyte.com/integrations/sources/microsoft-onedrive) and [Sharepoint](https://github.com/airbytehq/airbyte/pull/33537) are now offered as a source from which to connect your files.
+- [OneDrive](/integrations/sources/microsoft-onedrive) and [Sharepoint](https://github.com/airbytehq/airbyte/pull/33537) are now offered as a source from which to connect your files.
 - Stripe and Salesforce are enabled to run [concurrently](https://github.com/airbytehq/airbyte/pull/34454) with full refresh with 4x speed

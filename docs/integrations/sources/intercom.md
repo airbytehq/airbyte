@@ -43,7 +43,7 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 ## Supported sync modes
 
-The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Intercom source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -74,7 +74,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
 | 0.6.6   | 2024-05-24 | [38626](https://github.com/airbytehq/airbyte/pull/38626) | Add step granularity for activity logs stream                                                                                    |
 | 0.6.5   | 2024-04-19 | [36644](https://github.com/airbytehq/airbyte/pull/36644) | Updating to 0.80.0 CDK                                                                                                           |
 | 0.6.4   | 2024-04-12 | [36644](https://github.com/airbytehq/airbyte/pull/36644) | Schema descriptions                                                                                                              |
@@ -102,7 +102,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 | 0.1.24  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                                 |
 | 0.1.23  | 2022-07-19 | [14830](https://github.com/airbytehq/airbyte/pull/14830) | Added `checkpoint_interval` for Incremental streams                                                                              |
 | 0.1.22  | 2022-07-09 | [14554](https://github.com/airbytehq/airbyte/pull/14554) | Fixed `conversation_parts` stream schema definition                                                                              |
-| 0.1.21  | 2022-07-05 | [14403](https://github.com/airbytehq/airbyte/pull/14403) | Refactored  `Conversations`, `Conversation Parts`, `Company Segments` to increase performance                                    |
+| 0.1.21  | 2022-07-05 | [14403](https://github.com/airbytehq/airbyte/pull/14403) | Refactored `Conversations`, `Conversation Parts`, `Company Segments` to increase performance                                     |
 | 0.1.20  | 2022-06-24 | [14099](https://github.com/airbytehq/airbyte/pull/14099) | Extended `Contacts` stream schema with `sms_consent`,`unsubscribe_from_sms` properties                                           |
 | 0.1.19  | 2022-05-25 | [13204](https://github.com/airbytehq/airbyte/pull/13204) | Fixed `conversation_parts` stream schema definition                                                                              |
 | 0.1.18  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                                  |
@@ -118,8 +118,8 @@ The Intercom connector should not run into Intercom API limitations under normal
 | 0.1.8   | 2021-11-09 | [7060](https://github.com/airbytehq/airbyte/pull/7060)   | Added oauth support                                                                                                              |
 | 0.1.7   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                                                  |
 | 0.1.6   | 2021-10-07 | [6879](https://github.com/airbytehq/airbyte/pull/6879)   | Corrected pagination for contacts                                                                                                |
-| 0.1.5   | 2021-09-28 | [6082](https://github.com/airbytehq/airbyte/pull/6082)   | Corrected android\_last\_seen\_at field data type in schemas                                                                     |
-| 0.1.4   | 2021-09-20 | [6087](https://github.com/airbytehq/airbyte/pull/6087)   | Corrected updated\_at field data type in schemas                                                                                 |
+| 0.1.5   | 2021-09-28 | [6082](https://github.com/airbytehq/airbyte/pull/6082)   | Corrected android_last_seen_at field data type in schemas                                                                        |
+| 0.1.4   | 2021-09-20 | [6087](https://github.com/airbytehq/airbyte/pull/6087)   | Corrected updated_at field data type in schemas                                                                                  |
 | 0.1.3   | 2021-09-08 | [5908](https://github.com/airbytehq/airbyte/pull/5908)   | Corrected timestamp and arrays in schemas                                                                                        |
 | 0.1.2   | 2021-08-19 | [5531](https://github.com/airbytehq/airbyte/pull/5531)   | Corrected pagination                                                                                                             |
 | 0.1.1   | 2021-07-31 | [5123](https://github.com/airbytehq/airbyte/pull/5123)   | Corrected rate limit                                                                                                             |

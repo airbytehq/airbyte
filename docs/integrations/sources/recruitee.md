@@ -31,7 +31,7 @@ You can find your Company ID and find or create an API key within [Recruitee](ht
 
 ## Supported sync modes
 
-The Recruitee source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Recruitee source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -48,7 +48,7 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject               |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 0.1.1 | 2024-05-20 | [38452](https://github.com/airbytehq/airbyte/pull/38452) | [autopull] base image + poetry + up_to_date |
-| 0.1.0 | 2022-10-30 | [18671](https://github.com/airbytehq/airbyte/pull/18671) | New Source: Recruitee |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.1.1   | 2024-05-20 | [38452](https://github.com/airbytehq/airbyte/pull/38452) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-30 | [18671](https://github.com/airbytehq/airbyte/pull/18671) | New Source: Recruitee                       |

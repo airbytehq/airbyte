@@ -8,7 +8,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 
 - Added reserved keywords for schema names by fixing the quotation logic in normalization. [#14683](https://github.com/airbytehq/airbyte/pull/14683)
 
-- Added [documentation](https://docs.airbyte.com/cloud/managing-airbyte-cloud/review-sync-summary) about the data displayed in sync log summaries. [#15181](https://github.com/airbytehq/airbyte/pull/15181)
+- Added [documentation](/cloud/managing-airbyte-cloud/review-sync-summary) about the data displayed in sync log summaries. [#15181](https://github.com/airbytehq/airbyte/pull/15181)
 
 - Added OAuth login to Airbyte Cloud, which allows you to sign in using your Google login credentials. [#15414](https://github.com/airbytehq/airbyte/pull/15414)
 

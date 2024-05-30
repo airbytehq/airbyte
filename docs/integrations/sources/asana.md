@@ -44,7 +44,7 @@ If you have access to multiple projects, Airbyte will sync data related to all p
 
 ## Supported sync modes
 
-The Asana source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Asana source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |

@@ -8,24 +8,24 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 
 - **New Sources and Promotions**
 
-  - 🎉 New Source: [Unleash](https://docs.airbyte.com/integrations/sources/unleash) [low-code CDK] ([#19923](https://github.com/airbytehq/airbyte/pull/19923))
-  - 🎉 Source [Twitter](https://docs.airbyte.com/integrations/sources/twitter): to Alpha and in Cloud ([#23832](https://github.com/airbytehq/airbyte/pull/23832))
-  - 🎉 Source [Confluence](https://docs.airbyte.com/integrations/sources/confluence): Enabled in cloud and now in Beta ([#23775](https://github.com/airbytehq/airbyte/pull/23775))
-  - 🎉 Source [Airtable](https://docs.airbyte.com/integrations/sources/airtable): to GA ([#23763](https://github.com/airbytehq/airbyte/pull/23763))
-  - 🎉 Source [Paystack](https://docs.airbyte.com/integrations/sources/paystack): in Cloud
-  - 🎉 Source [Google Analytics 4](https://docs.airbyte.com/integrations/sources/google-analytics-data-api): to GA
-  - 🎉 Source [Strava](https://docs.airbyte.com/integrations/sources/strava): to Beta
-  - 🎉 Source [GCS](https://docs.airbyte.com/integrations/sources/gcs): in Cloud
-  - 🎉 Source [ZohoCRM](https://docs.airbyte.com/integrations/sources/zoho-crm): to Alpha and in Cloud
-  - 🎉 Source [Yandex Metrica](https://docs.airbyte.com/integrations/sources/yandex-metrica): to Beta and in Cloud
-  - 🎉 Source [Salesloft](https://docs.airbyte.com/integrations/sources/salesloft/): to Alpha and in Cloud
-  - 🎉 Source [Xero](https://docs.airbyte.com/integrations/sources/xero/): to Beta and in Cloud
-  - 🎉 Source [Trello](https://docs.airbyte.com/integrations/sources/trello/): to Beta
-  - 🎉 Source [Paystack](https://docs.airbyte.com/integrations/sources/paystack/): to Beta and in Cloud
+  - 🎉 New Source: [Unleash](/integrations/sources/unleash) [low-code CDK] ([#19923](https://github.com/airbytehq/airbyte/pull/19923))
+  - 🎉 Source [Twitter](/integrations/sources/twitter): to Alpha and in Cloud ([#23832](https://github.com/airbytehq/airbyte/pull/23832))
+  - 🎉 Source [Confluence](/integrations/sources/confluence): Enabled in cloud and now in Beta ([#23775](https://github.com/airbytehq/airbyte/pull/23775))
+  - 🎉 Source [Airtable](/integrations/sources/airtable): to GA ([#23763](https://github.com/airbytehq/airbyte/pull/23763))
+  - 🎉 Source [Paystack](/integrations/sources/paystack): in Cloud
+  - 🎉 Source [Google Analytics 4](/integrations/sources/google-analytics-data-api): to GA
+  - 🎉 Source [Strava](/integrations/sources/strava): to Beta
+  - 🎉 Source [GCS](/integrations/sources/gcs): in Cloud
+  - 🎉 Source [ZohoCRM](/integrations/sources/zoho-crm): to Alpha and in Cloud
+  - 🎉 Source [Yandex Metrica](/integrations/sources/yandex-metrica): to Beta and in Cloud
+  - 🎉 Source [Salesloft](/integrations/sources/salesloft/): to Alpha and in Cloud
+  - 🎉 Source [Xero](/integrations/sources/xero/): to Beta and in Cloud
+  - 🎉 Source [Trello](/integrations/sources/trello/): to Beta
+  - 🎉 Source [Paystack](/integrations/sources/paystack/): to Beta and in Cloud
   - 🎉 Source Trustpilot: in Cloud
-  - 🎉 Source [LinkedIn Pages](https://docs.airbyte.com/integrations/sources/linkedin-pages): in Cloud
-  - 🎉 Source [Pipedrive](https://docs.airbyte.com/integrations/sources/pipedrive): to Beta and in Cloud ([#23539](https://github.com/airbytehq/airbyte/pull/23539))
-  - 🎉 Source [Chargebee](https://docs.airbyte.com/integrations/sources/chargebee): Migrate to YAML ([#21688](https://github.com/airbytehq/airbyte/pull/21688))
+  - 🎉 Source [LinkedIn Pages](/integrations/sources/linkedin-pages): in Cloud
+  - 🎉 Source [Pipedrive](/integrations/sources/pipedrive): to Beta and in Cloud ([#23539](https://github.com/airbytehq/airbyte/pull/23539))
+  - 🎉 Source [Chargebee](/integrations/sources/chargebee): Migrate to YAML ([#21688](https://github.com/airbytehq/airbyte/pull/21688))
 
 - **New Features for Existing Connectors**
 

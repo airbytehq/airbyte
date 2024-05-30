@@ -10,7 +10,7 @@ This connector does not support new per-stream features which are vital for ensu
 
 ### Recommended Actions
 
-Users who still wish to sync data from this connector are advised to explore creating a custom connector as an alternative to continue their data synchronization needs. For guidance, please visit our [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
+Users who still wish to sync data from this connector are advised to explore creating a custom connector as an alternative to continue their data synchronization needs. For guidance, please visit our [Custom Connector documentation](/connector-development/).
 
 :::
 
@@ -46,7 +46,7 @@ Generate an API key per the [Courier documentation](https://www.courier.com/docs
 
 ## Supported sync modes
 
-The Courier source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Courier source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

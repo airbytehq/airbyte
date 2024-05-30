@@ -26,12 +26,12 @@ This page contains the setup guide and reference information for the Klaviyo sou
 
 ## Supported sync modes
 
-The Klaviyo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Klaviyo source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -68,7 +68,7 @@ Stream `Lists Detailed` contains field `profile_count` in addition to info from 
 ## Changelog
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
-|:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
 | `2.6.2`  | 2024-05-08 | [37789](https://github.com/airbytehq/airbyte/pull/37789)   | Move stream schemas and spec to manifest                                                                                      |
 | `2.6.1`  | 2024-05-07 | [38010](https://github.com/airbytehq/airbyte/pull/38010)   | Add error handler for `5XX` status codes                                                                                      |
 | `2.6.0`  | 2024-04-19 | [37370](https://github.com/airbytehq/airbyte/pull/37370)   | Add streams `campaigns_detailed` and `lists_detailed`                                                                         |

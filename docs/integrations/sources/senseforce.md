@@ -45,7 +45,7 @@ The Senseforce Airbyte connector allows to export custom datasets built bei Sens
 
 ## Supported sync modes
 
-The Senseforce source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Senseforce source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental

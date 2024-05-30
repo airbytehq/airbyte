@@ -354,7 +354,7 @@ Here is an example of setting the `display_type` of a oneOf field to `dropdown`,
   "oneOf": [
     {
       "title": "Read Changes using Binary Log (CDC)",
-      "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the MySQL <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">binary log</a>. This must be enabled on your database.",
+      "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the MySQL <a href=\"/integrations/sources/mysql/#change-data-capture-cdc\">binary log</a>. This must be enabled on your database.",
       "required": ["method"],
       "properties": {
         "method": {
@@ -372,7 +372,7 @@ Here is an example of setting the `display_type` of a oneOf field to `dropdown`,
     },
     {
       "title": "Scan Changes with User Defined Cursor",
-      "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+      "description": "Incrementally detects new inserts and updates using the <a href=\"/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
       "required": ["method"],
       "properties": {
         "method": {

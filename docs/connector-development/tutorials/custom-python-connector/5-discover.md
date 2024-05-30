@@ -120,5 +120,5 @@ If the connector you're building has a dynamic schema, you'll need to overwrite 
 ---
 
 The three connector operations work as expected. You can now
-[upload your connector to your Airbyte instance](https://docs.airbyte.com/operator-guides/using-custom-connectors).In
+[upload your connector to your Airbyte instance](/operator-guides/using-custom-connectors).In
 the [next section](6-incremental-reads.md), we'll add the connector to our local Airbyte instance.

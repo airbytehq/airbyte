@@ -104,11 +104,11 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 The Salesforce source connector supports the following sync modes:
 
-- (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- (Recommended)[ Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append)
+- (Recommended)[ Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -130,7 +130,7 @@ Expand to see details about Salesforce connector limitations and troubleshooting
 
 #### Rate limiting
 
-The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) sync mode.
+The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped) sync mode.
 
 #### A note on the BULK API vs REST API and their limitations
 
@@ -191,7 +191,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
 | 2.5.13  | 2024-05-23 | [38563](https://github.com/airbytehq/airbyte/pull/38563) | Use HttpClient to perform HTTP requests for bulk, authentication and schema discovery                                                |
 | 2.5.12  | 2024-05-16 | [38255](https://github.com/airbytehq/airbyte/pull/38255) | Replace AirbyteLogger with logging.Logger                                                                                            |
 | 2.5.11  | 2024-05-09 | [38205](https://github.com/airbytehq/airbyte/pull/38205) | Use new delete method of HttpMocker for test_bulk_stream                                                                             |

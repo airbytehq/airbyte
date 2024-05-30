@@ -33,7 +33,7 @@ A DataScope account with access to the API. You can create a free account [here]
 
 ## Supported sync modes
 
-The DataScope source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The DataScope source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

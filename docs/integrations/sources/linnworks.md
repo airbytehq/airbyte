@@ -30,7 +30,7 @@ The value of your API Token can be viewed at any time from the main dashboard of
 
 ## Supported streams and sync modes
 
-The Linnworks source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Linnworks source connector supports the following streams and [sync modes](/cloud/core-concepts/#connection-sync-mode):
 
 | Stream Name                                                                                    | Full Refresh | Incremental |
 | :--------------------------------------------------------------------------------------------- | :----------- | :---------- |

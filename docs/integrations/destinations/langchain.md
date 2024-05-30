@@ -7,11 +7,11 @@ Please use the respective destination for the vector database you want to use to
 
 To following databases are supported:
 
-- [Pinecone](https://docs.airbyte.com/integrations/destinations/pinecone)
-- [Weaviate](https://docs.airbyte.com/integrations/destinations/weaviate)
-- [Milvus](https://docs.airbyte.com/integrations/destinations/milvus)
-- [Chroma](https://docs.airbyte.com/integrations/destinations/chroma)
-- [Qdrant](https://docs.airbyte.com/integrations/destinations/qdrant)
+- [Pinecone](/integrations/destinations/pinecone)
+- [Weaviate](/integrations/destinations/weaviate)
+- [Milvus](/integrations/destinations/milvus)
+- [Chroma](/integrations/destinations/chroma)
+- [Qdrant](/integrations/destinations/qdrant)
   :::
 
 ## Overview

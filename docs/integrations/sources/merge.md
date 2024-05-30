@@ -37,7 +37,7 @@ Access Token (which acts as bearer token) and linked accounts tokens are mandate
 
 ## Supported sync modes
 
-The Merge source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Merge source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -74,7 +74,7 @@ Merge [API reference](https://api.merge.dev/api/ats/v1/) has v1 at present. The 
 
 ## Changelog
 
-| Version | Date       | Pull Request                                       | Subject        |
-| :------ | :--------- | :------------------------------------------------- | :------------- |
-| 0.1.1 | 2024-05-20 | [38445](https://github.com/airbytehq/airbyte/pull/38445) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2023-04-18 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.1.1   | 2024-05-20 | [38445](https://github.com/airbytehq/airbyte/pull/38445) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2023-04-18 | [Init](https://github.com/airbytehq/airbyte/pull/)       | Initial commit                              |

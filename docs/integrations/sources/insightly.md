@@ -14,7 +14,7 @@ This page guides you through the process of setting up the Insightly source conn
 
 ## Supported sync modes
 
-The Insightly source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Insightly source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental

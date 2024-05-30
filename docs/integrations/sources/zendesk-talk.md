@@ -34,7 +34,7 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
 
 ## Supported sync modes
 
-The **Zendesk Talk** source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The **Zendesk Talk** source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental Sync
@@ -66,7 +66,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 ## Data type map
 
 | Integration Type | Airbyte Type |
-|:-----------------|:-------------|
+| :--------------- | :----------- |
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -75,7 +75,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
 | 1.0.0   | 2024-05-06 | [35780](https://github.com/airbytehq/airbyte/pull/35780) | Migrate implementation to low-code CDK                                      |
 | 0.2.1   | 2024-05-02 | [36625](https://github.com/airbytehq/airbyte/pull/36625) | Schema descriptions and CDK 0.80.0                                          |
 | 0.2.0   | 2024-03-25 | [36459](https://github.com/airbytehq/airbyte/pull/36459) | Unpin CDK version, add record counts in state messages                      |

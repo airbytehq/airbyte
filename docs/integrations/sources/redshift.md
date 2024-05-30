@@ -27,9 +27,9 @@ The Redshift source does not alter the schema present in your warehouse. Dependi
 
 #### Incremental Sync
 
-The Redshift source connector supports incremental syncs. To setup an incremental sync for a table in Redshift in the Airbyte UI, you must setup a [user-defined cursor field](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor) such as an `updated_at` column. The connector relies on this column to know which records were updated since the last sync it ran. See the [incremental sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) for more information.
+The Redshift source connector supports incremental syncs. To setup an incremental sync for a table in Redshift in the Airbyte UI, you must setup a [user-defined cursor field](/understanding-airbyte/connections/incremental-append/#user-defined-cursor) such as an `updated_at` column. The connector relies on this column to know which records were updated since the last sync it ran. See the [incremental sync docs](/understanding-airbyte/connections/incremental-append-deduped) for more information.
 
-Defining a cursor field allows you to run incremental-append syncs. To run [incremental-dedupe](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) syncs, you'll need to tell the connector which column(s) to use as a primary key. See the [incremental-dedupe sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) for more information.
+Defining a cursor field allows you to run incremental-append syncs. To run [incremental-dedupe](/understanding-airbyte/connections/incremental-append-deduped) syncs, you'll need to tell the connector which column(s) to use as a primary key. See the [incremental-dedupe sync docs](/understanding-airbyte/connections/incremental-append-deduped) for more information.
 
 ## Getting started
 

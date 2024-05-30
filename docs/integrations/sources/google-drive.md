@@ -101,7 +101,7 @@ To set up Google Drive as a source in Airbyte Cloud:
 
 ## Supported sync modes
 
-The Google Drive source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Drive source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported? |
 | :--------------------------------------------- | :--------- |
@@ -252,7 +252,7 @@ This connector utilizes the open source [Unstructured](https://unstructured-io.g
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
-|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | 0.0.11  | 2024-05-29 | [38698](https://github.com/airbytehq/airbyte/pull/38698) | Avoid error on empty stream when running discover                                            |
 | 0.0.10  | 2024-03-28 | [36581](https://github.com/airbytehq/airbyte/pull/36581) | Manage dependencies with Poetry                                                              |
 | 0.0.9   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |

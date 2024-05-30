@@ -45,7 +45,7 @@ _Applies to the following connector languages: java, low-code, python_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
-Connectors must have a `metadata.yaml` file at the root of their directory. This file is used to build our connector registry. Its structure must follow our metadata schema. Field values are also validated. This is to ensure that all connectors have the required metadata fields and that the metadata is valid. More details in this [documentation](https://docs.airbyte.com/connector-development/connector-metadata-file).
+Connectors must have a `metadata.yaml` file at the root of their directory. This file is used to build our connector registry. Its structure must follow our metadata schema. Field values are also validated. This is to ensure that all connectors have the required metadata fields and that the metadata is valid. More details in this [documentation](/connector-development/connector-metadata-file).
 
 ### Connector must have a language tag in metadata
 
@@ -101,7 +101,7 @@ _Applies to the following connector languages: java, low-code, python_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
-Connectors must be licensed under the MIT or Elv2 license. This is to ensure that all connectors are licensed under a permissive license. More details in our [License FAQ](https://docs.airbyte.com/developer-guides/licenses/license-faq).
+Connectors must be licensed under the MIT or Elv2 license. This is to ensure that all connectors are licensed under a permissive license. More details in our [License FAQ](/developer-guides/licenses/license-faq).
 
 ### Connector license in metadata.yaml and pyproject.toml file must match
 
@@ -119,7 +119,7 @@ _Applies to the following connector languages: java, low-code, python_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
-Connector version must follow the Semantic Versioning scheme. This is to ensure that all connectors follow a consistent versioning scheme. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) for more details.
+Connector version must follow the Semantic Versioning scheme. This is to ensure that all connectors follow a consistent versioning scheme. Refer to our [Semantic Versioning for Connectors](/contributing-to-airbyte/#semantic-versioning-for-connectors) for more details.
 
 ### Connector version in metadata.yaml and pyproject.toml file must match
 

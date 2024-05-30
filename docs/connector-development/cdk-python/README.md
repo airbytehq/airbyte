@@ -2,8 +2,8 @@
 
 :::info
 Over the next few months, the project will only accept connector contributions that are made using the
-[Low-Code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview) or the
-[Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview).
+[Low-Code CDK](/connector-development/config-based/low-code-cdk-overview) or the
+[Connector Builder](/connector-development/connector-builder-ui/overview).
 
 New pull requests made with the Python CDK will be closed, but we will inquire to understand why it wasn't done with
 Low-Code/Connector Builder so we can address missing features. This decision is aimed at improving maintenance and
@@ -31,7 +31,7 @@ offers helpers specific for creating Airbyte source connectors for:
 - Generic Python sources \(anything not covered by the above\)
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the
-[Airbyte Specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/) before proceeding.
+[Airbyte Specification](/understanding-airbyte/airbyte-protocol/) before proceeding.
 
 If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to
 [the Connector Development section of our Airbyte Forum](https://github.com/airbytehq/airbyte/discussions) to

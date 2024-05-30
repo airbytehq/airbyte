@@ -172,7 +172,7 @@ A job specific variable overwrites the default sync job variable defined above.
 
 Note that Airbyte does not support logging to separate Cloud Storage providers.
 
-Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes-via-helm#configure-logs) for more information on configuring Kubernetes logging.
+Please see [here](/deploying-airbyte/on-kubernetes-via-helm#configure-logs) for more information on configuring Kubernetes logging.
 
 1. `GCS_LOG_BUCKET` - Defines the GCS bucket to store logs.
 2. `S3_BUCKET` - Defines the S3 bucket to store logs.

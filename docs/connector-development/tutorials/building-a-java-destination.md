@@ -237,7 +237,7 @@ incoming data and how it should be written to the destination. Its "output" is t
 2. `AirbyteMessage`s of type `AirbyteStateMessage`, written to stdout to indicate which records have
    been written so far during a sync. It's important to output these messages when possible in order
    to avoid re-extracting messages from the source. See the
-   [write operation protocol reference](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#write)
+   [write operation protocol reference](/understanding-airbyte/airbyte-protocol#write)
    for more information.
 
 To implement the `write` Airbyte operation, implement the `getConsumer` method in your generated

@@ -3,7 +3,7 @@
 The Facebook Marketing Connector by Airbyte is a Snowflake Native Application that allows you to extract data from your Facebook Marketing account and load records into a Snowflake database of your choice.
 
 :::info
-The Snowflake Native Apps platform is new and rapidly evolving. The Facebook Marketing Connector by Airbyte is in _public preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a [full table refresh](/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite.md) without deduplication is supported.  
+The Snowflake Native Apps platform is new and rapidly evolving. The Facebook Marketing Connector by Airbyte is in _public preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a [full table refresh](/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite.md) without deduplication is supported.
 :::
 
 # Getting started
@@ -33,7 +33,7 @@ Do not refresh the Apps page while the application is being installed. This may 
 
 ## Facebook Marketing Account
 
-In order for the Facebook Marketing Connector by Airbyte to query Facebook's APIs, you will need an account with the right permissions. Please follow the [Facebook Marketing authentication guide](https://docs.airbyte.com/integrations/sources/facebook-marketing#for-airbyte-open-source-generate-an-access-token-and-request-a-rate-limit-increase) for further information.
+In order for the Facebook Marketing Connector by Airbyte to query Facebook's APIs, you will need an account with the right permissions. Please follow the [Facebook Marketing authentication guide](/integrations/sources/facebook-marketing#for-airbyte-open-source-generate-an-access-token-and-request-a-rate-limit-increase) for further information.
 
 ## Snowflake Native App Authorizations
 
@@ -61,7 +61,7 @@ CREATE OR REPLACE NETWORK RULE FACEBOOK_MARKETING_APIS_NETWORK_RULE
   VALUE_LIST = ('graph.facebook.com');
 ```
 
-:::note  
+:::note
 As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration) mentions that direct external access is a preview feature and that it is `available to all accounts on AWS` which might restrict the number of users able to use the connector.
 :::
 
@@ -75,7 +75,7 @@ CREATE OR REPLACE SECRET AIRBYTE_APP_SECRET
   }';
 ```
 
-... where `client_id`, `client_secret` and `refresh_token` are strings. For more information, see the [Facebook Marketing authentication guide](https://docs.airbyte.com/integrations/sources/facebook-marketing#for-airbyte-open-source-generate-an-access-token-and-request-a-rate-limit-increase).
+... where `client_id`, `client_secret` and `refresh_token` are strings. For more information, see the [Facebook Marketing authentication guide](/integrations/sources/facebook-marketing#for-airbyte-open-source-generate-an-access-token-and-request-a-rate-limit-increase).
 
 4. Once the network rule and the secret are defined in Snowflake, you need to make them available to the app by using an external access integration.
 
@@ -157,7 +157,7 @@ When extracting Ad Creatives, retrieve the thumbnail_url and store it as thumbna
 
 `custom_insights`
 
-Custom insights allow you to define ad statistic entries representing the performance of your campaigns against specific metrics. For more information about how to configure custom insights, please refer to the [Facebook Marketing documentation](https://docs.airbyte.com/integrations/sources/facebook-marketing#set-up-facebook-marketing-as-a-source-in-airbyte).
+Custom insights allow you to define ad statistic entries representing the performance of your campaigns against specific metrics. For more information about how to configure custom insights, please refer to the [Facebook Marketing documentation](/integrations/sources/facebook-marketing#set-up-facebook-marketing-as-a-source-in-airbyte).
 
 ---
 

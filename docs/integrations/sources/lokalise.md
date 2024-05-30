@@ -31,7 +31,7 @@ You can find your Project ID and find or create an API key within [Lokalise](htt
 
 ## Supported sync modes
 
-The Lokalise source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Lokalise source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -59,7 +59,7 @@ The Lokalise source connector supports the following [sync modes](https://docs.a
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject              |
-| :------ | :--------- | :------------------------------------------------------- | :------------------- |
-| 0.1.1 | 2024-05-20 | [38435](https://github.com/airbytehq/airbyte/pull/38435) | [autopull] base image + poetry + up_to_date |
-| 0.1.0 | 2022-10-27 | [18522](https://github.com/airbytehq/airbyte/pull/18522) | New Source: Lokalise |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.1.1   | 2024-05-20 | [38435](https://github.com/airbytehq/airbyte/pull/38435) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-27 | [18522](https://github.com/airbytehq/airbyte/pull/18522) | New Source: Lokalise                        |

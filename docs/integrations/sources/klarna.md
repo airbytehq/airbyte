@@ -32,7 +32,7 @@ Klarna Source Connector does not support OAuth at this time due to limitations o
 
 ## Supported sync modes
 
-The Klarna source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Klarna source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                   | Supported? |
 | :------------------------ | :--------- |

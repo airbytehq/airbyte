@@ -35,7 +35,7 @@ Just pass the generated API key and Movie ID for establishing the connection.
 
 ## Supported sync modes
 
-The Google-webfonts source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google-webfonts source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -91,7 +91,7 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 ## Changelog
 
-| Version | Date       | Pull Request                                            | Subject        |
-| :------ | :--------- | :------------------------------------------------------ | :------------- |
-| 0.1.1 | 2024-05-21 | [38496](https://github.com/airbytehq/airbyte/pull/38496) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561) | Initial commit |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.1.1   | 2024-05-21 | [38496](https://github.com/airbytehq/airbyte/pull/38496) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561)  | Initial commit                              |

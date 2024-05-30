@@ -31,7 +31,7 @@ You can find your Project ID and find or create an API key within [Fastbill](htt
 
 ## Supported sync modes
 
-The Fastbill source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Fastbill source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |

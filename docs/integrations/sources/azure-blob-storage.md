@@ -78,7 +78,7 @@ Follow these steps to set up an IAM role:
 
 ## Supported Streams
 
-The Azure Blob Storage source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Azure Blob Storage source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported? |
 | :--------------------------------------------- | :--------- |
@@ -246,7 +246,7 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
 | 0.4.3   | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover                                            |
 | 0.4.2   | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification                                                                         |
 | 0.4.1   | 2024-04-22 | [37467](https://github.com/airbytehq/airbyte/pull/37467) | Fix start date filter                                                                        |

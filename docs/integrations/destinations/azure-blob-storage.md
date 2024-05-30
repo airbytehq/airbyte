@@ -8,7 +8,7 @@ The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob
 
 ## Prerequisites
 
-- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your AzureBlobStorage connector to version `0.1.6` or newer
+- For Airbyte Open Source users using the [Postgres](/integrations/sources/postgres) source connector, [upgrade](/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your AzureBlobStorage connector to version `0.1.6` or newer
 
 ## Sync Mode
 

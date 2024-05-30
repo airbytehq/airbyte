@@ -20,7 +20,7 @@ It is required to have an account on Braze to provide us with `URL` and `Rest AP
 
 ## Supported sync modes
 
-The Braze source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Braze source connector supports the following [ sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Incremental Sync | Append

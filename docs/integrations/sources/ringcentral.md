@@ -38,7 +38,7 @@ Auth Token (which acts as bearer token), account id and extension id are mandate
 
 ## Supported sync modes
 
-The RingCentral source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The RingCentral source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

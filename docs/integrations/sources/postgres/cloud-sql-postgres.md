@@ -2,9 +2,9 @@
 
 Airbyte's certified Postgres connector offers the following features:
 
-- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](https://docs.airbyte.com/integrations/sources/postgres#xmin).
-- All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
-- Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
+- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](/understanding-airbyte/cdc) and replication using the [xmin system column](/integrations/sources/postgres#xmin).
+- All available [sync modes](/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
+- Reliable replication at any table size with [checkpointing](/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
 ![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png?raw=true)
 
@@ -50,8 +50,8 @@ To fill out the required information:
 2. You may optionally opt to list each of the schemas you want to sync. These are case-sensitive, and multiple schemas may be entered. By default, `public` is the only selected schema.
 3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
 4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. See here to learn about other SSL modes and SSH tunneling.
-5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](https://docs.airbyte.com/integrations/sources/postgres#xmin) to reliably replicate data from your database.
-   1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](https://docs.airbyte.com/integrations/sources/postgres#cdc).
+5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](/integrations/sources/postgres#xmin) to reliably replicate data from your database.
+   1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](/integrations/sources/postgres#cdc).
 
 <!-- env:cloud -->
 
@@ -75,8 +75,8 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
 
-- See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
-- See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
+- See [here](/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
+- See [here](/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
 
 We recommend configuring your Postgres source with CDC when:
 
@@ -156,12 +156,12 @@ In your Postgres source, change the replication mode to `Logical Replication (CD
 
 ## Postgres Replication Methods
 
-The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). See [here](https://docs.airbyte.com/integrations/sources/postgres#postgres-replication-methods) for more details.
+The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). See [here](/integrations/sources/postgres#postgres-replication-methods) for more details.
 
 ## Connecting with SSL or SSH Tunnel
 
-See [these instructions](https://docs.airbyte.com/integrations/sources/postgres#connecting-with-ssl-or-ssh-tunneling) to learn more about SSL modes and connecting via SSH tunnel.
+See [these instructions](/integrations/sources/postgres#connecting-with-ssl-or-ssh-tunneling) to learn more about SSL modes and connecting via SSH tunnel.
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
+To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting).

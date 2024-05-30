@@ -10,13 +10,13 @@ With lightning-fast replication speeds of over 10 MB per second, incremental CDC
 
 In [v0.50.31](https://github.com/airbytehq/airbyte-platform/releases/tag/v0.50.31), we also released [versioned Connector Documentation](https://github.com/airbytehq/airbyte/pull/30410), which allows everyone to see the correct version of the documentation for their connector version without needing to upgrade their Airbyte platform version.
 
-We're also always learning and listening to user feedback. We no longer [deduplicate raw tables](https://github.com/airbytehq/airbyte/pull/31520) to further speed up syncs with Destinations V2. We also released a new voting feature on our [docs](https://docs.airbyte.com) that asks how helpful our docs are for you.
+We're also always learning and listening to user feedback. We no longer [deduplicate raw tables](https://github.com/airbytehq/airbyte/pull/31520) to further speed up syncs with Destinations V2. We also released a new voting feature on our [docs](/) that asks how helpful our docs are for you.
 
 This month, we also held our annual Hacktoberfest, from which we have already merged 51 PRs and welcomed 3 new contributors to our community!
 
 ## Platform Releases
 
-- **Enhanced payment options:** Cloud customers can now sign up for [auto-recharging of their balance](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-credits#automatic-reload-of-credits-beta) and can purchase up to 6,000 credits within our application.
+- **Enhanced payment options:** Cloud customers can now sign up for [auto-recharging of their balance](/cloud/managing-airbyte-cloud/manage-credits#automatic-reload-of-credits-beta) and can purchase up to 6,000 credits within our application.
 - **Free historical syncs:** Cloud customers can have more predictability around pricing with free historical syncs for any new connector. Reach out to our Sales team if interested.
 - **Email Notification Recipient** Cloud customers can now designate the recipient of important email notifications about their connectors and syncs.
 

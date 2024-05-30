@@ -4,8 +4,8 @@ Multiple tests suites compose the Airbyte connector testing pyramid
 
 ## Common to all connectors
 
-- [Connectors QA checks](https://docs.airbyte.com/contributing-to-airbyte/resources/qa-checks)
-- [Connector Acceptance tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/)
+- [Connectors QA checks](/contributing-to-airbyte/resources/qa-checks)
+- [Connector Acceptance tests](/connector-development/testing-connectors/connector-acceptance-tests-reference/)
 
 ## Connector specific tests
 

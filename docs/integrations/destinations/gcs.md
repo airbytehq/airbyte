@@ -55,7 +55,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | GCS Region         | string  | See [here](https://cloud.google.com/storage/docs/locations) for all region codes.                                                                                                                                                                                           |
 | HMAC Key Access ID | string  | HMAC key access ID . The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details. |
 | HMAC Key Secret    | string  | The corresponding secret for the access ID. It is a 40-character base-64 encoded string.                                                                                                                                                                                    |
-| Format             | object  | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema).                                                                                                                                               |
+| Format             | object  | Format specific configuration. See below [for details](/integrations/destinations/gcs#output-schema).                                                                                                                                                                       |
 | Part Size          | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize \* 10,000 blocks.                                                                                                                                                       |
 
 Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
@@ -131,7 +131,7 @@ Here is the available compression codecs:
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](/understanding-airbyte/json-avro-conversion).
 
 ### CSV
 
@@ -231,7 +231,7 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](/understanding-airbyte/json-avro-conversion).
 
 ## CHANGELOG
 

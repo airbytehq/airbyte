@@ -26,9 +26,9 @@ This page contains the setup guide and reference information for the [GitHub](ht
 
 ## Supported sync modes
 
-The GitHub source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The GitHub source connector supports the following [sync modes](/cloud/core-concepts/#connection-sync-modes):
 
-- Full Refresh 
+- Full Refresh
 - Incremental
 
 ## Tutorials

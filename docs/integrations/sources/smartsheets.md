@@ -51,7 +51,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 
 ## Supported sync modes
 
-The Smartsheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Smartsheets source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -65,7 +65,7 @@ At the time of writing, the [Smartsheets API rate limit](https://developers.smar
 ## Supported streams
 
 This source provides a single stream per spreadsheet with a dynamic schema, depending on your spreadsheet structure.
-For example, having a spreadsheet `Customers`, the connector would introduce a stream with the same name and properties typed according to Data type map (see [below](https://docs.airbyte.com/integrations/sources/smartsheets/#data-type-map)).
+For example, having a spreadsheet `Customers`, the connector would introduce a stream with the same name and properties typed according to Data type map (see [below](/integrations/sources/smartsheets/#data-type-map)).
 
 Additionallly specific metadata fields related to the sheet or row can be include in the stream, these must be specified in the configuration in order to be included in the data stream
 

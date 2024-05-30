@@ -36,7 +36,7 @@ API Key (which acts as bearer token) is mandate for this connector to work, It c
 
 ## Supported sync modes
 
-The FullStory source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The FullStory source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -68,7 +68,7 @@ FullStory [API reference](https://api.fullstory.com) has v1 at present. The conn
 
 ## Changelog
 
-| Version | Date       | Pull Request                                       | Subject        |
-| :------ | :--------- | :------------------------------------------------- | :------------- |
-| 0.1.1 | 2024-05-20 | [38420](https://github.com/airbytehq/airbyte/pull/38420) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2023-04-25 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |
+| Version | Date       | Pull Request                                             | Subject                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.1.1   | 2024-05-20 | [38420](https://github.com/airbytehq/airbyte/pull/38420) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2023-04-25 | [Init](https://github.com/airbytehq/airbyte/pull/)       | Initial commit                              |

@@ -23,6 +23,7 @@ Connectors built with the connector builder always make HTTP requests, receive t
 When doing HTTP requests, the connector expects the records to be part of the response JSON body. The "Record Selector" component of the stream can be used to configure how records should be extracted from the response body.
 
 The Record Selector component contains a few different levers to configure this extraction:
+
 - Field Path
 - Record Filter
 - Cast Record Fields to Schema Types
@@ -30,11 +31,13 @@ The Record Selector component contains a few different levers to configure this 
 These will be explained below.
 
 ### Field Path
+
 The Field Path feature lets you define a path into the fields of the response to point to the part of the response which should be treated as the record(s).
 
 Below are a few different examples of what this can look like depending on the API.
 
 #### Top-level key pointing to array
+
 Very often, the response body contains an array of records along with some suplementary information (for example meta data for pagination).
 
 For example the ["Most popular" NY Times API](https://developer.nytimes.com/docs/most-popular-product/1/overview) returns the following response body:
@@ -180,25 +183,28 @@ A Field Path with a placeholder `*` selects all children at the current position
 ```
 
 ### Record Filter
+
 In some cases, certain certain records should be excluded from the final output of the connector, which can be accomplished through the Record Filter feature within the Record Selector component.
 
 For example, say your API response looks like this:
+
 ```
 [
   {
     "id": 1,
-    "status": "pending" 
+    "status": "pending"
   },
   {
     "id": 2,
-    "status": "active" 
+    "status": "active"
   },
   {
     "id": 3,
-    "status": "expired" 
+    "status": "expired"
   }
 ]
 ```
+
 and you only want to sync records for which the status is not `expired`.
 
 You can accomplish this by setting the Record Filter to `{{ record.status != 'expired' }}`
@@ -208,9 +214,11 @@ Any records for which this expression evaluates to `true` will be emitted by the
 Note that Record Filter value must be an [interpolated string](/connector-development/config-based/advanced-topics#string-interpolation) with the filtering condition placed inside double curly braces `{{ }}`.
 
 ### Cast Record Fields to Schema Types
+
 Sometimes the type of a field in the record is not the desired type. If the existing field type can be simply cast to the desired type, this can be solved by setting the stream's declared schema to the desired type and enabling `Cast Record Fields to Schema Types`.
 
 For example, say the API response looks like this:
+
 ```
 [
   {
@@ -231,12 +239,15 @@ For example, say the API response looks like this:
   }
 ]
 ```
+
 Notice that the `lat` and `lng` values are strings despite them all being numeric. If you would rather have these fields contain raw number values in your output records, you can do the following:
+
 - In the Declared Schema tab, disable `Automatically import detected schema`
 - Change the `type` of the `lat` and `lng` fields from `string` to `number`
 - Enable `Cast Record Fields to Schema Types` in the Record Selector component
 
 This will cause those fields in the output records to be cast to the type declared in the schema, so the output records will now look like this:
+
 ```
 [
   {
@@ -257,8 +268,8 @@ This will cause those fields in the output records to be cast to the type declar
   }
 ]
 ```
-Note that this casting is performed on a best-effort basis; if you tried to set the `city` field's type to `number` in the schema, for example, it would remain unchanged because those string values cannot be cast to numbers.
 
+Note that this casting is performed on a best-effort basis; if you tried to set the `city` field's type to `number` in the schema, for example, it would remain unchanged because those string values cannot be cast to numbers.
 
 ## Transformations
 
@@ -496,7 +507,7 @@ result in the following schema:
 }
 ```
 
-More strict is always better, but the detected schema is a good default to rely on. See the documentation about [supported data types](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) for JSON schema structures that will be picked up by the Airbyte system.
+More strict is always better, but the detected schema is a good default to rely on. See the documentation about [supported data types](/understanding-airbyte/supported-data-types/) for JSON schema structures that will be picked up by the Airbyte system.
 
 If `Automatically import detected schema` is disabled, and the declared schema deviates from the detected schema, the "Detected schema" tab in the testing panel highlights the differences. It's important to note that differences are not necessarily a problem that needs to be fixed - in some cases the currently loaded set of records in the testing panel doesn't feature all possible cases so the detected schema is too strict. However, if the declared schema is incompatible with the detected schema based on the test records, it's very likely there will be errors when running syncs.
 

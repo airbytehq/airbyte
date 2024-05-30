@@ -333,7 +333,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet
 format. Because the data stream can come from any data source, the Json to Avro conversion process
 has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the
-current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+current limitations [here](/understanding-airbyte/json-avro-conversion).
 
 ## Related tutorial
 
@@ -344,7 +344,7 @@ Delta Lake tables are created. You may want to consult the tutorial on
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                  |
-|:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------- |
 | 2.0.0   | 2024-05-17 | [#37613](https://github.com/airbytehq/airbyte/pull/37613)                                                           | (Private release, not to be used for production) Alpha release of the connector to use Unity Catalog                     |
 | 1.1.2   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846)                                                           | (incompatible with CDK, do not use) Remove duplicate S3 Region                                                           |
 | 1.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)                                                           | (incompatible with CDK, do not use) Add new ap-southeast-3 AWS region                                                    |

@@ -33,7 +33,7 @@ The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their 
 
 ## Supported Sync Modes
 
-The Kyriba source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Kyriba source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental

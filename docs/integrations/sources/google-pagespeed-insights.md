@@ -24,7 +24,7 @@ This page guides you through the process of setting up the Google PageSpeed Insi
 
 ## Supported sync modes
 
-The Google PageSpeed Insights source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google PageSpeed Insights source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 

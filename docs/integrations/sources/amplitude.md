@@ -32,7 +32,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ## Supported sync modes
 
-The Amplitude source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Amplitude source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental

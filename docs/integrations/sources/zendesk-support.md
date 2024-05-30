@@ -74,7 +74,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 ## Supported sync modes
 
-The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Zendesk Support source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -132,7 +132,7 @@ The Zendesk Support source connector supports the following streams:
 The Zendesk Support connector fetches deleted records in the following streams:
 
 | Stream                   | Deletion indicator field |
-|:-------------------------|:-------------------------|
+| :----------------------- | :----------------------- |
 | **Brands**               | `is_deleted`             |
 | **Groups**               | `deleted`                |
 | **Organizations**        | `deleted_at`             |
@@ -163,7 +163,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2.6.5   | 2024-05-23 | [38607](https://github.com/airbytehq/airbyte/pull/38607) | migrate to cursor based pagination in stream `Organization memberships`                                                                                                                                                            |
 | 2.6.4   | 2024-05-20 | [38310](https://github.com/airbytehq/airbyte/pull/38310) | Fix record filter for `Ticket Metrics` stream                                                                                                                                                                                      |
 | 2.6.3   | 2024-05-02 | [36669](https://github.com/airbytehq/airbyte/pull/36669) | Schema descriptions                                                                                                                                                                                                                |

@@ -31,7 +31,7 @@ This is specific to each deployment.
 
 Elasticsearch data types: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
 
-Airbyte data types: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
+Airbyte data types: /understanding-airbyte/supported-data-types/
 
 In Elasticsearch, there is no dedicated array data type.
 Any field can contain zero or more values by default, however,

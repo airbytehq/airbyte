@@ -45,7 +45,7 @@ An API key is required as well as an API application key. See the [Datadog API a
 
 ## Supported sync modes
 
-The Datadog source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Datadog source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |

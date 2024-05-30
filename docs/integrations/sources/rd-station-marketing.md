@@ -17,7 +17,7 @@ RD Station Marketing is the leading Marketing Automation tool in Latin America. 
 
 ## Supported sync modes
 
-The RD Station Marketing source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The RD Station Marketing source connector supports the following [sync modes](/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental (for analytics endpoints)

@@ -3,6 +3,7 @@
 ## Upgrading to 3.0.0
 
 Custom Insights Reports now have updated schema for following breakdowns:
+
 - body_asset
 - call_to_action_asset
 - description_asset
@@ -12,7 +13,7 @@ Custom Insights Reports now have updated schema for following breakdowns:
 - video_asset
 
 | Field                  | Old Type | New Type | Example                                                                                                                           |
-|:-----------------------|:---------|:---------|:----------------------------------------------------------------------------------------------------------------------------------|
+| :--------------------- | :------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------- |
 | `body_asset`           | string   | object   | `{"text": "Body Text", "id": "12653412653"}`                                                                                      |
 | `call_to_action_asset` | string   | object   | `{"name": "Action Name", "id": "12653412653"}`                                                                                    |
 | `description_asset`    | string   | object   | `{"text": "Description", "id": "12653412653"}`                                                                                    |
@@ -21,23 +22,18 @@ Custom Insights Reports now have updated schema for following breakdowns:
 | `title_asset`          | string   | object   | `{"text": "Text", "id": "12653412653" }`                                                                                          |
 | `video_asset`          | string   | object   | `{"video_id": "2412334234", "url": "http://url", "thumbnail_url: "http://url", "video_name": "Video Name", "id": "12653412653" }` |
 
-
-### Refresh affected Custom Insights Report above and clear data if it uses breakdowns 
+### Refresh affected Custom Insights Report above and clear data if it uses breakdowns
 
 1. Select **Connections** in the main navbar.
-    1. Select the connection(s) affected by the update.
-2. Select the **Schema** tab.
-    1. Select **Refresh source schema**.
-    2. Select **OK*
-    3. Select **Save changes** at the bottom of the page.
-:::note
-Any detected schema changes will be listed for your review.
-:::
+   1. Select the connection(s) affected by the update.
+2. Select the **Schema** tab. 1. Select **Refresh source schema**. 2. Select **OK\* 3. Select **Save changes\*\* at the bottom of the page.
+   :::note
+   Any detected schema changes will be listed for your review.
+   :::
 
-3.  Navigate to a connection's **Settings** tab and click **Clear data** to clear all streams, this action will clear data for all streams in the connection. To clear data for a single stream navigate to **Status** tab and click the **three grey dots** next to affected stream and select **Clear data**, do this action for all affected streams in the connection.
+3. Navigate to a connection's **Settings** tab and click **Clear data** to clear all streams, this action will clear data for all streams in the connection. To clear data for a single stream navigate to **Status** tab and click the **three grey dots** next to affected stream and select **Clear data**, do this action for all affected streams in the connection.
 
-For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
-
+For more information on clearing your data in Airbyte, see [this page](/operator-guides/reset).
 
 ## Upgrading to 2.0.0
 
@@ -77,4 +73,4 @@ Any detected schema changes will be listed for your review.
    This will reset the data in your destination and initiate a fresh sync.
    :::
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+For more information on resetting your data in Airbyte, see [this page](/operator-guides/reset).

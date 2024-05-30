@@ -7,10 +7,10 @@
 
 ## Supported sync modes
 
-| Feature           | Supported?\(Yes/No\) | Notes                                                                                          |
-| :---------------- | :------------------- | :--------------------------------------------------------------------------------------------- |
-| Full Refresh Sync | Yes                  | [Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite) |
-| Incremental Sync  | No                   |                                                                                                |
+| Feature           | Supported?\(Yes/No\) | Notes                                                                  |
+| :---------------- | :------------------- | :--------------------------------------------------------------------- |
+| Full Refresh Sync | Yes                  | [Overwrite](/understanding-airbyte/connections/full-refresh-overwrite) |
+| Incremental Sync  | No                   |                                                                        |
 
 ## Supported Streams
 

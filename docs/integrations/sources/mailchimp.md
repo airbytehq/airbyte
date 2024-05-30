@@ -61,7 +61,7 @@ For more information on Mailchimp API Keys, please refer to the [official Mailch
 
 ## Supported streams
 
-The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Mailchimp source connector supports the following streams and [sync modes](/cloud/core-concepts/#connection-sync-mode):
 
 | Stream                                                                                                             | Full Refresh | Incremental |
 | :----------------------------------------------------------------------------------------------------------------- | :----------- | :---------- |

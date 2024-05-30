@@ -12,7 +12,7 @@ demonstrate the following concepts in action:
 - [The Airbyte Specification](../../../understanding-airbyte/airbyte-protocol.md) and the interface
   implemented by a source connector
 - [The AirbyteCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md)
-- [Packaging your connector](https://docs.airbyte.com/connector-development#1.-implement-and-package-the-connector)
+- [Packaging your connector](/connector-development#1.-implement-and-package-the-connector)
 - [Testing your connector](../../testing-connectors/connector-acceptance-tests-reference.md)
 
 :::warning
@@ -114,7 +114,7 @@ touch source.py
 #### Implement the spec operation
 
 The `spec` operation is described in the
-[Airbyte Protocol](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#spec). It's a
+[Airbyte Protocol](/understanding-airbyte/airbyte-protocol/#spec). It's a
 way for the connector to tell Airbyte what user inputs it needs in order to connecto to the source
 (the stock ticker API in our case). Airbyte expects the command to output a connector specification
 in `AirbyteMessage` format.
@@ -255,7 +255,7 @@ if __name__ == "__main__":
 Some notes on the above code:
 
 1. As described in the
-   [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#key-takeaways),
+   [specification](/understanding-airbyte/airbyte-protocol/#key-takeaways),
    Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply
    a JSON string formatted according to the Airbyte Specification. So to "return" a value we use
    `print` to output the return value to stdout.
@@ -275,7 +275,7 @@ python source.py spec
 #### Implementing check connection
 
 The second command to implement is the
-[check operation](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#check)
+[check operation](/understanding-airbyte/airbyte-protocol/#check)
 `check --config <config_name>`, which tells the user whether a config file they gave us is correct.
 In our case, "correct" means they input a valid stock ticker and a correct API key like we declare
 via the `spec` operation.
@@ -526,7 +526,7 @@ With that, we're done implementing the `discover` command.
 #### Implementing the read operation
 
 We've done a lot so far, but a connector ultimately exists to read data! This is where the
-[`read` command](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#read) comes in.
+[`read` command](/understanding-airbyte/airbyte-protocol/#read) comes in.
 The format of the command is:
 
 ```bash
@@ -1006,7 +1006,7 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 ### 4. Test the connector
 
 The minimum requirement for testing your connector is to pass the
-[Connector Acceptance Test](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+[Connector Acceptance Test](/connector-development/testing-connectors/connector-acceptance-tests-reference)
 suite. The connector acceptence test is a blackbox test suite containing a number of tests that
 validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add
 custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are
@@ -1018,7 +1018,7 @@ setup tests for each operation with valid and invalid credentials. Edit
 `acceptance-test-config.yaml` to look as follows:
 
 ```yaml
-# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# See [Connector Acceptance Tests](/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-stock-ticker-api:dev
 acceptance_tests:
@@ -1249,5 +1249,5 @@ contributor now ;\)
 
 ## Additional guides
 
-- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun)
-- [Building a Java Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination)
+- [Building a Python Source](/connector-development/tutorials/cdk-speedrun)
+- [Building a Java Destination](/connector-development/tutorials/building-a-java-destination)

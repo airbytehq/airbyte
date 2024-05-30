@@ -13,9 +13,9 @@ The following pages outline how to:
 1. [Deploy Airbyte Enterprise using Kubernetes](./implementation-guide.md)
 2. [Configure Okta for Single Sign-On (SSO) with Airbyte Self-Managed Self-Managed Enterprise](/access-management/sso.md)
 
-| Feature                   | Description                                                                                                                                                                                                      |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Premium Support           | [Priority assistance](https://docs.airbyte.com/operator-guides/contact-support/#airbyte-enterprise-self-hosted-support) with deploying, managing and upgrading Airbyte or troubleshooting any connection issues. |
-| User Management           | [Okta SSO](/access-management/sso.md) to extend each Airbyte workspace to multiple users                                                                                                                         |
-| Multiple Workspaces       | Ability to create + manage multiple workspaces on one Airbyte instance                                                                                                                                           |
-| Role-Based Access Control | Isolate workspaces from one another with users roles scoped to individual workspaces                                                                                                                             |
+| Feature                   | Description                                                                                                                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Premium Support           | [Priority assistance](/operator-guides/contact-support/#airbyte-enterprise-self-hosted-support) with deploying, managing and upgrading Airbyte or troubleshooting any connection issues. |
+| User Management           | [Okta SSO](/access-management/sso.md) to extend each Airbyte workspace to multiple users                                                                                                 |
+| Multiple Workspaces       | Ability to create + manage multiple workspaces on one Airbyte instance                                                                                                                   |
+| Role-Based Access Control | Isolate workspaces from one another with users roles scoped to individual workspaces                                                                                                     |
