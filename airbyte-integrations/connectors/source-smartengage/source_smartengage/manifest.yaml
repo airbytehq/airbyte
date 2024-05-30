@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /avatars/list
           http_method: GET
         record_selector:
@@ -28,7 +28,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/avatars'
+          $ref: "#/schemas/avatars"
     tags:
       type: DeclarativeStream
       name: tags
@@ -37,11 +37,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tags/list
           http_method: GET
           request_parameters:
-            avatar_id: '{{ stream_slice.avatar_id }}'
+            avatar_id: "{{ stream_slice.avatar_id }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -54,11 +54,11 @@ definitions:
                 parent_key: avatar_id
                 partition_field: avatar_id
                 stream:
-                  $ref: '#/definitions/streams/avatars'
+                  $ref: "#/definitions/streams/avatars"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tags'
+          $ref: "#/schemas/tags"
     custom_fields:
       type: DeclarativeStream
       name: custom_fields
@@ -67,11 +67,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /customfields/list
           http_method: GET
           request_parameters:
-            avatar_id: '{{ stream_slice.avatar_id }}'
+            avatar_id: "{{ stream_slice.avatar_id }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -84,11 +84,11 @@ definitions:
                 parent_key: avatar_id
                 partition_field: avatar_id
                 stream:
-                  $ref: '#/definitions/streams/avatars'
+                  $ref: "#/definitions/streams/avatars"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/custom_fields'
+          $ref: "#/schemas/custom_fields"
     sequences:
       type: DeclarativeStream
       name: sequences
@@ -97,11 +97,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /sequences/list
           http_method: GET
           request_parameters:
-            avatar_id: '{{ stream_slice.avatar_id }}'
+            avatar_id: "{{ stream_slice.avatar_id }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -114,23 +114,23 @@ definitions:
                 parent_key: avatar_id
                 partition_field: avatar_id
                 stream:
-                  $ref: '#/definitions/streams/avatars'
+                  $ref: "#/definitions/streams/avatars"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/sequences'
+          $ref: "#/schemas/sequences"
   base_requester:
     type: HttpRequester
     url_base: https://api.smartengage.com
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/avatars'
-  - $ref: '#/definitions/streams/tags'
-  - $ref: '#/definitions/streams/custom_fields'
-  - $ref: '#/definitions/streams/sequences'
+  - $ref: "#/definitions/streams/avatars"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/sequences"
 
 spec:
   type: Spec
@@ -166,22 +166,22 @@ schemas:
       brand_image:
         type:
           - string
-          - 'null'
+          - "null"
         description: URL to the brand image associated with the avatar
       brand_name:
         type:
           - string
-          - 'null'
+          - "null"
         description: Name of the brand or company related to the avatar
       facebook_page_id:
         type:
           - string
-          - 'null'
+          - "null"
         description: Identifier for the Facebook page linked to the avatar
       user_role:
         type:
           - string
-          - 'null'
+          - "null"
         description: Role or position of the user associated with the avatar
     required:
       - avatar_id
@@ -195,7 +195,7 @@ schemas:
       tag_name:
         type:
           - string
-          - 'null'
+          - "null"
         description: Name or label associated with the tag.
     required:
       - tag_id
@@ -209,7 +209,7 @@ schemas:
       custom_field_name:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name or label associated with the custom field.
     required:
       - custom_field_id
@@ -223,7 +223,7 @@ schemas:
       sequence_name:
         type:
           - string
-          - 'null'
+          - "null"
         description: Name of the sequence
     required:
       - sequence_id
