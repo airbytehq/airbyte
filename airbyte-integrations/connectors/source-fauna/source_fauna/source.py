@@ -21,14 +21,14 @@ from airbyte_cdk.models import (
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
-    StreamDescriptor,
-    TraceType,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
+    StreamDescriptor,
     SyncMode,
-    Type,
+    TraceType,
 )
+from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import Source
 from faunadb import _json
@@ -647,9 +647,7 @@ class SourceFauna(Source):
                         type=MessageType.STATE,
                         state=AirbyteStateMessage(
                             type=AirbyteStateType.STREAM,
-                            stream=AirbyteStreamState(
-                                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state
-                            ),
+                            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
                         ),
                     )
                 elif stream.sync_mode == SyncMode.incremental:
@@ -692,9 +690,7 @@ class SourceFauna(Source):
                         type=MessageType.STATE,
                         state=AirbyteStateMessage(
                             type=AirbyteStateType.STREAM,
-                            stream=AirbyteStreamState(
-                                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state
-                            ),
+                            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
                         ),
                     )
                 else:
@@ -705,9 +701,7 @@ class SourceFauna(Source):
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state
-                    ),
+                    stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
                 ),
             )
             logger.error(e)
