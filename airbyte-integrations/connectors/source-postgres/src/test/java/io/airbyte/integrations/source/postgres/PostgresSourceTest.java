@@ -853,7 +853,7 @@ class PostgresSourceTest {
   }
 
   private static final String EXPECTED_DEFAULT_PARAMS =
-      "prepareThreshold=0&defaultRowFetchSize=1&adaptiveFetch=true&maxResultBuffer=10percent";
+      "prepareThreshold=0&defaultRowFetchSize=1&adaptiveFetch=true&maxResultBuffer=10percent&adaptiveFetchMaximum=1000";
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(
