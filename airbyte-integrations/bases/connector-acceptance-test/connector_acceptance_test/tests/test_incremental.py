@@ -199,7 +199,9 @@ class TestIncremental(BaseTest):
 
             states_with_expected_record_count = self._state_messages_selector(states_1)
             if not states_with_expected_record_count:
-                pytest.fail("Unable to test because there is no suitable state checkpoint, likely due to a zero record count in the states.")
+                pytest.fail(
+                    "Unable to test because there is no suitable state checkpoint, likely due to a zero record count in the states."
+                )
 
             mutating_stream_name_to_per_stream_state = dict()
 
