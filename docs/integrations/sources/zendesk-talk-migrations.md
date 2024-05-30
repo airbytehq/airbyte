@@ -46,7 +46,8 @@ Each instance of the connector must be updated separately. If you have created m
    :::note
    Any detected schema changes will be listed for your review.
    :::
-3. Select **Save changes** at the bottom of the page. 1. Ensure the **Reset affected streams** option is checked.
+3. Select **Save changes** at the bottom of the page. 
+    1. Ensure the **Reset affected streams** option is checked.
    :::note
    Depending on destination type you may not be prompted to reset your data.
    :::
