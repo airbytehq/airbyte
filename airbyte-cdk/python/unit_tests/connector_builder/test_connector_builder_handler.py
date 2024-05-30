@@ -45,6 +45,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, update_secrets
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -53,17 +54,11 @@ _stream_url_base = "https://api.sendgrid.com"
 _stream_options = {"name": _stream_name, "primary_key": _stream_primary_key, "url_base": _stream_url_base}
 _page_size = 2
 
-_A_STATE = [AirbyteStateMessage(
-    type="STREAM",
-    stream=AirbyteStreamState(
-        stream_descriptor=StreamDescriptor(
-            name=_stream_name
-        ),
-        stream_state={
-            "key": "value"
-        }
+_A_STATE = [
+    AirbyteStateMessage(
+        type="STREAM", stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=_stream_name), stream_state={"key": "value"})
     )
-)]
+]
 
 MANIFEST = {
     "version": "0.30.3",
@@ -281,7 +276,9 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
     config["__command"] = command
     source = ManifestDeclarativeSource(MANIFEST)
     limits = TestReadLimits()
-    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"), _A_STATE, limits)
+    resolved_manifest = handle_connector_builder_request(
+        source, command, config, create_configured_catalog("dummy_stream"), _A_STATE, limits
+    )
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -897,3 +894,38 @@ def test_handle_read_external_oauth_request(deployment_mode, token_url, expected
             error_message = output_data["logs"][0]
             assert error_message["level"] == "ERROR"
             assert expected_error in error_message["message"]
+
+
+def test_read_stream_exception_with_secrets():
+    # Define the test parameters
+    config = {"__injected_declarative_manifest": "test_manifest", "api_key": "super_secret_key"}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
+    state = []
+    limits = TestReadLimits()
+
+    # Add the secret to be filtered
+    update_secrets([config["api_key"]])
+
+    # Mock the source
+    mock_source = MagicMock()
+
+    # Patch the handler to raise an exception
+    with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups") as mock_handler:
+        mock_handler.side_effect = Exception("Test exception with secret key: super_secret_key")
+
+        # Call the read_stream function and check for the correct error message
+        response = read_stream(mock_source, config, catalog, state, limits)
+
+        # Check if the error message contains the filtered secret
+        filtered_message = filter_secrets("Test exception with secret key: super_secret_key")
+        assert response.type == Type.TRACE
+        assert filtered_message in response.trace.error.message
+        assert "super_secret_key" not in response.trace.error.message
