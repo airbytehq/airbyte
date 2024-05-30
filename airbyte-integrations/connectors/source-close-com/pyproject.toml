@@ -19,7 +19,7 @@ include = "source_close_com"
 python = "^3.9,<3.12"
 requests = "==2.31.0"
 pendulum = "==2.1.2"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "^1"
 
 [tool.poetry.scripts]
 source-close-com = "source_close_com.run:run"
