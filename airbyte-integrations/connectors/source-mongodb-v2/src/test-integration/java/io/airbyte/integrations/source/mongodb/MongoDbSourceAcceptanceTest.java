@@ -626,10 +626,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private List<AirbyteTraceMessage> filterStatusTraceMessages(final List<AirbyteMessage> messages) {
-    return messages.stream().filter(m ->
-                    m.getType() == Type.TRACE &&
-                            m.getTrace().getType() == AirbyteTraceMessage.Type.STREAM_STATUS).map(AirbyteMessage::getTrace)
-            .collect(Collectors.toList());
+    return messages.stream().filter(m -> m.getType() == Type.TRACE &&
+        m.getTrace().getType() == AirbyteTraceMessage.Type.STREAM_STATUS).map(AirbyteMessage::getTrace)
+        .collect(Collectors.toList());
   }
 
   private void insertData(final String databaseName, final String collectionName, final int numberOfDocuments) {

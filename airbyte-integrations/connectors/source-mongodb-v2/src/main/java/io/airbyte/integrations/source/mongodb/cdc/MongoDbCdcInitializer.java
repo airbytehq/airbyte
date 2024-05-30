@@ -12,6 +12,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
@@ -21,6 +22,7 @@ import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
+import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -29,9 +31,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
-import io.airbyte.protocol.models.v0.*;
-
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.bson.Document;
@@ -168,27 +167,27 @@ public class MongoDbCdcInitializer {
         AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close); // TODO: check here
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = incrementalOnlyStreamsCatalog.getStreams().stream()
-            .filter(stream -> !initialSnapshotStreams.contains(stream))
-            .map(stream -> {
-              LOGGER.info("*** adding STARTED stream for {}/{}", stream.getStream().getNamespace(), stream.getStream().getName());
-              return (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(
-                      new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
-                      AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
-            })
-            .toList();
+        .filter(stream -> !initialSnapshotStreams.contains(stream))
+        .map(stream -> {
+          LOGGER.info("*** adding STARTED stream for {}/{}", stream.getStream().getNamespace(), stream.getStream().getName());
+          return (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(
+              new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+              AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
+        })
+        .toList();
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsCompleteStatusEmitters = incrementalOnlyStreamsCatalog.getStreams().stream()
-            .map(stream -> {
-              LOGGER.info("*** adding COMPLETE stream for {}/{}", stream.getStream().getNamespace(), stream.getStream().getName());
-              return (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(
-                      new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
-                      AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
-            })
-            .toList();
+        .map(stream -> {
+          LOGGER.info("*** adding COMPLETE stream for {}/{}", stream.getStream().getNamespace(), stream.getStream().getName());
+          return (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(
+              new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+              AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
+        })
+        .toList();
 
     return Stream.of(Collections.singletonList(initialSnapshotIterator), cdcStreamsStartStatusEmitters,
-            Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-            cdcStreamsCompleteStatusEmitters).flatMap(Collection::stream).toList();
+        Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+        cdcStreamsCompleteStatusEmitters).flatMap(Collection::stream).toList();
   }
 
   private void logOplogInfo(final MongoClient mongoClient) {
