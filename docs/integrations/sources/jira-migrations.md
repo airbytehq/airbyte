@@ -7,7 +7,7 @@ We're continuously striving to enhance the quality and reliability of our connec
 To gracefully handle these changes for your existing connections, we highly recommend resetting your data before resuming your data syncs with the new version. The **Issues**, **Board Issues** and **Sprint Issues** streams can be manually reset in the following way:
 
 1. Select **Connections** in the main navbar.
-   1.1 Select the connection(s) affected by the update.
+   1. Select the connection(s) affected by the update.
 2. Select the **Schema** tab.
 3. Uncheck all streams except the affected ones.
 4. Select **Save changes** at the bottom of the page.
