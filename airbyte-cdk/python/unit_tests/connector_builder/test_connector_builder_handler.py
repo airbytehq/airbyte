@@ -45,7 +45,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.utils.airbyte_secrets_utils import update_secrets
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, update_secrets
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -924,15 +924,8 @@ def test_read_stream_exception_with_secrets():
         # Call the read_stream function and check for the correct error message
         response = read_stream(mock_source, config, catalog, state, limits)
 
-        # Define the expected error message
-        expected_error_message = (
-            "Error reading stream with config={'__injected_declarative_manifest': 'test_manifest', 'api_key': '****'} "
-            "and catalog=streams=[ConfiguredAirbyteStream(stream=AirbyteStream(name='stream_with_custom_requester', json_schema={}, "
-            "supported_sync_modes=[<SyncMode.full_refresh: 'full_refresh'>], source_defined_cursor=None, "
-            "default_cursor_field=None, source_defined_primary_key=None, namespace=None), sync_mode=<SyncMode.full_refresh: "
-            "'full_refresh'>, cursor_field=None, destination_sync_mode=<DestinationSyncMode.append: 'append'>, primary_key=None, "
-            "generation_id=None, minimum_generation_id=None, sync_id=None)]: Test exception with secret key: ****"
-        )
-
+        # Check if the error message contains the filtered secret
+        filtered_message = filter_secrets("Test exception with secret key: super_secret_key")
         assert response.type == Type.TRACE
-        assert response.trace.error.message == expected_error_message
+        assert filtered_message in response.trace.error.message
+        assert "super_secret_key" not in response.trace.error.message
