@@ -39,11 +39,6 @@ data:
   name: Freshsales
   releaseDate: 2021-11-03
   releaseStage: beta
-  releases:
-    breakingChanges:
-      1.0.0:
-        message: "This version migrates the Freshsales connector to our low-code framework for greater maintainability. It also introduces changes to data types across most streams. You will need to run a reset after upgrading to continue syncing data with the connector."
-        upgradeDeadline: "2023-11-29"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshsales
   tags:
@@ -64,6 +59,4 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
 metadataSpecVersion: "1.0"
