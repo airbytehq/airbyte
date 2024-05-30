@@ -1,13 +1,28 @@
 # Changelog
 
-## 0.89.0
+## 1.1.2
+CDK: upgrade dpath
 
+## 1.1.1
+Fix bug so that RFR streams don't resync successful streams on subsequent attempts
+
+## 1.1.0
+low-code: Add RFR support automatically for non-substreams
+
+## 1.0.1
+File-based CDK: avoid error on empty stream when running discover
+
+## 1.0.0
+Delete deprecated AirbyteLogger, AirbyteSpec, and Authenticators + move public classes to the top level init file. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
+
+## 0.90.0
+Python CDK: Adds HttpClient, ErrorHandler, and related interfaces.
+
+## 0.89.0
+low-code: Remove support for last_records and improve memory usage
 
 ## 0.88.4
 HttpMocker, Adding the delete method.
-
-## 0.88.3
-Add Delete method to HttpMocker
 
 ## 0.88.2
 Fix dependency for pytz

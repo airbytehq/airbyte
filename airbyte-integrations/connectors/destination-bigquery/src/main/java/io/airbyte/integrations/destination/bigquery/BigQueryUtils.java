@@ -4,10 +4,9 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.api.gax.rpc.HeaderProvider;
+import com.google.cloud.RetryOption;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.BigQueryException;
@@ -22,6 +21,7 @@ import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.RangePartitioning;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
@@ -29,7 +29,6 @@ import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
-import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
@@ -40,12 +39,14 @@ import io.airbyte.commons.json.Jsons;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
 
 public class BigQueryUtils {
 
@@ -82,16 +83,6 @@ public class BigQueryUtils {
     } catch (final Exception e) {
       LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
-    }
-  }
-
-  public static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
-                                                  final Set<String> existingSchemas,
-                                                  final String schemaName,
-                                                  final String datasetLocation) {
-    if (!existingSchemas.contains(schemaName)) {
-      getOrCreateDataset(bigquery, schemaName, datasetLocation);
-      existingSchemas.add(schemaName);
     }
   }
 
@@ -185,28 +176,36 @@ public class BigQueryUtils {
    * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
    *         was not successfully created
    */
-  static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
+  public static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
-      final var chunkingColumn = JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
-      final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
-          .setField(chunkingColumn)
+      // Partition by generation ID. This will be useful for when we want to build
+      // hybrid refreshes.
+      final RangePartitioning partitioning = RangePartitioning.newBuilder()
+          .setField(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+          .setRange(RangePartitioning.Range.newBuilder()
+              .setStart(0L)
+              // Bigquery allows a table to have up to 10_000 partitions.
+              .setEnd(10_000L)
+              // Somewhat conservative estimate. This should avoid issues with
+              // users running many merge refreshes.
+              .setInterval(5L)
+              .build())
           .build();
 
       final Clustering clustering = Clustering.newBuilder()
-          .setFields(ImmutableList.of(chunkingColumn))
+          .setFields(ImmutableList.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
           .build();
 
       final StandardTableDefinition tableDefinition =
           StandardTableDefinition.newBuilder()
               .setSchema(schema)
-              .setTimePartitioning(partitioning)
+              .setRangePartitioning(partitioning)
               .setClustering(clustering)
               .build();
       final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
       final Table table = bigquery.getTable(tableInfo.getTableId());
       if (table != null && table.exists()) {
-        // TODO: Handle migration from v1 -> v2
         LOGGER.info("Partitioned table ALREADY EXISTS: {}", tableId);
       } else {
         bigquery.create(tableInfo);
@@ -214,7 +213,8 @@ public class BigQueryUtils {
       }
 
     } catch (final BigQueryException e) {
-      LOGGER.error("Partitioned table was not created: " + tableId, e);
+      LOGGER.error("Partitioned table was not created: {}", tableId, e);
+      throw e;
     }
   }
 
@@ -316,15 +316,39 @@ public class BigQueryUtils {
     if (job != null) {
       AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
       try {
-        LOGGER.info("Waiting for job finish {}. Status: {}", job, job.getStatus());
-        job.waitFor();
-        LOGGER.info("Job finish {} with status {}", job, job.getStatus());
+        LOGGER.info("Waiting for Job {} to finish. Status: {}", job.getJobId(), job.getStatus());
+        // Default totalTimeout is 12 Hours, 30 minutes seems reasonable
+        final Job completedJob = job.waitFor(RetryOption.totalTimeout(Duration.ofMinutes(30)));
+        if (completedJob == null) {
+          // job no longer exists
+          LOGGER.warn("Job {} No longer exists", job.getJobId());
+        } else if (completedJob.getStatus().getError() != null) {
+          // job failed, handle error
+          LOGGER.error("Job {} failed with errors {}", completedJob.getJobId(), completedJob.getStatus().getError().toString());
+          throw new RuntimeException(
+              "Fail to complete a load job in big query, Job id: " + completedJob.getJobId() +
+                  ", with error: " + completedJob.getStatus().getError());
+        } else {
+          // job completed successfully
+          LOGGER.info("Job {} completed successfully, job info {}", completedJob.getJobId(), completedJob);
+        }
       } catch (final BigQueryException e) {
         final String errorMessage = getJobErrorMessage(e.getErrors(), job);
         LOGGER.error(errorMessage);
         throw new BigQueryException(e.getCode(), errorMessage, e);
       }
+    } else {
+      LOGGER.warn("Received null value for Job, nothing to waitFor");
     }
+  }
+
+  private static String getJobErrorMessage(List<BigQueryError> errors, Job job) {
+    if (errors == null || errors.isEmpty()) {
+      return StringUtils.EMPTY;
+
+    }
+    return String.format("An error occurred during execution of job: %s, \n For more details see Big Query Error collection: %s:", job,
+        errors.stream().map(BigQueryError::toString).collect(Collectors.joining(",\n ")));
   }
 
   public static HeaderProvider getHeaderProvider() {

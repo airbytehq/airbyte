@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_weaviate.config import ConfigModel
 from destination_weaviate.destination import DestinationWeaviate
@@ -19,7 +19,7 @@ class TestDestinationWeaviate(unittest.TestCase):
             "indexing": {"host": "https://my-cluster.weaviate.network", "auth": {"mode": "no_auth"}},
         }
         self.config_model = ConfigModel.parse_obj(self.config)
-        self.logger = AirbyteLogger()
+        self.logger = logging.getLogger("airbyte")
 
     @patch("destination_weaviate.destination.WeaviateIndexer")
     @patch("destination_weaviate.destination.create_from_config")
