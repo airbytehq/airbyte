@@ -37,7 +37,7 @@ For supported destinations, and depending on the sync mode you have selected, th
 
 ## Refresh and Remove Records
 
-Refresh and Remove Records Syncs will only display data in the destination’s final tables that was newly synced since the refresh was initiated. This is the simplest type of refresh, and leads to table mirroring, if you are using an overwrite sync mode.
+`Refresh and Remove Records Syncs` will only display data in the destination’s final tables that was newly synced since the refresh was initiated. This is the simplest type of `Refresh Sync`, and leads to table mirroring, if you are using an overwrite sync mode.
 
 :::warning
 
@@ -47,11 +47,11 @@ Not all sources keep their history forever. If you perform a Refresh and Remove 
 
 ## Refresh and Retain Records
 
-Refresh and Retain Records Syncs keep the records you had previously, and merge in the new data from this sync onward with the data previously stored in your destination. Using a Refresh and Retain Records Sync with a Deduplicated Sync mode is the best way to recover from an unreliable (e.g. lossy or buggy) source.
+`Refresh and Retain Records Syncs` keep the records you had previously, and merge in the new data from this sync onward with the data previously stored in your destination. Using a `Refresh and Retain Records Sync` with a Deduplicated Sync mode is the best way to recover from an unreliable (e.g. lossy or buggy) source.
 
 :::warning
 
-Refresh and Retain Records Syncs will lead to increased data storage in your destination (as the old and new copies of your data are both stored). This may also lead to increased compute costs and slower syncs, depending on your destination.
+`Refresh and Retain Records Syncs` will lead to increased data storage in your destination (as the old and new copies of your data are both stored). This may also lead to increased compute costs and slower syncs, depending on your destination.
 
 :::
 
