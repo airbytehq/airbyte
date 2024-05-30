@@ -19,11 +19,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: users
           http_method: GET
           request_headers:
-            x-api-key: '{{ config[''api_key''] }}'
+            x-api-key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -36,11 +36,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''next_page''] }}'
+            cursor_value: "{{ last_record['next_page'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     leads:
       type: DeclarativeStream
       name: leads
@@ -49,11 +49,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: leads
           http_method: GET
           request_headers:
-            x-api-key: '{{ config[''api_key''] }}'
+            x-api-key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -67,11 +67,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             extractorPath: leads
-            cursor_value: '{{ last_record[''next_page''] }}'
+            cursor_value: "{{ last_record['next_page'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/leads'
+          $ref: "#/schemas/leads"
     campaigns:
       type: DeclarativeStream
       name: campaigns
@@ -80,11 +80,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: campaigns
           http_method: GET
           request_headers:
-            x-api-key: '{{ config[''api_key''] }}'
+            x-api-key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -98,19 +98,19 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             extractorPath: campaigns
-            cursor_value: '{{ last_record[''next_page''] }}'
+            cursor_value: "{{ last_record['next_page'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaigns'
+          $ref: "#/schemas/campaigns"
   base_requester:
     type: HttpRequester
     url_base: https://api.persistiq.com/v1/
 
 streams:
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/leads'
-  - $ref: '#/definitions/streams/campaigns'
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/leads"
+  - $ref: "#/definitions/streams/campaigns"
 
 spec:
   type: Spec
@@ -144,11 +144,11 @@ schemas:
     properties:
       activated:
         type:
-          - 'null'
+          - "null"
           - boolean
       default_mailbox_id:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
@@ -159,11 +159,11 @@ schemas:
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       salesforce_id:
         type:
-          - 'null'
+          - "null"
           - string
   leads:
     type: object
@@ -172,121 +172,121 @@ schemas:
     properties:
       bounced:
         type:
-          - 'null'
+          - "null"
           - boolean
       creator_id:
         type:
-          - 'null'
+          - "null"
           - string
       data:
         type: object
         properties:
           address:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           company_name:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
             format: email
           facebook:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           industry:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           linkedin:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           salesforce_id:
             type:
-              - 'null'
+              - "null"
               - string
           snippet:
             type:
-              - 'null'
+              - "null"
               - string
           snippet1:
             type:
-              - 'null'
+              - "null"
               - string
           snippet2:
             type:
-              - 'null'
+              - "null"
               - string
           snippet3:
             type:
-              - 'null'
+              - "null"
               - string
           snippet4:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           title:
             type:
-              - 'null'
+              - "null"
               - string
           twitch_name:
             type:
-              - 'null'
+              - "null"
               - string
           twitter:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
           - string
       last_sent_at:
         type:
-          - 'null'
+          - "null"
           - string
       optedout:
         type:
-          - 'null'
+          - "null"
           - boolean
       owner_id:
         type:
           - string
       replied_count:
         type:
-          - 'null'
+          - "null"
           - integer
       sent_count:
         type:
-          - 'null'
+          - "null"
           - integer
       status:
         type:
-          - 'null'
+          - "null"
           - string
   campaigns:
     type: object
@@ -295,58 +295,58 @@ schemas:
     properties:
       creator:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           email:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       stats:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           prospects_bounced:
             type:
-              - 'null'
+              - "null"
               - integer
           prospects_contacted:
             type:
-              - 'null'
+              - "null"
               - integer
           prospects_opened:
             type:
-              - 'null'
+              - "null"
               - integer
           prospects_optedout:
             type:
-              - 'null'
+              - "null"
               - integer
           prospects_reached:
             type:
-              - 'null'
+              - "null"
               - integer
           prospects_replied:
             type:
-              - 'null'
+              - "null"
               - integer
           total_contacted:
             type:
-              - 'null'
+              - "null"
               - integer
