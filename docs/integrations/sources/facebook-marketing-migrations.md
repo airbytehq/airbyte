@@ -31,7 +31,7 @@ Custom Insights Reports now have updated schema for following breakdowns:
    Any detected schema changes will be listed for your review.
    :::
 
-3. Navigate to a connection's **Settings** tab and click **Clear data** to clear all streams, this action will clear data for all streams in the connection. To clear data for a single stream navigate to **Status** tab and click the **three grey dots** next to affected stream and select **Clear data**, do this action for all affected streams in the connection.
+3. Navigate to a connection's **Settings** tab and click **Clear data** to clear all streams. This action will clear data for all streams in the connection. To clear data for a single stream navigate to the **Status** tab,  click the **three grey dots** next to the affected stream, and select **Clear data**. Do this for all affected streams in the connection.
 
 For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
 
