@@ -52,7 +52,7 @@ Each instance of the connector must be updated separately. If you have created m
 ### Refresh affected schemas and reset data
 
 1. Select **Connections** in the main nav bar.
-   1.1 Select the connection(s) affected by the update.
+   1. Select the connection(s) affected by the update.
 2. Select the **Schema** tab.
 3. Uncheck all streams except the affected ones.
 4. Select **Save changes** at the bottom of the page.
