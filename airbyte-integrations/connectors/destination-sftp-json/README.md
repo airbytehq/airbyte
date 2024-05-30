@@ -1,7 +1,7 @@
-# Sftp-Json source connector
+# Sftp-Json destination connector
 
 
-This is the repository for the Sftp-Json source connector, written in Python.
+This is the repository for the Sftp-Json destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/sftp-json).
 
 ## Local development
@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run destination-sftp-json spec
 poetry run destination-sftp-json check --config secrets/config.json
 poetry run destination-sftp-json discover --config secrets/config.json
-poetry run destination-sftp-json read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run destination-sftp-json write --config secrets/config.json
 ```
 
 ### Running unit tests
