@@ -622,8 +622,7 @@ class ModelToComponentFactory:
                 and model_incremental_sync.end_datetime
             ):
                 raise ValueError("Data Feed option should be selected")
-        else:
-            return None
+        return None
 
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs: Any) -> DeclarativeStream:
         # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
