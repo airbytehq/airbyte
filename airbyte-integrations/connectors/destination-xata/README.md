@@ -1,7 +1,7 @@
-# Xata source connector
+# Xata destination connector
 
 
-This is the repository for the Xata source connector, written in Python.
+This is the repository for the Xata destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/xata).
 
 ## Local development
@@ -29,8 +29,7 @@ See `sample_files/sample_config.json` for a sample config file.
 ```
 poetry run destination-xata spec
 poetry run destination-xata check --config secrets/config.json
-poetry run destination-xata discover --config secrets/config.json
-poetry run destination-xata read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run destination-xata write --config secrets/config.json
 ```
 
 ### Running unit tests
