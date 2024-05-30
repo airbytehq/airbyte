@@ -1,7 +1,7 @@
-# Cumulio source connector
+# Cumulio destination connector
 
 
-This is the repository for the Cumulio source connector, written in Python.
+This is the repository for the Cumulio destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/cumulio).
 
 ## Local development
@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run destination-cumulio spec
 poetry run destination-cumulio check --config secrets/config.json
 poetry run destination-cumulio discover --config secrets/config.json
-poetry run destination-cumulio read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run destination-cumulio write --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Running unit tests
