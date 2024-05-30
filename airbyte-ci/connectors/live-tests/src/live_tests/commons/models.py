@@ -178,10 +178,9 @@ class ConnectorUnderTest:
         cls: type[ConnectorUnderTest],
         dagger_client: dagger.Client,
         image_name: str,
-        is_ci: bool,
         target_or_control: TargetOrControl,
     ) -> ConnectorUnderTest:
-        container = await get_connector_container(dagger_client, image_name, is_ci, target_or_control == target_or_control.TARGET)
+        container = await get_connector_container(dagger_client, image_name)
         return cls(image_name, container, target_or_control)
 
 
