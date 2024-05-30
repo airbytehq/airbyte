@@ -90,8 +90,6 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
     Args:
         dagger_client (dagger.Client): The dagger client to use to import the connector image
         image_name_with_tag (str): The docker image name and tag of the connector image to test
-        is_ci (bool): Whether the tests are being run with airbyte-ci (locally or in GHA)
-        is_target (bool): Whether the container to get is the target container
 
     Returns:
         dagger.Container: The dagger container for the connector image to test
@@ -99,7 +97,7 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
     # If a container_id.txt file is available, we'll use it to load the connector container
     # We use a txt file as container ids can be too long to be passed as env vars
     # It's used for dagger-in-dagger use case with airbyte-ci, when the connector container is built via an upstream dagger operation
-    container_id_path = Path(f"/tmp/{image_name_with_tag}_container_id.txt")
+    container_id_path = Path(f"/tmp/{image_name_with_tag.split(':')[1]}_container_id.txt")
     if container_id_path.exists():
         return await get_container_from_id(dagger_client, container_id_path.read_text())
 
