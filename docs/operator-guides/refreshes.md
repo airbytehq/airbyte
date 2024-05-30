@@ -89,21 +89,21 @@ Consider the following example. You are extracting data into your data warehouse
 
 | year_month (pk) | total_sales | \_airbyte_extracted_at | \_airbyte_generation_id | \_airbyte_meta                 | \_airbyte_raw_id |
 | --------------- | ----------- | ---------------------- | ----------------------- | ------------------------------ | ---------------- |
-| 2024-01         | $100        | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | aaa-aaa          |
-| 2024-02         | $200        | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | bbb-bbb          |
-| 2024-04         | $400        | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | ccc-ccc          |
+| 2024-01         | $100        | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | aaa-aaa          |
+| 2024-02         | $200        | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | bbb-bbb          |
+| 2024-04         | $400        | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | ccc-ccc          |
 
 You decide to do a Refresh and Retain History Sync, and now have the missing row
 
 | year_month (pk) | total_sales | \_airbyte_extracted_at | \_airbyte_generation_id | \_airbyte_meta                 | \_airbyte_raw_id |
 | --------------- | ----------- | ---------------------- | ----------------------- | ------------------------------ | ---------------- |
-| 2024-01         | $100        | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | aaa-aaa          |
-| 2024-02         | $300        | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | bbb-bbb          |
-| 2024-04         | $400        | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | ccc-ccc          |
-| 2024-01         | $100        | 2024-01-02 12:00:00    | 2                       | `{ changes: [], sync_id: 2, }` | ddd-ddd          |
-| 2024-02         | $200        | 2024-01-02 12:00:00    | 2                       | `{ changes: [], sync_id: 2, }` | eee-eee          |
-| 2024-03         | $300        | 2024-01-02 12:00:00    | 2                       | `{ changes: [], sync_id: 2, }` | fff-fff          |
-| 2024-04         | $400        | 2024-01-02 12:00:00    | 2                       | `{ changes: [], sync_id: 2, }` | ggg-ggg          |
+| 2024-01         | $100        | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | aaa-aaa          |
+| 2024-02         | $300        | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | bbb-bbb          |
+| 2024-04         | $400        | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | ccc-ccc          |
+| 2024-01         | $100        | 2024-01-02 12:00:00    | 1                       | `{ changes: [], sync_id: 2, }` | ddd-ddd          |
+| 2024-02         | $200        | 2024-01-02 12:00:00    | 1                       | `{ changes: [], sync_id: 2, }` | eee-eee          |
+| 2024-03         | $300        | 2024-01-02 12:00:00    | 1                       | `{ changes: [], sync_id: 2, }` | fff-fff          |
+| 2024-04         | $400        | 2024-01-02 12:00:00    | 1                       | `{ changes: [], sync_id: 2, }` | ggg-ggg          |
 
 It is now possible to compute the different total values of `sum(total_sales)` for _each generation_, and then if they are different, to look for records which didn’t exist before and after the reset, in different generations. If you aren’t using an append sync mode, the data for both the previous and current generations will be retained in your destination’s raw tables, but not displayed in the final tables. A similar analysis could be performed looking for records which exist in the current generations, but not the previous.
 
@@ -113,16 +113,16 @@ Another example of using generation Id: You are extracting data into your data w
 
 | user_id (pk) | name   | \_airbyte_extracted_at | \_airbyte_generation_id | \_airbyte_meta                 | \_airbyte_raw_id |
 | ------------ | ------ | ---------------------- | ----------------------- | ------------------------------ | ---------------- |
-| 1            | Evan   | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | aaa-aaa          |
-| 2            | Davin  | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | bbb-bbb          |
-| 3            | Benoit | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | ccc-ccc          |
+| 1            | Evan   | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | aaa-aaa          |
+| 2            | Davin  | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | bbb-bbb          |
+| 3            | Benoit | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | ccc-ccc          |
 
 Time passes, and you opt to do a Refresh and Remove History Sync to see if any user was removed in the source. Your final table now looks like:
 
 | user_id (pk) | name   | \_airbyte_extracted_at | \_airbyte_generation_id | \_airbyte_meta                 | \_airbyte_raw_id |
 | ------------ | ------ | ---------------------- | ----------------------- | ------------------------------ | ---------------- |
-| 1            | Evan   | 2024-02-02 12:00:00    | 2                       | `{ changes: [], sync_id: 2, }` | ddd-ddd          |
-| 2            | Davin  | 2024-01-01 12:00:00    | 1                       | `{ changes: [], sync_id: 1, }` | bbb-bbb          |
-| 3            | Benoit | 2024-02-02 12:00:00    | 2                       | `{ changes: [], sync_id: 2, }` | eee-eee          |
+| 1            | Evan   | 2024-02-02 12:00:00    | 1                       | `{ changes: [], sync_id: 2, }` | ddd-ddd          |
+| 2            | Davin  | 2024-01-01 12:00:00    | 0                       | `{ changes: [], sync_id: 1, }` | bbb-bbb          |
+| 3            | Benoit | 2024-02-02 12:00:00    | 1                       | `{ changes: [], sync_id: 2, }` | eee-eee          |
 
 Notice that user #2’s latest entry doesn’t belong to the current (e.g. `max(_airbyte_generation_id)`) generation. This informs you that the source no longer includes a record for this primary key, and it has been deleted. In your downstream tables or analysis, you can opt to exclude this record.
