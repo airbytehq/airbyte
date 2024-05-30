@@ -198,6 +198,9 @@ class TestIncremental(BaseTest):
                 continue
 
             states_with_expected_record_count = self._state_messages_selector(states_1)
+            if not states_with_expected_record_count:
+                pytest.fail("Unable to test because there is no suitable state checkpoint, likely due to a zero record count in the states.")
+
             mutating_stream_name_to_per_stream_state = dict()
 
             for idx, state_message_data in enumerate(states_with_expected_record_count):
@@ -269,10 +272,6 @@ class TestIncremental(BaseTest):
         """
         Validates a list of state messages to ensure that consecutive messages with the same stream state are represented by only the first message, while subsequent duplicates are ignored.
         """
-        # If there is only one state message or less, the list is considered to be unique
-        if len(states) <= 1:
-            return states
-
         current_idx = 0
         unique_state_messages = []
 
