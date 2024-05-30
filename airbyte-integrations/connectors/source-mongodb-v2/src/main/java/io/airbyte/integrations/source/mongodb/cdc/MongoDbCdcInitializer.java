@@ -168,12 +168,9 @@ public class MongoDbCdcInitializer {
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = incrementalOnlyStreamsCatalog.getStreams().stream()
         .filter(stream -> !initialSnapshotStreams.contains(stream))
-        .map(stream -> {
-          LOGGER.info("*** adding STARTED stream for {}/{}", stream.getStream().getNamespace(), stream.getStream().getName());
-          return (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(
-              new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
-              AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
-        })
+        .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(
+            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
         .toList();
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsCompleteStatusEmitters = incrementalOnlyStreamsCatalog.getStreams().stream()
