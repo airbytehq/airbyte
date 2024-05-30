@@ -266,7 +266,7 @@ For example, to set up CDC for databases, a user must create logical replication
 
 ### External Documentation
 
-This section is concerned with the external-facing documentation of a connector that goes in [https://docs.airbyte.com](https://docs.airbyte.com) e.g: [this one](/integrations/sources/amazon-seller-partner)
+This section is concerned with the external-facing documentation of a connector that goes in [https://docs.airbyte.com](/) e.g: [this one](/integrations/sources/amazon-seller-partner)
 
 **Documentation should communicate persona-impacting behaviors**
 

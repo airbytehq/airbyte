@@ -10,7 +10,7 @@ With lightning-fast replication speeds of over 10 MB per second, incremental CDC
 
 In [v0.50.31](https://github.com/airbytehq/airbyte-platform/releases/tag/v0.50.31), we also released [versioned Connector Documentation](https://github.com/airbytehq/airbyte/pull/30410), which allows everyone to see the correct version of the documentation for their connector version without needing to upgrade their Airbyte platform version.
 
-We're also always learning and listening to user feedback. We no longer [deduplicate raw tables](https://github.com/airbytehq/airbyte/pull/31520) to further speed up syncs with Destinations V2. We also released a new voting feature on our [docs](https://docs.airbyte.com) that asks how helpful our docs are for you.
+We're also always learning and listening to user feedback. We no longer [deduplicate raw tables](https://github.com/airbytehq/airbyte/pull/31520) to further speed up syncs with Destinations V2. We also released a new voting feature on our [docs](/) that asks how helpful our docs are for you.
 
 This month, we also held our annual Hacktoberfest, from which we have already merged 51 PRs and welcomed 3 new contributors to our community!
 
