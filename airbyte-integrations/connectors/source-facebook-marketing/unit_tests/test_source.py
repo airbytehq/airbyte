@@ -28,6 +28,7 @@ from .utils import command_check
 def config_fixture(requests_mock):
     config = {
         "account_ids": ["123"],
+        "access_token": "ACCESS_TOKEN",
         "credentials": {
             "auth_type": "Service",
             "access_token": "ACCESS_TOKEN",

@@ -131,10 +131,9 @@ class MigrateSecretsPathInConnector:
     Starting from `2.2.0`, the `client_id`, `client_secret` and `access_token` will be placed at `credentials` path.
     """
 
-    message_repository: MessageRepository = InMemoryMessageRepository()
 
     @classmethod
-    def should_migrate(cls, config: Mapping[str, Any]) -> bool:
+    def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
         This method determines whether the config should be migrated to nest existing fields at credentials.
         It is assumed if credentials does not exist on configuration, `client_id`, `client_secret` and `access_token` exists on root path.
@@ -160,41 +159,40 @@ class MigrateSecretsPathInConnector:
             # read the existing config
             config = source.read_config(config_path)
             # migration check
-            if cls.should_migrate(config):
-                cls.emit_control_message(
-                    cls.modify_and_save(config_path, source, config),
+            if cls._should_migrate(config):
+                cls._emit_control_message(
+                    cls._modify_and_save(config_path, source, config),
                 )
 
     @classmethod
-    def transform(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _transform(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         # transform the config
         if "credentials" not in config:
-            config["credentials"] = {}
+            config["credentials"] = {
+                "auth_type": "Service",
+            }
         if "access_token" in config:
-            config["credentials"]["auth_type"] = "Service"
-            config["credentials"]["access_token"] = config.pop("access_token")
+            config["credentials"]["access_token"] = config.get("access_token")
         if "client_id" in config:
             config["credentials"]["auth_type"] = "Client"
-            config["credentials"]["client_id"] = config.pop("client_id")
+            config["credentials"]["client_id"] = config.get("client_id")
         if "client_secret" in config:
             config["credentials"]["auth_type"] = "Client"
-            config["credentials"]["client_secret"] = config.pop("client_secret")
+            config["credentials"]["client_secret"] = config.get("client_secret")
         # return transformed config
         return config
 
     @classmethod
-    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
         # modify the config
-        migrated_config = cls.transform(config)
+        migrated_config = cls._transform(config)
         # save the config
         source.write_config(migrated_config, config_path)
         # return modified config
         return migrated_config
 
     @classmethod
-    def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
+    def _emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
         # add the Airbyte Control Message to message repo
-        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
-        # emit the Airbyte Control Message from message queue to stdout
-        for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+        print(create_connector_config_control_message(migrated_config).json(exclude_unset=True))
+

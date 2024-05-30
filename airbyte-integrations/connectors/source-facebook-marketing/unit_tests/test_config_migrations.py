@@ -197,13 +197,9 @@ class TestMigrateSecretsPathInConnector:
         credentials = test_migrated_config["credentials"]
         assert "access_token" in credentials
         # check the migration should be skipped, once already done
-        assert not migration_instance.should_migrate(test_migrated_config)
+        assert not migration_instance._should_migrate(test_migrated_config)
         # load the old custom reports VS migrated
         assert original_config["access_token"] == credentials["access_token"]
-        # test CONTROL MESSAGE was emitted
-        control_msg = migration_instance.message_repository._message_queue[0]
-        assert control_msg.type == Type.CONTROL
-        assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
         # revert the test_config to the starting point
         self.revert_migration(self.OLD_TEST_CONFIG_PATH_ACCESS_TOKEN)
     
@@ -221,23 +217,19 @@ class TestMigrateSecretsPathInConnector:
         assert "client_id" in credentials
         assert "client_secret" in credentials
         # check the migration should be skipped, once already done
-        assert not migration_instance.should_migrate(test_migrated_config)
+        assert not migration_instance._should_migrate(test_migrated_config)
         # load the old custom reports VS migrated
         assert original_config["client_id"] == credentials["client_id"]
         assert original_config["client_secret"] == credentials["client_secret"]
-        # test CONTROL MESSAGE was emitted
-        control_msg = migration_instance.message_repository._message_queue[0]
-        assert control_msg.type == Type.CONTROL
-        assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
         # revert the test_config to the starting point
         self.revert_migration(self.OLD_TEST_CONFIG_PATH_CLIENT)
 
     def test_should_not_migrate_new_client_config(self):
         new_config = load_config(self.NEW_TEST_CONFIG_PATH_CLIENT)
         migration_instance = MigrateSecretsPathInConnector()
-        assert not migration_instance.should_migrate(new_config)
+        assert not migration_instance._should_migrate(new_config)
     
     def test_should_not_migrate_new_access_token_config(self):
         new_config = load_config(self.NEW_TEST_CONFIG_PATH_ACCESS_TOKEN)
         migration_instance = MigrateSecretsPathInConnector()
-        assert not migration_instance.should_migrate(new_config)
+        assert not migration_instance._should_migrate(new_config)

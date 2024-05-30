@@ -8778,37 +8778,12 @@
               "examples": ["2017-01-26T00:00:00Z"],
               "type": "string"
             },
-            "credentials": {
-              "title": "authentication credentials",
-              "description": "",
-              "type": "object",
-              "properties": {
-                "access_token": {
-                  "title": "Access Token",
-                  "description": "The value of the generated access token. From your App\u2019s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
-                  "order": 3,
-                  "airbyte_secret": true,
-                  "type": "string"
-                },
-                "client_id": {
-                  "title": "Client Id",
-                  "description": "The Client Id for your OAuth app",
-                  "airbyte_secret": true,
-                  "type": "string"
-                },
-                "client_secret": {
-                  "title": "Client Secret",
-                  "description": "The Client Secret for your OAuth app",
-                  "airbyte_secret": true,
-                  "type": "string"
-                },
-                "auth_type": {
-                  "title": "Auth Type",
-                  "description": "The type of authentication to use. If you are using an OAuth app, select 'oauth'. If you are using an access token, select 'access_token'.",
-                  "enum": ["Service", "Client"],
-                  "type": "string"
-                }
-              }
+            "access_token": {
+              "title": "Access Token",
+              "description": "The value of the generated access token. From your App’s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
+              "order": 3,
+              "airbyte_secret": true,
+              "type": "string"
             },
             "include_deleted": {
               "title": "Include Deleted Campaigns, Ads, and AdSets",

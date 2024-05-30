@@ -181,6 +181,18 @@ class ConnectorConfig(BaseConfig):
         min_items=1,
     )
 
+    access_token: str = Field(
+        title="Access Token",
+        order=1,
+        description=(
+            "The value of the generated access token. "
+            'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+            'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
+        ),
+        airbyte_secret=True,
+    )
+
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
         title="Authentication",
         description="Credentials for connecting to the Facebook Marketing API",
@@ -290,5 +302,17 @@ class ConnectorConfig(BaseConfig):
     action_breakdowns_allow_empty: bool = Field(
         description="Allows action_breakdowns to be an empty list",
         default=True,
+        airbyte_hidden=True,
+    )
+
+    client_id: Optional[str] = Field(
+        description="The Client Id for your OAuth app",
+        airbyte_secret=True,
+        airbyte_hidden=True,
+    )
+
+    client_secret: Optional[str] = Field(
+        description="The Client Secret for your OAuth app",
+        airbyte_secret=True,
         airbyte_hidden=True,
     )

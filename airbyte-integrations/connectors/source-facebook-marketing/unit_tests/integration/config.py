@@ -25,6 +25,7 @@ class ConfigBuilder:
     def __init__(self) -> None:
         self._config: MutableMapping[str, Any] = {
             "account_ids": [ACCOUNT_ID],
+            "access_token": ACCESS_TOKEN,
             "credentials": {
                 "auth_type": "Service",
                 "access_token": ACCESS_TOKEN,
