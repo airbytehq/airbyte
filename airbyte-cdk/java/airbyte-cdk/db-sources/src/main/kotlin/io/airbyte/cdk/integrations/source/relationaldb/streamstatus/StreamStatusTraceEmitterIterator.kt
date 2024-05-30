@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.source.relationaldb.streamstatus
 
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage
-import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -22,10 +21,6 @@ class StreamStatusTraceEmitterIterator(private val statusHolder: AirbyteStreamSt
 
     override fun next(): AirbyteMessage {
         emitted = true
-        LOGGER.info(
-            "*** Emitting stream status message: {}",
-            Jsons.serialize(statusHolder.toTraceMessage())
-        )
         return makeStreamStatusTraceAirbyteMessage(statusHolder)
     }
 
