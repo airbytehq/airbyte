@@ -34,6 +34,6 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
-| 0.1.2 | 2024-05-31 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Make compatible with the builder |
+| 0.1.2 | 2024-05-31 | [38793](https://github.com/airbytehq/airbyte/pull/38793) | Make compatible with the builder |
 | 0.1.1 | 2024-05-21 | [38531](https://github.com/airbytehq/airbyte/pull/38531) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-10-31 | [18739](https://github.com/airbytehq/airbyte/pull/18739) | 🎉 New Source: CallRail |
