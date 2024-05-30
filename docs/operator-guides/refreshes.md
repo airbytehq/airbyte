@@ -47,7 +47,7 @@ Not all sources keep their history forever. If you perform a Refresh and Remove 
 
 ## Refresh and Retain Records
 
-Refresh and Retain Records Syncs keep the records you had previously, and merge in the new data from this sync onward with the data previously stored in your destination. Using a Refresh and Retain Records Sync with a Deduplicated Sync mode is the best way to recover from an unreliable source.
+Refresh and Retain Records Syncs keep the records you had previously, and merge in the new data from this sync onward with the data previously stored in your destination. Using a Refresh and Retain Records Sync with a Deduplicated Sync mode is the best way to recover from an unreliable (e.g. lossy or buggy) source.
 
 :::warning
 
