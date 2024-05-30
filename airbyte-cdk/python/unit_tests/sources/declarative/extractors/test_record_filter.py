@@ -59,16 +59,16 @@ def test_record_filter(filter_template: str, records: List[Mapping], expected_re
 
 
 @pytest.mark.parametrize(
-    "stream_state, record_filter_expression, count_expected_records",
+    "stream_state, record_filter_expression, expected_record_ids",
     [
-        ({}, None, 2),
-        ({"created_at": "2021-01-03"}, None, 1),
-        ({}, "{{ record['id'] % 2 == 1 }}", 1),
+        ({}, None, [2, 3]),
+        ({"created_at": "2021-01-03"}, None, [3]),
+        ({}, "{{ record['id'] % 2 == 1 }}", [3]),
     ],
     ids=["no_stream_state_no_record_filter", "with_stream_state_no_record_filter", "no_stream_state_with_record_filter"]
 )
 def test_client_side_record_filter_decorator_no_parent_stream(stream_state: Optional[Mapping], record_filter_expression: str,
-                                                              count_expected_records: int):
+                                                              expected_record_ids: List[int]):
     records_to_filter = [
         {"id": 1, "created_at": "2020-01-03"},
         {"id": 2, "created_at": "2021-01-03"},
@@ -98,7 +98,7 @@ def test_client_side_record_filter_decorator_no_parent_stream(stream_state: Opti
         record_filter_decorator.filter_records(records=records_to_filter, stream_state=stream_state, stream_slice={}, next_page_token=None)
     )
 
-    assert len(filtered_records) == count_expected_records
+    assert [x.get("id") for x in filtered_records] == expected_record_ids
 
 
 @pytest.mark.parametrize(
