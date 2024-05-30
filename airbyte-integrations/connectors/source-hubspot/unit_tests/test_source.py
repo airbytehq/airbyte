@@ -716,12 +716,14 @@ def test_get_granted_scopes(requests_mock, mocker):
 
 def test_get_granted_scopes_retry(requests_mock, mocker):
     authenticator = mocker.Mock()
-    authenticator.get_access_token.return_value = "the-token"
-    expected_scopes = ["a", "b", "c"]
+    expected_token = "the-token"
+    authenticator.get_access_token.return_value = expected_token
+    mock_url = f"https://api.hubapi.com/oauth/v1/access-tokens/{expected_token}"
     response = [
-        {"json": {"scopes": expected_scopes}, "status_code": 500},
+        {"json": {}, "status_code": 500},
     ]
-    requests_mock.register_uri("GET", "https://api.hubapi.com/oauth/v1/access-tokens/the-token", response)
+
+    requests_mock.register_uri("GET", mock_url, response)
     actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
     assert len(requests_mock.request_history) > 1
 
