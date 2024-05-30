@@ -117,7 +117,7 @@ definitions:
   locations_stream:
     $ref: "#/definitions/base_stream"
     name: "locations"
-    primary_key: "Entity ID"
+    primary_key: "ID"      
     incremental_sync:
       $ref: "#/definitions/incremental_base"
     transformations:
