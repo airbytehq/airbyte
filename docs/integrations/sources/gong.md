@@ -33,6 +33,8 @@ By default Gong limits your company's access to the service to 3 API calls per s
 - **Gong API keys**. See the [Gong docs](https://us-14321.app.gong.io/settings/api/documentation#overview) for information on how to obtain the API keys.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -43,3 +45,5 @@ By default Gong limits your company's access to the service to 3 API calls per s
 | 0.1.2   | 2024-04-12 | [37169](https://github.com/airbytehq/airbyte/pull/37169) | schema descriptions                                                             |
 | 0.1.1   | 2024-02-05 | [34847](https://github.com/airbytehq/airbyte/pull/34847) | Adjust stream schemas and make ready for airbyte-lib                            |
 | 0.1.0   | 2022-10-27 | [18819](https://github.com/airbytehq/airbyte/pull/18819) | Add Gong Source Connector                                                       |
+
+</details>

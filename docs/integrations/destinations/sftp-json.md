@@ -36,7 +36,9 @@ If `destination_path` is set to `/myfolder/files` and `filename` is set to `myda
 These files can then be accessed by creating an SFTP connection to the server and navigating to the `destination_path`.
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
 | 0.1.0   | 2022-11-24 | [4924](https://github.com/airbytehq/airbyte/pull/4924) | 🎉 New Destination: SFTP JSON |
+</details>

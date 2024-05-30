@@ -70,7 +70,11 @@ The Pexels-API source connector supports the following [sync modes](https://docs
 Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at present and v2 is at development. The connector as default uses v1.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
 | 0.1.0   | 2022-11-02 | [Init](https://github.com/airbytehq/airbyte/pull/18854) | Initial commit |
+
+</details>

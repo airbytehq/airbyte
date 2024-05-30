@@ -74,7 +74,8 @@ Using this feature requires additional configuration, when creating the source. 
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
 | 0.2.2   | 2024-02-13 | [35235](https://github.com/airbytehq/airbyte/pull/35235)   | Adopt CDK 0.20.4                                                                                          |
@@ -94,9 +95,11 @@ Using this feature requires additional configuration, when creating the source. 
 | 0.1.4   | 20.10.2021 | [\#7327](https://github.com/airbytehq/airbyte/pull/7327)   | Added support for connection via SSH tunnel(aka Bastion server).                                          |
 | 0.1.3   | 20.10.2021 | [\#7127](https://github.com/airbytehq/airbyte/pull/7127)   | Added SSL connections support.                                                                            |
 | 0.1.2   | 13.08.2021 | [\#4699](https://github.com/airbytehq/airbyte/pull/4699)   | Added json config validator.                                                                              |
+</details>
 
-## CHANGELOG source-clickhouse-strict-encrypt
-
+## Changelog: source-clickhouse-strict-encrypt
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                   |
 | :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485)                                                          | Remove LEGACY state                                                                                                                       |
@@ -113,3 +116,4 @@ Using this feature requires additional configuration, when creating the source. 
 | 0.1.2   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371)                                                          | Fixed incorrect handling "\n" in ssh key                                                                                                  |
 | 0.1.1   | 20.10.2021 | [\#7327](https://github.com/airbytehq/airbyte/pull/7327)                                                          | Added support for connection via SSH tunnel(aka Bastion server).                                                                          |
 | 0.1.0   | 20.10.2021 | [\#7127](https://github.com/airbytehq/airbyte/pull/7127)                                                          | Added source-clickhouse-strict-encrypt that supports SSL connections only.                                                                |
+</details>

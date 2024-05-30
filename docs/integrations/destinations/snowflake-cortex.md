@@ -77,10 +77,12 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 - embedding (vector) - the embedding of the chunk, stored as a list of floats
 
 
-## CHANGELOG
-
+## Changelog
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.1.2 | 2024-05-17 | [#38327](https://github.com/airbytehq/airbyte/pull/38327) | Fix chunking related issue.
 | 0.1.1 | 2024-05-15 | [#38206](https://github.com/airbytehq/airbyte/pull/38206) | Bug fixes.
 | 0.1.0 | 2024-05-13 | [#37333](https://github.com/airbytehq/airbyte/pull/36807) | Add support for Snowflake as a Vector destination.
+</details>

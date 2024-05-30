@@ -51,7 +51,9 @@ Mixpanel recommends using `[insert_id, event_time, event_name, distinct_id]` as 
 
 Syncing huge date windows may take longer due to Mixpanel's low API rate-limits \(**60 reqs per hour**\).
 
-## CHANGELOG
+## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
@@ -108,3 +110,5 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 | 0.1.2   | 2021-11-02 | [7439](https://github.com/airbytehq/airbyte/issues/7439) | Added delay for all streams to match API limitation of requests rate                                        |
 | 0.1.1   | 2021-09-16 | [6075](https://github.com/airbytehq/airbyte/issues/6075) | Added option to select project region                                                                       |
 | 0.1.0   | 2021-07-06 | [3698](https://github.com/airbytehq/airbyte/issues/3698) | Created CDK native mixpanel connector                                                                       |
+
+</details>

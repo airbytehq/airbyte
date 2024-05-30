@@ -48,7 +48,11 @@ Please follow the [their documentation for generating a VictorOps API
 Key](https://help.victorops.com/knowledge-base/api/).
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                   | Subject                                                |
 | :------ | :--------- | :------------------------------------------------------------- | :----------------------------------------------------- |
 | 0.1.23  | 2021-11-17 | [150](https://github.com/faros-ai/airbyte-connectors/pull/150) | Add VictorOps source and Faros destination's conterter |
+
+</details>

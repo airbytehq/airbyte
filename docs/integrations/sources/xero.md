@@ -102,6 +102,8 @@ As Xero uses .NET, some date fields in records could be in [.NET JSON date forma
 The connector is restricted by Xero [API rate limits](https://developer.xero.com/documentation/guides/oauth2/limits/#api-rate-limits).
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
@@ -114,3 +116,5 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 | 0.2.1 | 2023-03-20 | [24217](https://github.com/airbytehq/airbyte/pull/24217) | Certify to Beta |
 | 0.2.0 | 2023-03-14 | [24005](https://github.com/airbytehq/airbyte/pull/24005) | Enable in Cloud |
 | 0.1.0 | 2021-11-11 | [18666](https://github.com/airbytehq/airbyte/pull/18666) | 🎉 New Source - Xero [python cdk] |
+
+</details>

@@ -32,7 +32,11 @@ Toggl APIs are under rate limits for the number of API calls allowed per API key
 - API token
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                 |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------- |
 | 0.1.0   | 2022-10-28 | [#18507](https://github.com/airbytehq/airbyte/pull/18507) | 🎉 New Source: Toggl API [low-code CDK] |
+
+</details>

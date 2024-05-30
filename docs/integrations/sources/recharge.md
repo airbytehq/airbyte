@@ -73,6 +73,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 The Recharge connector should gracefully handle Recharge API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
@@ -105,3 +107,5 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 | 0.1.4   | 2021-11-05 | [7626](https://github.com/airbytehq/airbyte/pull/7626)   | Improve 'backoff' for HTTP requests                                                                                            |
 | 0.1.3   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Update `discount` and `order` schema                                                                                           |
 | 0.1.2   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Change `cursor_field` for Incremental streams                                                                                  |
+
+</details>

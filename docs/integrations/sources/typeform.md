@@ -95,6 +95,8 @@ Connector performs additional API call to fetch all possible `form ids` on an ac
 API rate limits \(2 requests per second\): [https://developer.typeform.com/get-started/\#rate-limits](https://developer.typeform.com/get-started/#rate-limits)
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
@@ -125,3 +127,5 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 | 0.1.2   | 2021-10-11 | [6571](https://github.com/airbytehq/airbyte/pull/6571)   | Support pulling data from a select set of forms                                                 |
 | 0.1.1   | 2021-09-06 | [5799](https://github.com/airbytehq/airbyte/pull/5799)   | Add missed choices field to responses schema                                                    |
 | 0.1.0   | 2021-07-10 | [4541](https://github.com/airbytehq/airbyte/pull/4541)   | Initial release for Typeform API supporting Forms and Responses streams                         |
+
+</details>

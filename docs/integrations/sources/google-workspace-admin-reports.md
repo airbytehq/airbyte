@@ -55,6 +55,8 @@ At the end of this process, you should have JSON credentials to this Google Serv
 You should now be ready to use the Google Workspace Admin Reports API connector in Airbyte.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
@@ -62,3 +64,4 @@ You should now be ready to use the Google Workspace Admin Reports API connector 
 | 0.1.7   | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description |
 | 0.1.6   | 2021-11-02 | [7623](https://github.com/airbytehq/airbyte/pull/7623)   | Migrate to the CDK                        |
 | 0.1.5   | 2021-10-07 | [6878](https://github.com/airbytehq/airbyte/pull/6878)   | Improve testing & output schemas          |
+</details>

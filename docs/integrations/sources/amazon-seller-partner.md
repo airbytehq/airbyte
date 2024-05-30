@@ -172,7 +172,8 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 | `object`                 | `object`     |
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 4.3.0   | 2024-05-24 | [#00000](https://github.com/airbytehq/airbyte/pull/00000) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
@@ -250,3 +251,4 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 | 0.2.0   | 2021-08-06 | [#4863](https://github.com/airbytehq/airbyte/pull/4863)   | Rebuild source with `airbyte-cdk`                                                                                                                                                   |
 | 0.1.3   | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288)   | Bugfix failing `connection check`                                                                                                                                                   |
 | 0.1.2   | 2021-06-15 | [#4108](https://github.com/airbytehq/airbyte/pull/4108)   | Fixed: Sync fails with timeout when create report is CANCELLED`                                                                                                                     |
+</details>

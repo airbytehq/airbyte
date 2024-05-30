@@ -59,6 +59,8 @@ Please reach out to the Orb team at [team@withorb.com](mailto:team@withorb.com) 
 an Orb Account and API Key.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -75,3 +77,5 @@ an Orb Account and API Key.
 | 0.1.1   | 2022-03-03 | [10839](https://github.com/airbytehq/airbyte/pull/10839) | Support ledger entries with numeric properties + schema fixes                                         |
 | 0.1.0   | 2022-02-01 |                                                          | New Source: Orb                                                                                       |
 | :---    | :---       | :---                                                     | :---                                                                                                  |
+
+</details>

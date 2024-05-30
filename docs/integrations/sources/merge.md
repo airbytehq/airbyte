@@ -73,8 +73,12 @@ GET https://api.merge.dev/api/ats/v1/account-details
 Merge [API reference](https://api.merge.dev/api/ats/v1/) has v1 at present. The connector as default uses v1.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
 | 0.1.1 | 2024-05-20 | [38445](https://github.com/airbytehq/airbyte/pull/38445) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2023-04-18 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |
+
+</details>

@@ -80,6 +80,8 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 The connector is restricted by normal Okta [requests limitation](https://developer.okta.com/docs/reference/rate-limits/).
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
@@ -101,3 +103,5 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 | 0.1.2   | 2021-07-01 | [4456](https://github.com/airbytehq/airbyte/pull/4456)   | Fix infinite pagination in logs stream                                         |
 | 0.1.1   | 2021-06-09 | [3937](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                   |
 | 0.1.0   | 2021-05-30 | [3563](https://github.com/airbytehq/airbyte/pull/3563)   | Initial Release                                                                |
+
+</details>

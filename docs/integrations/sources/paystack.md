@@ -62,6 +62,8 @@ The [Paystack API](https://paystack.com/docs/api) is compatible with the [JSONSc
 The Paystack connector should not run into Paystack API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
@@ -69,3 +71,5 @@ The Paystack connector should not run into Paystack API limitations under normal
 | 0.1.2   | 2023-03-15 | [24085](https://github.com/airbytehq/airbyte/pull/24085) | Set additionalProperties: true, add TypeTransformer to Refunds |
 | 0.1.1   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description                      |
 | 0.1.0   | 2021-10-20 | [7214](https://github.com/airbytehq/airbyte/pull/7214)   | Add Paystack source connector                                  |
+
+</details>

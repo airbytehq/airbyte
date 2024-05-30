@@ -72,6 +72,8 @@ The connector is restricted by normal Intercom [request limitations](https://dev
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
@@ -124,3 +126,5 @@ The Intercom connector should not run into Intercom API limitations under normal
 | 0.1.2   | 2021-08-19 | [5531](https://github.com/airbytehq/airbyte/pull/5531)   | Corrected pagination                                                                                                             |
 | 0.1.1   | 2021-07-31 | [5123](https://github.com/airbytehq/airbyte/pull/5123)   | Corrected rate limit                                                                                                             |
 | 0.1.0   | 2021-07-19 | [4676](https://github.com/airbytehq/airbyte/pull/4676)   | Release Intercom CDK Connector                                                                                                   |
+
+</details>

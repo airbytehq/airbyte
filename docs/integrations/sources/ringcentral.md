@@ -74,7 +74,11 @@ GET https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/
 RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.0) has v1 at present. The connector as default uses v1.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
 | 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |
+
+</details>

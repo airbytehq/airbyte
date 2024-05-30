@@ -160,6 +160,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 </details>
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 | ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -218,5 +220,6 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 | 0.1.6   | 2021-01-27 | [1668](https://github.com/airbytehq/airbyte/pull/1668)   | Adopt connector best practices                                                    |
 | 0.1.5   | 2020-12-30 | [1438](https://github.com/airbytehq/airbyte/pull/1438)   | Implement backoff                                                                 |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                           |
+</details>
 
 </HideInUI>

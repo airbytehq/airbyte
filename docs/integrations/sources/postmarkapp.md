@@ -52,6 +52,8 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 | Namespaces        | No         |
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -59,3 +61,5 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 | 0.1.2   | 2024-04-15 | [37232](https://github.com/airbytehq/airbyte/pull/37232) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1   | 2024-04-12 | [37232](https://github.com/airbytehq/airbyte/pull/37232) | schema descriptions                                                             |
 | 0.1.0   | 2022-11-09 | 18220                                                    | 🎉 New Source: Postmarkapp API [low-code CDK]                                   |
+
+</details>

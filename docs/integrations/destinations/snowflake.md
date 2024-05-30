@@ -273,7 +273,8 @@ to `Destination Default`. Otherwise, make sure to grant the role the required pe
 desired namespace.
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:----------------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                            |
@@ -466,3 +467,4 @@ desired namespace.
 | 0.3.12          | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                                                                                     |
 | 0.3.11          | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                                                                                        |
 | 0.3.10          | 2021-07-12 | [\#4713](https://github.com/airbytehq/airbyte/pull/4713)   | Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake                                                                             |
+</details>

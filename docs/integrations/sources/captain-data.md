@@ -59,8 +59,10 @@ GET https://api.captaindata.co/v3/
 Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at present. The connector as default uses v3.
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
 | 0.1.1 | 2024-05-20 | [38374](https://github.com/airbytehq/airbyte/pull/38374) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2023-04-15 | [Init](https://github.com/airbytehq/airbyte/pull/25230) | Initial commit |
+</details>

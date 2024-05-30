@@ -39,6 +39,8 @@ In addition, to understand how to configure the dataset path and query parameter
 - [Example Queries](https://www.census.gov/data/developers/guidance/api-user-guide.Example_API_Queries.html)
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
@@ -47,3 +49,5 @@ In addition, to understand how to configure the dataset path and query parameter
 | 0.1.2 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
 | 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.0 | 2021-07-20 | [4228](https://github.com/airbytehq/airbyte/pull/4228) | Initial release |
+
+</details>

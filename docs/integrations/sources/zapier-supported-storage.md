@@ -19,6 +19,8 @@ The Zapier Supported Storage Connector can be used to sync your [Zapier](https:/
 - secret - The Storage by Zapier secret.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
 |:--------|:-----------|:---------------------------------------------------------| |
@@ -27,3 +29,5 @@ The Zapier Supported Storage Connector can be used to sync your [Zapier](https:/
 | 0.1.2 | 2024-04-15 | [37300](https://github.com/airbytehq/airbyte/pull/37300) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37300](https://github.com/airbytehq/airbyte/pull/37300) | schema descriptions |
 | 0.1.0 | 2022-10-25 | [18442](https://github.com/airbytehq/airbyte/pull/18442) | Initial release |
+
+</details>

@@ -74,7 +74,9 @@ The Looker connector should not run into Looker API limitations under normal usa
 
 Please read the "API3 Key" section in [Looker's information for users docs](https://docs.looker.com/admin-options/settings/users) for instructions on how to generate Client Id and Client Secret.
 
-## CHANGELOG
+## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
@@ -89,3 +91,5 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 | 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Allow future / unknown properties in the protocol.       |
 | 0.1.1   | 2021-01-27 | [1857](https://github.com/airbytehq/airbyte/pull/1857)   | Fix failed CI tests.                                     |
 | 0.1.0   | 2020-12-24 | [1441](https://github.com/airbytehq/airbyte/pull/1441)   | Add looker connector.                                    |
+
+</details>

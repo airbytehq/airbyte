@@ -115,6 +115,8 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 | Namespaces       | No           |                                                                                 |
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 | :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
@@ -148,3 +150,5 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 | `0.1.2`  | 2021-12-03 | [8483](https://github.com/airbytehq/airbyte/pull/8483)   | Improve field conversion to conform schema                                                       |
 | `0.1.1`  | 2021-11-29 | [0000](https://github.com/airbytehq/airbyte/pull/0000)   | Fix timestamp value format issue                                                                 |
 | `0.1.0`  | 2021-09-06 | [5863](https://github.com/airbytehq/airbyte/pull/5863)   | Release Marketo CDK Connector                                                                    |
+
+</details>

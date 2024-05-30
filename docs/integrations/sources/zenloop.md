@@ -71,6 +71,8 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 | `object`         | `object`     |
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -89,3 +91,5 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 | 0.1.2   | 2022-08-22 | [15843](https://github.com/airbytehq/airbyte/pull/15843) | Adds Properties stream                                                          |
 | 0.1.1   | 2021-10-26 | [8299](https://github.com/airbytehq/airbyte/pull/8299)   | Fix missing seed files                                                          |
 | 0.1.0   | 2021-10-26 | [7380](https://github.com/airbytehq/airbyte/pull/7380)   | Initial Release                                                                 |
+
+</details>

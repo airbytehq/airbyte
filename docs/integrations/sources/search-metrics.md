@@ -69,8 +69,12 @@ The SearchMetrics connector should not run into SearchMetrics API limitations un
 Please read [How to get your API Key and Client Secret](https://developer.searchmetrics.com/docs/apiv4-documentation/ZG9jOjQ2Nzk1-getting-started) .
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                           | Subject                             |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------------- |
 | 0.1.1   | 2021-12-22 | [6992](https://github.com/airbytehq/airbyte/pull/6992) | Deleted windows in days from config |
 | 0.1.0   | 2021-10-13 | [6992](https://github.com/airbytehq/airbyte/pull/6992) | Release SearchMetrics CDK Connector |
+
+</details>

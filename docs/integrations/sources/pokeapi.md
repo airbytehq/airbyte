@@ -33,6 +33,8 @@ According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), pl
 The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
@@ -43,3 +45,5 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 | 0.1.3   | 2021-12-03 | [8432](https://github.com/airbytehq/airbyte/pull/8432)   | Migrate from base_python to CDK, add SAT tests. |
 | 0.1.1   | 2020-06-29 | [1046](https://github.com/airbytehq/airbyte/pull/4410)   | Fix runtime UI error from GitHub store path.    |
 | 0.1.0   | 2020-05-04 | [1046](https://github.com/airbytehq/airbyte/pull/3149)   | Add source for PokeAPI.                         |
+
+</details>

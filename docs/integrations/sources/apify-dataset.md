@@ -66,7 +66,8 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
   - The stream uses a static schema which corresponds to the datasets produced by [Website Content Crawler](https://apify.com/apify/website-content-crawler) Actor. So only datasets produced by this Actor are supported.
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 2.1.5   | 2024-04-19 | [37115](https://github.com/airbytehq/airbyte/pull/37115)     | Updating to 0.80.0 CDK                                                          |
@@ -83,3 +84,4 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 | 0.1.4   | 2021-12-23 | [PR\#8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications                               |
 | 0.1.2   | 2021-11-08 | [PR\#7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                 |
 | 0.1.0   | 2021-07-29 | [PR\#5069](https://github.com/airbytehq/airbyte/pull/5069)   | Initial version of the connector                                                |
+</details>

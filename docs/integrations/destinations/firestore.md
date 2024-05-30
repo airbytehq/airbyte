@@ -33,7 +33,9 @@ Each stream will be output into a BigQuery table.
 | Namespaces                     | ✅                   |       |
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
 | 0.1.1   | 2021-11-21 | [8158](https://github.com/airbytehq/airbyte/pull/8158) | Publish Destination Firestore |
+</details>

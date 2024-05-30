@@ -99,6 +99,8 @@ This connector outputs the following streams:
 Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Topic/RateLimiting), but the Salesloft connector should not run into Salesloft API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
@@ -114,3 +116,5 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 | 0.1.2   | 2022-03-17 | [11239](https://github.com/airbytehq/airbyte/pull/11239) | Added new Emails stream                                           |
 | 0.1.1   | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617)   | Update connector fields title/description                         |
 | 0.1.0   | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962)   | Salesloft Connector                                               |
+
+</details>

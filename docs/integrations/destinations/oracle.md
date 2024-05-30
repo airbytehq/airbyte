@@ -89,7 +89,8 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 3. `TLS Encrypted` (verify certificate) - if this option is selected, data transfer will be transfered using the TLS protocol, taking into account the handshake procedure and certificate verification. To use this option, insert the content of the certificate issued by the server into the `SSL PEM file` field
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version     | Date       | Pull Request                                               | Subject                                                                                             |
 | :---------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
 | 1.0.0       | 2024-04-11 | [\#36048](https://github.com/airbytehq/airbyte/pull/36048) | Removes Normalization, updates to V2 Raw Table Format                                               |
@@ -111,3 +112,4 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 | 0.1.4       | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                        |
 | 0.1.3       | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                           |
 | 0.1.2       | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874)   | Require `sid` instead of `database` in connector specification                                      |
+</details>

@@ -48,7 +48,11 @@ The Workable source connector supports the following [sync modes](https://docs.a
 - [Recruiters](https://workable.readme.io/reference/recruiters)
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
 | 0.1.0   | 2022-10-15 | [18033](https://github.com/airbytehq/airbyte/pull/18033) | New Source: Workable |
+
+</details>

@@ -121,6 +121,8 @@ Strava API has limitations to 100 requests every 15 minutes, 1000 daily.
 More information about Strava rate limits and adjustments to those limits can be found [here](https://developers.strava.com/docs/rate-limits).
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -134,3 +136,5 @@ More information about Strava rate limits and adjustments to those limits can be
 | 0.1.2   | 2021-12-15 | [8799](https://github.com/airbytehq/airbyte/pull/8799)   | Implement OAuth 2.0 support                                                     |
 | 0.1.1   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                        |
 | 0.1.0   | 2021-10-18 | [7151](https://github.com/airbytehq/airbyte/pull/7151)   | Initial release supporting Strava API                                           |
+
+</details>

@@ -45,7 +45,11 @@ The following fields are required fields for the connector to work:
   channels, or set to 'global' for only global channels.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject    |
 | :------ | :--------- | :------------------------------------------------------- | :--------- |
 | 0.1.0   | 2022-10-22 | [18333](https://github.com/airbytehq/airbyte/pull/18333) | New source |
+
+</details>

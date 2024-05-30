@@ -48,6 +48,8 @@ The Firebolt source does not alter schema present in your database. Depending on
 You can now use the Airbyte Firebolt source.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
@@ -56,3 +58,5 @@ You can now use the Airbyte Firebolt source.
 | 0.2.1   | 2022-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix DATETIME conversion to Airbyte date-time type            |
 | 0.2.0   | 2022-09-09 | [16583](https://github.com/airbytehq/airbyte/pull/16583) | Reading from views                                           |
 | 0.1.0   | 2022-04-28 | [13874](https://github.com/airbytehq/airbyte/pull/13874) | Create Firebolt source                                       |
+
+</details>

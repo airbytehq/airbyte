@@ -65,7 +65,9 @@ The Courier source connector supports the following [sync modes](https://docs.ai
 Courier's [API reference](https://www.courier.com/docs/reference/) does not address rate limiting but the connector implements exponential backoff when a 429 response status code is received.
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-09-10 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Initial commit |
+</details>

@@ -145,6 +145,8 @@ Leaving this field blank (default option) will disallow escaping.
 - **True Values**: A set of case-sensitive strings that should be interpreted as true values.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
@@ -160,3 +162,5 @@ Leaving this field blank (default option) will disallow escaping.
 | 0.3.0   | 2023-10-11 | [31212](https://github.com/airbytehq/airbyte/pull/31212) | Migrated to file based CDK                                              |
 | 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2                                                    |
 | 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS                                                         |
+
+</details>

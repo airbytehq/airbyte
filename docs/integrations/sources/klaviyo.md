@@ -66,6 +66,8 @@ Stream `Lists Detailed` contains field `profile_count` in addition to info from 
 | `object`         | `object`     |       |
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
@@ -102,3 +104,5 @@ Stream `Lists Detailed` contains field `profile_count` in addition to info from 
 | `0.1.4`  | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream.                                                          |
 | `0.1.3`  | 2021-12-09 | [8592](https://github.com/airbytehq/airbyte/pull/8592)     | Improve performance, make Global Exclusions stream incremental and enable Metrics stream.                                     |
 | `0.1.2`  | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952)     | Update schema validation in SAT                                                                                               |
+
+</details>

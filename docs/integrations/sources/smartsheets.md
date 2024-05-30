@@ -111,6 +111,8 @@ The data type mapping adopted by this connector is based on the Smartsheet [docu
 The remaining column datatypes supported by Smartsheets are more complex types (e.g. Predecessor, Dropdown List) and are not supported by this connector beyond its `string` representation.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
@@ -127,3 +129,5 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 | 0.1.10  | 2022-04-15 | [12077](https://github.com/airbytehq/airbyte/pull/12077) | Implement incremental read and improve code test coverage |
 | 0.1.9   | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns                                 |
 | 0.1.8   | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792)   | Added oauth support                                       |
+
+</details>

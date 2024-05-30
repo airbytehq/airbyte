@@ -115,6 +115,8 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
    - As mentioned earlier, you can also simply use the Access token auth method for 60-day access.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
@@ -123,3 +125,5 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 | 1.0.1 | 2023-03-22 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove `authSpecification` as it's not yet supported |
 | 1.0.0 | 2023-03-16 | [18967](https://github.com/airbytehq/airbyte/pull/18967) | Fixed failing connection checks |
 | 0.1.0 | 2022-08-11 | [13098](https://github.com/airbytehq/airbyte/pull/13098) | Initial Release |
+
+</details>

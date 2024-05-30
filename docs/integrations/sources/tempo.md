@@ -43,6 +43,8 @@ This connector outputs the following streams:
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
@@ -50,3 +52,5 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | 0.3.0   | 2022-11-02 | [18936](https://github.com/airbytehq/airbyte/pull/18936) | Migrate to low code + certify to Beta + migrate to API v4 |
 | 0.2.6   | 2022-09-08 | [16361](https://github.com/airbytehq/airbyte/pull/16361) | Avoid infinite loop for non-paginated APIs                |
 | 0.2.4   | 2021-11-08 | [7649](https://github.com/airbytehq/airbyte/pull/7649)   | Migrate to the CDK                                        |
+
+</details>

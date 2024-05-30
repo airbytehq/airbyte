@@ -83,7 +83,8 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 </details>
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.2.6   | 2024-04-19 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Updating to 0.80.0 CDK                                                          |
@@ -94,5 +95,6 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 | 0.2.1   | 2022-09-16 | [16826](https://github.com/airbytehq/airbyte/pull/16826) | Add custom fields validation during check                                       |
 | 0.2.0   | 2022-03-24 | [11326](https://github.com/airbytehq/airbyte/pull/11326) | Add support for Custom Reports endpoint                                         |
 | 0.1.0   | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054)   | Initial release with Employees API                                              |
+</details>
 
 </HideInUI>

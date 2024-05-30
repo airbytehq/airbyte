@@ -47,7 +47,9 @@ data from the connector.
   - Replication [optional] [default: 1]
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                             | Subject                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------- |
 | 0.1.4   | 2022-08-23 | [15894](https://github.com/airbytehq/airbyte/pull/15894) | Replace batch insert with async method |
+</details>

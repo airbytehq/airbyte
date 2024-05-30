@@ -35,8 +35,10 @@ Connector needs a self-hosted instance of Dremio, this way you can access the Dr
 Please read [How to get your APIs credentials](https://docs.dremio.com/software/rest-api/#authenticationn).
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                             | Subject            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------- |
 | 0.1.1 | 2024-05-21 | [38497](https://github.com/airbytehq/airbyte/pull/38497) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-12-01 | [19912](https://github.com/airbytehq/airbyte/pull/19912) | New Source: Dremio |
+</details>

@@ -38,6 +38,8 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 - [Resources](https://github.com/hubplanner/API/blob/master/Sections/resource.md)
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
@@ -45,3 +47,5 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 
 | 0.2.0 | 2021-09-31 | [29311](https://github.com/airbytehq/airbyte/pull/29311) | Migrated to LowCode CDK |
 | 0.1.0 | 2021-08-10 | [12145](https://github.com/airbytehq/airbyte/pull/12145) | Initial Release |
+
+</details>

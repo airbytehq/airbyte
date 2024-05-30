@@ -25,6 +25,8 @@ In addition, PyPI reserves the right to temporarily or permanently prohibit a co
 Try not to make a lot of requests (thousands) in a short amount of time (minutes). Generally PyPI can handle it, but it’s preferred to make requests in serial over a longer amount of time if possible.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -33,3 +35,5 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 | 0.1.2   | 2024-04-15 | [37237](https://github.com/airbytehq/airbyte/pull/37237) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1   | 2024-04-12 | [37237](https://github.com/airbytehq/airbyte/pull/37237) | schema descriptions                                                             |
 | 0.1.0   | 2022-10-29 | [18632](https://github.com/airbytehq/airbyte/pull/18632) | Initial Release                                                                 |
+
+</details>

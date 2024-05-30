@@ -50,8 +50,12 @@ The following fields are required fields for the connector to work:
 - (optional) `end_datetime`: The end date and time for the sync.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------|
 | 0.1.1   | 2024-05-28 | [38688](https://github.com/airbytehq/airbyte/pull/38688) | Make connector builder compatible |
 | 0.1.0   | 2022-10-20 | [18224](https://github.com/airbytehq/airbyte/pull/18224) | New source                        |
+
+</details>

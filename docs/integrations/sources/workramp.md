@@ -34,7 +34,11 @@ The Workramp connector should not run into Workramp API limitations under normal
 - **Workramp API ke**. See the [Workramp docs](https://developers.workramp.com/reference/basic-auth) for information on how to obtain an API key.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
 | 0.1.0   | 2022-01-02 | [18843](https://github.com/airbytehq/airbyte/pull/18843) | Add Workramp Source Connector |
+
+</details>

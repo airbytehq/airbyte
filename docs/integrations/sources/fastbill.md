@@ -58,6 +58,8 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 | `object`            | `object`     |
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -67,3 +69,5 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 | 0.2.1   | 2024-04-12 | [37159](https://github.com/airbytehq/airbyte/pull/37159) | schema descriptions                                                             |
 | 0.2.0   | 2023-08-13 | [29390](https://github.com/airbytehq/airbyte/pull/29390) | Migrated to Low Code CDK                                                        |
 | 0.1.0   | 2022-11-08 | [18522](https://github.com/airbytehq/airbyte/pull/18593) | New Source: Fastbill                                                            |
+
+</details>

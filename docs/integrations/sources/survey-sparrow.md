@@ -46,6 +46,8 @@ In order to get access token, follow these steps:
 - [Users](https://developers.surveysparrow.com/rest-apis/users#getV3Users)
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -55,3 +57,5 @@ In order to get access token, follow these steps:
 | 0.2.1   | 2024-04-12 | [37267](https://github.com/airbytehq/airbyte/pull/37267) | schema descriptions                                                             |
 | 0.2.0   | 2022-11-18 | [19143](https://github.com/airbytehq/airbyte/pull/19143) | Allow users to change base_url based on account's location                      |
 | 0.1.0   | 2022-11-03 | [18395](https://github.com/airbytehq/airbyte/pull/18395) | Initial Release                                                                 |
+
+</details>

@@ -35,7 +35,11 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 - **Partnerstack API keys**. See the [Partnerstack docs](https://docs.partnerstack.com/reference/auth) for information on how to obtain the API keys.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                         | Subject                           |
 | :------ | :--------- | :--------------------------------------------------- | :-------------------------------- |
 | 0.1.0   | 2022-10-27 | [XXX](https://github.com/airbytehq/airbyte/pull/XXX) | Add Partnerstack Source Connector |
+
+</details>

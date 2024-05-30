@@ -44,6 +44,8 @@ Currencies are number and the date is a string.
 The Wrike connector should not run into Wrike API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
@@ -51,3 +53,5 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 | 0.2.1   | 2024-04-30 | [31058](https://github.com/airbytehq/airbyte/pull/31058) | Changed last_records to last_record. Fix schema for stream `workflows` |
 | 0.2.0   | 2023-10-10 | [31058](https://github.com/airbytehq/airbyte/pull/31058) | Migrate to low code.                                                   |
 | 0.1.0   | 2022-08-16 | [15638](https://github.com/airbytehq/airbyte/pull/15638) | Initial version/release of the connector.                              |
+
+</details>

@@ -100,7 +100,11 @@ The Gutendex source connector supports the following [sync modes](https://docs.a
 There is no published rate limit. However, since this data updates infrequently, it is recommended to set the update cadence to 24hr or higher.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
 | 0.1.0   | 2022-10-17 | [#18075](https://github.com/airbytehq/airbyte/pull/18075) | 🎉 New Source: Gutendex API [low-code CDK] |
+
+</details>

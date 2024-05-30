@@ -65,6 +65,8 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 </details>
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
@@ -72,5 +74,6 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 | 0.1.2   | 2024-04-12 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | schema descriptions                                                                          |
 | 0.1.1   | 2024-01-30 | [34545](https://github.com/airbytehq/airbyte/pull/34545) | Updates CDK, Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.0   | 2022-07-13 | [12748](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created                                                                 |
+</details>
 
 </HideInUI>

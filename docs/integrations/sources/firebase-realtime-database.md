@@ -72,10 +72,12 @@ You should now have all the requirements needed to configure Firebase Realtime D
 
 Once you've configured Firebase Realtime Database as a source, delete the Service Account Key from your computer.
 
-## CHANGELOG
-
-### source-firebase-realtime-database
+## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
 | 0.1.0   | 2022-10-16 | [\#18029](https://github.com/airbytehq/airbyte/pull/18029) | 🎉 New Source: Firebase Realtime Database. |
+
+</details>

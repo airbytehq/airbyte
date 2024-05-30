@@ -33,7 +33,11 @@ The connector has a rate limit of 5 API requests per second per IP-address.
 - Smaily API subdomain
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-10-25 | [18674](https://github.com/airbytehq/airbyte/pull/18674) | Initial commit |
+
+</details>

@@ -80,6 +80,8 @@ The YouTube Analytics source connector supports the following [sync modes](https
 Quota usage is not an issue because data is retrieved once and then filtered, sorted, and queried within the application.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                        |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
@@ -88,3 +90,5 @@ Quota usage is not an issue because data is retrieved once and then filtered, so
 | 0.1.2   | 2022-09-29 | [17399](https://github.com/airbytehq/airbyte/pull/17399) | Fixed `403` error while `check connection`     |
 | 0.1.1   | 2022-08-18 | [15744](https://github.com/airbytehq/airbyte/pull/15744) | Fix `channel_basic_a2` schema fields data type |
 | 0.1.0   | 2021-11-01 | [7407](https://github.com/airbytehq/airbyte/pull/7407)   | Initial Release                                |
+
+</details>

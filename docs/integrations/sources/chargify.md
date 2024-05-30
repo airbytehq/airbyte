@@ -39,10 +39,12 @@ The Chargify connector should not run into Chargify API limitations under normal
 Please follow the [Chargify documentation for generating an API key](https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api).
 
 ## Changelog
-
+<details>
+  <summary>Expand to review</summary>
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
 | 0.4.0   | 2023-10-16 | [31116](https://github.com/airbytehq/airbyte/pull/31116) | Add Coupons, Transactions, Invoices Streams |
 | 0.3.0   | 2023-08-10 | [29130](https://github.com/airbytehq/airbyte/pull/29130) | Migrate Python CDK to Low Code              |
 | 0.2.0   | 2023-08-08 | [29218](https://github.com/airbytehq/airbyte/pull/29218) | Fix schema                                  |
 | 0.1.0   | 2022-03-16 | [10853](https://github.com/airbytehq/airbyte/pull/10853) | Initial release                             |
+</details>

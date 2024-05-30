@@ -40,6 +40,8 @@ List of available streams:
 - [Projects](https://developer.todoist.com/rest/v2/#projects)
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
@@ -47,3 +49,5 @@ List of available streams:
 | 0.2.1   | 2024-04-12 | [37272](https://github.com/airbytehq/airbyte/pull/37272) | schema descriptions                                        |
 | 0.2.0   | 2023-12-19 | [32690](https://github.com/airbytehq/airbyte/pull/32690) | Migrate to low-code                                        |
 | 0.1.0   | 2022-12-03 | [20046](https://github.com/airbytehq/airbyte/pull/20046) | 🎉 New Source: todoist                                     |
+
+</details>
