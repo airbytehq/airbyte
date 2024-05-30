@@ -140,8 +140,10 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
+        generationId: Long,
     ) {
+        // TODO handle generation ID
         val columnNames =
             if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES
         insertRecords(

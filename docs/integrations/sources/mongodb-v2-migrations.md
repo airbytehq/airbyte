@@ -7,6 +7,9 @@ This version introduces a general availability version of the MongoDB V2 source 
 reliability of syncs. This version provides better error handling, incremental delivery of data and improved
 reliability of large syncs via frequent checkpointing.
 
+MongoDB now supports incremental syncs. Alternatively you can also choose to use full refresh if your DB has lots of updates but in relatively 
+small volume.
+
 **THIS VERSION INCLUDES BREAKING CHANGES FROM PREVIOUS VERSIONS OF THE CONNECTOR!**
 
 The changes will require you to reconfigure your existing MongoDB V2 configured source connectors. To review the
@@ -23,3 +26,4 @@ Worthy of specific mention, this version includes:
 - Required SSL/TLS connections
 
 Learn more about what's new in the connection, view the updated documentation [here](/integrations/sources/mongodb-v2/).
+

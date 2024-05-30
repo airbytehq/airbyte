@@ -253,6 +253,7 @@ internal constructor(
                     ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
                 )
                 // On receiving a config error, the container should be immediately shut down.
+                System.exit(1)
             } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(
                     e,
@@ -385,8 +386,8 @@ internal constructor(
             }
 
         @JvmStatic
-        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo {
-            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo
+        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo? {
+            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo?
         }
 
         /**

@@ -55,8 +55,11 @@ import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.CommonField
 import io.airbyte.protocol.models.JsonSchemaType
+import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
@@ -104,6 +107,21 @@ abstract class AbstractJdbcSource<Datatype>(
         airbyteStream: ConfiguredAirbyteStream
     ): Boolean {
         return false
+    }
+
+    override fun discover(config: JsonNode): AirbyteCatalog {
+        var catalog = super.discover(config)
+        var database = createDatabase(config)
+        catalog.streams.forEach(
+            Consumer { stream: AirbyteStream ->
+                stream.isResumable =
+                    supportResumableFullRefresh(
+                        database,
+                        CatalogHelpers.toDefaultConfiguredStream(stream)
+                    )
+            }
+        )
+        return catalog
     }
 
     open fun getInitialLoadHandler(
