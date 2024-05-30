@@ -62,6 +62,7 @@ class ElasticSearchV2Stream(HttpStream, ABC):
     client: Elasticsearch = Elasticsearch(url_base)
     date_start = ""
     pit = None
+    primary_key = "_id"
 
     def __init__(self, date_start):
         super().__init__()
@@ -124,7 +125,7 @@ class ElasticSearchV2Stream(HttpStream, ABC):
 
         # If this is a new sync
         if next_page_token is None:
-            self.pit = self.client.open_point_in_time(index=self.index, keep_alive="1m")
+            self.pit = self.client.open_point_in_time(index=self.index, keep_alive="10m")
             payload = {
                 "query": {
                     "bool": {
@@ -141,7 +142,7 @@ class ElasticSearchV2Stream(HttpStream, ABC):
                 },
                 "pit": {
                     "id": self.pit.body["id"],
-                    "keep_alive": "1m"
+                    "keep_alive": "10m"
                 },
                 "size": 10000,
                 "sort": [
@@ -170,7 +171,7 @@ class ElasticSearchV2Stream(HttpStream, ABC):
                 },
                 "pit": {
                     "id": pit_id,
-                    "keep_alive": "5m"
+                    "keep_alive": "10m"
                 },
                 "size": 10000,
                 "search_after": search_after,
@@ -220,7 +221,10 @@ class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, IncrementalMixin, 
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
         try:
-            self.cursor_value = value[self.cursor_field]
+            timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
+            new_timestamp_dt = timestamp_dt - timedelta(hours=7)
+            new_timestamp_str = new_timestamp_dt.isoformat()
+            self.cursor_value = new_timestamp_str
         except KeyError:
             self.cursor_value = value["updated_at"]
         except TypeError:
@@ -420,8 +424,8 @@ class SourceElasticSearchV2(AbstractSource):
         stream_name = configured_stream.stream.name
         # The platform always passes stream state regardless of sync mode. We shouldn't need to consider this case within the
         # connector, but right now we need to prevent accidental usage of the previous stream state
-        self.state[stream_instance.name] = stream_instance.state
-        logger.info(f"Setting state of {self.name} stream to {self.state}")
+        # self.state[stream_instance.name] = stream_instance.state
+        # logger.info(f"Setting state of {self.name} stream to {self.state}")
 
         record_iterator = stream_instance.read(
             configured_stream,
@@ -442,15 +446,11 @@ class SourceElasticSearchV2(AbstractSource):
                     logger.info(f"Marking stream {stream_name} as RUNNING")
                     # If we just read the first record of the stream, emit the transition to the RUNNING state
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.RUNNING)
-                if record_counter % 10000 == 0:
-                    self.state[stream_instance.name] = stream_instance.state
-                    airbyte_state_message = self._checkpoint_state(self.state, state_manager)
-                    logger.info(f"Checkpointing {record_counter} records from {stream_name} stream")
-                    yield airbyte_state_message
             yield from self._emit_queued_messages()
             yield record
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
+        logger.info(f"Setting state of {self.name} stream to {self.state}")
         self.state[stream_instance.name] = stream_instance.state
         airbyte_state_message = self._checkpoint_state(self.state, state_manager)
         yield airbyte_state_message
@@ -463,113 +463,20 @@ class SourceElasticSearchV2(AbstractSource):
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
         # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
         # instance's deprecated get_updated_state() method.
-        try:
-            state_manager.update_state_for_stream(
-                self.name, self.namespace, self.state  # type: ignore # we know the field might not exist...
-            )
+        state_manager.update_state_for_stream(
+            self.name, self.namespace, self.state  # type: ignore # we know the field might not exist...
+        )
 
-        except AttributeError:
-            state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)
 
 
 class Creatives(IncrementalElasticSearchV2Stream):
-    primary_key = "_id"
     index = "statistics_ad_creative*"
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        """State getter, should return state in form that can serialized to a string and send to the output
-        as a STATE AirbyteMessage.
-
-        A good example of a state is a _cursor_value:
-            {
-                self.cursor_field: "_cursor_value"
-            }
-
-         State should try to be as small as possible but at the same time descriptive enough to restore
-         syncing process from the point where it stopped.
-        """
-
-        return {self.cursor_field: self.cursor_value}
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        """State setter, accept state serialized by state getter."""
-        try:
-            timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
-            new_timestamp_dt = timestamp_dt - timedelta(hours=2)
-            new_timestamp_str = new_timestamp_dt.isoformat()
-            self.cursor_value = new_timestamp_str
-        except KeyError:
-            self.cursor_value = value["updated_at"]
-        except TypeError:
-            pass
 
 
 class Campaigns(IncrementalElasticSearchV2Stream):
-    primary_key = "_id"
     index = "statistics_campaign*"
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        """State getter, should return state in form that can serialized to a string and send to the output
-        as a STATE AirbyteMessage.
-
-        A good example of a state is a _cursor_value:
-            {
-                self.cursor_field: "_cursor_value"
-            }
-
-         State should try to be as small as possible but at the same time descriptive enough to restore
-         syncing process from the point where it stopped.
-        """
-
-        return {self.cursor_field: self.cursor_value}
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        """State setter, accept state serialized by state getter."""
-        try:
-            timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
-            new_timestamp_dt = timestamp_dt - timedelta(days=1)
-            new_timestamp_str = new_timestamp_dt.isoformat()
-            self.cursor_value = new_timestamp_str
-        except KeyError:
-            self.cursor_value = value["updated_at"]
-        except TypeError:
-            pass
 
 
 class Accounts(IncrementalElasticSearchV2Stream):
-    primary_key = "_id"
     index = "statistics_account*"
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        """State getter, should return state in form that can serialized to a string and send to the output
-        as a STATE AirbyteMessage.
-
-        A good example of a state is a _cursor_value:
-            {
-                self.cursor_field: "_cursor_value"
-            }
-
-         State should try to be as small as possible but at the same time descriptive enough to restore
-         syncing process from the point where it stopped.
-        """
-
-        return {self.cursor_field: self.cursor_value}
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        """State setter, accept state serialized by state getter."""
-        try:
-            timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
-            new_timestamp_dt = timestamp_dt - timedelta(days=1)
-            new_timestamp_str = new_timestamp_dt.isoformat()
-            self.cursor_value = new_timestamp_str
-        except KeyError:
-            self.cursor_value = value["updated_at"]
-        except TypeError:
-            pass
