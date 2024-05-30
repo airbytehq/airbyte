@@ -28,7 +28,7 @@ data:
   supportLevel: community
   # Disable the acceptanceTests suite for now
   # They are not passing
-  # Low/No Airbyte Cloud Usage 
+  # Low/No Airbyte Cloud Usage
   #
   # connectorTestSuitesOptions:
   #   - suite: acceptanceTests
