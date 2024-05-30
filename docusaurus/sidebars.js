@@ -112,7 +112,7 @@ const sourceMongoDB = {
     {
       type: "doc",
       label: "Migration Guide",
-      id: "integrations/sources/mongodb-v2/mongodb-v2-migrations",
+      id: "integrations/sources/mongodb-v2-migrations",
     },
     {
       type: "doc",
