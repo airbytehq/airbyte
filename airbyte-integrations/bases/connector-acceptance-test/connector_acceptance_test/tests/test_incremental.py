@@ -273,7 +273,7 @@ class TestIncremental(BaseTest):
         Validates a list of state messages to ensure that consecutive messages with the same stream state are represented by only the first message, while subsequent duplicates are ignored.
         """
         if len(states) <= 1:
-            return [(state, 0.0) for state in states]
+            return [(state, 0.0) for state in states if self._get_record_count(state)]
 
         current_idx = 0
         unique_state_messages = []
