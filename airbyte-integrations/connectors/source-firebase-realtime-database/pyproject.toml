@@ -25,6 +25,5 @@ source-firebase-realtime-database = "source_firebase_realtime_database.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
-source-acceptance-test = "^1.0.0"
 requests-mock = "^1.9.3"
 pytest = "^6.1"
