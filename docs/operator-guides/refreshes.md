@@ -37,7 +37,7 @@ For supported destinations, and depending on the sync mode you have selected, th
 
 ## Refresh and Remove Records
 
-`Refresh and Remove Records Syncs` will only display data in the destination’s final tables that was newly synced since the refresh was initiated. This is the simplest type of `Refresh Sync`, and leads to table mirroring, if you are using an overwrite sync mode.
+`Refresh and Remove Records Syncs` will only display data in the destination’s final tables that was newly synced since the refresh was initiated. This is the simplest type of `Refresh Sync`.
 
 :::warning
 
