@@ -18,7 +18,7 @@ As of Airbyte 1.0, Refresh Syncs have been added to the Airbyte platform. A Refr
 - The source you are syncing from is unreliable and you wish to re-attempt the sync
 - Something has gone wrong with your sync, and you wish to try again
 
-Refresh syncs do not create data downtime. While the refresh is running, the previous data in your destination remains available to query. Only at the successful conclusion of a refresh sync with the newly refreshed data be swapped or merged into place. This is an improvement from the previous "Reset Syncs" that Airbyte had in earlier iterations.
+`Refresh Syncs` do not create data downtime. While the `Refresh Sync` is running, the previous data in your destination remains available to query. Only at the successful conclusion of a `Refresh Sync` will the newly refreshed data be swapped or merged into place. This is an improvement from the previous `Reset Syncs` that Airbyte had in earlier iterations.
 
 When performing a Refresh Sync, any records you’ve already imported will be imported again for the stream(s) being refreshed (assuming they are still present within the source), leading to a slower and more expensive sync than you might be used to. Refresh syncs will block any scheduled syncs from occurring until they are complete. During a Refresh Sync, the streams that are not being refreshed will also sync normally in order to lower data latency . All refresh syncs are resumable, if the underlying source and destination support [checkpointing](/understanding-airbyte/airbyte-protocol/#state--checkpointing).
 
