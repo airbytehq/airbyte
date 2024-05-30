@@ -39,6 +39,5 @@ These files can then be accessed by creating an SFTP connection to the server an
 
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
-| 0.1.2 | 2024-05-22 | [38541](https://github.com/airbytehq/airbyte/pull/38541) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2024-05-21 | [38541](https://github.com/airbytehq/airbyte/pull/38541) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-11-24 | [4924](https://github.com/airbytehq/airbyte/pull/4924) | 🎉 New Destination: SFTP JSON |

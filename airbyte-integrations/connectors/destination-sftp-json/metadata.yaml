@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/destination-sftp-json
   githubIssueLabel: destination-sftp-json
   icon: sftp.svg
