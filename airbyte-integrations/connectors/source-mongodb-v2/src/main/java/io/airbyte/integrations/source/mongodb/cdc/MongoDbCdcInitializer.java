@@ -164,7 +164,7 @@ public class MongoDbCdcInitializer {
     // We can close the client after the initial snapshot is complete, incremental
     // iterator does not make use of the client.
     final AutoCloseableIterator<AirbyteMessage> initialSnapshotIterator = AutoCloseableIterators.appendOnClose(
-        AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close); // TODO: check here
+        AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close);
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = incrementalOnlyStreamsCatalog.getStreams().stream()
         .filter(stream -> !initialSnapshotStreams.contains(stream))
