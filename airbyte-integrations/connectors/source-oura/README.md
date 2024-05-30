@@ -1,6 +1,5 @@
 # Oura source connector
 
-
 This is the repository for the Oura source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/oura).
 

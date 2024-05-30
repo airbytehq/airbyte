@@ -1073,7 +1073,6 @@ python-versions = ">=3.8"
 files = [
     {file = "requests-2.32.1-py3-none-any.whl", hash = "sha256:21ac9465cdf8c1650fe1ecde8a71669a93d4e6f147550483a2967d08396a56a5"},
     {file = "requests-2.32.1.tar.gz", hash = "sha256:eb97e87e64c79e64e5b8ac75cee9dd1f97f49e289b083ee6be96268930725685"},
-]
 
 [package.dependencies]
 certifi = ">=2017.4.17"
