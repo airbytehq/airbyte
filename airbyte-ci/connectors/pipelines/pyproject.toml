@@ -38,6 +38,7 @@ google-cloud-secret-manager = "^2.20.0"
 google-auth = "^2.29.0"
 pygithub = "^2.3.0"
 pydash = "6.0.2"
+python-slugify = ">=8.0.4"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"

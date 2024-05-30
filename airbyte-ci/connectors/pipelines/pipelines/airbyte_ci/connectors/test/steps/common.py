@@ -27,6 +27,7 @@ from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
+from slugify import slugify
 
 
 class VersionCheck(Step, ABC):
@@ -459,7 +460,9 @@ class RegressionTests(Step):
             # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
             # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
             # build their own.
-            .with_new_file(f"/tmp/{self.target_version}_container_id.txt", contents=str(target_container_id))
+            .with_new_file(
+                f"/tmp/{slugify(self.connector_image + ':' + self.target_version)}_container_id.txt", contents=str(target_container_id)
+            )
         )
 
         if self.context.is_ci:
