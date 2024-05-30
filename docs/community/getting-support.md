@@ -42,7 +42,7 @@ Please be sure to sign up for Airbyte with your company email address, as we do 
 
 If you're running Airbyte Open Source with Airbyte Enterprise or have an OSS support package, we're here to help you with upgrading Airbyte versions, debugging connector issues, or troubleshooting schema changes.
 
-Before opening a support ticket, we recommend consulting [our documentation](/) and searching our [Help Center](https://support.airbyte.com/hc/en-us). If your question remains unanswered, please submit a ticket through our Help Center. We suggest creating an [Airbyte Help Center account](https://airbyte1416.zendesk.com/auth/v2/login/signin?return_to=https%3A%2F%2Fsupport.airbyte.com%2Fhc%2Fen-us&theme=hc&locale=en-us&brand_id=15365055240347&auth_origin=15365055240347%2Ctrue%2Ctrue) to access your organization's support requests. Our team is online and availible to assist from 7AM - 7PM Eastern.
+Before opening a support ticket, we recommend consulting [our documentation](/) and searching our [Help Center](https://support.airbyte.com/hc/en-us). If your question remains unanswered, please submit a ticket through our Help Center. We suggest creating an [Airbyte Help Center account](https://airbyte1416.zendesk.com/auth/v2/login/registration) to access your organization's support requests. Our team is online and available to assist from 7 AM - 7 PM Eastern Standard Time.
 
 **Connector support is based on certification status of the connector.** Please see our [Connector Support Levels](/project-overview/product-support-levels) if you have any questions on support provided for one of your connectors.
 
