@@ -88,14 +88,13 @@ def header_name(n: SyntaxTreeNode) -> str:
 
 def prepare_lines_to_compare(connector_name: str, docs_line: str, template_line: str) -> tuple[str]:
     def _replace_link(docs_string: str, link_to_replace: str) -> str:
-        try:
-            docs_string = docs_string[: docs_string.index("(")] + link_to_replace + docs_string[docs_string.index(")") + 1 :]
-            return docs_string
-        except ValueError:  # ValueError if actual docs doesn't have expected links
-            return docs_string
+        links = re.findall("(https?://[^\s)]+)", docs_string)
+        for link in links:
+            docs_string = docs_string.replace(link, link_to_replace)
+        return docs_string
 
     connector_name_to_replace = "{connector_name}"
-    link_to_replace = "({docs_link})"
+    link_to_replace = "{docs_link}"
 
     template_line = (
         template_line.replace(connector_name_to_replace, connector_name) if connector_name_to_replace in template_line else template_line
