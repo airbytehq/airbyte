@@ -17,7 +17,7 @@ include = "source_exchange_rates"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^1"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-exchange-rates = "source_exchange_rates.run:run"
