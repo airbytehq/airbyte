@@ -5,18 +5,18 @@ package io.airbyte.integrations.destination.snowflake
 
 import io.airbyte.cdk.integrations.base.DestinationConfig
 import io.airbyte.commons.json.Jsons.emptyObject
+import io.airbyte.integrations.destination.snowflake.operation.SnowflakeStagingClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class SnowflakeInternalStagingSqlOperationsTest {
-    private var snowflakeStagingSqlOperations: SnowflakeInternalStagingSqlOperations? = null
+internal class SnowflakeStagingClientTest {
+    private var snowflakeStagingSqlOperations: SnowflakeStagingClient? = null
 
     @BeforeEach
     fun setup() {
         DestinationConfig.initialize(emptyObject())
-        snowflakeStagingSqlOperations =
-            SnowflakeInternalStagingSqlOperations(SnowflakeSQLNameTransformer())
+        snowflakeStagingSqlOperations = SnowflakeStagingClient(SnowflakeSQLNameTransformer())
     }
 
     @Test
