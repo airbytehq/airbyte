@@ -1,5 +1,22 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "value"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "accounts": {
+          "updated_at": "2024-04-01T13:10:01.213503"
+        },
+        "campaigns": {
+          "updated_at": "2024-05-15T13:10:01.213503"
+        },
+        "creatives": {
+          "updated_at": "2024-05-26T01:10:01.213503"
+        }
+      },
+      "stream_descriptor": {
+        "name": "SourceElasticSearchV2",
+        "namespace": ""
+      }
+    }
   }
-}
+]
