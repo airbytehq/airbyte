@@ -60,7 +60,7 @@
       "cursor_field": ["date"],
       "destination_sync_mode": "append"
     },
-        {
+    {
       "stream": {
         "name": "german_history_hospitalization",
         "json_schema": {},
