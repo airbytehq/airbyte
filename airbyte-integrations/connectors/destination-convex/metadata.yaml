@@ -2,7 +2,7 @@ data:
   connectorType: destination
   connectorSubtype: api
   definitionId: 3eb4d99c-11fa-4561-a259-fc88e0c2f8f4
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/destination-convex
   githubIssueLabel: destination-convex
   icon: convex.svg
@@ -25,4 +25,6 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
 metadataSpecVersion: "1.0"
