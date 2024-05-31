@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "supported_sync_modes": ["full_refresh"],
+    "properties": {
+      "links": {
+        "type": ["null", "string"]
+      },
+      "asofdate": {
+        "type": ["string"],
+        "format": "date-time"
+      },        
+      "id": {
+        "type": ["string"]
+      },      
+      "expensecogsaccount": {
+        "type": ["null", "string"]
+      },
+      "itemdescription": {
+        "type": ["null", "string"]
+      },
+      "itemname": {
+        "type": ["null", "string"]
+      },
+      "productfamily": {
+        "type": ["null", "string"]
+      },      
+      "preferredstocklevel": {
+        "type": ["null", "number"]
+      },      
+      "quantityavailable": {
+        "type": ["null", "number"]
+      },
+      "quantityavailableandonorder": {
+        "type": ["null", "number"]
+      },
+      "quantitycommitted": {
+        "type": ["null", "number"]
+      },   
+      "quantityonhand": {
+        "type": ["null", "number"]
+      },   
+      "quantityonorder": {
+        "type": ["null", "number"]
+      },   
+      "quantityneeded": {
+        "type": ["null", "number"]
+      },
+      "quantityintransit": {
+        "type": ["null", "number"]
+      }     
+    }
+  }

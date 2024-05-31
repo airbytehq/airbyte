@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests_oauthlib import OAuth1
 from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS
-from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream
+from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream, CustomInventory, CustomSalesOrder
 
 
 class SourceNetsuite(AbstractSource):
@@ -95,7 +95,11 @@ class SourceNetsuite(AbstractSource):
         """
         Calls the API for specific object type and returns schema as a dict.
         """
-        return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json()}
+        # TODO: May need to return a real schema instead of a fake one.
+        if (object_name.lower().startswith("custom_")):
+            return {object_name.lower(): { 'properties': { 'allData': {'title': 'All Data', 'type': 'string'} } } }
+        else:
+            return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json()}
 
     def generate_stream(
         self,
@@ -149,10 +153,10 @@ class SourceNetsuite(AbstractSource):
         metadata_url = base_url + META_PATH
         object_names = config.get("object_types")
 
-        # retrieve all record types if `object_types` config field is not specified
-        if not object_names:
-            objects_metadata = session.get(metadata_url).json().get("items")
-            object_names = [object["name"] for object in objects_metadata]
+        # Do not try to query NetSuite to pull all object names. This will not end well...
+        # if not object_names:
+        #     objects_metadata = session.get(metadata_url).json().get("items")
+        #     object_names = [object["name"] for object in objects_metadata]
 
         input_args = {"session": session, "metadata_url": metadata_url}
         schemas = self.get_schemas(object_names, **input_args)
@@ -171,4 +175,14 @@ class SourceNetsuite(AbstractSource):
             stream = self.generate_stream(object_name=name.lower(), **input_args)
             if stream:
                 streams.append(stream)
+                
+        # Append to the config-driven dynamic list of streams with our custom streams.
+        # No longer need the schemas as param for these streams.
+        input_args.pop("schemas")
+        input_args.pop("session")
+        input_args.pop("metadata_url")
+        input_args.update(**{ "object_name": "" })
+        streams.append(CustomInventory(**input_args))
+        streams.append(CustomSalesOrder(**input_args))
+        
         return streams
