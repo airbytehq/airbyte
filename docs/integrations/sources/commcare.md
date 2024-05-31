@@ -36,7 +36,9 @@ The Commcare source connector supports the following streams:
 ## Changelog
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                   |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------- |
 | 0.1.0   | 2022-11-08 | [20220](https://github.com/airbytehq/airbyte/pull/20220) | Commcare Source Connector |
+
 </details>

@@ -71,6 +71,7 @@ In the Data tab, you should see the tables and a sample of the data that will be
 ## Changelog
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
 | 0.4.0   | 2023-12-13 | [33431](https://github.com/airbytehq/airbyte/pull/33431) | 🐛 Convex source fix bug where full_refresh stops after one page |
@@ -78,4 +79,5 @@ In the Data tab, you should see the tables and a sample of the data that will be
 | 0.2.0   | 2023-06-21 | [27226](https://github.com/airbytehq/airbyte/pull/27226) | 🐛 Convex source fix skipped records                             |
 | 0.1.1   | 2023-03-06 | [23797](https://github.com/airbytehq/airbyte/pull/23797) | 🐛 Convex source connector error messages                        |
 | 0.1.0   | 2022-10-24 | [18403](https://github.com/airbytehq/airbyte/pull/18403) | 🎉 New Source: Convex                                            |
+
 </details>

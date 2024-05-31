@@ -48,8 +48,10 @@ The following fields are required fields for the connector to work:
 ## Changelog
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
 | 0.1.1   | 2023-04-30 | [25558](https://github.com/airbytehq/airbyte/pull/25558) | Make manifest.yaml connector builder-friendly |
 | 0.1.0   | 2022-10-20 | [18248](https://github.com/airbytehq/airbyte/pull/18248) | New source                                    |
+
 </details>

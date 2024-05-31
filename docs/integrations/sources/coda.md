@@ -63,6 +63,7 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 ## Changelog
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
 | 1.2.2   | 2024-05-28 | [38578](https://github.com/airbytehq/airbyte/pull/38578) | Make connector Builder compatible                                                                           |
@@ -71,4 +72,5 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 | 1.1.0   | 2023-07-10 | [27797](https://github.com/airbytehq/airbyte/pull/27797) | Add `rows` stream                                                                                           |
 | 1.0.0   | 2023-07-10 | [28093](https://github.com/airbytehq/airbyte/pull/28093) | Update `docs` and `pages` schemas                                                                           |
 | 0.1.0   | 2022-11-17 | [18675](https://github.com/airbytehq/airbyte/pull/18675) | 🎉 New source: Coda [python cdk]                                                                            |
+
 </details>
