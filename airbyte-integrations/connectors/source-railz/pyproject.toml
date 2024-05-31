@@ -17,7 +17,7 @@ include = "source_railz"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "^0"
 isodate = "==0.6.1"
 requests = "==2.28.2"
 
