@@ -133,7 +133,7 @@ class SourceFacebookMarketing(AbstractSource):
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
         if config.credentials is not None:
-                api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+            api = API(access_token=config.credentials.access_token, page_size=config.page_size)
         else:
             api = API(access_token=config.access_token, page_size=config.page_size)
 
@@ -261,7 +261,7 @@ class SourceFacebookMarketing(AbstractSource):
                             "auth_type": {
                                 "type": "string",
                                 "path_in_connector_config": ["credentials", "auth_type"],
-                            }
+                            },
                         },
                     },
                     complete_oauth_server_input_specification={
@@ -286,7 +286,7 @@ class SourceFacebookMarketing(AbstractSource):
                             "auth_type": {
                                 "type": "string",
                                 "path_in_connector_config": ["credentials", "auth_type"],
-                            }
+                            },
                         },
                     },
                 ),

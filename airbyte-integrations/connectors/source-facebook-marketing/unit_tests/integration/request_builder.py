@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
-from .config import ACCOUNT_ID, ACCESS_TOKEN
+from .config import ACCESS_TOKEN, ACCOUNT_ID
 
 
 def get_account_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:

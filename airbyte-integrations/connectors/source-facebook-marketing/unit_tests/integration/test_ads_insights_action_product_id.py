@@ -25,7 +25,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_protocol.models import AirbyteStateMessage, StreamDescriptor, SyncMode
 from source_facebook_marketing.streams.async_job import Status
 
-from .config import ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, ACCESS_TOKEN, START_DATE, ConfigBuilder
+from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response

@@ -131,7 +131,6 @@ class MigrateSecretsPathInConnector:
     Starting from `2.2.0`, the `client_id`, `client_secret` and `access_token` will be placed at `credentials` path.
     """
 
-
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
@@ -141,10 +140,7 @@ class MigrateSecretsPathInConnector:
             > True, if the migration is necessary
             > False, otherwise.
         """
-        credentials = config.get("credentials", None)
-        return credentials is None or (
-            "access_token" not in credentials and ("client_id" not in credentials or "client_secret" not in credentials)
-        )
+        return "access_token" in config or "client_id" in config or "client_secret" in config
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
@@ -172,13 +168,13 @@ class MigrateSecretsPathInConnector:
                 "auth_type": "Service",
             }
         if "access_token" in config:
-            config["credentials"]["access_token"] = config.get("access_token")
+            config["credentials"]["access_token"] = config.pop("access_token")
         if "client_id" in config:
             config["credentials"]["auth_type"] = "Client"
-            config["credentials"]["client_id"] = config.get("client_id")
+            config["credentials"]["client_id"] = config.pop("client_id")
         if "client_secret" in config:
             config["credentials"]["auth_type"] = "Client"
-            config["credentials"]["client_secret"] = config.get("client_secret")
+            config["credentials"]["client_secret"] = config.pop("client_secret")
         # return transformed config
         return config
 
@@ -195,4 +191,3 @@ class MigrateSecretsPathInConnector:
     def _emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
         # add the Airbyte Control Message to message repo
         print(create_connector_config_control_message(migrated_config).json(exclude_unset=True))
-

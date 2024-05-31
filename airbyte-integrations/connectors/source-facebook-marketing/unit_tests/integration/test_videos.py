@@ -20,7 +20,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 
-from .config import ACCOUNT_ID, NOW, ACCESS_TOKEN, ConfigBuilder
+from .config import ACCESS_TOKEN, ACCOUNT_ID, NOW, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import error_reduce_amount_of_data_response, get_account_response
