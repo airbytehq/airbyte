@@ -14,7 +14,7 @@ This page describes a coming-soon feature. Refreshes will be available as of Air
 
 As of Airbyte 1.0, Refresh Syncs have been added to the Airbyte platform. A Refresh Sync erases the current cursor you have set for any incremental streams, effectively ‘rewinding’ the sync back to the beginning. This is helpful in the following scenarios:
 
-- The source you're syncing from does not sync record deletions/removals, and you wish to truly mirror the source stream, which would include removing deleted records
+- The source you're syncing from does not sync record deletions/removals, and you wish to mirror the source stream, which would include removing deleted records
 - The source you are syncing from is unreliable and you wish to re-attempt the sync
 - Something has gone wrong with your sync, and you wish to try again
 
