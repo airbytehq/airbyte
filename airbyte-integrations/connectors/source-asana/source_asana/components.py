@@ -2,27 +2,22 @@
 
 from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional
-
-import requests
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    RequestInput,
-)
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 
 @dataclass
-class CustomAsanaRequester(HttpRequester, SchemaLoader):
-    # def get_request_params(
-    #     self,
-    #     *,
-    #     stream_state: Optional[StreamState] = None,
-    #     stream_slice: Optional[StreamSlice] = None,
-    #     next_page_token: Optional[Mapping[str, Any]] = None,
-    # ) -> MutableMapping[str, Any]:
-    #     params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-    #     # params.update(self.get_opt_fields(self))
-    #     return params
+class CustomAsanaRequester(HttpRequester):
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        # params.update(self.get_opt_fields(self))
+        return params
 
     def _request_params(
         self,
@@ -46,7 +41,8 @@ class CustomAsanaRequester(HttpRequester, SchemaLoader):
         More info can be found here - https://developers.asana.com/docs/input-output-options.
         """
         opt_fields = list()
-        schema = self.get_json_schema()
+        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
+        schema = schema_loader.get_json_schema()
 
         for prop, value in schema["properties"].items():
             if "object" in value["type"]:
