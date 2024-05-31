@@ -26,6 +26,7 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 - [API token](https://www.ip2whois.com/register)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

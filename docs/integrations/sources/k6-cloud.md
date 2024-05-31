@@ -26,6 +26,7 @@ This source can sync data from the [K6 Cloud API](https://developers.k6.io). At 
 - API Token
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

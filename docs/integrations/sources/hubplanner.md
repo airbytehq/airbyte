@@ -38,6 +38,7 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 - [Resources](https://github.com/hubplanner/API/blob/master/Sections/resource.md)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

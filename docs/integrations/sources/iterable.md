@@ -77,6 +77,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 [List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to unexpected failures when trying to get users list for specific list ids. See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

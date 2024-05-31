@@ -50,6 +50,7 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 - Hellobaton api key
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

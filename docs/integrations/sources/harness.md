@@ -46,6 +46,7 @@ Please follow the [their documentation for generating a Harness API
 Key](https://ngdocs.harness.io/article/tdoad7xrh9-add-and-manage-api-keys#harness_api_key).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

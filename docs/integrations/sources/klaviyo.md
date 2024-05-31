@@ -66,6 +66,7 @@ Stream `Lists Detailed` contains field `profile_count` in addition to info from 
 | `object`         | `object`     |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

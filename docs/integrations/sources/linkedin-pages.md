@@ -115,6 +115,7 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
    - As mentioned earlier, you can also simply use the Access token auth method for 60-day access.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -331,6 +331,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

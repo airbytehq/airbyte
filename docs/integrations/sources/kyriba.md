@@ -65,6 +65,7 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

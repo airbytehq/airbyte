@@ -68,6 +68,7 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

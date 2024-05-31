@@ -40,6 +40,7 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 - Lever Hiring Refresh Token
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

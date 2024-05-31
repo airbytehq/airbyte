@@ -28,6 +28,7 @@ This Source is capable of syncing the following core Streams:
 - **Klaus API keys**. See the [Klaus API docs](https://support.klausapp.com/en/articles/4027272-setting-up-a-custom-integration) for information on how to obtain the API keys.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

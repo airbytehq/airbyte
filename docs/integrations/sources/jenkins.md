@@ -53,6 +53,7 @@ Login to your Jenkins server in your browser and go to
 `https://your.jenkins.url/me/configure` to generate your API token.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

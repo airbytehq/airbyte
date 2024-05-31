@@ -120,6 +120,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 - [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

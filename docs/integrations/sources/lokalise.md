@@ -58,6 +58,7 @@ The Lokalise source connector supports the following [sync modes](https://docs.a
 | `object`            | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

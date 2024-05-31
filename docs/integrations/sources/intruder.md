@@ -29,6 +29,7 @@ Intruder.io APIs are under rate limits for the number of API calls allowed per A
 - Intruder.io Access token
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

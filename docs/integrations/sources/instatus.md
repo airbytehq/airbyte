@@ -61,6 +61,7 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 | Namespaces        | No                   |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

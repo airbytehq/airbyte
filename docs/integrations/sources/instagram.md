@@ -110,6 +110,7 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -172,6 +172,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | `string`         | `string`     |                             |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

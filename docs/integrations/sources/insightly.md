@@ -66,6 +66,7 @@ The Insightly source connector supports the following streams, some of them may 
 The connector is restricted by Insightly [requests limitation](https://api.na1.insightly.com/v3.1/#!/Overview/Introduction).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

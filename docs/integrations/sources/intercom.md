@@ -72,6 +72,7 @@ The connector is restricted by normal Intercom [request limitations](https://dev
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

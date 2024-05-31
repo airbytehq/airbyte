@@ -115,6 +115,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 | Namespaces       | No           |                                                                                 |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

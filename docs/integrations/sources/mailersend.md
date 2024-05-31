@@ -22,6 +22,7 @@ MailerSend has a default [rate limit](https://developers.mailersend.com/general.
 ## Getting started
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

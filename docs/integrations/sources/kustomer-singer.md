@@ -53,6 +53,7 @@ Kustomer has some [rate limit restrictions](https://developer.kustomer.com/kusto
 - **Kustomer API token**. See the [Kustomer docs](https://help.kustomer.com/api-keys-SJs5YTIWX) for information on how to obtain an API token.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

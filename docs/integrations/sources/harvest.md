@@ -85,6 +85,7 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

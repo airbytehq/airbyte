@@ -58,6 +58,7 @@ The procedure to generate the credentials and setup the necessary permissions is
 https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-application-user-in-dynamics-365
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

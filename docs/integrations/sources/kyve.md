@@ -23,6 +23,7 @@ For information about how to setup an end to end pipeline with this connector, s
 You can fetch with one source configuration more than one pool simultaneously. You just need to specify the **`Pool-IDs`** and the **`Bundle-Start-ID`** for the KYVE storage pool you want to archive separated with comma.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

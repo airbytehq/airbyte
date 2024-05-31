@@ -34,6 +34,7 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 - Lemlist API key
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

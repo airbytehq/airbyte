@@ -56,6 +56,7 @@ Klarna API has [rate limiting](https://developers.klarna.com/api/#api-rate-limit
 Connector will handle an issue with rate limiting as Klarna returns 429 status code when limits are reached
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -73,6 +73,7 @@ GET https://api.merge.dev/api/ats/v1/account-details
 Merge [API reference](https://api.merge.dev/api/ats/v1/) has v1 at present. The connector as default uses v1.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

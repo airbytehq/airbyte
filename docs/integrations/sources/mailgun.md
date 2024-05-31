@@ -62,6 +62,7 @@ The MailGun source connector supports the following [sync modes](https://docs.ai
 MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_reference.html) has v3 at present and v4 is at development. The connector as default uses v3.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
