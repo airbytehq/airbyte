@@ -52,6 +52,7 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 | Namespaces        | No         |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

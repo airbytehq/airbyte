@@ -416,6 +416,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 ```
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

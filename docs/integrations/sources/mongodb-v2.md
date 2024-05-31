@@ -193,6 +193,7 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.10/fundamentals/connection/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -30,6 +30,7 @@ This source allows you to synchronize the following data tables:
 Depending on the amount of team members and time logs the source provides a property to change the pagination size for the time logs query. Typically a pagination of 30 days is a correct balance between reliability and speed. But if you have a big amount of monthly entries you might want to change this value to a lower value.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

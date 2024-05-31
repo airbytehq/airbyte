@@ -50,6 +50,7 @@ The following fields are required fields for the connector to work:
 - (optional) `end_datetime`: The end date and time for the sync.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

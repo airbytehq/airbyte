@@ -306,6 +306,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | composite type                        | string         |                                                                                                                                                      |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -58,6 +58,7 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 - [Guide](https://engageapi.pendo.io/#4f1e3ca1-fc41-4469-bf4b-da90ee8caf3d)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

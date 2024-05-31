@@ -32,6 +32,7 @@ Visit the [OpenWeather](https://openweathermap.org) to create a user account and
 The free plan allows 60 calls per minute and 1,000,000 calls per month, you won't get beyond these limits with existing Airbyte's sync frequencies.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

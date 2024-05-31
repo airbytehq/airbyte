@@ -197,6 +197,7 @@ The connector is restricted by the Pinterest
 [requests limitation](https://developers.pinterest.com/docs/reference/ratelimits/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

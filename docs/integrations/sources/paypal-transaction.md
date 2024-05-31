@@ -258,6 +258,7 @@ The below table contains the configuraiton parameters available for this connect
 | `object`         | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

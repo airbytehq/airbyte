@@ -72,6 +72,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 | `object`         | `object`     |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

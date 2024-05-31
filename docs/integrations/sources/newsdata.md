@@ -42,6 +42,7 @@ The following fields are required fields for the connector to work:
 - `api_key`: Your Newsdata API key.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

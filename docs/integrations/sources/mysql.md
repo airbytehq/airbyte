@@ -227,6 +227,7 @@ Any database or table encoding combination of charset and collation is supported
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

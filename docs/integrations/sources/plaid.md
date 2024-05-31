@@ -67,6 +67,7 @@ This guide will walk through how to create the credentials you need to run this 
 - We should now have everything we need to configure this source in the UI.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

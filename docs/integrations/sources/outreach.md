@@ -50,6 +50,7 @@ List of available streams:
 - Snippets
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

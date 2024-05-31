@@ -109,6 +109,7 @@ Apart from `Fields` streams, all other streams support incremental.
 The Pipedrive connector will gracefully handle rate limits. For more information, see [the Pipedrive docs for rate limitations](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

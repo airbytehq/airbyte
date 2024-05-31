@@ -80,6 +80,7 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 The connector is restricted by normal Okta [requests limitation](https://developer.okta.com/docs/reference/rate-limits/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

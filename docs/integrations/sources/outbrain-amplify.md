@@ -59,6 +59,7 @@ The Outbrain Amplify connector should not run into Outbrain Amplify API limitati
 Specify credentials and a start date.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

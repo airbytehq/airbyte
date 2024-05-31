@@ -48,6 +48,7 @@ Your API Key needs to have `Read` and `Configuration Access` permissions to enab
 The Opsgenie connector uses the most recent API version for each source of data. Each stream endpoint operates on its own version.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

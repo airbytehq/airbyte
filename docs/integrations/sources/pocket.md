@@ -51,6 +51,7 @@ curl --insecure -X POST -H 'Content-Type: application/json' -H 'X-Accept: applic
 ```
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -30,6 +30,7 @@ Thus, this source connector retrieves [all possible metrics](https://plausible.i
 The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per hour per API key, with higher capacities potentially available [upon request](https://plausible.io/contact).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

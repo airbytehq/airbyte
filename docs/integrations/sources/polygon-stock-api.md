@@ -47,6 +47,7 @@ The following fields are required fields for the connector to work:
 - (optional) `limit`: Limits the number of base aggregates queried to create the aggregate results. Max 50000 and Default 5000. Read more about how limit is used to calculate aggregate results in our article on Aggregate Data API Improvements [Find-more](https://polygon.io/blog/aggs-api-updates/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

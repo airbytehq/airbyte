@@ -47,6 +47,7 @@ Please follow the [their documentation for generating a PagerDuty API
 Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a-general-access-rest-api-key).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

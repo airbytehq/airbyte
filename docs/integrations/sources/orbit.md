@@ -42,6 +42,7 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 4. Click **New API Token** in the top right if one doesn't already exist.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

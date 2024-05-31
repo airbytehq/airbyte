@@ -42,6 +42,7 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 2. You won't be able to specify the `base` parameter, meaning that you will be dealing only with default base value which is USD.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

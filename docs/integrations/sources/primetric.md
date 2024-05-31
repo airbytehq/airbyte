@@ -54,6 +54,7 @@ your employees to the right projects.
 - Primetric client id
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -50,6 +50,7 @@ Access your profile [here](https://www.pivotaltracker.com/profile) go down and c
 Use this to pull data from Pivotal Tracker.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

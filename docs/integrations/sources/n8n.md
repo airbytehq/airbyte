@@ -26,6 +26,7 @@ You need a n8n instance or use cloud version
 - Select Create an API key.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -101,6 +101,7 @@ This connector outputs the following incremental streams:
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

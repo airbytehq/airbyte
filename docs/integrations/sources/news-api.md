@@ -55,6 +55,7 @@ The following fields are required fields for the connector to work:
 - `sort_by`: How to sort the results.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

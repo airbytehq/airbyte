@@ -58,6 +58,7 @@ GET https://api.punkapi.com/v2/beers
 Punk API's [API reference](https://punkapi.com/documentation/v2) has v2 at present and v1 as depricated. The connector as default uses v2.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

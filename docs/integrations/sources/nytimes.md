@@ -39,6 +39,7 @@ The New York Times connector should not run into limitations under normal usage.
 3. Write the key into `secrets/config.json` file.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

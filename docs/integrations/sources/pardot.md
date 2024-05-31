@@ -58,6 +58,7 @@ The Pardot connector should not run into Pardot API limitations under normal usa
 - `is_sandbox`: Whether or not the app is in a Salesforce sandbox. If you do not know what this is, assume it is false.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

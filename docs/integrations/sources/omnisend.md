@@ -30,6 +30,7 @@ The connector has a rate limit of 400 requests per 1 minute.
 - Omnisend API Key
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

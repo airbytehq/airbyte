@@ -37,6 +37,7 @@ The PersistIq connector should not run into PersistIq API limitations under norm
 Please read [How to find your API key](https://apidocs.persistiq.com/#introduction).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
