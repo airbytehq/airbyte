@@ -1,0 +1,90 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MenuItemFeedbackReport",
+    "description": "Schema for menu item feedback reports from Uber Eats.",
+    "type": "object",
+    "properties": {
+      "Store": {
+        "type": ["string", "null"]
+      },
+      "External Store ID": {
+        "type": ["string", "null"]
+      },
+      "Country": {
+        "type": "string"
+      },
+      "Country Code": {
+        "type": "string"
+      },
+      "City": {
+        "type": "string"
+      },
+      "Order ID": {
+        "type": ["string", "null"]
+      },
+      "Order UUID": {
+        "type": "string"
+      },
+      "Date Ordered": {
+        "type": "string",
+        "format": "date"
+      },
+      "Item Name": {
+        "type": "string"
+      },
+      "Currency Code": {
+        "type": "string"
+      },
+      "Item Price": {
+        "type": "number"
+      },
+      "Menu Category": {
+        "type": "string"
+      },
+      "Special Instructions": {
+        "type": ["string", "null"]
+      },
+      "Rating Date": {
+        "type": "string",
+        "format": "date"
+      },
+      "Rating Time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "Rating Value": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 5
+      },
+      "Comment": {
+        "type": ["string", "null"]
+      },
+      "Catering Order?": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "External Item ID": {
+        "type": ["string", "null"]
+      },
+      "External Data": {
+        "type": ["string", "null"]
+      },
+      "Fulfillment Type": {
+        "type": "string"
+      },
+      "Order Channel": {
+        "type": "string"
+      },
+      "Eats Brand": {
+        "type": "string"
+      },
+      "Rating Tags": {
+        "type": ["string", "null"]
+      }
+    },
+    "required": [],
+    "additionalProperties": true
+  }
+  
