@@ -801,6 +801,14 @@ class WaitUntilTimeFromHeader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class Decoder(BaseModel):
+    __root__: Any
+
+
+class JsonlDecoder(BaseModel):
+    __root__: Any
+
+
 class AddedFieldDefinition(BaseModel):
     type: Literal['AddedFieldDefinition']
     path: List[str] = Field(
@@ -884,9 +892,7 @@ class CursorPagination(BaseModel):
         examples=['{{ response.data.has_more is false }}', "{{ 'next' not in headers['link'] }}"],
         title='Stop Condition',
     )
-    decoder: Optional[JsonDecoder] = Field(
-        None, description='Component decoding the response so records can be extracted.', title='Decoder'
-    )
+    decoder: Optional[Decoder] = Field(None, description='Component decoding the response so records can be extracted.', title='Decoder')
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -991,7 +997,7 @@ class DefaultPaginator(BaseModel):
     pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrement, PageIncrement] = Field(
         ..., description='Strategy defining how records are paginated.', title='Pagination Strategy'
     )
-    decoder: Optional[JsonDecoder] = Field(
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder]] = Field(
         None, description='Component decoding the response so records can be extracted.', title='Decoder'
     )
     page_size_option: Optional[RequestOption] = None
@@ -1007,9 +1013,7 @@ class DpathExtractor(BaseModel):
         examples=[['data'], ['data', 'records'], ['data', '{{ parameters.name }}'], ['data', '*', 'record']],
         title='Field Path',
     )
-    decoder: Optional[JsonDecoder] = Field(
-        None, description='Component decoding the response so records can be extracted.', title='Decoder'
-    )
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder]] = Field(None, title='Decoder')
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1086,7 +1090,7 @@ class DeclarativeSource(BaseModel):
     type: Literal['DeclarativeSource']
     check: CheckStream
     streams: List[DeclarativeStream]
-    version: str = Field(..., description='The version of the CDK used to build and test the source.')
+    version: str = Field(..., description='The version of the Airbyte CDK used to build and test the source.')
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None

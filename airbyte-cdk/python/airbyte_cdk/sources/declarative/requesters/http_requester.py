@@ -65,6 +65,7 @@ class HttpRequester(Requester):
     disable_retries: bool = False
     message_repository: MessageRepository = NoopMessageRepository()
     use_cache: bool = False
+    stream_response: bool = False
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
@@ -531,13 +532,20 @@ class HttpRequester(Requester):
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
-        response: requests.Response = self._session.send(request)
-        self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
+        response: requests.Response = self._session.send(request, stream=self.stream_response)
+        if self.stream_response:
+            self.logger.debug(
+                "Receiving response, but not logging it as it is a stream response",
+                extra={"headers": response.headers, "status": response.status_code},
+            )
+        else:
+            self.logger.debug(
+                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+            )
         if log_formatter:
-            formatter = log_formatter
             self.message_repository.log_message(
                 Level.DEBUG,
-                lambda: formatter(response),
+                lambda: log_formatter(response),
             )
         if self._should_retry(response):
             custom_backoff_time = self._backoff_time(response)
