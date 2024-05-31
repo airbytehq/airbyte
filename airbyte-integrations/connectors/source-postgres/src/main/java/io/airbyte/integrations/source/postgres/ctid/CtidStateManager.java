@@ -120,8 +120,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
    */
   @Override
   public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
-    return Objects.nonNull(lastCtid)
-        && StringUtils.isNotBlank(lastCtid);
+    return false;
   }
 
   private JsonNode getStreamState(final AirbyteStreamNameNamespacePair pair) {
