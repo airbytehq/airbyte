@@ -17,7 +17,7 @@ include = "source_getlago"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-getlago = "source_getlago.run:run"
