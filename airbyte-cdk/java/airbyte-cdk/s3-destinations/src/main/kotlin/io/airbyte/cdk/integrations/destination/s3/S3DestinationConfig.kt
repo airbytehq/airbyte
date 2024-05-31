@@ -294,6 +294,7 @@ open class S3DestinationConfig {
         }
 
         @JvmStatic
+        @JvmOverloads
         fun getS3DestinationConfig(
             @Nonnull config: JsonNode,
             environment: Map<String, String> = System.getenv()

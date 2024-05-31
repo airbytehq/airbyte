@@ -16,10 +16,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SizeBasedDataTransformer.TransformationInfo;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
-import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer.TransformationInfo;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change;
@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import kotlin.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,9 +65,32 @@ public class RedshiftSuperLimitationTransformerTest {
     transformer = new RedshiftSuperLimitationTransformer(parsedCatalog, "test_schema");
   }
 
+  private static final String EMPLOYEE_JSON_STRING = """
+    {
+      "id": %d,
+      "name": "John Doe",
+      "age": 35,
+      "salary": 7.50005e4,
+      "performance_rating": 4.5,
+      "department": "Engineering",
+      "skills": ["Java", "Python", "C++"],
+      "manager": {
+       "id": 101,
+       "name": "Jane Smith"
+      }
+    }""";
+  private static final String JSON_STRING = """                             
+    {
+      "employees": [
+        %s
+       ]
+    }
+    """;
+
   @Test
   public void testVarcharNulling() throws IOException {
-    final String jsonString = MoreResources.readResource("test.json");
+    int numEmployees = (RedshiftSuperLimitationTransformer.REDSHIFT_SUPER_MAX_BYTE_SIZE/EMPLOYEE_JSON_STRING.length()) + 1;
+    final String jsonString = JSON_STRING.formatted(IntStream.range(0, numEmployees).mapToObj(i->EMPLOYEE_JSON_STRING.formatted(i)).collect(Collectors.joining(",\n")));
     final JsonNode jsonNode = Jsons.deserializeExact(jsonString);
     // Calculate the size of the json before transformation, note that the original JsonNode is altered
     // so
@@ -74,12 +98,12 @@ public class RedshiftSuperLimitationTransformerTest {
     final int jacksonDeserializationSize = Jsons.serialize(jsonNode).getBytes(StandardCharsets.UTF_8).length;
     // Add a short length as predicate.
     final TransformationInfo transformationInfo =
-        transformer.transformNodes(jsonNode, text -> text.length() > 10);
+        transformer.clearLargeFields(jsonNode);
     // Calculate the size of the json after transformation
     final int jacksonDeserializeSizeAfterTransform = Jsons.serialize(jsonNode).getBytes(StandardCharsets.UTF_8).length;
-    assertEquals(jacksonDeserializationSize, transformationInfo.originalBytes());
-    assertEquals(jacksonDeserializeSizeAfterTransform, transformationInfo.originalBytes() - transformationInfo.removedBytes());
-    System.out.println(transformationInfo.meta());
+    assertEquals(jacksonDeserializationSize, transformationInfo.getOriginalBytes());
+    assertEquals(jacksonDeserializeSizeAfterTransform, transformationInfo.getOriginalBytes() - transformationInfo.getRemovedBytes());
+    System.out.println(transformationInfo.getMeta());
     System.out.println(Jsons.serialize(jsonNode));
   }
 
