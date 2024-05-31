@@ -80,6 +80,7 @@ The YouTube Analytics source connector supports the following [sync modes](https
 Quota usage is not an issue because data is retrieved once and then filtered, sorted, and queried within the application.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

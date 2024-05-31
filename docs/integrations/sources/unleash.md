@@ -52,6 +52,7 @@ For more information around the returned payload, [see that page](https://docs.g
 The API key that you are assigned is rate-limited.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

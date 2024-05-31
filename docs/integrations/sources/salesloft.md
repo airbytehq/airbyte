@@ -99,6 +99,7 @@ This connector outputs the following streams:
 Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Topic/RateLimiting), but the Salesloft connector should not run into Salesloft API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

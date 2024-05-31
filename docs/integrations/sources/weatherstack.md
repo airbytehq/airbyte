@@ -33,6 +33,7 @@ Visit the [Wetherstack](https://weatherstack.com/) to create a user account and 
 The free plan allows 250 calls per month, you won't get beyond these limits with existing Airbyte's sync frequencies.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

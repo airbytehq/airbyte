@@ -65,6 +65,7 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 :::
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -45,6 +45,7 @@ The following fields are required fields for the connector to work:
   channels, or set to 'global' for only global channels.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

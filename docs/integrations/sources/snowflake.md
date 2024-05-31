@@ -110,6 +110,7 @@ SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

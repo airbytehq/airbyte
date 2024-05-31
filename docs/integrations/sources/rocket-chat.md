@@ -35,6 +35,7 @@ You need to setup a personal access token within the Rocket.chat workspace, see 
 - endpoint
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

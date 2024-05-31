@@ -98,6 +98,7 @@ Useful links:
 | `boolean`        | `boolean`    |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

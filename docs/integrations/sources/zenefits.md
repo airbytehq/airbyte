@@ -50,6 +50,7 @@ You can replicate the following tables using the Zenefits connector:
 |      object      |    object    |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

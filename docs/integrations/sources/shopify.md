@@ -205,6 +205,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

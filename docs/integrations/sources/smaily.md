@@ -33,6 +33,7 @@ The connector has a rate limit of 5 API requests per second per IP-address.
 - Smaily API subdomain
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

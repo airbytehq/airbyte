@@ -65,6 +65,7 @@ GET https://api.yotpo.com/v1/apps/APPAAAAAATTTTTTDDDDDD/reviews?utoken=abcdefghi
 Yotpo [API reference](https://api.yotpo.com/v1/) has v1 at present. The connector as default uses v1 and changed according to different endpoints.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -124,6 +124,7 @@ Now that you have set up the TiDB source connector, check out the following TiDB
 - [Using Airbyte to Migrate Data from TiDB Cloud to Snowflake](https://en.pingcap.com/blog/using-airbyte-to-migrate-data-from-tidb-cloud-to-snowflake/)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

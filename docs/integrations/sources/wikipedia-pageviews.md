@@ -47,6 +47,7 @@ The Wikipedia Pageviews source connector supports the following [sync modes](htt
 100 req/s per endpoint.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

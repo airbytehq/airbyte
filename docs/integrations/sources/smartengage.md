@@ -25,6 +25,7 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 - SmartEngage API Key
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

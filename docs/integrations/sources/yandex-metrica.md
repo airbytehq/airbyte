@@ -86,6 +86,7 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 | `object`         | `object`     |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

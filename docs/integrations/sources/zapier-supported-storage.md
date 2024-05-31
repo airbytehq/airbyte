@@ -19,6 +19,7 @@ The Zapier Supported Storage Connector can be used to sync your [Zapier](https:/
 - secret - The Storage by Zapier secret.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -97,6 +97,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 | `boolean`        | `boolean`    |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -77,6 +77,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 | `object`         | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

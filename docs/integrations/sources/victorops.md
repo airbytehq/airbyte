@@ -48,6 +48,7 @@ Please follow the [their documentation for generating a VictorOps API
 Key](https://help.victorops.com/knowledge-base/api/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

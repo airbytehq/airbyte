@@ -107,6 +107,7 @@ The Guardian API source connector supports the following [sync modes](https://do
 The key that you are assigned is rate-limited and as such any applications that depend on making large numbers of requests on a polling basis are likely to exceed their daily quota and thus be prevented from making further requests until the next period begins.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

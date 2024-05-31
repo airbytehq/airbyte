@@ -26,6 +26,7 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 - API Access
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

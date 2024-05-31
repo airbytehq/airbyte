@@ -95,6 +95,7 @@ Connector performs additional API call to fetch all possible `form ids` on an ac
 API rate limits \(2 requests per second\): [https://developer.typeform.com/get-started/\#rate-limits](https://developer.typeform.com/get-started/#rate-limits)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

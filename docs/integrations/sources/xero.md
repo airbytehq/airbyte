@@ -102,6 +102,7 @@ As Xero uses .NET, some date fields in records could be in [.NET JSON date forma
 The connector is restricted by Xero [API rate limits](https://developer.xero.com/documentation/guides/oauth2/limits/#api-rate-limits).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

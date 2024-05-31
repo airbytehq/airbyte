@@ -219,6 +219,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

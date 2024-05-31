@@ -127,6 +127,7 @@ For generating the refresh token, please refer to [this page](https://www.zoho.c
 Make sure to complete the auth flow quickly, as the initial token granted by Zoho CRM is only live for a few minutes before it can no longer be used to generate a refresh token.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

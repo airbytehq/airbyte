@@ -43,6 +43,7 @@ You can get the API Token for Retently [here](https://app.retently.com/settings/
 OAuth application is [here](https://app.retently.com/settings/oauth).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

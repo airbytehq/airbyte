@@ -48,6 +48,7 @@ The Workable source connector supports the following [sync modes](https://docs.a
 - [Recruiters](https://workable.readme.io/reference/recruiters)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

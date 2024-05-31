@@ -35,6 +35,7 @@ This Source is capable of syncing the following core Streams:
 - **Reply.io API key**. See the [Reply.io docs](https://apidocs.reply.io/#authentication) for information on how to obtain an API key.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

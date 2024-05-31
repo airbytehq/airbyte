@@ -3,6 +3,7 @@
 The Airbyte Source for [Yahoo Finance Price](https://finance.yahoo.com/)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

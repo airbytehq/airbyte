@@ -121,6 +121,7 @@ Strava API has limitations to 100 requests every 15 minutes, 1000 daily.
 More information about Strava rate limits and adjustments to those limits can be found [here](https://developers.strava.com/docs/rate-limits).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

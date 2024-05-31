@@ -61,6 +61,7 @@ The Explore API has an account-based quota limit of 15 simultaneous reports (exe
 Please refer to the [getting started with the API](https://docs.talkdesk.com/docs/api-access) guide.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

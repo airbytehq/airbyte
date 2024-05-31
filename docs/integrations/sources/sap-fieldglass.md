@@ -19,6 +19,7 @@ This page contains the setup guide and reference information for the SAP Fieldgl
 - [Active Worker Download](https://api.sap.com/api/activeWorkerDownload/resource)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

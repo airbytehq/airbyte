@@ -60,6 +60,7 @@ You need a Teradata user which has read permissions on the database
    These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Teradata database.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

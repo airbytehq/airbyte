@@ -158,6 +158,7 @@ Usually, the very first sync operation for all of the objects inside Zuora accou
 5. You're ready to set up Zuora connector in Airbyte, using created `Client ID` and `Client Secret`!
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

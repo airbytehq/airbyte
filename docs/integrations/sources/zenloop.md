@@ -71,6 +71,7 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 | `object`         | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

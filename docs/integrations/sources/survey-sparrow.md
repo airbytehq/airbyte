@@ -46,6 +46,7 @@ In order to get access token, follow these steps:
 - [Users](https://developers.surveysparrow.com/rest-apis/users#getV3Users)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

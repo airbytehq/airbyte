@@ -60,6 +60,7 @@ Generate a API key using the [Recurly documentation](https://docs.recurly.com/do
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

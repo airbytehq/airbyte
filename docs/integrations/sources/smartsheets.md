@@ -111,6 +111,7 @@ The data type mapping adopted by this connector is based on the Smartsheet [docu
 The remaining column datatypes supported by Smartsheets are more complex types (e.g. Predecessor, Dropdown List) and are not supported by this connector beyond its `string` representation.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

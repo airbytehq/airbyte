@@ -161,6 +161,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

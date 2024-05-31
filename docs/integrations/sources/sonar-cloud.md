@@ -24,6 +24,7 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 - Sonar cloud User Token
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

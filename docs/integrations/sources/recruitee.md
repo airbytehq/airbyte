@@ -47,6 +47,7 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 - [Departments](https://docs.recruitee.com/reference/departments-get)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

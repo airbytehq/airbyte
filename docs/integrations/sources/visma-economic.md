@@ -46,6 +46,7 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 | Incremental Sync  | No                   |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

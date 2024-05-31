@@ -69,6 +69,7 @@ The SurveyMonkey API applies heavy API quotas for default private apps, which ha
 To cover more data from this source we use caching.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

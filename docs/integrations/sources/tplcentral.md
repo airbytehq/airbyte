@@ -43,6 +43,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en-us/articles/360056546352-Getting-Started-with-Credential-Management).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

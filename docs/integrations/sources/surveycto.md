@@ -46,6 +46,7 @@ The SurveyCTO source connector supports the following streams:
 - Surveycto
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

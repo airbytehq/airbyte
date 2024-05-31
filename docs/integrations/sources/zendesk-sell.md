@@ -71,6 +71,7 @@ Generate an API Token or oauth2.0 Access token as described in [here](https://de
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

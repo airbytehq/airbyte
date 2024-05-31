@@ -32,6 +32,7 @@ Toggl APIs are under rate limits for the number of API calls allowed per API key
 - API token
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

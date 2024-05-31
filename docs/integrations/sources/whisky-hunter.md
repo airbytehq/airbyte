@@ -32,6 +32,7 @@ No config is required.
 There is no published rate limit. However, since this data updates infrequently, it is recommended to set the update cadence to 24hr or higher.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

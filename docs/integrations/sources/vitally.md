@@ -35,6 +35,7 @@ The Vitally connector should not run into Vitally API limitations under normal u
 - **Vitaly API key**. See the [Vitally docs](https://docs.vitally.io/pushing-data-to-vitally/rest-api#authentication) for information on how to obtain an API key.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

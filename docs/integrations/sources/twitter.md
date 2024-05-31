@@ -35,6 +35,7 @@ The Twitter source connector supports the following [sync modes](https://docs.ai
 Rate limiting is mentioned in the API [documentation](https://developer.twitter.com/en/docs/twitter-api/rate-limits)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

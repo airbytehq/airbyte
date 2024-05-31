@@ -73,6 +73,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 | `object`         | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

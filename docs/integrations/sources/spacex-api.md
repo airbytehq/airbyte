@@ -69,6 +69,7 @@ The SpaceX-API source connector supports the following [sync modes](https://docs
 The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/SpaceX-API/tree/master/docs/launches). The connector as default uses V4 as it has minimal bugs.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

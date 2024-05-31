@@ -118,6 +118,7 @@ Hourly streams can be slowly because they generate a lot of records.
 Snapchat Marketing API has limitations to 1000 items per page.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

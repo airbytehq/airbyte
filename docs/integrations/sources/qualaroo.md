@@ -40,6 +40,7 @@ The connector is **not** yet restricted by normal requests limitation. As a resu
 Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API) or you can log in to Qualaroo and visit [Reporting API](https://app.qualaroo.com/account).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

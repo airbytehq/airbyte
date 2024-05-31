@@ -69,6 +69,7 @@ The SearchMetrics connector should not run into SearchMetrics API limitations un
 Please read [How to get your API Key and Client Secret](https://developer.searchmetrics.com/docs/apiv4-documentation/ZG9jOjQ2Nzk1-getting-started) .
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

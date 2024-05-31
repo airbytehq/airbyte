@@ -74,6 +74,7 @@ GET https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/
 RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.0) has v1 at present. The connector as default uses v1.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

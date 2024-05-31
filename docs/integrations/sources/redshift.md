@@ -53,6 +53,7 @@ Next is to provide the necessary information on how to connect to your cluster s
 All Redshift connections are encrypted using SSL
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

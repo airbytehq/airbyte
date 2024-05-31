@@ -39,6 +39,7 @@ In addition, to understand how to configure the dataset path and query parameter
 - [Example Queries](https://www.census.gov/data/developers/guidance/api-user-guide.Example_API_Queries.html)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

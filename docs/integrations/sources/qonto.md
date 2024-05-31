@@ -3,6 +3,7 @@
 The Airbyte Source for [Qonto](https://qonto.com)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

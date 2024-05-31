@@ -102,6 +102,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 | `object`         | `object`     |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -40,6 +40,7 @@ List of available streams:
 - [Projects](https://developer.todoist.com/rest/v2/#projects)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

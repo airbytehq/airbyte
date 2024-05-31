@@ -165,6 +165,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

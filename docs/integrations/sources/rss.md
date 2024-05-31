@@ -32,6 +32,7 @@ Only the `url` of an RSS feed is required.
 None
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

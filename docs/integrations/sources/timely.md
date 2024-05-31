@@ -31,6 +31,7 @@ The Timely source connector supports the following [sync modes](https://docs.air
 | Incremental Sync  | No         |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

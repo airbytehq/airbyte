@@ -50,6 +50,7 @@ The RKI Covid connector should not run into RKI Covid API limitations under norm
 Select start date
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

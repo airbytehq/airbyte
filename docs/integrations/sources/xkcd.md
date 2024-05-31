@@ -19,6 +19,7 @@ That is just one stream for xkcd, that retrieves a given comic metadata.
 XKCD does not perform rate limiting.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
