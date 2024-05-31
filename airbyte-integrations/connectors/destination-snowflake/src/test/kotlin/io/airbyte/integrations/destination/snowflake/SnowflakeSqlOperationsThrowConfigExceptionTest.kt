@@ -89,6 +89,7 @@ internal class SnowflakeSqlOperationsThrowConfigExceptionTest {
         private var snowflakeStagingSqlOperations: SnowflakeStagingClient? = null
 
         private var snowflakeSqlOperations: SnowflakeSqlOperations? = null
+        private var jdbcOperations: SnowflakeDestination.SnowflakeOperations? = null
 
         private val dbForExecuteQuery: JdbcDatabase = Mockito.mock(JdbcDatabase::class.java)
         private val dbForRunUnsafeQuery: JdbcDatabase = Mockito.mock(JdbcDatabase::class.java)
@@ -109,6 +110,8 @@ internal class SnowflakeSqlOperationsThrowConfigExceptionTest {
 
             snowflakeStagingSqlOperations = SnowflakeStagingClient(SnowflakeSQLNameTransformer())
             snowflakeSqlOperations = SnowflakeSqlOperations()
+            jdbcOperations =
+                SnowflakeDestination.SnowflakeOperations(snowflakeStagingSqlOperations!!)
 
             createStageIfNotExists = Executable {
                 snowflakeStagingSqlOperations!!.createStageIfNotExists(
@@ -117,11 +120,7 @@ internal class SnowflakeSqlOperationsThrowConfigExceptionTest {
                 )
             }
             dropStageIfExists = Executable {
-                snowflakeStagingSqlOperations!!.dropStageIfExists(
-                    dbForExecuteQuery,
-                    STAGE_NAME,
-                    null
-                )
+                snowflakeStagingSqlOperations!!.dropStageIfExists(dbForExecuteQuery, STAGE_NAME)
             }
             copyIntoTableFromStage = Executable {
                 snowflakeStagingSqlOperations!!.copyIntoTableFromStage(
@@ -141,18 +140,10 @@ internal class SnowflakeSqlOperationsThrowConfigExceptionTest {
                 snowflakeSqlOperations!!.isSchemaExists(dbForRunUnsafeQuery, SCHEMA_NAME)
             }
             createTableIfNotExists = Executable {
-                snowflakeSqlOperations!!.createTableIfNotExists(
-                    dbForExecuteQuery,
-                    SCHEMA_NAME,
-                    TABLE_NAME
-                )
+                jdbcOperations!!.createTableIfNotExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME)
             }
             dropTableIfExists = Executable {
-                snowflakeSqlOperations!!.dropTableIfExists(
-                    dbForExecuteQuery,
-                    SCHEMA_NAME,
-                    TABLE_NAME
-                )
+                jdbcOperations!!.dropTableIfExists(dbForExecuteQuery, SCHEMA_NAME, TABLE_NAME)
             }
         }
 
