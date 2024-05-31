@@ -81,7 +81,7 @@ This example uses a database source, but the same logic holds for API sources as
 
 ## Data Generations
 
-With the advent of Refresh and Retain History Syncs, Airbyte has provided a way for you to determine if any given record is from before or after the refresh took place. This is helpful when disambiguating historic data which may have changed due to an unreliable source. We call this information the “Generation” of the data, indicated by the `_airbyte_generation_id` column. Every time a Refresh Sync (of either type) occurs, the generation increases. `_airbyte_generation_id` is a monotonically increasing counter which maps to this notion of “generation” of data.
+With the advent of Refresh and Retain History Syncs, Airbyte has provided a way for you to determine if any given record is from before or after the refresh took place. This is helpful when disambiguating historic data which may have changed due to an unreliable source. We call this information the “Generation” of the data, indicated by the `_airbyte_generation_id` column. Every time a Refresh Sync (of either type) occurs, the generation increases. `_airbyte_generation_id` is a monotonically increasing counter which maps to this notion of “generation” of data. Data which was synced before the addition of this feature will have a generation of `null`.
 
 ### Example: Understanding and Recovering from a Flaky Source
 
