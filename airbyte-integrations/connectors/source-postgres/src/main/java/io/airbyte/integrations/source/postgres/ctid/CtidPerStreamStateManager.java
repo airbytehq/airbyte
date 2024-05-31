@@ -39,7 +39,6 @@ public class CtidPerStreamStateManager extends CtidStateManager {
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
         if (stateMessage.getType() == AirbyteStateType.STREAM && !stateMessage.equals(EMPTY_STATE)) {
-          LOGGER.info("State message: " + stateMessage);
           final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
           final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace());
           final CtidStatus ctidStatus;

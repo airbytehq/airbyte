@@ -74,7 +74,6 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
         stream.getStream().getNamespace());
     final CtidStatus ctidStatus = generateCtidStatusForState(pair);
-    LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
     return createCtidStateMessage(pair, ctidStatus);
   }
 
