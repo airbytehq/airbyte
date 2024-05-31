@@ -17,7 +17,7 @@ include = "source_posthog"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^1"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-posthog = "source_posthog.run:run"
