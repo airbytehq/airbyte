@@ -140,6 +140,7 @@ public class MongoUtil {
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced))
         .filter(Optional::isPresent)
         .map(Optional::get)
+        .map(stream -> stream.withIsResumable(true))
         .collect(Collectors.toList());
   }
 
