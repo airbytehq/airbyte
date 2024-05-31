@@ -8,7 +8,7 @@ The job history displays information about synced data, such as the amount of da
 
 ![Job History](./assets/connection-job-history.png)
 
-To review the sync history, click a connection in the list to view its sync history. Sync History displays the sync status or [clear](/operator-guides/clear.md) status. The sync status is defined as:
+To review the sync history, click a connection in the list to view its sync history. Sync History displays the sync status or [clear](/operator-guides/clear) status. The sync status is defined as:
 
 | Status              | Description                                                       |
 | ------------------- | ----------------------------------------------------------------- |
