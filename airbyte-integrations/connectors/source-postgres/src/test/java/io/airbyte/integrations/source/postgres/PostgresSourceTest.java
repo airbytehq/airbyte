@@ -79,14 +79,16 @@ class PostgresSourceTest {
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
@@ -94,21 +96,24 @@ class PostgresSourceTest {
           Field.of("last_name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME_PRIVILEGES_TEST_CASE,
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW,
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true)));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final ConfiguredAirbyteCatalog CONFIGURED_INCR_CATALOG = toIncrementalConfiguredCatalog(CATALOG);
 
@@ -278,9 +283,10 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    // expect 6 records and 3 state messages (view does not have its own state message because it goes
+    // expect 6 records, 3 state messages and 4 stream status messages. (view does not have its own
+    // state message because it goes
     // to non resumable full refresh path).
-    assertEquals(9, actualMessages.size());
+    assertEquals(13, actualMessages.size());
     final var actualRecordMessages = filterRecords(actualMessages);
     assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
   }
@@ -294,6 +300,17 @@ class PostgresSourceTest {
       assertTrue(expectedStream.isPresent());
       assertEquals(expectedStream.get(), actualStream);
     });
+  }
+
+  @Test
+  void testDiscoverWithViewShouldNotBeResumeable() throws Exception {
+    final ConfiguredAirbyteStream viewStream = createViewWithNullValueCursor(testdb.getDatabase());
+    final AirbyteCatalog actual = source().discover(getConfig());
+
+    final Optional<AirbyteStream> actualStream =
+        actual.getStreams().stream().filter(stream -> stream.getName().equals(viewStream.getStream().getName())).findAny();
+    assertTrue(actualStream.isPresent());
+    assertEquals(actualStream.get().getIsResumable(), false);
   }
 
   @Test
@@ -485,7 +502,7 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
     // Assert that the correct number of messages are emitted.
-    assertEquals(actualMessages.size(), expectedOutput.size() + 3);
+    assertEquals(actualMessages.size(), expectedOutput.size() + 3 + 2);
     assertThat(actualMessages.contains(expectedOutput));
     // Assert that the Postgres source is emitting records & state messages in the correct order.
     assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -503,8 +520,9 @@ class PostgresSourceTest {
         MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
-    // An extra state message is emitted, in addition to the record messages.
-    assertEquals(nextSyncMessages.size(), 2);
+    // An extra state message is emitted, in addition to the record messages, along with 2 stream status
+    // messages.
+    assertEquals(nextSyncMessages.size(), 4);
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
   }
 
@@ -533,8 +551,9 @@ class PostgresSourceTest {
 
     setEmittedAtToNull(actualMessages);
 
-    // Assert that the correct number of messages are emitted - final state message.
-    assertEquals(1, actualMessages.size());
+    // Assert that the correct number of messages are emitted - final state message and 2 stream status
+    // messages
+    assertEquals(3, actualMessages.size());
     assertEquals(1, stateAfterFirstBatch.size());
 
     AirbyteStateMessage stateMessage = stateAfterFirstBatch.get(0);
@@ -571,8 +590,8 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
-    // Assert that the correct number of messages are emitted.
-    assertEquals(expectedOutput.size() + 3, actualMessages.size());
+    // Assert that the correct number of messages are emitted. 3 state messages and 2 trace messages.
+    assertEquals(expectedOutput.size() + 3 + 2, actualMessages.size());
     assertThat(actualMessages.contains(expectedOutput));
     // Assert that the Postgres source is emitting records & state messages in the correct order.
     assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -590,8 +609,9 @@ class PostgresSourceTest {
         MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
-    // A state message is emitted, in addition to the new record messages.
-    assertEquals(nextSyncMessages.size(), 2);
+    // A state message is emitted, in addition to the new record messages, along with 2 stream status
+    // messages.
+    assertEquals(4, nextSyncMessages.size());
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
   }
 
@@ -624,8 +644,8 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
-    // Assert that the correct number of messages are emitted.
-    assertEquals(expectedOutput.size() + 3, actualMessages.size());
+    // Assert that the correct number of messages are emitted: 3 record, 3 state and 2 trace
+    assertEquals(expectedOutput.size() + 3 + 2, actualMessages.size());
     assertThat(actualMessages.contains(expectedOutput));
     // Assert that the Postgres source is emitting records & state messages in the correct order.
     assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -644,8 +664,8 @@ class PostgresSourceTest {
         MoreIterators.toList(source().read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
-    // All record messages will be re-read.
-    assertEquals(8, nextSyncMessages.size());
+    // All record messages will be re-read. 4 record, 4 state and 2 trace
+    assertEquals(10, nextSyncMessages.size());
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1))));
   }
@@ -679,8 +699,8 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
     // Assert that the correct number of messages are emitted. 6 for incremental streams, 6 for full
-    // refresh streams.
-    assertEquals(actualMessages.size(), 12);
+    // refresh streams, and 4 stream status trace messages (for 2 streams).
+    assertEquals(actualMessages.size(), 16);
     assertThat(actualMessages.contains(expectedOutput));
 
     // For per stream, platform will collect states for all streams and compose a new state. Thus, in
@@ -701,9 +721,10 @@ class PostgresSourceTest {
     setEmittedAtToNull(nextSyncMessages);
 
     // Incremental stream: An extra state message is emitted, in addition to the record messages.
-    // Full refresh stream: expect 4 messages (3 records and 1 state)
-    // Thus, we expect 6 messages.
-    assertEquals(8, nextSyncMessages.size());
+    // Full refresh stream: expect 6 messages (3 records and 3 state)
+    // Adding 4 stream status messages (2 for each stream)
+    // Thus, we expect 12 messages.
+    assertEquals(12, nextSyncMessages.size());
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
   }
 
@@ -892,7 +913,8 @@ class PostgresSourceTest {
             SCHEMA_NAME,
             Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+            .withIsResumable(false));
 
   }
 

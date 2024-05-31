@@ -275,7 +275,8 @@ private constructor(
                 val tableName: String
                 when (destinationColumns) {
                     JavaBaseConstants.DestinationColumns.V2_WITH_META,
-                    JavaBaseConstants.DestinationColumns.V2_WITHOUT_META -> {
+                    JavaBaseConstants.DestinationColumns.V2_WITHOUT_META,
+                    JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION -> {
                         val streamId = parsedCatalog!!.getStream(abStream.namespace, streamName).id
                         outputSchema = streamId.rawNamespace
                         tableName = streamId.rawName
