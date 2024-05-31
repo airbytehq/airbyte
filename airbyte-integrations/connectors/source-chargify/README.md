@@ -1,6 +1,7 @@
-# Chargify Source
+# Chargify source connector
 
-This is the repository for the Chargify configuration based source connector.
+
+This is the repository for the Chargify source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/chargify).
 
 ## Local development
@@ -25,6 +26,7 @@ poetry install --with dev
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/chargify)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_chargify/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
+See `sample_files/sample_config.json` for a sample config file.
 See `sample_files/sample_config.json` for a sample config file.
 
 
@@ -53,6 +55,7 @@ poetry run pytest tests
 airbyte-ci connectors --name=source-chargify build
 ```
 
+An image will be available on your host with the tag `airbyte/source-chargify:dev`.
 An image will be available on your host with the tag `airbyte/source-chargify:dev`.
 
 
@@ -95,9 +98,14 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+    - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/chargify.md`).
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/chargify.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
 8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
