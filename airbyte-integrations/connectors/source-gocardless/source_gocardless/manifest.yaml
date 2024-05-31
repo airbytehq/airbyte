@@ -17,13 +17,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /payments
           http_method: GET
           request_parameters:
-            created_at[gte]: '{{ config[''start_date''] }}'
+            created_at[gte]: "{{ config['start_date'] }}"
           request_headers:
-            GoCardless-Version: '{{ config[''gocardless_version''] }}'
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -43,11 +43,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 500
-            cursor_value: '{{ response[''meta''][''cursors''][''after''] }}'
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/payments'
+          $ref: "#/schemas/payments"
     refunds:
       type: DeclarativeStream
       name: refunds
@@ -56,13 +56,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /refunds
           http_method: GET
           request_parameters:
-            created_at[gte]: '{{ config[''start_date''] }}'
+            created_at[gte]: "{{ config['start_date'] }}"
           request_headers:
-            GoCardless-Version: '{{ config[''gocardless_version''] }}'
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -82,11 +82,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 500
-            cursor_value: '{{ response[''meta''][''cursors''][''after''] }}'
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/refunds'
+          $ref: "#/schemas/refunds"
     mandates:
       type: DeclarativeStream
       name: mandates
@@ -95,13 +95,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /mandates
           http_method: GET
           request_parameters:
-            created_at[gte]: '{{ config[''start_date''] }}'
+            created_at[gte]: "{{ config['start_date'] }}"
           request_headers:
-            GoCardless-Version: '{{ config[''gocardless_version''] }}'
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -121,11 +121,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 500
-            cursor_value: '{{ response[''meta''][''cursors''][''after''] }}'
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/mandates'
+          $ref: "#/schemas/mandates"
     payouts:
       type: DeclarativeStream
       name: payouts
@@ -134,13 +134,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /payouts
           http_method: GET
           request_parameters:
-            created_at[gte]: '{{ config[''start_date''] }}'
+            created_at[gte]: "{{ config['start_date'] }}"
           request_headers:
-            GoCardless-Version: '{{ config[''gocardless_version''] }}'
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -160,11 +160,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 500
-            cursor_value: '{{ response[''meta''][''cursors''][''after''] }}'
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/payouts'
+          $ref: "#/schemas/payouts"
   base_requester:
     type: HttpRequester
     url_base: >-
@@ -172,13 +172,13 @@ definitions:
       'live' else 'https://api-sandbox.gocardless.com' }}
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''access_token''] }}'
+      api_token: "{{ config['access_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/payments'
-  - $ref: '#/definitions/streams/refunds'
-  - $ref: '#/definitions/streams/mandates'
-  - $ref: '#/definitions/streams/payouts'
+  - $ref: "#/definitions/streams/payments"
+  - $ref: "#/definitions/streams/refunds"
+  - $ref: "#/definitions/streams/mandates"
+  - $ref: "#/definitions/streams/payouts"
 
 spec:
   type: Spec
@@ -224,7 +224,7 @@ spec:
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data
           before this date will not be replicated.
         examples:
-          - '2017-01-25T00:00:00Z'
+          - "2017-01-25T00:00:00Z"
         order: 3
     additionalProperties: true
 
@@ -242,87 +242,87 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           order_dispatch_date:
             type:
-              - 'null'
+              - "null"
               - string
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       amount_refunded:
         type:
-          - 'null'
+          - "null"
           - integer
       charge_date:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       fx:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           estimated_exchange_rate:
             type:
-              - 'null'
+              - "null"
               - string
           exchange_rate:
             type:
-              - 'null'
+              - "null"
               - string
           fx_amount:
             type:
-              - 'null'
+              - "null"
               - integer
           fx_currency:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           creditor:
             type:
-              - 'null'
+              - "null"
               - string
           mandate:
             type:
-              - 'null'
+              - "null"
               - string
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       retry_if_possible:
         type:
-          - 'null'
+          - "null"
           - boolean
       status:
         type:
-          - 'null'
+          - "null"
           - string
   refunds:
     type: object
@@ -330,63 +330,63 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           reason:
             type:
-              - 'null'
+              - "null"
               - string
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       fx:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           estimated_exchange_rate:
             type:
-              - 'null'
+              - "null"
               - string
           exchange_rate:
             type:
-              - 'null'
+              - "null"
               - string
           fx_amount:
             type:
-              - 'null'
+              - "null"
               - integer
           fx_currency:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           payment:
             type:
-              - 'null'
+              - "null"
               - string
       reference:
         type:
-          - 'null'
+          - "null"
           - string
   mandates:
     type: object
@@ -394,55 +394,55 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           contract:
             type:
-              - 'null'
+              - "null"
               - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       id:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           creditor:
             type:
-              - 'null'
+              - "null"
               - string
           customer:
             type:
-              - 'null'
+              - "null"
               - string
           customer_bank_account:
             type:
-              - 'null'
+              - "null"
               - string
       next_possible_charge_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       scheme:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
   payouts:
     type: object
@@ -450,85 +450,85 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - object
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       amount_refunded:
         type:
-          - 'null'
+          - "null"
           - integer
       arrival_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       deducted_fees:
         type:
-          - 'null'
+          - "null"
           - integer
       fx:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           estimated_exchange_rate:
             type:
-              - 'null'
+              - "null"
               - string
           exchange_rate:
             type:
-              - 'null'
+              - "null"
               - string
           fx_amount:
             type:
-              - 'null'
+              - "null"
               - integer
           fx_currency:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           creditor:
             type:
-              - 'null'
+              - "null"
               - string
           creditor_bank_account:
             type:
-              - 'null'
+              - "null"
               - string
       payout_type:
         type:
-          - 'null'
+          - "null"
           - string
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       tax_currency:
         type:
-          - 'null'
+          - "null"
           - string
