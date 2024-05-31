@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ccd3901d-edf3-4e58-900c-942d6990aa59
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-qonto
   githubIssueLabel: source-qonto
   icon: qonto.svg
@@ -15,12 +15,21 @@ data:
   tags:
     - language:python
     - cdk:low-code
-  connectorTestSuitesOptions:
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-QONTO__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  # Disabling acceptance tests for now
+  # They are not passing
+  # No Airbyte Cloud usage
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-QONTO__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-qonto
 metadataSpecVersion: "1.0"
