@@ -99,7 +99,7 @@ class DefaultPaginator(Paginator):
             raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
         if isinstance(self.url_base, str):
             self.url_base = InterpolatedString(string=self.url_base, parameters=parameters)
-        self._token = self.pagination_strategy.initial_token
+        self._token: Optional[Any] = self.pagination_strategy.initial_token
 
     def next_page_token(
         self, response: requests.Response, last_page_size: int, last_record: Optional[Record]
@@ -153,8 +153,11 @@ class DefaultPaginator(Paginator):
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
-    def reset(self) -> None:
-        self.pagination_strategy.reset()
+    def reset(self, reset_value: Optional[Any] = None) -> None:
+        if reset_value:
+            self.pagination_strategy.reset(reset_value=reset_value)
+        else:
+            self.pagination_strategy.reset()
         self._token = self.pagination_strategy.initial_token
 
     def _get_request_options(self, option_type: RequestOptionType) -> MutableMapping[str, Any]:
@@ -235,6 +238,6 @@ class PaginatorTestReadDecorator(Paginator):
     ) -> Mapping[str, Any]:
         return self._decorated.get_request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-    def reset(self) -> None:
+    def reset(self, reset_value: Optional[Any] = None) -> None:
         self._decorated.reset()
         self._page_count = self._PAGE_COUNT_BEFORE_FIRST_NEXT_CALL

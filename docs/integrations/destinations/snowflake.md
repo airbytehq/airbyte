@@ -275,7 +275,11 @@ desired namespace.
 ## Changelog
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
-| :-------------- | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:----------------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                            |
+| 3.8.3           | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | Bump CDK version                                                                            |
+| 3.8.2           | 2024-05-22 | [\#38553](https://github.com/airbytehq/airbyte/pull/38553) | Remove `SwitchingDestination` and `AbstractJdbcDestination` dependency in destination                                                                            |
+| 3.8.1           | 2024-05-22 | [\#38568](https://github.com/airbytehq/airbyte/pull/38568) | Adopt latest CDK                                                                                                                                                 |
 | 3.8.0           | 2024-05-08 | [\#37715](https://github.com/airbytehq/airbyte/pull/37715) | Remove option for incremental typing and deduping                                                                                                                |
 | 3.7.4           | 2024-05-07 | [\#38052](https://github.com/airbytehq/airbyte/pull/38052) | Revert problematic optimization                                                                                                                                  |
 | 3.7.3           | 2024-05-07 | [\#34612](https://github.com/airbytehq/airbyte/pull/34612) | Adopt CDK 0.33.2                                                                                                                                                 |
