@@ -4,8 +4,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from live_tests.commons.evaluation_modes import TestEvaluationMode
 from live_tests.commons.models import ConnectionObjects
-from live_tests.regression_tests.report import Report
+from live_tests.report import Report
 
 AIRBYTE_API_KEY = pytest.StashKey[str]()
 AUTO_SELECT_CONNECTION = pytest.StashKey[bool]()
@@ -30,3 +31,4 @@ TARGET_VERSION = pytest.StashKey[str]()
 TEST_ARTIFACT_DIRECTORY = pytest.StashKey[Path]()
 USER = pytest.StashKey[str]()
 WORKSPACE_ID = pytest.StashKey[str]()
+TEST_EVALUATION_MODE = pytest.StashKey[TestEvaluationMode]
