@@ -399,6 +399,7 @@ class TestDataIntegrity:
             read_target_execution_result,
         )
 
+    @pytest.mark.allow_diagnostic_mode
     @pytest.mark.with_state()
     async def test_all_records_are_the_same_with_state(
         self,
@@ -430,6 +431,7 @@ class TestDataIntegrity:
             read_with_state_target_execution_result,
         )
 
+    @pytest.mark.allow_diagnostic_mode
     @pytest.mark.without_state()
     async def test_all_records_are_the_same_without_state(
         self,

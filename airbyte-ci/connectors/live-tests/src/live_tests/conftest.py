@@ -85,7 +85,7 @@ def pytest_addoption(parser: Parser) -> None:
         "But if the target version introduces a breaking change in the state, you might want to run without state. \n",
     )
     parser.addoption(
-        "--validation-test-mode",
+        "--test-evaluation-mode",
         choices=[e.value for e in TestEvaluationMode],
         default=TestEvaluationMode.STRICT.value,
         help='If "diagnostic" mode is selected, all tests will pass as long as there is no exception; warnings will be logged. In "strict" mode, tests may fail.',
@@ -131,7 +131,7 @@ def pytest_configure(config: Config) -> None:
     custom_configured_catalog_path = config.getoption("--catalog-path")
     custom_state_path = config.getoption("--state-path")
     config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
-    config.stash[stash_keys.VALIDATION_TEST_MODE] = TestEvaluationMode(config.getoption("--validation-test-mode", "strict"))
+    config.stash[stash_keys.TEST_EVALUATION_MODE] = TestEvaluationMode(config.getoption("--test-evaluation-mode", "strict"))
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(get_option_or_fail(config, "--should-read-with-state"))
@@ -245,7 +245,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Gener
 
     # Overwrite test failures with passes for tests being run in diagnostic mode
     if (
-        item.config.stash.get(stash_keys.VALIDATION_TEST_MODE, TestEvaluationMode.STRICT) == TestEvaluationMode.DIAGNOSTIC
+        item.config.stash.get(stash_keys.TEST_EVALUATION_MODE, TestEvaluationMode.STRICT) == TestEvaluationMode.DIAGNOSTIC
         and "allow_diagnostic_mode" in item.keywords
     ):
         if call.when == "call":

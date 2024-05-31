@@ -31,4 +31,4 @@ TARGET_VERSION = pytest.StashKey[str]()
 TEST_ARTIFACT_DIRECTORY = pytest.StashKey[Path]()
 USER = pytest.StashKey[str]()
 WORKSPACE_ID = pytest.StashKey[str]()
-VALIDATION_TEST_MODE = pytest.StashKey[TestEvaluationMode]
+TEST_EVALUATION_MODE = pytest.StashKey[TestEvaluationMode]
