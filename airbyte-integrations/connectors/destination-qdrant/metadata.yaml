@@ -38,4 +38,6 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
 metadataSpecVersion: "1.0"

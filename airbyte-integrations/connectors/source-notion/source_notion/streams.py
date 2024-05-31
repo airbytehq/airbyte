@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging as Logger
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
 import pendulum
 import pydantic
 import requests
-from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream

@@ -9,7 +9,6 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -22,7 +21,7 @@ from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudg
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
@@ -111,7 +110,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             )
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
         self.validate_and_fill_with_defaults(config)
         stripe.api_key = config["client_secret"]
         try:

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.1"
+version = "0.2.2"
 name = "source-wrike"
 description = "Source implementation for Wrike."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -12,8 +12,7 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/wrike"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-[[tool.poetry.packages]]
-include = "source_wrike"
+packages = [ { include = "source_wrike" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"

@@ -12,7 +12,7 @@ java {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.34.2'
+    cdkVersionRequired = '0.36.3'
     features = ['db-sources', 'datastore-postgres']
     useLocalCdk = false
 }

@@ -16,7 +16,7 @@ class Decoder:
     """
 
     @abstractmethod
-    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List]:
+    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List[Any]]:
         """
         Decodes a requests.Response into a Mapping[str, Any] or an array
         :param response: the response to decode

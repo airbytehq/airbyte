@@ -3,10 +3,10 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass
@@ -27,10 +27,12 @@ class RecordFilter:
 
     def filter_records(
         self,
-        records: List[Mapping[str, Any]],
+        records: Iterable[Mapping[str, Any]],
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> List[Mapping[str, Any]]:
+    ) -> Iterable[Mapping[str, Any]]:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        return [record for record in records if self._filter_interpolator.eval(self.config, record=record, **kwargs)]
+        for record in records:
+            if self._filter_interpolator.eval(self.config, record=record, **kwargs):
+                yield record

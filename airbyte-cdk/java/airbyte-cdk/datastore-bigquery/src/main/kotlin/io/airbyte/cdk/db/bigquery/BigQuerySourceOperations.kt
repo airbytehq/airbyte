@@ -23,15 +23,16 @@ import io.airbyte.cdk.db.util.JsonUtil.putLongValueIntoJson
 import io.airbyte.cdk.db.util.JsonUtil.putStringValueIntoJson
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.JsonSchemaType
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.function.Consumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
-class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQLTypeName?> {
+private val LOGGER = KotlinLogging.logger {}
+
+class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQLTypeName> {
     private val BIG_QUERY_DATE_FORMAT: DateFormat = SimpleDateFormat("yyyy-MM-dd")
     private val BIG_QUERY_DATETIME_FORMAT: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
     private val BIG_QUERY_TIMESTAMP_FORMAT: DateFormat =
@@ -136,7 +137,7 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
                     }
                 }
             } catch (e: UnsupportedOperationException) {
-                LOGGER.error("Failed to parse Object field with name: {}, {}", fieldName, e.message)
+                LOGGER.error { "Failed to parse Object field with name: $fieldName, ${e.message}" }
             }
         }
     }
@@ -147,12 +148,12 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
         try {
             parsedValue = dateFormat.parse(value)
         } catch (e: ParseException) {
-            LOGGER.error("Fail to parse date value : $value. Null is returned.")
+            LOGGER.error { "Fail to parse date value : $value. Null is returned." }
         }
         return parsedValue
     }
 
-    override fun getAirbyteType(sourceType: StandardSQLTypeName?): JsonSchemaType {
+    override fun getAirbyteType(sourceType: StandardSQLTypeName): JsonSchemaType {
         return when (sourceType) {
             StandardSQLTypeName.BOOL -> JsonSchemaType.BOOLEAN
             StandardSQLTypeName.INT64 -> JsonSchemaType.INTEGER
@@ -192,11 +193,9 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
 
     fun getQueryParameter(paramType: StandardSQLTypeName, paramValue: String): QueryParameterValue {
         val value = getFormattedValue(paramType, paramValue)
-        LOGGER.info("Query parameter for set : " + value + ". Type: " + paramType.name)
+        LOGGER.info { "Query parameter for set : $value. Type: ${paramType.name}" }
         return QueryParameterValue.newBuilder().setType(paramType).setValue(value).build()
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BigQuerySourceOperations::class.java)
-    }
+    companion object {}
 }
