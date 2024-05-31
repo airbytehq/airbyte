@@ -55,6 +55,7 @@ The following fields are required fields for the connector to work:
   history.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

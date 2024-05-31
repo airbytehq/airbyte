@@ -31,6 +31,7 @@ This Source is capable of syncing the following core Streams:
 - CallRail API Token
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

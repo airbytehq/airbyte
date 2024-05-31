@@ -91,8 +91,10 @@ Using this feature requires additional configuration, when creating the source. 
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------ |
 | 0.1.6   | 2022-10-26 | [18341](https://github.com/airbytehq/airbyte/pull/18341) | enforce ssl connection on cloud       |
@@ -102,4 +104,5 @@ Using this feature requires additional configuration, when creating the source. 
 | 0.1.2   | 2022-04-19 | [11752](https://github.com/airbytehq/airbyte/pull/11752) | Reduce batch size to 32Mb             |
 | 0.1.1   | 2022-02-10 | [10256](https://github.com/airbytehq/airbyte/pull/1256)  | Add ExitOnOutOfMemoryError connectors |
 | 0.1.0   | 2021-10-13 | [7005](https://github.com/airbytehq/airbyte/pull/7005)   | Initial release.                      |
+
 </details>

@@ -244,6 +244,7 @@ This connector utilizes the open source [Unstructured](https://unstructured-io.g
 The Azure Blob Storage connector should not encounter any [Microsoft API limitations](https://learn.microsoft.com/en-us/azure/storage/blobs/scalability-targets#scale-targets-for-blob-storage) under normal usage.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

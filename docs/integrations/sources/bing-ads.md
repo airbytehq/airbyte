@@ -252,6 +252,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

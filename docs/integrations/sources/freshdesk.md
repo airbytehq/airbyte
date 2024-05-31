@@ -66,6 +66,7 @@ The Freshdesk connector should not run into Freshdesk API limitations under norm
 If you don't use the start date Freshdesk will retrieve only the last 30 days. More information [here](https://developers.freshdesk.com/api/#list_all_tickets).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -57,6 +57,7 @@ The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence
 The Confluence connector should not run into Confluence API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

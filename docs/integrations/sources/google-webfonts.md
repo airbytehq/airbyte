@@ -62,6 +62,7 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 Google Webfont's [API reference](https://developers.google.com/fonts/docs/developer_api) has v1 at present and v2 is at development. The connector as default uses v1.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

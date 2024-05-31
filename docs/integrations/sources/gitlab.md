@@ -106,6 +106,7 @@ GitLab source works with GitLab API v4. It can also work with self-hosted GitLab
 Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.html#gitlabcom-specific-rate-limits), but the Gitlab connector should not run into Gitlab API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

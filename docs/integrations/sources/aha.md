@@ -36,6 +36,7 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 2. Use the generated `API Key` in the Airbyte connection.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

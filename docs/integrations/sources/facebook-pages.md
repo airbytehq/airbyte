@@ -82,6 +82,7 @@ Facebook heavily throttles API tokens generated from Facebook Apps by default, m
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

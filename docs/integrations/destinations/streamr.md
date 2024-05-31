@@ -34,9 +34,12 @@ All json data is output at Streamr
 Any json data schema will work
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                              | Subject          |
 | :------ | :--------- | :---------------------------------------------------------------------------------------- | :--------------- |
 | 0.0.1   | 2021-11-20 | [GitHub](https://github.com/devmate-cloud/streamr-airbyte-connectors/releases/tag/v0.0.1) | Initial release. |
+
 </details>

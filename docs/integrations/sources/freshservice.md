@@ -51,6 +51,7 @@ The Freshservice connector should not run into Freshservice API limitations unde
 Please read [How to find your API key](https://api.freshservice.com/#authentication).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

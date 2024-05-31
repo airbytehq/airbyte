@@ -22,6 +22,7 @@ This project supports the following streams:
 - Users Stream
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

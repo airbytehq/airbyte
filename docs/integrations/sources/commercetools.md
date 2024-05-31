@@ -46,6 +46,7 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 4. You're ready to set up Commercetools in Airbyte!
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

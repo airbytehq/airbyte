@@ -51,10 +51,13 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 4. Copy the generated deploy key into the `access_key` field in Airbyte.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
 | 0.2.0   | 2023-05-15 | [26103](https://github.com/airbytehq/airbyte/pull/26103) | 🐛 Update Convex destination connector to fix overwrite sync mode |
 | 0.1.0   | 2023-01-05 | [21287](https://github.com/airbytehq/airbyte/pull/21287) | 🎉 New Destination: Convex                                        |
+
 </details>

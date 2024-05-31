@@ -97,6 +97,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

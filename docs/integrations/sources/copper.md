@@ -38,6 +38,7 @@ The Copper source connector supports the following [sync modes](https://docs.air
 - [Oppurtunities](https://developer.copper.com/opportunities/list-opportunities-search.html)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

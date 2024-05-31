@@ -211,6 +211,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

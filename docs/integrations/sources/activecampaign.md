@@ -32,6 +32,7 @@ The connector has a rate limit of 5 requests per second per account.
 - ActiveCampaign API Key
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

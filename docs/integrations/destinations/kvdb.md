@@ -19,8 +19,10 @@ TODO
 TODO
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------- |
 | 0.1.4   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                                       |
@@ -28,4 +30,5 @@ TODO
 | 0.1.2   | 2024-02-19 | [35422](https://github.com/airbytehq/airbyte/pull/35422)  | bump connector version to publish                                          |
 | 0.1.1   | 2024-02-16 | [35370](https://github.com/airbytehq/airbyte/pull/35370)  | bump connector version to publish                                          |
 | 0.1.0   | 2021-07-19 | [4786](https://github.com/airbytehq/airbyte/pull/4786)    | Python Demo Destination: KVDB                                              |
+
 </details>

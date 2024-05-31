@@ -51,6 +51,7 @@ The `Standard Server` will be the default option until you change it in the Opti
 The Amplitude connector ideally should gracefully handle Amplitude API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

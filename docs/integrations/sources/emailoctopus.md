@@ -22,6 +22,7 @@
 No documented strict rate limit.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

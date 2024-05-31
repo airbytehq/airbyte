@@ -126,6 +126,7 @@ Information about expected report generation waiting time can be found [here](ht
 | `object`                 | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

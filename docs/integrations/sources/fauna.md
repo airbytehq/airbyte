@@ -226,6 +226,7 @@ To select the collection name, add `"collection", "id"` to the "Path" of the add
 FQL [`Select`](https://docs.fauna.com/fauna/current/api/fql/functions/select) is used.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

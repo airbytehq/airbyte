@@ -34,6 +34,7 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 2. Use the generated `API Key` in the Airbyte connection.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

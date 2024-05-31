@@ -92,6 +92,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airby
 Your database user should now be ready for use with Airbyte.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

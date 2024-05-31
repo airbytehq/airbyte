@@ -69,6 +69,7 @@ In the Data tab, you should see the tables and a sample of the data that will be
 4. Copy the generated deploy key into the `access_key` field in Airbyte.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -172,6 +172,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 | `object`                 | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

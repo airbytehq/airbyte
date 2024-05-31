@@ -50,6 +50,7 @@ The Drift connector should not run into Drift API limitations under normal usage
 3. Proceed the authentication in order to obtain the `access_token`
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

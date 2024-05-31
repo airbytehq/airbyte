@@ -239,8 +239,10 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | ARRAY                               | SUPER                                  |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.6.2   | 2024-05-14 | [38189](https://github.com/airbytehq/airbyte/pull/38189)   | adding an option to DROP CASCADE on resets                                                                                                                     |
@@ -347,4 +349,5 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.13  | 2021-09-02 | [\#5745](https://github.com/airbytehq/airbyte/pull/5745)   | Disable STATUPDATE flag when using S3 staging to speed up performance                                                                                                                                            |
 | 0.3.12  | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Enable partial checkpointing for halfway syncs                                                                                                                                                                   |
 | 0.3.11  | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874)   | allow `additionalProperties` in connector spec                                                                                                                                                                   |
+
 </details>

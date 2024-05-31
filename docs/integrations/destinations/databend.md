@@ -66,8 +66,10 @@ If your databend version >= v0.9.0 or later, you need to use databend-sqlalchemy
 And the [Databend Cloud](https://app.databend.com/) will only support databend version > 0.9.0.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version                                                  | Date                                     | Pull Request                                              | Subject                                                  |
 | :------------------------------------------------------- | :--------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------- | ----------- |
 | 0.1.3                                                    | 2024-03-05                               | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                     |
@@ -76,4 +78,5 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 | [21182](https://github.com/airbytehq/airbyte/pull/21182) | Remove protocol option and enforce HTTPS |
 |                                                          | 0.1.0                                    | 2022-01-09                                                | [20909](https://github.com/airbytehq/airbyte/pull/20909) | Destination |
 | Databend                                                 |
+
 </details>

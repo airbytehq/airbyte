@@ -42,6 +42,7 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 - **Ashby API key**. See the [Ashby docs](https://developers.ashbyhq.com/reference/authentication) for information on how to obtain an API key.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

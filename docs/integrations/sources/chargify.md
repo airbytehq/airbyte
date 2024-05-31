@@ -39,6 +39,7 @@ The Chargify connector should not run into Chargify API limitations under normal
 Please follow the [Chargify documentation for generating an API key](https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
   

@@ -83,6 +83,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

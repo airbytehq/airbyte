@@ -73,6 +73,7 @@ One issue that can happen is the API not having the data available for the perio
 Generate/Find all requirements using this [external article](https://leapfin.com/blog/apple-appstore-integration/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

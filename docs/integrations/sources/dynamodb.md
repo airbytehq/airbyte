@@ -72,6 +72,7 @@ the underlying role executing the container workload in AWS.
   https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeNames.html
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

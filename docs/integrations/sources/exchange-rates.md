@@ -84,6 +84,7 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

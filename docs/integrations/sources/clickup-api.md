@@ -51,6 +51,7 @@ Here are some optional fields for different streams:
 - `Include Closed Tasks`: Toggle to include or exclude closed tasks. By default, they are excluded.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

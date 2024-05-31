@@ -70,6 +70,7 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 - [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

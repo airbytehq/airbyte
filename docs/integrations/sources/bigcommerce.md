@@ -52,6 +52,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 5. You're ready to set up BigCommerce in Airbyte!
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

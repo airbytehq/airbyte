@@ -100,6 +100,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

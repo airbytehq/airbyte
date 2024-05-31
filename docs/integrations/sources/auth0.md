@@ -54,6 +54,7 @@ The Auth0 source connector supports the following [sync modes](https://docs.airb
 The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy/management-api-endpoint-rate-limits).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

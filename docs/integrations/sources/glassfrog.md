@@ -44,6 +44,7 @@ This Source is capable of syncing the following Streams:
 4. Use the created secret key to configure your source!
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

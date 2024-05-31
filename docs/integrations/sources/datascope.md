@@ -58,6 +58,7 @@ Implemented but not added streams:
 GET https://www.mydatascope.com/api/external/locations
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

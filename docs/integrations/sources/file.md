@@ -228,6 +228,7 @@ In order to read large files from a remote location, this connector uses the [sm
 - The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -81,6 +81,7 @@ all values in the array must be of the same data type. Hence, every field can be
 | `point`                   | `["string", "array", "number", "integer"]` |       |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

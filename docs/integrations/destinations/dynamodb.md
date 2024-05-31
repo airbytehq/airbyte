@@ -73,8 +73,10 @@ provision more capacity units in the DynamoDB console when there are performance
     connection tool in the UI.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                     |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------- |
 | 0.1.8   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)  | Add new ap-southeast-3 AWS region                           |
@@ -86,4 +88,5 @@ provision more capacity units in the DynamoDB console when there are performance
 | 0.1.2   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                |
 | 0.1.1   | 2022-12-05 | [\#9314](https://github.com/airbytehq/airbyte/pull/9314)   | Rename dynamo_db_table_name to dynamo_db_table_name_prefix. |
 | 0.1.0   | 2021-08-20 | [\#5561](https://github.com/airbytehq/airbyte/pull/5561)   | Initial release.                                            |
+
 </details>

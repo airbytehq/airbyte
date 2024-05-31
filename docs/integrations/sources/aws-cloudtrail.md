@@ -48,6 +48,7 @@ The rate of lookup requests for `events` stream is limited to two per second, pe
 Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html) to get your AWS access key and secret.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

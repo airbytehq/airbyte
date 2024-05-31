@@ -68,6 +68,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

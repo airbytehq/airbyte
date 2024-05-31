@@ -35,6 +35,7 @@ Connector needs a self-hosted instance of Dremio, this way you can access the Dr
 Please read [How to get your APIs credentials](https://docs.dremio.com/software/rest-api/#authenticationn).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -155,10 +155,13 @@ data less frequently** rather than _smaller amounts of data more frequently_!
        implemented).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                             |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
 | 0.1.1   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                |
 | 0.1.0   | 2023-02-16 |                                                           | Initial release of Cumul.io's Destination connector |
+
 </details>

@@ -103,6 +103,7 @@ The Close.com connector is subject to rate limits. For more information on this 
 [click here](https://developer.close.com/topics/rate-limits/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -47,6 +47,7 @@ The following fields are required fields for the connector to work:
 - (optional) `limit`: The maximum number of records to pull per request. Defaults to 100.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

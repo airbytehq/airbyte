@@ -29,6 +29,7 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 - Lago API KEY
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

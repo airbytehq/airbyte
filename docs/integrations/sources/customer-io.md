@@ -46,6 +46,7 @@ rate limit issues.
 Please follow the [their documentation for generating an App API Key](https://customer.io/docs/managing-credentials/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

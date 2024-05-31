@@ -96,6 +96,7 @@ Extra care should be taken to understand this risk before enabling this option.
 >   are needed in the AWS IAM Policy
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

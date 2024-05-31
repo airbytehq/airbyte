@@ -55,6 +55,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 You should now be ready to use the Google Workspace Admin Reports API connector in Airbyte.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

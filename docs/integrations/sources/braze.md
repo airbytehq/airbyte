@@ -48,6 +48,7 @@ Rate limits differ depending on stream.
 Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-request-type
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

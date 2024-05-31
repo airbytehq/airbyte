@@ -47,6 +47,7 @@ The Cart.com API has some request limitation. See [this](https://developers.cart
 Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/README.md#setup) to obtain Access Token for your account.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

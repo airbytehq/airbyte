@@ -33,6 +33,7 @@ The Breezometer connector supports full sync refresh.
 - [Wildfire - Locate](https://docs.breezometer.com/api-documentation/wildfire-tracker-api/v1/#current-conditions)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -29,6 +29,7 @@ This source is capable of syncing the following streams:
 - Start Date
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -250,6 +250,7 @@ Before parsing each document, the connector exports Google Document files to Doc
 This connector utilizes the open source [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html#product-offerings) library to perform OCR and text extraction from PDFs and MS Word files, as well as from embedded tables and images. You can read more about the parsing logic in the [Unstructured docs](https://unstructured-io.github.io/unstructured/core/partition.html) and you can learn about other Unstructured tools and services at [www.unstructured.io](https://www.unstructured.io).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

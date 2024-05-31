@@ -49,6 +49,7 @@ If the connector is used with an API key, Google allows for 25.000 queries per d
 [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

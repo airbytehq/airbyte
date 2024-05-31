@@ -66,6 +66,7 @@ This is a legacy mode used in Airbyte integration tests. It has been removed sin
 This mode is also excluded from the Cloud variant of this connector.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

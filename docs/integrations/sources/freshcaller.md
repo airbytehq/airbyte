@@ -40,6 +40,7 @@ The Freshcaller connector should not run into Freshcaller API limitations under 
 Please read [How to find your API key](https://support.freshdesk.com/en/support/solutions/articles/225435-where-can-i-find-my-api-key-).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -59,6 +59,7 @@ GET https://api.captaindata.co/v3/
 Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at present. The connector as default uses v3.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

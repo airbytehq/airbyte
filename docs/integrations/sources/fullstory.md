@@ -67,6 +67,7 @@ GET https://api.fullstory.com/segments/v1
 FullStory [API reference](https://api.fullstory.com) has v1 at present. The connector as default uses v1.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

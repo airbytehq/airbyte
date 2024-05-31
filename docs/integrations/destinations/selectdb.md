@@ -54,9 +54,12 @@ You need to prepare database that will be used to store synced data from Airbyte
 - **database**
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                              |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------- |
 | 0.1.0   | 2023-04-03 | [\#20881](https://github.com/airbytehq/airbyte/pull/20881) | Initial release SelectDB Destination |
+
 </details>

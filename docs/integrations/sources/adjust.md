@@ -36,6 +36,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 - Incremental
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

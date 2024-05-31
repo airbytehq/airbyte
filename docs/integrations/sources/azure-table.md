@@ -64,6 +64,7 @@ Visit the [Azure Portal](https://portal.azure.com). Go to your storage account, 
 We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. However, shared access key authentication is not supported by this connector yet.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

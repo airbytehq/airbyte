@@ -34,6 +34,7 @@ The Commcare source connector supports the following streams:
 - Form
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

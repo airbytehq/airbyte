@@ -199,6 +199,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 |      object      |    object    |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

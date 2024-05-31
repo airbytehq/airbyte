@@ -25,6 +25,7 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 - [Users](https://developer.genesys.cloud/useragentman/users/)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

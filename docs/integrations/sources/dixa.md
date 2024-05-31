@@ -48,6 +48,7 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
    Keep the performance consideration above in mind
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

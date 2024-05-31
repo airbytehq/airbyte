@@ -33,6 +33,7 @@ By default Gong limits your company's access to the service to 3 API calls per s
 - **Gong API keys**. See the [Gong docs](https://us-14321.app.gong.io/settings/api/documentation#overview) for information on how to obtain the API keys.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

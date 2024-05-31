@@ -95,9 +95,12 @@ Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.
 - Grant S3 bucket [location privileges](https://docs.starburst.io/starburst-galaxy/security/privileges.html#location-privileges-) to the role user is assigned to.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                 |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------- |
 | 0.0.1   | 2023-03-28 | [\#24620](https://github.com/airbytehq/airbyte/pull/24620) | Initial public release. |
+
 </details>

@@ -160,6 +160,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

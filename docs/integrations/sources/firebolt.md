@@ -48,6 +48,7 @@ The Firebolt source does not alter schema present in your database. Depending on
 You can now use the Airbyte Firebolt source.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

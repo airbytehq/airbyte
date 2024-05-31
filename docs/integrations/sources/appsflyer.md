@@ -3,6 +3,7 @@
 The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

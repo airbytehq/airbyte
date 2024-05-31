@@ -264,6 +264,7 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

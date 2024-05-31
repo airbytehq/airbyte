@@ -43,6 +43,7 @@ This Source is capable of syncing the following data as streams:
 Authentication uses a pre-created API token which can be [created in the UI](https://apidocs.flexport.com/v3/tag/Authentication/).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

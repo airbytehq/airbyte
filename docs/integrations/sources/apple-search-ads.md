@@ -54,6 +54,7 @@ The Apple Search Ads currently offers [aggregation](https://developer.apple.com/
 However, at this moment and as indicated in the stream names, the connector only offers data with daily aggregation.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

@@ -3,6 +3,7 @@
 The Airbyte Source for [Clockify](https://clockify.me)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

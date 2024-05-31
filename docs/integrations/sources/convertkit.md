@@ -30,6 +30,7 @@ The connector has a rate limit of no more than 120 requests over a rolling 60 se
 - ConvertKit API Secret
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

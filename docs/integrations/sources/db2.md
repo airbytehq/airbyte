@@ -57,6 +57,7 @@ To set up an SSL connection, you need to use a client certificate. Add it to the
 You can also enter your own password for the keystore, but if you don't, the password will be generated automatically.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

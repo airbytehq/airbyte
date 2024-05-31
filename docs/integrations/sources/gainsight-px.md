@@ -68,6 +68,7 @@ GET https://api.aptrinsic.com/v1/accounts
 Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 at present. The connector as default uses v1.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

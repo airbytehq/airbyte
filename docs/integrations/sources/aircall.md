@@ -67,6 +67,7 @@ GET https://api.aircall.io/v1/numbers
 Aircall [API reference](https://api.aircall.io/v1) has v1 at present. The connector as default uses v1.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

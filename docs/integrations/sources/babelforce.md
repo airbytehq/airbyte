@@ -43,6 +43,7 @@ There are no performance consideration in the current version.
 Generate a API access key ID and token using the [Babelforce documentation](https://help.babelforce.com/hc/en-us/articles/360044753932-API-documentation-and-endpoints-an-introduction-)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

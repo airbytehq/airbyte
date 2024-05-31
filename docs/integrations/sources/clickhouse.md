@@ -74,6 +74,7 @@ Using this feature requires additional configuration, when creating the source. 
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

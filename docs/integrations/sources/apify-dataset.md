@@ -66,6 +66,7 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
   - The stream uses a static schema which corresponds to the datasets produced by [Website Content Crawler](https://apify.com/apify/website-content-crawler) Actor. So only datasets produced by this Actor are supported.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

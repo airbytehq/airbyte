@@ -61,6 +61,7 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 | `object`         | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

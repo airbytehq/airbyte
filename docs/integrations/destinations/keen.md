@@ -79,8 +79,10 @@ Connect your first source and then head to the Keen application. You can seamles
 If you have any questions, please reach out to us at team@keen.io and we’ll be happy to help!
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
 | 0.2.4   | 2022-08-04 | [15291](https://github.com/airbytehq/airbyte/pull/15291) | Update Keen destination to use outputRecordCollector to properly store state |
@@ -88,4 +90,5 @@ If you have any questions, please reach out to us at team@keen.io and we’ll be
 | 0.2.1   | 2021-12-30 | [8809](https://github.com/airbytehq/airbyte/pull/8809)   | Update connector fields title/description                                    |
 | 0.2.0   | 2021-09-10 | [5973](https://github.com/airbytehq/airbyte/pull/5973)   | Fix timestamp inference for complex schemas                                  |
 | 0.1.0   | 2021-08-18 | [5339](https://github.com/airbytehq/airbyte/pull/5339)   | Keen Destination Release!                                                    |
+
 </details>

@@ -33,6 +33,7 @@ Gridly support version control, by default the `grid id` is the same to the `bra
 - [Records](https://www.gridly.com/docs/api/#record)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

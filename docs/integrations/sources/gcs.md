@@ -145,6 +145,7 @@ Leaving this field blank (default option) will disallow escaping.
 - **True Values**: A set of case-sensitive strings that should be interpreted as true values.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

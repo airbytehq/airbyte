@@ -73,8 +73,10 @@ Using this feature requires additional configuration, when creating the destinat
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
 | 0.1.7   | 2022-09-07 | [16391](https://github.com/airbytehq/airbyte/pull/16391) | Add custom JDBC parameters field                       |
@@ -85,4 +87,5 @@ Using this feature requires additional configuration, when creating the destinat
 | 0.1.2   | 2021-12-30 | [\#8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description              |
 | 0.1.1   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key.              |
 | 0.1.0   | 2021-11-15 | [\#7961](https://github.com/airbytehq/airbyte/pull/7961) | Added MariaDB ColumnStore destination.                 |
+
 </details>

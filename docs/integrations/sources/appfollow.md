@@ -34,6 +34,7 @@ The Appfollow source connector supports the following [sync modes](https://docs.
 The Appfollow connector ideally should gracefully handle Appfollow API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

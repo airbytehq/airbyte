@@ -48,6 +48,7 @@ This source is capable of syncing the following core streams:
 - [Unsubscribed People](https://app.delighted.com/docs/api/listing-unsubscribed-people)
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

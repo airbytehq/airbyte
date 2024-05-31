@@ -261,6 +261,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 | `object`         | `object`     |
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

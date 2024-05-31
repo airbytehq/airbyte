@@ -46,6 +46,7 @@ The following fields are required fields for the connector to work:
 - (optional) `end_date`: The end date to pull `history` data until.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
