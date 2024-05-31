@@ -1,11 +1,26 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
+import re
 import textwrap
+from pathlib import Path
+from threading import Thread
 from typing import List
 
+import requests
 from connector_ops.utils import Connector  # type: ignore
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
+from connectors_qa.utils import (
+    description_end_line_index,
+    documentation_node,
+    header_name,
+    prepare_headers,
+    prepare_lines_to_compare,
+    reason_missing_titles,
+    reason_titles_not_match,
+    remove_not_required_step_headers,
+    remove_step_from_heading,
+    required_titles_from_spec,
+)
 from pydash.objects import get  # type: ignore
 
 
@@ -113,6 +128,59 @@ class CheckDocumentationStructure(DocumentationCheck):
         "## Changelog",
     ]
 
+    PREREQUISITES = "Prerequisites"
+    HEADING = "heading"
+    CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access"]
+    CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
+
+    def _get_template_headings(self, connector_name: str) -> tuple[tuple[str], tuple[str]]:
+        """
+        Headings in order to docs structure.
+        """
+        all_headings = (
+            connector_name,
+            "Prerequisites",
+            "Setup guide",
+            f"Set up {connector_name}",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            f"Set up the {connector_name} connector in Airbyte",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            "Supported sync modes",
+            "Supported Streams",
+            self.CONNECTOR_SPECIFIC_HEADINGS,
+            "Performance considerations",
+            "Data type map",
+            "Troubleshooting",
+            "Tutorials",
+            "Changelog",
+        )
+        not_required_heading = (
+            f"Set up the {connector_name} connector in Airbyte",
+            "For Airbyte Cloud:",
+            "For Airbyte Open Source:",
+            self.CONNECTOR_SPECIFIC_HEADINGS,
+            "Performance considerations",
+            "Data type map",
+            "Troubleshooting",
+            "Tutorials",
+        )
+        return all_headings, not_required_heading
+
+    def _headings_description(self, connector_name: str) -> dict[str:Path]:
+        """
+        Headings with path to file with template description
+        """
+        descriptions_paths = {
+            connector_name: Path(__file__).parent / "doc_templates/source.txt",
+            "For Airbyte Cloud:": Path(__file__).parent / "doc_templates/for_airbyte_cloud.txt",
+            "For Airbyte Open Source:": Path(__file__).parent / "doc_templates/for_airbyte_open_source.txt",
+            "Supported sync modes": Path(__file__).parent / "doc_templates/supported_sync_modes.txt",
+            "Tutorials": Path(__file__).parent / "doc_templates/tutorials.txt",
+        }
+        return descriptions_paths
+
     def check_main_header(self, connector: Connector, doc_lines: List[str]) -> List[str]:
         errors = []
         if not doc_lines[0].lower().startswith(f"# {connector.metadata['name']}".lower()):
@@ -128,33 +196,191 @@ class CheckDocumentationStructure(DocumentationCheck):
                 errors.append(f"Connector documentation is missing a '{expected_section.replace('#', '').strip()}' section")
         return errors
 
-    def _run(self, connector: Connector) -> CheckResult:
-        if not connector.documentation_file_path or not connector.documentation_file_path.exists():
-            return self.fail(
-                connector=connector,
-                message="Could not check documentation structure as the documentation file is missing.",
-            )
+    def validate_links(self, docs_content) -> List[str]:
+        valid_status_codes = [200, 403, 401, 405]  # we skip 4xx due to needed access
+        links = re.findall("(https?://[^\s)]+)", docs_content)
+        invalid_links = []
+        threads = []
 
-        doc_lines = [line.lower() for line in connector.documentation_file_path.read_text().splitlines()]
+        def request_link(docs_link):
+            response = requests.get(docs_link)
+            if response.status_code not in valid_status_codes:
+                invalid_links.append(docs_link)
 
-        if not doc_lines:
-            return self.fail(
-                connector=connector,
-                message="Documentation file is empty",
-            )
+        for link in links:
+            process = Thread(target=request_link, args=[link])
+            process.start()
+            threads.append(process)
+
+        for process in threads:
+            process.join(timeout=30)  # 30s timeout for process else link will be skipped
+            process.is_alive()
 
         errors = []
-        errors.extend(self.check_main_header(connector, doc_lines))
-        errors.extend(self.check_sections(doc_lines))
+        for link in invalid_links:
+            errors.append(f"Link {link} is invalid in the connector documentation.")
 
-        if errors:
-            return self.fail(
-                connector=connector,
-                message=f"Connector documentation does not follow the guidelines: {'. '.join(errors)}",
+        return errors
+
+    def check_docs_structure(self, docs_content: str, connector_name: str) -> List[str]:
+        """
+        test_docs_structure gets all top-level headers from source documentation file and check that the order is correct.
+        The order of the headers should follow our standard template https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw.
+        _get_template_headings returns tuple of headers as in standard template and non-required headers that might nor be in the source docs.
+        CONNECTOR_SPECIFIC_HEADINGS value in list of required headers that shows a place where should be a connector specific headers,
+        which can be skipped as out of standard template and depends on connector.
+        """
+        errors = []
+
+        heading_names = prepare_headers(docs_content)
+        template_headings, non_required_heading = self._get_template_headings(connector_name)
+
+        heading_names_len, template_headings_len = len(heading_names), len(template_headings)
+        heading_names_index, template_headings_index = 0, 0
+
+        while heading_names_index < heading_names_len and template_headings_index < template_headings_len:
+            heading_names_value = heading_names[heading_names_index]
+            template_headings_value = template_headings[template_headings_index]
+            # check that template header is specific for connector and actual header should not be validated
+            if template_headings_value == self.CONNECTOR_SPECIFIC_HEADINGS:
+                # check that actual header is not in required headers, as required headers should be on a right place and order
+                if heading_names_value not in template_headings:
+                    heading_names_index += 1  # go to the next actual header as CONNECTOR_SPECIFIC_HEADINGS can be more than one
+                    continue
+                else:
+                    # if actual header is required go to the next template header to validate actual header order
+                    template_headings_index += 1
+                    continue
+            # strict check that actual header equals template header
+            if heading_names_value == template_headings_value:
+                # found expected header, go to the next header in template and actual headers
+                heading_names_index += 1
+                template_headings_index += 1
+                continue
+            # actual header != template header means that template value is not required and can be skipped
+            if template_headings_value in non_required_heading:
+                # found non-required header, go to the next template header to validate actual header
+                template_headings_index += 1
+                continue
+            # any check is True, indexes didn't move to the next step
+            errors.append(reason_titles_not_match(heading_names_value, template_headings_value, template_headings))
+            return errors
+        # indexes didn't move to the last required one, so some headers are missed
+        if template_headings_index != template_headings_len:
+            errors.append(reason_missing_titles(template_headings_index, template_headings))
+            return errors
+
+        return errors
+
+    def check_prerequisites_section_has_descriptions_for_required_fields(
+        self, actual_connector_spec: dict, connector_documentation: str, docs_path: str
+    ) -> List[str]:
+        errors = []
+        if not actual_connector_spec:
+            return errors
+
+        node = documentation_node(connector_documentation)
+        header_line_map = {header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        headings = tuple(header_line_map.keys())
+
+        if not header_line_map.get(self.PREREQUISITES):
+            return [f"Documentation does not have {self.PREREQUISITES} section."]
+
+        prereq_start_line = header_line_map[self.PREREQUISITES]
+        prereq_end_line = description_end_line_index(self.PREREQUISITES, headings, header_line_map)
+
+        with open(docs_path, "r") as docs_file:
+            prereq_content_lines = docs_file.readlines()[prereq_start_line:prereq_end_line]
+            # adding real character to avoid accidentally joining lines into a wanted title.
+            prereq_content = "|".join(prereq_content_lines).lower()
+            required_titles, has_credentials = required_titles_from_spec(actual_connector_spec["connectionSpecification"])
+
+            for title in required_titles:
+                if title not in prereq_content:
+                    errors.append(
+                        f"Required '{title}' field is not in {self.PREREQUISITES} section "
+                        f"or title in spec doesn't match name in the docs."
+                    )
+
+            if has_credentials:
+                # credentials has specific check for keywords as we have a lot of way how to describe this step
+                credentials_validation = [k in prereq_content for k in self.CREDENTIALS_KEYWORDS]
+                if True not in credentials_validation:
+                    errors.append(f"Required description for 'credentials' field is not in {self.PREREQUISITES} section.")
+
+            return errors
+
+    def check_docs_descriptions(self, docs_path: str, connector_documentation: str, connector_name: str) -> List[str]:
+        errors = []
+        template_descriptions = self._headings_description(connector_name)
+
+        node = documentation_node(connector_documentation)
+        header_line_map = {header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        actual_headings = tuple(header_line_map.keys())
+
+        for heading, description in template_descriptions.items():
+            if heading in actual_headings:
+
+                description_start_line = header_line_map[heading]
+                description_end_line = description_end_line_index(heading, actual_headings, header_line_map)
+
+                with open(docs_path, "r") as docs_file, open(description, "r") as template_file:
+
+                    docs_description_content = docs_file.readlines()[description_start_line:description_end_line]
+                    template_description_content = template_file.readlines()
+
+                    for d, t in zip(docs_description_content, template_description_content):
+                        d, t = prepare_lines_to_compare(connector_name, d, t)
+                        if d != t:
+                            errors.append(f"Description for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}")
+
+        return errors
+
+    def _run(self, connector: Connector) -> CheckResult:
+        connector_type, sl_level = connector.connector_type, connector.ab_internal_sl
+        if connector_type == "source" and sl_level >= 300:
+
+            if not connector.documentation_file_path or not connector.documentation_file_path.exists():
+                return self.fail(
+                    connector=connector,
+                    message="Could not check documentation structure as the documentation file is missing.",
+                )
+
+            doc_lines = [line.lower() for line in connector.documentation_file_path.read_text().splitlines()]
+
+            if not doc_lines:
+                return self.fail(
+                    connector=connector,
+                    message="Documentation file is empty",
+                )
+
+            docs_content = connector.documentation_file_path.read_text().rstrip()
+
+            errors = []
+            errors.extend(self.check_main_header(connector, doc_lines))
+            errors.extend(self.check_sections(doc_lines))
+            errors.extend(self.validate_links(docs_content))
+            errors.extend(self.check_docs_structure(docs_content, connector.name_from_metadata))
+            errors.extend(
+                self.check_prerequisites_section_has_descriptions_for_required_fields(
+                    connector.connector_spec, docs_content, connector.documentation_file_path
+                )
             )
-        return self.pass_(
+            errors.extend(self.check_docs_descriptions(connector.documentation_file_path, docs_content, connector.name_from_metadata))
+
+            if errors:
+                return self.fail(
+                    connector=connector,
+                    message=f"Connector documentation does not follow the guidelines: {'. '.join(errors)}",
+                )
+            return self.pass_(
+                connector=connector,
+                message="Documentation guidelines are followed",
+            )
+
+        return self.skip(
             connector=connector,
-            message="Documentation guidelines are followed",
+            reason="Check does not apply for sources with sl < 300",
         )
 
 
@@ -201,6 +427,6 @@ class CheckChangelogEntry(DocumentationCheck):
 ENABLED_CHECKS = [
     CheckMigrationGuide(),
     CheckDocumentationExists(),
-    # CheckDocumentationStructure(),  # Disabled as many are failing - we either need a big push or to block everyone. See https://github.com/airbytehq/airbyte/commit/4889e6e024d64ba0e353611f8fe67497b02de190#diff-3c73c6521bf819248b3d3d8aeab7cacfa4e8011f9890da93c77da925ece7eb20L262
+    CheckDocumentationStructure(),
     CheckChangelogEntry(),
 ]

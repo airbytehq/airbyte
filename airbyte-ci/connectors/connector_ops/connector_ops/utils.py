@@ -3,6 +3,7 @@
 #
 
 import functools
+import json
 import logging
 import os
 import re
@@ -380,6 +381,21 @@ class Connector:
         if not file_path.is_file():
             return None
         return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
+
+    @property
+    def connector_spec(self) -> Optional[dict]:
+        yaml_spec = Path(self.python_source_dir_path / "spec.yaml")
+        json_spec = Path(self.python_source_dir_path / "spec.json")
+
+        if yaml_spec.exists():
+            return yaml.safe_load(yaml_spec.read_text())
+        elif json_spec.exists():
+            with open(json_spec) as f:
+                return json.load(f)
+        elif self.manifest_path.exists():
+            return yaml.safe_load(self.manifest_path.read_text())["spec"]
+
+        return None
 
     @property
     def language(self) -> ConnectorLanguage:
