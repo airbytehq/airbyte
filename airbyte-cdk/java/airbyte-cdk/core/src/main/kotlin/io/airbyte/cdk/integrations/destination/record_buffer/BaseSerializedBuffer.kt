@@ -57,7 +57,8 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
     protected abstract fun writeRecord(
         recordString: String,
         airbyteMetaString: String,
-        emittedAt: Long
+        generationId: Long,
+        emittedAt: Long,
     )
 
     /**
@@ -99,7 +100,12 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
     }
 
     @Throws(Exception::class)
-    override fun accept(recordString: String, airbyteMetaString: String, emittedAt: Long): Long {
+    override fun accept(
+        recordString: String,
+        airbyteMetaString: String,
+        generationId: Long,
+        emittedAt: Long
+    ): Long {
         if (!isStarted) {
             if (useCompression) {
                 compressedBuffer = GzipCompressorOutputStream(byteCounter)
@@ -111,7 +117,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
         }
         if (inputStream == null && !isClosed) {
             val startCount = byteCounter.count
-            writeRecord(recordString, airbyteMetaString, emittedAt)
+            writeRecord(recordString, airbyteMetaString, generationId, emittedAt)
             return byteCounter.count - startCount
         } else {
             throw IllegalCallerException("Buffer is already closed, it cannot accept more messages")
