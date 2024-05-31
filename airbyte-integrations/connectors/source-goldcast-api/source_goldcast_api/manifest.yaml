@@ -83,7 +83,7 @@ definitions:
               parent_key: id
               partition_field: event
               stream:
-                $ref: '#/definitions/events_stream'
+                $ref: "#/definitions/events_stream"
       path: "/event/webinars/{{ stream_partition.event }}"
 
   event_members_stream:
@@ -99,7 +99,7 @@ definitions:
               parent_key: id
               partition_field: event
               stream:
-                $ref: '#/definitions/events_stream'
+                $ref: "#/definitions/events_stream"
       path: "/event/event-members?event={{ stream_partition.event }}"
 
 #  event_agenda_stream:
@@ -136,7 +136,6 @@ definitions:
 #              stream:
 #                $ref: '#/definitions/event_agenda_stream'
 #      path: "/event/get_session_attendance/?session={{ stream_partition.session }}"
-      
 
 streams:
   - "#/definitions/organizations_stream"
@@ -162,7 +161,7 @@ check:
 #    - "event_agenda"
 #    - "session_attendance"
 
-spec: 
+spec:
   documentation_url: https://customapi.goldcast.io/swagger-ui/#/
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
