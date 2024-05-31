@@ -23,7 +23,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
-import io.airbyte.integrations.destination.snowflake.SnowflakeSqlOperations
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Connection
@@ -245,7 +245,7 @@ class SnowflakeDestinationHandler(
                     } else {
                         e.message
                     }
-                throw SnowflakeSqlOperations.checkForKnownConfigExceptions(e).orElseThrow {
+                throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow {
                     RuntimeException(trimmedMessage, e)
                 }
             }
@@ -423,7 +423,7 @@ class SnowflakeDestinationHandler(
     }
 
     private fun toJdbcTypeName(airbyteProtocolType: AirbyteProtocolType): String {
-        return SnowflakeSqlGenerator.toSqlTypeName(airbyteProtocolType)
+        return SnowflakeDatabaseUtils.toSqlTypeName(airbyteProtocolType)
     }
 
     override fun createNamespaces(schemas: Set<String>) {
@@ -437,7 +437,7 @@ class SnowflakeDestinationHandler(
                     database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", it))
                 }
             } catch (e: Exception) {
-                throw SnowflakeSqlOperations.checkForKnownConfigExceptions(e).orElseThrow { e }
+                throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
             }
         }
     }
@@ -450,7 +450,7 @@ class SnowflakeDestinationHandler(
                     .anyMatch { anObject: String -> schema == anObject }
             }
         } catch (e: Exception) {
-            throw SnowflakeSqlOperations.checkForKnownConfigExceptions(e).orElseThrow { e }
+            throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
         }
     }
 

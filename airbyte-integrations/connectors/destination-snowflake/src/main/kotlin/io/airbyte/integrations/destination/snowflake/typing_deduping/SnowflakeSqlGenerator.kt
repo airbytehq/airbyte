@@ -23,6 +23,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.SOFT_RESET_SUFFIX
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.time.Instant
 import java.util.*
@@ -31,7 +32,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.commons.text.StringSubstitutor
 
 class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator {
-    private val CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at")
+    private val cdcDeletedAtColumn = buildColumnId("_ab_cdc_deleted_at")
 
     override fun buildStreamId(
         namespace: String,
@@ -74,6 +75,10 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
 
         // Literally impossible; AirbyteType is a sealed interface.
         throw IllegalArgumentException("Unsupported AirbyteType: $type")
+    }
+
+    private fun toDialectType(airbyteProtocolType: AirbyteProtocolType): String {
+        return SnowflakeDatabaseUtils.toSqlTypeName(airbyteProtocolType)
     }
 
     override fun createSchema(schema: String): Sql {
@@ -337,7 +342,7 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
 
         if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
             var cdcConditionalOrIncludeStatement = ""
-            if (stream.columns.containsKey(CDC_DELETED_AT_COLUMN)) {
+            if (stream.columns.containsKey(cdcDeletedAtColumn)) {
                 cdcConditionalOrIncludeStatement =
                     """
                                            OR (
@@ -501,7 +506,7 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
         if (stream.destinationSyncMode != DestinationSyncMode.APPEND_DEDUP) {
             return ""
         }
-        if (!stream.columns.containsKey(CDC_DELETED_AT_COLUMN)) {
+        if (!stream.columns.containsKey(cdcDeletedAtColumn)) {
             return ""
         }
 
@@ -683,18 +688,18 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
          * This method is separate from [.escapeJsonIdentifier] because we need to retain the
          * original field name for JSON access, e.g. `SELECT "_airbyte_data":"${FOO" AS "__FOO"`.
          */
-        fun escapeSqlIdentifier(identifier: String): String {
+        fun escapeSqlIdentifier(inputIdentifier: String): String {
             // Snowflake scripting language does something weird when the `${` bigram shows up in
             // the script
             // so replace these with something else.
             // For completeness, if we trigger this, also replace closing curly braces with
             // underscores.
-            var localId = identifier
-            if (localId.contains("\${")) {
-                localId = localId.replace("$", "_").replace("{", "_").replace("}", "_")
+            var identifier = inputIdentifier
+            if (identifier.contains("\${")) {
+                identifier = identifier.replace("$", "_").replace("{", "_").replace("}", "_")
             }
 
-            return escapeJsonIdentifier(localId)
+            return escapeJsonIdentifier(identifier)
         }
 
         private fun prefixReservedColumnName(columnName: String): String {
@@ -709,22 +714,6 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
 
         fun escapeSingleQuotedString(str: String): String {
             return str.replace("\\", "\\\\").replace("'", "\\'")
-        }
-
-        fun toSqlTypeName(airbyteProtocolType: AirbyteProtocolType): String {
-            // TODO verify these types against normalization
-            return when (airbyteProtocolType) {
-                AirbyteProtocolType.STRING -> "TEXT"
-                AirbyteProtocolType.NUMBER -> "FLOAT"
-                AirbyteProtocolType.INTEGER -> "NUMBER"
-                AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
-                AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ"
-                AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
-                AirbyteProtocolType.TIME_WITH_TIMEZONE -> "TEXT"
-                AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> "TIME"
-                AirbyteProtocolType.DATE -> "DATE"
-                AirbyteProtocolType.UNKNOWN -> "VARIANT"
-            }
         }
     }
 }

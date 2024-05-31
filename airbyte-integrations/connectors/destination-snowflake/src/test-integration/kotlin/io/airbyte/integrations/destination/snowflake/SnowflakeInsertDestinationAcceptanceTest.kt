@@ -30,7 +30,6 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.*
-import java.util.function.Function
 import java.util.stream.Collectors
 import javax.sql.DataSource
 import org.assertj.core.api.AssertionsForClassTypes
@@ -50,7 +49,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
             val insertConfig = deserialize(readFile(Path.of("secrets/insert_config.json")))
             return insertConfig
         }
-    private var config: JsonNode = Jsons.clone<JsonNode>(staticConfig)
+    private var config: JsonNode = Jsons.clone(staticConfig)
     private var dataSource: DataSource =
         SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
     private var database: JdbcDatabase = SnowflakeDatabaseUtils.getDatabase(dataSource)
@@ -64,7 +63,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
         get() = "airbyte/destination-snowflake:dev"
 
     override fun getConfig(): JsonNode {
-        return config!!
+        return config
     }
 
     override fun getTestDataComparator(): TestDataComparator {
@@ -95,7 +94,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
 
     @Throws(Exception::class)
     override fun retrieveRecords(
-        env: TestDestinationEnv?,
+        testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
         streamSchema: JsonNode
@@ -109,11 +108,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
                 )
         return retrieveRecordsFromTable(streamId.rawName, streamId.rawNamespace)
             .stream()
-            .map<JsonNode>(
-                Function<JsonNode, JsonNode> { r: JsonNode ->
-                    r.get(JavaBaseConstants.COLUMN_NAME_DATA)
-                }
-            )
+            .map { r: JsonNode -> r.get(JavaBaseConstants.COLUMN_NAME_DATA) }
             .collect(Collectors.toList<JsonNode>())
     }
 
@@ -146,7 +141,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
         val timeZone = TimeZone.getTimeZone("UTC")
         TimeZone.setDefault(timeZone)
 
-        return database!!.bufferedResultSetQuery<JsonNode>(
+        return database.bufferedResultSetQuery<JsonNode>(
             { connection: Connection ->
                 connection
                     .createStatement()
@@ -195,7 +190,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
 
     @Throws(Exception::class)
     override fun tearDown(testEnv: TestDestinationEnv) {
-        testSchemas.add(config!!["schema"].asText())
+        testSchemas.add(config["schema"].asText())
         for (schema in testSchemas) {
             // we need to wrap namespaces in quotes, but that means we have to manually upcase them.
             // thanks, v1 destinations!
@@ -204,7 +199,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
             // but it's approximately correct and maybe works for some things.
             val mangledSchema = schema.uppercase(Locale.getDefault())
             val dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS \"%s\"", mangledSchema)
-            database!!.execute(dropSchemaQuery)
+            database.execute(dropSchemaQuery)
         }
 
         close(dataSource)
