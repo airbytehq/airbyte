@@ -443,14 +443,14 @@ class IncrementalAcceptanceTests(Step):
             )
 
 
-class RegressionTests(Step):
-    """A step to run regression tests for a connector."""
+class LiveTests(Step):
+    """A step to run live tests for a connector."""
 
     context: ConnectorContext
-    title = "Regression tests"
+    title = "Live tests (regression + validation)"
     skipped_exit_code = 5
     accept_extra_params = True
-    regression_tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
+    tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
     working_directory = "/app"
     github_user = "octavia-squidington-iii"
     platform_repo_url = "airbytehq/airbyte-platform-internal"
@@ -468,23 +468,9 @@ class RegressionTests(Step):
             "--durations": ["3"],  # Show the 3 slowest tests in the report
         }
 
-    def regression_tests_command(self) -> List[str]:
-        """
-        This command:
-
-        1. Starts a Google Cloud SQL proxy running on localhost, which is used by the connection-retriever to connect to postgres.
-        2. Gets the PID of the proxy so it can be killed once done.
-        3. Runs the regression tests.
-        4. Kills the proxy, and waits for it to exit.
-        5. Exits with the regression tests' exit code.
-        We need to explicitly kill the proxy in order to allow the GitHub Action to exit.
-        An alternative that we can consider is to run the proxy as a separate service.
-
-        (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
-        """
-        run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
+    def _test_command(self) -> str:
         selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
-        run_pytest = " ".join(
+        return " ".join(
             [
                 "poetry",
                 "run",
@@ -504,14 +490,33 @@ class RegressionTests(Step):
                 self.run_id or "",
                 "--should-read-with-state",
                 str(self.should_read_with_state),
+                "--test-evaluation-mode",
+                str(self.test_evaluation_mode),
             ]
             + selected_streams
         )
+
+    def _run_command_with_proxy(self, command: str) -> List[str]:
+        """
+        This command:
+
+        1. Starts a Google Cloud SQL proxy running on localhost, which is used by the connection-retriever to connect to postgres.
+           This is required for secure access to our internal tools.
+        2. Gets the PID of the proxy so it can be killed once done.
+        3. Runs the command that was passed in as input.
+        4. Kills the proxy, and waits for it to exit.
+        5. Exits with the command's exit code.
+        We need to explicitly kill the proxy in order to allow the GitHub Action to exit.
+        An alternative that we can consider is to run the proxy as a separate service.
+
+        (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
+        """
+        run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
         run_pytest_with_proxy = dedent(
             f"""
         {run_proxy} &
         proxy_pid=$!
-        {run_pytest}
+        {command}
         pytest_exit=$?
         kill $proxy_pid
         wait $proxy_pid
@@ -540,6 +545,7 @@ class RegressionTests(Step):
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", True)
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
+        self.test_evaluation_mode = self.context.run_step_options.get_item_or_default(options, "test-evaluation-mode", "strict")
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
@@ -551,14 +557,14 @@ class RegressionTests(Step):
         Returns:
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
-        container = await self._build_regression_test_container(await connector_under_test_container.id())
-        container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
-        regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
-        path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
+        container = await self._build_test_container(await connector_under_test_container.id())
+        container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(self._test_command())))
+        tests_artifacts_dir = str(self.tests_artifacts_dir)
+        path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
 
         exit_code, stdout, stderr = await get_exec_result(container)
 
-        if "report.html" not in await container.directory(f"{regression_tests_artifacts_dir}/session_{self.run_id}").entries():
+        if "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries():
             main_logger.exception(
                 "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
             )
@@ -577,7 +583,7 @@ class RegressionTests(Step):
             report=regression_test_report,
         )
 
-    async def _build_regression_test_container(self, target_container_id: str) -> Container:
+    async def _build_test_container(self, target_container_id: str) -> Container:
         """Create a container to run regression tests."""
         container = with_poetry(self.context)
         container_requirements = ["apt-get", "install", "-y", "git", "curl", "docker.io"]
@@ -668,3 +674,39 @@ class RegressionTests(Step):
 
         container = container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
         return container
+
+
+class RegressionTests(LiveTests):
+    """A step to run live tests for a connector."""
+
+    context: ConnectorContext
+    title = "Regression tests"
+
+    def _test_command(self) -> str:
+        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
+        return " ".join(
+            [
+                "poetry",
+                "run",
+                "pytest",
+                "src/live_tests/regression_tests",
+                "--connector-image",
+                self.connector_image,
+                "--connection-id",
+                self.connection_id or "",
+                "--control-version",
+                self.control_version or "",
+                "--target-version",
+                self.target_version or "",
+                "--pr-url",
+                self.pr_url or "",
+                "--run-id",
+                self.run_id or "",
+                "--should-read-with-state",
+                str(self.should_read_with_state),
+                "--test-evaluation-mode",
+                str(self.test_evaluation_mode),
+            ]
+            + selected_streams
+        )
+
