@@ -99,7 +99,6 @@ class ConnectorTestContext(ConnectorContext):
             for secret_info in enabled_test_suite["testSecrets"]:
                 if secret := ConnectorTestContext._process_secret(secret_info, secret_stores, raise_on_missing_secret_store, logger):
                     secrets.append(secret)
-
         return secrets
 
     def get_connector_secrets_for_test_suite(
