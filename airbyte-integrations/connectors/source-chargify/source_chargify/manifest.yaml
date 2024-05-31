@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: customers.json
           http_method: GET
         record_selector:
@@ -25,7 +25,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '*'
+              - "*"
               - customer
         paginator:
           type: DefaultPaginator
@@ -44,7 +44,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customers'
+          $ref: "#/schemas/customers"
     subscriptions:
       type: DeclarativeStream
       name: subscriptions
@@ -53,7 +53,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: subscriptions.json
           http_method: GET
         record_selector:
@@ -61,7 +61,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '*'
+              - "*"
               - subscription
         paginator:
           type: DefaultPaginator
@@ -80,7 +80,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/subscriptions'
+          $ref: "#/schemas/subscriptions"
     invoices:
       type: DeclarativeStream
       name: invoices
@@ -89,7 +89,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: invoices
           http_method: GET
         record_selector:
@@ -115,7 +115,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/invoices'
+          $ref: "#/schemas/invoices"
     coupons:
       type: DeclarativeStream
       name: coupons
@@ -124,7 +124,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: coupons.json
           http_method: GET
         record_selector:
@@ -132,7 +132,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '*'
+              - "*"
               - coupon
         paginator:
           type: DefaultPaginator
@@ -151,7 +151,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/coupons'
+          $ref: "#/schemas/coupons"
     transactions:
       type: DeclarativeStream
       name: transactions
@@ -160,7 +160,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: transaction
           http_method: GET
         record_selector:
@@ -168,7 +168,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '*'
+              - "*"
               - transactions.json
         paginator:
           type: DefaultPaginator
@@ -187,21 +187,21 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/transactions'
+          $ref: "#/schemas/transactions"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain'] }}/
     authenticator:
       type: BasicHttpAuthenticator
-      password: 'x'
-      username: '{{ config[''api_key''] }}'
+      password: "x"
+      username: "{{ config['api_key'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/customers'
-  - $ref: '#/definitions/streams/subscriptions'
-  - $ref: '#/definitions/streams/invoices'
-  - $ref: '#/definitions/streams/coupons'
-  - $ref: '#/definitions/streams/transactions'
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/coupons"
+  - $ref: "#/definitions/streams/transactions"
 
 spec:
   type: Spec
@@ -241,118 +241,118 @@ schemas:
     properties:
       address:
         type:
-          - 'null'
+          - "null"
           - string
       address_2:
         type:
-          - 'null'
+          - "null"
           - string
       cc_emails:
         type:
-          - 'null'
+          - "null"
           - string
       city:
         type:
-          - 'null'
+          - "null"
           - string
       country:
         type:
-          - 'null'
+          - "null"
           - string
       country_name:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       default_subscription_group_uid:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
       locale:
         type:
-          - 'null'
+          - "null"
           - string
       organization:
         type:
-          - 'null'
+          - "null"
           - string
       parent_id:
         type:
-          - 'null'
+          - "null"
           - integer
       phone:
         type:
-          - 'null'
+          - "null"
           - string
       portal_customer_created_at:
         type:
-          - 'null'
+          - "null"
           - string
       portal_invite_last_accepted_at:
         type:
-          - 'null'
+          - "null"
           - string
       portal_invite_last_sent_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
       state_name:
         type:
-          - 'null'
+          - "null"
           - string
       tax_exempt:
         type:
-          - 'null'
+          - "null"
           - boolean
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       vat_number:
         type:
-          - 'null'
+          - "null"
           - string
       verified:
         type:
-          - 'null'
+          - "null"
           - string
       zip:
         type:
-          - 'null'
+          - "null"
           - string
   subscriptions:
     type:
-      - 'null'
+      - "null"
       - object
     $parameters:
       field_path: subscription
@@ -364,743 +364,743 @@ schemas:
     properties:
       activated_at:
         type:
-          - 'null'
+          - "null"
           - string
       automatically_resume_at:
         type:
-          - 'null'
+          - "null"
           - string
       balance_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       bank_account:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           bank_account_holder_type:
             type:
-              - 'null'
+              - "null"
               - string
           bank_account_type:
             type:
-              - 'null'
+              - "null"
               - string
           bank_name:
             type:
-              - 'null'
+              - "null"
               - string
           billing_address:
             type:
-              - 'null'
+              - "null"
               - string
           billing_address_2:
             type:
-              - 'null'
+              - "null"
               - string
           billing_city:
             type:
-              - 'null'
+              - "null"
               - string
           billing_country:
             type:
-              - 'null'
+              - "null"
               - string
           billing_state:
             type:
-              - 'null'
+              - "null"
               - string
           billing_zip:
             type:
-              - 'null'
+              - "null"
               - string
           chargify_token:
             type:
-              - 'null'
+              - "null"
               - string
           current_vault:
             type:
-              - 'null'
+              - "null"
               - string
           customer_id:
             type:
-              - 'null'
+              - "null"
               - integer
           customer_vault_token:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           gateway_handle:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           masked_bank_account_number:
             type:
-              - 'null'
+              - "null"
               - string
           masked_bank_routing_number:
             type:
-              - 'null'
+              - "null"
               - string
           site_gateway_setting_id:
             type:
-              - 'null'
+              - "null"
               - integer
           vault_token:
             type:
-              - 'null'
+              - "null"
               - string
       cancel_at_end_of_period:
         type:
-          - 'null'
+          - "null"
           - boolean
       canceled_at:
         type:
-          - 'null'
+          - "null"
           - string
       cancellation_message:
         type:
-          - 'null'
+          - "null"
           - string
       cancellation_method:
         type:
-          - 'null'
+          - "null"
           - string
       coupon_code:
         type:
-          - 'null'
+          - "null"
           - string
       coupon_codes:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       coupon_use_count:
         type:
-          - 'null'
+          - "null"
           - integer
       coupon_uses_allowed:
         type:
-          - 'null'
+          - "null"
           - integer
       coupons:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       credit_balance_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       credit_card:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           billing_address:
             type:
-              - 'null'
+              - "null"
               - string
           billing_address_2:
             type:
-              - 'null'
+              - "null"
               - string
           billing_city:
             type:
-              - 'null'
+              - "null"
               - string
           billing_country:
             type:
-              - 'null'
+              - "null"
               - string
           billing_state:
             type:
-              - 'null'
+              - "null"
               - string
           billing_zip:
             type:
-              - 'null'
+              - "null"
               - string
           card_type:
             type:
-              - 'null'
+              - "null"
               - string
           chargify_token:
             type:
-              - 'null'
+              - "null"
               - string
           current_vault:
             type:
-              - 'null'
+              - "null"
               - string
           customer_id:
             type:
-              - 'null'
+              - "null"
               - integer
           customer_vault_token:
             type:
-              - 'null'
+              - "null"
               - string
           disabled:
             type:
-              - 'null'
+              - "null"
               - boolean
           expiration_month:
             type:
-              - 'null'
+              - "null"
               - integer
           expiration_year:
             type:
-              - 'null'
+              - "null"
               - integer
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           gateway_handle:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           masked_card_number:
             type:
-              - 'null'
+              - "null"
               - string
           payment_type:
             type:
-              - 'null'
+              - "null"
               - string
           site_gateway_setting_id:
             type:
-              - 'null'
+              - "null"
               - integer
           vault_token:
             type:
-              - 'null'
+              - "null"
               - string
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       current_billing_amount_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       current_period_ends_at:
         type:
-          - 'null'
+          - "null"
           - string
       current_period_started_at:
         type:
-          - 'null'
+          - "null"
           - string
       customer:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           address:
             type:
-              - 'null'
+              - "null"
               - string
           address_2:
             type:
-              - 'null'
+              - "null"
               - string
           cc_emails:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           country_name:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           default_subscription_group_uid:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           locale:
             type:
-              - 'null'
+              - "null"
               - string
           organization:
             type:
-              - 'null'
+              - "null"
               - string
           parent_id:
             type:
-              - 'null'
+              - "null"
               - integer
           phone:
             type:
-              - 'null'
+              - "null"
               - string
           portal_customer_created_at:
             type:
-              - 'null'
+              - "null"
               - string
           portal_invite_last_accepted_at:
             type:
-              - 'null'
+              - "null"
               - string
           portal_invite_last_sent_at:
             type:
-              - 'null'
+              - "null"
               - string
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           state_name:
             type:
-              - 'null'
+              - "null"
               - string
           tax_exempt:
             type:
-              - 'null'
+              - "null"
               - boolean
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           vat_number:
             type:
-              - 'null'
+              - "null"
               - string
           verified:
             type:
-              - 'null'
+              - "null"
               - boolean
           zip:
             type:
-              - 'null'
+              - "null"
               - string
       delayed_cancel_at:
         type:
-          - 'null'
+          - "null"
           - string
       dunning_communication_delay_enabled:
         type:
-          - 'null'
+          - "null"
           - boolean
       dunning_communication_delay_time_zone:
         type:
-          - 'null'
+          - "null"
           - string
       expires_at:
         type:
-          - 'null'
+          - "null"
           - string
       group:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           primary:
             type:
-              - 'null'
+              - "null"
               - string
           primary_subscription_id:
             type:
-              - 'null'
+              - "null"
               - string
           scheme:
             type:
-              - 'null'
+              - "null"
               - string
           uid:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       locale:
         type:
-          - 'null'
+          - "null"
           - string
       net_terms:
         type:
-          - 'null'
+          - "null"
           - integer
       next_assessment_at:
         type:
-          - 'null'
+          - "null"
           - string
       next_product_handle:
         type:
-          - 'null'
+          - "null"
           - string
       next_product_id:
         type:
-          - 'null'
+          - "null"
           - integer
       next_product_price_point_id:
         type:
-          - 'null'
+          - "null"
           - integer
       offer_id:
         type:
-          - 'null'
+          - "null"
           - integer
       on_hold_at:
         type:
-          - 'null'
+          - "null"
           - string
       payer_id:
         type:
-          - 'null'
+          - "null"
           - integer
       payment_collection_method:
         type:
-          - 'null'
+          - "null"
           - string
       payment_type:
         type:
-          - 'null'
+          - "null"
           - string
       prepaid_dunning:
         type:
-          - 'null'
+          - "null"
           - boolean
       prepayment_balance_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       previous_state:
         type:
-          - 'null'
+          - "null"
           - string
       product:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           accounting_code:
             type:
-              - 'null'
+              - "null"
               - string
           archived_at:
             type:
-              - 'null'
+              - "null"
               - string
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
           default_product_price_point_id:
             type:
-              - 'null'
+              - "null"
               - integer
           description:
             type:
-              - 'null'
+              - "null"
               - string
           expiration_interval:
             type:
-              - 'null'
+              - "null"
               - integer
           expiration_interval_unit:
             type:
-              - 'null'
+              - "null"
               - string
           handle:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           initial_charge_after_trial:
             type:
-              - 'null'
+              - "null"
               - boolean
           initial_charge_in_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           interval:
             type:
-              - 'null'
+              - "null"
               - integer
           interval_unit:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           price_in_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           product_family:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               accounting_code:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               description:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               handle:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               updated_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           product_price_point_name:
             type:
-              - 'null'
+              - "null"
               - string
           public_signup_pages:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               anyOf:
                 - type:
-                    - 'null'
+                    - "null"
                     - object
                   additionalProperties: true
                   properties:
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     return_params:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     return_url:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     url:
                       type:
-                        - 'null'
+                        - "null"
                         - string
           request_billing_address:
             type:
-              - 'null'
+              - "null"
               - boolean
           request_credit_card:
             type:
-              - 'null'
+              - "null"
               - boolean
           require_billing_address:
             type:
-              - 'null'
+              - "null"
               - boolean
           require_credit_card:
             type:
-              - 'null'
+              - "null"
               - boolean
           require_shipping_address:
             type:
-              - 'null'
+              - "null"
               - boolean
           return_params:
             type:
-              - 'null'
+              - "null"
               - string
           tax_code:
             type:
-              - 'null'
+              - "null"
               - string
           taxable:
             type:
-              - 'null'
+              - "null"
               - boolean
           trial_interval:
             type:
-              - 'null'
+              - "null"
               - integer
           trial_interval_unit:
             type:
-              - 'null'
+              - "null"
               - string
           trial_price_in_cents:
             type:
-              - 'null'
+              - "null"
               - integer
           update_return_params:
             type:
-              - 'null'
+              - "null"
               - string
           update_return_url:
             type:
-              - 'null'
+              - "null"
               - string
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
           version_number:
             type:
-              - 'null'
+              - "null"
               - integer
       product_price_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       product_price_point_id:
         type:
-          - 'null'
+          - "null"
           - integer
       product_price_point_type:
         type:
-          - 'null'
+          - "null"
           - string
       product_version_number:
         type:
-          - 'null'
+          - "null"
           - integer
       reason_code:
         type:
-          - 'null'
+          - "null"
           - string
       receives_invoice_emails:
         type:
-          - 'null'
+          - "null"
           - boolean
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       referral_code:
         type:
-          - 'null'
+          - "null"
           - string
       scheduled_cancellation_at:
         type:
-          - 'null'
+          - "null"
           - string
       signup_payment_id:
         type:
-          - 'null'
+          - "null"
           - integer
       signup_revenue:
         type:
-          - 'null'
+          - "null"
           - string
       snap_day:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
       stored_credential_transaction_id:
         type:
-          - 'null'
+          - "null"
           - integer
       total_revenue_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       trial_ended_at:
         type:
-          - 'null'
+          - "null"
           - string
       trial_started_at:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
   invoices:
     type: object
@@ -1109,248 +1109,248 @@ schemas:
     properties:
       billing_address:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           city:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           line2:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           street:
             type:
-              - 'null'
+              - "null"
               - string
           zip:
             type:
-              - 'null'
+              - "null"
               - string
       collection_method:
         type:
-          - 'null'
+          - "null"
           - string
       consolidation_level:
         type:
-          - 'null'
+          - "null"
           - string
       credit_amount:
         type:
-          - 'null'
+          - "null"
           - string
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       customer:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           chargify_id:
             type:
-              - 'null'
+              - "null"
               - integer
           email:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           organization:
             type:
-              - 'null'
+              - "null"
               - string
       customer_id:
         type:
-          - 'null'
+          - "null"
           - integer
       discount_amount:
         type:
-          - 'null'
+          - "null"
           - string
       due_amount:
         type:
-          - 'null'
+          - "null"
           - string
       due_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       group_primary_subscription_id:
         type:
-          - 'null'
+          - "null"
           - integer
       issue_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       memo:
         type:
-          - 'null'
+          - "null"
           - string
       number:
         type:
-          - 'null'
+          - "null"
           - string
       paid_amount:
         type:
-          - 'null'
+          - "null"
           - string
       paid_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       parent_invoice_number:
         type:
-          - 'null'
+          - "null"
           - integer
       parent_invoice_uid:
         type:
-          - 'null'
+          - "null"
           - integer
       payment_instructions:
         type:
-          - 'null'
+          - "null"
           - string
       product_family_name:
         type:
-          - 'null'
+          - "null"
           - string
       product_name:
         type:
-          - 'null'
+          - "null"
           - string
       refund_amount:
         type:
-          - 'null'
+          - "null"
           - string
       seller:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           address:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               line2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               street:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               zip:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - string
       sequence_number:
         type:
-          - 'null'
+          - "null"
           - integer
       shipping_address:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           city:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           line2:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
           street:
             type:
-              - 'null'
+              - "null"
               - string
           zip:
             type:
-              - 'null'
+              - "null"
               - string
       site_id:
         type:
-          - 'null'
+          - "null"
           - integer
       status:
         type:
-          - 'null'
+          - "null"
           - string
       subscription_id:
         type:
-          - 'null'
+          - "null"
           - integer
       subtotal_amount:
         type:
-          - 'null'
+          - "null"
           - string
       tax_amount:
         type:
-          - 'null'
+          - "null"
           - string
       total_amount:
         type:
-          - 'null'
+          - "null"
           - string
       uid:
         type:
-          - 'null'
+          - "null"
           - string
   coupons:
     type: object
@@ -1359,145 +1359,145 @@ schemas:
     properties:
       allow_negative_balance:
         type:
-          - 'null'
+          - "null"
           - boolean
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       amount_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
-      'apply_on_cancel_at_end_of_period ':
+      "apply_on_cancel_at_end_of_period ":
         type:
-          - 'null'
+          - "null"
           - boolean
       archived_at:
         type:
-          - 'null'
+          - "null"
           - string
       code:
         type:
-          - 'null'
+          - "null"
           - string
       compounding_strategy:
         type:
-          - 'null'
+          - "null"
           - string
       conversion_limit:
         type:
-          - 'null'
+          - "null"
           - string
       coupon_restrictions:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             handle:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             item_id:
               type:
-                - 'null'
+                - "null"
                 - integer
             item_type:
               type:
-                - 'null'
+                - "null"
                 - string
             name:
               type:
-                - 'null'
+                - "null"
                 - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       discount_type:
         type:
-          - 'null'
+          - "null"
           - string
       duration_interval:
         type:
-          - 'null'
+          - "null"
           - integer
       duration_interval_span:
         type:
-          - 'null'
+          - "null"
           - string
       duration_interval_unit:
         type:
-          - 'null'
+          - "null"
           - string
       duration_period_count:
         type:
-          - 'null'
+          - "null"
           - integer
       end_date:
         type:
-          - 'null'
+          - "null"
           - string
       exclude_mid_period_allocations:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       percentage:
         type:
-          - 'null'
+          - "null"
           - integer
       product_family_id:
         type:
-          - 'null'
+          - "null"
           - integer
       product_family_name:
         type:
-          - 'null'
+          - "null"
           - string
       recurring:
         type:
-          - 'null'
+          - "null"
           - boolean
       recurring_scheme:
         type:
-          - 'null'
+          - "null"
           - string
       stackable:
         type:
-          - 'null'
+          - "null"
           - boolean
       start_date:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       use_site_exchange_rate:
         type:
-          - 'null'
+          - "null"
           - boolean
   transactions:
     type: object
@@ -1506,109 +1506,109 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       amount_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       card_expiration:
         type:
-          - 'null'
+          - "null"
           - string
       card_number:
         type:
-          - 'null'
+          - "null"
           - string
       card_type:
         type:
-          - 'null'
+          - "null"
           - string
       component_id:
         type:
-          - 'null'
+          - "null"
           - integer
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       customer_id:
         type:
-          - 'null'
+          - "null"
           - integer
       ending_balance_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       gateway_order_id:
         type:
-          - 'null'
+          - "null"
           - integer
       gateway_transaction_id:
         type:
-          - 'null'
+          - "null"
           - string
       gateway_used:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       item_name:
         type:
-          - 'null'
+          - "null"
           - string
       kind:
         type:
-          - 'null'
+          - "null"
           - string
       memo:
         type:
-          - 'null'
+          - "null"
           - string
       parent_id:
         type:
-          - 'null'
+          - "null"
           - integer
       payment_id:
         type:
-          - 'null'
+          - "null"
           - integer
       product_id:
         type:
-          - 'null'
+          - "null"
           - integer
       refunded_amount_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       role:
         type:
-          - 'null'
+          - "null"
           - string
       starting_balance_in_cents:
         type:
-          - 'null'
+          - "null"
           - integer
       statement_id:
         type:
-          - 'null'
+          - "null"
           - integer
       subscription_id:
         type:
-          - 'null'
+          - "null"
           - integer
       success:
         type:
-          - 'null'
+          - "null"
           - boolean
       tax_id:
         type:
-          - 'null'
+          - "null"
           - integer
       transaction_type:
         type:
-          - 'null'
+          - "null"
           - string
