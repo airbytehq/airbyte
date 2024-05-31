@@ -43,7 +43,7 @@ List of available streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
-| 0.2.4 | 2024-06-05 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Make compatible with the builder                             |
+| 0.2.4 | 2024-06-05 | [38819](https://github.com/airbytehq/airbyte/pull/38819) | Make compatible with the builder                             |
 | 0.2.3 | 2024-05-21 | [38524](https://github.com/airbytehq/airbyte/pull/38524) | [autopull] base image + poetry + up_to_date |
 | 0.2.2 | 2024-04-19 | [37272](https://github.com/airbytehq/airbyte/pull/37272) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
 | 0.2.1 | 2024-04-12 | [37272](https://github.com/airbytehq/airbyte/pull/37272) | schema descriptions |
