@@ -40,6 +40,7 @@ import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import com.mongodb.connection.ServerDescription;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -171,7 +172,7 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
+    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
         "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
   }
@@ -183,7 +184,7 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
+    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
   }
 
   @Test
@@ -193,7 +194,7 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
+    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
         "Initial snapshot iterator should at least have one message if the initial snapshot state is set as in progress");
   }
@@ -205,7 +206,7 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
+    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertFalse(iterators.get(0).hasNext(), "Initial snapshot iterator should have no messages if its snapshot state is set as complete");
   }
 
@@ -247,7 +248,7 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, resyncConfig);
     assertNotNull(iterators);
-    assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
+    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
         "Initial snapshot iterator should at least have one message if its snapshot state is set as complete but needs to start over due to invalid saved offset");
   }
@@ -328,6 +329,10 @@ class MongoDbCdcInitializerTest {
         .withCursorField(new ArrayList<>())
         .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
         .withPrimaryKey(new ArrayList<>());
+  }
+
+  private List<AutoCloseableIterator<AirbyteMessage>> filterTraceIterator(List<AutoCloseableIterator<AirbyteMessage>> iterators) {
+    return iterators.stream().filter(it -> it instanceof StreamStatusTraceEmitterIterator == false).toList();
   }
 
 }
