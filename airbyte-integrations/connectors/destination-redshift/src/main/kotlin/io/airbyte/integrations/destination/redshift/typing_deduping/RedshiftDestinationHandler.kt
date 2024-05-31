@@ -32,6 +32,10 @@ class RedshiftDestinationHandler(
         rawNamespace,
         SQLDialect.DEFAULT
     ) {
+    override fun createNamespaces(schemas: Set<String>) {
+        TODO("Not yet implemented")
+    }
+
     @Throws(Exception::class)
     override fun execute(sql: Sql) {
         val transactions = sql.transactions
