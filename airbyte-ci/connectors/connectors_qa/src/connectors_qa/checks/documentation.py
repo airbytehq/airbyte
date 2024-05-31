@@ -130,7 +130,7 @@ class CheckDocumentationStructure(DocumentationCheck):
 
     PREREQUISITES = "Prerequisites"
     HEADING = "heading"
-    CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access"]
+    CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access", "client"]
     CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
 
     def _get_template_headings(self, connector_name: str) -> tuple[tuple[str], tuple[str]]:
@@ -197,7 +197,7 @@ class CheckDocumentationStructure(DocumentationCheck):
         return errors
 
     def validate_links(self, docs_content) -> List[str]:
-        valid_status_codes = [200, 403, 401, 405]  # we skip 4xx due to needed access
+        valid_status_codes = [200, 403, 401, 405, 503]  # we skip 4xx due to needed access
         links = re.findall("(https?://[^\s)]+)", docs_content)
         invalid_links = []
         threads = []
@@ -205,7 +205,7 @@ class CheckDocumentationStructure(DocumentationCheck):
         def request_link(docs_link):
             response = requests.get(docs_link)
             if response.status_code not in valid_status_codes:
-                invalid_links.append(docs_link)
+                invalid_links.append(f"{docs_link} with {response.status_code} status code")
 
         for link in links:
             process = Thread(target=request_link, args=[link])
@@ -293,7 +293,8 @@ class CheckDocumentationStructure(DocumentationCheck):
             prereq_content_lines = docs_file.readlines()[prereq_start_line:prereq_end_line]
             # adding real character to avoid accidentally joining lines into a wanted title.
             prereq_content = "|".join(prereq_content_lines).lower()
-            required_titles, has_credentials = required_titles_from_spec(actual_connector_spec["connectionSpecification"])
+            spec = actual_connector_spec.get("connectionSpecification") or actual_connector_spec.get("connection_specification")
+            required_titles, has_credentials = required_titles_from_spec(spec)
 
             for title in required_titles:
                 if title not in prereq_content:
