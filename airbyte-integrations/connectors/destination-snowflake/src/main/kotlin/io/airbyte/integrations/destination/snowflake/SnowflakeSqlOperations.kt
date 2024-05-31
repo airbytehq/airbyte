@@ -59,12 +59,12 @@ open class SnowflakeSqlOperations : JdbcSqlOperations(), SqlOperations {
     }
 
     @Throws(Exception::class)
-    override fun isSchemaExists(database: JdbcDatabase?, outputSchema: String?): Boolean {
+    override fun isSchemaExists(database: JdbcDatabase?, schemaName: String?): Boolean {
         try {
             database!!.unsafeQuery(SHOW_SCHEMAS).use { results ->
                 return results
                     .map { schemas: JsonNode -> schemas[NAME].asText() }
-                    .anyMatch { anObject: String? -> outputSchema.equals(anObject) }
+                    .anyMatch { anObject: String? -> schemaName.equals(anObject) }
             }
         } catch (e: Exception) {
             throw checkForKnownConfigExceptions(e).orElseThrow { e }
@@ -116,10 +116,10 @@ open class SnowflakeSqlOperations : JdbcSqlOperations(), SqlOperations {
 
     @Throws(Exception::class)
     override fun insertRecordsInternalV2(
-        jdbcDatabase: JdbcDatabase,
-        list: List<PartialAirbyteMessage>,
-        s: String?,
-        s1: String?
+        database: JdbcDatabase,
+        records: List<PartialAirbyteMessage>,
+        schemaName: String?,
+        tableName: String?
     ) {
         // Snowflake doesn't have standard inserts... so we don't do this at real runtime.
         // Intentionally do nothing. This method is called from the `check` method.

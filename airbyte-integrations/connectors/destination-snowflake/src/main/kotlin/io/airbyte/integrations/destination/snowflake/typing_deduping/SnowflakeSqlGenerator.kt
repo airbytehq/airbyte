@@ -705,12 +705,12 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
             // so replace these with something else.
             // For completeness, if we trigger this, also replace closing curly braces with
             // underscores.
-            var identifier = identifier
-            if (identifier.contains("\${")) {
-                identifier = identifier.replace("$", "_").replace("{", "_").replace("}", "_")
+            var localId = identifier
+            if (localId.contains("\${")) {
+                localId = localId.replace("$", "_").replace("{", "_").replace("}", "_")
             }
 
-            return escapeJsonIdentifier(identifier)
+            return escapeJsonIdentifier(localId)
         }
 
         private fun prefixReservedColumnName(columnName: String): String {

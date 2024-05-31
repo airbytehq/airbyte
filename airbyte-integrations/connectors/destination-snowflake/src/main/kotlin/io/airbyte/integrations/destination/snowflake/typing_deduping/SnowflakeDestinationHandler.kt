@@ -59,7 +59,7 @@ class SnowflakeDestinationHandler(
     private fun getFinalTableRowCount(
         streamIds: List<StreamId>
     ): java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, Int>> {
-        val tableRowCounts = java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, Int>>()
+        val tableRowCounts = LinkedHashMap<String, java.util.LinkedHashMap<String, Int>>()
         val paramHolder = java.lang.String.join(",", Collections.nCopies(streamIds.size, "?"))
         // convert list stream to array
         val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
@@ -69,21 +69,17 @@ class SnowflakeDestinationHandler(
                          SELECT table_schema, table_name, row_count
                          FROM information_schema.tables
                          WHERE table_catalog = ?
-                           AND table_schema IN (%s)
-                           AND table_name IN (%s)
+                           AND table_schema IN ($paramHolder)
+                           AND table_name IN ($paramHolder)
                          
-                         """
-                .trimIndent()
-                .formatted(paramHolder, paramHolder)
+                         """.trimIndent()
         val bindValues = arrayOf(databaseName) + namespaces + names
         val results: List<JsonNode> = database.queryJsons(query, *bindValues)
         for (result in results) {
             val tableSchema = result["TABLE_SCHEMA"].asText()
             val tableName = result["TABLE_NAME"].asText()
             val rowCount = result["ROW_COUNT"].asInt()
-            tableRowCounts
-                .computeIfAbsent(tableSchema) { k: String? -> java.util.LinkedHashMap() }[
-                    tableName] = rowCount
+            tableRowCounts.computeIfAbsent(tableSchema) { LinkedHashMap() }[tableName] = rowCount
         }
         return tableRowCounts
     }
@@ -254,8 +250,7 @@ class SnowflakeDestinationHandler(
     }
 
     private fun getPks(stream: StreamConfig?): Set<String> {
-        return if (stream!!.primaryKey != null) stream.primaryKey.map(ColumnId::name).toSet()
-        else emptySet()
+        return stream!!.primaryKey.map(ColumnId::name).toSet()
     }
 
     override fun isAirbyteRawIdColumnMatch(existingTable: TableDefinition): Boolean {
@@ -461,7 +456,7 @@ class SnowflakeDestinationHandler(
             streamIds: List<StreamId>
         ): java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, TableDefinition>> {
             val existingTables =
-                java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, TableDefinition>>()
+                LinkedHashMap<String, java.util.LinkedHashMap<String, TableDefinition>>()
             val paramHolder = java.lang.String.join(",", Collections.nCopies(streamIds.size, "?"))
             // convert list stream to array
             val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
@@ -471,13 +466,11 @@ class SnowflakeDestinationHandler(
                          SELECT table_schema, table_name, column_name, data_type, is_nullable
                          FROM information_schema.columns
                          WHERE table_catalog = ?
-                           AND table_schema IN (%s)
-                           AND table_name IN (%s)
+                           AND table_schema IN ($paramHolder)
+                           AND table_name IN ($paramHolder)
                          ORDER BY table_schema, table_name, ordinal_position;
                          
-                         """
-                    .trimIndent()
-                    .formatted(paramHolder, paramHolder)
+                         """.trimIndent()
 
             val bindValues =
                 arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
@@ -490,10 +483,8 @@ class SnowflakeDestinationHandler(
                 val isNullable = result["IS_NULLABLE"].asText()
                 val tableDefinition =
                     existingTables
-                        .computeIfAbsent(tableSchema) { k: String? -> java.util.LinkedHashMap() }
-                        .computeIfAbsent(tableName) { k: String? ->
-                            TableDefinition(java.util.LinkedHashMap())
-                        }
+                        .computeIfAbsent(tableSchema) { LinkedHashMap() }
+                        .computeIfAbsent(tableName) { TableDefinition(LinkedHashMap()) }
                 tableDefinition.columns[columnName] =
                     ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
             }

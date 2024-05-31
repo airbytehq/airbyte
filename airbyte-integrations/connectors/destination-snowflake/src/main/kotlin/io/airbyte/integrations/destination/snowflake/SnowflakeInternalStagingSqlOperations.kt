@@ -54,7 +54,7 @@ class SnowflakeInternalStagingSqlOperations(
     override fun uploadRecordsToStage(
         database: JdbcDatabase?,
         recordsData: SerializableBuffer?,
-        namespace: String?,
+        schemaName: String?,
         stageName: String?,
         stagingPath: String?
     ): String {
