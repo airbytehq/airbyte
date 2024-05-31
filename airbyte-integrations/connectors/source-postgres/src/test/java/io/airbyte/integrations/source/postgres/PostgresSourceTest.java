@@ -255,7 +255,7 @@ class PostgresSourceTest {
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
       ctx.fetch("CREATE USER test_user_0 password '123';");
       ctx.fetch("CREATE USER test_user_1 password '123';");
-      ctx.fetch("GRANT SELECT ON TABLE id_and_name TO test_user_1");
+      ctx.fetch("GRANT SELECT ON TABLE id_and_name TO test_user_1;");
       return null;
     });
     final JsonNode configUser1 = getConfig("test_user_1", "123");
