@@ -76,6 +76,16 @@ First, we'll update the request parameters to only be set if this is not a reque
 paginated request, we'll use the parameters coming from the response.
 
 ```python
+# add next library to import section
+from urllib.parse import urlparse
+```
+
+```python
+# Create a pagination constant
+_PAGE_SIZE: int = 1000
+```
+
+```python
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -98,7 +108,8 @@ Then we'll extract the next_page_token from the response
 ```
 
 The test should now pass. We won't write more integration tests in this tutorial, but they are
-strongly recommended for any connector used in production.
+strongly recommended for any connector used in production. The change on request params will cause
+a fail in "test_read_a_single_page", fix this unit test is left as an exercise for the reader.
 
 ```bash
 poetry run pytest unit_tests
