@@ -185,6 +185,11 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     // Do nothing
   }
 
+  @Override
+  protected void addIsResumableFlagForNonPkTable(final AirbyteStream stream) {
+    stream.setIsResumable(false);
+  }
+
   // Utilize the setup to do test on MssqlDebeziumStateUtil.
   @Test
   public void testCdcSnapshot() {
