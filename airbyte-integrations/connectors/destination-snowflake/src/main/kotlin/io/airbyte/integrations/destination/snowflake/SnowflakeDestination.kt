@@ -93,11 +93,11 @@ constructor(
     }
 
     private fun getDataSource(config: JsonNode): DataSource {
-        return SnowflakeDatabase.createDataSource(config, airbyteEnvironment)
+        return SnowflakeDatabaseUtils.createDataSource(config, airbyteEnvironment)
     }
 
     private fun getDatabase(dataSource: DataSource): JdbcDatabase {
-        return SnowflakeDatabase.getDatabase(dataSource)
+        return SnowflakeDatabaseUtils.getDatabase(dataSource)
     }
 
     override fun getSerializedMessageConsumer(

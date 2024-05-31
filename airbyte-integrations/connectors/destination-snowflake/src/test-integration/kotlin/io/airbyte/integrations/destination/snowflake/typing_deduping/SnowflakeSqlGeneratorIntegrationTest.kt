@@ -17,7 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeTypeAndDedupe
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts
-import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.SnowflakeSourceOperations
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.dumpFinalTable
@@ -1844,15 +1844,15 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
             Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")))
         private var databaseName = config[JdbcUtils.DATABASE_KEY].asText()
         private var dataSource: DataSource =
-            SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-        private var database: JdbcDatabase = SnowflakeDatabase.getDatabase(dataSource)
+            SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
+        private var database: JdbcDatabase = SnowflakeDatabaseUtils.getDatabase(dataSource)
 
         @JvmStatic
         @BeforeAll
         fun setupSnowflake(): Unit {
             dataSource =
-                SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-            database = SnowflakeDatabase.getDatabase(dataSource)
+                SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
+            database = SnowflakeDatabaseUtils.getDatabase(dataSource)
         }
 
         @JvmStatic

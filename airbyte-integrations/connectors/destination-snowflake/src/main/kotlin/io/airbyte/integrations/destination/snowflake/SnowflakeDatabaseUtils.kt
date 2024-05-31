@@ -27,8 +27,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /** SnowflakeDatabase contains helpers to create connections to and run queries on Snowflake. */
-object SnowflakeDatabase {
-    private val LOGGER: Logger = LoggerFactory.getLogger(SnowflakeDatabase::class.java)
+object SnowflakeDatabaseUtils {
+    private val LOGGER: Logger = LoggerFactory.getLogger(SnowflakeDatabaseUtils::class.java)
     private const val PAUSE_BETWEEN_TOKEN_REFRESH_MIN =
         7 // snowflake access token TTL is 10min and can't be modified
 

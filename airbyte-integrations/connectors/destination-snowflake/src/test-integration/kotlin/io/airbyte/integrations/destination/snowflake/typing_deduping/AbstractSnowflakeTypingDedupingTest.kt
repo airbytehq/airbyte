@@ -45,8 +45,9 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         val config = deserialize(readFile(Path.of(configPath)))
         (config as ObjectNode).put("schema", "typing_deduping_default_schema$uniqueSuffix")
         databaseName = config.get(JdbcUtils.DATABASE_KEY).asText()
-        dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-        database = SnowflakeDatabase.getDatabase(dataSource)
+        dataSource =
+            SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
+        database = SnowflakeDatabaseUtils.getDatabase(dataSource)
         cleanAirbyteInternalTable(database)
         return config
     }
