@@ -18,7 +18,7 @@ include = "source_aws_cloudtrail"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 boto3 = "==1.17.112"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-aws-cloudtrail = "source_aws_cloudtrail.run:run"
