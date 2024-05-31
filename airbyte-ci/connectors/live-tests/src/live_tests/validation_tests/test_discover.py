@@ -7,21 +7,16 @@ import dpath.util
 import jsonschema
 import pytest
 from airbyte_protocol.models import AirbyteCatalog
-from live_tests.commons.evaluation_modes import allow_diagnostic_mode
 from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, find_all_values_for_key_in_schema
-
-if TYPE_CHECKING:
-    from _pytest.config import Config
 
 pytestmark = [
     pytest.mark.anyio,
 ]
 
 
-@allow_diagnostic_mode
+@pytest.mark.allow_diagnostic_mode
 async def test_discover(
-    pytestconfig: "Config",
     record_property: Callable,
     discover_target_execution_result: ExecutionResult,
     target_discovered_catalog: AirbyteCatalog,
@@ -51,15 +46,15 @@ def _duplicated_stream_names(streams) -> List[str]:
     return [k for k, v in name_counts.items() if v > 1]
 
 
-@allow_diagnostic_mode
-async def test_streams_have_valid_json_schemas(pytestconfig: "Config", target_discovered_catalog: AirbyteCatalog):
+@pytest.mark.allow_diagnostic_mode
+async def test_streams_have_valid_json_schemas(target_discovered_catalog: AirbyteCatalog):
     """Check if all stream schemas are valid json schemas."""
     for stream in target_discovered_catalog.streams:
         jsonschema.Draft7Validator.check_schema(stream.json_schema)
 
 
-@allow_diagnostic_mode
-async def test_defined_cursors_exist_in_schema(pytestconfig: "Config", target_discovered_catalog: AirbyteCatalog):
+@pytest.mark.allow_diagnostic_mode
+async def test_defined_cursors_exist_in_schema(target_discovered_catalog: AirbyteCatalog):
     """Check if all of the source defined cursor fields exist on stream's json schema."""
     for stream in target_discovered_catalog.streams:
         if not stream.default_cursor_field:
@@ -74,8 +69,8 @@ async def test_defined_cursors_exist_in_schema(pytestconfig: "Config", target_di
         )
 
 
-@allow_diagnostic_mode
-async def test_defined_refs_exist_in_schema(pytestconfig: "Config", target_discovered_catalog: AirbyteCatalog):
+@pytest.mark.allow_diagnostic_mode
+async def test_defined_refs_exist_in_schema(target_discovered_catalog: AirbyteCatalog):
     """Check the presence of unresolved `$ref`s values within each json schema."""
     schemas_errors = []
     for stream in target_discovered_catalog.streams:
@@ -86,9 +81,9 @@ async def test_defined_refs_exist_in_schema(pytestconfig: "Config", target_disco
     assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
 
 
-@allow_diagnostic_mode
+@pytest.mark.allow_diagnostic_mode
 @pytest.mark.parametrize("keyword", ["allOf", "not"])
-async def test_defined_keyword_exist_in_schema(pytestconfig: "Config", keyword, target_discovered_catalog: AirbyteCatalog):
+async def test_defined_keyword_exist_in_schema(keyword, target_discovered_catalog: AirbyteCatalog):
     """Check for the presence of not allowed keywords within each json schema"""
     schemas_errors = []
     for stream in target_discovered_catalog.streams:
@@ -120,8 +115,8 @@ def _find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
     return False
 
 
-@allow_diagnostic_mode
-async def test_primary_keys_exist_in_schema(pytestconfig: "Config", target_discovered_catalog: AirbyteCatalog):
+@pytest.mark.allow_diagnostic_mode
+async def test_primary_keys_exist_in_schema(target_discovered_catalog: AirbyteCatalog):
     """Check that all primary keys are present in catalog."""
     for stream in target_discovered_catalog.streams:
         for pk in stream.source_defined_primary_key or []:
@@ -131,16 +126,16 @@ async def test_primary_keys_exist_in_schema(pytestconfig: "Config", target_disco
             assert pk_field_location, f"One of the PKs ({pk}) is not specified in discover schema for {stream.name} stream"
 
 
-@allow_diagnostic_mode
-async def test_streams_has_sync_modes(pytestconfig: "Config", target_discovered_catalog: AirbyteCatalog):
+@pytest.mark.allow_diagnostic_mode
+async def test_streams_has_sync_modes(target_discovered_catalog: AirbyteCatalog):
     """Check that the supported_sync_modes is a not empty field in streams of the catalog."""
     for stream in target_discovered_catalog.streams:
         assert stream.supported_sync_modes is not None, f"The stream {stream.name} is missing supported_sync_modes field declaration."
         assert len(stream.supported_sync_modes) > 0, f"supported_sync_modes list on stream {stream.name} should not be empty."
 
 
-@allow_diagnostic_mode
-async def test_additional_properties_is_true(pytestconfig: "Config", target_discovered_catalog: AirbyteCatalog):
+@pytest.mark.allow_diagnostic_mode
+async def test_additional_properties_is_true(target_discovered_catalog: AirbyteCatalog):
     """
     Check that value of the "additionalProperties" field is always true.
 
@@ -158,9 +153,9 @@ async def test_additional_properties_is_true(pytestconfig: "Config", target_disc
             ), "When set, additionalProperties field value must be true for backward compatibility."
 
 
-@allow_diagnostic_mode
+@pytest.mark.allow_diagnostic_mode
 @pytest.mark.skip("This a placeholder for a CAT which has too many failures. We need to fix the connectors at scale first.")
-async def test_catalog_has_supported_data_types(pytestconfig: "Config", target_discovered_catalog: AirbyteCatalog):
+async def test_catalog_has_supported_data_types(target_discovered_catalog: AirbyteCatalog):
     """
     Check that all streams have supported data types, format and airbyte_types.
 

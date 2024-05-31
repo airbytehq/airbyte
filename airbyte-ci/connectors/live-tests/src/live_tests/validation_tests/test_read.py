@@ -16,12 +16,10 @@ from airbyte_protocol.models import (
     AirbyteStreamStatusTraceMessage,
     ConfiguredAirbyteCatalog,
 )
-from live_tests.commons.evaluation_modes import allow_diagnostic_mode
 from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, get_test_logger
 
 if TYPE_CHECKING:
-    from _pytest.config import Config
     from _pytest.fixtures import SubRequest
 
 pytestmark = [
@@ -29,9 +27,8 @@ pytestmark = [
 ]
 
 
-@allow_diagnostic_mode
+@pytest.mark.allow_diagnostic_mode
 async def test_read(
-    pytestconfig: "Config",
     request: "SubRequest",
     record_property: Callable,
     configured_catalog: ConfiguredAirbyteCatalog,

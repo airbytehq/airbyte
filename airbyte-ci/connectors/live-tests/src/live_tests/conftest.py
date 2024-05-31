@@ -1,7 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
-import functools
 import logging
 import os
 import textwrap
@@ -243,6 +242,17 @@ def pytest_keyboard_interrupt(excinfo: Exception) -> None:
 def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Generator:
     outcome = yield
     report = outcome.get_result()
+
+    # Overwrite test failures with passes for tests being run in diagnostic mode
+    if (
+        item.config.stash.get(stash_keys.VALIDATION_TEST_MODE, TestEvaluationMode.STRICT) == TestEvaluationMode.DIAGNOSTIC
+        and "allow_diagnostic_mode" in item.keywords
+    ):
+        if call.when == "call":
+            if call.excinfo:
+                if report.outcome == "failed":
+                    report.outcome = "passed"
+
     # This is to add skipped or failed tests due to upstream fixture failures on setup
     if report.outcome in ["failed", "skipped"] or report.when == "call":
         item.config.stash[stash_keys.REPORT].add_test_result(

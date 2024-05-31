@@ -2,26 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 
 import pytest
 from airbyte_protocol.models import Type
-from live_tests.commons.evaluation_modes import allow_diagnostic_mode
 from live_tests.commons.models import ExecutionResult
 from live_tests.consts import MAX_LINES_IN_REPORT
 from live_tests.utils import fail_test_on_failing_execution_results, is_successful_check, tail_file
-
-if TYPE_CHECKING:
-    from _pytest.config import Config
 
 pytestmark = [
     pytest.mark.anyio,
 ]
 
 
-@allow_diagnostic_mode
+@pytest.mark.allow_diagnostic_mode
 async def test_check_succeeds(
-    pytestconfig: "Config",
     record_property: Callable,
     check_target_execution_result: ExecutionResult,
 ) -> None:
