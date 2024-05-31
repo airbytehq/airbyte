@@ -17,7 +17,7 @@ include = "source_auth0"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-auth0 = "source_auth0.run:run"
