@@ -32,4 +32,5 @@ Vantage APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.1.1 | 2024-05-21 | [38490](https://github.com/airbytehq/airbyte/pull/38490) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-30 | [#18665](https://github.com/airbytehq/airbyte/pull/18665) | 🎉 New Source: Vantage API [low-code CDK] |

@@ -35,6 +35,7 @@ class CursorPaginationStrategy(PaginationStrategy):
     decoder: Decoder = JsonDecoder(parameters={})
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._initial_cursor = None
         if isinstance(self.cursor_value, str):
             self._cursor_value = InterpolatedString.create(self.cursor_value, parameters=parameters)
         else:
@@ -46,7 +47,7 @@ class CursorPaginationStrategy(PaginationStrategy):
 
     @property
     def initial_token(self) -> Optional[Any]:
-        return None
+        return self._initial_cursor
 
     def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
@@ -74,9 +75,8 @@ class CursorPaginationStrategy(PaginationStrategy):
         )
         return token if token else None
 
-    def reset(self) -> None:
-        # No state to reset
-        pass
+    def reset(self, reset_value: Optional[Any] = None) -> None:
+        self._initial_cursor = reset_value
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size

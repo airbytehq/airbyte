@@ -112,7 +112,7 @@ const sourceMongoDB = {
     {
       type: "doc",
       label: "Migration Guide",
-      id: "integrations/sources/mongodb-v2/mongodb-v2-migrations",
+      id: "integrations/sources/mongodb-v2-migrations",
     },
     {
       type: "doc",
@@ -396,8 +396,8 @@ const deployAirbyte = {
   items: [
     {
       type: "doc",
-      label: "On your local machine",
-      id: "deploying-airbyte/local-deployment",
+      label: "Quickstart",
+      id: "deploying-airbyte/quickstart",
     },
     {
       type: "doc",
@@ -516,25 +516,12 @@ module.exports = {
             "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
           ],
         },
-        {
-          type: "category",
-          label: "Typing and Deduping",
-          link: {
-            type: "doc",
-            id: "using-airbyte/core-concepts/typing-deduping",
-          },
-          items: ["using-airbyte/core-concepts/basic-normalization"],
-        },
+        "using-airbyte/core-concepts/typing-deduping",
         "using-airbyte/schema-change-management",
         {
           type: "category",
           label: "Transformations",
-          items: [
-            "cloud/managing-airbyte-cloud/dbt-cloud-integration",
-            "operator-guides/transformation-and-normalization/transformations-with-sql",
-            "operator-guides/transformation-and-normalization/transformations-with-dbt",
-            "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-          ],
+          items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
         },
       ],
     },
