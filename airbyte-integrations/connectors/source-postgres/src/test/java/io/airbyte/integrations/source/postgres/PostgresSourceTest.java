@@ -11,9 +11,7 @@ import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUti
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,6 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -59,10 +58,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 class PostgresSourceTest {
 
@@ -249,6 +245,23 @@ class PostgresSourceTest {
       final var actualRecordMessages = filterRecords(actualMessages);
       assertEquals(UTF8_MESSAGES, actualRecordMessages);
     }
+  }
+
+  @Test
+  void testCheckPrivilegesToSelectTable() throws Exception {
+    testdb.query(ctx -> {
+      ctx.execute("DROP TABLE id_and_name;");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
+      ctx.fetch("CREATE USER test_user_0 password '123';");
+      ctx.fetch("CREATE USER test_user_1 password '123';");
+      ctx.fetch("GRANT SELECT ON TABLE id_and_name TO test_user_1");
+      return null;
+    });
+    final JsonNode configUser1 = getConfig("test_user_1", "123");
+    assertThat(source().check(configUser1).getStatus().equals(AirbyteConnectionStatus.Status.SUCCEEDED.toString()));
+    final JsonNode configUser0 = getConfig("test_user_0", "123");
+    assertThat(source().check(configUser0).getMessage().contains("User lacks privileges to SELECT from any of the tables in schema public"));
   }
 
   @Test
