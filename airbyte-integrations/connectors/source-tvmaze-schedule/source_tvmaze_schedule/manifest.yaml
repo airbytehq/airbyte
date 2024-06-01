@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /schedule
           http_method: GET
           request_parameters:
@@ -41,26 +41,26 @@ definitions:
         primary_key: id
         path: /schedule
         cursor_datetime_formats:
-          - '%Y-%m-%d'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           field_name: date
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_date''] or today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config['end_date'] or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/domestic'
+          $ref: "#/schemas/domestic"
     web:
       type: DeclarativeStream
       name: web
@@ -69,7 +69,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /schedule
           http_method: GET
           request_parameters:
@@ -93,26 +93,26 @@ definitions:
         primary_key: id
         path: /schedule
         cursor_datetime_formats:
-          - '%Y-%m-%d'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           field_name: date
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_date''] or today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config['end_date'] or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/web'
+          $ref: "#/schemas/web"
     future:
       type: DeclarativeStream
       name: future
@@ -121,7 +121,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /schedule/full
           http_method: GET
           request_parameters:
@@ -145,34 +145,34 @@ definitions:
         primary_key: id
         path: /schedule/full
         cursor_datetime_formats:
-          - '%Y-%m-%d'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           field_name: date
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_date''] or today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config['end_date'] or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/future'
+          $ref: "#/schemas/future"
   base_requester:
     type: HttpRequester
     url_base: https://api.tvmaze.com
 
 streams:
-  - $ref: '#/definitions/streams/domestic'
-  - $ref: '#/definitions/streams/web'
-  - $ref: '#/definitions/streams/future'
+  - $ref: "#/definitions/streams/domestic"
+  - $ref: "#/definitions/streams/web"
+  - $ref: "#/definitions/streams/future"
 
 spec:
   type: Spec
@@ -228,7 +228,7 @@ schemas:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       _links:
         type: object
         properties:
@@ -238,66 +238,66 @@ schemas:
               href:
                 type:
                   - string
-                  - 'null'
+                  - "null"
       airdate:
         type:
           - string
-          - 'null'
+          - "null"
       airstamp:
         type:
           - string
-          - 'null'
+          - "null"
       airtime:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - number
-          - 'null'
+          - "null"
       image:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           medium:
             type:
               - string
-              - 'null'
+              - "null"
           original:
             type:
               - string
-              - 'null'
+              - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       number:
         type:
           - number
-          - 'null'
+          - "null"
       rating:
         type: object
         properties:
           average:
             type:
               - number
-              - 'null'
+              - "null"
       runtime:
         type:
           - number
-          - 'null'
+          - "null"
       season:
         type:
           - number
-          - 'null'
+          - "null"
       show:
         type: object
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           _links:
             type: object
             properties:
@@ -307,73 +307,73 @@ schemas:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               self:
                 type: object
                 properties:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
           averageRuntime:
             type:
               - number
-              - 'null'
+              - "null"
           dvdCountry: null
           ended:
             type:
               - string
-              - 'null'
+              - "null"
           externals:
             type: object
             properties:
               imdb:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               thetvdb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               tvrage:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           genres:
             type: array
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           id:
             type:
               - number
-              - 'null'
+              - "null"
           image:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               medium:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               original:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           language:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           network:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               country:
                 type: object
@@ -381,43 +381,43 @@ schemas:
                   code:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   name:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   timezone:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               id:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               officialSite: null
           officialSite:
             type:
               - string
-              - 'null'
+              - "null"
           premiered:
             type:
               - string
-              - 'null'
+              - "null"
           rating:
             type: object
             properties:
               average:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           runtime:
             type:
               - number
-              - 'null'
+              - "null"
           schedule:
             type: object
             properties:
@@ -426,40 +426,40 @@ schemas:
                 items:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               time:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
           updated:
             type:
               - number
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           webChannel: null
           weight:
             type:
               - number
-              - 'null'
+              - "null"
       summary:
         type:
           - string
-          - 'null'
+          - "null"
       url:
         type:
           - string
-          - 'null'
+          - "null"
     additionalProperties: true
   web:
     type: object
@@ -468,7 +468,7 @@ schemas:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       _links:
         type: object
         properties:
@@ -478,59 +478,59 @@ schemas:
               href:
                 type:
                   - string
-                  - 'null'
+                  - "null"
       airdate:
         type:
           - string
-          - 'null'
+          - "null"
       airstamp:
         type:
           - string
-          - 'null'
+          - "null"
       airtime:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - number
-          - 'null'
+          - "null"
       image:
         type:
           - object
-          - 'null'
+          - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       number:
         type:
           - number
-          - 'null'
+          - "null"
       rating:
         type: object
         properties:
           average:
             type:
               - number
-              - 'null'
+              - "null"
       runtime:
         type:
           - number
-          - 'null'
+          - "null"
       season:
         type:
           - number
-          - 'null'
+          - "null"
       show:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           _links:
             type: object
             properties:
@@ -540,66 +540,66 @@ schemas:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               self:
                 type: object
                 properties:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
           averageRuntime:
             type:
               - number
-              - 'null'
+              - "null"
           dvdCountry: null
           ended:
             type:
               - string
-              - 'null'
+              - "null"
           externals:
             type: object
             properties:
               imdb:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               thetvdb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               tvrage: null
           genres:
             type: array
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           id:
             type:
               - number
-              - 'null'
+              - "null"
           image:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               medium:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               original:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           language:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           network:
             type: object
             properties:
@@ -609,40 +609,40 @@ schemas:
                   code:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   name:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   timezone:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               id:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               officialSite: null
           officialSite: null
           premiered:
             type:
               - string
-              - 'null'
+              - "null"
           rating:
             type: object
             properties:
               average:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           runtime:
             type:
               - number
-              - 'null'
+              - "null"
           schedule:
             type: object
             properties:
@@ -651,40 +651,40 @@ schemas:
                 items:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               time:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
           updated:
             type:
               - number
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           webChannel: null
           weight:
             type:
               - number
-              - 'null'
+              - "null"
       summary:
         type:
           - string
-          - 'null'
+          - "null"
       url:
         type:
           - string
-          - 'null'
+          - "null"
     additionalProperties: true
   future:
     type: object
@@ -693,7 +693,7 @@ schemas:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       _links:
         type: object
         properties:
@@ -703,32 +703,32 @@ schemas:
               href:
                 type:
                   - string
-                  - 'null'
+                  - "null"
       airdate:
         type:
           - string
-          - 'null'
+          - "null"
       airstamp:
         type:
           - string
-          - 'null'
+          - "null"
       airtime:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - number
-          - 'null'
+          - "null"
       image: null
       name:
         type:
           - string
-          - 'null'
+          - "null"
       number:
         type:
           - number
-          - 'null'
+          - "null"
       rating:
         type: object
         properties:
@@ -736,18 +736,18 @@ schemas:
       runtime:
         type:
           - number
-          - 'null'
+          - "null"
       season:
         type:
           - number
-          - 'null'
+          - "null"
       show:
         type: object
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           _links:
             type: object
             properties:
@@ -757,64 +757,64 @@ schemas:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               self:
                 type: object
                 properties:
                   href:
                     type:
                       - string
-                      - 'null'
+                      - "null"
           averageRuntime:
             type:
               - number
-              - 'null'
+              - "null"
           dvdCountry: null
           ended:
             type:
               - string
-              - 'null'
+              - "null"
           externals:
             type: object
             properties:
               imdb:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               thetvdb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               tvrage: null
           genres:
             type: array
             items:
               type:
                 - string
-                - 'null'
+                - "null"
           id:
             type:
               - number
-              - 'null'
+              - "null"
           image:
             type: object
             properties:
               medium:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               original:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           language:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           network:
             type: object
             properties:
@@ -824,29 +824,29 @@ schemas:
                   code:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   name:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   timezone:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               id:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               officialSite: null
           officialSite: null
           premiered:
             type:
               - string
-              - 'null'
+              - "null"
           rating:
             type: object
             properties:
@@ -854,7 +854,7 @@ schemas:
           runtime:
             type:
               - number
-              - 'null'
+              - "null"
           schedule:
             type: object
             properties:
@@ -863,38 +863,38 @@ schemas:
                 items:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               time:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
           updated:
             type:
               - number
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
           webChannel: null
           weight:
             type:
               - number
-              - 'null'
+              - "null"
       summary:
         type:
           - string
-          - 'null'
+          - "null"
       url:
         type:
           - string
-          - 'null'
+          - "null"
     additionalProperties: true
