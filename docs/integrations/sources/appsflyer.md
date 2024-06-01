@@ -2,6 +2,20 @@
 
 The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 
+## Supported Streams
+
+| Category                     | Status                |
+|------------------------------|-----------------------|
+| Raw Data (Non-Organic)       | ✔️ (Except Reinstall) |
+| Raw Data (Organic)           | ✔️ (Except Reinstall) |
+| Retargeting                  | ✔️                    |
+| Ad Revenue                   | ❌                     |
+| Postback                     | ❌                     |
+| Protect360 Fraud             | ❌                     |
+| Aggregate Report             | ✔️                    |
+| Aggregate Retargeting Report | ✔️                    |
+
+
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                                     |

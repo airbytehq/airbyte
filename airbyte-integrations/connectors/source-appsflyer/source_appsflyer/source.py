@@ -8,8 +8,7 @@ from abc import ABC
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from http import HTTPStatus
-from operator import add
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Sequence
 
 import pendulum
 import requests
@@ -20,7 +19,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.tz.timezone import Timezone
 
-from . import fields
+from .fields import *
 
 
 # Simple transformer
@@ -33,7 +32,6 @@ def parse_date(date: Any, timezone: Timezone) -> datetime:
 # Basic full refresh stream
 class AppsflyerStream(HttpStream, ABC):
     primary_key = None
-    main_fields = ()
     additional_fields = ()
     maximum_rows = 1_000_000
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
@@ -66,20 +64,18 @@ class AppsflyerStream(HttpStream, ABC):
         }
 
         if self.additional_fields:
-            additional_fields = (",").join(self.additional_fields)
+            additional_fields = ",".join(self.additional_fields)
             params["additional_fields"] = additional_fields
 
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        fields = add(self.main_fields, self.additional_fields) if self.additional_fields else self.main_fields
         csv_data = map(lambda x: x.decode("utf-8"), response.iter_lines())
-        reader = csv.DictReader(csv_data, fields)
+        reader = csv.DictReader(csv_data)
+        known_keys = mapper.field_map.keys()
 
-        # Skip CSV Header
-        next(reader, {})
-
-        yield from reader
+        for record in reader:
+            yield {mapper.field_map[k]: v for k, v in record.items() if k in known_keys}
 
     def is_aggregate_reports_reached_limit(self, response: requests.Response) -> bool:
         template = "Limit reached for "
@@ -170,8 +166,7 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
 
 
 class RawDataMixin:
-    main_fields = fields.raw_data.main_fields
-    additional_fields = fields.raw_data.additional_fields
+    additional_fields = additional_fields.raw_data
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -208,6 +203,46 @@ class RetargetingMixin:
         return params
 
 
+class EventsMixin:
+    def find_events(self, header: Sequence[str]) -> List[str]:
+        return [
+            event.replace(" (Unique users)", "").strip()
+            for event in header if " (Unique users)" in event
+        ]
+
+    def get_records(self, row: Dict, events: List[str]) -> List[Dict]:
+        identifiers = {
+            'Date': 'date',
+            'Agency/PMD (af_prt)': 'af_prt',
+            'Media Source (pid)': 'media_source',
+            'Campaign (c)': 'campaign',
+            'Country': 'country'
+        }
+
+        record = {
+            identifiers[k]: v for k, v in row.items() if k in identifiers.keys()
+        }
+
+        for event in events:
+            yield {
+                **record,
+                "event_name": event,
+                "event_unique_users": row.get(f"{event} (Unique users)"),
+                "event_counter": row.get(f"{event} (Event counter)"),
+                "event_sales": row.get(f"{event} (Sales in USD)"),
+            }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        csv_data = map(lambda x: x.decode("utf-8"), response.iter_lines())
+        reader = csv.DictReader(csv_data)
+
+        header = reader.fieldnames
+        events = self.find_events(header)
+
+        for row in reader:
+            yield from self.get_records(row, events)
+
+
 class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     intervals = 31
     cursor_field = "event_time"
@@ -230,7 +265,7 @@ class OrganicInAppEvents(RawDataMixin, IncrementalAppsflyerStream):
 
 class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
-    additional_fields = fields.uninstall_events.additional_fields
+    additional_fields = additional_fields.uninstall_events
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -240,7 +275,7 @@ class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
 
 class OrganicUninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
-    additional_fields = fields.uninstall_events.additional_fields
+    additional_fields = additional_fields.uninstall_events
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
@@ -267,16 +302,23 @@ class OrganicInstalls(RawDataMixin, IncrementalAppsflyerStream):
         return f"raw-data/export/app/{self.app_id}/organic_installs_report/v5"
 
 
-class RetargetingInAppEvents(RetargetingMixin, InAppEvents):
-    pass
+class RetargetingInAppEvents(InAppEvents):
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"raw-data/export/app/{self.app_id}/in-app-events-retarget/v5"
 
 
-class RetargetingConversions(RetargetingMixin, Installs):
-    pass
+class RetargetingInstalls(Installs):
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"raw-data/export/app/{self.app_id}/installs-retarget/v5"
 
 
 class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
-    main_fields = fields.partners_report.main_fields
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -285,7 +327,6 @@ class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
 
 
 class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
-    main_fields = fields.daily_report.main_fields
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -294,7 +335,6 @@ class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
 
 
 class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
-    main_fields = fields.geo_report.main_fields
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -302,16 +342,32 @@ class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
         return f"agg-data/export/app/{self.app_id}/geo_by_date_report/v5"
 
 
+class GeoEventsReport(EventsMixin, GeoReport):
+    pass
+
+
+class PartnersEventsReport(EventsMixin, PartnersReport):
+    pass
+
+
 class RetargetingPartnersReport(RetargetingMixin, PartnersReport):
-    main_fields = fields.retargeting_partners_report.main_fields
+    pass
 
 
 class RetargetingDailyReport(RetargetingMixin, DailyReport):
-    main_fields = fields.retargeting_daily_report.main_fields
+    pass
 
 
 class RetargetingGeoReport(RetargetingMixin, GeoReport):
-    main_fields = fields.retargeting_geo_report.main_fields
+    pass
+
+
+class RetargetingGeoEventsReport(EventsMixin, RetargetingGeoReport):
+    pass
+
+
+class RetargetingPartnersEventsReport(EventsMixin, RetargetingPartnersReport):
+    pass
 
 
 # Source
@@ -357,16 +413,25 @@ class SourceAppsflyer(AbstractSource):
         return [
             InAppEvents(authenticator=auth, **config),
             OrganicInAppEvents(authenticator=auth, **config),
+            RetargetingInAppEvents(authenticator=auth, **config),
+
             Installs(authenticator=auth, **config),
             OrganicInstalls(authenticator=auth, **config),
+            RetargetingInstalls(authenticator=auth, **config),
+
             UninstallEvents(authenticator=auth, **config),
             OrganicUninstallEvents(authenticator=auth, **config),
-            RetargetingInAppEvents(authenticator=auth, **config),
-            RetargetingConversions(authenticator=auth, **config),
-            PartnersReport(authenticator=auth, **config),
+
             DailyReport(authenticator=auth, **config),
-            GeoReport(authenticator=auth, **config),
-            RetargetingPartnersReport(authenticator=auth, **config),
             RetargetingDailyReport(authenticator=auth, **config),
+
+            PartnersReport(authenticator=auth, **config),
+            RetargetingPartnersReport(authenticator=auth, **config),
+            PartnersEventsReport(authenticator=auth, **config),
+            RetargetingPartnersEventsReport(authenticator=auth, **config),
+
+            GeoReport(authenticator=auth, **config),
             RetargetingGeoReport(authenticator=auth, **config),
+            GeoEventsReport(authenticator=auth, **config),
+            RetargetingGeoEventsReport(authenticator=auth, **config),
         ]
