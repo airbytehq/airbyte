@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransformer) :
     SnowflakeSqlStagingOperations() {
-    override fun getStageName(namespace: String?, streamName: String?): String {
+    fun getStageName(namespace: String?, streamName: String?): String {
         return java.lang.String.join(
             ".",
             '"'.toString() + nameTransformer.convertStreamName(namespace!!) + '"',
@@ -31,13 +31,7 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
         )
     }
 
-    override fun getStagingPath(
-        connectionId: UUID?,
-        namespace: String?,
-        streamName: String?,
-        outputTableName: String?,
-        writeDatetime: Instant?
-    ): String? {
+    fun getStagingPath(connectionId: UUID?, writeDatetime: Instant?): String? {
         // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
         val zonedDateTime = ZonedDateTime.ofInstant(writeDatetime, ZoneOffset.UTC)
         return nameTransformer.applyDefaultCase(
@@ -53,10 +47,9 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
     }
 
     @Throws(IOException::class)
-    override fun uploadRecordsToStage(
+    fun uploadRecordsToStage(
         database: JdbcDatabase?,
         recordsData: SerializableBuffer?,
-        schemaName: String?,
         stageName: String?,
         stagingPath: String?
     ): String {
@@ -154,7 +147,7 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
     }
 
     @Throws(Exception::class)
-    override fun createStageIfNotExists(database: JdbcDatabase?, stageName: String?) {
+    fun createStageIfNotExists(database: JdbcDatabase?, stageName: String?) {
         val query = getCreateStageQuery(stageName)
         LOGGER.debug("Executing query: {}", query)
         try {
@@ -176,7 +169,7 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
     }
 
     @Throws(SQLException::class)
-    override fun copyIntoTableFromStage(
+    fun copyIntoTableFromStage(
         database: JdbcDatabase?,
         stageName: String?,
         stagingPath: String?,
@@ -221,10 +214,9 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
     }
 
     @Throws(Exception::class)
-    override fun dropStageIfExists(
+    fun dropStageIfExists(
         database: JdbcDatabase?,
         stageName: String?,
-        stagingPath: String?
     ) {
         try {
             val query = getDropQuery(stageName)

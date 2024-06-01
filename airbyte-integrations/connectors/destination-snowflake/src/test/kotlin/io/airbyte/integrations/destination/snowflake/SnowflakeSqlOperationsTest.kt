@@ -49,7 +49,7 @@ internal class SnowflakeSqlOperationsTest {
                 JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
                 JavaBaseConstants.COLUMN_NAME_DATA
             )
-        val actualQuery = snowflakeSqlOperations!!.createTableQuery(db, SCHEMA_NAME, TABLE_NAME)
+        val actualQuery = snowflakeSqlOperations!!.createTableQuery(SCHEMA_NAME, TABLE_NAME)
         Assertions.assertEquals(expectedQuery, actualQuery)
     }
 

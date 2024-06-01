@@ -17,8 +17,16 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.getRawNamespaceOverride
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveDestinationRunner
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcCheckOperations
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
+import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer
+import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator
 import io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory.Companion.builder
+import io.airbyte.cdk.integrations.destination.staging.StagingOperations
+import io.airbyte.commons.json.Jsons.jsonNode
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations
@@ -33,7 +41,9 @@ import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -53,8 +63,88 @@ constructor(
     private val nameTransformer: NamingConventionTransformer = SnowflakeSQLNameTransformer(),
 ) : BaseConnector(), Destination {
 
+    class SnowflakeOperations(val client: SnowflakeStagingClient) :
+        JdbcSqlOperations(), StagingOperations {
+        override fun insertRecordsInternal(
+            database: JdbcDatabase,
+            records: List<PartialAirbyteMessage>,
+            schemaName: String?,
+            tableName: String?
+        ) {
+            TODO("Not yet implemented")
+        }
+
+        override fun insertRecordsInternalV2(
+            database: JdbcDatabase,
+            records: List<PartialAirbyteMessage>,
+            schemaName: String?,
+            tableName: String?
+        ) {
+            TODO("Not yet implemented")
+        }
+
+        override fun copyIntoTableFromStage(
+            database: JdbcDatabase?,
+            stageName: String?,
+            stagingPath: String?,
+            stagedFiles: List<String>?,
+            tableName: String?,
+            schemaName: String?
+        ) {
+            client.copyIntoTableFromStage(
+                database,
+                stageName,
+                stagingPath,
+                stagedFiles,
+                tableName,
+                tableName
+            )
+        }
+
+        override fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String) {
+            client.createSchemaIfNotExists(database, schemaName)
+        }
+
+        override fun createStageIfNotExists(database: JdbcDatabase?, stageName: String?) {
+            client.createStageIfNotExists(database, stageName)
+        }
+
+        override fun dropStageIfExists(
+            database: JdbcDatabase?,
+            stageName: String?,
+            stagingPath: String?
+        ) {
+            client.dropStageIfExists(database, stageName)
+        }
+
+        override fun getStageName(namespace: String?, streamName: String?): String? {
+            return client.getStageName(namespace, streamName)
+        }
+
+        override fun getStagingPath(
+            connectionId: UUID?,
+            namespace: String?,
+            streamName: String?,
+            outputTableName: String?,
+            writeDatetime: Instant?
+        ): String? {
+            return client.getStagingPath(connectionId, writeDatetime)
+        }
+
+        override fun uploadRecordsToStage(
+            database: JdbcDatabase?,
+            recordsData: SerializableBuffer?,
+            schemaName: String?,
+            stageName: String?,
+            stagingPath: String?
+        ): String {
+            return client.uploadRecordsToStage(database, recordsData, stageName, stagingPath)
+        }
+    }
+
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
-        val snowflakeInternalStagingSqlOperations = SnowflakeStagingClient(nameTransformer)
+        val client = SnowflakeStagingClient(nameTransformer)
+        val snowflakeInternalStagingSqlOperations = SnowflakeOperations(client)
         val dataSource = getDataSource(config)
         try {
             val database = getDatabase(dataSource)
@@ -66,12 +156,7 @@ constructor(
                 snowflakeInternalStagingSqlOperations,
                 true,
             )
-            attemptStageOperations(
-                outputSchema,
-                database,
-                nameTransformer,
-                snowflakeInternalStagingSqlOperations
-            )
+            attemptStageOperations(outputSchema, database, nameTransformer, client)
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: Exception) {
             LOGGER.error("Exception while checking connection: ", e)
@@ -171,7 +256,7 @@ constructor(
         return builder(
                 outputRecordCollector,
                 database,
-                SnowflakeStagingClient(nameTransformer),
+                SnowflakeOperations(SnowflakeStagingClient(nameTransformer)),
                 nameTransformer,
                 config,
                 catalog,
@@ -215,6 +300,36 @@ constructor(
         val SCHEDULED_EXECUTOR_SERVICE: ScheduledExecutorService =
             Executors.newScheduledThreadPool(1)
 
+        internal fun attemptWriteToStage(
+            outputSchema: String?,
+            stageName: String,
+            database: JdbcDatabase?,
+            sqlOperations: SnowflakeStagingClient
+        ) {
+            val csvSerializedBuffer =
+                CsvSerializedBuffer(
+                    FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
+                    StagingDatabaseCsvSheetGenerator(
+                        JavaBaseConstants.DestinationColumns.V2_WITHOUT_META
+                    ),
+                    true
+                )
+            // create a dummy stream\records that will bed used to test uploading
+            @Suppress("DEPRECATION")
+            csvSerializedBuffer.accept(
+                AirbyteRecordMessage()
+                    .withData(jsonNode(mapOf("testKey" to "testValue")))
+                    .withEmittedAt(System.currentTimeMillis())
+            )
+            csvSerializedBuffer.flush()
+            sqlOperations.uploadRecordsToStage(
+                database,
+                csvSerializedBuffer,
+                outputSchema,
+                if (stageName.endsWith("/")) stageName else "$stageName/"
+            )
+        }
+
         @Throws(Exception::class)
         private fun attemptStageOperations(
             outputSchema: String,
@@ -234,10 +349,10 @@ constructor(
 
             // try to make test write to make sure we have required role
             try {
-                sqlOperations.attemptWriteToStage(outputSchema, stageName, database)
+                attemptWriteToStage(outputSchema, stageName, database, sqlOperations)
             } finally {
                 // drop created tmp stage
-                sqlOperations.dropStageIfExists(database, stageName, null)
+                sqlOperations.dropStageIfExists(database, stageName)
             }
         }
 
