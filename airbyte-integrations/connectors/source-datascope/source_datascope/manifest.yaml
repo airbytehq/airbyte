@@ -255,48 +255,48 @@ schemas:
         type: string
       description:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       code:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       address:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       city:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       country:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       latitude:
         type:
-        - number
-        - 'null'
+          - number
+          - "null"
       longitude:
         type:
-        - number
-        - 'null'
+          - number
+          - "null"
       region:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       phone:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       company_code:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       company_name:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
 
   answers:
     "$schema": http://json-schema.org/draft-07/schema#
@@ -306,8 +306,8 @@ schemas:
         type: string
       form_state:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       user_name:
         type: string
       user_identifier:
@@ -322,12 +322,12 @@ schemas:
         type: integer
       latitude:
         type:
-        - number
-        - 'null'
+          - number
+          - "null"
       longitude:
         type:
-        - number
-        - 'null'
+          - number
+          - "null"
       "[question_name1]":
         type: string
       "[question_name2]":
@@ -377,4 +377,3 @@ schemas:
         type: string
       created_at:
         type: string
-
