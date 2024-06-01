@@ -14,7 +14,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     ProcessingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 
 
 class IndexingModel(BaseModel):
@@ -43,16 +43,13 @@ class ConfigModel(BaseModel):
         type="object",
     )
     processing: ProcessingConfigModel
-
-    class Config:
-        title = "My Destination Config"
-        schema_extra = {
-            "groups": [
-                {"id": "processing", "title": "Processing"},
-                {"id": "embedding", "title": "Embedding"},
-                {"id": "indexing", "title": "Indexing"},
-            ]
-        }
+    model_config = ConfigDict(title="My Destination Config", json_schema_extra={
+        "groups": [
+            {"id": "processing", "title": "Processing"},
+            {"id": "embedding", "title": "Embedding"},
+            {"id": "indexing", "title": "Indexing"},
+        ]
+    })
 
     @staticmethod
     def remove_discriminator(schema: dict) -> None:

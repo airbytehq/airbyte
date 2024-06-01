@@ -9,8 +9,10 @@ from pydantic import BaseModel, Field
 
 
 class LocalProcessingConfigModel(BaseModel):
-    mode: Literal["local"] = Field("local", const=True)
+    mode: Literal["local"] = "local"
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "Local"
         description = "Process files locally, supporting `fast` and `ocr` modes. This is the default option."
@@ -27,7 +29,7 @@ class APIParameterConfigModel(BaseModel):
 
 
 class APIProcessingConfigModel(BaseModel):
-    mode: Literal["api"] = Field("api", const=True)
+    mode: Literal["api"] = "api"
 
     api_key: str = Field(
         default="",
@@ -52,6 +54,8 @@ class APIProcessingConfigModel(BaseModel):
         description="List of parameters send to the API",
     )
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "via API"
         description = "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured."
@@ -59,15 +63,14 @@ class APIProcessingConfigModel(BaseModel):
 
 
 class UnstructuredFormat(BaseModel):
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "Unstructured Document Format"
         description = "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file."
         discriminator = "filetype"
 
-    filetype: str = Field(
-        "unstructured",
-        const=True,
-    )
+    filetype: Literal["unstructured"] = "unstructured"
 
     skip_unprocessable_files: bool = Field(
         default=True,

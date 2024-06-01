@@ -5,17 +5,17 @@
 
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
+from typing import Literal
 
 
 class AvroFormat(BaseModel):
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "Avro Format"
         discriminator = "filetype"
 
-    filetype: str = Field(
-        "avro",
-        const=True,
-    )
+    filetype: Literal["avro"] = "avro"
 
     double_as_string: bool = Field(
         title="Convert Double Fields to Strings",
