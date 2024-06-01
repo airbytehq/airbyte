@@ -28,8 +28,8 @@ def stream_data_to_airbyte_message(
         # taken unless configured. See
         # docs/connector-development/cdk-python/schemas.md for details.
         transformer.transform(data, schema)  # type: ignore
-        message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
-        return AirbyteMessage(type=MessageType.RECORD, record=message)
+        message = AirbyteRecordMessage.construct(stream=stream_name, data=data, emitted_at=now_millis)
+        return AirbyteMessage.construct(type=MessageType.RECORD, record=message)
     elif isinstance(data_or_message, AirbyteTraceMessage):
         return AirbyteMessage(type=MessageType.TRACE, trace=data_or_message)
     elif isinstance(data_or_message, AirbyteLogMessage):
