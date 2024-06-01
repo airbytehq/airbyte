@@ -36,7 +36,7 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 
 
 class EntrypointOutput:

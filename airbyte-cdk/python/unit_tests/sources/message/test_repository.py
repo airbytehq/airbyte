@@ -12,7 +12,7 @@ from airbyte_cdk.sources.message import (
     MessageRepository,
     NoopMessageRepository,
 )
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 
 A_CONTROL = AirbyteControlMessage(
     type=OrchestratorType.CONNECTOR_CONFIG,
