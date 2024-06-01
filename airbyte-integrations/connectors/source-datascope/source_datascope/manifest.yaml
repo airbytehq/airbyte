@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /locations
           http_method: GET
         record_selector:
@@ -41,7 +41,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/locations'
+          $ref: "#/schemas/locations"
     answers:
       type: DeclarativeStream
       name: answers
@@ -50,7 +50,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v2/answers
           http_method: GET
         record_selector:
@@ -78,12 +78,12 @@ definitions:
         primary_key: form_answer_id
         path: /v2/answers
         cursor_datetime_formats:
-          - '%d/%m/%Y %H:%M'
-        datetime_format: '%d/%m/%Y %H:%M'
+          - "%d/%m/%Y %H:%M"
+        datetime_format: "%d/%m/%Y %H:%M"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%d/%m/%Y %H:%M'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%d/%m/%Y %H:%M"
         start_time_option:
           type: RequestOption
           field_name: start
@@ -94,14 +94,14 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%d/%m/%Y %H:%M'') }}'
-          datetime_format: '%d/%m/%Y %H:%M'
+          datetime: "{{ now_utc().strftime('%d/%m/%Y %H:%M') }}"
+          datetime_format: "%d/%m/%Y %H:%M"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/answers'
+          $ref: "#/schemas/answers"
     lists:
       type: DeclarativeStream
       name: lists
@@ -110,7 +110,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /metadata_objects
           http_method: GET
         record_selector:
@@ -134,7 +134,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/lists'
+          $ref: "#/schemas/lists"
     notifications:
       type: DeclarativeStream
       name: notifications
@@ -143,7 +143,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /notifications
           http_method: GET
         record_selector:
@@ -171,12 +171,12 @@ definitions:
         primary_key: id
         path: /notifications
         cursor_datetime_formats:
-          - '%d/%m/%Y %H:%M'
-        datetime_format: '%d/%m/%Y %H:%M'
+          - "%d/%m/%Y %H:%M"
+        datetime_format: "%d/%m/%Y %H:%M"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%d/%m/%Y %H:%M'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%d/%m/%Y %H:%M"
         start_time_option:
           type: RequestOption
           field_name: start
@@ -187,30 +187,30 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%d/%m/%Y %H:%M'') }}'
-          datetime_format: '%d/%m/%Y %H:%M'
+          datetime: "{{ now_utc().strftime('%d/%m/%Y %H:%M') }}"
+          datetime_format: "%d/%m/%Y %H:%M"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/notifications'
+          $ref: "#/schemas/notifications"
   base_requester:
     type: HttpRequester
     url_base: https://www.mydatascope.com/api/external/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: Authorization
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/locations'
-  - $ref: '#/definitions/streams/answers'
-  - $ref: '#/definitions/streams/lists'
-  - $ref: '#/definitions/streams/notifications'
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/answers"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/notifications"
 
 spec:
   type: Spec
@@ -251,51 +251,51 @@ schemas:
       address:
         type:
           - string
-          - 'null'
+          - "null"
       city:
         type:
           - string
-          - 'null'
+          - "null"
       code:
         type:
           - string
-          - 'null'
+          - "null"
       company_code:
         type:
           - string
-          - 'null'
+          - "null"
       company_name:
         type:
           - string
-          - 'null'
+          - "null"
       country:
         type:
           - string
-          - 'null'
+          - "null"
       description:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: integer
       latitude:
         type:
           - number
-          - 'null'
+          - "null"
       longitude:
         type:
           - number
-          - 'null'
+          - "null"
       name:
         type: string
       phone:
         type:
           - string
-          - 'null'
+          - "null"
       region:
         type:
           - string
-          - 'null'
+          - "null"
     additionalProperties: true
   answers:
     type: object
@@ -313,15 +313,15 @@ schemas:
       form_state:
         type:
           - string
-          - 'null'
+          - "null"
       latitude:
         type:
           - number
-          - 'null'
+          - "null"
       longitude:
         type:
           - number
-          - 'null'
+          - "null"
       question_name1:
         type: string
       question_name2:
