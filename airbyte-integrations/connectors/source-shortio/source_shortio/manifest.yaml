@@ -88,19 +88,358 @@ definitions:
     $parameters:
       extractor_path: "links"
       path: "links"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/links"
 
   clicks_stream:
     $ref: "#/definitions/v2_base_stream"
     name: "clicks"
     $parameters:
       path: "domain/{{ config['domain_id'] }}/link_clicks"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/clicks"
+
+schemas:
+  links:
+    $schema: "http://json-schema.org/draft-04/schema#"
+    type: "object"
+    additionalProperties: "true"
+    properties: 
+      lcpath: 
+        type: 
+        - "null"
+        - "string"
+      passwordContact: 
+        type: 
+        - "null"
+        - "boolean"
+      hasPassword: 
+        type: 
+        - "null"
+        - "boolean"
+      OwnerId: 
+        type: 
+        - "null"
+        - "integer"
+      id: 
+        type: 
+        - "null"
+        - "string"
+      path: 
+        type: 
+        - "null"
+        - "string"
+      title: 
+        type: 
+        - "null"
+        - "string"
+      icon: 
+        type: 
+        - "null"
+        - "string"
+      archived: 
+        type: 
+        - "null"
+        - "boolean"
+      originalURL: 
+        type: "string"
+      iphoneURL: 
+        type: 
+        - "null"
+        - "string"
+      androidURL: 
+        type: 
+        - "null"
+        - "string"
+      password: 
+        type: 
+        - "null"
+        - "string"
+      utmSource: 
+        type: 
+        - "null"
+        - "string"
+      utmMedium: 
+        type: 
+        - "null"
+        - "string"
+      utmCampaign: 
+        type: 
+        - "null"
+        - "string"
+      utmCampaignId: 
+        type: 
+        - "null"
+        - "string"
+      utmTerm: 
+        type: 
+        - "null"
+        - "string"
+      utmContent: 
+        type: 
+        - "null"
+        - "string"
+      splitURL: 
+        type: 
+        - "null"
+        - "string"
+      splitPercent: 
+        type: 
+        - "null"
+        - "string"
+      expiresAt: 
+        type: 
+        - "null"
+        - "string"
+      expiredURL: 
+        type: 
+        - "null"
+        - "string"
+      redirectType: 
+        type: 
+        - "null"
+        - "string"
+      clicksLimit: 
+        type: 
+        - "null"
+        - "string"
+      cloaking: 
+        type: 
+        - "null"
+        - "boolean"
+      source: 
+        type: 
+        - "null"
+        - "string"
+      integrationGA: 
+        type: 
+        - "null"
+        - "string"
+      integrationFB: 
+        type: 
+        - "null"
+        - "string"
+      integrationAdroll: 
+        type: 
+        - "null"
+        - "string"
+      integrationGTM: 
+        type: 
+        - "null"
+        - "string"
+      AutodeletedAt: 
+        type: 
+        - "null"
+        - "string"
+        format: "date-time"
+      createdAt: 
+        type: "string"
+        format: "date-time"
+      updatedAt: 
+        type: "string"
+        format: "date-time"
+      DomainId: 
+        type: "integer"
+      Owner: 
+        type: 
+        - "null"
+        - "object"
+        properties: 
+          id: 
+            type: "integer"
+          name: 
+            type: 
+            - "null"
+            - "string"
+          email: 
+            type: 
+            - "null"
+            - "string"
+          photoURL: 
+            type: 
+            - "null"
+            - "string"
+      tags: 
+        type: 
+        - "null"
+        - "array"
+        items: 
+          type: "string"
+      secureShortURL: 
+        type: 
+        - "null"
+        - "string"
+      idString: 
+        type: "string"
+      shortURL: 
+        type: "string"
+      User: 
+        type: 
+        - "null"
+        - "object"
+        properties: 
+          id: 
+            type: "integer"
+          name: 
+            type: 
+            - "null"
+            - "string"
+          email: 
+            type: 
+            - "null"
+            - "string"
+          photoURL: 
+            type: 
+            - "null"
+            - "string"
+  clicks:
+    $schema: "http://json-schema.org/draft-04/schema#"
+    type: "object"
+    default_cursor_field: 
+    - "dt"
+    additionalProperties: "true"
+    properties: 
+      host: 
+        type: 
+        - "null"
+        - "string"
+      path: 
+        type: 
+        - "null"
+        - "string"
+      method: 
+        type: 
+        - "null"
+        - "string"
+      url: 
+        type: 
+        - "null"
+        - "string"
+      dt: 
+        type: 
+        - "null"
+        - "string"
+        format: "date-time"
+      st: 
+        type: 
+        - "null"
+        - "integer"
+      ip: 
+        type: 
+        - "null"
+        - "string"
+      proto: 
+        type: 
+        - "null"
+        - "string"
+      ref: 
+        type: 
+        - "null"
+        - "string"
+      ua: 
+        type: 
+        - "null"
+        - "string"
+      human: 
+        type: 
+        - "null"
+        - "boolean"
+      browser: 
+        type: 
+        - "null"
+        - "string"
+      browser_version: 
+        type: 
+        - "null"
+        - "string"
+      country: 
+        type: 
+        - "null"
+        - "string"
+      city: 
+        type: 
+        - "null"
+        - "string"
+      social: 
+        type: 
+        - "null"
+        - "string"
+      refhost: 
+        type: 
+        - "null"
+        - "string"
+      os: 
+        type: 
+        - "null"
+        - "string"
+      utm_source: 
+        type: 
+        - "null"
+        - "string"
+      utm_medium: 
+        type: 
+        - "null"
+        - "string"
+      utm_campaign: 
+        type: 
+        - "null"
+        - "string"
+      goal_completed: 
+        type: 
+        - "null"
+        - "string"
+      ab_path: 
+        type: 
+        - "null"
+        - "string"
+      lcpath: 
+        type: 
+        - "null"
+        - "string"
 
 streams:
-  - "#/definitions/links_stream"
-  - "#/definitions/clicks_stream"
+  - $ref: "#/definitions/links_stream"
+  - $ref: "#/definitions/clicks_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "links"
     - "clicks"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/shortio/
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Shortio Spec
+    type: object
+    additionalProperties: true
+    required:
+      - domain_id
+      - secret_key
+      - start_date
+    properties:
+      domain_id:
+        type: string
+        desciprtion: Short.io Domain ID
+        title: Domain ID
+        airbyte_secret: false
+      secret_key:
+        type: string
+        title: Secret Key
+        description: Short.io Secret Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        description:
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated.
+        examples:
+          - "2023-07-30T03:43:59.244Z"
+        airbyte_secret: false
