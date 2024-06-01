@@ -77,7 +77,7 @@ class TestStreamReader(AbstractFileBasedStreamReader):
 class TestSpec(AbstractFileBasedSpec):
     @classmethod
     def documentation_url(cls) -> AnyUrl:
-        return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/test")  # type: ignore
+        return AnyUrl(url="https://docs.airbyte.com/integrations/sources/test")  # type: ignore
 
 
 @pytest.mark.parametrize(

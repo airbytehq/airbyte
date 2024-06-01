@@ -163,7 +163,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
 class InMemorySpec(AbstractFileBasedSpec):
     @classmethod
     def documentation_url(cls) -> AnyUrl:
-        return AnyUrl(scheme="https", url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
+        return AnyUrl(url="https://docs.airbyte.com/integrations/sources/in_memory_files")  # type: ignore
 
 
 class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):

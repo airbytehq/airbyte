@@ -40,7 +40,7 @@ class CustomStreamReader(AbstractStreamReader):
 class CustomConfig(AbstractFileBasedSpec):
     @classmethod
     def documentation_url(cls) -> AnyUrl:
-        return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
+        return AnyUrl("https://docs.airbyte.com/integrations/sources/s3")
 
     a_spec_field: str = Field(title="A Spec Field", description="This is where you describe the fields of the spec", order=0)
     <...>
