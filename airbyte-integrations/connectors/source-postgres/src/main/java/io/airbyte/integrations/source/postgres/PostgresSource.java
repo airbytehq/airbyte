@@ -470,6 +470,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       });
     }
 
+    if (isXmin(config)) {
+      checkOperations.add(database -> {
+        if (PostgresQueryUtils.getXminStatus(database).getNumWraparound() > 0) {
+          throw new ConfigErrorException("The database has experienced transaction ID wraparound. " +
+              "Please fix this issue before continue setting up.");
+        }
+      });
+    }
+
     return checkOperations;
   }
 
