@@ -246,132 +246,135 @@ metadata:
 
 schemas:
   locations:
+    "$schema": http://json-schema.org/draft-04/schema#
     type: object
     properties:
-      address:
-        type:
-          - string
-          - "null"
-      city:
-        type:
-          - string
-          - "null"
-      code:
-        type:
-          - string
-          - "null"
-      company_code:
-        type:
-          - string
-          - "null"
-      company_name:
-        type:
-          - string
-          - "null"
-      country:
-        type:
-          - string
-          - "null"
-      description:
-        type:
-          - string
-          - "null"
       id:
         type: integer
-      latitude:
-        type:
-          - number
-          - "null"
-      longitude:
-        type:
-          - number
-          - "null"
       name:
         type: string
-      phone:
+      description:
         type:
-          - string
-          - "null"
+        - string
+        - 'null'
+      code:
+        type:
+        - string
+        - 'null'
+      address:
+        type:
+        - string
+        - 'null'
+      city:
+        type:
+        - string
+        - 'null'
+      country:
+        type:
+        - string
+        - 'null'
+      latitude:
+        type:
+        - number
+        - 'null'
+      longitude:
+        type:
+        - number
+        - 'null'
       region:
         type:
-          - string
-          - "null"
-    additionalProperties: true
+        - string
+        - 'null'
+      phone:
+        type:
+        - string
+        - 'null'
+      company_code:
+        type:
+        - string
+        - 'null'
+      company_name:
+        type:
+        - string
+        - 'null'
+
   answers:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
     properties:
-      code:
-        type: string
-      created_at:
-        type: string
-      form_answer_id:
-        type: integer
-      form_id:
-        type: integer
       form_name:
         type: string
       form_state:
         type:
-          - string
-          - "null"
-      latitude:
-        type:
-          - number
-          - "null"
-      longitude:
-        type:
-          - number
-          - "null"
-      question_name1:
-        type: string
-      question_name2:
-        type: string
-      question_name3:
+        - string
+        - 'null'
+      user_name:
         type: string
       user_identifier:
         type: string
-      user_name:
+      code:
         type: string
-    additionalProperties: true
+      form_id:
+        type: integer
+      created_at:
+        type: string
+      form_answer_id:
+        type: integer
+      latitude:
+        type:
+        - number
+        - 'null'
+      longitude:
+        type:
+        - number
+        - 'null'
+      "[question_name1]":
+        type: string
+      "[question_name2]":
+        type: string
+      "[question_name3]":
+        type: string
   lists:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
     properties:
-      account_id:
+      id:
         type: integer
+      name:
+        type: string
+      description:
+        type: string
       attribute1:
         type: string
       attribute2:
         type: string
+      list_id:
+        type: integer
+      account_id:
+        type: integer
       code:
         type: string
       created_at:
         type: string
-      description:
-        type: string
-      id:
-        type: integer
-      list_id:
-        type: integer
-      name:
-        type: string
       updated_at:
         type: string
-    additionalProperties: true
+
   notifications:
+    "$schema": http://json-schema.org/draft-04/schema#
     type: object
     properties:
+      id:
+        type: integer
       type:
         type: string
-      created_at:
-        type: string
-      form_code:
+      url:
         type: string
       form_name:
         type: string
-      id:
-        type: integer
-      url:
+      form_code:
         type: string
       user:
         type: string
-    additionalProperties: true
+      created_at:
+        type: string
+
