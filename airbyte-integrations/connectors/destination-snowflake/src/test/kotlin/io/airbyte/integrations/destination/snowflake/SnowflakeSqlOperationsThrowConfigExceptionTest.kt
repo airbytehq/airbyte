@@ -7,6 +7,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.DestinationConfig
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons.emptyObject
+import io.airbyte.integrations.destination.snowflake.operation.SnowflakeStagingClient
 import java.sql.SQLException
 import java.util.stream.Stream
 import net.snowflake.client.jdbc.SnowflakeSQLException
@@ -85,7 +86,7 @@ internal class SnowflakeSqlOperationsThrowConfigExceptionTest {
         private const val TEST_IP_NOT_IN_WHITE_LIST_EXCEPTION_CATCHED =
             "not allowed to access Snowflake"
 
-        private var snowflakeStagingSqlOperations: SnowflakeInternalStagingSqlOperations? = null
+        private var snowflakeStagingSqlOperations: SnowflakeStagingClient? = null
 
         private var snowflakeSqlOperations: SnowflakeSqlOperations? = null
 
@@ -106,8 +107,7 @@ internal class SnowflakeSqlOperationsThrowConfigExceptionTest {
         fun setup(): Unit {
             DestinationConfig.initialize(emptyObject())
 
-            snowflakeStagingSqlOperations =
-                SnowflakeInternalStagingSqlOperations(SnowflakeSQLNameTransformer())
+            snowflakeStagingSqlOperations = SnowflakeStagingClient(SnowflakeSQLNameTransformer())
             snowflakeSqlOperations = SnowflakeSqlOperations()
 
             createStageIfNotExists = Executable {
