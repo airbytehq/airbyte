@@ -50,9 +50,9 @@ internal class SnowflakeDestinationIntegrationTest {
         val config = config
         val schema = config["schema"].asText()
         val dataSource: DataSource =
-            SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
+            SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
         try {
-            val database = SnowflakeDatabase.getDatabase(dataSource)
+            val database = SnowflakeDatabaseUtils.getDatabase(dataSource)
             Assertions.assertDoesNotThrow { syncWithNamingResolver(database, schema) }
             Assertions.assertThrows(SQLException::class.java) {
                 syncWithoutNamingResolver(database, schema)

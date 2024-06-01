@@ -52,8 +52,8 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
         }
     private var config: JsonNode = Jsons.clone<JsonNode>(staticConfig)
     private var dataSource: DataSource =
-        SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-    private var database: JdbcDatabase = SnowflakeDatabase.getDatabase(dataSource)
+        SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
+    private var database: JdbcDatabase = SnowflakeDatabaseUtils.getDatabase(dataSource)
 
     @BeforeEach
     fun setup() {
@@ -187,8 +187,9 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
         this.config = Jsons.clone<JsonNode>(staticConfig)
         (config as ObjectNode?)!!.put("schema", schemaName)
 
-        dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-        database = SnowflakeDatabase.getDatabase(dataSource)
+        dataSource =
+            SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
+        database = SnowflakeDatabaseUtils.getDatabase(dataSource)
         database.execute(createSchemaQuery)
     }
 
