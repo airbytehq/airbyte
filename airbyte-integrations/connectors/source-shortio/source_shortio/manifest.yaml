@@ -91,7 +91,6 @@ definitions:
 
 schemas:
   links:
-    $schema: "http://json-schema.org/draft-04/schema#"
     type: "object"
     additionalProperties: "true"
     properties:
@@ -283,10 +282,7 @@ schemas:
               - "null"
               - "string"
   clicks:
-    $schema: "http://json-schema.org/draft-04/schema#"
     type: "object"
-    default_cursor_field:
-      - "dt"
     additionalProperties: "true"
     properties:
       host:
