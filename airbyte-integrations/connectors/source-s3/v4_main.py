@@ -9,6 +9,7 @@ from typing import List
 
 from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
+from source_s3.source import SourceS3Spec
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 
@@ -16,6 +17,7 @@ def get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
+
     try:
         return SourceS3(
             SourceS3StreamReader(),

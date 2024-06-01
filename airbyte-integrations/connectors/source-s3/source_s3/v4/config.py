@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 import dpath.util
 from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import AnyUrl, Field, ValidationError, root_validator
+from pydantic import AnyUrl, Field, ValidationError, model_validator
 
 
 class Config(AbstractFileBasedSpec):
@@ -18,7 +18,7 @@ class Config(AbstractFileBasedSpec):
 
     @classmethod
     def documentation_url(cls) -> AnyUrl:
-        return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
+        return AnyUrl("https://docs.airbyte.com/integrations/sources/s3")
 
     bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=0)
 
@@ -63,7 +63,7 @@ class Config(AbstractFileBasedSpec):
         order=5,
     )
 
-    @root_validator
+    @model_validator(mode="before")
     def validate_optional_args(cls, values):
         aws_access_key_id = values.get("aws_access_key_id")
         aws_secret_access_key = values.get("aws_secret_access_key")
