@@ -76,22 +76,6 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
         throw IllegalArgumentException("Unsupported AirbyteType: $type")
     }
 
-    fun toDialectType(airbyteProtocolType: AirbyteProtocolType): String {
-        // TODO verify these types against normalization
-        return when (airbyteProtocolType) {
-            AirbyteProtocolType.STRING -> "TEXT"
-            AirbyteProtocolType.NUMBER -> "FLOAT"
-            AirbyteProtocolType.INTEGER -> "NUMBER"
-            AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
-            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ"
-            AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
-            AirbyteProtocolType.TIME_WITH_TIMEZONE -> "TEXT"
-            AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> "TIME"
-            AirbyteProtocolType.DATE -> "DATE"
-            AirbyteProtocolType.UNKNOWN -> "VARIANT"
-        }
-    }
-
     override fun createSchema(schema: String): Sql {
         return of(
             StringSubstitutor(java.util.Map.of("schema", StringUtils.wrap(schema, QUOTE)))
@@ -725,6 +709,22 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
 
         fun escapeSingleQuotedString(str: String): String {
             return str.replace("\\", "\\\\").replace("'", "\\'")
+        }
+
+        fun toSqlTypeName(airbyteProtocolType: AirbyteProtocolType): String {
+            // TODO verify these types against normalization
+            return when (airbyteProtocolType) {
+                AirbyteProtocolType.STRING -> "TEXT"
+                AirbyteProtocolType.NUMBER -> "FLOAT"
+                AirbyteProtocolType.INTEGER -> "NUMBER"
+                AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
+                AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ"
+                AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
+                AirbyteProtocolType.TIME_WITH_TIMEZONE -> "TEXT"
+                AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> "TIME"
+                AirbyteProtocolType.DATE -> "DATE"
+                AirbyteProtocolType.UNKNOWN -> "VARIANT"
+            }
         }
     }
 }
