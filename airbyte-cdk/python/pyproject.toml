@@ -23,7 +23,7 @@ classifiers = [
 keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 airbyte-protocol-models = { path = "/Users/natikgadzhi/src/airbytehq/airbyte-protocol/protocol-models/python" }
 backoff = "*"
 cachetools = "*"
@@ -34,7 +34,7 @@ isodate = "~0.6.1"
 Jinja2 = "~3.1.2"
 jsonref = "~0.2"
 jsonschema = "~3.2.0"
-pendulum = "<3.0.0"
+pendulum = "^3.0"
 pydantic = "^2.7"
 pyrate-limiter = "~3.1.0"
 python-dateutil = "*"
