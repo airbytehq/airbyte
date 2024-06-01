@@ -8,7 +8,9 @@ import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons.deserialize
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import java.io.IOException
 import java.io.PrintWriter
 import java.net.URI
@@ -23,6 +25,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import javax.sql.DataSource
+import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -42,14 +45,20 @@ object SnowflakeDatabaseUtils {
             .version(HttpClient.Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(10))
             .build()
-    const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
-    const val PRIVATE_KEY_FIELD_NAME: String = "private_key"
-    const val PRIVATE_KEY_PASSWORD: String = "private_key_password"
+    private const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
+    private const val PRIVATE_KEY_FIELD_NAME: String = "private_key"
+    private const val PRIVATE_KEY_PASSWORD: String = "private_key_password"
     private const val CONNECTION_STRING_IDENTIFIER_KEY = "application"
     private const val CONNECTION_STRING_IDENTIFIER_VAL = "Airbyte_Connector"
 
+    // This is an unfortunately fragile way to capture the errors, but Snowflake doesn't
+    // provide a more specific permission exception error code
+    private const val NO_PRIVILEGES_ERROR_MESSAGE = "but current role has no privileges on it"
+    private const val IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake"
+
     @JvmStatic
     fun createDataSource(config: JsonNode, airbyteEnvironment: String?): HikariDataSource {
+
         val dataSource = HikariDataSource()
 
         val jdbcUrl =
@@ -241,6 +250,47 @@ object SnowflakeDatabaseUtils {
             } catch (e: IOException) {
                 LOGGER.error("Failed to obtain a fresh accessToken:$e")
             }
+        }
+    }
+
+    fun checkForKnownConfigExceptions(e: Exception?): Optional<ConfigErrorException> {
+        if (e is SnowflakeSQLException && e.message!!.contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
+            return Optional.of(
+                ConfigErrorException(
+                    "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",
+                    e
+                )
+            )
+        }
+        if (e is SnowflakeSQLException && e.message!!.contains(IP_NOT_IN_WHITE_LIST_ERR_MSG)) {
+            return Optional.of(
+                ConfigErrorException(
+                    """
+              Snowflake has blocked access from Airbyte IP address. Please make sure that your Snowflake user account's
+               network policy allows access from all Airbyte IP addresses. See this page for the list of Airbyte IPs:
+               https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-addresses and this page
+               for documentation on Snowflake network policies: https://docs.snowflake.com/en/user-guide/network-policies
+          
+          """.trimIndent(),
+                    e
+                )
+            )
+        }
+        return Optional.empty()
+    }
+
+    fun toSqlTypeName(airbyteProtocolType: AirbyteProtocolType): String {
+        return when (airbyteProtocolType) {
+            AirbyteProtocolType.STRING -> "TEXT"
+            AirbyteProtocolType.NUMBER -> "FLOAT"
+            AirbyteProtocolType.INTEGER -> "NUMBER"
+            AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
+            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ"
+            AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
+            AirbyteProtocolType.TIME_WITH_TIMEZONE -> "TEXT"
+            AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> "TIME"
+            AirbyteProtocolType.DATE -> "DATE"
+            AirbyteProtocolType.UNKNOWN -> "VARIANT"
         }
     }
 }

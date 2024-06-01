@@ -45,6 +45,15 @@ internal class SnowflakeDestinationIntegrationTest {
     }
 
     @Test
+    fun testCheckSuccessTest() {
+        val credentialsJsonString =
+            deserialize(Files.readString(Paths.get("secrets/1s1t_internal_staging_config.json")))
+        val check =
+            SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString)
+        Assertions.assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check!!.status)
+    }
+
+    @Test
     @Throws(Exception::class)
     fun testInvalidSchemaName() {
         val config = config

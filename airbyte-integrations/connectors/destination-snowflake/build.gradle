@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.35.13'
+    cdkVersionRequired = '0.35.14'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -44,4 +44,6 @@ integrationTestJava {
 dependencies {
     implementation 'net.snowflake:snowflake-jdbc:3.14.1'
     implementation 'org.apache.commons:commons-text:1.10.0'
+
+    testImplementation "io.mockk:mockk:1.13.11"
 }

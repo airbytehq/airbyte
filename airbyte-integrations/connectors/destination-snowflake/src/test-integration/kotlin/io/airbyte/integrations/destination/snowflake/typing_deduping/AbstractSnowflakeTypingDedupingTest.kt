@@ -10,6 +10,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.commons.io.IOs.readFile
+import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
@@ -54,15 +55,15 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
 
     @Throws(Exception::class)
     override fun dumpRawTableRecords(streamNamespace: String?, streamName: String): List<JsonNode> {
-        var streamNamespace = streamNamespace
-        if (streamNamespace == null) {
-            streamNamespace = defaultSchema
+        var namespaceOrDefault = streamNamespace
+        if (namespaceOrDefault == null) {
+            namespaceOrDefault = defaultSchema
         }
-        val tableName: String = StreamId.concatenateRawTableName(streamNamespace, streamName)
+        val tableName: String = StreamId.concatenateRawTableName(namespaceOrDefault, streamName)
         val schema = rawSchema
         return SnowflakeTestUtils.dumpRawTable(
             database!!, // Explicitly wrap in quotes to prevent snowflake from upcasing
-            "\"$schema\".\"$tableName\""
+            "\"$schema\".\"$tableName\"",
         )
     }
 
@@ -71,23 +72,23 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         streamNamespace: String?,
         streamName: String
     ): List<JsonNode> {
-        var streamNamespace = streamNamespace
-        if (streamNamespace == null) {
-            streamNamespace = defaultSchema
+        var namespaceOrDefault = streamNamespace
+        if (namespaceOrDefault == null) {
+            namespaceOrDefault = defaultSchema
         }
         return SnowflakeTestUtils.dumpFinalTable(
             database!!,
             databaseName!!,
-            streamNamespace.uppercase(Locale.getDefault()),
-            streamName.uppercase(Locale.getDefault())
+            namespaceOrDefault.uppercase(Locale.getDefault()),
+            streamName.uppercase(Locale.getDefault()),
         )
     }
 
     @Throws(Exception::class)
     override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String) {
-        var streamNamespace = streamNamespace
-        if (streamNamespace == null) {
-            streamNamespace = defaultSchema
+        var namespaceOrDefault = streamNamespace
+        if (namespaceOrDefault == null) {
+            namespaceOrDefault = defaultSchema
         }
         database!!.execute(
             String.format(
@@ -97,9 +98,9 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
             
             """.trimIndent(),
                 rawSchema, // Raw table is still lowercase.
-                StreamId.concatenateRawTableName(streamNamespace, streamName),
-                streamNamespace.uppercase(Locale.getDefault())
-            )
+                StreamId.concatenateRawTableName(namespaceOrDefault, streamName),
+                namespaceOrDefault.uppercase(Locale.getDefault()),
+            ),
         )
     }
 
@@ -118,111 +119,6 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
          */
         get() = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 
-    /**
-     * Run a sync using 3.0.0 (which is the highest version that still creates v2 final tables with
-     * lowercased+quoted names). Then run a sync using our current version.
-     */
-    @Test
-    @Throws(Exception::class)
-    open fun testFinalTableUppercasingMigration_append() {
-        try {
-            val catalog =
-                ConfiguredAirbyteCatalog()
-                    .withStreams(
-                        java.util.List.of(
-                            ConfiguredAirbyteStream()
-                                .withSyncMode(SyncMode.FULL_REFRESH)
-                                .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                                .withStream(
-                                    AirbyteStream()
-                                        .withNamespace(streamNamespace)
-                                        .withName(streamName)
-                                        .withJsonSchema(SCHEMA)
-                                )
-                        )
-                    )
-
-            // First sync
-            val messages1 = readMessages("dat/sync1_messages.jsonl")
-            runSync(catalog, messages1, "airbyte/destination-snowflake:3.0.0")
-
-            // We no longer have the code to dump a lowercased table, so just move on directly to
-            // the new sync
-
-            // Second sync
-            val messages2 = readMessages("dat/sync2_messages.jsonl")
-
-            runSync(catalog, messages2)
-
-            val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw_mixed_tzs.jsonl")
-            val expectedFinalRecords2 =
-                readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
-            verifySyncResult(
-                expectedRawRecords2,
-                expectedFinalRecords2,
-                disableFinalTableComparison()
-            )
-        } finally {
-            // manually drop the lowercased schema, since we no longer have the code to do it
-            // automatically
-            // (the raw table is still in lowercase "airbyte_internal"."whatever", so the
-            // auto-cleanup code
-            // handles it fine)
-            database!!.execute("DROP SCHEMA IF EXISTS \"$streamNamespace\" CASCADE")
-        }
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testFinalTableUppercasingMigration_overwrite() {
-        try {
-            val catalog =
-                ConfiguredAirbyteCatalog()
-                    .withStreams(
-                        java.util.List.of(
-                            ConfiguredAirbyteStream()
-                                .withSyncMode(SyncMode.FULL_REFRESH)
-                                .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-                                .withStream(
-                                    AirbyteStream()
-                                        .withNamespace(streamNamespace)
-                                        .withName(streamName)
-                                        .withJsonSchema(SCHEMA)
-                                )
-                        )
-                    )
-
-            // First sync
-            val messages1 = readMessages("dat/sync1_messages.jsonl")
-            runSync(catalog, messages1, "airbyte/destination-snowflake:3.0.0")
-
-            // We no longer have the code to dump a lowercased table, so just move on directly to
-            // the new sync
-
-            // Second sync
-            val messages2 = readMessages("dat/sync2_messages.jsonl")
-
-            runSync(catalog, messages2)
-
-            val expectedRawRecords2 =
-                readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl")
-            val expectedFinalRecords2 =
-                readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
-            verifySyncResult(
-                expectedRawRecords2,
-                expectedFinalRecords2,
-                disableFinalTableComparison()
-            )
-        } finally {
-            // manually drop the lowercased schema, since we no longer have the code to do it
-            // automatically
-            // (the raw table is still in lowercase "airbyte_internal"."whatever", so the
-            // auto-cleanup code
-            // handles it fine)
-            database!!.execute("DROP SCHEMA IF EXISTS \"$streamNamespace\" CASCADE")
-        }
-    }
-
     @Test
     @Throws(Exception::class)
     open fun testRemovingPKNonNullIndexes() {
@@ -238,17 +134,16 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // First sync
         val messages = readMessages("dat/sync_null_pk.jsonl")
-        val e =
-            Assertions.assertThrows(TestHarnessException::class.java) {
-                runSync(catalog, messages, "airbyte/destination-snowflake:3.1.18")
-            } // this version introduced non-null PKs to the final tables
+        Assertions.assertThrows(TestHarnessException::class.java) {
+            runSync(catalog, messages, "airbyte/destination-snowflake:3.1.18")
+        } // this version introduced non-null PKs to the final tables
 
         // ideally we would assert on the logged content of the original exception within e, but
         // that is
@@ -258,8 +153,68 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         runSync(catalog, messages) // does not throw with latest version
         Assertions.assertEquals(
             1,
-            dumpFinalTableRecords(streamNamespace, streamName).toTypedArray().size
+            dumpFinalTableRecords(streamNamespace, streamName).toTypedArray().size,
         )
+    }
+
+    @Test
+    open fun testV1V2Migration() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
+                )
+
+        // First sync
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+
+        runSync(
+            catalog,
+            messages1,
+            "airbyte/destination-snowflake:2.1.7",
+        ) { config: JsonNode? ->
+            // Defensive to avoid weird behaviors or test failures if the original config is being
+            // altered by
+            // another thread, thanks jackson for a mutable JsonNode
+            val copiedConfig = Jsons.clone(config!!)
+            if (config is ObjectNode) {
+                // Opt out of T+D to run old V1 sync
+                (copiedConfig as ObjectNode?)!!.put(
+                    "use_1s1t_format",
+                    false,
+                )
+            }
+            copiedConfig
+        }
+
+        // The record differ code is already adapted to V2 columns format, use the post V2 sync
+        // to verify that append mode preserved all the raw records and final records.
+
+        // Second sync
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+
+        runSync(catalog, messages2)
+
+        val expectedRawRecords2 =
+            BaseTypingDedupingTest.readRecords("dat/sync2_expectedrecords_v1v2_raw.jsonl")
+        val expectedFinalRecords2 =
+            BaseTypingDedupingTest.readRecords(
+                "dat/sync2_expectedrecords_v1v2_fullrefresh_append_final.jsonl"
+            )
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
     @Test
@@ -278,9 +233,9 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // First sync
@@ -320,7 +275,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                 "_airbyte_data",
                 "_AIRBYTE_DATA",
                 "_airbyte_meta",
-                "_AIRBYTE_META"
+                "_AIRBYTE_META",
             )
 
         @Volatile private var cleanedAirbyteInternalTable = false
@@ -331,7 +286,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                 synchronized(AbstractSnowflakeTypingDedupingTest::class.java) {
                     if (!cleanedAirbyteInternalTable) {
                         database!!.execute(
-                            "DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < current_date() - 7"
+                            "DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < current_date() - 7",
                         )
                         cleanedAirbyteInternalTable = true
                     }
