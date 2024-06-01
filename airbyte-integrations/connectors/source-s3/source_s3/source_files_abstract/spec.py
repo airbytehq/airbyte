@@ -111,17 +111,18 @@ class SourceFilesAbstractSpec(BaseModel):
     def resolve_refs(schema: dict) -> dict:
         json_schema_ref_resolver = RefResolver.from_schema(schema)
         str_schema = json.dumps(schema)
-        for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):
+        for ref_block in re.findall(r'{"\$ref": "#\/\$defs\/.+?(?="})"}', str_schema):
             ref = json.loads(ref_block)["$ref"]
             str_schema = str_schema.replace(ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1]))
         pyschema: dict = json.loads(str_schema)
-        del pyschema["definitions"]
+        if "$defs" in pyschema:
+            del pyschema["$defs"]
         return pyschema
 
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """we're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema(*args, **kwargs)
+        schema = super().model_json_schema(*args, **kwargs)
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)
         schema = cls.resolve_refs(schema)

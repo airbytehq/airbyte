@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import ConfigDict, BaseModel, Field, RootModel
 from typing_extensions import Literal
 
 
@@ -62,8 +62,7 @@ class ConstantBackoffStrategy(BaseModel):
 
 
 class CustomAuthenticator(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomAuthenticator']
     class_name: str = Field(
@@ -76,8 +75,7 @@ class CustomAuthenticator(BaseModel):
 
 
 class CustomBackoffStrategy(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomBackoffStrategy']
     class_name: str = Field(
@@ -90,8 +88,7 @@ class CustomBackoffStrategy(BaseModel):
 
 
 class CustomErrorHandler(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomErrorHandler']
     class_name: str = Field(
@@ -104,8 +101,7 @@ class CustomErrorHandler(BaseModel):
 
 
 class CustomIncrementalSync(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomIncrementalSync']
     class_name: str = Field(
@@ -119,8 +115,7 @@ class CustomIncrementalSync(BaseModel):
 
 
 class CustomPaginationStrategy(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomPaginationStrategy']
     class_name: str = Field(
@@ -133,8 +128,7 @@ class CustomPaginationStrategy(BaseModel):
 
 
 class CustomRecordExtractor(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomRecordExtractor']
     class_name: str = Field(
@@ -147,8 +141,7 @@ class CustomRecordExtractor(BaseModel):
 
 
 class CustomRecordFilter(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomRecordFilter']
     class_name: str = Field(
@@ -161,8 +154,7 @@ class CustomRecordFilter(BaseModel):
 
 
 class CustomRequester(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomRequester']
     class_name: str = Field(
@@ -175,8 +167,7 @@ class CustomRequester(BaseModel):
 
 
 class CustomRetriever(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomRetriever']
     class_name: str = Field(
@@ -189,8 +180,7 @@ class CustomRetriever(BaseModel):
 
 
 class CustomPartitionRouter(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomPartitionRouter']
     class_name: str = Field(
@@ -203,8 +193,7 @@ class CustomPartitionRouter(BaseModel):
 
 
 class CustomSchemaLoader(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomSchemaLoader']
     class_name: str = Field(
@@ -217,8 +206,7 @@ class CustomSchemaLoader(BaseModel):
 
 
 class CustomStateMigration(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomStateMigration']
     class_name: str = Field(
@@ -231,8 +219,7 @@ class CustomStateMigration(BaseModel):
 
 
 class CustomTransformation(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['CustomTransformation']
     class_name: str = Field(
@@ -245,8 +232,7 @@ class CustomTransformation(BaseModel):
 
 
 class LegacyToPerPartitionStateMigration(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Optional[Literal['LegacyToPerPartitionStateMigration']] = None
 
@@ -269,8 +255,7 @@ class Algorithm(Enum):
 
 
 class JwtHeaders(BaseModel):
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
     kid: Optional[str] = Field(
         None, description='Private key ID for user account.', examples=["{{ config['kid'] }}"], title='Key Identifier'
@@ -280,8 +265,7 @@ class JwtHeaders(BaseModel):
 
 
 class JwtPayload(BaseModel):
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
     iss: Optional[str] = Field(
         None,
@@ -493,7 +477,7 @@ class HttpResponseFilter(BaseModel):
     error_message_contains: Optional[str] = Field(
         None,
         description='Match the response if its error message contains the substring.',
-        example=['This API operation is not enabled for this site'],
+        examples=[['This API operation is not enabled for this site']],
         title='Error Message Substring',
     )
     http_codes: Optional[List[int]] = Field(
@@ -526,7 +510,7 @@ class JsonFileSchemaLoader(BaseModel):
     file_path: Optional[str] = Field(
         None,
         description="Path to the JSON file defining the schema. The path is relative to the connector module's root.",
-        example=['./schemas/users.json'],
+        examples=[['./schemas/users.json']],
         title='File Path',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
@@ -572,8 +556,7 @@ class NoPagination(BaseModel):
 
 
 class OAuthConfigSpecification(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
         None,
@@ -638,7 +621,7 @@ class PageIncrement(BaseModel):
 
 
 class PrimaryKey(BaseModel):
-    __root__: Union[str, List[str], List[List[str]]] = Field(
+    RootModel: Union[str, List[str], List[List[str]]] = Field(
         ...,
         description='The stream field to be used to distinguish unique records. Can either be a single field, an array of fields representing a composite key, or an array of arrays representing a composite key where the fields are nested fields.',
         examples=['id', ['code', 'type']],
@@ -710,9 +693,7 @@ class RequestOption(BaseModel):
 
 class Schemas(BaseModel):
     pass
-
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
 
 class LegacySessionTokenAuthenticator(BaseModel):
@@ -727,7 +708,7 @@ class LegacySessionTokenAuthenticator(BaseModel):
     session_token: Optional[str] = Field(
         None,
         description='Session token to use if using a pre-defined token. Not needed if authenticating with username + password pair',
-        example=["{{ config['session_token'] }}"],
+        examples=[["{{ config['session_token'] }}"]],
         title='Session Token',
     )
     session_token_response_key: str = Field(
@@ -1085,8 +1066,7 @@ class CompositeErrorHandler(BaseModel):
 
 
 class DeclarativeSource(BaseModel):
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
     type: Literal['DeclarativeSource']
     check: CheckStream
@@ -1102,8 +1082,7 @@ class DeclarativeSource(BaseModel):
 
 
 class SelectiveAuthenticator(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['SelectiveAuthenticator']
     authenticator_selection_path: List[str] = Field(
@@ -1143,8 +1122,7 @@ class SelectiveAuthenticator(BaseModel):
 
 
 class DeclarativeStream(BaseModel):
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     type: Literal['DeclarativeStream']
     retriever: Union[CustomRetriever, SimpleRetriever] = Field(
@@ -1153,7 +1131,7 @@ class DeclarativeStream(BaseModel):
     incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = Field(
         None, description='Component used to fetch data incrementally based on a time field in the data.', title='Incremental Sync'
     )
-    name: Optional[str] = Field('', description='The stream name.', example=['Users'], title='Name')
+    name: Optional[str] = Field('', description='The stream name.', examples=[['Users']], title='Name')
     primary_key: Optional[PrimaryKey] = Field('', description='The primary key of the stream.', title='Primary Key')
     schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader, CustomSchemaLoader]] = Field(
         None, description='Component used to retrieve the schema for the current stream.', title='Schema Loader'

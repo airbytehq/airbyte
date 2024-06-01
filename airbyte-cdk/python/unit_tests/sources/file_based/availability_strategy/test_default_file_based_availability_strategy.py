@@ -10,7 +10,7 @@ from airbyte_cdk.sources.file_based.availability_strategy.default_file_based_ava
     DefaultFileBasedAvailabilityStrategy,
 )
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -21,7 +21,7 @@ _FILE_WITH_UNKNOWN_EXTENSION = RemoteFile(uri="a.unknown_extension", last_modifi
 _ANY_CONFIG = FileBasedStreamConfig(
     name="config.name",
     file_type="parquet",
-    format=JsonlFormat(),
+    format=CsvFormat(),
 )
 _ANY_SCHEMA = {"key": "value"}
 

@@ -2,54 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Type
 
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
-from pydantic import BaseModel, Extra
-from pydantic.main import ModelMetaclass
-from pydantic.typing import resolve_annotations
-
-
-class AllOptional(ModelMetaclass):
-    """
-    Metaclass for marking all Pydantic model fields as Optional
-    Here is example of declaring model using this metaclass like:
-    '''
-            class MyModel(BaseModel, metaclass=AllOptional):
-                a: str
-                b: str
-    '''
-    it is an equivalent of:
-    '''
-            class MyModel(BaseModel):
-                a: Optional[str]
-                b: Optional[str]
-    '''
-    It would make code more clear and eliminate a lot of manual work.
-    """
-
-    def __new__(mcs, name, bases, namespaces, **kwargs):
-        """
-        Iterate through fields and wrap then with typing.Optional type.
-        """
-        annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
-        for base in bases:
-            annotations = {**annotations, **getattr(base, "__annotations__", {})}
-        for field in annotations:
-            if not field.startswith("__"):
-                annotations[field] = Optional[annotations[field]]
-        namespaces["__annotations__"] = annotations
-        return super().__new__(mcs, name, bases, namespaces, **kwargs)
-
+from pydantic import BaseModel
 
 class BaseSchemaModel(BaseModel):
     """
     Base class for all schema models. It has some extra schema postprocessing.
-    Can be used in combination with AllOptional metaclass
     """
 
+    # TODO[pydantic]: We couldn't refactor this class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config:
-        extra = Extra.allow
+        extra = "allow"
 
         @classmethod
         def schema_extra(cls, schema: Dict[str, Any], model: Type[BaseModel]) -> None:
@@ -68,8 +34,8 @@ class BaseSchemaModel(BaseModel):
             for name, prop in schema.get("properties", {}).items():
                 prop.pop("title", None)
                 prop.pop("description", None)
-                allow_none = model.__fields__[name].allow_none
-                if allow_none:
+                required = model.model_fields.get(name).is_required()
+                if not required:
                     if "type" in prop:
                         prop["type"] = ["null", prop["type"]]
                     elif "$ref" in prop:

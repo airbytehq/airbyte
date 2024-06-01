@@ -3,6 +3,7 @@
 #
 
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -19,10 +20,7 @@ class JsonlFormat(BaseModel):
     class Config:
         title = "Jsonl"
 
-    filetype: str = Field(
-        "jsonl",
-        const=True,
-    )
+    filetype: Literal["jsonl"] = "jsonl"
 
     newlines_in_values: bool = Field(
         title="Allow newlines in values",

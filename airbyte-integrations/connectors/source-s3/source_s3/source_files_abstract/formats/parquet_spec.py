@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 from pydantic import BaseModel, Field
 
@@ -13,7 +13,7 @@ class ParquetFormat(BaseModel):
     class Config:
         title = "Parquet"
 
-    filetype: str = Field("parquet", const=True)
+    filetype: Literal["parquet"] = "parquet"
 
     columns: Optional[List[str]] = Field(
         default=None,

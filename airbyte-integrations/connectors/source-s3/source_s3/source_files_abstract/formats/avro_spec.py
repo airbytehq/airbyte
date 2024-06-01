@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Literal
 from pydantic import BaseModel, Field
 
 
@@ -11,7 +12,4 @@ class AvroFormat(BaseModel):
     class Config:
         title = "Avro"
 
-    filetype: str = Field(
-        "avro",
-        const=True,
-    )
+    filetype: Literal["avro"] = "avro"

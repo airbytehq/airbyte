@@ -7,11 +7,11 @@ from typing import Any, Dict, List, Literal, Optional, Union
 import dpath
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 
 
 class SeparatorSplitterConfigModel(BaseModel):
-    mode: Literal["separator"] = Field("separator", const=True)
+    mode: Literal["separator"] = "separator"
     separators: List[str] = Field(
         default=['"\\n\\n"', '"\\n"', '" "', '""'],
         title="Separators",
@@ -19,6 +19,8 @@ class SeparatorSplitterConfigModel(BaseModel):
     )
     keep_separator: bool = Field(default=False, title="Keep separator", description="Whether to keep the separator in the resulting chunks")
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "By Separator"
         description = "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
@@ -26,7 +28,7 @@ class SeparatorSplitterConfigModel(BaseModel):
 
 
 class MarkdownHeaderSplitterConfigModel(BaseModel):
-    mode: Literal["markdown"] = Field("markdown", const=True)
+    mode: Literal["markdown"] = "markdown"
     split_level: int = Field(
         default=1,
         title="Split level",
@@ -35,6 +37,8 @@ class MarkdownHeaderSplitterConfigModel(BaseModel):
         ge=1,
     )
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "By Markdown header"
         description = "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
@@ -42,7 +46,7 @@ class MarkdownHeaderSplitterConfigModel(BaseModel):
 
 
 class CodeSplitterConfigModel(BaseModel):
-    mode: Literal["code"] = Field("code", const=True)
+    mode: Literal["code"] = "code"
     language: str = Field(
         title="Language",
         description="Split code in suitable places based on the programming language",
@@ -66,6 +70,8 @@ class CodeSplitterConfigModel(BaseModel):
         ],
     )
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "By Programming Language"
         description = (
@@ -127,9 +133,11 @@ class ProcessingConfigModel(BaseModel):
 
 
 class OpenAIEmbeddingConfigModel(BaseModel):
-    mode: Literal["openai"] = Field("openai", const=True)
+    mode: Literal["openai"] = "openai"
     openai_key: str = Field(..., title="OpenAI API key", airbyte_secret=True)
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "OpenAI"
         description = (
@@ -139,7 +147,7 @@ class OpenAIEmbeddingConfigModel(BaseModel):
 
 
 class OpenAICompatibleEmbeddingConfigModel(BaseModel):
-    mode: Literal["openai_compatible"] = Field("openai_compatible", const=True)
+    mode: Literal["openai_compatible"] = "openai_compatible"
     api_key: str = Field(title="API key", default="", airbyte_secret=True)
     base_url: str = Field(
         ..., title="Base URL", description="The base URL for your OpenAI-compatible service", examples=["https://your-service-name.com"]
@@ -154,6 +162,8 @@ class OpenAICompatibleEmbeddingConfigModel(BaseModel):
         title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
     )
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "OpenAI-compatible"
         description = "Use a service that's compatible with the OpenAI API to embed text."
@@ -161,7 +171,7 @@ class OpenAICompatibleEmbeddingConfigModel(BaseModel):
 
 
 class AzureOpenAIEmbeddingConfigModel(BaseModel):
-    mode: Literal["azure_openai"] = Field("azure_openai", const=True)
+    mode: Literal["azure_openai"] = "azure_openai"
     openai_key: str = Field(
         ...,
         title="Azure OpenAI API key",
@@ -181,6 +191,8 @@ class AzureOpenAIEmbeddingConfigModel(BaseModel):
         examples=["your-resource-name"],
     )
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "Azure OpenAI"
         description = "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
@@ -188,8 +200,10 @@ class AzureOpenAIEmbeddingConfigModel(BaseModel):
 
 
 class FakeEmbeddingConfigModel(BaseModel):
-    mode: Literal["fake"] = Field("fake", const=True)
+    mode: Literal["fake"] = "fake"
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "Fake"
         description = "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
@@ -197,7 +211,7 @@ class FakeEmbeddingConfigModel(BaseModel):
 
 
 class FromFieldEmbeddingConfigModel(BaseModel):
-    mode: Literal["from_field"] = Field("from_field", const=True)
+    mode: Literal["from_field"] = "from_field"
     field_name: str = Field(
         ..., title="Field name", description="Name of the field in the record that contains the embedding", examples=["embedding", "vector"]
     )
@@ -205,6 +219,8 @@ class FromFieldEmbeddingConfigModel(BaseModel):
         ..., title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
     )
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "From Field"
         description = "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
@@ -212,9 +228,11 @@ class FromFieldEmbeddingConfigModel(BaseModel):
 
 
 class CohereEmbeddingConfigModel(BaseModel):
-    mode: Literal["cohere"] = Field("cohere", const=True)
+    mode: Literal["cohere"] = "cohere"
     cohere_key: str = Field(..., title="Cohere API key", airbyte_secret=True)
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "Cohere"
         description = "Use the Cohere API to embed text."

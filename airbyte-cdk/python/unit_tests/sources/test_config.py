@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Union
+from typing import List, Literal, Union
 
 from airbyte_cdk.sources.config import BaseConfig
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 
 
 class InnerClass(BaseModel):
@@ -14,21 +14,20 @@ class InnerClass(BaseModel):
 
 
 class Choice1(BaseModel):
-    selected_strategy = Field("option1", const=True)
+    selected_strategy: Literal["option1"] = "option1"
 
     name: str
     count: int
 
 
 class Choice2(BaseModel):
-    selected_strategy = Field("option2", const=True)
+    selected_strategy: Literal["option2"] = "option2"
 
     sequence: List[str]
 
 
 class SomeSourceConfig(BaseConfig):
-    class Config:
-        title = "Some Source"
+    model_config = ConfigDict(title="Some Source")
 
     items: List[InnerClass]
     choice: Union[Choice1, Choice2]
