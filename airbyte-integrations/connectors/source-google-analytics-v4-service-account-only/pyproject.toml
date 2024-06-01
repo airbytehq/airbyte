@@ -21,6 +21,7 @@ requests = "==2.31.0"
 PyJWT = "==2.8.0"
 cryptography = "==41.0.4"
 airbyte-cdk = "==0.82.0"
+source-google-analytics-v4 = { path = "../source-google-analytics-v4" }
 
 [tool.poetry.scripts]
 source-google-analytics-v4-service-account-only = "source_google_analytics_v4_service_account_only.run:run"
