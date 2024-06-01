@@ -82,7 +82,6 @@ class AppsflyerStream(HttpStream, ABC):
         predefined_fields = add(self.main_fields,
                                 self.additional_fields) if self.additional_fields else self.main_fields
 
-        # get first line from response
         header = response.text.split("\n")[0]
         self.custom_fields = tuple([self.rename_fields(i) for i in header.split(",")[len(predefined_fields):]])
 
@@ -243,6 +242,16 @@ class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
         return f"raw-data/export/app/{self.app_id}/in_app_events_report/v5"
 
 
+class OrganicInAppEvents(RawDataMixin, IncrementalAppsflyerStream):
+    intervals = 31
+    cursor_field = "event_time"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"raw-data/export/app/{self.app_id}/organic_in_app_events_report/v5"
+
+
 class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
     additional_fields = fields.uninstall_events.additional_fields
@@ -253,6 +262,17 @@ class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
         return f"raw-data/export/app/{self.app_id}/uninstall_events_report/v5"
 
 
+class OrganicUninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
+    cursor_field = "event_time"
+    additional_fields = fields.uninstall_events.additional_fields
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"raw-data/export/app/{self.app_id}/organic_uninstall_events_report/v5"
+
+
 class Installs(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "install_time"
 
@@ -260,6 +280,15 @@ class Installs(RawDataMixin, IncrementalAppsflyerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"raw-data/export/app/{self.app_id}/installs_report/v5"
+
+
+class OrganicInstalls(RawDataMixin, IncrementalAppsflyerStream):
+    cursor_field = "install_time"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"raw-data/export/app/{self.app_id}/organic_installs_report/v5"
 
 
 class RetargetingInAppEvents(RetargetingMixin, InAppEvents):
@@ -351,8 +380,11 @@ class SourceAppsflyer(AbstractSource):
         auth = TokenAuthenticator(token=config["api_token"])
         return [
             InAppEvents(authenticator=auth, **config),
+            OrganicInAppEvents(authenticator=auth, **config),
             Installs(authenticator=auth, **config),
+            OrganicInstalls(authenticator=auth, **config),
             UninstallEvents(authenticator=auth, **config),
+            OrganicUninstallEvents(authenticator=auth, **config),
             RetargetingInAppEvents(authenticator=auth, **config),
             RetargetingConversions(authenticator=auth, **config),
             PartnersReport(authenticator=auth, **config),
