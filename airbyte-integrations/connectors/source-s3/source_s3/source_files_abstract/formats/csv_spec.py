@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
+from typing import Optional, Literal
 
 from pydantic import BaseModel, Field
 
@@ -13,10 +13,7 @@ class CsvFormat(BaseModel):
     class Config:
         title = "CSV"
 
-    filetype: str = Field(
-        "csv",
-        const=True,
-    )
+    filetype: Literal["csv"] = "csv"
 
     delimiter: str = Field(
         default=",",

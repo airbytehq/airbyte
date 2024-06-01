@@ -39,7 +39,6 @@ class SourceS3(FileBasedSource):
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         s3_spec = SourceS3Spec.schema()
         s4_spec = self.spec_class.schema()
-
         if s3_spec["properties"].keys() & s4_spec["properties"].keys():
             raise ValueError("Overlapping properties between V3 and V4")
 
