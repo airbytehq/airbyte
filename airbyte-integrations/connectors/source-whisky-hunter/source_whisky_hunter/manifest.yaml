@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /auctions_data/?format=json
           http_method: GET
         record_selector:
@@ -28,14 +28,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/auctions_data'
+          $ref: "#/schemas/auctions_data"
     auctions_info:
       type: DeclarativeStream
       name: auctions_info
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /auctions_info?format=json
           http_method: GET
         record_selector:
@@ -46,14 +46,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/auctions_info'
+          $ref: "#/schemas/auctions_info"
     distilleries_info:
       type: DeclarativeStream
       name: distilleries_info
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /distilleries_info/?format=json
           http_method: GET
         record_selector:
@@ -64,15 +64,15 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/distilleries_info'
+          $ref: "#/schemas/distilleries_info"
   base_requester:
     type: HttpRequester
     url_base: https://whiskyhunter.net/api
 
 streams:
-  - $ref: '#/definitions/streams/auctions_data'
-  - $ref: '#/definitions/streams/auctions_info'
-  - $ref: '#/definitions/streams/distilleries_info'
+  - $ref: "#/definitions/streams/auctions_data"
+  - $ref: "#/definitions/streams/auctions_info"
+  - $ref: "#/definitions/streams/distilleries_info"
 
 spec:
   type: Spec
