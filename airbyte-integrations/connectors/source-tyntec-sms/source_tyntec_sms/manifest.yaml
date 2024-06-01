@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /messaging/v1/sms?to={{ config['to'] }}&from={{
             config['from']}}&message={{ config['message'] or ''}}
@@ -30,7 +30,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/sms'
+          $ref: "#/schemas/sms"
     messages:
       type: DeclarativeStream
       name: messages
@@ -39,7 +39,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /messaging/v1/messages/{{ stream_slice.requestId }}
           http_method: GET
         record_selector:
@@ -54,18 +54,18 @@ definitions:
                 parent_key: requestId
                 partition_field: requestId
                 stream:
-                  $ref: '#/definitions/streams/sms'
+                  $ref: "#/definitions/streams/sms"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/messages'
+          $ref: "#/schemas/messages"
     contacts:
       type: DeclarativeStream
       name: contacts
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /byon/contacts/v1
           http_method: GET
         record_selector:
@@ -76,14 +76,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
     phones:
       type: DeclarativeStream
       name: phones
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /byon/phonebook/v1/numbers
           http_method: GET
         record_selector:
@@ -94,14 +94,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/phones'
+          $ref: "#/schemas/phones"
     registrations:
       type: DeclarativeStream
       name: registrations
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /byon/provisioning/v1
           http_method: GET
         record_selector:
@@ -112,24 +112,24 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/registrations'
+          $ref: "#/schemas/registrations"
   base_requester:
     type: HttpRequester
     url_base: https://api.tyntec.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: apikey
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/sms'
-  - $ref: '#/definitions/streams/messages'
-  - $ref: '#/definitions/streams/contacts'
-  - $ref: '#/definitions/streams/phones'
-  - $ref: '#/definitions/streams/registrations'
+  - $ref: "#/definitions/streams/sms"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/phones"
+  - $ref: "#/definitions/streams/registrations"
 
 spec:
   type: Spec
@@ -181,115 +181,115 @@ schemas:
     properties:
       doneDate:
         type:
-          - 'null'
+          - "null"
           - string
       errorCode:
         type:
-          - 'null'
+          - "null"
           - string
       errorReason:
         type:
-          - 'null'
+          - "null"
           - string
       from:
         type:
-          - 'null'
+          - "null"
           - string
       href:
         type:
-          - 'null'
+          - "null"
           - string
       mccmnc:
         type:
-          - 'null'
+          - "null"
           - string
       overallPrice:
         type:
-          - 'null'
+          - "null"
           - string
       parts:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             currency:
               type:
-                - 'null'
+                - "null"
                 - string
             deliveryState:
               type:
-                - 'null'
+                - "null"
                 - string
             doneDate:
               type:
-                - 'null'
+                - "null"
                 - string
             errorCode:
               type:
-                - 'null'
+                - "null"
                 - string
             partId:
               type:
-                - 'null'
+                - "null"
                 - string
             price:
               type:
-                - 'null'
+                - "null"
                 - string
             priceEffective:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             sendDate:
               type:
-                - 'null'
+                - "null"
                 - string
             statusText:
               type:
-                - 'null'
+                - "null"
                 - string
       priceEffective:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       requestId:
         type:
-          - 'null'
+          - "null"
           - string
       sentDate:
         type:
-          - 'null'
+          - "null"
           - string
       size:
         type:
-          - 'null'
+          - "null"
           - integer
       status:
         type:
-          - 'null'
+          - "null"
           - string
       submitDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       to:
         type:
-          - 'null'
+          - "null"
           - string
       ttid:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   messages:
@@ -298,115 +298,115 @@ schemas:
     properties:
       doneDate:
         type:
-          - 'null'
+          - "null"
           - string
       errorCode:
         type:
-          - 'null'
+          - "null"
           - string
       errorReason:
         type:
-          - 'null'
+          - "null"
           - string
       from:
         type:
-          - 'null'
+          - "null"
           - string
       href:
         type:
-          - 'null'
+          - "null"
           - string
       mccmnc:
         type:
-          - 'null'
+          - "null"
           - string
       overallPrice:
         type:
-          - 'null'
+          - "null"
           - string
       parts:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             currency:
               type:
-                - 'null'
+                - "null"
                 - string
             deliveryState:
               type:
-                - 'null'
+                - "null"
                 - string
             doneDate:
               type:
-                - 'null'
+                - "null"
                 - string
             errorCode:
               type:
-                - 'null'
+                - "null"
                 - string
             partId:
               type:
-                - 'null'
+                - "null"
                 - string
             price:
               type:
-                - 'null'
+                - "null"
                 - string
             priceEffective:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             sendDate:
               type:
-                - 'null'
+                - "null"
                 - string
             statusText:
               type:
-                - 'null'
+                - "null"
                 - string
       priceEffective:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       requestId:
         type:
-          - 'null'
+          - "null"
           - string
       sentDate:
         type:
-          - 'null'
+          - "null"
           - string
       size:
         type:
-          - 'null'
+          - "null"
           - integer
       status:
         type:
-          - 'null'
+          - "null"
           - string
       submitDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       to:
         type:
-          - 'null'
+          - "null"
           - string
       ttid:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   contacts:
@@ -415,44 +415,44 @@ schemas:
     properties:
       contacts:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             companyAddress:
               type:
-                - 'null'
+                - "null"
                 - string
             companyName:
               type:
-                - 'null'
+                - "null"
                 - string
             contactEmail:
               type:
-                - 'null'
+                - "null"
                 - string
             contactName:
               type:
-                - 'null'
+                - "null"
                 - string
             contactPhone:
               type:
-                - 'null'
+                - "null"
                 - string
             contactTitle:
               type:
-                - 'null'
+                - "null"
                 - string
             friendlyName:
               type:
-                - 'null'
+                - "null"
                 - string
       size:
         type:
-          - 'null'
+          - "null"
           - integer
     additionalProperties: true
   phones:
@@ -461,36 +461,36 @@ schemas:
     properties:
       provisioningRequests:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             accountId:
               type:
-                - 'null'
+                - "null"
                 - string
             contactId:
               type:
-                - 'null'
+                - "null"
                 - string
             friendlyName:
               type:
-                - 'null'
+                - "null"
                 - string
             requestId:
               type:
-                - 'null'
+                - "null"
                 - string
             status:
               type:
-                - 'null'
+                - "null"
                 - string
       size:
         type:
-          - 'null'
+          - "null"
           - integer
     additionalProperties: true
   registrations:
@@ -499,35 +499,35 @@ schemas:
     properties:
       provisioningRequests:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             accountId:
               type:
-                - 'null'
+                - "null"
                 - string
             contactId:
               type:
-                - 'null'
+                - "null"
                 - string
             friendlyName:
               type:
-                - 'null'
+                - "null"
                 - string
             requestId:
               type:
-                - 'null'
+                - "null"
                 - string
             status:
               type:
-                - 'null'
+                - "null"
                 - string
       size:
         type:
-          - 'null'
+          - "null"
           - integer
     additionalProperties: true
