@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /providers
           http_method: GET
         record_selector:
@@ -42,7 +42,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/providers'
+          $ref: "#/schemas/providers"
     services:
       type: DeclarativeStream
       name: services
@@ -51,7 +51,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /services
           http_method: GET
         record_selector:
@@ -76,7 +76,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/services'
+          $ref: "#/schemas/services"
     products:
       type: DeclarativeStream
       name: products
@@ -85,7 +85,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products
           http_method: GET
         record_selector:
@@ -110,7 +110,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/products'
+          $ref: "#/schemas/products"
     reports:
       type: DeclarativeStream
       name: reports
@@ -119,7 +119,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /reports
           http_method: GET
         record_selector:
@@ -144,19 +144,19 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/reports'
+          $ref: "#/schemas/reports"
   base_requester:
     type: HttpRequester
     url_base: https://api.vantage.sh/v1
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''access_token''] }}'
+      api_token: "{{ config['access_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/providers'
-  - $ref: '#/definitions/streams/services'
-  - $ref: '#/definitions/streams/products'
-  - $ref: '#/definitions/streams/reports'
+  - $ref: "#/definitions/streams/providers"
+  - $ref: "#/definitions/streams/services"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/reports"
 
 spec:
   type: Spec
@@ -256,17 +256,17 @@ schemas:
       created_at:
         type: string
         description: The date and time, in UTC, the report was created. ISO 8601 Formatted.
-        example: '2021-07-09T00:00:00Z'
+        example: "2021-07-09T00:00:00Z"
       earliest_cost_date:
         type: string
         description: The date and time, in UTC, the report was created. ISO 8601 Formatted.
-        example: '2021-07-09T00:00:00Z'
+        example: "2021-07-09T00:00:00Z"
       id:
         type: string
       latest_cost_date:
         type: string
         description: The date and time, in UTC, the report was created. ISO 8601 Formatted.
-        example: '2021-07-09T00:00:00Z'
+        example: "2021-07-09T00:00:00Z"
       title:
         type: string
         description: The title of the cost report.
