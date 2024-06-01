@@ -92,7 +92,6 @@ metadata:
 schemas:
   auctions_data:
     type: object
-    $schema: http://json-schema.org/draft-04/schema#
     properties:
       all_auctions_lots_count:
         type: integer
@@ -115,7 +114,6 @@ schemas:
     additionalProperties: true
   auctions_info:
     type: object
-    $schema: http://json-schema.org/draft-04/schema#
     properties:
       base_currency:
         type: string
@@ -136,7 +134,6 @@ schemas:
     additionalProperties: true
   distilleries_info:
     type: object
-    $schema: http://json-schema.org/draft-04/schema#
     properties:
       country:
         type: string
