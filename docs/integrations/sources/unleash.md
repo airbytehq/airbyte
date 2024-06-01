@@ -10,7 +10,7 @@ To access the API, you will need to sign up for an API token, which should be se
 
 ## This Source Supports the Following Streams
 
-* features
+- features
 
 ## Output schema
 
@@ -34,10 +34,10 @@ For more information around the returned payload, [see that page](https://docs.g
 
 ## Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ## Getting started
 
@@ -53,6 +53,6 @@ The API key that you are assigned is rate-limited.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                    |
-|:--------|:-----------| :----------- |:-----------------------------------------------------------|
+| Version | Date       | Pull Request                                              | Subject                               |
+| :------ | :--------- | :-------------------------------------------------------- | :------------------------------------ |
 | 0.1.0   | 2022-11-30 | [#19923](https://github.com/airbytehq/airbyte/pull/19923) | 🎉 New source: Unleash [low-code CDK] |

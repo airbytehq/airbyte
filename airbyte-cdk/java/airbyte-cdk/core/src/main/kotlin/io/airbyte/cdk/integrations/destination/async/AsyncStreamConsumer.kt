@@ -28,8 +28,8 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
+import org.jetbrains.annotations.VisibleForTesting
 
 private val logger = KotlinLogging.logger {}
 
@@ -41,7 +41,10 @@ private val logger = KotlinLogging.logger {}
  * memory limit governed by [GlobalMemoryManager]. Record writing is decoupled via [FlushWorkers].
  * See the other linked class for more detail.
  */
-class AsyncStreamConsumer(
+open class AsyncStreamConsumer
+@VisibleForTesting
+@JvmOverloads
+constructor(
     outputRecordCollector: Consumer<AirbyteMessage>,
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
@@ -51,7 +54,8 @@ class AsyncStreamConsumer(
     private val defaultNamespace: Optional<String>,
     private val flushFailure: FlushFailure = FlushFailure(),
     workerPool: ExecutorService = Executors.newFixedThreadPool(5),
-    private val airbyteMessageDeserializer: AirbyteMessageDeserializer,
+    private val airbyteMessageDeserializer: AirbyteMessageDeserializer =
+        AirbyteMessageDeserializer(),
 ) : SerializedAirbyteMessageConsumer {
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
     private val flushWorkers: FlushWorkers =
@@ -155,18 +159,11 @@ class AsyncStreamConsumer(
         bufferManager.close()
 
         val streamSyncSummaries =
-            streamNames
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { streamDescriptor: StreamDescriptor -> streamDescriptor },
-                        { streamDescriptor: StreamDescriptor ->
-                            StreamSyncSummary(
-                                Optional.of(getRecordCounter(streamDescriptor).get()),
-                            )
-                        },
-                    ),
+            streamNames.associateWith { streamDescriptor: StreamDescriptor ->
+                StreamSyncSummary(
+                    Optional.of(getRecordCounter(streamDescriptor).get()),
                 )
+            }
         onClose.accept(hasFailed, streamSyncSummaries)
 
         // as this throws an exception, we need to be after all other close functions.

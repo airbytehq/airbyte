@@ -4,17 +4,17 @@
   "type": "object",
   "properties": {
     "key": {
-      "type": "string",
       "description": "The key of the transition property. Also known as the name of the transition property.",
+      "type": "string",
       "readOnly": true
     },
     "value": {
-      "type": "string",
-      "description": "The value of the transition property."
+      "description": "The value of the transition property.",
+      "type": "string"
     },
     "id": {
-      "type": "string",
       "description": "The ID of the transition property.",
+      "type": "string",
       "readOnly": true
     }
   },

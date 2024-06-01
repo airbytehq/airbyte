@@ -23,6 +23,7 @@ This connector supports **OAuth** and **Personal Access Tokens**. Please follow 
 5. Click **Set up source**.
 
 #### Syncing Multiple Projects
+
 If you have access to multiple projects, Airbyte will sync data related to all projects you have access to. The ability to filter to specific projects is not available at this time.
 
 <!-- /env:cloud -->
@@ -52,6 +53,7 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 | Namespaces        | No         |
 
 ## Supported Streams
+
 - [Attachments](https://developers.asana.com/docs/attachments)
 - [Custom fields](https://developers.asana.com/docs/custom-fields)
 - [Projects](https://developers.asana.com/docs/projects)
@@ -92,8 +94,8 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 ### Troubleshooting
 
-* If you encounter access errors while using **OAuth** authentication, please make sure you've followed this [Asana Article](https://developers.asana.com/docs/oauth).
-* Check out common troubleshooting issues for the Asana source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- If you encounter access errors while using **OAuth** authentication, please make sure you've followed this [Asana Article](https://developers.asana.com/docs/oauth).
+- Check out common troubleshooting issues for the Asana source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
@@ -101,9 +103,9 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
-| 0.6.1   | 2023-11-13 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Fix hidden config access |
+| 0.6.1   | 2023-11-13 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Fix hidden config access                                          |
 | 0.6.0   | 2023-11-03 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Add new stream Portfolio Memberships with Parent Portfolio        |
-| 0.5.0   | 2023-10-30 | [31114](https://github.com/airbytehq/airbyte/pull/31114) | Add Portfolios stream |
+| 0.5.0   | 2023-10-30 | [31114](https://github.com/airbytehq/airbyte/pull/31114) | Add Portfolios stream                                             |
 | 0.4.0   | 2023-10-24 | [31084](https://github.com/airbytehq/airbyte/pull/31084) | Add StoriesCompact stream                                         |
 | 0.3.0   | 2023-10-24 | [31634](https://github.com/airbytehq/airbyte/pull/31634) | Add OrganizationExports stream                                    |
 | 0.2.0   | 2023-10-17 | [31090](https://github.com/airbytehq/airbyte/pull/31090) | Add Attachments stream                                            |

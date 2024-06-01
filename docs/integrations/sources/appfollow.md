@@ -35,7 +35,8 @@ The Appfollow connector ideally should gracefully handle Appfollow API limitatio
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject               |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 1.0.0   | 2023-08-05 | [29128](https://github.com/airbytehq/airbyte/pull/29128) | Migrate to low-code and add new streams  |
-| 0.1.1   | 2022-08-11 | [14418](https://github.com/airbytehq/airbyte/pull/14418) | New Source: Appfollow |
+| Version | Date       | Pull Request                                             | Subject                                 |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
+| 1.0.1 | 2024-05-20 | [38388](https://github.com/airbytehq/airbyte/pull/38388) | [autopull] base image + poetry + up_to_date |
+| 1.0.0 | 2023-08-05 | [29128](https://github.com/airbytehq/airbyte/pull/29128) | Migrate to low-code and add new streams |
+| 0.1.1 | 2022-08-11 | [14418](https://github.com/airbytehq/airbyte/pull/14418) | New Source: Appfollow |

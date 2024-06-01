@@ -51,7 +51,8 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject                   |
-| :------ | :--------- | :----------------------------------------------------- | :------------------------ |
-| 0.2.0   | 2023-08-19 | [29490](https://github.com/airbytehq/airbyte/pull/29490) | Migrate CDK from Python to Low Code |
-| 0.1.0   | 2022-01-14 | [8461](https://github.com/airbytehq/airbyte/pull/8461) | 🎉 New Source: Hellobaton |
+| Version | Date       | Pull Request                                             | Subject                             |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------- |
+| 0.2.1 | 2024-05-21 | [38507](https://github.com/airbytehq/airbyte/pull/38507) | [autopull] base image + poetry + up_to_date |
+| 0.2.0 | 2023-08-19 | [29490](https://github.com/airbytehq/airbyte/pull/29490) | Migrate CDK from Python to Low Code |
+| 0.1.0 | 2022-01-14 | [8461](https://github.com/airbytehq/airbyte/pull/8461) | 🎉 New Source: Hellobaton |

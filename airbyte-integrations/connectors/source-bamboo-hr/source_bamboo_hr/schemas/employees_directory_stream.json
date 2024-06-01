@@ -3,60 +3,79 @@
   "required": [],
   "properties": {
     "id": {
+      "description": "A unique identifier for the employee.",
       "type": ["null", "string"]
     },
     "displayName": {
+      "description": "The name to be displayed for the employee.",
       "type": ["null", "string"]
     },
     "firstName": {
+      "description": "The first name of the employee.",
       "type": ["null", "string"]
     },
     "lastName": {
+      "description": "The last name of the employee.",
       "type": ["null", "string"]
     },
     "preferredName": {
+      "description": "The preferred or nickname of the employee.",
       "type": ["null", "string"]
     },
     "jobTitle": {
+      "description": "The job title or role of the employee.",
       "type": ["null", "string"]
     },
     "workPhone": {
+      "description": "The work phone number of the employee.",
       "type": ["null", "string"]
     },
     "mobilePhone": {
+      "description": "The mobile phone number of the employee.",
       "type": ["null", "string"]
     },
     "workEmail": {
+      "description": "The work email address of the employee.",
       "type": ["null", "string"]
     },
     "department": {
+      "description": "The department in which the employee works.",
       "type": ["null", "string"]
     },
     "location": {
+      "description": "The physical location where the employee works.",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "The division of the company to which the employee belongs.",
       "type": ["null", "string"]
     },
     "linkedIn": {
+      "description": "The LinkedIn profile URL of the employee, if available.",
       "type": ["null", "string"]
     },
     "pronouns": {
+      "description": "The preferred pronouns of the employee.",
       "type": ["null", "string"]
     },
     "workPhoneExtension": {
+      "description": "The extension number for the employee's work phone line.",
       "type": ["null", "string"]
     },
     "supervisor": {
+      "description": "The supervisor or manager of the employee.",
       "type": ["null", "string"]
     },
     "photoUploaded": {
+      "description": "Indicates whether a profile photo has been uploaded for the employee.",
       "type": ["null", "boolean"]
     },
     "photoUrl": {
+      "description": "The URL of the employee's profile photo.",
       "type": ["null", "string"]
     },
     "canUploadPhoto": {
+      "description": "Indicates whether the employee has permission to upload a profile photo.",
       "type": ["null", "number"]
     }
   }

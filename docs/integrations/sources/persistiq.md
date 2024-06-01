@@ -17,7 +17,7 @@ This Source is capable of syncing the following streams:
 ### Features
 
 | Feature                   | Supported?\(Yes/No\) |
-| :------------------------ | :------------------- |
+|:--------------------------|:---------------------|
 | Full Refresh Sync         | Yes                  |
 | Incremental - Append Sync | No                   |
 | Namespaces                | No                   |
@@ -38,7 +38,8 @@ Please read [How to find your API key](https://apidocs.persistiq.com/#introducti
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject                  |
-| :------ | :--------- | :----------------------------------------------------- | :----------------------- |
-| 0.2.0   | 2023-10-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate to low code |
-| 0.1.0   | 2022-01-21 | [9515](https://github.com/airbytehq/airbyte/pull/9515) | 🎉 New Source: PersistIq |
+| Version | Date       | Pull Request                                             | Subject                                |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------|
+| 0.2.1   | 2024-05-13 | [37596](https://github.com/airbytehq/airbyte/pull/37596) | Change `last_records` to `last_record` |
+| 0.2.0   | 2023-10-10 | [31055](https://github.com/airbytehq/airbyte/pull/31055) | Migrate to low code                    |
+| 0.1.0   | 2022-01-21 | [9515](https://github.com/airbytehq/airbyte/pull/9515)   | 🎉 New Source: PersistIq               |

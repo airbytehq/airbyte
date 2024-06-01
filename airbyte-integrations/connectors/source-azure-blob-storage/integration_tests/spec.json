@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/azure-blob-storage",
   "connectionSpecification": {
-    "title": "Config",
+    "title": "SourceAzureBlobStorageSpec",
     "description": "NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes\nbecause it is responsible for converting legacy Azure Blob Storage v0 configs into v1 configs using the File-Based CDK.",
     "type": "object",
     "properties": {
@@ -369,18 +369,11 @@
           "required": ["name", "format"]
         }
       },
-      "azure_blob_storage_account_name": {
-        "title": "Azure Blob Storage account name",
-        "description": "The account's name of the Azure Blob Storage.",
-        "examples": ["airbyte5storage"],
-        "order": 2,
-        "type": "string"
-      },
       "credentials": {
         "title": "Authentication",
         "description": "Credentials for connecting to the Azure Blob Storage",
         "type": "object",
-        "order": 3,
+        "order": 2,
         "oneOf": [
           {
             "title": "Authenticate via Oauth2",
@@ -452,6 +445,13 @@
           }
         ]
       },
+      "azure_blob_storage_account_name": {
+        "title": "Azure Blob Storage account name",
+        "description": "The account's name of the Azure Blob Storage.",
+        "examples": ["airbyte5storage"],
+        "order": 3,
+        "type": "string"
+      },
       "azure_blob_storage_container_name": {
         "title": "Azure blob storage container (Bucket) Name",
         "description": "The name of the Azure blob storage container.",
@@ -469,8 +469,8 @@
     },
     "required": [
       "streams",
-      "azure_blob_storage_account_name",
       "credentials",
+      "azure_blob_storage_account_name",
       "azure_blob_storage_container_name"
     ]
   },

@@ -80,13 +80,21 @@ https://github.com/airbytehq/airbyte/issues/3549
 4. Enter the name for the BigQuery connector.
 5. For **Project ID**, enter your
    [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
-6. For **Dataset Location**, select the location of your BigQuery dataset. :::warning You cannot
-   change the location later. :::
+6. For **Dataset Location**, select the location of your BigQuery dataset.
+
+:::warning
+You cannot change the location later.
+:::
+
 7. For **Default Dataset ID**, enter the BigQuery
    [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
 8. For **Loading Method**, select [Standard Inserts](#using-insert) or
-   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket). :::tip We recommend using the
-   GCS Staging option. :::
+   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket).
+
+:::tip
+We recommend using the GCS Staging option.
+:::
+
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
    [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
@@ -95,11 +103,13 @@ https://github.com/airbytehq/airbyte/issues/3549
     or **batch** to have
     [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch).
 
-    :::note Interactive queries are executed as soon as possible and count towards daily concurrent
-    quotas and limits, while batch queries are executed as soon as idle resources are available in
-    the BigQuery shared resource pool. If BigQuery hasn't started the query within 24 hours,
-    BigQuery changes the job priority to interactive. Batch queries don't count towards your
-    concurrent rate limit, making it easier to start many queries at once. :::
+:::note
+Interactive queries are executed as soon as possible and count towards daily concurrent
+quotas and limits, while batch queries are executed as soon as idle resources are available in
+the BigQuery shared resource pool. If BigQuery hasn't started the query within 24 hours,
+BigQuery changes the job priority to interactive. Batch queries don't count towards your
+concurrent rate limit, making it easier to start many queries at once.
+:::
 
 11. For **Google BigQuery Client Chunk Size (Optional)**, use the default value of 15 MiB. Later, if
     you see networking or memory management problems with the sync (specifically on the
@@ -210,6 +220,18 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.1   | 2024-05-29 | [38770](https://github.com/airbytehq/airbyte/pull/38770)   | Internal code change (switch to CDK artifact)                                                                                                                   |
+| 2.6.0   | 2024-05-28 | [38359](https://github.com/airbytehq/airbyte/pull/38359)   | Propagate airbyte_meta from sources; add generation_id column                                                                                                   |
+| 2.5.1   | 2024-05-22 | [38591](https://github.com/airbytehq/airbyte/pull/38591)   | Bugfix to include forward-slash when cleaning up stage                                                                                                          |
+| 2.5.0   | 2024-05-22 | [38132](https://github.com/airbytehq/airbyte/pull/38132)   | Major rewrite of existing code, Adapting to CDK changes introduced in [38107](https://github.com/airbytehq/airbyte/pull/38107)                                  |
+| 2.4.20  | 2024-05-13 | [38131](https://github.com/airbytehq/airbyte/pull/38131)   | Cleanup `BigQueryWriteConfig` and reuse `StreamConfig`; Adapt to `StreamConfig` signature changes                                                               |
+| 2.4.19  | 2024-05-10 | [38125](https://github.com/airbytehq/airbyte/pull/38125)   | adopt latest CDK code                                                                                                                                           |
+| 2.4.18  | 2024-05-10 | [38111](https://github.com/airbytehq/airbyte/pull/38111)   | No functional changes, deleting unused code                                                                                                                     |
+| 2.4.17  | 2024-05-09 | [38098](https://github.com/airbytehq/airbyte/pull/38098)   | Internal build structure change                                                                                                                                 |
+| 2.4.16  | 2024-05-08 | [37714](https://github.com/airbytehq/airbyte/pull/37714)   | Adopt CDK 0.34.0                                                                                                                                                |
+| 2.4.15  | 2024-05-07 | [34611](https://github.com/airbytehq/airbyte/pull/34611)   | Adopt CDK 0.33.2                                                                                                                                                |
+| 2.4.14  | 2024-02-25 | [37584](https://github.com/airbytehq/airbyte/pull/37584)   | Remove unused insecure dependencies from CDK                                                                                                                    |
+| 2.4.13  | 2024-02-25 | [36899](https://github.com/airbytehq/airbyte/pull/36899)   | adopt latest CDK                                                                                                                                                |
 | 2.4.12  | 2024-03-04 | [35315](https://github.com/airbytehq/airbyte/pull/35315)   | Adopt CDK 0.23.11                                                                                                                                               |
 | 2.4.11  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569)   | Fix logging bug.                                                                                                                                                |
 | 2.4.10  | 2024-02-15 | [35240](https://github.com/airbytehq/airbyte/pull/35240)   | Adopt CDK 0.20.9                                                                                                                                                |

@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "0.81.4"
 
 definitions:
   schema_loader:
@@ -23,16 +23,14 @@ definitions:
     url_base: "{{ 'https://connect.squareupsandbox.com/v2' if config['is_sandbox'] else 'https://connect.squareup.com/v2' }}"
     http_method: "GET"
     authenticator:
-      class_name: source_square.components.AuthenticatorSquare
-      bearer: "#/definitions/bearer_authenticator"
-      oauth: "#/definitions/oauth_authenticator"
-
-  #    Uncomment this block later. request_headers used to accidentally get overridden but this was fixed in beta release
-  #    However, because expected_records were originally generated with the buggy flow missing these, we need to
-  #    regenerate the expected records. Temporarily commenting it out to retain the old behavior until we do it.
-  #    request_headers:
-  #      Square-Version: "2022-10-19"
-  #      Content-Type: "application/json"
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "auth_type"]
+      authenticators:
+        API Key: "#/definitions/bearer_authenticator"
+        OAuth: "#/definitions/oauth_authenticator"
+    request_headers:
+      Square-Version: "2022-10-19"
+      Content-Type: "application/json"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -329,26 +327,21 @@ definitions:
           field_path: ["loyalty_accounts"]
 
   orders_stream:
+    # ToDo: Improve the efficiency of this stream by grouping location IDs into batches of 10.
     $ref: "#/definitions/base_stream_page_json_limit"
     $parameters:
       name: "orders"
       primary_key: "id"
       path: "/orders/search"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_square.components.SquareSubstreamIncrementalSync
+      type: DatetimeBasedCursor
       start_datetime:
         datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      end_datetime:
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       step: P30D
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       cursor_granularity: "PT0.000001S"
-      parent_stream: "#/definitions/locations_stream"
       cursor_field: "updated_at"
-      parent_key: "id"
     retriever:
       $ref: "#/definitions/base_stream_page_json_limit/retriever"
       requester:
@@ -356,6 +349,20 @@ definitions:
         http_method: "POST"
         request_body_json:
           limit: "{{ 500 }}"
+          filter:
+            date_time_filter:
+              updated_at:
+                start_at: "{{ stream_slice.start_time }}"
+          sort:
+            sort_field: "UPDATED_AT"
+            sort_order: "ASC"
+          location_ids: "{{ [ stream_slice.location_ids ] }}"
+      partition_router:
+        type: "SubstreamPartitionRouter"
+        parent_stream_configs:
+          - stream: "#/definitions/locations_stream"
+            parent_key: "id"
+            partition_field: "location_ids"
 
   bank_accounts_stream:
     $ref: "#/definitions/base_stream"

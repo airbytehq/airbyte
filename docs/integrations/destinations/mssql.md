@@ -115,7 +115,7 @@ Using this feature requires additional configuration, when creating the source. 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2024-04-11 | [\#36050](https://github.com/airbytehq/airbyte/pull/36050) | Update to Dv2 Table Format and Remove normalization                                                 |
 | 0.2.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.1.25  | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                   |

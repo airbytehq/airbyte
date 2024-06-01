@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 3.0.5
+  dockerImageTag: 3.0.9
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
@@ -34,9 +34,7 @@ data:
             impactedScopes:
               ["media_insights", "story_insights", "user_lifetime_insights"]
       2.0.0:
-        message:
-          This release introduces a default primary key for the streams UserLifetimeInsights and UserInsights.
-          Additionally, the format of timestamp fields has been updated in the UserLifetimeInsights, UserInsights, Media and Stories streams to include timezone information.
+        message: This release introduces a default primary key for the streams UserLifetimeInsights and UserInsights. Additionally, the format of timestamp fields has been updated in the UserLifetimeInsights, UserInsights, Media and Stories streams to include timezone information.
         upgradeDeadline: "2023-12-11"
   suggestedStreams:
     streams:
@@ -55,4 +53,20 @@ data:
     sl: 200
     ql: 400
   supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-INSTAGRAM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-INSTAGRAM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

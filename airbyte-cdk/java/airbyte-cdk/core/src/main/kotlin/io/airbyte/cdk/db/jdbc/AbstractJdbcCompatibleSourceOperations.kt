@@ -13,6 +13,7 @@ import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.sql.*
 import java.sql.Date
@@ -21,15 +22,11 @@ import java.time.*
 import java.time.chrono.IsoEra
 import java.time.format.DateTimeParseException
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Source operation skeleton for JDBC compatible databases. */
 abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     JdbcCompatibleSourceOperations<Datatype> {
-
-    private val LOGGER: Logger =
-        LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations::class.java)
 
     @Throws(SQLException::class)
     override fun convertDatabaseRowToAirbyteRecordData(queryContext: ResultSet): AirbyteRecordData {
@@ -47,12 +44,9 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
                 copyToJsonField(queryContext, i, jsonNode)
             } catch (e: java.lang.Exception) {
                 jsonNode.putNull(columnName)
-                LOGGER.info(
-                    "Failed to serialize column: {}, of type {}, with error {}",
-                    columnName,
-                    columnTypeName,
-                    e.message
-                )
+                LOGGER.info {
+                    "Failed to serialize column: $columnName, of type $columnTypeName, with error ${e.message}"
+                }
                 AirbyteTraceMessageUtility.emitAnalyticsTrace(dataTypesSerializationErrorMessage())
                 metaChanges.add(
                     AirbyteRecordMessageMetaChange()
@@ -68,9 +62,9 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         return AirbyteRecordData(jsonNode, AirbyteRecordMessageMeta().withChanges(metaChanges))
     }
     @Throws(SQLException::class)
-    override fun rowToJson(queryContext: ResultSet): JsonNode {
+    override fun rowToJson(queryResult: ResultSet): JsonNode {
         // the first call communicates with the database. after that the result is cached.
-        val columnCount = queryContext.metaData.columnCount
+        val columnCount = queryResult.metaData.columnCount
         val jsonNode = Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode
 
         for (i in 1..columnCount) {
@@ -79,13 +73,13 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             // parsing. if it is null, we can move on. while awkward, this seems to be the agreed
             // upon way of
             // checking for null values with jdbc.
-            queryContext.getObject(i)
-            if (queryContext.wasNull()) {
+            queryResult.getObject(i)
+            if (queryResult.wasNull()) {
                 continue
             }
 
             // convert to java types that will convert into reasonable json.
-            copyToJsonField(queryContext, i, jsonNode)
+            copyToJsonField(queryResult, i, jsonNode)
         }
 
         return jsonNode
@@ -175,7 +169,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getDouble(index) },
-                { d: Double? -> java.lang.Double.isFinite(d!!) },
+                { d: Double -> java.lang.Double.isFinite(d) },
             ),
         )
     }
@@ -191,7 +185,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getFloat(index) },
-                { f: Float? -> java.lang.Float.isFinite(f!!) },
+                { f: Float -> java.lang.Float.isFinite(f) },
             ),
         )
     }
@@ -334,7 +328,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun setBit(
+    protected open fun setBit(
         preparedStatement: PreparedStatement?,
         parameterIndex: Int,
         value: String?

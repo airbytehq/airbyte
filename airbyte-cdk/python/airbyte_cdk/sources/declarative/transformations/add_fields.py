@@ -8,7 +8,7 @@ from typing import Any, List, Mapping, Optional, Type, Union
 import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, FieldPointer, Record, StreamSlice, StreamState
 
 
 @dataclass(frozen=True)

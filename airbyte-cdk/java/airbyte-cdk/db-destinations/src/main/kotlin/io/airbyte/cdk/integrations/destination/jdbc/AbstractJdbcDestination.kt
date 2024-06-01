@@ -38,6 +38,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Minimu
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -45,8 +46,8 @@ import java.util.*
 import java.util.function.Consumer
 import javax.sql.DataSource
 import org.apache.commons.lang3.NotImplementedException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationState>(
     driverClass: String,
@@ -65,8 +66,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         namingResolver,
         sqlOperations
     )
-    protected val configSchemaKey: String
-        get() = "schema"
+    protected open val configSchemaKey: String = "schema"
 
     /**
      * If the destination should always disable type dedupe, override this method to return true. We
@@ -102,7 +102,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(message)
         } catch (e: Exception) {
-            LOGGER.error("Exception while checking connection: ", e)
+            LOGGER.error(e) { "Exception while checking connection: " }
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
@@ -115,7 +115,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             try {
                 close(dataSource)
             } catch (e: Exception) {
-                LOGGER.warn("Unable to close data source.", e)
+                LOGGER.warn(e) { "Unable to close data source." }
             }
         }
     }
@@ -195,6 +195,11 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         database: JdbcDatabase,
         rawTableSchema: String
     ): JdbcDestinationHandler<DestinationState>
+
+    protected open fun getV1V2Migrator(
+        database: JdbcDatabase,
+        databaseName: String
+    ): DestinationV1V2Migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
 
     /**
      * Provide any migrations that the destination needs to run. Most destinations will need to
@@ -306,6 +311,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             typerDeduper,
             getDataTransformer(parsedCatalog, defaultNamespace),
             optimalBatchSizeBytes,
+            parsedCatalog,
         )
     }
 
@@ -317,7 +323,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val sqlGenerator = getSqlGenerator(config)
         val databaseName = getDatabaseName(config)
         val v2TableMigrator = NoopV2TableMigrator()
-        val migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
+        val migrator = getV1V2Migrator(database, databaseName)
         val destinationHandler: DestinationHandler<DestinationState> =
             getDestinationHandler(
                 databaseName,
@@ -358,7 +364,6 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AbstractJdbcDestination::class.java)
 
         const val RAW_SCHEMA_OVERRIDE: String = "raw_data_schema"
 
@@ -372,7 +377,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         @Deprecated("")
         @Throws(Exception::class)
         fun attemptSQLCreateAndDropTableOperations(
-            outputSchema: String?,
+            outputSchema: String,
             database: JdbcDatabase,
             namingResolver: NamingConventionTransformer,
             sqlOps: SqlOperations
@@ -401,7 +406,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         @JvmStatic
         @Throws(Exception::class)
         fun attemptTableOperations(
-            outputSchema: String?,
+            outputSchema: String,
             database: JdbcDatabase,
             namingResolver: NamingConventionTransformer,
             sqlOps: SqlOperations,
@@ -414,8 +419,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 // Get metadata from the database to see whether connection is possible
                 database.bufferedResultSetQuery(
                     { conn: Connection -> conn.metaData.catalogs },
-                    { queryContext: ResultSet? ->
-                        JdbcUtils.defaultSourceOperations.rowToJson(queryContext!!)
+                    { queryContext: ResultSet ->
+                        JdbcUtils.defaultSourceOperations.rowToJson(queryContext)
                     },
                 )
 
@@ -434,7 +439,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     if (attemptInsert) {
                         sqlOps.insertRecords(
                             database,
-                            java.util.List.of(dummyRecord),
+                            listOf(dummyRecord),
                             outputSchema,
                             outputTableName,
                         )

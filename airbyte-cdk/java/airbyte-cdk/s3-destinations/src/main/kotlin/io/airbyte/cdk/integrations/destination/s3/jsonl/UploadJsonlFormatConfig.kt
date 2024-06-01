@@ -12,9 +12,8 @@ import io.airbyte.cdk.integrations.destination.s3.util.CompressionTypeHelper
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening.Companion.fromValue
 import java.util.*
-import lombok.ToString
+import org.apache.commons.lang3.builder.ToStringBuilder
 
-@ToString
 class UploadJsonlFormatConfig(
     val flatteningType: Flattening,
     val compressionType: CompressionType
@@ -49,6 +48,10 @@ class UploadJsonlFormatConfig(
 
     override fun hashCode(): Int {
         return Objects.hash(flatteningType, compressionType)
+    }
+
+    override fun toString(): String {
+        return ToStringBuilder.reflectionToString(this)
     }
 
     companion object {
