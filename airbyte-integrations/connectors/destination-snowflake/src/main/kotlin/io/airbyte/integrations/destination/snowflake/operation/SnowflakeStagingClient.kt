@@ -9,16 +9,16 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.commons.string.Strings
-import io.airbyte.integrations.destination.snowflake.SnowflakeSqlOperations
 import io.airbyte.integrations.destination.snowflake.SnowflakeSqlStagingOperations
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.sql.SQLException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val log = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransformer) :
@@ -31,7 +31,7 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
         )
     }
 
-    fun getStagingPath(connectionId: UUID?, writeDatetime: Instant?): String? {
+    fun getStagingPath(connectionId: UUID?, writeDatetime: Instant?): String {
         // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
         val zonedDateTime = ZonedDateTime.ofInstant(writeDatetime, ZoneOffset.UTC)
         return nameTransformer.applyDefaultCase(
@@ -60,16 +60,13 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
                 uploadRecordsToBucket(database, stageName, stagingPath, recordsData)
                 succeeded = true
             } catch (e: Exception) {
-                LOGGER.error("Failed to upload records into stage {}", stagingPath, e)
+                log.error(e) { "Failed to upload records into stage $stagingPath" }
                 exceptionsThrown.add(e)
             }
             if (!succeeded) {
-                LOGGER.info(
-                    "Retrying to upload records into stage {} ({}/{}})",
-                    stagingPath,
-                    exceptionsThrown.size,
-                    UPLOAD_RETRY_LIMIT
-                )
+                log.info {
+                    "Retrying to upload records into stage $stagingPath (${exceptionsThrown.size}/$UPLOAD_RETRY_LIMIT})"
+                }
             }
         }
         if (!succeeded) {
@@ -80,11 +77,9 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
                 )
             )
         }
-        LOGGER.info(
-            "Successfully loaded records to stage {} with {} re-attempt(s)",
-            stagingPath,
-            exceptionsThrown.size
-        )
+        log.info {
+            "Successfully loaded records to stage $stagingPath with ${exceptionsThrown.size} re-attempt(s)"
+        }
         return recordsData!!.filename
     }
 
@@ -96,15 +91,14 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
         recordsData: SerializableBuffer?
     ) {
         val query = getPutQuery(stageName, stagingPath, recordsData!!.file!!.absolutePath)
-        LOGGER.debug("Executing query: {}", query)
+        log.debug { "Executing query: $query" }
         database!!.execute(query)
         if (!checkStageObjectExists(database, stageName, stagingPath, recordsData.filename)) {
-            LOGGER.error(
-                String.format(
-                    "Failed to upload data into stage, object @%s not found",
-                    (stagingPath + "/" + recordsData.filename).replace("/+".toRegex(), "/")
-                )
-            )
+            log.error {
+                "Failed to upload data into stage, object @${
+                        (stagingPath + "/" + recordsData.filename).replace("/+".toRegex(), "/")
+                    } not found"
+            }
             throw RuntimeException("Upload failed")
         }
     }
@@ -127,7 +121,7 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
         filename: String
     ): Boolean {
         val query = getListQuery(stageName, stagingPath, filename)
-        LOGGER.debug("Executing query: {}", query)
+        log.debug { "Executing query: $query" }
         val result: Boolean
         database!!.unsafeQuery(query).use { stream -> result = stream.findAny().isPresent }
         return result
@@ -149,7 +143,7 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
     @Throws(Exception::class)
     fun createStageIfNotExists(database: JdbcDatabase?, stageName: String?) {
         val query = getCreateStageQuery(stageName)
-        LOGGER.debug("Executing query: {}", query)
+        log.debug { "Executing query: $query" }
         try {
             database!!.execute(query)
         } catch (e: Exception) {
@@ -179,7 +173,7 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
     ) {
         try {
             val query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName)
-            LOGGER.debug("Executing query: {}", query)
+            log.debug { "Executing query: $query" }
             database!!.execute(query)
         } catch (e: SQLException) {
             throw checkForKnownConfigExceptions(e).orElseThrow { e }
@@ -220,7 +214,7 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
     ) {
         try {
             val query = getDropQuery(stageName)
-            LOGGER.debug("Executing query: {}", query)
+            log.debug { "Executing query: $query" }
             database!!.execute(query)
         } catch (e: SQLException) {
             throw checkForKnownConfigExceptions(e).orElseThrow { e }
@@ -276,7 +270,5 @@ class SnowflakeStagingClient(private val nameTransformer: NamingConventionTransf
       """.trimIndent()
         private const val DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;"
         private const val REMOVE_QUERY = "REMOVE @%s;"
-
-        private val LOGGER: Logger = LoggerFactory.getLogger(SnowflakeSqlOperations::class.java)
     }
 }
