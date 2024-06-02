@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.1"
+name = "source-tvmaze-schedule"
+description = "Source implementation for Tvmaze Schedule."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/tvmaze-schedule"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_tvmaze_schedule"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "1.0.0"
+
+[tool.poetry.scripts]
+source-tvmaze-schedule = "source_tvmaze_schedule.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+pytest = "^6.1"
+pytest-mock = "^3.6.1"

@@ -234,6 +234,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withStream(
@@ -280,6 +283,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
@@ -326,7 +332,10 @@ abstract class BaseTypingDedupingTest {
                 .ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
-                        ConfiguredAirbyteStream() // These two lines are literally the only
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0) // These two lines are literally the only
                             // difference between this test and
                             // fullRefreshAppend
                             .withSyncMode(SyncMode.INCREMENTAL)
@@ -375,6 +384,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -424,6 +436,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -460,6 +475,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -545,6 +563,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -593,6 +614,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
@@ -626,6 +650,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -637,6 +664,9 @@ abstract class BaseTypingDedupingTest {
                                     .withJsonSchema(SCHEMA)
                             ),
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -716,6 +746,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -736,6 +769,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -843,6 +879,9 @@ abstract class BaseTypingDedupingTest {
         )
         val configuredStream =
             ConfiguredAirbyteStream()
+                .withSyncId(42)
+                .withGenerationId(43)
+                .withMinimumGenerationId(0)
                 .withSyncMode(SyncMode.INCREMENTAL)
                 .withCursorField(listOf("old_cursor"))
                 .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -921,6 +960,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     listOf(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withStream(
@@ -1111,10 +1153,10 @@ abstract class BaseTypingDedupingTest {
         return Companion.readRecords(filename)
     }
 
-    protected val schema: JsonNode = SCHEMA
+    val schema: JsonNode = SCHEMA
 
     companion object {
-        @JvmField protected val SCHEMA: JsonNode
+        @JvmStatic val SCHEMA: JsonNode
 
         init {
             try {
