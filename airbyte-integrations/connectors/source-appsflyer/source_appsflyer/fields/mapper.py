@@ -135,5 +135,5 @@ field_map = {
     "Blocked Reason Rule": "blocked_reason_rule",
     "Blocked Sub Reason": "blocked_sub_reason",
     "Rejected Reason": "rejected_reason",
-    "Rejected Reason Value": "rejected_reason_value"
+    "Rejected Reason Value": "rejected_reason_value",
 }

@@ -8,7 +8,7 @@ from abc import ABC
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from http import HTTPStatus
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 import pendulum
 import requests
@@ -205,23 +205,18 @@ class RetargetingMixin:
 
 class EventsMixin:
     def find_events(self, header: Sequence[str]) -> List[str]:
-        return [
-            event.replace(" (Unique users)", "").strip()
-            for event in header if " (Unique users)" in event
-        ]
+        return [event.replace(" (Unique users)", "").strip() for event in header if " (Unique users)" in event]
 
     def get_records(self, row: Dict, events: List[str]) -> List[Dict]:
         identifiers = {
-            'Date': 'date',
-            'Agency/PMD (af_prt)': 'af_prt',
-            'Media Source (pid)': 'media_source',
-            'Campaign (c)': 'campaign',
-            'Country': 'country'
+            "Date": "date",
+            "Agency/PMD (af_prt)": "af_prt",
+            "Media Source (pid)": "media_source",
+            "Campaign (c)": "campaign",
+            "Country": "country",
         }
 
-        record = {
-            identifiers[k]: v for k, v in row.items() if k in identifiers.keys()
-        }
+        record = {identifiers[k]: v for k, v in row.items() if k in identifiers.keys()}
 
         for event in events:
             yield {
@@ -278,8 +273,7 @@ class OrganicUninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     additional_fields = additional_fields.uninstall_events
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"raw-data/export/app/{self.app_id}/organic_uninstall_events_report/v5"
 
@@ -304,22 +298,19 @@ class OrganicInstalls(RawDataMixin, IncrementalAppsflyerStream):
 
 class RetargetingInAppEvents(InAppEvents):
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"raw-data/export/app/{self.app_id}/in-app-events-retarget/v5"
 
 
 class RetargetingInstalls(Installs):
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"raw-data/export/app/{self.app_id}/installs-retarget/v5"
 
 
 class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -327,7 +318,6 @@ class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
 
 
 class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -335,7 +325,6 @@ class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
 
 
 class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -414,22 +403,17 @@ class SourceAppsflyer(AbstractSource):
             InAppEvents(authenticator=auth, **config),
             OrganicInAppEvents(authenticator=auth, **config),
             RetargetingInAppEvents(authenticator=auth, **config),
-
             Installs(authenticator=auth, **config),
             OrganicInstalls(authenticator=auth, **config),
             RetargetingInstalls(authenticator=auth, **config),
-
             UninstallEvents(authenticator=auth, **config),
             OrganicUninstallEvents(authenticator=auth, **config),
-
             DailyReport(authenticator=auth, **config),
             RetargetingDailyReport(authenticator=auth, **config),
-
             PartnersReport(authenticator=auth, **config),
             RetargetingPartnersReport(authenticator=auth, **config),
             PartnersEventsReport(authenticator=auth, **config),
             RetargetingPartnersEventsReport(authenticator=auth, **config),
-
             GeoReport(authenticator=auth, **config),
             RetargetingGeoReport(authenticator=auth, **config),
             GeoEventsReport(authenticator=auth, **config),

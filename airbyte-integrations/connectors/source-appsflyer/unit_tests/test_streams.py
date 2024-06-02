@@ -37,14 +37,14 @@ def test_request_params(patch_base_class):
 
 
 @pytest.mark.parametrize(
-    ("main_fields", "return_value", "expected_parsed_object"),
+    ("return_value", "expected_parsed_object"),
     [
-        (("a", "b"), [b"a,b", b"c,d"], [{"a": "c", "b": "d"}]),
-        (("a"), [b"a"], []),
+        ([b"Campaign (c),Date", b"c,d"], [{"campaign": "c", "date": "d"}]),
+        ([b"Date"], []),
     ],
 )
-def test_parse_response(patch_base_class, mocker, main_fields, return_value, expected_parsed_object):
-    mocker.patch.object(AppsflyerStream, "main_fields", main_fields)
+def test_parse_response(patch_base_class, mocker, return_value, expected_parsed_object):
+    mocker.patch.object(AppsflyerStream, "primary_key", "test_primary_key")
     stream = AppsflyerStream()
     response = MagicMock()
     response.iter_lines.return_value = return_value

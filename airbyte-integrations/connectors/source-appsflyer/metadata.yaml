@@ -22,7 +22,7 @@ data:
     breakingChanges:
       0.2.0:
         message: Migrate to V2 AppsFlyer API
-        upgradeDeadline: "2024-05-27"
+        upgradeDeadline: "2024-06-10"
   documentationUrl: https://docs.airbyte.com/integrations/sources/appsflyer
   tags:
     - language:python
