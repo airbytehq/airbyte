@@ -8,7 +8,7 @@ The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 |------------------------------|-----------------------|
 | Raw Data (Non-Organic)       | ✔️ (Except Reinstall) |
 | Raw Data (Organic)           | ✔️ (Except Reinstall) |
-| Retargeting                  | ✔️                    |
+| Raw Data (Retargeting)       | ✔️                    |
 | Ad Revenue                   | ❌                     |
 | Postback                     | ❌                     |
 | Protect360 Fraud             | ❌                     |
