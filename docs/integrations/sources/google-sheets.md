@@ -162,7 +162,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.5.2   | 2024-06-02 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Emit state message at least once per stream                                       |
 | 0.5.1   | 2024-04-11 | [35404](https://github.com/airbytehq/airbyte/pull/35404) | Add `row_batch_size` parameter more granular control read records                 |
 | 0.5.0   | 2024-03-26 | [36515](https://github.com/airbytehq/airbyte/pull/36515) | Resolve poetry dependency conflict, add record counts to state messages           |
 | 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                   |
