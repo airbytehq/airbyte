@@ -1,5 +1,27 @@
 # Facebook Marketing Migration Guide
 
+## Upgrading to 3.1.0
+
+The `AdsInsights` Reports now don't have the possibility to fetch the next root level properties (fields):
+- cost_per_conversion_lead
+- conversion_lead_rate
+
+### Refresh affected AdsInsights Report and clear data:
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Schema** tab. 
+    1. Select **Refresh source schema**. 
+    2. Select **OK** 
+    3. Select **Save changes** at the bottom of the page.
+   :::note
+   Any detected schema changes will be listed for your review.
+   :::
+
+3. Navigate to a connection's **Settings** tab and click **Clear data** to clear all streams. This action will clear data for all streams in the connection. To clear data for a single stream navigate to the **Status** tab,  click the **three grey dots** next to the affected stream, and select **Clear data**. Do this for all affected streams in the connection.
+
+For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
+
 ## Upgrading to 3.0.0
 
 Custom Insights Reports now have updated schema for following breakdowns:
