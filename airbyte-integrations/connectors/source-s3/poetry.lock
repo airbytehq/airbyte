@@ -10,7 +10,7 @@ files = []
 develop = false
 
 [package.dependencies]
-airbyte-protocol-models = ">=0.9.0, <1.0"
+airbyte-protocol-models = {path = "/Users/ella/airbytehq/airbyte-protocol/protocol-models/python"}
 avro = {version = "~1.11.2", optional = true}
 backoff = "*"
 cachetools = "*"
@@ -51,18 +51,17 @@ type = "directory"
 url = "../../../airbyte-cdk/python"
 
 [[package]]
-name = "airbyte-protocol-models"
-version = "0.11.0"
+name = "airbyte_protocol_models"
+version = "0.0.0"
 description = "Declares the Airbyte Protocol."
 optional = false
 python-versions = ">=3.8"
-files = [
-    {file = "airbyte_protocol_models-0.11.0-py3-none-any.whl", hash = "sha256:2157757c1af8c13e471ab6a0304fd2f9a2a6af8cc9173937be1348a9553f7c32"},
-    {file = "airbyte_protocol_models-0.11.0.tar.gz", hash = "sha256:1c7e46251b0d5a292b4aa382df24f415ac2a2a2b4719361b3c0f76368a043c23"},
-]
+files = []
+develop = false
 
-[package.dependencies]
-pydantic = ">=1.9.2,<2.0.0"
+[package.source]
+type = "directory"
+url = "../../../../airbyte-protocol/protocol-models/python"
 
 [[package]]
 name = "atomicwrites"
