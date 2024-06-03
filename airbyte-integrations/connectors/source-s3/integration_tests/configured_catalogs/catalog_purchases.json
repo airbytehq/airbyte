@@ -1,0 +1,43 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "purchases",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "user_id": {
+              "type": ["null", "integer"]
+            },
+            "product_id": {
+              "type": ["null", "integer"]
+            },
+            "returned_at": {
+              "type": ["null", "string"]
+            },
+            "purchased_at": {
+              "type": ["null", "string"]
+            },
+            "added_to_cart_at": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_source_file_last_modified"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

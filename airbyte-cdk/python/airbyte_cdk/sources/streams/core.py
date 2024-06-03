@@ -193,7 +193,8 @@ class Stream(ABC):
                     if checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
                         airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
                         yield airbyte_state_message
-
+                    if record_counter >= 100000:
+                        break
                     if internal_config.is_limit_reached(record_counter):
                         break
             self._observe_state(checkpoint_reader)
