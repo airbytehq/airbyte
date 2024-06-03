@@ -62,7 +62,7 @@ def test_record_filter(filter_template: str, records: List[Mapping], expected_re
     "stream_state, record_filter_expression, expected_record_ids",
     [
         ({}, None, [2, 3]),
-        ({"created_at": "2021-01-03"}, None, [3]),
+        ({"created_at": "2021-01-04"}, None, [3]),
         ({}, "{{ record['id'] % 2 == 1 }}", [3]),
     ],
     ids=["no_stream_state_no_record_filter", "with_stream_state_no_record_filter", "no_stream_state_with_record_filter"]
@@ -148,7 +148,7 @@ def test_client_side_record_filter_decorator_with_parent_stream(stream_state: Op
         ),
     )
     if stream_state:
-        per_partition_cursor.set_initial_state({"states": [{"partition": {"id": "some_parent_id", "parent_slice": {}}, "cursor": {'created_at': '2021-01-03'}}]})
+        per_partition_cursor.set_initial_state({"states": [{"partition": {"id": "some_parent_id", "parent_slice": {}}, "cursor": {'created_at': '2021-01-04'}}]})
     record_filter_decorator = ClientSideIncrementalRecordFilterDecorator(
         config={},
         parameters={},

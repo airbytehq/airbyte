@@ -64,11 +64,13 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
 
     @property
     def _end_datetime(self) -> datetime.datetime:
-        return (
-            self._date_time_based_cursor._end_datetime.get_datetime(self._date_time_based_cursor.config)
-            if self._date_time_based_cursor._end_datetime
-            else datetime.datetime.max
-        )
+        if self._date_time_based_cursor._end_datetime:
+            end_datetime = self._date_time_based_cursor._end_datetime.get_datetime(self._date_time_based_cursor.config)
+        else:
+            end_datetime = datetime.datetime.now(tz=None)
+            if "%z" in self._date_time_based_cursor.datetime_format.lower():
+                end_datetime = end_datetime.replace(tzinfo=datetime.timezone.utc)
+        return end_datetime
 
     def filter_records(
         self,
@@ -82,7 +84,7 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
         records = (
             record
             for record in records
-            if self._end_datetime > self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date
+            if self._end_datetime >= self._date_time_based_cursor.parse_date(record[self._cursor_field]) >= filter_date
         )
         if self.condition:
             records = super().filter_records(
