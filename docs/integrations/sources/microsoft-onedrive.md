@@ -123,7 +123,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 0.2.2   | 2024-06-03 | [](https://github.com/airbytehq/airbyte/pull/) | Bump `python-cdk` version to use unstructured document format |                                                                                                                           
+| 0.2.2   | 2024-06-03 | [38904](https://github.com/airbytehq/airbyte/pull/38904) | Bump `python-cdk` version to use unstructured document format |                                                                                                                           
 | 0.2.1   | 2024-05-29 | [38676](https://github.com/airbytehq/airbyte/pull/38676) | Avoid error on empty stream when running discover                                               |
 | 0.2.0   | 2024-03-12 | [35849](https://github.com/airbytehq/airbyte/pull/35849) | Add fetching shared items                                                                       |
 | 0.1.9   | 2024-03-11 | [35956](https://github.com/airbytehq/airbyte/pull/35956) | Pin `transformers` transitive dependency                                                        |

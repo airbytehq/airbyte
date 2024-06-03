@@ -243,7 +243,7 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.4.4   | 2024-06-03 | [](https://github.com/airbytehq/airbyte/pull/) | Bump `python-cdk` version to use unstructured document format                                  |
+| 0.4.4   | 2024-06-03 | [38904](https://github.com/airbytehq/airbyte/pull/38904) | Bump `python-cdk` version to use unstructured document format                                  |
 | 0.4.3   | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover                                            |
 | 0.4.2   | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification                                                                         |
 | 0.4.1   | 2024-04-22 | [37467](https://github.com/airbytehq/airbyte/pull/37467) | Fix start date filter                                                                        |
