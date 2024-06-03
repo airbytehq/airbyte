@@ -32,8 +32,7 @@ The Oracle connector is currently in Alpha on Airbyte Cloud. Only TLS encrypted 
 
 To use the Oracle destination, you'll need:
 
-- An Oracle server version 18 or above
-- It's possible to use Oracle 12+ but you need to configure the table name length to 120 chars.
+- An Oracle server version 21 or above
 
 #### Network Access
 
