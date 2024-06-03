@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from anyio import Semaphore
 
 
-class CheckIsInlineCandidate(Step):
+class CheckIsMigrationCandidate(Step):
     """Check if the connector is a candidate to get replace the AirbyteLogger.
     Candidate conditions:
     - The connector is a Python connector.
@@ -95,7 +95,7 @@ async def run_connector_migrate_to_logging_logger_pipeline(context: ConnectorCon
 
     steps_to_run: STEP_TREE = []
 
-    steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LOGGER_CANDIDATE, step=CheckIsInlineCandidate(context))])
+    steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LOGGER_CANDIDATE, step=CheckIsMigrationCandidate(context))])
 
     steps_to_run.append(
         [
