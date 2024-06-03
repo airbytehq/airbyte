@@ -132,8 +132,7 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
         current_state = self.state or {}
         try:
             for record in super().read_records(sync_mode, cursor_field, stream_slice, current_state):
-                current_state = self._get_updated_state(current_state, record)
-                self.state = current_state
+                self.state = self._get_updated_state(current_state, record)
                 yield record
 
         except KlaviyoBackoffError as e:
