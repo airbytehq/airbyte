@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Union
+from typing import Any, Mapping, Union, Iterable
 
 import requests
 
@@ -16,7 +16,7 @@ class Decoder:
     """
 
     @abstractmethod
-    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List[Any]]:
+    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], Iterable[Mapping[str, Any]]]:
         """
         Decodes a requests.Response into a Mapping[str, Any] or an array
         :param response: the response to decode
