@@ -247,9 +247,6 @@ definitions:
             partition_field: id
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_mailchimp.components.MailChimpRecordFilter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
@@ -261,6 +258,7 @@ definitions:
         datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       lookback_window: PT0.1S
+      is_client_side_incremental: true
     transformations:
       - type: AddFields
         fields:
@@ -289,9 +287,6 @@ definitions:
             partition_field: id
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_mailchimp.components.MailChimpRecordFilter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
@@ -303,6 +298,7 @@ definitions:
         datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       lookback_window: PT0.1S
+      is_client_side_incremental: true
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
     $parameters:

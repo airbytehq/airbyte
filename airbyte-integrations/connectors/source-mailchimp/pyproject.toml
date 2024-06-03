@@ -17,7 +17,7 @@ include = "source_mailchimp"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.85.0"
+airbyte-cdk = "*"
 pytest = "==6.2.5"
 
 [tool.poetry.scripts]
