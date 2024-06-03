@@ -74,6 +74,7 @@ You should now have all the requirements needed to configure Chroma as a destina
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.0.11 | 2024-06-03 | [38903](https://github.com/airbytehq/airbyte/pull/38903) | Replace AirbyteLogger with logging.Logger |
 | 0.0.10  | 2024-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Updated CDK & pytest version to fix security vulnerabilities |
 | 0.0.9   | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                        |
 | 0.0.8   | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                      |
