@@ -29,7 +29,7 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
     @property
     def state(self):
         return self._state
-    
+
     @state.setter
     def state(self, value):
         self._state = value
@@ -38,7 +38,7 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
         super().__init__(**kwargs)
         self._api_key = api_key
         self._start_ts = start_date
-        if not hasattr(self, '_state'):
+        if not hasattr(self, "_state"):
             self._state = {}
 
     @property
@@ -128,7 +128,7 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        
+
         current_state = self.state or {}
         try:
             for record in super().read_records(sync_mode, cursor_field, stream_slice, current_state):
