@@ -11,7 +11,6 @@ import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGen
 import io.airbyte.cdk.integrations.destination.staging.StagingOperations
 import io.airbyte.commons.json.Jsons.jsonNode
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import java.util.Map
 
 abstract class SnowflakeSqlStagingOperations : SnowflakeSqlOperations(), StagingOperations {
     /**
@@ -37,7 +36,7 @@ abstract class SnowflakeSqlStagingOperations : SnowflakeSqlOperations(), Staging
         // create a dummy stream\records that will bed used to test uploading
         csvSerializedBuffer.accept(
             AirbyteRecordMessage()
-                .withData(jsonNode(Map.of("testKey", "testValue")))
+                .withData(jsonNode(mapOf("testKey" to "testValue")))
                 .withEmittedAt(System.currentTimeMillis())
         )
         csvSerializedBuffer.flush()

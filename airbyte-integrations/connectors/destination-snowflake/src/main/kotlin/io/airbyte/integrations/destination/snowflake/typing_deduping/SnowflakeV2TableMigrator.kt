@@ -17,7 +17,6 @@ import io.airbyte.integrations.destination.snowflake.SnowflakeDestination
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.SQLException
 import java.util.*
-import java.util.List
 import kotlin.collections.LinkedHashMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -76,7 +75,7 @@ class SnowflakeV2TableMigrator(
             SnowflakeDestinationHandler.Companion.findExistingTables(
                 database,
                 databaseName,
-                List.of<StreamId>(id)
+                listOf(id)
             )
         if (
             existingTableMap.containsKey(id.finalNamespace) &&
