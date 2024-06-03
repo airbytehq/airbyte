@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.6.2
   dockerRepository: airbyte/source-snapchat-marketing
   githubIssueLabel: source-snapchat-marketing
   icon: snapchat.svg
@@ -33,4 +33,13 @@ data:
     sl: 200
     ql: 400
   supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_SNAPCHAT_MARKETING_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

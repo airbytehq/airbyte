@@ -63,6 +63,7 @@ STORAGE_DRIVER = "fuse-overlayfs"
 SETUP_PY_FILE_PATH = "setup.py"
 DEFAULT_PYTHON_PACKAGE_REGISTRY_URL = "https://upload.pypi.org/legacy/"
 DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL = "https://pypi.org/pypi"
+MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS = "airbyte-connector-testing-secret-store"
 
 
 class CIContext(str, Enum):

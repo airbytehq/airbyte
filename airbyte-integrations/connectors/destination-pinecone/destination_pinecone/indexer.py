@@ -137,7 +137,9 @@ class PineconeIndexer(Indexer):
         for batch in serial_batches:
             async_results = []
             for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE):
-                async_result = self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
+                async_result = self.pinecone_index.upsert(
+                    vectors=ids_vectors_chunk, async_req=True, show_progress=False, namespace=namespace
+                )
                 async_results.append(async_result)
             # Wait for and retrieve responses (this raises in case of error)
             [async_result.result() for async_result in async_results]

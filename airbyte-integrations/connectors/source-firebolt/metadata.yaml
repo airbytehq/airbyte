@@ -36,4 +36,20 @@ data:
       2.0.0:
         message: "Use new firebolt-sdk version."
         upgradeDeadline: "2024-06-01"
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-FIREBOLT_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FIREBOLT_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
