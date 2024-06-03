@@ -185,6 +185,18 @@ class CustomRetriever(BaseModel):
         examples=['source_railz.components.MyCustomRetriever'],
         title='Class Name',
     )
+    partition_router: Optional[
+        Union[
+            CustomPartitionRouter,
+            ListPartitionRouter,
+            SubstreamPartitionRouter,
+            List[Union[CustomPartitionRouter, ListPartitionRouter, SubstreamPartitionRouter]],
+        ]
+    ] = Field(
+        [],
+        description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
+        title='Partition Router',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
