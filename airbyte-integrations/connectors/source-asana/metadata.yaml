@@ -33,7 +33,7 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-ASANA__CREDS
+        - name: SECRET_SOURCE-ASANA-PERSONAL-TOKEN__CREDS
           fileName: config.json
           secretStore:
             type: GSM
