@@ -5,8 +5,8 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional
 
-import dpath.exceptions
 import dpath
+import dpath.exceptions
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, FieldPointer, StreamSlice, StreamState

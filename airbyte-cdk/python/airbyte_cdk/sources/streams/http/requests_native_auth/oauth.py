@@ -154,9 +154,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             message_repository (MessageRepository): the message repository used to emit logs on HTTP requests and control message on config update
         """
         self._client_id = client_id if client_id is not None else dpath.get(connector_config, ("credentials", "client_id"))
-        self._client_secret = (
-            client_secret if client_secret is not None else dpath.get(connector_config, ("credentials", "client_secret"))
-        )
+        self._client_secret = client_secret if client_secret is not None else dpath.get(connector_config, ("credentials", "client_secret"))
         self._access_token_config_path = access_token_config_path
         self._refresh_token_config_path = refresh_token_config_path
         self._token_expiry_date_config_path = token_expiry_date_config_path
