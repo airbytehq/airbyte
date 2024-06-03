@@ -73,7 +73,7 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class RedshiftStagingS3Destination :
+class RedshiftDestination :
     AbstractJdbcDestination<RedshiftState>(
         DRIVER_CLASS,
         RedshiftSQLNameTransformer(),
@@ -355,8 +355,7 @@ class RedshiftStagingS3Destination :
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(RedshiftStagingS3Destination::class.java)
+        private val LOGGER: Logger = LoggerFactory.getLogger(RedshiftDestination::class.java)
 
         val DRIVER_CLASS: String = DatabaseDriver.REDSHIFT.driverClassName
         val SSL_JDBC_PARAMETERS: Map<String, String> =
@@ -369,7 +368,7 @@ class RedshiftStagingS3Destination :
 
         private fun sshWrappedDestination(): Destination {
             return SshWrappedDestination(
-                RedshiftStagingS3Destination(),
+                RedshiftDestination(),
                 JdbcUtils.HOST_LIST_KEY,
                 JdbcUtils.PORT_LIST_KEY
             )
@@ -409,9 +408,9 @@ class RedshiftStagingS3Destination :
         @JvmStatic
         fun main(args: Array<String>) {
             val destination: Destination = sshWrappedDestination()
-            LOGGER.info("starting destination: {}", RedshiftStagingS3Destination::class.java)
+            LOGGER.info("starting destination: {}", RedshiftDestination::class.java)
             IntegrationRunner(destination).run(args)
-            LOGGER.info("completed destination: {}", RedshiftStagingS3Destination::class.java)
+            LOGGER.info("completed destination: {}", RedshiftDestination::class.java)
         }
     }
 }

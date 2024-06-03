@@ -22,11 +22,13 @@ import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.TestingNamespaces;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.List;
@@ -90,7 +92,11 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
     return objectMapper.convertValue(json, new TypeReference<>() {});
   }
 
-  public abstract JsonNode getStaticConfig() throws IOException;
+  public JsonNode getStaticConfig() throws IOException {
+    final Path configPath = Path.of("secrets/config_staging.json");
+    final String configAsString = IOs.readFile(configPath);
+    return Jsons.deserialize(configAsString);
+  }
 
   @Override
   protected JsonNode getFailCheckConfig() {
@@ -146,7 +152,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   private Database createDatabaseFromConfig(final JsonNode config) {
     connection = ConnectionFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        RedshiftStagingS3Destination.Companion.getSSL_JDBC_PARAMETERS(),
+        RedshiftDestination.Companion.getSSL_JDBC_PARAMETERS(),
         String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
