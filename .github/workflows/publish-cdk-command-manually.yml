@@ -313,8 +313,8 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          commit-message: Updating CDK version following release
-          title: Updating CDK version following release
+          commit-message: "chore: update CDK version following release"
+          title: "chore: update CDK version following release"
           body: This is an automatically generated PR triggered by a CDK release
           branch: automatic-cdk-release
           base: master
