@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, Union
 
-import dpath.util
+import dpath
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -71,9 +71,9 @@ class DpathExtractor(RecordExtractor):
         else:
             path = [path.eval(self.config) for path in self._field_path]
             if "*" in path:
-                extracted = dpath.util.values(response_body, path)
+                extracted = dpath.values(response_body, path)
             else:
-                extracted = dpath.util.get(response_body, path, default=[])
+                extracted = dpath.get(response_body, path, default=[])
         if isinstance(extracted, list):
             yield from extracted
         elif extracted:
