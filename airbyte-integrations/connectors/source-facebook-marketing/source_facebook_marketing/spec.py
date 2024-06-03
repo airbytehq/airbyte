@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import logging
 from datetime import datetime, timezone
 from enum import Enum
@@ -17,7 +16,12 @@ from pydantic import BaseModel, Field, PositiveInt, constr
 logger = logging.getLogger("airbyte")
 
 
-ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
+# Those fields were removed as there were causing `Tried accessing nonexisting field on node type` error from Meta
+# For more information, see https://github.com/airbytehq/airbyte/pull/38860
+_REMOVED_FIELDS = ["conversion_lead_rate", "cost_per_conversion_lead"]
+adjusted_ads_insights_fields = {key: value for key, value in AdsInsights.Field.__dict__.items() if key not in _REMOVED_FIELDS}
+ValidFields = Enum("ValidEnums", adjusted_ads_insights_fields)
+
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
