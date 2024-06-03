@@ -90,7 +90,7 @@ All other streams contain an `id` primary key.
 ## Data type mapping
 
 | Integration Type     | Airbyte Type              | Notes                                                                               |
-| :------------------- | :------------------------ | :---------------------------------------------------------------------------------- |
+|:---------------------|:--------------------------|:------------------------------------------------------------------------------------|
 | `array`              | `array`                   | the type of elements in the array is determined based on the mappings in this table |
 | `string`             | `string`                  |                                                                                     |
 | `float`, `number`    | `number`                  |                                                                                     |
@@ -122,7 +122,8 @@ Now that you have set up the Mailchimp source connector, check out the following
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
-| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 2.0.4   | 2024-06-03 | [38868](https://github.com/airbytehq/airbyte/pull/38868) | Refactor:  use `client_side_incremental` feature                           |
 | 2.0.3   | 2024-05-02 | [36649](https://github.com/airbytehq/airbyte/pull/36649) | Schema descriptions                                                        |
 | 2.0.2   | 2024-04-25 | [37572](https://github.com/airbytehq/airbyte/pull/37572) | Fixed `start_date` format issue for the `email_activity` stream            |
 | 2.0.1   | 2024-04-19 | [37434](https://github.com/airbytehq/airbyte/pull/37434) | Fixed cursor format for the `email_activity` stream                        |
