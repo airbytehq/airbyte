@@ -30,6 +30,12 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
             datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
         ),
         (
+                "test_parse_timestamp",
+                "1675092508.873709",
+                "%float_s",
+                datetime.datetime(2023, 1, 30, 15, 28, 28, 873709, tzinfo=datetime.timezone.utc),
+        ),
+        (
             "test_parse_timestamp",
             "1609459200001",
             "%ms",
