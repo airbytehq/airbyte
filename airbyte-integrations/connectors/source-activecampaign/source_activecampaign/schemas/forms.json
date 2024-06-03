@@ -238,8 +238,8 @@
     },
     "defaultscreenshot": {
       "type": ["string", "null"],
-      "default": "http://img-us1.com/default-form.gif",
-      "examples": ["http://img-us1.com/default-form.gif"]
+      "default": "https://img-us1.com/default-form.gif",
+      "examples": ["https://img-us1.com/default-form.gif"]
     },
     "recent": {
       "type": "array"
