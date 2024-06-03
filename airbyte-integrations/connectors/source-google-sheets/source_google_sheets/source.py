@@ -178,7 +178,7 @@ class SourceGoogleSheets(Source):
             if not is_valid:
                 logger.info(f"Skipping syncing sheet {sheet}: {reason}")
                 yield self._checkpoint_state(checkpoint_reader.get_checkpoint(), state_manager, sheet, None)
-                yield as_airbyte_message(stream, AirbyteStreamStatus.COMPLETE)
+                yield as_airbyte_message(stream, AirbyteStreamStatus.INCOMPLETE)
                 continue
 
             column_index_to_name = sheet_to_column_index_to_name[sheet]
