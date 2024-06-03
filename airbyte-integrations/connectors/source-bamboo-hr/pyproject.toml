@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.6"
+version = "0.3.0"
 name = "source-bamboo-hr"
 description = "Source implementation for Bamboo Hr."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -12,18 +12,16 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/bamboo-hr"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-[[tool.poetry.packages]]
-include = "source_bamboo_hr"
+packages = [ { include = "source_bamboo_hr" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
-PyBambooHR = "==0.8.1"
+airbyte-cdk = "^1"
 
 [tool.poetry.scripts]
 source-bamboo-hr = "source_bamboo_hr.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.6.1"
-requests-mock = "^1.9.3"
-pytest = "^6.1"
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"

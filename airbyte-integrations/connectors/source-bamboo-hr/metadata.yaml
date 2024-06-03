@@ -1,4 +1,7 @@
 data:
+  allowedHosts:
+    hosts:
+      - api.bamboohr.com
   ab_internal:
     ql: 200
     sl: 100
@@ -7,12 +10,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 90916976-a132-4ce9-8bce-82a03dd58788
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-bamboo-hr
   documentationUrl: https://docs.airbyte.com/integrations/sources/bamboo-hr
   githubIssueLabel: source-bamboo-hr
   icon: bamboohr.svg
   license: MIT
+  releaseDate: 2021-08-27
   name: BambooHR
   registries:
     cloud:
@@ -27,7 +31,7 @@ data:
   supportLevel: community
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests
