@@ -1,2 +1,4 @@
 -e ../../bases/source-acceptance-test
 -e .
+pandas
+openpyxl

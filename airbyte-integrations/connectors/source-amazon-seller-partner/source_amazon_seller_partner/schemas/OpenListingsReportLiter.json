@@ -1,0 +1,26 @@
+{
+    "title": "Open Listings Report Liter",
+    "description": "An active listings report that contains only the SKU and Quantity fields for items that have a quantity greater than zero.",
+    "type": "object",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "source_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "seller-sku": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "quantity": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

@@ -97,7 +97,8 @@ def is_object(property_type) -> bool:
 
 
 def is_airbyte_column(name: str) -> bool:
-    return name.startswith("_airbyte_")
+    return name.startswith("_daspire_") or name.startswith("_airbyte_")
+
 
 
 def is_simple_property(definition: dict) -> bool:

@@ -4,43 +4,9 @@ connectionSpecification:
   title: Amazon Ads Spec
   type: object
   properties:
-    auth_type:
-      title: Auth Type
-      const: oauth2.0
-      order: 1
-      type: string
-    source_name:
-      title: Source Identifier (Optional)
-      description:  The identification to help you identify your Amazon Ads source in Daspire.
-      order: 1
-      type: string
-    client_id:
-      title: Client ID
-      description:
-        The client ID of your Amazon Ads developer application. See the
-        <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a>
-        for more information.
-      order: 2
-      type: string
-    client_secret:
-      title: Client Secret
-      description:
-        The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.
-      airbyte_secret: true
-      order: 3
-      type: string
-    refresh_token:
-      title: Refresh Token
-      description:
-        Amazon Ads refresh token. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens\">docs</a> for more information on how to obtain this token.
-      airbyte_secret: true
-      order: 4
-      type: string
     region:
       title: Region *
-      description:
-        Region to pull data from (EU/NA/FE). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a>
-        for more details.
+      description: Region to pull data from (EU/NA/FE). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a> for more details.
       enum:
         - NA
         - EU
@@ -48,46 +14,28 @@ connectionSpecification:
       type: string
       default: NA
       order: 0
-    report_wait_timeout:
-      title: Report Wait Timeout
-      description: Maximum number of minutes the integration will wait for the generation of a report for profiles. Default is 60 minutes.
-      default: 60
-      examples:
-        - 60
-        - 120
-      order: 5
-      type: integer
-    report_generation_max_retries:
-      title: Report Generation Maximum Retries
-      description:
-        Maximum retries Daspire will attempt for fetching report data. Default is 5.
-      default: 5
-      examples:
-        - 5
-        - 10
-        - 15
-      order: 6
-      type: integer
-    start_date:
-      title: Start Date (Optional)
-      format: date
-      pattern: ^[0-9]{4}
-      description:
-        The Start date for syncing data, should not be more than 60 days in the past. In YYYY-MM-DD format.
-      examples:
-        - "2022-10-10"
-        - "2022-10-22"
-      order: 7
+    auth_type:
+      title: Auth Type
+      const: oauth2.0
+      order: 1
       type: string
-    profiles:
-      title: Profile IDs (Optional)
-      description:
-        Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a>
-        for more details.
-      order: 9
-      type: array
-      items:
-        type: integer
+    client_id:
+      title: Client ID
+      description: The client ID of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.
+      order: 2
+      type: string
+    client_secret:
+      title: Client Secret
+      description: The client secret of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.
+      airbyte_secret: true
+      order: 3
+      type: string
+    refresh_token:
+      title: Refresh Token
+      description: Amazon Ads refresh token. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens">docs</a> for more information on how to obtain this token.
+      airbyte_secret: true
+      order: 4
+      type: string
   required:
     - client_id
     - client_secret
@@ -135,3 +83,8 @@ advanced_auth:
           type: string
           path_in_connector_config:
             - region
+      
+
+
+
+

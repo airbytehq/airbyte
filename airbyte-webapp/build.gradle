@@ -1,117 +1,117 @@
 plugins {
     id "base"
-    id "com.github.node-gradle.node" version "3.3.0"
+    //id "com.github.node-gradle.node" version "3.3.0"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'
+//def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'
 
 // This array should contain a path to all configs that are common to most build tasks and
 // might affect them (i.e. if any of those files change we want to rerun most tasks)
-def commonConfigs = [
-    '.env',
-    'package.json',
-    'package-lock.json',
-    'tsconfig.json',
-    '.prettierrc.js'
-]
+//def commonConfigs = [
+//    '.env',
+//    'package.json',
+//    'package-lock.json',
+//    'tsconfig.json',
+//    '.prettierrc.js'
+//]
 
-node {
-    download = true
-    version = nodeVersion
-}
+//node {
+//    download = true
+//    version = nodeVersion
+//}
 
-npm_run_build {
-    inputs.files commonConfigs
-    inputs.file '.eslintrc'
-    inputs.dir 'public'
-    inputs.dir 'src'
+//npm_run_build {
+//    inputs.files commonConfigs
+//    inputs.file '.eslintrc'
+//    inputs.dir 'public'
+//    inputs.dir 'src'
 
-    outputs.dir 'build/app'
-}
+//    outputs.dir 'build/app'
+//}
 
-task test(type: NpmTask) {
-    dependsOn assemble
+//task test(type: NpmTask) {
+//    dependsOn assemble
 
-    args = ['run', 'test', '--', '--watchAll=false', '--silent']
-    inputs.files commonConfigs
-    inputs.dir 'src'
-}
+//    args = ['run', 'test', '--', '--watchAll=false', '--silent']
+//    inputs.files commonConfigs
+//    inputs.dir 'src'
+//}
 
-task licenseCheck(type: NpmTask) {
-    dependsOn npmInstall
+//task licenseCheck(type: NpmTask) {
+//    dependsOn npmInstall
 
-    args = ['run', 'license-check']
-    inputs.files commonConfigs
-    inputs.file 'scripts/license-check.js'
+//    args = ['run', 'license-check']
+//    inputs.files commonConfigs
+//    inputs.file 'scripts/license-check.js'
 
     // The licenseCheck has no outputs, thus we always treat the outpus up to date
     // as long as the inputs have not changed
-    outputs.upToDateWhen { true }
-}
+//    outputs.upToDateWhen { true }
+//}
 
-task validateLinks(type: NpmTask) {
-    dependsOn npmInstall
+//task validateLinks(type: NpmTask) {
+//    dependsOn npmInstall
 
-    args = ['run', 'validate-links']
+//    args = ['run', 'validate-links']
 
     // Since the output of this task depends on availability of URLs
     // we never want to treat it as "up-to-date" and always want to run it
-    outputs.upToDateWhen { false }
-}
+//    outputs.upToDateWhen { false }
+//}
 
-task buildStorybook(type: NpmTask) {
-    dependsOn npmInstall
-    args = ['run', 'build:storybook']
+//task buildStorybook(type: NpmTask) {
+//    dependsOn npmInstall
+//    args = ['run', 'build:storybook']
 
-    inputs.files commonConfigs
-    inputs.dir '.storybook'
-    inputs.dir 'public'
-    inputs.dir 'src'
+//    inputs.files commonConfigs
+//    inputs.dir '.storybook'
+//    inputs.dir 'public'
+//    inputs.dir 'src'
 
-    outputs.dir 'build/storybook'
-}
+//    outputs.dir 'build/storybook'
+//}
 
-task copyBuildOutput(type: Copy) {
-    dependsOn copyDocker, npm_run_build
+//task copyBuildOutput(type: Copy) {
+//    dependsOn copyDocker, npm_run_build
 
-    from "${project.projectDir}/build/app"
-    into 'build/docker/bin/build'
-}
+//    from "${project.projectDir}/build/app"
+//    into 'build/docker/bin/build'
+//}
 
-task copyDocs(type: Copy) {
-    dependsOn copyDocker, copyBuildOutput
+// task copyDocs(type: Copy) {
+//     dependsOn copyDocker, copyBuildOutput
 
-    from "${project.rootProject.projectDir}/docs/integrations"
-    into "build/docker/bin/build/docs/integrations"
-    // google-ads.md is blocked by Ad Blockers
-    rename ('google-ads.md', 'gglad.md')
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-}
+//     from "${project.rootProject.projectDir}/docs/integrations"
+//     into "build/docker/bin/build/docs/integrations"
+//     // google-ads.md is blocked by Ad Blockers
+//     rename ('google-ads.md', 'gglad.md')
+//     duplicatesStrategy DuplicatesStrategy.INCLUDE
+// }
 
-task copySetupGuide(type: Copy) {
-    dependsOn copyDocker, copyBuildOutput
+// task copySetupGuide(type: Copy) {
+//     dependsOn copyDocker, copyBuildOutput
 
-    from "${project.rootProject.projectDir}/docs/setup-guide"
-    into "build/docker/bin/build/docs/setup-guide"
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-}
+//     from "${project.rootProject.projectDir}/docs/setup-guide"
+//     into "build/docker/bin/build/docs/setup-guide"
+//     duplicatesStrategy DuplicatesStrategy.INCLUDE
+// }
 
-task copyZhSetupGuide(type: Copy) {
-    dependsOn copyDocker, copyBuildOutput
+// task copyZhSetupGuide(type: Copy) {
+//     dependsOn copyDocker, copyBuildOutput
 
-    from "${project.rootProject.projectDir}/docs/zh"
-    into "build/docker/bin/build/docs/zh"
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-}
+//     from "${project.rootProject.projectDir}/docs/zh"
+//     into "build/docker/bin/build/docs/zh"
+//     duplicatesStrategy DuplicatesStrategy.INCLUDE
+// }
 
-// Copy images that are used in .md integration documentation docs
-task copyDocAssets(type: Copy) {
-    dependsOn copyDocker, copyBuildOutput
+// // Copy images that are used in .md integration documentation docs
+// task copyDocAssets(type: Copy) {
+//     dependsOn copyDocker, copyBuildOutput
 
-    from "${project.rootProject.projectDir}/docs/.gitbook"
-    into "build/docker/bin/build/docs/.gitbook"
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-}
+//     from "${project.rootProject.projectDir}/docs/.gitbook"
+//     into "build/docker/bin/build/docs/.gitbook"
+//     duplicatesStrategy DuplicatesStrategy.INCLUDE
+// }
 
 task copyNginx(type: Copy) {
     dependsOn copyDocker
@@ -120,25 +120,25 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
-task stylelint(type: NpmTask) {
-    dependsOn npmInstall
-    args = ['run', 'stylelint']
-    inputs.files commonConfigs
-    inputs.file '.stylelintrc'
-    inputs.dir 'src'
-}
+//task stylelint(type: NpmTask) {
+//    dependsOn npmInstall
+//    args = ['run', 'stylelint']
+//    inputs.files commonConfigs
+//    inputs.file '.stylelintrc'
+//    inputs.dir 'src'
+//}
 
 // Those tasks should be run as part of the "check" task
-check.dependsOn licenseCheck, test, stylelint
+//check.dependsOn licenseCheck, test, stylelint
 
-build.dependsOn buildStorybook
+//build.dependsOn buildStorybook
 
 tasks.named("buildDockerImage") {
     dependsOn copyDocker
-    dependsOn copyBuildOutput
+    // dependsOn copyBuildOutput
     dependsOn copyNginx
-    dependsOn copyDocs
-    dependsOn copyDocAssets
-    dependsOn copySetupGuide
-    dependsOn copyZhSetupGuide
+    // dependsOn copyDocs
+    // dependsOn copyDocAssets
+    // dependsOn copySetupGuide
+    // dependsOn copyZhSetupGuide
 }

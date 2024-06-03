@@ -1,0 +1,104 @@
+{
+    "title": "Referral Fee Discounts Report",
+    "description": "Contains a summary of the seller's fee discounts.",
+    "type": "object",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "source_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Promotion type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Marketplace": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "ASIN": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "SKU": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Product name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Current price": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Referral Fee at current price": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Target price": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Referral Fee at target price": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Discount amount": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Discount type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Discount start date": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Discount end date": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Buy Box price": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Description": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

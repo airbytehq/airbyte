@@ -12,7 +12,7 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=["airbyte-cdk", "pyyaml", "jinja2", "types-PyYAML"],
+    install_requires=["airbyte-cdk", "pyyaml", "jinja2", "types-PyYAML", "pydantic<1.9"],
     package_data={"": ["*.yml"]},
     setup_requires=["pytest-runner"],
     entry_points={

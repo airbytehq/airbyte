@@ -1,97 +1,26 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
-  "connectionSpecification": {
-    "title": "Amazon Ads Spec",
-    "type": "object",
-    "properties": {
-      "auth_type": {
-        "title": "Auth Type",
-        "const": "oauth2.0",
-        "order": 0,
-        "type": "string"
-      },
-      "client_id": {
-        "title": "Client ID",
-        "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
-        "order": 1,
-        "type": "string"
-      },
-      "client_secret": {
-        "title": "Client Secret",
-        "description": "The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
-        "airbyte_secret": true,
-        "order": 2,
-        "type": "string"
-      },
-      "refresh_token": {
-        "title": "Refresh Token",
-        "description": "Amazon Ads refresh token. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens\">docs</a> for more information on how to obtain this token.",
-        "airbyte_secret": true,
-        "order": 3,
-        "type": "string"
-      },
-      "region": {
-        "title": "Region *",
-        "description": "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
-        "enum": ["NA", "EU", "FE"],
-        "type": "string",
-        "default": "NA",
-        "order": 4
-      },
-      "report_wait_timeout": {
-        "title": "Report Wait Timeout *",
-        "description": "Timeout duration in minutes for Reports. Default is 60 minutes.",
-        "default": 60,
-        "examples": [60, 120],
-        "order": 5,
-        "type": "integer"
-      },
-      "report_generation_max_retries": {
-        "title": "Report Generation Maximum Retries *",
-        "description": "Maximum retries Airbyte will attempt for fetching report data. Default is 5.",
-        "default": 5,
-        "examples": [5, 10, 15],
-        "order": 6,
-        "type": "integer"
-      },
-      "start_date": {
-        "title": "Start Date (Optional)",
-        "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
-        "examples": ["2022-10-10", "2022-10-22"],
-        "order": 7,
-        "type": "string"
-      },
-      "profiles": {
-        "title": "Profile IDs (Optional)",
-        "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details.",
-        "order": 8,
-        "type": "array",
-        "items": {
-          "type": "integer"
-        }
-      }
-    },
-    "required": ["client_id", "client_secret", "refresh_token"],
-    "additionalProperties": true
-  },
+  "supportsDBT": false,
   "advanced_auth": {
+    "predicate_key": [
+      "auth_type"
+    ],
     "auth_flow_type": "oauth2.0",
-    "predicate_key": ["auth_type"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": true,
         "properties": {
           "refresh_token": {
             "type": "string",
-            "path_in_connector_config": ["refresh_token"]
+            "path_in_connector_config": [
+              "refresh_token"
+            ]
           }
-        }
+        },
+        "additionalProperties": true
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string"
@@ -99,22 +28,94 @@
           "client_secret": {
             "type": "string"
           }
-        }
+        },
+        "additionalProperties": true
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": ["client_id"]
+            "path_in_connector_config": [
+              "client_id"
+            ]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": ["client_secret"]
+            "path_in_connector_config": [
+              "client_secret"
+            ]
           }
-        }
+        },
+        "additionalProperties": true
+      },
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "properties": {
+          "region": {
+            "type": "string",
+            "path_in_connector_config": [
+              "region"
+            ]
+          }
+        },
+        "additionalProperties": true
       }
     }
-  }
+  },
+  "documentationUrl": "https://docs.daspire.com/zh/setup-guide/sources/amazon-ads",
+  "supportsNormalization": false,
+  "connectionSpecification": {
+    "type": "object",
+    "title": "Amazon Ads Spec",
+    "required": [
+      "client_id",
+      "client_secret",
+      "refresh_token"
+    ],
+    "properties": {
+      "region": {
+        "enum": [
+          "NA",
+          "EU",
+          "FE"
+        ],
+        "type": "string",
+        "order": 0,
+        "title": "Region *",
+        "default": "NA",
+        "description": "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details."
+      },
+      "auth_type": {
+        "type": "string",
+        "const": "oauth2.0",
+        "order": 1,
+        "title": "Auth Type"
+      },
+      "client_id": {
+        "type": "string",
+        "order": 2,
+        "title": "Client ID",
+        "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information."
+      },
+      "client_secret": {
+        "type": "string",
+        "order": 3,
+        "title": "Client Secret",
+        "description": "The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "order": 4,
+        "title": "Refresh Token",
+        "description": "Amazon Ads refresh token. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens\">docs</a> for more information on how to obtain this token.",
+        "airbyte_secret": true
+      }
+    },
+    "additionalProperties": true
+  },
+  "supported_destination_sync_modes": [
+
+  ]
 }

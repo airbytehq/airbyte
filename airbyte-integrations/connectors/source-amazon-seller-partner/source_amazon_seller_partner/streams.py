@@ -8,10 +8,12 @@ import json as json_lib
 import time
 import zlib
 from abc import ABC, abstractmethod
-from io import StringIO
+from io import StringIO, BytesIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 import json
+import pandas as pd
+import os
 
 import pendulum
 import requests
@@ -61,12 +63,11 @@ class AmazonSPStream(HttpStream, ABC):
         self.marketplace_id = marketplace_id
         self.source_name = source_name
         self._session.auth = aws_signature
-        
+
         # added by Jerry 2023.6.20, if replication_start_date is none, set the replication_start_date to the previous day
-        if self._replication_start_date is None or len(replication_start_date.strip())<=0:
+        if self._replication_start_date is None or len(replication_start_date.strip()) <= 0:
             self._replication_start_date = pendulum.yesterday("utc").strftime(DATE_TIME_FORMAT)
             self._replication_end_date = pendulum.today("utc").subtract(seconds=1).strftime(DATE_TIME_FORMAT)
-
 
     @property
     def url_base(self) -> str:
@@ -194,7 +195,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._report_options = report_options
         self.max_wait_seconds = max_wait_seconds
         self.source_name = source_name
-        
+
         # added by Jerry 2023.6.15, if replication_start_date is none, set the replication_start_date to the previous day
         if self._replication_start_date is None:
             self._replication_start_date = pendulum.yesterday("utc").strftime(DATE_TIME_FORMAT)
@@ -322,13 +323,37 @@ class ReportsAmazonSPStream(Stream, ABC):
 
     def parse_response(self, response: requests.Response) -> Iterable[Mapping]:
         payload = response.json().get(self.data_field, {})
-        document = self.decrypt_report_document(
-            payload.get("url"),
-            payload.get("encryptionDetails", {}).get("initializationVector"),
-            payload.get("encryptionDetails", {}).get("key"),
-            payload.get("encryptionDetails", {}).get("standard"),
-            payload,
-        )
+        document = ""
+        
+        # deal with xlxs file
+        if self.name == "ReferralFeeDiscountsReport":
+            
+            decrypted = self.decrypt_aes(
+                requests.get(payload.get("url")).content,
+                payload.get("encryptionDetails", {}).get("key"),
+                payload.get("encryptionDetails", {}).get("initializationVector"),
+            )
+            df = pd.read_excel(BytesIO(decrypted), engine="openpyxl", skiprows=2)
+            # df = pd.read_excel(url,engine="openpyxl",skiprows=2)
+            df = pd.read_excel("1313.xlsx",engine="openpyxl",skiprows=2)
+            for index, row in df.iterrows():
+                col_index = 0
+                for column in df.columns:
+                    value = row[column]
+                    document += str(value)
+                    if col_index < df.columns.size - 1:
+                        document += "\t"
+                        col_index += 1
+                    else:
+                        document += "\n"
+        else:
+            document = self.decrypt_report_document(
+                payload.get("url"),
+                payload.get("encryptionDetails", {}).get("initializationVector"),
+                payload.get("encryptionDetails", {}).get("key"),
+                payload.get("encryptionDetails", {}).get("standard"),
+                payload,
+            )
 
         results = []
         """
@@ -346,7 +371,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         for item in document_records:
             item["source_name"] = self.source_name
             results.append(item)
-                   
+
         yield from results
 
     def parse_document(self, document):
@@ -415,6 +440,7 @@ class FlatFileOrdersReports(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
     report_type = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
+
 class FbaInventoryPlanningReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
@@ -425,9 +451,11 @@ class FbaInventoryPlanningReports(ReportsAmazonSPStream):
     name = "GET_FBA_INVENTORY_PLANNING_DATA"
     report_type = "GET_FBA_INVENTORY_PLANNING_DATA"
 
+
 class FBAInboundPerformanceReport(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_INBOUND_NONCOMPLIANCE_DATA"
     report_type = "GET_FBA_FULFILLMENT_INBOUND_NONCOMPLIANCE_DATA"
+
 
 class FBAManageInventory(ReportsAmazonSPStream):
     name = "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
@@ -622,7 +650,7 @@ class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
 class SalesAndTrafficReports(ReportsAmazonSPStream):
     name = "GET_SALES_AND_TRAFFIC_REPORT"
     report_type = "GET_SALES_AND_TRAFFIC_REPORT"
-    
+
     def __init__(
         self,
         url_base: str,
@@ -636,22 +664,30 @@ class SalesAndTrafficReports(ReportsAmazonSPStream):
         source_name: str,
         authenticator: HttpAuthenticator = None,
     ):
-        super().__init__(url_base=url_base, aws_signature=aws_signature, replication_start_date=replication_start_date, 
-                         marketplace_id=marketplace_id, period_in_days=period_in_days, report_options=report_options, 
-                         max_wait_seconds=max_wait_seconds, replication_end_date=replication_end_date, source_name=source_name, 
-                         authenticator=authenticator)
-        
+        super().__init__(
+            url_base=url_base,
+            aws_signature=aws_signature,
+            replication_start_date=replication_start_date,
+            marketplace_id=marketplace_id,
+            period_in_days=period_in_days,
+            report_options=report_options,
+            max_wait_seconds=max_wait_seconds,
+            replication_end_date=replication_end_date,
+            source_name=source_name,
+            authenticator=authenticator
+        )
+
         # added by Jerry 2023.6.29, if replication_start_date is none, set the replication_start_date to the previous day
-        if replication_start_date is None or len(replication_start_date.strip())<=0:
+        if replication_start_date is None or len(replication_start_date.strip()) <= 0:
             self._replication_start_date = pendulum.yesterday("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
             self._replication_end_date = pendulum.yesterday("utc").subtract(seconds=1).strftime(DATE_TIME_FORMAT)
-    
+
     def parse_document(self, document):
         results = []
         parsed = json_lib.loads(document)
         results.append(parsed)
         return results
-    
+
     def _report_data(
         self,
         sync_mode: SyncMode,
@@ -664,10 +700,11 @@ class SalesAndTrafficReports(ReportsAmazonSPStream):
             options = self.report_options()
             if options is not None:
                 data["reportOptions"] = options
-                
+
         logger.info(f"****** the data with report options is {data}")
 
         return data
+
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
     @property
@@ -1083,7 +1120,80 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
 class FBALongTermStorageFeeChargesReport(ReportsAmazonSPStream):
     name = "LongTermStorageFeeCharges"
     report_type = "GET_FBA_FULFILLMENT_LONGTERM_STORAGE_FEE_CHARGES_DATA"
-    
+
+
 class FBAReimbursementsReport(ReportsAmazonSPStream):
     name = "GET_FBA_REIMBURSEMENTS_DATA"
     report_type = "GET_FBA_REIMBURSEMENTS_DATA"
+
+
+class OpenListingsReport(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory#open-listings-report
+    """
+
+    name = "OpenListingsReport"
+    report_type = "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
+
+
+class OpenListingsReportLite(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory#open-listings-report-lite
+    """
+
+    name = "OpenListingsReportLite"
+    report_type = "GET_MERCHANT_LISTINGS_DATA_LITE"
+
+
+class OpenListingsReportLiter(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory#open-listings-report-liter
+    """
+
+    name = "OpenListingsReportLiter"
+    report_type = "GET_MERCHANT_LISTINGS_DATA_LITER"
+
+
+class ReferralFeeDiscountsReport(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-amazon-business#referral-fee-discounts-report
+    """
+
+    name = "ReferralFeeDiscountsReport"
+    report_type = "FEE_DISCOUNTS_REPORT"
+
+
+class ActiveListingsReport(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory#active-listings-report
+    """
+
+    name = "ActiveListingsReport"
+    report_type = "GET_MERCHANT_LISTINGS_DATA"
+
+
+class InactiveListingsReport(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory#inactive-listings-report
+    """
+
+    name = "InactiveListingsReport"
+    report_type = "GET_MERCHANT_LISTINGS_INACTIVE_DATA"
+
+
+class CanceledListingsReport(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory#canceled-listings-report
+    """
+
+    name = "CanceledListingsReport"
+    report_type = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
+
+
+class ReferralFeePreviewReport(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory#referral-fee-preview-report
+    """
+
+    name = "ReferralFeePreviewReport"
+    report_type = "GET_REFERRAL_FEE_PREVIEW_REPORT"

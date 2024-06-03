@@ -1,7 +1,7 @@
 {#
     This overrides the behavior of the macro `should_full_refresh` so full refresh are triggered if:
     - the dbt cli is run with --full-refresh flag or the model is configured explicitly to full_refresh
-    - the column _airbyte_ab_id does not exists in the normalized tables and make sure it is well populated.
+    - the column _daspire_ab_id does not exists in the normalized tables and make sure it is well populated.
 #}
 
 {%- macro need_full_refresh(col_ab_id, target_table=this) -%}

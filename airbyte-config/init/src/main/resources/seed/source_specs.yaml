@@ -495,30 +495,73 @@
 - dockerImage: "yuanrui2014/source-amazon-ads:0.0.4"
   spec:
     supportsDBT: false
+    documentationUrl: https://docs.daspire.com/setup-guide/sources/amazon-ads
+    connectionSpecification:
+      title: Amazon Ads Spec
+      type: object
+      properties:
+        region:
+          title: Region *
+          description: Region to pull data from (EU/NA/FE). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a> for more details.
+          enum:
+            - NA
+            - EU
+            - FE
+          type: string
+          default: NA
+          order: 0
+        auth_type:
+          title: Auth Type
+          const: oauth2.0
+          order: 1
+          type: string
+        client_id:
+          title: Client ID
+          description: The client ID of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.
+          order: 2
+          type: string
+        client_secret:
+          title: Client Secret
+          description: The client secret of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.
+          airbyte_secret: true
+          order: 3
+          type: string
+        refresh_token:
+          title: Refresh Token
+          description: Amazon Ads refresh token. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens">docs</a> for more information on how to obtain this token.
+          airbyte_secret: true
+          order: 4
+          type: string
+      required:
+        - client_id
+        - client_secret
+        - refresh_token
+      additionalProperties: true
     advanced_auth:
+      auth_flow_type: oauth2.0
       predicate_key:
         - auth_type
-      auth_flow_type: oauth2.0
       predicate_value: oauth2.0
       oauth_config_specification:
         complete_oauth_output_specification:
           type: object
+          additionalProperties: true
           properties:
             refresh_token:
               type: string
               path_in_connector_config:
                 - refresh_token
-          additionalProperties: true
         complete_oauth_server_input_specification:
           type: object
+          additionalProperties: true
           properties:
             client_id:
               type: string
             client_secret:
               type: string
-          additionalProperties: true
         complete_oauth_server_output_specification:
           type: object
+          additionalProperties: true
           properties:
             client_id:
               type: string
@@ -528,99 +571,14 @@
               type: string
               path_in_connector_config:
                 - client_secret
-          additionalProperties: true
         oauth_user_input_from_connector_config_specification:
           type: object
+          additionalProperties: true
           properties:
             region:
               type: string
               path_in_connector_config:
                 - region
-          additionalProperties: true
-    documentationUrl: https://docs.daspire.com/setup-guide/sources/amazon-ads
-    supportsNormalization: false
-    connectionSpecification:
-      type: object
-      title: Amazon Ads Spec
-      required:
-        - client_id
-        - client_secret
-        - refresh_token
-      properties:
-        region:
-          enum:
-            - NA
-            - EU
-            - FE
-          type: string
-          order: 0
-          title: Region *
-          default: NA
-          description: Region to pull data from (EU/NA/FE). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a> for more details.
-        profiles:
-          type: array
-          items:
-            type: integer
-          order: 9
-          title: Profile IDs (Optional)
-          description: Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a> for more details.
-        auth_type:
-          type: string
-          const: oauth2.0
-          order: 1
-          title: Auth Type
-        client_id:
-          type: string
-          order: 2
-          title: Client ID
-          description: The client ID of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.
-        start_date:
-          type: string
-          order: 7
-          title: Start Date (Optional)
-          format: date
-          pattern: ^[0-9]{4}
-          examples:
-            - '2023-10-10'
-          description: The Start date for syncing data, should not be more than 60 days in the past. In YYYY-MM-DD format.
-        source_name:
-          type: string
-          order: 8
-          title: Source Identifier (Optional)
-          description: The identification to help you identify your Amazon Ads source in Daspire.
-        client_secret:
-          type: string
-          order: 3
-          title: Client Secret
-          description: The client secret of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.
-          airbyte_secret: true
-        refresh_token:
-          type: string
-          order: 4
-          title: Refresh Token
-          description: Amazon Ads refresh token. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens">docs</a> for more information on how to obtain this token.
-          airbyte_secret: true
-        report_wait_timeout:
-          type: integer
-          order: 5
-          title: Report Wait Timeout
-          default: 60
-          examples:
-            - '60'
-            - '120'
-          description: Maximum number of minutes the integration will wait for the generation of a report for profiles. Default is 60 minutes.
-        report_generation_max_retries:
-          type: integer
-          order: 6
-          title: Report Generation Maximum Retries
-          default: 5
-          examples:
-            - 5
-            - 10
-            - 15
-          description: Maximum retries Daspire will attempt for fetching report data. Default is 5.
-      additionalProperties: true
-    supported_destination_sync_modes: []
 - dockerImage: "yuanrui2014/source-amazon-seller-partner:0.0.5"
   spec:
     supportsDBT: false
@@ -703,15 +661,8 @@
         - aws_access_key
         - aws_secret_key
         - role_arn
-        - replication_start_date
         - region
       properties:
-        app_id:
-          type: string
-          order: 0
-          title: App Id *
-          description: Your Amazon App ID
-          airbyte_secret: true
         region:
           enum:
             - AE
@@ -736,98 +687,60 @@
             - UK
             - US
           type: string
-          order: 1
+          order: 0
           title: Region
           description: The region where your Amazon store is.
-        role_arn:
+        source_name:
           type: string
-          order: 7
-          title: Role ARN
-          description: Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).
-          airbyte_secret: true
+          order: 1
+          title: Store Name *
+          description: The identification of one of your Amazon store
         auth_type:
           type: string
           const: oauth2.0
           order: 2
           title: Auth Type
-        lwa_app_id:
+        app_id:
           type: string
           order: 3
-          title: LWA Client Id
-          description: Your Login with Amazon Client ID.
-        source_name:
-          type: string
-          order: 0
-          title: Store Name *
-          description: The identification of one of your Amazon store
-        refresh_token:
-          type: string
-          order: 4
-          title: Refresh Token
-          description: The Refresh Token obtained via OAuth flow authorization.
-          airbyte_secret: true
+          title: App Id *
+          description: Your Amazon App ID
+          airbyte_secret: true 
         aws_access_key:
           type: string
-          order: 5
+          order: 4
           title: AWS Access Key
           description: Specifies the AWS access key used as part of the credentials to authenticate the user.
           airbyte_secret: true
         aws_secret_key:
           type: string
-          order: 6
+          order: 5
           title: AWS Secret Access Key
           description: It will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.
-          airbyte_secret: true
-        period_in_days:
-          type: integer
-          order: 11
-          title: Period In Days
-          default: 30
-          examples:
-            - '30'
-            - '365'
-          description: Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.
-        report_options:
+          airbyte_secret: true 
+        lwa_app_id:
           type: string
-          order: 13
-          title: Report Options
-          examples:
-            - '{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}'
-            - '{"GET_SOME_REPORT": {"custom": "true"}}'
-          description: Additional information passed to reports. This varies by report type. Must be a valid JSON string.
-        max_wait_seconds:
-          type: integer
-          order: 12
-          title: Max Wait Time for Reports (in seconds)
-          default: 500
-          examples:
-            - '500'
-            - '1980'
-          description: Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.
+          order: 6
+          title: LWA Client Id
+          description: Your Login with Amazon Client ID.  
         lwa_client_secret:
           type: string
-          order: 8
+          order: 7
           title: LWA Client Secret
           description: Your Login with Amazon Client Secret.
-          airbyte_secret: true
-        replication_end_date:
+          airbyte_secret: true  
+        role_arn:
           type: string
-          order: 10
-          title: End Date and Time
-          format: date-time
-          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$
-          examples:
-            - '2023-10-01T00:00:00Z'
-          description: The end date and time for syncing data. In the format of YYYY-MM-DDTHH:MM:SSZ. Any data after this date will not be replicated.
-        replication_start_date:
+          order: 8
+          title: Role ARN
+          description: Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).
+          airbyte_secret: true
+        refresh_token:
           type: string
           order: 9
-          title: Start Date and Time
-          format: date-time
-          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-          examples:
-            - '2023-01-25T00:00:00Z'
-          description: The start date and time for syncing data, should not be more than 60 days in the past. In the format of YYYY-MM-DDTHH:MM:SSZ. If not specified, today's date is used.
+          title: Refresh Token
+          description: The Refresh Token obtained via OAuth flow authorization.
+          airbyte_secret: true
       definitions:
         AWSRegion:
           enum:
