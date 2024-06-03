@@ -243,6 +243,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
+      is_client_side_incremental: true
     retriever:
       type: SimpleRetriever
       requester:
@@ -279,9 +280,6 @@ streams:
         request_body_json: {}
       record_selector:
         type: RecordSelector
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_notion.components.NotionSemiIncrementalFilter
         extractor:
           type: DpathExtractor
           field_path:
