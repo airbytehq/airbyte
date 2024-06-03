@@ -55,10 +55,10 @@ class CheckIsInlineCandidate(Step):
         )
 
 
-class InlineSchemas(Step):
+class MigrateAirbyteLogger(Step):
     context: ConnectorContext
 
-    title = "Migrate connector to replace AirbyteLogger with logging.Logger."
+    title = "Migrate connector to replace AirbyteLogger with logging.Logger. It is recommended to run `airbyte-ci format fix python` after running this command."
 
     def __init__(self, context: PipelineContext) -> None:
         super().__init__(context)
@@ -101,7 +101,7 @@ async def run_connector_migrate_to_logging_logger_pipeline(context: ConnectorCon
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LOGGER_MIGRATION,
-                step=InlineSchemas(context),
+                step=MigrateAirbyteLogger(context),
                 depends_on=[CONNECTOR_TEST_STEP_ID.AIRBYTE_LOGGER_CANDIDATE],
             )
         ]
