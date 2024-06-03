@@ -42,13 +42,13 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
-  # Temporarily disabled due to test coverage not passing
-  # - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-      - name: SECRET_DESTINATION-SNOWFLAKE-CORTEX__CREDS
-        fileName: config.json
-        secretStore:
-          type: GSM
-          alias: airbyte-connector-testing-secret-store
+    # Temporarily disabled due to test coverage not passing
+    # - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-SNOWFLAKE-CORTEX__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
