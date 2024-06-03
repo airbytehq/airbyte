@@ -69,18 +69,6 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def interpret_response_status(self, response: requests.Response) -> ErrorResolution:
-        """
-        Specifies conditions for backoff, error handling and reporting based on the response from the server.
-
-        By default, back off on the following HTTP response statuses:
-         - 429 (Too Many Requests) indicating rate limiting
-         - 500s to handle transient server errors
-
-        Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
-        """
-
-    @abstractmethod
     def get_request_headers(
         self,
         *,

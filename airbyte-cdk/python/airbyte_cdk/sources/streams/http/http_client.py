@@ -6,7 +6,7 @@ import logging
 import os
 import urllib
 from pathlib import Path
-from typing import Any, Mapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
@@ -47,7 +47,7 @@ class HttpClient:
         session: Optional[Union[requests.Session, requests_cache.CachedSession]] = None,
         authenticator: Optional[AuthBase] = None,
         use_cache: bool = False,
-        backoff_strategy: Optional[BackoffStrategy] = None,
+        backoff_strategy: Optional[Union[BackoffStrategy, List[BackoffStrategy]]] = None,
         error_message_parser: Optional[ErrorMessageParser] = None,
     ):
         self._name = name
@@ -64,7 +64,13 @@ class HttpClient:
             self._session.auth = authenticator
         self._logger = logger
         self._error_handler = error_handler or HttpStatusErrorHandler(self._logger)
-        self._backoff_strategy = backoff_strategy or DefaultBackoffStrategy()
+        if backoff_strategy is not None:
+            if isinstance(backoff_strategy, list):
+                self._backoff_strategies = backoff_strategy
+            else:
+                self._backoff_strategies = [backoff_strategy]
+        else:
+            self._backoff_strategies = [DefaultBackoffStrategy()]
         self._error_message_parser = error_message_parser or JsonErrorMessageParser()
 
     @property
@@ -137,19 +143,55 @@ class HttpClient:
 
     def _send_with_retry(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
-        Backoff package has max_tries parameter that means total number of
-        tries before giving up, so if this number is 0 no calls expected to be done.
-        But for this class we call it max_REtries assuming there would be at
-        least one attempt and some retry attempts, to comply this logic we add
-        1 to expected retries attempts.
+        Sends a request with retry logic.
+
+        This method uses the retry logic to send the request. It determines the maximum number of retries
+        by checking if the error handler or any backoff strategy has a defined max_retries property.
+        If not, it falls back to the default value.
+
+        The `backoff` package uses the `max_tries` parameter, which indicates the total number of
+        attempts before giving up. If this number is 0, no calls are expected to be made. However,
+        this method uses `max_retries` assuming there would be at least one initial attempt and some
+        retry attempts, so it adds 1 to the expected retry attempts.
+
+        The method also determines the maximum time for retries and the factor for exponential backoff
+        based on the error handler and backoff strategies.
+
+        Args:
+            request (requests.PreparedRequest): The prepared HTTP request to send.
+            request_kwargs (Mapping[str, Any]): Additional keyword arguments for the request.
+
+        Returns:
+            requests.Response: The HTTP response received from the server after retries.
         """
-        max_retries = self._backoff_strategy.max_retries or self._DEFAULT_MAX_RETRY  # type: ignore # max_retries is included in default implemention but optional
+        max_retries = self._DEFAULT_MAX_RETRY
+        if hasattr(self._error_handler, "max_retries") and self._error_handler.max_retries is not None:
+            max_retries = self._error_handler.max_retries
+        else:
+            for backoff_strategy in self._backoff_strategies:
+                if hasattr(backoff_strategy, "max_retries") and backoff_strategy.max_retries is not None:
+                    max_retries = backoff_strategy.max_retries
+                    break
+
         max_tries = max(0, max_retries) + 1
 
-        max_time = self._backoff_strategy.max_time or self._DEFAULT_MAX_TIME  # type: ignore # max_time is included in default implemention but optional
+        max_time = self._DEFAULT_MAX_TIME
+        if hasattr(self._error_handler, "max_time") and self._error_handler.max_time is not None:
+            max_time = self._error_handler.max_time
+        else:
+            for backoff_strategy in self._backoff_strategies:
+                if hasattr(backoff_strategy, "max_time") and backoff_strategy.max_time is not None:
+                    max_time = backoff_strategy.max_time
+                    break
+
+        factor = self._DEFAULT_RETRY_FACTOR
+        for backoff_strategy in self._backoff_strategies:
+            if hasattr(backoff_strategy, "factor") and backoff_strategy.factor is not None:
+                factor = backoff_strategy.factor
+                break
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
+        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
         # backoff handlers wrap _send, so it will always return a response
         response = backoff_handler(user_backoff_handler)(request, request_kwargs)
 
@@ -202,7 +244,13 @@ class HttpClient:
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self._backoff_strategy.backoff_time(response if response is not None else exc)
+            custom_backoff_time = None
+            for backoff_strategy in self._backoff_strategies:
+                if hasattr(backoff_strategy, "backoff_time"):
+                    backoff_time = backoff_strategy.backoff_time(response if response is not None else exc)
+                    if backoff_time:
+                        custom_backoff_time = backoff_time
+                        break
             error_message = (
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."

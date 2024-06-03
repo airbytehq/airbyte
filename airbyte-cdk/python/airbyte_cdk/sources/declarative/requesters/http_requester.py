@@ -4,15 +4,11 @@
 
 import logging
 import os
-import urllib
 from dataclasses import InitVar, dataclass
-from pathlib import Path
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 import requests
-import requests_cache
-from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -20,18 +16,11 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
-from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
-from airbyte_cdk.sources.streams.http.error_handlers.error_handler import ErrorHandler
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from requests.auth import AuthBase
 
 
 @dataclass
@@ -47,6 +36,7 @@ class HttpRequester(Requester):
         request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests
         authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source
         error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors
+        backoff_strategies (Optional[List[BackoffStrategy]]): List of backoff strategies to use when retrying requests
         config (Config): The user-provided configuration as specified by the source's spec
         use_cache (bool): Indicates that data should be cached for this stream
     """
@@ -64,10 +54,6 @@ class HttpRequester(Requester):
     message_repository: MessageRepository = NoopMessageRepository()
     use_cache: bool = False
 
-    _DEFAULT_MAX_RETRY = 5
-    _DEFAULT_RETRY_FACTOR = 5
-    _DEFAULT_MAX_TIME = 60 * 10
-
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
         self._path = InterpolatedString.create(self.path, parameters=parameters)
@@ -82,46 +68,20 @@ class HttpRequester(Requester):
         self.error_handler = self.error_handler
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
-        self._session = self.request_cache()
-        self._session.mount(
-            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
-        )
 
-        if isinstance(self._authenticator, AuthBase):
-            self._session.auth = self._authenticator
-
-    # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
-    # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
-    # but this has a cascading effect where all dataclass fields must also be set to frozen.
-    def __hash__(self) -> int:
-        return hash(tuple(self.__dict__))
-
-    @property
-    def cache_filename(self) -> str:
-        """
-        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
-        """
-        return f"{self.name}.sqlite"
-
-    def request_cache(self) -> requests.Session:
-        if self.use_cache:
-            cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
-            # Use in-memory cache if cache_dir is not set
-            # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
-            if cache_dir:
-                sqlite_path = str(Path(cache_dir) / self.cache_filename)
-            else:
-                sqlite_path = "file::memory:?cache=shared"
-            return requests_cache.CachedSession(sqlite_path, backend="sqlite")  # type: ignore # there are no typeshed stubs for requests_cache
+        if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
+            backoff_strategies = self.error_handler.backoff_strategies
         else:
-            return requests.Session()
+            backoff_strategies = None
 
-    def clear_cache(self) -> None:
-        """
-        Clear cached requests for current session, can be called any time
-        """
-        if isinstance(self._session, requests_cache.CachedSession):
-            self._session.cache.clear()  # type: ignore # cache.clear is not typed
+        self._http_client = HttpClient(
+            name=self.name,
+            logger=self.logger,
+            error_handler=self.error_handler,
+            authenticator=self._authenticator,
+            use_cache=self.use_cache,
+            backoff_strategy=backoff_strategies,
+        )
 
     def get_authenticator(self) -> DeclarativeAuthenticator:
         return self._authenticator
@@ -138,17 +98,6 @@ class HttpRequester(Requester):
 
     def get_method(self) -> HttpMethod:
         return self._http_method
-
-    def interpret_response_status(self, response: requests.Response) -> ErrorResolution:
-        if self.error_handler is None:
-            raise ValueError("Cannot interpret response status without an error handler")
-
-        # Change CachedRequest to PreparedRequest for response
-        request = response.request
-        if isinstance(request, requests_cache.CachedRequest):
-            response.request = request.prepare()
-
-        return self.error_handler.interpret_response(response)
 
     def get_request_params(
         self,
@@ -198,23 +147,6 @@ class HttpRequester(Requester):
         return self._request_options_provider.get_request_body_json(
             stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-
-    @property
-    def max_retries(self) -> Union[int, None]:
-        if self.disable_retries:
-            return 0
-        if self.error_handler is None:
-            return self._DEFAULT_MAX_RETRY
-        return self.error_handler.max_retries  # type: ignore # parent class does not have max_retries
-
-    @property
-    def max_time(self) -> Union[int, None]:
-        """
-        Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
-        """
-        if self.error_handler is None:
-            return self._DEFAULT_MAX_TIME
-        return self.error_handler.max_time  # type: ignore # parent class does not have max_time
 
     @property
     def logger(self) -> logging.Logger:
@@ -340,48 +272,9 @@ class HttpRequester(Requester):
             raise ValueError("Request body json cannot be a string")
         return options
 
-    def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
-        """
-        Remove query parameters from params mapping if they are already encoded in the URL.
-        :param url: URL with
-        :param params:
-        :return:
-        """
-        if params is None:
-            params = {}
-        query_string = urllib.parse.urlparse(url).query
-        query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
-
-        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
-        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
-
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
         return urljoin(url_base, path)
-
-    def _create_prepared_request(
-        self,
-        path: str,
-        headers: Optional[Mapping[str, str]] = None,
-        params: Optional[Mapping[str, Any]] = None,
-        json: Any = None,
-        data: Any = None,
-    ) -> requests.PreparedRequest:
-        url = urljoin(self.get_url_base(), path)
-        http_method = str(self._http_method.value)
-        query_params = self.deduplicate_query_params(url, params)
-        args = {"method": http_method, "url": url, "headers": headers, "params": query_params}
-        if http_method.upper() in BODY_REQUEST_METHODS:
-            if json and data:
-                raise RequestBodyException(
-                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
-                )
-            elif json:
-                args["json"] = json
-            elif data:
-                args["data"] = data
-
-        return self._session.prepare_request(requests.Request(**args))
 
     def send_request(
         self,
@@ -395,177 +288,19 @@ class HttpRequester(Requester):
         request_body_json: Optional[Mapping[str, Any]] = None,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Optional[requests.Response]:
-        request = self._create_prepared_request(
-            path=path
-            if path is not None
-            else self.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+
+        request, response = self._http_client.send_request(
+            http_method=self.get_method().value,
+            url=self._join_url(
+                self.get_url_base(),
+                path or self.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ),
+            request_kwargs={},  # TODO: determine request_kwargs for low code
             headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
             params=self._request_params(stream_state, stream_slice, next_page_token, request_params),
             json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),
             data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
+            dedupe_query_params=True,
         )
 
-        response = self._send_with_retry(request, log_formatter=log_formatter)
         return response
-
-    def _send_with_retry(
-        self,
-        request: requests.PreparedRequest,
-        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
-    ) -> requests.Response:
-        """
-        Creates backoff wrappers which are responsible for retry logic
-        """
-
-        """
-        Backoff package has max_tries parameter that means total number of
-        tries before giving up, so if this number is 0 no calls expected to be done.
-        But for this class we call it max_REtries assuming there would be at
-        least one attempt and some retry attempts, to comply this logic we add
-        1 to expected retries attempts.
-        """
-        max_tries = self.max_retries
-        """
-        According to backoff max_tries docstring:
-            max_tries: The maximum number of attempts to make before giving
-                up ...The default value of None means there is no limit to
-                the number of tries.
-        This implies that if max_tries is explicitly set to None there is no
-        limit to retry attempts, otherwise it is limited number of tries. But
-        this is not true for current version of backoff packages (1.8.0). Setting
-        max_tries to 0 or negative number would result in endless retry attempts.
-        Add this condition to avoid an endless loop if it hasn't been set
-        explicitly (i.e. max_retries is not None).
-        """
-        max_time = self.max_time
-        """
-        According to backoff max_time docstring:
-            max_time: The maximum total amount of time to try for before
-                giving up. Once expired, the exception will be allowed to
-                escape. If a callable is passed, it will be
-                evaluated at runtime and its return value used.
-        """
-        if max_tries is not None:
-            max_tries = max(0, max_tries) + 1
-
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
-        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
-        # backoff handlers wrap _send, so it will always return a response
-        return backoff_handler(user_backoff_handler)(request, log_formatter=log_formatter)  # type: ignore
-
-    def _send(
-        self,
-        request: requests.PreparedRequest,
-        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
-    ) -> requests.Response:
-        """
-        Wraps sending the request in rate limit and error handlers.
-        Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
-
-        This method handles two types of exceptions:
-            1. Expected transient exceptions e.g: 429 status code.
-            2. Unexpected transient exceptions e.g: timeout.
-
-        To trigger a backoff, we raise an exception that is handled by the backoff decorator. If an exception is not handled by the decorator will
-        fail the sync.
-
-        For expected transient exceptions, backoff time is determined by the type of exception raised:
-            1. CustomBackoffException uses the user-provided backoff value
-            2. DefaultBackoffException falls back on the decorator's default behavior e.g: exponential backoff
-
-        Unexpected transient exceptions use the default backoff parameters.
-        Unexpected persistent exceptions are not handled and will cause the sync to fail.
-        """
-        self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
-        )
-
-        response: requests.Response = self._session.send(request)
-
-        if self.error_handler is None:
-            return response
-
-        error_resolution: ErrorResolution = self.interpret_response_status(response)
-
-        self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
-
-        if log_formatter:
-            formatter = log_formatter
-            self.message_repository.log_message(
-                Level.DEBUG,
-                lambda: formatter(response),
-            )
-
-        if error_resolution.response_action == ResponseAction.FAIL:
-            error_message = f"'{request.method}' request to '{request.url}' failed with status code '{response.status_code}' and error message '{self.parse_response_error_message(response)}'"
-
-            raise AirbyteTracedException(
-                internal_message=error_message,
-                message=error_resolution.error_message or error_message,
-                failure_type=error_resolution.failure_type,
-            )
-
-        elif error_resolution.response_action == ResponseAction.IGNORE:
-            log_message = f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
-
-            self.logger.info(error_resolution.error_message or log_message)
-
-        elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self.error_handler.backoff_time(response) if self.error_handler is not None else None  # type: ignore # parent class does not have backoff_time
-            error_message = f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action} with message: {error_resolution.error_message if error_resolution.error_message else None}"
-            if custom_backoff_time:
-                raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time,
-                    request=request,
-                    response=response,
-                    error_message=error_message,
-                )
-            else:
-                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
-
-        elif response:
-            try:
-                response.raise_for_status()
-            except requests.HTTPError as e:
-                self.logger.error(response.text)
-                raise e
-
-        return response
-
-    @classmethod
-    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
-        """
-        Parses the raw response object from a failed request into a user-friendly error message.
-        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
-
-        :param response:
-        :return: A user-friendly message that indicates the cause of the error
-        """
-
-        # default logic to grab error from common fields
-        def _try_get_error(value: Any) -> Any:
-            if isinstance(value, str):
-                return value
-            elif isinstance(value, list):
-                error_list = [_try_get_error(v) for v in value]
-                return ", ".join(v for v in error_list if v is not None)
-            elif isinstance(value, dict):
-                new_value = (
-                    value.get("message")
-                    or value.get("messages")
-                    or value.get("error")
-                    or value.get("errors")
-                    or value.get("failures")
-                    or value.get("failure")
-                    or value.get("details")
-                    or value.get("detail")
-                )
-                return _try_get_error(new_value)
-            return None
-
-        try:
-            body = response.json()
-            error = _try_get_error(body)
-            return str(error) if error else None
-        except requests.exceptions.JSONDecodeError:
-            return None
