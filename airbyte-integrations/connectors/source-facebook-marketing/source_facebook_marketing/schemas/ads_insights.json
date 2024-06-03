@@ -78,9 +78,6 @@
     "clicks": {
       "type": ["null", "integer"]
     },
-    "conversion_lead_rate": {
-      "type": ["null", "number"]
-    },
     "conversion_rate_ranking": {
       "type": ["null", "string"]
     },
@@ -110,9 +107,6 @@
     },
     "cost_per_conversion": {
       "$ref": "ads_action_stats.json"
-    },
-    "cost_per_conversion_lead": {
-      "type": ["null", "number"]
     },
     "cost_per_estimated_ad_recallers": {
       "type": ["null", "number"]
