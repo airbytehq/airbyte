@@ -45,7 +45,7 @@ class HttpResponseFilter:
         if self.predicate and isinstance(self.predicate, str):
             self.predicate = InterpolatedBoolean(condition=self.predicate, parameters=parameters)
         else:
-            self.predicate = None
+            self.predicate = ""
         self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, parameters=parameters)
 
     def matches(self, response: requests.Response, backoff_time: Optional[float] = None) -> Optional[ResponseStatus]:
