@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+add client side incremental sync
+
+## 1.1.3
+Removed experimental suffix for unstructured file type
+
+## 1.1.2
+CDK: upgrade dpath
+
 ## 1.1.1
 Fix bug so that RFR streams don't resync successful streams on subsequent attempts
 
