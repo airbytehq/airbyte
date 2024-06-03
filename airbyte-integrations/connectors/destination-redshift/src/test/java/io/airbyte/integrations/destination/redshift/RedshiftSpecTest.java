@@ -97,7 +97,7 @@ public class RedshiftSpecTest {
 
   @Test
   void testJdbcAdditionalProperty() throws Exception {
-    final ConnectorSpecification spec = new RedshiftDestination().spec();
+    final ConnectorSpecification spec = new RedshiftStagingS3Destination().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
 

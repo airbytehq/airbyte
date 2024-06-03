@@ -223,7 +223,7 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
   protected Database createDatabase() {
     connection = ConnectionFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
-        RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
+        RedshiftStagingS3Destination.Companion.getSSL_JDBC_PARAMETERS(),
         String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             baseConfig.get(JdbcUtils.HOST_KEY).asText(),
             baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
