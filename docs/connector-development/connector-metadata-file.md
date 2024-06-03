@@ -177,7 +177,7 @@ If not specified, all remote registry configurations are disabled by default.
 
 The `connectorTestSuitesOptions` contains a list of test suite options for a connector.
 The list of declared test suites affects which suite will run in CI.
-We currently accept three value for the `suite` field:
+We currently accept three values for the `suite` field:
 * `unitTests`
 * `integrationTests`
 * `acceptanceTests`
@@ -193,6 +193,30 @@ The `testSecrets` object has three properties:
 **If you are a community contributor please note that addition of a new secret to our secret store requires manual intervention from an Airbyter. Please reach out to your PR reviewers if you want to add a test secret to our CI.**
 
 #### The `secretStore` object
-This object has three properties:
+This object has two properties:
 * `type`: Defines the secret store type, only `GSM` (Google Secret Manager) is currently supported
 * `alias`: The alias of this secret store in our system, which is resolved into an actual secret store address by our CI. We currently have a single alias to store our connector test secrets: `airbyte-connector-testing-secret-store` .
+
+#### How to enable a test suite
+We currently support three test suite types: 
+* `unitTests`, 
+* `integrationTests`
+* `acceptanceTests`
+
+
+To enable a test suite, add the suite name to the `connectorTestSuitesOptions` list: 
+
+```yaml
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    # This will enable acceptanceTests for this connector
+    # It declares that this test suite requires a secret named SECRET_SOURCE-FAKER_CREDS
+    # In our secret store, and that the secret should be stored in the connector secret folder in a file named config.json
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FAKER_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+```
