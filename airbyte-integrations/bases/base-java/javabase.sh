@@ -19,6 +19,8 @@ fi
 JAVA_OPTS=$JAVA_OPTS" -Dlog4j.encoder.byteBufferSize=32768 -Dlog4j2.configurationFile=log4j2.xml"
 #needed because we make ThreadLocal.get(Thread) accessible in IntegrationRunner.stopOrphanedThreads
 JAVA_OPTS=$JAVA_OPTS" --add-opens=java.base/java.lang=ALL-UNNAMED"
+# tell jooq to be quiet (https://stackoverflow.com/questions/28272284/how-to-disable-jooqs-self-ad-message-in-3-4)
+JAVA_OPTS=$JAVA_OPTS" -Dorg.jooq.no-logo=true -Dorg.jooq.no-tips=true"
 export JAVA_OPTS
 
 # Wrap run script in a script so that we can lazy evaluate the value of APPLICATION. APPLICATION is

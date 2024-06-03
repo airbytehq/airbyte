@@ -33,11 +33,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
+import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDestinationState;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -58,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<MinimumDestinationState.Impl> {
+public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<BigQueryDestinationState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
 
@@ -105,7 +104,9 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                   _airbyte_raw_id STRING NOT NULL,
                   _airbyte_data STRING NOT NULL,
                   _airbyte_extracted_at TIMESTAMP NOT NULL,
-                  _airbyte_loaded_at TIMESTAMP
+                  _airbyte_loaded_at TIMESTAMP,
+                  _airbyte_meta STRING,
+                  _airbyte_generation_id INTEGER
                 ) PARTITION BY (
                   DATE_TRUNC(_airbyte_extracted_at, DAY)
                 ) CLUSTER BY _airbyte_loaded_at;
@@ -136,7 +137,8 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
                                          final StreamId streamId,
                                          final String suffix,
-                                         final List<? extends JsonNode> records)
+                                         final List<? extends JsonNode> records,
+                                         final long generationId)
       throws InterruptedException {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     final String cdcDeletedAtDecl = includeCdcDeletedAt ? ",`_ab_cdc_deleted_at` TIMESTAMP" : "";
@@ -178,6 +180,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                   _airbyte_raw_id,
                   _airbyte_extracted_at,
                   _airbyte_meta,
+                  _airbyte_generation_id,
                   `id1`,
                   `id2`,
                   `updated_at`,
@@ -199,6 +202,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                   _airbyte_raw_id,
                   _airbyte_extracted_at,
                   parse_json(_airbyte_meta),
+                  _airbyte_generation_id,
                   cast(`id1` as int64),
                   cast(`id2` as int64),
                   `updated_at`,
@@ -220,6 +224,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                     _airbyte_raw_id STRING,
                     _airbyte_extracted_at TIMESTAMP,
                     _airbyte_meta STRING,
+                    _airbyte_generation_id INTEGER,
                     `id1` STRING,
                     `id2` STRING,
                     `updated_at` TIMESTAMP,
@@ -270,7 +275,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Override
   protected void insertRawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws InterruptedException {
-    final String recordsText = stringifyRecords(records, JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META);
+    final String recordsText = stringifyRecords(records, JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITH_GENERATION);
 
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
@@ -278,9 +283,9 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
             "records", recordsText)).replace(
                 // TODO: Perform a normal insert - edward
                 """
-                INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
-                SELECT _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data FROM UNNEST([
-                  STRUCT<`_airbyte_raw_id` STRING, `_airbyte_extracted_at` TIMESTAMP, `_airbyte_loaded_at` TIMESTAMP, _airbyte_data STRING>
+                INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data, _airbyte_meta, _airbyte_generation_id)
+                SELECT _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data, _airbyte_meta, cast(_airbyte_generation_id as int64) FROM UNNEST([
+                  STRUCT<`_airbyte_raw_id` STRING, `_airbyte_extracted_at` TIMESTAMP, `_airbyte_loaded_at` TIMESTAMP, _airbyte_data STRING, _airbyte_meta STRING, `_airbyte_generation_id` STRING>
                   ${records}
                 ])
                 """))
@@ -309,10 +314,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Override
   protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
     final TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + streamId.rawTableId(BigQuerySqlGenerator.QUOTE)));
-    return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result).stream().peek(record -> {
-      final JsonNode deserializedData = Jsons.deserializeExact(record.get("_airbyte_data").asText());
-      ((ObjectNode) record).set("_airbyte_data", deserializedData);
-    }).toList();
+    return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
   @Override
@@ -348,6 +350,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
             Field.newBuilder("_airbyte_raw_id", legacySQLTypeName(StandardSQLTypeName.STRING)).setMode(Field.Mode.REQUIRED).build(),
             Field.newBuilder("_airbyte_extracted_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)).setMode(Field.Mode.REQUIRED).build(),
             Field.newBuilder("_airbyte_meta", legacySQLTypeName(StandardSQLTypeName.JSON)).setMode(Field.Mode.REQUIRED).build(),
+            Field.newBuilder("_airbyte_generation_id", legacySQLTypeName(StandardSQLTypeName.INT64)).build(),
             Field.of("id1", legacySQLTypeName(StandardSQLTypeName.INT64)),
             Field.of("id2", legacySQLTypeName(StandardSQLTypeName.INT64)),
             Field.of("updated_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)),
@@ -407,7 +410,6 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   public void testFailureOnReservedColumnNamePrefix(final String prefix) {
     final StreamConfig stream = new StreamConfig(
         getStreamId(),
-        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
         Collections.emptyList(),
         Optional.empty(),
@@ -417,7 +419,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
             put(getGenerator().buildColumnId(prefix + "the_column_name"), AirbyteProtocolType.STRING);
           }
 
-        });
+        }, 0, 0, 0);
 
     final Sql createTable = getGenerator().createTable(stream, "", false);
     assertThrows(
