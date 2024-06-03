@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "live-tests"
-version = "0.17.2"
+version = "0.17.4"
 description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -39,6 +39,7 @@ pyyaml = "^6.0.1"
 dpath = "^2.1.6"
 genson = "^1.2.2"
 segment-analytics-python = "^2.3.2"
+python-slugify = ">=8.0.4"
 
 [tool.poetry.scripts]
 live-tests = "live_tests.cli:live_tests"

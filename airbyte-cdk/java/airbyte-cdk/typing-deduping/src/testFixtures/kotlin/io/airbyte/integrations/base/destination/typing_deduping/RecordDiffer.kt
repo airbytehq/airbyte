@@ -90,8 +90,8 @@ constructor(
     fun diffRawTableRecords(expectedRecords: List<JsonNode>, actualRecords: List<JsonNode>) {
         val diff =
             diffRecords(
-                expectedRecords.map { record: JsonNode -> this.copyWithLiftedData(record) },
-                actualRecords.map { record: JsonNode -> this.copyWithLiftedData(record) },
+                expectedRecords.map { record: JsonNode -> this.deserializeMetaAndLiftData(record) },
+                actualRecords.map { record: JsonNode -> this.deserializeMetaAndLiftData(record) },
                 rawRecordIdentityComparator,
                 rawRecordSortComparator,
                 rawRecordIdentityExtractor,
@@ -120,12 +120,12 @@ constructor(
     }
 
     /**
-     * Lift _airbyte_data fields to the root level. If _airbyte_data is a string, deserialize it
-     * first.
+     * If airbyte_data/airbyte_meta are strings, deserialize them. Then lift _airbyte_data fields to
+     * the root level.
      *
      * @return A copy of the record, but with all fields in _airbyte_data lifted to the top level.
      */
-    private fun copyWithLiftedData(record: JsonNode): JsonNode {
+    private fun deserializeMetaAndLiftData(record: JsonNode): JsonNode {
         val copy = record.deepCopy<ObjectNode>()
         copy.remove(getMetadataColumnName(rawRecordColumnNames, "_airbyte_data"))
         var airbyteData = record[getMetadataColumnName(rawRecordColumnNames, "_airbyte_data")]
@@ -144,6 +144,13 @@ constructor(
                 )
             }
         }
+
+        val metadataColumnName = getMetadataColumnName(rawRecordColumnNames, "_airbyte_meta")
+        val airbyteMeta = record[metadataColumnName]
+        if (airbyteMeta != null && airbyteMeta.isTextual) {
+            copy.set<JsonNode>(metadataColumnName, Jsons.deserializeExact(airbyteMeta.asText()))
+        }
+
         return copy
     }
 
