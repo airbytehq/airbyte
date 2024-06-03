@@ -351,9 +351,11 @@ class ModelToComponentFactory:
         return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
-        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
+        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, decoder, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
-        login_requester = self._create_component_from_model(model=model.login_requester, config=config, name=f"{name}_login_requester")
+        login_requester = self._create_component_from_model(
+            model=model.login_requester, config=config, name=f"{name}_login_requester", decoder=decoder
+        )
         token_provider = SessionTokenProvider(
             login_requester=login_requester,
             session_token_path=model.session_token_path,
@@ -751,7 +753,7 @@ class ModelToComponentFactory:
         return paginator
 
     def create_dpath_extractor(
-        self, model: DpathExtractorModel, decoder: Optional[Decoder], config: Config, **kwargs: Any
+        self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder] = None, **kwargs: Any
     ) -> DpathExtractor:
         if model.decoder:
             decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
@@ -768,7 +770,7 @@ class ModelToComponentFactory:
 
     def create_http_requester(self, model: HttpRequesterModel, decoder: Optional[Decoder], config: Config, *, name: str) -> HttpRequester:
         authenticator = (
-            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name)
+            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name, decoder=decoder)
             if model.authenticator
             else None
         )
@@ -999,12 +1001,13 @@ class ModelToComponentFactory:
         self,
         model: RecordSelectorModel,
         config: Config,
+        decoder: Optional[Decoder],
         *,
         transformations: List[RecordTransformation],
         **kwargs: Any,
     ) -> RecordSelector:
         assert model.schema_normalization is not None  # for mypy
-        extractor = self._create_component_from_model(model=model.extractor, config=config)
+        extractor = self._create_component_from_model(model=model.extractor, decoder=decoder, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
@@ -1059,8 +1062,11 @@ class ModelToComponentFactory:
         stop_condition_on_cursor: bool = False,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
-        requester = self._create_component_from_model(model=model.requester, config=config, name=name)
-        record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else None
+        requester = self._create_component_from_model(model=model.requester, decoder=decoder, config=config, name=name)
+        record_selector = self._create_component_from_model(
+            model=model.record_selector, config=config, decoder=decoder, transformations=transformations
+        )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
         cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None

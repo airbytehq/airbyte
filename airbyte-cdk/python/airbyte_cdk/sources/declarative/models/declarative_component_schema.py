@@ -1333,6 +1333,7 @@ class SimpleRetriever(BaseModel):
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
     )
+    decoder: Optional[Decoder] = Field(None, description='Component decoding the response so records can be extracted.', title='Decoder')
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 

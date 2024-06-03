@@ -2279,6 +2279,10 @@ definitions:
                 - "$ref": "#/definitions/CustomPartitionRouter"
                 - "$ref": "#/definitions/ListPartitionRouter"
                 - "$ref": "#/definitions/SubstreamPartitionRouter"
+      decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted.
+        "$ref": "#/definitions/Decoder"
       $parameters:
         type: object
         additionalProperties: true

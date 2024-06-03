@@ -16,31 +16,35 @@ decoder = JsonDecoder(parameters={})
 
 
 @pytest.mark.parametrize(
-    "test_name, field_path, body, expected_records",
+    "field_path, body, expected_records",
     [
-        ("test_extract_from_array", ["data"], {"data": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
-        ("test_extract_single_record", ["data"], {"data": {"id": 1}}, [{"id": 1}]),
-        ("test_extract_single_record_from_root", [], {"id": 1}, [{"id": 1}]),
-        ("test_extract_from_root_array", [], [{"id": 1}, {"id": 2}], [{"id": 1}, {"id": 2}]),
-        ("test_nested_field", ["data", "records"], {"data": {"records": [{"id": 1}, {"id": 2}]}}, [{"id": 1}, {"id": 2}]),
-        ("test_field_in_config", ["{{ config['field'] }}"], {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
-        (
-            "test_field_in_parameters",
-            ["{{ parameters['parameters_field'] }}"],
-            {"record_array": [{"id": 1}, {"id": 2}]},
-            [{"id": 1}, {"id": 2}],
-        ),
-        ("test_field_does_not_exist", ["record"], {"id": 1}, []),
-        ("test_nested_list", ["list", "*", "item"], {"list": [{"item": {"id": "1"}}]}, [{"id": "1"}]),
-        (
-            "test_complex_nested_list",
-            ["data", "*", "list", "data2", "*"],
-            {"data": [{"list": {"data2": [{"id": 1}, {"id": 2}]}}, {"list": {"data2": [{"id": 3}, {"id": 4}]}}]},
-            [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}],
-        ),
+        (["data"], {"data": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
+        (["data"], {"data": {"id": 1}}, [{"id": 1}]),
+        ([], {"id": 1}, [{"id": 1}]),
+        ([], [{"id": 1}, {"id": 2}], [{"id": 1}, {"id": 2}]),
+        (["data", "records"], {"data": {"records": [{"id": 1}, {"id": 2}]}}, [{"id": 1}, {"id": 2}]),
+        (["{{ config['field'] }}"], {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
+        (["{{ parameters['parameters_field'] }}"], {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
+        (["record"], {"id": 1}, []),
+        (["list", "*", "item"], {"list": [{"item": {"id": "1"}}]}, [{"id": "1"}]),
+        (["data", "*", "list", "data2", "*"],
+         {"data": [{"list": {"data2": [{"id": 1}, {"id": 2}]}}, {"list": {"data2": [{"id": 3}, {"id": 4}]}}]},
+         [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}]),
     ],
+    ids=[
+        "test_extract_from_array",
+        "test_extract_single_record",
+        "test_extract_single_record_from_root",
+        "test_extract_from_root_array",
+        "test_nested_field",
+        "test_field_in_config",
+        "test_field_in_parameters",
+        "test_field_does_not_exist",
+        "test_nested_list",
+        "test_complex_nested_list",
+    ]
 )
-def test_dpath_extractor(test_name, field_path, body, expected_records):
+def test_dpath_extractor(field_path, body, expected_records):
     extractor = DpathExtractor(field_path=field_path, config=config, decoder=decoder, parameters=parameters)
 
     response = create_response(body)
