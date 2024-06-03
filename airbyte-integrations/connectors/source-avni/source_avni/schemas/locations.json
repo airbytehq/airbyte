@@ -35,6 +35,13 @@
       "type": "string",
       "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
     },
+    "Parent": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "additionalProperties": true
+    },
     "audit": {
       "type": [
         "null",
