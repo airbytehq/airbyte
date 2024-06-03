@@ -46,7 +46,7 @@ data:
   - suite: integrationTests
     testSecrets:
       - name: SECRET_DESTINATION-SNOWFLAKE-CORTEX__CREDS
-        fileName: secrets/config.json
+        fileName: config.json
         secretStore:
           type: GSM
           alias: airbyte-connector-testing-secret-store
