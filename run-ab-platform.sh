@@ -114,7 +114,7 @@ TelemetryConfig()
       # grab the deprecated ulid value, as we may still write it to the file if we write the file with a uuid
       telemetryUserULID=$(cat ~/.airbyte/analytics.yml | grep "anonymous_user_id" | cut -d ":" -f2 | xargs)
 
-      telemetryUserUUID=$(cat ~/.airbyte/analytics.yml | grep "anonymous_user_uuid" | cut -d ":" -f2 | xargs)
+      telemetryUserUUID=$(cat ~/.airbyte/analytics.yml | grep "analytics_id" | cut -d ":" -f2 | xargs)
     fi
 
     # if the telemetery uuid is still undefined, attempt to create it and write the analytics file
@@ -132,9 +132,9 @@ TelemetryConfig()
 # This file is used by Airbyte to track anonymous usage statistics.
 # For more information or to opt out, please see
 # - https://docs.airbyte.com/operator-guides/telemetry
-# Deprecated, use anonymous_user_uuid instead
+# Deprecated, use analytics_id instead
 anonymous_user_id: $telemetryUserULID
-anonymous_user_uuid: $telemetryUserUUID
+analytics_id: $telemetryUserUUID
 EOL
       fi
     fi
