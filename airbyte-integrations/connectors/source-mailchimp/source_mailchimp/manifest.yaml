@@ -407,8 +407,8 @@ definitions:
         description: A summary of an individual campaign's settings and content.
         properties:
           ab_split_opts:
-            description: '[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/)
-              options for a campaign.'
+            description: "[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/)
+              options for a campaign."
             properties:
               from_name_a:
                 description: For campaigns split on 'From Name', the name for Group A.
@@ -665,9 +665,9 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: 'The status of the member with regard to their campaign
+                              description: "The status of the member with regard to their campaign
                               interaction. One of the following: opened, clicked, was sent,
-                              didn''t open, didn''t click, or was not sent.'
+                              didn''t open, didn''t click, or was not sent."
                               enum:
                                 - open
                                 - click
@@ -702,10 +702,10 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: 'The status of the member with regard to the automation
+                              description: "The status of the member with regard to the automation
                               workflow. One of the following: has started the workflow, has
                               completed the workflow, has not started the workflow, or has
-                              not completed the workflow.'
+                              not completed the workflow."
                               enum:
                                 - started
                                 - completed
@@ -775,8 +775,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: 'The status of a member''s interaction with a conversation.
-                              One of the following: has replied or has not replied.'
+                              description: "The status of a member''s interaction with a conversation.
+                              One of the following: has replied or has not replied."
                               enum:
                                 - member
                                 - notmember
@@ -811,9 +811,9 @@ definitions:
                               title: Segment Extra Value
                               type: string
                             field:
-                              description: 'The type of date field to segment on: The opt-in
+                              description: "The type of date field to segment on: The opt-in
                               time for a signup, the date the subscriber was last updated,
-                              or the date of their last ecomm purchase.'
+                              or the date of their last ecomm purchase."
                               enum:
                                 - timestamp_opt
                                 - info_changed
@@ -822,8 +822,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: 'When the event took place:  Before, after, is a
-                              specific date, is not a specific date, is blank, or is not blank.'
+                              description: "When the event took place:  Before, after, is a
+                              specific date, is not a specific date, is blank, or is not blank."
                               enum:
                                 - greater
                                 - less
@@ -837,8 +837,8 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: 'What type of data to segment on: a specific date,
-                              a specific campaign, or the last campaign sent.'
+                              description: "What type of data to segment on: a specific date,
+                              a specific campaign, or the last campaign sent."
                               example: date
                               title: Segment Data
                               type: string
@@ -1002,10 +1002,10 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: 'The status of the member with regard to the survey.
+                              description: "The status of the member with regard to the survey.
                               One of the following: has started the survey, has completed
                               the survey, has not started the survey, or has not completed
-                              the survey.'
+                              the survey."
                               enum:
                                 - started
                                 - completed
@@ -2128,8 +2128,8 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: 'What type of data to segment on: a specific date,
-                              a specific campaign, or the last campaign sent.'
+                              description: "What type of data to segment on: a specific date,
+                              a specific campaign, or the last campaign sent."
                               title: Segment Data
                               type: string
                           title: New Subscribers Prebuilt Segment
@@ -2232,8 +2232,8 @@ definitions:
             title: Resendable
             type: boolean
           rss_opts:
-            description: '[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/)
-              options for a campaign.'
+            description: "[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/)
+              options for a campaign."
             properties:
               constrain_rss_img:
                 description: Whether to add CSS to images in the RSS feed to constrain their
@@ -3719,8 +3719,8 @@ definitions:
             title: Industry Stats
             properties:
               type:
-                description: 'The type of business industry associated with your account.
-                  For example: retail, education, etc.'
+                description: "The type of business industry associated with your account.
+                  For example: retail, education, etc."
                 type:
                 - 'null'
                 - string
