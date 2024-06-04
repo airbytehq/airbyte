@@ -236,7 +236,6 @@ public class MySqlInitialReadUtil {
         .toList();
 
     // Build the incremental CDC iterators.
-    // TODO : We need to interleave CDC iterators here.
     final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<MySqlCdcPosition>(
         sourceConfig,
         MySqlCdcTargetPosition.targetPosition(database),
@@ -244,8 +243,14 @@ public class MySqlInitialReadUtil {
         firstRecordWaitTime,
         AirbyteDebeziumHandler.QUEUE_CAPACITY,
         false);
+    final var completedCdcStreamList = catalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
+        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
+
+    LOGGER.info("Completed streams passed into db props manager: {}", completedCdcStreamList.toString());
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
-        MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog);
+        MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, completedCdcStreamList);
     final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
@@ -263,16 +268,31 @@ public class MySqlInitialReadUtil {
     // from the current cdc syncs.
     // We finish the current CDC once the initial snapshot is complete and the next sync starts
     // processing the binlogs
-    return Collections.singletonList(
-        AutoCloseableIterators.concatWithEagerClose(
-            Stream
-                .of(initialLoadIterator,
-                    cdcStreamsStartStatusEmitters,
-                    Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-                    allStreamsCompleteStatusEmitters)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList()),
-            AirbyteTraceMessageUtility::emitStreamStatusTrace));
+    if (completedCdcStreamList.isEmpty()) {
+      LOGGER.info("Skipping the CDC read altogether because no cdc streams have been completed");
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(
+              Stream
+                  .of(
+                      initialLoadIterator,
+                      allStreamsCompleteStatusEmitters)
+                  .flatMap(Collection::stream)
+                  .collect(Collectors.toList()),
+              AirbyteTraceMessageUtility::emitStreamStatusTrace));
+    } else {
+      LOGGER.info("Including the CDC read altogether cdc streams have been completed");
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(
+              Stream
+                  .of(
+                      cdcStreamsStartStatusEmitters,
+                      Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+                      initialLoadIterator,
+                      allStreamsCompleteStatusEmitters)
+                  .flatMap(Collection::stream)
+                  .collect(Collectors.toList()),
+              AirbyteTraceMessageUtility::emitStreamStatusTrace));
+    }
   }
 
   /**

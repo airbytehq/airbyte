@@ -102,6 +102,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         }
       }
     }
+    // TODO(Akash) : Perhaps it is easier to throw a transient error here after all the streams have
+    // been completed??
     return iteratorList;
   }
 
