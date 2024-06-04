@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: f2e549cd-8e2a-48f8-822d-cc13630eb42d
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/destination-kvdb
   githubIssueLabel: destination-kvdb
   icon: kvdb.svg
