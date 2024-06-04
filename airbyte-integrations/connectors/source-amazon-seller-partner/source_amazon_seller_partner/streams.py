@@ -334,8 +334,6 @@ class ReportsAmazonSPStream(Stream, ABC):
                 payload.get("encryptionDetails", {}).get("initializationVector"),
             )
             df = pd.read_excel(BytesIO(decrypted), engine="openpyxl", skiprows=2)
-            # df = pd.read_excel(url,engine="openpyxl",skiprows=2)
-            df = pd.read_excel("1313.xlsx",engine="openpyxl",skiprows=2)
             for index, row in df.iterrows():
                 col_index = 0
                 for column in df.columns:
