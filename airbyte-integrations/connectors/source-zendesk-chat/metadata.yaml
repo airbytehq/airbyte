@@ -1,22 +1,27 @@
 data:
   ab_internal:
-    ql: 400
+    ql: 200
     sl: 200
   allowedHosts:
     hosts:
       - zopim.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-zendesk-chat
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
   githubIssueLabel: source-zendesk-chat
   icon: zendesk-chat.svg
   license: MIT
   name: Zendesk Chat
+  maxSecondsBetweenMessages: 60
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-chat
   registries:
     cloud:
       enabled: true
@@ -26,4 +31,23 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_ZENDESK_CHAT_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_ZENDESK_CHAT_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_ZENDESK_CHAT_OLD_CREDS
+          fileName: config_old.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

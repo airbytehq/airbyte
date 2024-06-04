@@ -36,4 +36,9 @@ public class ClickhouseDestinationStrictEncrypt extends SpecModifyingDestination
     LOGGER.info("completed destination: {}", ClickhouseDestinationStrictEncrypt.class);
   }
 
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
 }

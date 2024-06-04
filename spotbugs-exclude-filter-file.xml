@@ -19,10 +19,4 @@
     <Class name="io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore" />
     <Bug code="SECOBDES" />
   </Match>
-  <!-- Silenced during CDK migration. TODO: fix or replace this comment with description. -->
-  <Match>
-    <Class name="io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils" />
-    <Bug pattern="MS_SHOULD_BE_FINAL" />
-  </Match>
-
 </FindBugsFilter>

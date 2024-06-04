@@ -22,7 +22,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 65de8962-48c9-11ee-be56-0242ac120002
-  dockerImageTag: 0.0.12
+  dockerImageTag: 0.0.15
   dockerRepository: airbyte/destination-milvus
   githubIssueLabel: destination-milvus
   icon: milvus.svg
@@ -33,8 +33,25 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/milvus
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 200
     ql: 300
   supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-MILVUS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION-MILVUS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

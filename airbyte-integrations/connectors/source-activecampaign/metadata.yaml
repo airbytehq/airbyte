@@ -5,13 +5,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9f32dab3-77cb-45a1-9d33-347aa5fbe363
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-activecampaign
   documentationUrl: https://docs.airbyte.com/integrations/sources/activecampaign
   githubIssueLabel: source-activecampaign
   icon: activecampaign.svg
   license: MIT
   name: ActiveCampaign
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-activecampaign
   registries:
     cloud:
       enabled: false
@@ -20,6 +24,20 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
+  # Disable acceptance tests for now
+  # They are not passing
+  # Low/No Airbyte Cloud Usage
+  #
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-ACTIVECAMPAIGN__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
 metadataSpecVersion: "1.0"

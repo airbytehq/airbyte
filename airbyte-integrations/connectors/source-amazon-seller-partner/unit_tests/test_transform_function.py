@@ -15,6 +15,7 @@ from source_amazon_seller_partner.streams import (
 
 def reports_stream(marketplace_id):
     stream = SellerFeedbackReports(
+        stream_name="SELLER_FEEDBACK_REPORTS",
         url_base="https://test.url",
         replication_start_date="2010-01-25T00:00:00Z",
         replication_end_date="2017-02-25T00:00:00Z",
@@ -107,7 +108,10 @@ def test_transform_merchant_fyp_reports(report_init_kwargs, input_data, expected
 @pytest.mark.parametrize(
     ("input_data", "expected_data"),
     (
+        ({"Date": "07/29/2022", "dataEndTime": "2022-07-31"}, {"Date": "2022-07-29", "dataEndTime": "2022-07-31"}),
         ({"Date": "7/29/2022", "dataEndTime": "2022-07-31"}, {"Date": "2022-07-29", "dataEndTime": "2022-07-31"}),
+        ({"Date": "07/2022", "dataEndTime": "2022-07-31"}, {"Date": "2022-07-01", "dataEndTime": "2022-07-31"}),
+        ({"Date": "7/2022", "dataEndTime": "2022-07-31"}, {"Date": "2022-07-01", "dataEndTime": "2022-07-31"}),
         ({"Date": "", "dataEndTime": "2022-07-31"}, {"Date": "", "dataEndTime": "2022-07-31"}),
     ),
 )

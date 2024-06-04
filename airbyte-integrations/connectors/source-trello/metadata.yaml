@@ -5,6 +5,12 @@ data:
   allowedHosts:
     hosts:
       - api.trello.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-trello
   registries:
     oss:
       enabled: true
@@ -13,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8da67652-004c-11ec-9a03-0242ac130003
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/source-trello
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   githubIssueLabel: source-trello
@@ -29,5 +35,15 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TRELLO_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

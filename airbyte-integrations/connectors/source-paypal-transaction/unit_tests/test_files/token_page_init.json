@@ -1,0 +1,399 @@
+{
+  "payments": [
+    {
+      "id": "PAYID-MW55RCA31D103955T218492B",
+      "intent": "sale",
+      "state": "approved",
+      "cart": "06J27273EH485262V",
+      "payer": {
+        "payment_method": "paypal",
+        "status": "VERIFIED",
+        "payer_info": {
+          "email": "sb-vxpcr15413769@personal.example.com",
+          "first_name": "John",
+          "last_name": "Doe",
+          "payer_id": "TWL7BJVYNS7GU",
+          "shipping_address": {
+            "recipient_name": "John Doe",
+            "line1": "1 Main St",
+            "city": "San Jose",
+            "state": "CA",
+            "postal_code": "95131",
+            "country_code": "US"
+          },
+          "phone": "4083068029",
+          "country_code": "US"
+        }
+      },
+      "transactions": [
+        {
+          "reference_id": "1000000000047",
+          "amount": {
+            "total": "343.80",
+            "currency": "USD",
+            "details": {
+              "subtotal": "343.80",
+              "shipping": "0.00",
+              "insurance": "0.00",
+              "handling_fee": "0.00",
+              "shipping_discount": "0.00",
+              "discount": "0.00"
+            }
+          },
+          "payee": {
+            "merchant_id": "C7CYMKZDG8D6E",
+            "email": "john_merchant@example.com"
+          },
+          "item_list": {
+            "shipping_address": {
+              "recipient_name": "John Doe",
+              "line1": "1 Main St",
+              "city": "San Jose",
+              "state": "CA",
+              "postal_code": "95131",
+              "country_code": "US"
+            }
+          },
+          "related_resources": [
+            {
+              "sale": {
+                "id": "7PE037460E080360M",
+                "state": "completed",
+                "amount": {
+                  "total": "343.80",
+                  "currency": "USD",
+                  "details": {
+                    "subtotal": "343.80",
+                    "shipping": "0.00",
+                    "insurance": "0.00",
+                    "handling_fee": "0.00",
+                    "shipping_discount": "0.00",
+                    "discount": "0.00"
+                  }
+                },
+                "payment_mode": "INSTANT_TRANSFER",
+                "protection_eligibility": "ELIGIBLE",
+                "protection_eligibility_type": "ITEM_NOT_RECEIVED_ELIGIBLE,UNAUTHORIZED_PAYMENT_ELIGIBLE",
+                "transaction_fee": {
+                  "value": "12.49",
+                  "currency": "USD"
+                },
+                "purchase_unit_reference_id": "1000000000047",
+                "parent_payment": "PAYID-MW55RCA31D103955T218492B",
+                "create_time": "2024-02-01T17:44:40Z",
+                "update_time": "2024-02-01T17:44:40Z",
+                "links": [
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/sale/7PE037460E080360M",
+                    "rel": "self",
+                    "method": "GET"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/sale/7PE037460E080360M/refund",
+                    "rel": "refund",
+                    "method": "POST"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAYID-MW55RCA31D103955T218492B",
+                    "rel": "parent_payment",
+                    "method": "GET"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "create_time": "2024-02-01T17:44:40Z",
+      "update_time": "2024-02-01T17:44:40Z",
+      "links": [
+        {
+          "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAYID-MW55RCA31D103955T218492B",
+          "rel": "self",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "id": "PAYID-MW53UPA6UB45753B0034831X",
+      "intent": "sale",
+      "state": "approved",
+      "cart": "9A220393SG7753433",
+      "payer": {
+        "payment_method": "paypal",
+        "status": "VERIFIED",
+        "payer_info": {
+          "email": "sb-g43l4x28821325@personal.example.com",
+          "first_name": "John",
+          "last_name": "Doe",
+          "payer_id": "889X39VDHV8QY",
+          "shipping_address": {
+            "recipient_name": "John Doe",
+            "line1": "Via Unit? d'Italia, 5783296",
+            "city": "Napoli",
+            "state": "Napoli",
+            "postal_code": "80127",
+            "country_code": "IT"
+          },
+          "phone": "9393358454",
+          "country_code": "IT"
+        }
+      },
+      "transactions": [
+        {
+          "reference_id": "default",
+          "amount": {
+            "total": "100.00",
+            "currency": "USD",
+            "details": {
+              "subtotal": "100.00",
+              "shipping": "0.00",
+              "insurance": "0.00",
+              "handling_fee": "0.00",
+              "shipping_discount": "0.00",
+              "discount": "0.00"
+            }
+          },
+          "payee": {
+            "merchant_id": "C7CYMKZDG8D6E",
+            "email": "john_merchant@example.com"
+          },
+          "description": "T-Shirt",
+          "item_list": {
+            "items": [
+              {
+                "name": "T-Shirt",
+                "description": "Green XL",
+                "price": "100.00",
+                "currency": "USD",
+                "tax": "0.00",
+                "quantity": 1
+              }
+            ],
+            "shipping_address": {
+              "recipient_name": "John Doe",
+              "line1": "Via Unit? d'Italia, 5783296",
+              "city": "Napoli",
+              "state": "Napoli",
+              "postal_code": "80127",
+              "country_code": "IT"
+            }
+          },
+          "related_resources": [
+            {
+              "sale": {
+                "id": "29N28023XB153584X",
+                "state": "completed",
+                "amount": {
+                  "total": "100.00",
+                  "currency": "USD",
+                  "details": {
+                    "subtotal": "100.00",
+                    "shipping": "0.00",
+                    "insurance": "0.00",
+                    "handling_fee": "0.00",
+                    "shipping_discount": "0.00",
+                    "discount": "0.00"
+                  }
+                },
+                "payment_mode": "INSTANT_TRANSFER",
+                "protection_eligibility": "ELIGIBLE",
+                "protection_eligibility_type": "ITEM_NOT_RECEIVED_ELIGIBLE,UNAUTHORIZED_PAYMENT_ELIGIBLE",
+                "transaction_fee": {
+                  "value": "5.48",
+                  "currency": "USD"
+                },
+                "receivable_amount": {
+                  "value": "100.00",
+                  "currency": "USD"
+                },
+                "exchange_rate": "1.098848913950027",
+                "purchase_unit_reference_id": "default",
+                "parent_payment": "PAYID-MW53UPA6UB45753B0034831X",
+                "create_time": "2024-02-01T15:35:25Z",
+                "update_time": "2024-02-01T15:35:25Z",
+                "links": [
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/sale/29N28023XB153584X",
+                    "rel": "self",
+                    "method": "GET"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/sale/29N28023XB153584X/refund",
+                    "rel": "refund",
+                    "method": "POST"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAYID-MW53UPA6UB45753B0034831X",
+                    "rel": "parent_payment",
+                    "method": "GET"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "create_time": "2024-02-01T15:35:24Z",
+      "update_time": "2024-02-01T15:35:25Z",
+      "links": [
+        {
+          "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAYID-MW53UPA6UB45753B0034831X",
+          "rel": "self",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "id": "PAY-81S181868H8011217MW526OI",
+      "intent": "authorize",
+      "state": "approved",
+      "payer": {
+        "payment_method": "paypal",
+        "status": "VERIFIED",
+        "payer_info": {
+          "email": "mihai.streza1@mi-pay.com",
+          "first_name": "Mihai",
+          "last_name": "Streza",
+          "payer_id": "QHD3E8SRDDSQL",
+          "shipping_address": {
+            "recipient_name": "Mihai Streza"
+          },
+          "phone": "07534201211",
+          "country_code": "GB"
+        }
+      },
+      "transactions": [
+        {
+          "amount": {
+            "total": "20.00",
+            "currency": "EUR",
+            "details": {
+              "subtotal": "20.00"
+            }
+          },
+          "payee": {
+            "merchant_id": "C7CYMKZDG8D6E"
+          },
+          "description": "topup",
+          "invoice_number": "100000000188917",
+          "soft_descriptor": "PAYPAL *JOHNMERCHAN",
+          "item_list": {
+            "items": [
+              {
+                "name": "topup",
+                "price": "20.00",
+                "currency": "EUR",
+                "tax": "0.00",
+                "quantity": 1
+              }
+            ],
+            "shipping_address": {
+              "recipient_name": "Mihai Streza"
+            }
+          },
+          "related_resources": [
+            {
+              "authorization": {
+                "id": "05D21713M12255848",
+                "state": "captured",
+                "amount": {
+                  "total": "20.00",
+                  "currency": "EUR",
+                  "details": {
+                    "subtotal": "20.00"
+                  }
+                },
+                "payment_mode": "INSTANT_TRANSFER",
+                "protection_eligibility": "ELIGIBLE",
+                "protection_eligibility_type": "ITEM_NOT_RECEIVED_ELIGIBLE,UNAUTHORIZED_PAYMENT_ELIGIBLE",
+                "billing_agreement_id": "B-2B029484VC167663Y",
+                "parent_payment": "PAY-81S181868H8011217MW526OI",
+                "valid_until": "2024-03-01T14:48:26Z",
+                "create_time": "2024-02-01T14:48:26Z",
+                "update_time": "2024-02-01T14:48:30Z",
+                "links": [
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/authorization/05D21713M12255848",
+                    "rel": "self",
+                    "method": "GET"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/authorization/05D21713M12255848/capture",
+                    "rel": "capture",
+                    "method": "POST"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/authorization/05D21713M12255848/void",
+                    "rel": "void",
+                    "method": "POST"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/authorization/05D21713M12255848/reauthorize",
+                    "rel": "reauthorize",
+                    "method": "POST"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAY-81S181868H8011217MW526OI",
+                    "rel": "parent_payment",
+                    "method": "GET"
+                  }
+                ]
+              }
+            },
+            {
+              "capture": {
+                "id": "546282867R0022639",
+                "amount": {
+                  "total": "20.00",
+                  "currency": "EUR"
+                },
+                "state": "completed",
+                "custom": "",
+                "transaction_fee": {
+                  "value": "1.39",
+                  "currency": "EUR"
+                },
+                "parent_payment": "PAY-81S181868H8011217MW526OI",
+                "invoice_number": "100000000188917",
+                "create_time": "2024-02-01T14:48:30Z",
+                "links": [
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/capture/546282867R0022639",
+                    "rel": "self",
+                    "method": "GET"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/capture/546282867R0022639/refund",
+                    "rel": "refund",
+                    "method": "POST"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/authorization/05D21713M12255848",
+                    "rel": "authorization",
+                    "method": "GET"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAY-81S181868H8011217MW526OI",
+                    "rel": "parent_payment",
+                    "method": "GET"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "create_time": "2024-02-01T14:48:25Z",
+      "links": [
+        {
+          "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAY-81S181868H8011217MW526OI",
+          "rel": "self",
+          "method": "GET"
+        }
+      ]
+    }
+  ],
+  "count": 3,
+  "next_id": "PAY-0L38757939422510JMW5ZJVA"
+}

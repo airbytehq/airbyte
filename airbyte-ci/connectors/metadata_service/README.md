@@ -1,7 +1,9 @@
 # Metadata Service
-This is the begining of metadata service for airbyte.
+
+Airbyte Metadata Service manages the Airbyte Connector Registry.
 
 This system is responsible for the following:
+
 - Validating Connector metadata
 - Storing Connector metadata in GCS
 - Serving Connector metadata to various consumers
@@ -9,4 +11,7 @@ This system is responsible for the following:
 - Triggering actions based on changes to Connector metadata
 
 ## Subsystems
-- [Metadata Orchestrator](./orchestrator/README.md)
+
+- [Metadata Lib](./lib) responsible for preparing and validating connector metadata.
+- [Metadata Orchestrator](./orchestrator) responsible for gathering metadata into the registry,
+  using Dagster.

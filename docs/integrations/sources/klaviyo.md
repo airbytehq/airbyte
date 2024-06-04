@@ -36,11 +36,13 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 ## Supported Streams
 
 - [Campaigns](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
+- [Campaigns Detailed](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
 - [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
 - [Events](https://developers.klaviyo.com/en/reference/get_events)
 - [Flows](https://developers.klaviyo.com/en/reference/get_flows)
 - [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
 - [Lists](https://developers.klaviyo.com/en/reference/get_lists)
+- [Lists Detailed](https://developers.klaviyo.com/en/reference/get_lists)
 - [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
 - [Profiles](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
 
@@ -49,6 +51,10 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 The connector is restricted by Klaviyo [requests limitation](https://apidocs.klaviyo.com/reference/api-overview#rate-limits).
 
 The Klaviyo connector should not run into Klaviyo API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+
+Stream `Campaigns Detailed` contains fields `estimated_recipient_count` and `campaign_message` in addition to info from the `Campaigns` stream. Additional time is needed to fetch extra data.
+
+Stream `Lists Detailed` contains field `profile_count` in addition to info from the `Lists` stream. Additional time is needed to fetch extra data due to Klaviyo API [limitation](https://developers.klaviyo.com/en/reference/get_list).
 
 ## Data type map
 
@@ -63,6 +69,16 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `2.6.2`  | 2024-05-08 | [37789](https://github.com/airbytehq/airbyte/pull/37789)   | Move stream schemas and spec to manifest                                                                                      |
+| `2.6.1`  | 2024-05-07 | [38010](https://github.com/airbytehq/airbyte/pull/38010)   | Add error handler for `5XX` status codes                                                                                      |
+| `2.6.0`  | 2024-04-19 | [37370](https://github.com/airbytehq/airbyte/pull/37370)   | Add streams `campaigns_detailed` and `lists_detailed`                                                                         |
+| `2.5.0`  | 2024-04-15 | [36264](https://github.com/airbytehq/airbyte/pull/36264)   | Migrate to low-code                                                                                                           |
+| `2.4.0`  | 2024-04-11 | [36989](https://github.com/airbytehq/airbyte/pull/36989)   | Update `Campaigns` schema                                                                                                     |
+| `2.3.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)   | Pin airbyte-cdk version to `^0`                                                                                               |
+| `2.2.0`  | 2024-02-27 | [35637](https://github.com/airbytehq/airbyte/pull/35637)   | Fix `predictive_analytics` field in stream `profiles`                                                                         |
+| `2.1.3`  | 2024-02-15 | [35336](https://github.com/airbytehq/airbyte/pull/35336)   | Added type transformer for the `profiles` stream.                                                                             |
+| `2.1.2`  | 2024-02-09 | [35088](https://github.com/airbytehq/airbyte/pull/35088)   | Manage dependencies with Poetry.                                                                                              |
+| `2.1.1`  | 2024-02-07 | [34998](https://github.com/airbytehq/airbyte/pull/34998)   | Add missing fields to stream schemas                                                                                          |
 | `2.1.0`  | 2023-12-07 | [33237](https://github.com/airbytehq/airbyte/pull/33237)   | Continue syncing streams even when one of the stream fails                                                                    |
 | `2.0.2`  | 2023-12-05 | [33099](https://github.com/airbytehq/airbyte/pull/33099)   | Fix filtering for archived records stream                                                                                     |
 | `2.0.1`  | 2023-11-08 | [32291](https://github.com/airbytehq/airbyte/pull/32291)   | Add logic to have regular checkpointing schedule                                                                              |

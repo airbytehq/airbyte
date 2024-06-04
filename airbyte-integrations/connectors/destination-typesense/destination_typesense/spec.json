@@ -38,6 +38,12 @@
         "type": "integer",
         "description": "How many documents should be imported together. Default 1000",
         "order": 4
+      },
+      "path": {
+        "title": "Path",
+        "type": "string",
+        "description": "Path of the Typesense instance. Default is none",
+        "order": 5
       }
     }
   }

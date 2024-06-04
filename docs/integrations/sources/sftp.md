@@ -108,5 +108,8 @@ More formats \(e.g. Apache Avro\) will be supported in the future.
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
+| 0.2.2   | 2024-02-13 | [35221](https://github.com/airbytehq/airbyte/pull/35221) | Adopt CDK 0.20.4                                       |
+| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                       |
+| 0.2.0   | 2024-01-15 | [34265](https://github.com/airbytehq/airbyte/pull/34265) | Remove LEGACY state flag                               |
 | 0.1.2   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.0   | 2021-24-05 |                                                          | Initial version                                        |

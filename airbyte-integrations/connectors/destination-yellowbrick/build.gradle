@@ -1,0 +1,15 @@
+plugins {
+    id 'airbyte-java-connector'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.27.7'
+    features = ['db-destinations', 'datastore-postgres', 'typing-deduping']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.yellowbrick.YellowbrickDestination'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}

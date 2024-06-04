@@ -1,72 +1,102 @@
 {
   "properties": {
     "error_code": {
+      "description": "Error code associated with the transaction",
       "type": ["null", "string"]
     },
     "device_id": {
+      "description": "ID of the device used to process the transaction",
       "type": ["null", "integer"]
     },
     "user_id": {
+      "description": "ID of the user associated with the transaction",
       "type": ["null", "integer"]
     },
     "parent_id": {
+      "description": "ID of the parent transaction if applicable",
       "type": ["null", "integer"]
     },
     "test": {
+      "description": "Flag to indicate if the transaction is a test transaction",
       "type": ["null", "boolean"]
     },
     "kind": {
+      "description": "Type of transaction",
       "type": ["null", "string"]
     },
     "order_id": {
+      "description": "ID of the order associated with the transaction",
       "type": ["null", "integer"]
     },
     "amount": {
+      "description": "The amount of the transaction",
       "type": ["null", "number"]
     },
     "authorization": {
+      "description": "Authorization code for the transaction",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "Currency of the transaction",
       "type": ["null", "string"]
     },
     "source_name": {
+      "description": "Name of the source that initiated the transaction",
       "type": ["null", "string"]
     },
     "message": {
+      "description": "Additional message or notes regarding the transaction",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier of the transaction",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Date and time when the transaction was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "status": {
+      "description": "Status of the transaction",
       "type": ["null", "string"]
     },
     "total_unsettled_set": {
+      "description": "Total unsettled amount of the transaction",
       "type": ["null", "object"],
       "properties": {
         "shop_money": {
+          "description": "Amount in the shop currency",
           "type": ["null", "object"],
           "properties": {
             "amount": {
+              "description": "Amount in the shop currency",
               "type": ["null", "number"]
             },
             "currency_code": {
+              "description": "Currency code of the shop amount",
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "description": "Currency of the shop amount",
               "type": ["null", "string"]
             }
           }
         },
         "presentment_money": {
+          "description": "Amount in the presentment currency",
           "type": ["null", "object"],
           "properties": {
             "amount": {
+              "description": "Amount in the currency for presentation purposes",
               "type": ["null", "number"]
             },
             "currency_code": {
+              "description": "Currency code of the presentment amount",
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "description": "Currency of the presentment amount",
               "type": ["null", "string"]
             }
           }
@@ -74,59 +104,101 @@
       }
     },
     "payment_id": {
+      "description": "ID of the payment associated with the transaction",
       "type": ["null", "string"]
     },
     "payment_details": {
+      "description": "Details of the payment transaction",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
-        "cvv_result_code": {
+        "avs_result_code": {
+          "description": "Code indicating the AVS (Address Verification Service) result",
+          "type": ["null", "string"]
+        },
+        "buyer_action_info": {
+          "description": "Information about any buyer actions associated with the payment",
           "type": ["null", "string"]
         },
         "credit_card_bin": {
+          "description": "First few digits of the credit card number",
           "type": ["null", "string"]
         },
         "credit_card_company": {
+          "description": "Name of the credit card company",
+          "type": ["null", "string"]
+        },
+        "credit_card_expiration_month": {
+          "description": "Expiration month of the credit card",
+          "type": ["null", "integer"]
+        },
+        "credit_card_expiration_year": {
+          "description": "Expiration year of the credit card",
+          "type": ["null", "integer"]
+        },
+        "credit_card_name": {
+          "description": "Name on the credit card",
           "type": ["null", "string"]
         },
         "credit_card_number": {
+          "description": "Full credit card number",
           "type": ["null", "string"]
         },
-        "avs_result_code": {
+        "credit_card_wallet": {
+          "description": "Information about the digital wallet used for payment",
+          "type": ["null", "string"]
+        },
+        "cvv_result_code": {
+          "description": "Code indicating the CVV (Card Verification Value) result",
           "type": ["null", "string"]
         }
-      },
-      "type": ["null", "object"]
+      }
     },
     "processed_at": {
+      "description": "Date and time when the transaction was processed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "gateway": {
+      "description": "Payment gateway used for the transaction",
       "type": ["null", "string"]
     },
     "admin_graphql_api_id": {
+      "description": "Unique identifier for the resource in the GraphQL Admin API",
       "type": ["null", "string"]
     },
     "receipt": {
-      "type": ["null", "object"],
-      "properties": {
-        "fee_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
+      "description": "Receipt information related to the transaction",
+      "oneOf": [
+        {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "fee_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            },
+            "gross_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            },
+            "tax_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            }
+          }
         },
-        "gross_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
-        },
-        "tax_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
+        {
+          "type": ["null", "string"]
         }
-      }
+      ]
     },
     "location_id": {
+      "description": "ID of the location where the transaction took place",
       "type": ["null", "integer"]
     },
     "shop_url": {
+      "description": "URL of the shop where the transaction occurred",
       "type": ["null", "string"]
     }
   },

@@ -1,0 +1,86 @@
+{
+  "credentials": {
+    "auth_type": "Client",
+    "client_id": "cleint_id",
+    "tenant_id": "tenant_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "folder_path": ".",
+  "streams": [
+    {
+      "name": "test_parquet",
+      "globs": ["**/*.parquet"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "parquet"
+      }
+    },
+    {
+      "name": "test_avro",
+      "globs": ["**/*.avro"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "avro"
+      }
+    },
+    {
+      "name": "test_csv_gzip",
+      "file_type": "csv",
+      "globs": ["**/simple_test.csv.gz"],
+      "legacy_prefix": "",
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv",
+        "delimiter": ",",
+        "quote_char": "\"",
+        "double_quote": true,
+        "null_values": [
+          "",
+          "#N/A",
+          "#N/A N/A",
+          "#NA",
+          "-1.#IND",
+          "-1.#QNAN",
+          "-NaN",
+          "-nan",
+          "1.#IND",
+          "1.#QNAN",
+          "N/A",
+          "NA",
+          "NULL",
+          "NaN",
+          "n/a",
+          "nan",
+          "null"
+        ],
+        "true_values": ["1", "True", "TRUE", "true"],
+        "false_values": ["0", "False", "FALSE", "false"],
+        "inference_type": "Primitive Types Only",
+        "strings_can_be_null": false,
+        "encoding": "utf8",
+        "header_definition": {
+          "header_definition_type": "From CSV"
+        }
+      }
+    },
+    {
+      "name": "test_csv",
+      "globs": ["**/*.csv"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv"
+      }
+    },
+    {
+      "name": "test_unstructured",
+      "globs": ["**/*.pdf"],
+      "format": {
+        "filetype": "unstructured"
+      },
+      "schemaless": false,
+      "validation_policy": "Emit Record",
+      "days_to_sync_if_history_is_full": 3
+    }
+  ]
+}

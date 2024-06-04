@@ -3,8 +3,10 @@
 #
 
 
+import time
 from typing import Any, Iterable, Mapping
 
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
@@ -12,12 +14,11 @@ from typesense import Client
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
-    api_key = config.get("api_key")
-    host = config.get("host")
-    port = config.get("port") or "8108"
-    protocol = config.get("protocol") or "https"
-
-    client = Client({"api_key": api_key, "nodes": [{"host": host, "port": port, "protocol": protocol}], "connection_timeout_seconds": 3600})
+    node = {"host": config.get("host"), "port": config.get("port") or "8108", "protocol": config.get("protocol") or "https"}
+    path = config.get("path")
+    if path:
+        node["path"] = path
+    client = Client({"api_key": config.get("api_key"), "nodes": [node], "connection_timeout_seconds": 3600})
 
     return client
 
@@ -49,11 +50,13 @@ class DestinationTypesense(Destination):
                 continue
         writer.flush()
 
-    def check(self, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        logger.debug("TypeSense Destination Config Check")
         try:
             client = get_client(config=config)
             client.collections.create({"name": "_airbyte", "fields": [{"name": "title", "type": "string"}]})
             client.collections["_airbyte"].documents.create({"id": "1", "title": "The Hunger Games"})
+            time.sleep(3)
             client.collections["_airbyte"].documents["1"].retrieve()
             client.collections["_airbyte"].delete()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

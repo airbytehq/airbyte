@@ -11,13 +11,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
-  dockerImageTag: 0.3.6
+  dockerImageTag: 0.3.10
   dockerRepository: airbyte/source-amplitude
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   githubIssueLabel: source-amplitude
   icon: amplitude.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: Amplitude
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amplitude
   registries:
     cloud:
       enabled: true
@@ -32,6 +37,22 @@ data:
       - cohorts
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMPLITUDE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMPLITUDE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

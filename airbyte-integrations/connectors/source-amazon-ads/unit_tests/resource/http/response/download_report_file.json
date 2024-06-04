@@ -1,0 +1,13 @@
+[
+  {
+    "campaignId": 1,
+    "campaignName": "str",
+    "adGroupId": "str",
+    "adId": "str",
+    "targetId": "str",
+    "asin": "str",
+    "advertisedAsin": "str",
+    "keywordBid": "str",
+    "keywordId": "str"
+  }
+]

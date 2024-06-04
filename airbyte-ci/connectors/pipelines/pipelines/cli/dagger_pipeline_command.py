@@ -6,9 +6,7 @@
 from __future__ import annotations
 
 import sys
-from glob import glob
 from pathlib import Path
-from typing import Any
 
 import asyncclick as click
 from dagger import DaggerError
@@ -21,14 +19,12 @@ from pipelines.helpers.utils import slugify
 
 class DaggerPipelineCommand(click.Command):
     @sentry_utils.with_command_context
-    async def invoke(self, ctx: click.Context) -> Any:
+    async def invoke(self, ctx: click.Context) -> None:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
         Args:
             ctx (click.Context): The invocation context.
         Raises:
             e: Raise whatever exception that was caught.
-        Returns:
-            Any: The invocation return value.
         """
         command_name = self.name
         main_logger.info(f"Running Dagger Command {command_name}...")
@@ -57,11 +53,13 @@ class DaggerPipelineCommand(click.Command):
             sys.exit(1)
         finally:
             if ctx.obj.get("dagger_logs_path"):
-                if ctx.obj["is_local"]:
-                    main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
-                if ctx.obj["is_ci"]:
+                main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
+                if ctx.obj["is_ci"] and ctx.obj["ci_gcp_credentials"] and ctx.obj["ci_report_bucket_name"]:
                     gcs_uri, public_url = upload_to_gcs(
-                        ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
+                        ctx.obj["dagger_logs_path"],
+                        ctx.obj["ci_report_bucket_name"],
+                        dagger_logs_gcs_key,
+                        ctx.obj["ci_gcp_credentials"].value,
                     )
                     main_logger.info(f"Dagger logs saved to {gcs_uri}. Public URL: {public_url}")
 

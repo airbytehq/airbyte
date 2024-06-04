@@ -10,9 +10,9 @@ Airbyte uses [REST API](https://www.zoho.com/crm/developer/docs/api/v2/modules-a
 
 This Source is capable of syncing:
 
-* standard modules available in Zoho CRM account
-* custom modules manually added by user, available in Zoho CRM account
-* custom fields in both standard and custom modules, available in Zoho CRM account
+- standard modules available in Zoho CRM account
+- custom modules manually added by user, available in Zoho CRM account
+- custom fields in both standard and custom modules, available in Zoho CRM account
 
 The discovering of Zoho CRM module schema is made dynamically based on Metadata API and should generally take no longer than 10 to 30 seconds.
 
@@ -21,12 +21,12 @@ The discovering of Zoho CRM module schema is made dynamically based on Metadata 
 Some of Zoho CRM Modules may not be available for sync due to limitations of Zoho CRM Edition or permissions scope. For details refer to the [Scopes](https://www.zoho.com/crm/developer/docs/api/v2/scopes.html) section in the Zoho CRM documentation.
 
 Connector streams and schemas are built dynamically on top of Metadata that is available from the REST API - please see [Modules API](https://www.zoho.com/crm/developer/docs/api/v2/modules-api.html), [Modules Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/module-meta.html), [Fields Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/field-meta.html).
-The list of available streams is the list of Modules as long as Module Metadata is available for each of them from the Zoho CRM API, and Fields Metadata is available for each of the fields. If a module you want to sync is not available from this connector, it's because the Zoho CRM API does not make it available. 
+The list of available streams is the list of Modules as long as Module Metadata is available for each of them from the Zoho CRM API, and Fields Metadata is available for each of the fields. If a module you want to sync is not available from this connector, it's because the Zoho CRM API does not make it available.
 
 ### Data type mapping
 
 | Integration Type      | Airbyte Type | Notes                     |
-|:----------------------|:-------------|:--------------------------|
+| :-------------------- | :----------- | :------------------------ |
 | `boolean`             | `boolean`    |                           |
 | `double`              | `number`     |                           |
 | `currency`            | `number`     |                           |
@@ -56,7 +56,7 @@ Any other data type not listed in the table above will be treated as `string`.
 ### Features
 
 | Feature                                   | Supported? \(Yes/No\) |
-|:------------------------------------------|:----------------------|
+| :---------------------------------------- | :-------------------- |
 | Full Refresh Overwrite Sync               | Yes                   |
 | Full Refresh Append Sync                  | Yes                   |
 | Incremental - Append Sync                 | Yes                   |
@@ -68,7 +68,7 @@ Any other data type not listed in the table above will be treated as `string`.
 ### Production
 
 | Environment | Base URL                |
-|:------------|:------------------------|
+| :---------- | :---------------------- |
 | US          | https://zohoapis.com    |
 | AU          | https://zohoapis.com.au |
 | EU          | https://zohoapis.eu     |
@@ -79,7 +79,7 @@ Any other data type not listed in the table above will be treated as `string`.
 ### Sandbox
 
 | Environment | Endpoint                        |
-|:------------|:--------------------------------|
+| :---------- | :------------------------------ |
 | US          | https://sandbox.zohoapis.com    |
 | AU          | https://sandbox.zohoapis.com.au |
 | EU          | https://sandbox.zohoapis.eu     |
@@ -89,14 +89,14 @@ Any other data type not listed in the table above will be treated as `string`.
 
 ### Developer
 
-| Environment | Endpoint                           |
-|:------------|:-----------------------------------|
-| US          | https://developer.zohoapis.com     |
-| AU          | https://developer.zohoapis.com.au  |
-| EU          | https://developer.zohoapis.eu      |
-| IN          | https://developer.zohoapis.in      |
-| CN          | https://developer.zohoapis.com.cn  |
-| JP          | https://developer.zohoapis.jp      |
+| Environment | Endpoint                          |
+| :---------- | :-------------------------------- |
+| US          | https://developer.zohoapis.com    |
+| AU          | https://developer.zohoapis.com.au |
+| EU          | https://developer.zohoapis.eu     |
+| IN          | https://developer.zohoapis.in     |
+| CN          | https://developer.zohoapis.com.cn |
+| JP          | https://developer.zohoapis.jp     |
 
 For more information about available environments, please visit [this page](https://www.zoho.com/crm/developer/sandbox.html?src=dev-hub)
 
@@ -124,12 +124,12 @@ To set up a connection with a Zoho CRM source, you will need to choose start syn
 ### Create Refresh Token
 
 For generating the refresh token, please refer to [this page](https://www.zoho.com/crm/developer/docs/api/v2/access-refresh.html).
-Make sure to complete the auth flow quickly, as the initial token granted by Zoho CRM is only live for a few minutes before it can no longer be used to generate a refresh token. 
+Make sure to complete the auth flow quickly, as the initial token granted by Zoho CRM is only live for a few minutes before it can no longer be used to generate a refresh token.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
 | 0.1.2   | 2023-03-09 | [23906](https://github.com/airbytehq/airbyte/pull/23906) | added support for the latest CDK, fixed SAT                                        |
 | 0.1.1   | 2023-03-13 | [23818](https://github.com/airbytehq/airbyte/pull/23818) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix |
 | 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release                                                                    |

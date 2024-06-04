@@ -7,9 +7,8 @@ acceptance_tests:
     tests:
       - spec_path: "source_google_analytics_data_api/spec.json"
         backward_compatibility_tests_config:
-          # changed the structure of `custom_reports`
-          # from `json string` to `list[reports]`
-          disable_for_version: 1.5.1
+          # changed the structure of `custom_reports` -> `cohortSpec`
+          disable_for_version: 2.1.0
   connection:
     tests:
       - config_path: "secrets/config.json"

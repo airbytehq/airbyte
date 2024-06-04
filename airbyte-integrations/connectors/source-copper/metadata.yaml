@@ -2,23 +2,38 @@ data:
   allowedHosts:
     hosts:
       - https://api.copper.com/
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 44f3002f-2df9-4f6d-b21c-02cd3b47d0dc
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.5
   dockerRepository: airbyte/source-copper
+  documentationUrl: https://docs.airbyte.com/integrations/sources/copper
   githubIssueLabel: source-copper
   icon: copper.svg
   license: MIT
   name: Copper
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-copper
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/copper
   tags:
-    - language:lowcode
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-COPPER__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

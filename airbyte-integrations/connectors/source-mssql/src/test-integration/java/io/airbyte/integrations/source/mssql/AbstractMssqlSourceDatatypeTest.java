@@ -123,14 +123,13 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("real")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.23456794E9", null)
-            .createTablePatternSql(CREATE_TABLE_SQL)
-            .build());
+    addDataTypeTestData(TestDataHolder.builder()
+        .sourceType("real")
+        .airbyteType(JsonSchemaType.NUMBER)
+        .addInsertValues("'123'", "'1234567890.1234567'", "null")
+        .addExpectedValues("123.0", "1.234568E9", null)
+        .createTablePatternSql(CREATE_TABLE_SQL)
+        .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -257,7 +256,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
             .sourceType("binary")
             .airbyteType(JsonSchemaType.STRING_BASE_64)
             .addInsertValues("CAST( 'A' AS BINARY(1))", "null")
-            .addExpectedValues("A", null)
+            .addExpectedValues("QQ==", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -267,7 +266,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
             .fullSourceDataType("varbinary(3)")
             .airbyteType(JsonSchemaType.STRING_BASE_64)
             .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
-            .addExpectedValues("ABC", null)
+            .addExpectedValues("QUJD", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -345,6 +344,14 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
 
     }
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("int")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .addInsertValues("null", "1234", "7878")
+            .addExpectedValues(null, "1234", "7878")
+            .createTablePatternSql("CREATE TABLE %1$s(%2$s INTEGER NULL DEFAULT ((7878)), %3$s %4$s)")
+            .build());
   }
 
 }

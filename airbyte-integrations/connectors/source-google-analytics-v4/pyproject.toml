@@ -1,0 +1,32 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.3.1"
+name = "source-google-analytics-v4"
+description = "Source implementation for Google Analytics V4."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "Elv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_google_analytics_v4"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0"
+PyJWT = "==2.8.0"
+requests = "==2.31.0"
+cryptography = "==41.0.4"
+
+[tool.poetry.scripts]
+source-google-analytics-v4 = "source_google_analytics_v4.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.1"
+requests-mock = "^1.11.0"
+pytest-mock = "^3.12.0"
+freezegun = "^1.4.0"

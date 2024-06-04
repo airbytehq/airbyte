@@ -55,6 +55,7 @@ your employees to the right projects.
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                               | Subject                |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------- |
-| 0.1.0   | 2022-09-05 | [15880](https://github.com/airbytehq/airbyte/pull/15880) | Initial implementation |
+| Version | Date       | Pull Request                                             | Subject                 |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 1.0.0   | 2024-04-01 | [36508](https://github.com/airbytehq/airbyte/pull/36508) | Migrate to low code cdk |
+| 0.1.0   | 2022-09-05 | [15880](https://github.com/airbytehq/airbyte/pull/15880) | Initial implementation  |

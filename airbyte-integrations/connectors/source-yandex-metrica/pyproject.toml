@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "1.0.4"
+name = "source-yandex-metrica"
+description = "Source implementation for Yandex Metrica."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/yandex-metrica"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_yandex_metrica"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "0.80.0"
+
+[tool.poetry.scripts]
+source-yandex-metrica = "source_yandex_metrica.run:run"
+
+[tool.poetry.group.dev.dependencies]
+freezegun = "^1.4.0"
+requests-mock = "^1.9.3"
+pytest = "^6.1"
+pytest-mock = "^3.14.0"

@@ -12,7 +12,7 @@ from pipelines.external_scripts.airbyte_ci_install import main as install_airbyt
 
 @click.command()
 @click.option("--version", default="latest", type=str, help="The version to update to.")
-async def update(version: str):
+async def update(version: str) -> None:
     """Updates airbyte-ci to the latest version."""
     is_dev = is_dev_command()
     if is_dev:

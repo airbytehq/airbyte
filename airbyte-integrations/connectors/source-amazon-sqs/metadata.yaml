@@ -5,13 +5,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 983fd355-6bf3-4709-91b5-37afa391eeb6
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-amazon-sqs
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-sqs
   githubIssueLabel: source-amazon-sqs
   icon: awssqs.svg
   license: MIT
   name: Amazon SQS
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amazon-sqs
   registries:
     cloud:
       enabled: true
@@ -21,4 +25,14 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMAZON-SQS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

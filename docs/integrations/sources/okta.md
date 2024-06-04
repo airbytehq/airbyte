@@ -3,22 +3,26 @@
 Okta is the complete identity solution for all your apps and people that’s universal, reliable, and easy
 
 ## Prerequisites
-* Created Okta account with added application on [Add Application Page](https://okta-domain.okta.com/enduser/catalog) page. (change okta-domain to you'r domain received after complete registration)
+
+- Created Okta account with added application on [Add Application Page](https://okta-domain.okta.com/enduser/catalog) page. (change okta-domain to you'r domain received after complete registration)
 
 ## Airbyte Open Source
-* Name
-* Okta-Domain
-* Start Date
-* Personal Api Token (look [here](https://developer.okta.com/docs/guides/find-your-domain/-/main/) to find it)
+
+- Name
+- Okta-Domain
+- Start Date
+- Personal Api Token (look [here](https://developer.okta.com/docs/guides/find-your-domain/-/main/) to find it)
 
 ## Airbyte Cloud
-* Name
-* Start Date
-* Client ID (received when application was added).
-* Client Secret (received when application was added).
-* Refresh Token (received when application was added)
+
+- Name
+- Start Date
+- Client ID (received when application was added).
+- Client Secret (received when application was added).
+- Refresh Token (received when application was added)
 
 ## Setup guide
+
 ### Step 1: Set up Okta
 
 1. Create account on Okta by following link [signup](https://www.okta.com/free-trial/)
@@ -32,32 +36,32 @@ Okta is the complete identity solution for all your apps and people that’s uni
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
 4. Add **Name**
-5. Add **Okta-Domain**
+5. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
 6. Add **Start date** (defaults to 7 days if no date is included)
 7. Choose the method of authentication
-8. If you select Token authentication - fill the field  **Personal Api Token** 
+8. If you select Token authentication - fill the field **Personal Api Token**
 9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
 10. Click `Set up source`.
 
 ### For Airbyte Open Source:
 
 1. Go to local Airbyte page.
-2. Use API token from requirements and Okta [domain](https://developer.okta.com/docs/guides/find-your-domain/-/main/). 
+2. Use API token from requirements and Okta [domain](https://developer.okta.com/docs/guides/find-your-domain/-/main/).
 3. Go to local Airbyte page.
-4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-5. On the Set up the source page select **Okta** from the Source type dropdown. 
+4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+5. On the Set up the source page select **Okta** from the Source type dropdown.
 6. Add **Name**
 7. Add **Okta-Domain**
 8. Add **Start date**
 9. Paste all data to required fields fill the fields **Client ID**, **Client Secret**, **Refresh Token**
 10. Click `Set up source`.
 
-
 ## Supported sync modes
 
 The Okta source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
- - Full Refresh
- - Incremental
+
+- Full Refresh
+- Incremental
 
 ## Supported Streams
 
@@ -79,13 +83,14 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.2.0   | 2024-05-16 | [36509](https://github.com/airbytehq/airbyte/pull/36509) | Migrate to Low Code                                                            |
 | 0.1.16  | 2023-07-07 | [20833](https://github.com/airbytehq/airbyte/pull/20833) | Fix infinite loop for GroupMembers stream                                      |
-| 0.1.15  | 2023-06-20 | [27533](https://github.com/airbytehq/airbyte/pull/27533) | Fixed group member stream and resource sets stream pagination                                                     |
+| 0.1.15  | 2023-06-20 | [27533](https://github.com/airbytehq/airbyte/pull/27533) | Fixed group member stream and resource sets stream pagination                  |
 | 0.1.14  | 2022-12-24 | [20877](https://github.com/airbytehq/airbyte/pull/20877) | Disabled OAuth2.0 authorization method                                         |
 | 0.1.13  | 2022-08-12 | [14700](https://github.com/airbytehq/airbyte/pull/14700) | Add resource sets                                                              |
 | 0.1.12  | 2022-08-05 | [15050](https://github.com/airbytehq/airbyte/pull/15050) | Add parameter `start_date` for Logs stream                                     |
 | 0.1.11  | 2022-08-03 | [14739](https://github.com/airbytehq/airbyte/pull/14739) | Add permissions for custom roles                                               |
-| 0.1.10  | 2022-08-01 | [15179](https://github.com/airbytehq/airbyte/pull/15179) | Fix broken schemas for all streams                                             | 
+| 0.1.10  | 2022-08-01 | [15179](https://github.com/airbytehq/airbyte/pull/15179) | Fix broken schemas for all streams                                             |
 | 0.1.9   | 2022-07-25 | [15001](https://github.com/airbytehq/airbyte/pull/15001) | Return deprovisioned users                                                     |
 | 0.1.8   | 2022-07-19 | [14710](https://github.com/airbytehq/airbyte/pull/14710) | Implement OAuth2.0 authorization method                                        |
 | 0.1.7   | 2022-07-13 | [14556](https://github.com/airbytehq/airbyte/pull/14556) | Add User_Role_Assignments and Group_Role_Assignments streams (full fetch only) |

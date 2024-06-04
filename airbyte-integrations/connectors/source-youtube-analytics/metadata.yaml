@@ -15,6 +15,10 @@ data:
   icon: youtube-analytics.svg
   license: MIT
   name: YouTube Analytics
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-youtube-analytics
   registries:
     cloud:
       enabled: true
@@ -24,4 +28,7 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
 metadataSpecVersion: "1.0"

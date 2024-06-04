@@ -5,7 +5,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: a827c52e-791c-4135-a245-e233c5255199
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-sftp
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
   githubIssueLabel: source-sftp
@@ -21,5 +21,7 @@ data:
   supportLevel: community
   tags:
     - language:java
-    - language:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

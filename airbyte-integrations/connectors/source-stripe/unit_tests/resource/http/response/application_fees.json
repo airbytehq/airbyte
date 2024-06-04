@@ -1,0 +1,138 @@
+{
+  "object": "list",
+  "url": "/v1/application_fees",
+  "has_more": false,
+  "data": [
+    {
+      "id": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+      "object": "application_fee",
+      "account": "acct_164wxjKbnvuxQXGu",
+      "amount": 105,
+      "amount_refunded": 105,
+      "application": "ca_32D88BD1qLklliziD7gYQvctJIhWBSQ7",
+      "balance_transaction": "txn_1032HU2eZvKYlo2CEPtcnUvl",
+      "charge": "ch_1B73DOKbnvuxQXGurbwPqzsu",
+      "created": 1506609734,
+      "currency": "gbp",
+      "livemode": false,
+      "originating_transaction": null,
+      "refunded": true,
+      "refunds": {
+        "object": "list",
+        "data": [
+          {
+            "id": "fr_1MBoV6KbnvuxQXGucP0PaPPO",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1670284508,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          },
+          {
+            "id": "fr_1MBoU0KbnvuxQXGu2wCCz4Bb",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1670284441,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          },
+          {
+            "id": "fr_1MBoRzKbnvuxQXGuvKkBKkSR",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1670284315,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          },
+          {
+            "id": "fr_1MBoPOKbnvuxQXGueOBnke22",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1670284154,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          },
+          {
+            "id": "fr_1MBoOGKbnvuxQXGu6EPQI2Zp",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1670284084,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          },
+          {
+            "id": "fr_1MBoMUKbnvuxQXGu8Y0Peaoy",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1670283974,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          },
+          {
+            "id": "fr_1MAgZBKbnvuxQXGuLTUrgGeq",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1670015681,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          },
+          {
+            "id": "fr_1JAu9EKbnvuxQXGuRdZYkxVW",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1625738880,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {
+              "order_id": "6735"
+            }
+          },
+          {
+            "id": "fr_1HZK0UKbnvuxQXGuS428gH0W",
+            "object": "fee_refund",
+            "amount": 0,
+            "balance_transaction": null,
+            "created": 1602005482,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          },
+          {
+            "id": "fr_D0s7fGBKB40Twy",
+            "object": "fee_refund",
+            "amount": 138,
+            "balance_transaction": "txn_1CaqNg2eZvKYlo2C75cA3Euk",
+            "created": 1528486576,
+            "currency": "usd",
+            "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+            "metadata": {}
+          }
+        ],
+        "has_more": false,
+        "url": "/v1/application_fees/fee_1B73DOKbnvuxQXGuhY8Aw0TN/refunds"
+      },
+      "source": {
+        "fee_type": "charge_application_fee",
+        "resource": {
+          "charge": "ch_1B73DOKbnvuxQXGurbwPqzsu",
+          "type": "charge"
+        }
+      }
+    }
+  ]
+}

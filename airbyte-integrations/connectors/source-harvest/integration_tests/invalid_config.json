@@ -1,5 +1,9 @@
 {
   "api_token": "1111111.aa.wrong-api-token",
   "account_id": "1111111",
-  "replication_start_date": "1000-06-26T21:20:07Z"
+  "replication_start_date": "1000-06-26T21:20:07Z",
+  "credentials": {
+    "auth_type": "Token",
+    "api_token": "invalid_token"
+  }
 }

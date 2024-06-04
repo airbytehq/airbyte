@@ -8,6 +8,11 @@ data:
   icon: unleash.svg
   license: MIT
   name: Unleash
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-unleash
   registries:
     cloud:
       enabled: false
@@ -17,8 +22,17 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/unleash
   tags:
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-UNLEASH_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

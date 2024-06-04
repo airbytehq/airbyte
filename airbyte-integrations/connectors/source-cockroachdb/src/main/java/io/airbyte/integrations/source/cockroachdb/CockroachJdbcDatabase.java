@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -79,6 +80,11 @@ public class CockroachJdbcDatabase
       return statement.executeQuery();
     }, sourceOperations::rowToJson).stream();
 
+  }
+
+  @Override
+  public <T> T executeMetadataQuery(Function<DatabaseMetaData, T> function) throws SQLException {
+    return database.executeMetadataQuery(function);
   }
 
 }

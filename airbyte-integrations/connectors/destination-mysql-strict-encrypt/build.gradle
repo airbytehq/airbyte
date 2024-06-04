@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.8.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.33.0'
+    features = ['db-destinations', 'typing-deduping']
     useLocalCdk = false
 }
 
@@ -28,16 +28,6 @@ dependencies {
 
     implementation 'mysql:mysql-connector-java:8.0.22'
 
-    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
-    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
-
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mysql')
     integrationTestJavaImplementation libs.testcontainers.mysql
-}
-
-configurations.all {
-    resolutionStrategy {
-        force libs.jooq
-    }
 }

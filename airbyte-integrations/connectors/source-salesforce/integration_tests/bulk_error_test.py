@@ -17,6 +17,7 @@ from source_salesforce.source import SourceSalesforce
 HERE = Path(__file__).parent
 _ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
 _ANY_CONFIG = {}
+_ANY_STATE = {}
 
 
 @pytest.fixture(name="input_config")
@@ -35,7 +36,7 @@ def get_stream(input_config: Mapping[str, Any], stream_name: str) -> Stream:
     stream_cls = type("a", (object,), {"name": stream_name})
     configured_stream_cls = type("b", (object,), {"stream": stream_cls(), "sync_mode": "full_refresh"})
     catalog_cls = type("c", (object,), {"streams": [configured_stream_cls()]})
-    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG)
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.catalog = catalog_cls()
     return source.streams(input_config)[0]
 
@@ -46,12 +47,12 @@ def get_any_real_stream(input_config: Mapping[str, Any]) -> Stream:
 
 def test_not_queryable_stream(caplog, input_config):
     stream = get_any_real_stream(input_config)
-    url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query"
+    url = f"{stream._legacy_stream.sf_api.instance_url}/services/data/{stream._legacy_stream.sf_api.version}/jobs/query"
 
     # test non queryable BULK streams
     query = "Select Id, Subject from ActivityHistory"
     with caplog.at_level(logging.WARNING):
-        assert stream.create_stream_job(query, url) is None, "this stream should be skipped"
+        assert stream._legacy_stream.create_stream_job(query, url) is None, "this stream should be skipped"
 
     # check logs
     assert "is not queryable" in caplog.records[-1].message
@@ -88,7 +89,7 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
                 "id": "fake_id",
             },
         )
-        m.register_uri("GET", job_matcher, json={"state": "Failed", "errorMessage": "unknown error"})
+        m.register_uri("GET", job_matcher, json={"state": "Failed", "errorMessage": "unknown error", "id": "fake_id"})
         m.register_uri("DELETE", job_matcher, json={})
         with caplog.at_level(logging.WARNING):
             loaded_record_ids = set(

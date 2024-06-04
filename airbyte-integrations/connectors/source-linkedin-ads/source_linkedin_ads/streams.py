@@ -6,22 +6,18 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import pendulum
 import requests
-from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.utils import casing
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import get_parent_stream_values, transform_data
 
 logger = logging.getLogger("airbyte")
 
-LINKEDIN_VERSION_API = "202305"
+LINKEDIN_VERSION_API = "202404"
 
 
 class LinkedinAdsStream(HttpStream, ABC):
@@ -32,7 +28,6 @@ class LinkedinAdsStream(HttpStream, ABC):
     url_base = "https://api.linkedin.com/rest/"
     primary_key = "id"
     records_limit = 500
-    endpoint = None
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Dict):
@@ -52,6 +47,11 @@ class LinkedinAdsStream(HttpStream, ABC):
         """Property to return the list of the user Account Ids from input"""
         return ",".join(map(str, self.config.get("account_ids", [])))
 
+    @property
+    @abstractmethod
+    def endpoint(self) -> str:
+        """Endpoint associated with the current stream"""
+
     def path(
         self,
         *,
@@ -64,15 +64,13 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        To paginate through results, begin with a start value of 0 and a count value of N.
-        To get the next page, set start value to N, while the count value stays the same.
-        We have reached the end of the dataset when the response contains fewer elements than the `count` parameter request.
-        https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
+        Cursor based pagination using the pageSize and pageToken parameters.
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) < self.records_limit:
+        if parsed_response.get("metadata", {}).get("nextPageToken"):
+            return {"pageToken": parsed_response["metadata"]["nextPageToken"]}
+        else:
             return None
-        return {"start": parsed_response.get("paging").get("start") + self.records_limit}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -85,14 +83,14 @@ class LinkedinAdsStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {"count": self.records_limit, "q": "search"}
+        params = {"pageSize": self.records_limit, "q": "search"}
         if next_page_token:
             params.update(**next_page_token)
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
+        We need to get out the nested complex data structures for further normalization, so the transform_data method is applied.
         """
         for record in transform_data(response.json().get("elements")):
             yield self._date_time_to_rfc3339(record)
@@ -119,6 +117,44 @@ class LinkedinAdsStream(HttpStream, ABC):
         return super().should_retry(response)
 
 
+class OffsetPaginationMixin:
+    """Mixin for offset based pagination for endpoints tha tdoesnt support cursor based pagination"""
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"count": self.records_limit, "q": "search"}
+        if next_page_token:
+            params.update(**next_page_token)
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        To paginate through results, begin with a start value of 0 and a count value of N.
+        To get the next page, set start value to N, while the count value stays the same.
+        We have reached the end of the dataset when the response contains fewer elements than the `count` parameter request.
+        https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
+        """
+        parsed_response = response.json()
+        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
+
+        # Note: The API might return fewer records than requested within the limits during pagination.
+        # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
+        paging_params = parsed_response.get("paging", {})
+        is_end_of_records = (
+            paging_params["total"] - paging_params["start"] <= self.records_limit
+            if all(param in paging_params for param in ("total", "start"))
+            else True
+        )
+
+        if is_elements_less_than_limit and is_end_of_records:
+            return None
+        return {"start": paging_params.get("start") + self.records_limit}
+
+
 class Accounts(LinkedinAdsStream):
     """
     Get Accounts data. More info about LinkedIn Ads / Accounts:
@@ -126,6 +162,7 @@ class Accounts(LinkedinAdsStream):
     """
 
     endpoint = "adAccounts"
+    use_cache = True
 
     def request_headers(self, stream_state: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
         """
@@ -146,12 +183,19 @@ class Accounts(LinkedinAdsStream):
         Override request_params() to have the ability to accept the specific account_ids from user's configuration.
         If we have list of account_ids, we need to make sure that the request_params are encoded correctly,
         We will get HTTP Error 500, if we use standard requests.urlencode methods to parse parameters,
-        so the urlencode(..., safe=":(),") is used instead, to keep the values as they are.
+        so the urlencode(..., safe=":(),%") is used instead, to keep the values as they are.
         """
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if self.accounts:
-            params["search"] = f"(id:(values:List({self.accounts})))"
-        return urlencode(params, safe="():,%")
+            # Construct the URN for each account ID
+            accounts = [f"urn:li:sponsoredAccount:{account_id}" for account_id in self.config.get("account_ids")]
+
+            # Join the URNs into a single string, separated by commas, and URL encode only this part
+            encoded_accounts = quote(",".join(accounts), safe=",")
+
+            # Insert the encoded account IDs into the overall structure, keeping colons and parentheses outside safe
+            params["search"] = f"(id:(values:List({encoded_accounts})))"
+        return urlencode(params, safe=":(),%")
 
 
 class IncrementalLinkedinAdsStream(LinkedinAdsStream):
@@ -169,12 +213,12 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 
     @property
     @abstractmethod
-    def parent_stream(self) -> object:
-        """Defines the parrent stream for slicing, the class object should be provided."""
+    def parent_stream(self) -> LinkedinAdsStream:
+        """Defines the parent stream for slicing, the class object should be provided."""
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        """Define the checkpoint from the records output size."""
+        """Define the checkpoint from the record output size."""
         return 100
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -182,11 +226,11 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field))}
 
 
-class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
+class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
     """
     This class stands for provide stream slicing for other dependent streams.
     :: `parent_stream` - the reference to the parent stream class,
-        by default it's referenced to the Accounts stream class, as far as majority of streams are using it.
+        by default it's referenced to the Accounts stream class, as far as a majority of streams are using it.
     :: `parent_values_map` - key_value map for stream slices in a format: {<slice_key_name>: <key inside record>}
     :: `search_param` - the query param to pass with request_params
     """
@@ -215,7 +259,7 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
 
 
-class AccountUsers(LinkedInAdsStreamSlicing):
+class AccountUsers(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     """
     Get AccountUsers data using `account_id` slicing. More info about LinkedIn Ads / AccountUsers:
     https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts
@@ -315,7 +359,7 @@ class Creatives(LinkedInAdsStreamSlicing):
     endpoint = "creatives"
     parent_stream = Accounts
     cursor_field = "lastModifiedAt"
-    # standard records_limit=500 returns error 400: Request would return too many entities;  https://github.com/airbytehq/oncall/issues/2159
+    # standard records_limit=500 returns error 400: Request would return too many entities; https://github.com/airbytehq/oncall/issues/2159
     records_limit = 100
 
     def path(
@@ -353,7 +397,7 @@ class Creatives(LinkedInAdsStreamSlicing):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
-class Conversions(LinkedInAdsStreamSlicing):
+class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     """
     Get Conversions data using `account_id` slicing.
     https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account
@@ -388,161 +432,3 @@ class Conversions(LinkedInAdsStreamSlicing):
             else current_stream_state
         )
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
-
-
-class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
-    """
-    AdAnalytics Streams more info:
-    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#analytics-finder
-    """
-
-    endpoint = "adAnalytics"
-    # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc] + `end_date`
-    primary_key = ["pivotValue", "end_date"]
-    cursor_field = "end_date"
-    records_limit = 15000
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
-
-    def __init__(self, name: str = None, pivot_by: str = None, time_granularity: str = None, **kwargs):
-        self.user_stream_name = name
-        if pivot_by:
-            self.pivot_by = pivot_by
-        if time_granularity:
-            self.time_granularity = time_granularity
-        super().__init__(**kwargs)
-
-    @property
-    def name(self) -> str:
-        """We override stream name to let the user change it via configuration."""
-        name = self.user_stream_name or self.__class__.__name__
-        return casing.camel_to_snake(name)
-
-    @property
-    def base_analytics_params(self) -> MutableMapping[str, Any]:
-        """Define the base parameters for analytics streams"""
-        return {"q": "analytics", "pivot": f"(value:{self.pivot_by})", "timeGranularity": f"(value:{self.time_granularity})"}
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        headers = super().request_headers(stream_state, stream_slice, next_page_token)
-        return headers | {"X-Restli-Protocol-Version": "2.0.0"}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = self.base_analytics_params
-        params.update(**update_analytics_params(stream_slice))
-        params[self.search_param] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
-        return urlencode(params, safe="():,%")
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Pagination is not supported
-        (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
-        """
-        parsed_response = response.json()
-        if len(parsed_response.get("elements")) < self.records_limit:
-            return None
-        raise Exception(
-            f"Limit {self.records_limit} elements exceeded. "
-            f"Try to request your data in more granular pieces. "
-            f"(For example switch `Time Granularity` from MONTHLY to DAILY)"
-        )
-
-    def get_primary_key_from_slice(self, stream_slice) -> str:
-        return stream_slice.get(self.primary_slice_key)
-
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {self.cursor_field: self.config.get("start_date")}
-        parent_stream = self.parent_stream(config=self.config)
-        for record in parent_stream.read_records(**kwargs):
-            result_chunks = []
-            for analytics_slice in make_analytics_slices(
-                record, self.parent_values_map, stream_state.get(self.cursor_field), self.config.get("end_date")
-            ):
-                child_stream_slice = super().read_records(stream_slice=analytics_slice, **kwargs)
-                result_chunks.append(child_stream_slice)
-            yield from merge_chunks(result_chunks, self.cursor_field)
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
-        """
-        for rec in transform_data(response.json().get("elements")):
-            yield rec | {"pivotValue": f"urn:li:{self.search_param_value}:{self.get_primary_key_from_slice(kwargs.get('stream_slice'))}"}
-
-
-class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
-    """
-    Campaign Analytics stream.
-    """
-
-    endpoint = "adAnalytics"
-
-    parent_stream = Campaigns
-    parent_values_map = {"campaign_id": "id"}
-    search_param = "campaigns"
-    search_param_value = "sponsoredCampaign"
-    pivot_by = "CAMPAIGN"
-    time_granularity = "DAILY"
-
-
-class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
-    """
-    Creative Analytics stream.
-    """
-
-    parent_stream = Creatives
-    parent_values_map = {"creative_id": "id"}
-    search_param = "creatives"
-    search_param_value = "sponsoredCreative"
-    pivot_by = "CREATIVE"
-    time_granularity = "DAILY"
-
-    def get_primary_key_from_slice(self, stream_slice) -> str:
-        creative_id = stream_slice.get(self.primary_slice_key).split(":")[-1]
-        return creative_id
-
-
-class AdImpressionDeviceAnalytics(AdCampaignAnalytics):
-    pivot_by = "IMPRESSION_DEVICE_TYPE"
-
-
-class AdMemberCompanySizeAnalytics(AdCampaignAnalytics):
-    pivot_by = "MEMBER_COMPANY_SIZE"
-
-
-class AdMemberIndustryAnalytics(AdCampaignAnalytics):
-    pivot_by = "MEMBER_INDUSTRY"
-
-
-class AdMemberSeniorityAnalytics(AdCampaignAnalytics):
-    pivot_by = "MEMBER_SENIORITY"
-
-
-class AdMemberJobTitleAnalytics(AdCampaignAnalytics):
-    pivot_by = "MEMBER_JOB_TITLE"
-
-
-class AdMemberJobFunctionAnalytics(AdCampaignAnalytics):
-    pivot_by = "MEMBER_JOB_FUNCTION"
-
-
-class AdMemberCountryAnalytics(AdCampaignAnalytics):
-    pivot_by = "MEMBER_COUNTRY_V2"
-
-
-class AdMemberRegionAnalytics(AdCampaignAnalytics):
-    pivot_by = "MEMBER_REGION_V2"
-
-
-class AdMemberCompanyAnalytics(AdCampaignAnalytics):
-    pivot_by = "MEMBER_COMPANY"

@@ -3,9 +3,9 @@
 #
 
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from .common import CatalogModel, Targeting
+from .common import CatalogModel, KeywordsBase
 
 
 class Adjustments(CatalogModel):
@@ -19,39 +19,38 @@ class Bidding(CatalogModel):
 
 
 class ProductCampaign(CatalogModel):
-    portfolioId: int
-    campaignId: Decimal
+    portfolioId: str
+    campaignId: str
     name: str
     tags: Dict[str, str]
-    campaignType: str
     targetingType: str
     state: str
-    dailyBudget: Decimal
-    ruleBasedBudget: Dict[str, str]
+    dynamicBidding: Dict[str, Any]
     startDate: str
-    endDate: str = None
-    premiumBidAdjustment: bool
-    bidding: Bidding
-    networks: str
+    endDate: str
+    budget: Dict[str, Any]
+    extendedData: Optional[Dict[str, Any]]
 
 
 class ProductAdGroups(CatalogModel):
-    adGroupId: Decimal
+    adGroupId: str
     name: str
-    campaignId: Decimal
+    campaignId: str
     defaultBid: Decimal
     state: str
+    extendedData: dict
 
 
-class SuggestedBid(CatalogModel):
-    suggested: Decimal
-    rangeStart: Decimal
-    rangeEnd: Decimal
+class BidRecommendations(CatalogModel):
+    bidValues: List[Dict[str, str]]
+    targetingExpression: Dict[str, str]
 
 
 class ProductAdGroupBidRecommendations(CatalogModel):
-    adGroupId: Decimal
-    suggestedBid: Optional[SuggestedBid] = None
+    adGroupId: str
+    campaignId: str
+    theme: str
+    bidRecommendationsForTargetingExpressions: List[BidRecommendations]
 
 
 class SuggestedKeyword(CatalogModel):
@@ -60,20 +59,56 @@ class SuggestedKeyword(CatalogModel):
 
 
 class ProductAdGroupSuggestedKeywords(CatalogModel):
-    adGroupId: Decimal
+    adGroupId: int
     suggestedKeywords: List[SuggestedKeyword] = None
 
 
 class ProductAd(CatalogModel):
-    adId: Decimal
-    campaignId: Decimal
-    adGroupId: Decimal
-    sku: str
+    adId: str
+    campaignId: str
+    customText: str
     asin: str
     state: str
+    sku: str
+    adGroupId: str
+    extendedData: Optional[Dict[str, Any]]
 
 
-class ProductTargeting(Targeting):
-    campaignId: Decimal
+class ProductTargeting(CatalogModel):
     expression: List[Dict[str, str]]
+    targetId: str
     resolvedExpression: List[Dict[str, str]]
+    campaignId: str
+    expressionType: str
+    state: str
+    bid: float
+    adGroupId: str
+    extendedData: Optional[Dict[str, Any]]
+
+
+class SponsoredProductCampaignNegativeKeywordsModel(KeywordsBase):
+    keywordId: str
+    campaignId: str
+    state: str
+    keywordText: str
+    extendedData: Optional[Dict[str, Any]]
+
+
+class SponsoredProductKeywordsModel(KeywordsBase):
+    keywordId: str
+    nativeLanguageLocale: str
+    campaignId: str
+    state: str
+    adGroupId: str
+    keywordText: str
+    extendedData: Optional[Dict[str, Any]]
+
+
+class SponsoredProductNegativeKeywordsModel(KeywordsBase):
+    keywordId: str
+    nativeLanguageLocale: str
+    campaignId: str
+    state: str
+    adGroupId: str
+    keywordText: str
+    extendedData: Optional[Dict[str, Any]]

@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/destination-dynamodb
   githubIssueLabel: destination-dynamodb
   icon: dynamodb.svg
@@ -21,4 +21,13 @@ data:
     sl: 100
     ql: 200
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-DYNAMODB__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

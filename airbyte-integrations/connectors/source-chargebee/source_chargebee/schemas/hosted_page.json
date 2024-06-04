@@ -4,70 +4,64 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the hosted page.",
       "type": ["string", "null"]
     },
     "type": {
-      "type": ["string", "null"],
-      "enum": [
-        "checkout_new",
-        "checkout_existing",
-        "update_payment_method",
-        "manage_payment_sources",
-        "collect_now",
-        "extend_subscription",
-        "checkout_gift",
-        "claim_gift",
-        "checkout_one_time",
-        "pre_cancel"
-      ]
+      "description": "Type of hosted page (e.g., checkout, subscription).",
+      "type": ["string", "null"]
     },
     "url": {
+      "description": "URL where the hosted page can be accessed.",
       "type": ["string", "null"]
     },
     "state": {
-      "type": ["string", "null"],
-      "enum": ["created", "requested", "succeeded", "cancelled", "acknowledged"]
+      "description": "Current state of the hosted page (e.g., active, expired).",
+      "type": ["string", "null"]
     },
     "pass_thru_content": {
+      "description": "Content that is passed through to the hosted page.",
       "type": ["string", "null"]
     },
     "embed": {
+      "description": "Details about embedding the hosted page.",
       "type": ["boolean", "null"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the hosted page was created.",
       "type": ["integer", "null"]
     },
     "expires_at": {
+      "description": "Timestamp specifying the expiry date of the hosted page.",
       "type": ["integer", "null"]
     },
     "content": {
+      "description": "Content or details displayed on the hosted page.",
       "type": ["object", "null"]
     },
     "updated_at": {
+      "description": "Timestamp indicating the last update time of the hosted page.",
       "type": ["integer", "null"]
     },
     "resource_version": {
+      "description": "Version of the hosted page resource.",
       "type": ["integer", "null"]
     },
     "checkout_info": {
+      "description": "Information related to the checkout process for the hosted page.",
       "type": ["object", "null"]
     },
     "business_entity_id": {
+      "description": "The ID of the business entity associated with the hosted page.",
+      "type": ["string", "null"]
+    },
+    "object": {
+      "description": "Indicates the type of object, in this case, it would be 'hosted_page'.",
       "type": ["string", "null"]
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Any custom fields or additional information attached to the hosted page.",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

@@ -1,24 +1,33 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import importlib.metadata
 import os
+from typing import TYPE_CHECKING
 
 import sentry_sdk
-from connector_ops.utils import Connector
+from connector_ops.utils import Connector  # type: ignore
+
+if TYPE_CHECKING:
+    from typing import Any, Callable, Dict, Optional
+
+    from asyncclick import Command, Context
+    from pipelines.models.steps import Step
 
 
-def initialize():
+def initialize() -> None:
     if "SENTRY_DSN" in os.environ:
         sentry_sdk.init(
             dsn=os.environ.get("SENTRY_DSN"),
-            before_send=before_send,
+            environment=os.environ.get("SENTRY_ENVIRONMENT") or "production",
+            before_send=before_send,  # type: ignore
             release=f"pipelines@{importlib.metadata.version('pipelines')}",
         )
 
 
-def before_send(event, hint):
+def before_send(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     # Ignore logged errors that do not contain an exception
     if "log_record" in hint and "exc_info" not in hint:
         return None
@@ -26,8 +35,8 @@ def before_send(event, hint):
     return event
 
 
-def with_step_context(func):
-    def wrapper(self, *args, **kwargs):
+def with_step_context(func: Callable) -> Callable:
+    def wrapper(self: Step, *args: Any, **kwargs: Any) -> Step:
         with sentry_sdk.configure_scope() as scope:
             step_name = self.__class__.__name__
             scope.set_tag("pipeline_step", step_name)
@@ -61,8 +70,8 @@ def with_step_context(func):
     return wrapper
 
 
-def with_command_context(func):
-    def wrapper(self, ctx, *args, **kwargs):
+def with_command_context(func: Callable) -> Callable:
+    def wrapper(self: Command, ctx: Context, *args: Any, **kwargs: Any) -> Command:
         with sentry_sdk.configure_scope() as scope:
             scope.set_tag("pipeline_command", self.name)
             scope.set_context(

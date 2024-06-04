@@ -2,5 +2,6 @@
   "host": "default",
   "port": 5555,
   "database": "default",
-  "username": "default"
+  "username": "default",
+  "password": "default"
 }

@@ -17,11 +17,11 @@ from .streams import ProcessedOrderDetails, ProcessedOrders, StockItems, StockLo
 class LinnworksAuthenticator(Oauth2Authenticator):
     def __init__(
         self,
-        token_refresh_endpoint: str,
         application_id: str,
         application_secret: str,
         token: str,
         token_expiry_date: pendulum.datetime = None,
+        token_refresh_endpoint: str = "https://api.linnworks.net/api/Auth/AuthorizeByApplication",
         access_token_name: str = "Token",
         expires_in_name: str = "TTL",
         server_name: str = "Server",
@@ -36,16 +36,19 @@ class LinnworksAuthenticator(Oauth2Authenticator):
             access_token_name=access_token_name,
             expires_in_name=expires_in_name,
         )
-
+        self.access_token_name = access_token_name
         self.application_id = application_id
         self.application_secret = application_secret
+        self.expires_in_name = expires_in_name
         self.token = token
         self.server_name = server_name
+        self.token_refresh_endpoint = token_refresh_endpoint
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {"Authorization": self.get_access_token()}
 
     def get_access_token(self):
+
         if self.token_has_expired():
             t0 = pendulum.now()
             token, expires_in, server = self.refresh_access_token()

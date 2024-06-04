@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_braze import SourceBraze
+from source_braze.run import run
 
 if __name__ == "__main__":
-    source = SourceBraze()
-    launch(source, sys.argv[1:])
+    run()

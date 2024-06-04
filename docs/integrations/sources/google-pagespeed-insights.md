@@ -5,6 +5,7 @@ This page guides you through the process of setting up the Google PageSpeed Insi
 ## Sync overview
 
 ## Prerequisites
+
 - Your [Google PageSpeed `API Key`](https://developers.google.com/speed/docs/insights/v5/get-started#APIKey)
 
 ## Set up the Google PageSpeed Insights source connector
@@ -19,7 +20,7 @@ This page guides you through the process of setting up the Google PageSpeed Insi
 8. For **Lighthouse Categories**, select one or many of the provided options. Categories are also called "audits" in some of the [Google Lighthouse documentation](https://developer.chrome.com/docs/lighthouse/overview/).
 9. Click **Set up source**.
 
-> **IMPORTANT:** As of 2022-12-13, the PageSpeed Insights API - as well as this Airbyte Connector - allow to specify a URL with prefix "origin:" - like ``origin:https://www.google.com``. This results in condensed, aggregated reports about the specified origin - see [this FAQ](https://developers.google.com/speed/docs/insights/faq). **However**: This option is not specified in any official documentation anymore, therefore it might be deprecated anytime soon!
+> **IMPORTANT:** As of 2022-12-13, the PageSpeed Insights API - as well as this Airbyte Connector - allow to specify a URL with prefix "origin:" - like `origin:https://www.google.com`. This results in condensed, aggregated reports about the specified origin - see [this FAQ](https://developers.google.com/speed/docs/insights/faq). **However**: This option is not specified in any official documentation anymore, therefore it might be deprecated anytime soon!
 
 ## Supported sync modes
 
@@ -32,12 +33,13 @@ The Google PageSpeed Insights source connector supports the following [sync mode
 The Google PageSpeed Insights source connector supports the following stream:
 
 - [pagespeed](https://developers.google.com/speed/docs/insights/v5/get-started#cli): Full pagespeed report of the selected URLs, lighthouse categories and analyses strategies.
+
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -48,7 +50,12 @@ If the connector is used with an API key, Google allows for 25.000 queries per d
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.1   | 2023-05-25 | [#22287](https://github.com/airbytehq/airbyte/pull/22287) | 🐛 Fix URL pattern regex |
-| 0.1.0   | 2022-11-26 | [#19813](https://github.com/airbytehq/airbyte/pull/19813) | 🎉 New Source: Google PageSpeed Insights [low-code CDK] |
+| Version | Date       | Pull Request                                              | Subject                                                                         |
+| :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.6   | 2024-05-21 | [38147](https://github.com/airbytehq/airbyte/pull/38147)  | Make compatable with builder                                                    |
+| 0.1.5   | 2024-04-19 | [37171](https://github.com/airbytehq/airbyte/pull/37171)  | Updating to 0.80.0 CDK                                                          |
+| 0.1.4   | 2024-04-18 | [37171](https://github.com/airbytehq/airbyte/pull/37171)  | Manage dependencies with Poetry.                                                |
+| 0.1.3   | 2024-04-15 | [37171](https://github.com/airbytehq/airbyte/pull/37171)  | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.2   | 2024-04-12 | [37171](https://github.com/airbytehq/airbyte/pull/37171)  | schema descriptions                                                             |
+| 0.1.1   | 2023-05-25 | [#22287](https://github.com/airbytehq/airbyte/pull/22287) | 🐛 Fix URL pattern regex                                                        |
+| 0.1.0   | 2022-11-26 | [#19813](https://github.com/airbytehq/airbyte/pull/19813) | 🎉 New Source: Google PageSpeed Insights [low-code CDK]                         |

@@ -1,0 +1,58 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "evt_1OEiWvEcXtiJtvvhLaQOew6V",
+      "object": "event",
+      "api_version": "2020-08-27",
+      "created": 1700529213,
+      "data": {
+        "object": {
+          "object": "balance",
+          "available": [
+            {
+              "amount": 518686,
+              "currency": "usd",
+              "source_types": {
+                "card": 518686
+              }
+            }
+          ],
+          "connect_reserved": [
+            {
+              "amount": 0,
+              "currency": "usd"
+            }
+          ],
+          "issuing": {
+            "available": [
+              {
+                "amount": 150000,
+                "currency": "usd"
+              }
+            ]
+          },
+          "livemode": false,
+          "pending": [
+            {
+              "amount": 0,
+              "currency": "usd",
+              "source_types": {
+                "card": 0
+              }
+            }
+          ]
+        }
+      },
+      "livemode": false,
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": null
+      },
+      "type": "balance.available"
+    }
+  ],
+  "has_more": false,
+  "url": "/v1/events"
+}

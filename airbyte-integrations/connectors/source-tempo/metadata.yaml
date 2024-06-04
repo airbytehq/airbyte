@@ -15,6 +15,10 @@ data:
   icon: tempo.svg
   license: MIT
   name: Tempo
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tempo
   registries:
     cloud:
       enabled: true
@@ -23,6 +27,19 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TEMPO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_TEMPO_LIMITED_SCOPES
+          fileName: accounts_only_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

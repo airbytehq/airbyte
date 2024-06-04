@@ -11,16 +11,11 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
-public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>> {
+public class MySQLContainerFactory extends ContainerFactory<MySQLContainer<?>> {
 
   @Override
-  public MySQLContainer<?> createNewContainer(DockerImageName imageName) {
+  protected MySQLContainer<?> createNewContainer(DockerImageName imageName) {
     return new MySQLContainer<>(imageName.asCompatibleSubstituteFor("mysql"));
-  }
-
-  @Override
-  public Class<?> getContainerClass() {
-    return MySQLContainer.class;
   }
 
   /**
@@ -39,6 +34,8 @@ public class MySQLContainerFactory implements ContainerFactory<MySQLContainer<?>
   public void withMoscowTimezone(MySQLContainer<?> container) {
     container.withEnv("TZ", "Europe/Moscow");
   }
+
+  public void withCustomName(MySQLContainer<?> container) {} // do nothing
 
   public void withRootAndServerCertificates(MySQLContainer<?> container) {
     execInContainer(container,

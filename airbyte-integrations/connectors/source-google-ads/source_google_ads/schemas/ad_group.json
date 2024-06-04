@@ -3,102 +3,135 @@
   "type": "object",
   "properties": {
     "campaign.id": {
+      "description": "The unique identifier of the campaign to which the ad group belongs.",
       "type": ["null", "integer"]
     },
     "ad_group.ad_rotation_mode": {
+      "description": "The rotation mode for ads within the ad group.",
       "type": ["null", "string"]
     },
     "ad_group.base_ad_group": {
+      "description": "The base ad group associated with this ad group.",
       "type": ["null", "string"]
     },
     "ad_group.campaign": {
+      "description": "The campaign to which the ad group belongs.",
       "type": ["null", "string"]
     },
+    "metrics.cost_micros": {
+      "description": "The cost in micros for the ad group.",
+      "type": ["null", "integer"]
+    },
     "ad_group.cpc_bid_micros": {
+      "description": "The cost-per-click bid for the ad group in micros.",
       "type": ["null", "integer"]
     },
     "ad_group.cpm_bid_micros": {
+      "description": "The cost-per-thousand impressions bid for the ad group in micros.",
       "type": ["null", "integer"]
     },
     "ad_group.cpv_bid_micros": {
+      "description": "The cost-per-view bid for the ad group in micros.",
       "type": ["null", "integer"]
     },
     "ad_group.display_custom_bid_dimension": {
+      "description": "Custom bid dimension settings for the display network.",
       "type": ["null", "string"]
     },
     "ad_group.effective_target_cpa_micros": {
+      "description": "The effective target cost-per-acquisition bid in micros.",
       "type": ["null", "integer"]
     },
     "ad_group.effective_target_cpa_source": {
+      "description": "The source of the effective target CPA bid.",
       "type": ["null", "string"]
     },
     "ad_group.effective_target_roas": {
+      "description": "The effective target return on ad spend bid.",
       "type": ["null", "number"]
     },
     "ad_group.effective_target_roas_source": {
+      "description": "The source of the effective target ROAS bid.",
       "type": ["null", "string"]
     },
     "ad_group.excluded_parent_asset_field_types": {
+      "description": "Field types excluded from being used as asset fields in the ad group.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group.optimized_targeting_enabled": {
+      "description": "Indicates whether optimized targeting is enabled for the ad group.",
       "type": ["null", "boolean"]
     },
     "ad_group.final_url_suffix": {
+      "description": "The final URL suffix for the ad group.",
       "type": ["null", "string"]
     },
     "ad_group.id": {
+      "description": "The unique identifier for the ad group.",
       "type": ["null", "integer"]
     },
     "ad_group.labels": {
+      "description": "Labels associated with the ad group.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group.name": {
+      "description": "The name of the ad group.",
       "type": ["null", "string"]
     },
     "ad_group.percent_cpc_bid_micros": {
+      "description": "The percentage of the cost-per-click bid that is paid for the ad group.",
       "type": ["null", "integer"]
     },
     "ad_group.resource_name": {
+      "description": "The resource name of the ad group.",
       "type": ["null", "string"]
     },
     "ad_group.status": {
+      "description": "The status of the ad group.",
       "type": ["null", "string"]
     },
     "ad_group.target_cpa_micros": {
+      "description": "The target cost-per-acquisition bid in micros for the ad group.",
       "type": ["null", "integer"]
     },
     "ad_group.target_cpm_micros": {
+      "description": "The target cost-per-thousand impressions bid in micros for the ad group.",
       "type": ["null", "integer"]
     },
     "ad_group.target_roas": {
+      "description": "The target return on ad spend bid for the ad group.",
       "type": ["null", "number"]
     },
     "ad_group.targeting_setting.target_restrictions": {
+      "description": "Targeting restrictions defined for the ad group.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group.tracking_url_template": {
+      "description": "The tracking URL template for the ad group.",
       "type": ["null", "string"]
     },
     "ad_group.type": {
+      "description": "The type of the ad group.",
       "type": ["null", "string"]
     },
     "ad_group.url_custom_parameters": {
+      "description": "Custom parameters for the ad group's URLs.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "segments.date": {
+      "description": "The date segment for the data.",
       "type": ["null", "string"],
       "format": "date"
     }

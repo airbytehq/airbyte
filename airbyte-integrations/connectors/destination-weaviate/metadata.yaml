@@ -13,7 +13,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.18
   dockerRepository: airbyte/destination-weaviate
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   githubIssueLabel: destination-weaviate
@@ -29,11 +29,7 @@ data:
   releases:
     breakingChanges:
       0.2.0:
-        message:
-          "After upgrading, you need to reconfigure the source. For more details
-          check out the migration guide.
-
-          "
+        message: "After upgrading, you need to reconfigure the source. For more details check out the migration guide.\n"
         upgradeDeadline: "2023-10-01"
   resourceRequirements:
     jobSpecific:
@@ -44,4 +40,21 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-WEAVIATE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION-WEAVIATE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

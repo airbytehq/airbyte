@@ -1,9 +1,15 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/source-linnworks
+  documentationUrl: https://docs.airbyte.com/integrations/sources/linnworks
   githubIssueLabel: source-linnworks
   icon: linnworks.svg
   license: MIT
@@ -14,11 +20,31 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/linnworks
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-linnworks
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-LINNWORKS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-LINNWORKS_DSDSSDS_A-B_CREDS
+          fileName: dsdssds_a-b---_---_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-LINNWORKS_TEST
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

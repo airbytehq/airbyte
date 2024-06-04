@@ -50,7 +50,7 @@
       },
       "profiles": {
         "title": "Profile IDs",
-        "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details. Note: If Marketplace IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
+        "description": "Profile IDs you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details. Note: If Marketplace IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
         "order": 6,
         "type": "array",
         "items": {
@@ -114,6 +114,16 @@
     "predicate_key": ["auth_type"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "region": {
+            "type": "string",
+            "path_in_connector_config": ["region"]
+          }
+        }
+      },
       "complete_oauth_output_specification": {
         "type": "object",
         "additionalProperties": true,

@@ -7,17 +7,17 @@
 from __future__ import annotations
 
 import json
+import time
 import typing
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import List
 
-import anyio
-from anyio import Path
-from connector_ops.utils import console
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
-from pipelines.dagger.actions import remote_storage
-from pipelines.helpers.utils import format_duration
+from connector_ops.utils import console  # type: ignore
+from pipelines.consts import LOCAL_REPORTS_PATH_ROOT
+from pipelines.helpers.utils import format_duration, slugify
+from pipelines.models.artifacts import Artifact
 from pipelines.models.steps import StepResult, StepStatus
 from rich.console import Group
 from rich.panel import Panel
@@ -26,92 +26,112 @@ from rich.table import Table
 from rich.text import Text
 
 if typing.TYPE_CHECKING:
-    from pipelines.models.steps import PipelineContext
+    from pipelines.models.contexts.pipeline_context import PipelineContext
+    from rich.tree import RenderableType
 
 
 @dataclass(frozen=True)
 class Report:
     """A dataclass to build reports to share pipelines executions results with the user."""
 
-    pipeline_context: "PipelineContext"
+    pipeline_context: PipelineContext
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
     filename: str = "output"
 
     @property
-    def report_output_prefix(self) -> str:  # noqa D102
+    def report_output_prefix(self) -> str:
         return self.pipeline_context.report_output_prefix
 
     @property
-    def json_report_file_name(self) -> str:  # noqa D102
+    def report_dir_path(self) -> Path:
+        return Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}")
+
+    @property
+    def json_report_file_name(self) -> str:
         return self.filename + ".json"
 
     @property
-    def json_report_remote_storage_key(self) -> str:  # noqa D102
+    def json_report_remote_storage_key(self) -> str:
         return f"{self.report_output_prefix}/{self.json_report_file_name}"
 
     @property
-    def failed_steps(self) -> List[StepResult]:  # noqa D102
+    def failed_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.FAILURE]
 
     @property
-    def successful_steps(self) -> List[StepResult]:  # noqa D102
+    def successful_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SUCCESS]
 
     @property
-    def skipped_steps(self) -> List[StepResult]:  # noqa D102
+    def skipped_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SKIPPED]
 
     @property
-    def success(self) -> bool:  # noqa D102
+    def success(self) -> bool:
         return len(self.failed_steps) == 0 and (len(self.skipped_steps) > 0 or len(self.successful_steps) > 0)
 
     @property
-    def run_duration(self) -> timedelta:  # noqa D102
+    def run_duration(self) -> timedelta:
+        assert self.pipeline_context.started_at is not None, "The pipeline started_at timestamp must be set to save reports."
+        assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return self.pipeline_context.stopped_at - self.pipeline_context.started_at
 
     @property
-    def lead_duration(self) -> timedelta:  # noqa D102
+    def lead_duration(self) -> timedelta:
+        assert self.pipeline_context.started_at is not None, "The pipeline started_at timestamp must be set to save reports."
+        assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return self.pipeline_context.stopped_at - self.pipeline_context.created_at
 
-    @property
-    def remote_storage_enabled(self) -> bool:  # noqa D102
-        return self.pipeline_context.is_ci
-
-    async def save_local(self, filename: str, content: str) -> Path:
-        """Save the report files locally."""
-        local_path = anyio.Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}/{filename}")
-        await local_path.parents[0].mkdir(parents=True, exist_ok=True)
-        await local_path.write_text(content)
-        return local_path
-
-    async def save_remote(self, local_path: Path, remote_key: str, content_type: str = None) -> int:
-        gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
-        local_file = self.pipeline_context.dagger_client.host().directory(".", include=[str(local_path)]).file(str(local_path))
-        report_upload_exit_code, _, _ = await remote_storage.upload_to_gcs(
-            dagger_client=self.pipeline_context.dagger_client,
-            file_to_upload=local_file,
-            key=remote_key,
-            bucket=self.pipeline_context.ci_report_bucket,
-            gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
-            flags=gcs_cp_flags,
-        )
-        gcs_uri = "gs://" + self.pipeline_context.ci_report_bucket + "/" + remote_key
-        public_url = f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{remote_key}"
-        if report_upload_exit_code != 0:
-            self.pipeline_context.logger.error(f"Uploading {local_path} to {gcs_uri} failed.")
-        else:
-            self.pipeline_context.logger.info(f"Uploading {local_path} to {gcs_uri} succeeded. Public URL: {public_url}")
-        return report_upload_exit_code
-
     async def save(self) -> None:
-        """Save the report files."""
-        local_json_path = await self.save_local(self.json_report_file_name, self.to_json())
-        absolute_path = await local_json_path.absolute()
+        self.report_dir_path.mkdir(parents=True, exist_ok=True)
+        await self.save_json_report()
+        await self.save_step_result_artifacts()
+
+    async def save_json_report(self) -> None:
+        """Save the report as JSON, upload it to GCS if the pipeline is running in CI"""
+
+        json_report_path = self.report_dir_path / self.json_report_file_name
+        report_dir = self.pipeline_context.dagger_client.host().directory(str(self.report_dir_path))
+        local_json_report_file = report_dir.with_new_file(self.json_report_file_name, self.to_json()).file(self.json_report_file_name)
+        json_report_artifact = Artifact(name="JSON Report", content_type="application/json", content=local_json_report_file)
+        await json_report_artifact.save_to_local_path(json_report_path)
+        absolute_path = json_report_path.absolute()
         self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
-        if self.remote_storage_enabled:
-            await self.save_remote(local_json_path, self.json_report_remote_storage_key, "application/json")
+        if self.pipeline_context.remote_storage_enabled:
+            gcs_url = await json_report_artifact.upload_to_gcs(
+                dagger_client=self.pipeline_context.dagger_client,
+                bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
+                key=self.json_report_remote_storage_key,
+                gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
+            )
+            self.pipeline_context.logger.info(f"JSON Report uploaded to {gcs_url}")
+        else:
+            self.pipeline_context.logger.info("JSON Report not uploaded to GCS because remote storage is disabled.")
+
+    async def save_step_result_artifacts(self) -> None:
+        local_artifacts_dir = self.report_dir_path / "artifacts"
+        local_artifacts_dir.mkdir(parents=True, exist_ok=True)
+        # TODO: concurrent save and upload
+        for step_result in self.steps_results:
+            for artifact in step_result.artifacts:
+                step_artifacts_dir = local_artifacts_dir / slugify(step_result.step.title)
+                step_artifacts_dir.mkdir(parents=True, exist_ok=True)
+                await artifact.save_to_local_path(step_artifacts_dir / artifact.name)
+                if self.pipeline_context.remote_storage_enabled:
+                    upload_time = int(time.time())
+                    gcs_url = await artifact.upload_to_gcs(
+                        dagger_client=self.pipeline_context.dagger_client,
+                        bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
+                        key=f"{self.report_output_prefix}/artifacts/{slugify(step_result.step.title)}/{upload_time}_{artifact.name}",
+                        gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
+                    )
+                    self.pipeline_context.logger.info(f"Artifact {artifact.name} for {step_result.step.title} uploaded to {gcs_url}")
+                else:
+                    self.pipeline_context.logger.info(
+                        f"Artifact {artifact.name} for {step_result.step.title} not uploaded to GCS because remote storage is disabled."
+                    )
 
     def to_json(self) -> str:
         """Create a JSON representation of the report.
@@ -119,6 +139,9 @@ class Report:
         Returns:
             str: The JSON representation of the report.
         """
+        assert self.pipeline_context.pipeline_start_timestamp is not None, "The pipeline start timestamp must be set to save reports."
+        assert self.pipeline_context.started_at is not None, "The pipeline started_at timestamp must be set to save reports."
+        assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return json.dumps(
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
@@ -140,7 +163,7 @@ class Report:
             }
         )
 
-    def print(self):
+    def print(self) -> None:
         """Print the test report to the console in a nice way."""
         pipeline_name = self.pipeline_context.pipeline_name
         main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
@@ -160,14 +183,15 @@ class Report:
             if step_result.status is StepStatus.SKIPPED:
                 step_results_table.add_row(step, result, "N/A")
             else:
+                assert step_result.step.started_at is not None, "The step started_at timestamp must be set to print reports."
                 run_time = format_duration((step_result.created_at - step_result.step.started_at))
                 step_results_table.add_row(step, result, run_time)
 
-        to_render = [step_results_table]
+        to_render: List[RenderableType] = [step_results_table]
         if self.failed_steps:
             sub_panels = []
             for failed_step in self.failed_steps:
-                errors = Text(failed_step.stderr)
+                errors = Text(failed_step.stderr) if failed_step.stderr else Text("")
                 panel_title = Text(f"{pipeline_name} {failed_step.step.title.lower()} failures")
                 panel_title.stylize(Style(color="red", bold=True))
                 sub_panel = Panel(errors, title=panel_title)

@@ -1,28 +1,48 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - https://driftapi.com/
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false # hide Source Drift https://github.com/airbytehq/airbyte/issues/24270
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.5
   dockerRepository: airbyte/source-drift
+  documentationUrl: https://docs.airbyte.com/integrations/sources/drift
   githubIssueLabel: source-drift
   icon: drift.svg
   license: MIT
   name: Drift
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseDate: 2023-08-10
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-drift
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/drift
   tags:
-    - language:lowcode
-  ab_internal:
-    sl: 100
-    ql: 100
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-DRIFT_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-DRIFT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

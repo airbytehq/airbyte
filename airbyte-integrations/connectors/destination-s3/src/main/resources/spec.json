@@ -33,19 +33,26 @@
         "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
         "order": 1
       },
+      "role_arn": {
+        "type": "string",
+        "description": "The Role ARN",
+        "title": "Role ARN",
+        "examples": ["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],
+        "order": 2
+      },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",
         "type": "string",
         "description": "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
         "examples": ["airbyte_sync"],
-        "order": 2
+        "order": 3
       },
       "s3_bucket_path": {
         "title": "S3 Bucket Path",
         "description": "Directory under the S3 bucket where data will be written. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=to%20format%20the-,bucket%20path,-%3A\">here</a>",
         "type": "string",
         "examples": ["data_sync/test"],
-        "order": 3
+        "order": 4
       },
       "s3_bucket_region": {
         "title": "S3 Bucket Region",
@@ -54,33 +61,41 @@
         "description": "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes.",
         "enum": [
           "",
-          "us-east-1",
-          "us-east-2",
-          "us-west-1",
-          "us-west-2",
           "af-south-1",
           "ap-east-1",
-          "ap-south-1",
           "ap-northeast-1",
           "ap-northeast-2",
           "ap-northeast-3",
+          "ap-south-1",
+          "ap-south-2",
           "ap-southeast-1",
           "ap-southeast-2",
+          "ap-southeast-3",
+          "ap-southeast-4",
           "ca-central-1",
+          "ca-west-1",
           "cn-north-1",
           "cn-northwest-1",
           "eu-central-1",
+          "eu-central-2",
           "eu-north-1",
           "eu-south-1",
+          "eu-south-2",
           "eu-west-1",
           "eu-west-2",
           "eu-west-3",
-          "sa-east-1",
+          "il-central-1",
+          "me-central-1",
           "me-south-1",
+          "sa-east-1",
+          "us-east-1",
+          "us-east-2",
           "us-gov-east-1",
-          "us-gov-west-1"
+          "us-gov-west-1",
+          "us-west-1",
+          "us-west-2"
         ],
-        "order": 4
+        "order": 5
       },
       "format": {
         "title": "Output Format",
@@ -362,7 +377,7 @@
             }
           }
         ],
-        "order": 5
+        "order": 6
       },
       "s3_endpoint": {
         "title": "Endpoint",
@@ -370,7 +385,7 @@
         "default": "",
         "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
         "examples": ["http://localhost:9000"],
-        "order": 6
+        "order": 7
       },
       "s3_path_format": {
         "title": "S3 Path Format",
@@ -379,7 +394,7 @@
         "examples": [
           "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
         ],
-        "order": 7
+        "order": 8
       },
       "file_name_pattern": {
         "type": "string",
@@ -392,7 +407,7 @@
           "{part_number}",
           "{sync_id}"
         ],
-        "order": 8
+        "order": 9
       }
     }
   }

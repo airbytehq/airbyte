@@ -1,0 +1,91 @@
+name: "Install Airbyte CI"
+description: "Install Airbyte CI from source or from a binary according to changed files. Pulls the Dagger Engine image according to the dagger version used in airbyte-ci."
+
+inputs:
+  airbyte_ci_binary_url:
+    description: "URL to airbyte-ci binary"
+    required: false
+    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+  path_to_airbyte_ci_source:
+    description: "Path to airbyte-ci source"
+    required: false
+    default: airbyte-ci/connectors/pipelines
+  is_fork:
+    description: "Whether the PR is from a fork"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Get changed files
+      uses: tj-actions/changed-files@v44
+      # When the PR is from a fork, we always install from binary, so we don't need to check for changes
+      if: inputs.is_fork == 'false'
+      id: changes
+      with:
+        files_yaml: |
+          pipelines:
+            - '${{ inputs.path_to_airbyte_ci_source }}/**'
+
+    - name: "Determine how Airbyte CI should be installed"
+      shell: bash
+      id: determine-install-mode
+      # When the PR is from a fork, we always install from binary
+      if: inputs.is_fork == 'false'
+      run: |
+        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+          echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
+          echo "install-mode=source" >> $GITHUB_OUTPUT
+          echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
+        else
+          echo "install-mode=binary" >> $GITHUB_OUTPUT
+          echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
+        fi
+
+    - name: Install Airbyte CI from binary
+      id: install-airbyte-ci-binary
+      if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
+      shell: bash
+      run: |
+        curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
+        sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
+        sudo chmod +x /usr/local/bin/airbyte-ci
+
+    - name: Install Python 3.10
+      id: install-python-3-10
+      uses: actions/setup-python@v4
+      if: steps.determine-install-mode.outputs.install-mode == 'source'
+      with:
+        python-version: "3.10"
+        token: ${{ inputs.github_token }}
+
+    - name: Install Airbyte CI from source
+      id: install-airbyte-ci-source
+      if: steps.determine-install-mode.outputs.install-mode == 'source'
+      shell: bash
+      run: |
+        pip install --upgrade pip
+        pip install pipx
+        pipx ensurepath
+        pipx install ${{ inputs.path_to_airbyte_ci_source }}
+
+    - name: Get dagger engine image name
+      id: get-dagger-engine-image-name
+      shell: bash
+      run: |
+        dagger_engine_image=$(airbyte-ci --ci-requirements | tail -n 1 | jq -r '.dagger_engine_image')
+        echo "dagger_engine_image=${dagger_engine_image}" >> "$GITHUB_OUTPUT"
+
+    - name: Get dagger engine image
+      id: get-dagger-engine-image
+      uses: ./.github/actions/get-dagger-engine-image
+      with:
+        dagger_engine_image: ${{ steps.get-dagger-engine-image-name.outputs.dagger_engine_image }}
+
+outputs:
+  install_mode:
+    description: "Whether Airbyte CI was installed from source or from a binary"
+    value: ${{ steps.determine-install-mode.outputs.install-mode }}
+  dagger_engine_image_name:
+    description: "Dagger engine image name"
+    value: ${{ steps.get-dagger-engine-image-name.outputs.dagger_engine_image }}

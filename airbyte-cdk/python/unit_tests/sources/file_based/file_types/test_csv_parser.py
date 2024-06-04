@@ -447,11 +447,13 @@ class CsvReaderTest(unittest.TestCase):
             .build()
         )
 
+        dialects_before = set(csv.list_dialects())
         data_generator = self._read_data()
         next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" in csv.list_dialects()
+        [new_dialect] = set(csv.list_dialects()) - dialects_before
+        assert self._CONFIG_NAME in new_dialect
         data_generator.close()
-        assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
+        assert new_dialect not in csv.list_dialects()
 
     def test_given_too_many_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
         self._stream_reader.open_file.return_value = (
@@ -466,13 +468,15 @@ class CsvReaderTest(unittest.TestCase):
             .build()
         )
 
+        dialects_before = set(csv.list_dialects())
         data_generator = self._read_data()
         next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" in csv.list_dialects()
+        [new_dialect] = set(csv.list_dialects()) - dialects_before
+        assert self._CONFIG_NAME in new_dialect
 
         with pytest.raises(RecordParseError):
             next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
+        assert new_dialect not in csv.list_dialects()
 
     def test_given_too_few_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
         self._stream_reader.open_file.return_value = (
@@ -487,13 +491,34 @@ class CsvReaderTest(unittest.TestCase):
             .build()
         )
 
+        dialects_before = set(csv.list_dialects())
         data_generator = self._read_data()
         next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" in csv.list_dialects()
+        [new_dialect] = set(csv.list_dialects()) - dialects_before
+        assert self._CONFIG_NAME in new_dialect
 
         with pytest.raises(RecordParseError):
             next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
+        assert new_dialect not in csv.list_dialects()
+
+    def test_parse_field_size_larger_than_default_python_maximum(self) -> None:
+        # The field size for the csv module will be set as a side-effect of initializing the CsvParser class.
+        assert csv.field_size_limit() == 2**31
+        long_string = 130 * 1024 * "a"
+        assert len(long_string.encode("utf-8")) > (128 * 1024)
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1,header2",
+                    f'1,"{long_string}"',
+                ]
+            )
+            .build()
+        )
+
+        data_generator = self._read_data()
+        assert list(data_generator) == [{"header1": "1", "header2": long_string}]
 
     def _read_data(self) -> Generator[Dict[str, str], None, None]:
         data_generator = self._csv_reader.read_data(
@@ -504,6 +529,75 @@ class CsvReaderTest(unittest.TestCase):
             FileReadMode.READ,
         )
         return data_generator
+
+
+_TOO_MANY_VALUES = [
+    "header",
+    "too many values,value,value,value",
+]
+
+_TOO_FEW_VALUES = [
+    "header1,header2,header3",
+    "a value",
+    "value1,value2,value3",
+]
+
+
+@pytest.mark.parametrize(
+    "ignore_errors_on_fields_mismatch, data, error_message",
+    [
+        (
+            True,
+            _TOO_MANY_VALUES,
+            "Skipping record in line 2 of file a uri; invalid CSV row with missing column.",
+        ),
+        (
+            False,
+            _TOO_MANY_VALUES,
+            None,
+        ),
+        (
+            True,
+            _TOO_FEW_VALUES,
+            "Skipping record in line 2 of file a uri; invalid CSV row with extra column.",
+        ),
+        (
+            False,
+            _TOO_FEW_VALUES,
+            None,
+        ),
+    ],
+)
+def test_mismatch_between_values_and_header(ignore_errors_on_fields_mismatch, data, error_message) -> None:
+    config_format = CsvFormat()
+    config = Mock()
+    config.name = "config_name"
+    config.format = config_format
+
+    file = RemoteFile(uri="a uri", last_modified=datetime.now())
+    stream_reader = Mock(spec=AbstractFileBasedStreamReader)
+    logger = Mock(spec=logging.Logger)
+    csv_reader = _CsvReader()
+
+    config_format.ignore_errors_on_fields_mismatch = ignore_errors_on_fields_mismatch
+    stream_reader.open_file.return_value = CsvFileBuilder().with_data(data).build()
+
+    data_generator = csv_reader.read_data(
+        config,
+        file,
+        stream_reader,
+        logger,
+        FileReadMode.READ,
+    )
+
+    # Check if exception is raised only when skip_wrong_number_of_fields_error is False
+    if not ignore_errors_on_fields_mismatch:
+        with pytest.raises(RecordParseError):
+            print(list(data_generator))
+    else:
+        # Expect no exception when skip_wrong_number_of_fields_error is True
+        list(data_generator)
+        logger.error.assert_called_with(error_message)
 
 
 def test_encoding_is_passed_to_stream_reader() -> None:

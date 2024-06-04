@@ -46,7 +46,7 @@ jobs:
       - name: Get changed files
         if: steps.check-code-freeze-in-effect.outputs.is_in_code_freeze == 'true'
         id: changed-files
-        uses: tj-actions/changed-files@v40
+        uses: tj-actions/changed-files@v44
         with:
           files_yaml: |
             connectors:

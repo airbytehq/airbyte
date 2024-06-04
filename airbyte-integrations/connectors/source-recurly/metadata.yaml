@@ -2,10 +2,12 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
-  dockerImageTag: 0.4.1
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/source-recurly
   documentationUrl: https://docs.airbyte.com/integrations/sources/recurly
   githubIssueLabel: source-recurly
@@ -17,8 +19,27 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Version 1.0.0 introduces a number of schema updates to the Recurly connector. To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
+        upgradeDeadline: "2024-03-05"
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-recurly
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-RECURLY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

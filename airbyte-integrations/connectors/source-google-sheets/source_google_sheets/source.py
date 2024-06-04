@@ -14,12 +14,14 @@ from airbyte_cdk.models.airbyte_protocol import (
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteStateMessage,
+    AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     Status,
     Type,
 )
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message
 from apiclient import errors
 from google.auth import exceptions as google_exceptions
 from requests.status_codes import codes as status_codes
@@ -145,11 +147,12 @@ class SourceGoogleSheets(Source):
         logger: AirbyteLogger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Generator[AirbyteMessage, None, None]:
         client = GoogleSheetsClient(self.get_credentials(config))
+        client.Backoff.row_batch_size = config.get("batch_size", 200)
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
+        stream_name_to_stream = {stream.stream.name: stream for stream in catalog.streams}
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
@@ -162,6 +165,8 @@ class SourceGoogleSheets(Source):
         logger.info(f"Row counts: {sheet_row_counts}")
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
+            stream = stream_name_to_stream.get(sheet).stream
+            yield as_airbyte_message(stream, AirbyteStreamStatus.STARTED)
             # We revalidate the sheet here to avoid errors in case the sheet was changed after the sync started
             is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet)
             if is_valid:
@@ -191,11 +196,13 @@ class SourceGoogleSheets(Source):
                     if len(row_values) == 0:
                         break
 
+                    yield as_airbyte_message(stream, AirbyteStreamStatus.RUNNING)
                     for row in row_values:
                         if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
                             yield AirbyteMessage(
                                 type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name)
                             )
+                yield as_airbyte_message(stream, AirbyteStreamStatus.COMPLETE)
             else:
                 logger.info(f"Skipping syncing sheet {sheet}: {reason}")
 
@@ -208,7 +215,7 @@ class SourceGoogleSheets(Source):
     ) -> Generator[AirbyteMessage, None, None]:
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:
-            yield from self._read(logger, config, catalog, state)
+            yield from self._read(logger, config, catalog)
         except errors.HttpError as e:
             error_description = exception_description_by_status_code(e.status_code, spreadsheet_id)
 

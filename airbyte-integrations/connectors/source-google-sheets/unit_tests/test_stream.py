@@ -8,6 +8,7 @@ import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteStream,
+    AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
@@ -18,7 +19,7 @@ from apiclient import errors
 from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.client import GoogleSheetsClient
 from source_google_sheets.helpers import SCOPES, Helpers
-from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet, SpreadsheetValues, ValueRange
 
 
 def set_http_error_for_google_sheets_client(mocker, resp):
@@ -304,7 +305,7 @@ def test_read_expected_data_on_1_sheet(invalid_config, mocker, caplog):
     assert "Unexpected return result: Sheet soccer_team was expected to contain data on exactly 1 sheet." in str(e.value)
 
 
-def test_read_emply_sheet(invalid_config, mocker, caplog):
+def test_read_empty_sheet(invalid_config, mocker, caplog):
     source = SourceGoogleSheets()
     mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
     sheet1 = "soccer_team"
@@ -347,3 +348,47 @@ def test_read_emply_sheet(invalid_config, mocker, caplog):
     records = list(source.read(logger=logging.getLogger("airbyte"), catalog=catalog, config=invalid_config))
     assert records == []
     assert "The sheet soccer_team (ID invalid_spreadsheet_id) is empty!" in caplog.text
+
+
+def test_when_read_then_status_messages_emitted(mocker, invalid_config):
+    source = SourceGoogleSheets()
+    spreadsheet_id = "invalid_spreadsheet_id"
+    sheet_name = "sheet_1"
+    mocker.patch.object(
+        GoogleSheetsClient,
+        "get",
+        return_value=Spreadsheet(
+            spreadsheetId=spreadsheet_id,
+            sheets=[
+                Sheet(
+                    data=[GridData(rowData=[RowData(values=[CellData(formattedValue="ID")])])],
+                    properties=SheetProperties(title=sheet_name, gridProperties={"rowCount": 2})
+                ),
+            ],
+        ),
+    )
+
+    mocker.patch.object(
+        GoogleSheetsClient,
+        "get_values",
+        return_value=SpreadsheetValues(spreadsheetId=spreadsheet_id, valueRanges=[ValueRange(values=[["1"]])]),
+    )
+
+    sheet_schema = {"properties": {"ID": {"type": "string"}}}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=sheet_name, json_schema=sheet_schema, supported_sync_modes=["full_refresh"]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
+        ]
+    )
+
+    records = list(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
+
+    # stream started, stream running, 1 record, stream completed
+    assert len(records) == 4
+    assert records[0].trace.stream_status.status == AirbyteStreamStatus.STARTED
+    assert records[1].trace.stream_status.status == AirbyteStreamStatus.RUNNING
+    assert records[3].trace.stream_status.status == AirbyteStreamStatus.COMPLETE

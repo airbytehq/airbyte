@@ -6,6 +6,7 @@
 import logging
 from typing import Any, List, Mapping
 
+import dpath.util
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -33,9 +34,9 @@ class MigratePropertyID:
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
-        This method determines whether config require migration.
+        This method determines whether config requires migration.
         Returns:
-            > True, if the transformation is neccessary
+            > True, if the transformation is necessary
             > False, otherwise.
         """
         if cls.migrate_from_key in config:
@@ -72,7 +73,7 @@ class MigratePropertyID:
     def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
         """
         This method checks the input args, should the config be migrated,
-        transform if neccessary and emit the CONTROL message.
+        transform if necessary and emit the CONTROL message.
         """
         # get config path
         config_path = AirbyteEntrypoint(source).extract_config(args)
@@ -104,7 +105,7 @@ class MigrateCustomReports:
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
-        This method determines whether or not the config should be migrated to have the new structure for the `custom_reports`,
+        This method determines whether the config should be migrated to have the new structure for the `custom_reports`,
         based on the source spec.
         Returns:
             > True, if the transformation is necessary
@@ -126,7 +127,7 @@ class MigrateCustomReports:
     def _transform_to_array(cls, config: Mapping[str, Any], source: SourceGoogleAnalyticsDataApi = None) -> Mapping[str, Any]:
         # assign old values to new property that will be used within the new version
         config[cls.migrate_to_key] = config[cls.migrate_from_key]
-        # transfom `json_str` to `list` of objects
+        # transform `json_str` to `list` of objects
         return source._validate_custom_reports(config)
 
     @classmethod
@@ -150,7 +151,77 @@ class MigrateCustomReports:
     def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
         """
         This method checks the input args, should the config be migrated,
-        transform if neccessary and emit the CONTROL message.
+        transform if necessary and emit the CONTROL message.
+        """
+        # get config path
+        config_path = AirbyteEntrypoint(source).extract_config(args)
+        # proceed only if `--config` arg is provided
+        if config_path:
+            # read the existing config
+            config = source.read_config(config_path)
+            # migration check
+            if cls._should_migrate(config):
+                cls._emit_control_message(
+                    cls._modify_and_save(config_path, source, config),
+                )
+
+
+class MigrateCustomReportsCohortSpec:
+    """
+    This class stands for migrating the config at runtime,
+    Specifically, starting from `2.1.0`; the `cohortSpec` property will be added tp `custom_reports_array` with flag `enabled`:
+        > List([{name: my_report, "cohortSpec": { "enabled": "true" } }, ...])
+    """
+
+    message_repository: MessageRepository = InMemoryMessageRepository()
+
+    @classmethod
+    def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
+        """
+        This method determines whether the config should be migrated to have the new structure for the `cohortSpec` inside `custom_reports`,
+        based on the source spec.
+        Returns:
+            > True, if the transformation is necessary
+            > False, otherwise.
+        """
+
+        return not dpath.util.search(config, "custom_reports_array/**/cohortSpec/enabled")
+
+    @classmethod
+    def _transform_custom_reports_cohort_spec(
+        cls,
+        config: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        """Assign `enabled` property that will be used within the new version"""
+        for report in config.get("custom_reports_array", []):
+            if report.get("cohortSpec"):
+                report["cohortSpec"]["enabled"] = "true"
+            else:
+                report.setdefault("cohortSpec", {})["enabled"] = "false"
+        return config
+
+    @classmethod
+    def _modify_and_save(cls, config_path: str, source: SourceGoogleAnalyticsDataApi, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        # modify the config
+        migrated_config = cls._transform_custom_reports_cohort_spec(config)
+        # save the config
+        source.write_config(migrated_config, config_path)
+        # return modified config
+        return migrated_config
+
+    @classmethod
+    def _emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
+        # add the Airbyte Control Message to message repo
+        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
+        # emit the Airbyte Control Message from message queue to stdout
+        for message in cls.message_repository.consume_queue():
+            print(message.json(exclude_unset=True))
+
+    @classmethod
+    def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
+        """
+        This method checks the input args, should the config be migrated,
+        transform if necessary and emit the CONTROL message.
         """
         # get config path
         config_path = AirbyteEntrypoint(source).extract_config(args)

@@ -14,31 +14,19 @@ class StreamBreakingChangeScope(BaseModel):
         extra = Extra.forbid
 
     scopeType: Any = Field("stream", const=True)
-    impactedScopes: List[str] = Field(
-        ...,
-        description="List of streams that are impacted by the breaking change.",
-        min_items=1,
-    )
+    impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
 
 
 class BreakingChangeScope(BaseModel):
-    __root__: StreamBreakingChangeScope = Field(
-        ...,
-        description="A scope that can be used to limit the impact of a breaking change.",
-    )
+    __root__: StreamBreakingChangeScope = Field(..., description="A scope that can be used to limit the impact of a breaking change.")
 
 
 class VersionBreakingChange(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    upgradeDeadline: date = Field(
-        ...,
-        description="The deadline by which to upgrade before the breaking change takes effect.",
-    )
-    message: str = Field(
-        ..., description="Descriptive message detailing the breaking change."
-    )
+    upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
+    message: str = Field(..., description="Descriptive message detailing the breaking change.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -55,8 +43,7 @@ class ConnectorBreakingChanges(BaseModel):
         extra = Extra.forbid
 
     __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
-        ...,
-        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+        ..., description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade."
     )
 
 

@@ -1,144 +1,76 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
 
 import pytest
-from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_gitlab.streams import (
-    Branches,
-    Commits,
-    Deployments,
-    Jobs,
-    MergeRequestCommits,
-    MergeRequests,
-    Pipelines,
-    Projects,
-    Releases,
-    Tags,
-)
+from airbyte_cdk.models import SyncMode
+from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
 
-auth_params = {"authenticator": NoAuth(), "api_url": "gitlab.com"}
-start_date = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14)
-
-
-@pytest.fixture()
-def projects():
-    return Projects(project_ids=["p_1"], **auth_params)
-
-
-@pytest.fixture()
-def pipelines(projects):
-    return Pipelines(parent_stream=projects, start_date=str(start_date), **auth_params)
-
-
-@pytest.fixture()
-def merge_requests(projects):
-    return MergeRequests(parent_stream=projects, start_date=str(start_date), **auth_params)
-
-
-@pytest.fixture()
-def tags(projects):
-    return Tags(parent_stream=projects, repository_part=True, **auth_params)
-
-
-@pytest.fixture()
-def releases(projects):
-    return Releases(parent_stream=projects, **auth_params)
-
-
-@pytest.fixture()
-def jobs(pipelines):
-    return Jobs(parent_stream=pipelines, **auth_params)
-
-
-@pytest.fixture()
-def deployments(projects):
-    return Deployments(parent_stream=projects, **auth_params)
-
-
-@pytest.fixture()
-def merge_request_commits(merge_requests):
-    return MergeRequestCommits(parent_stream=merge_requests, **auth_params)
-
-
-@pytest.fixture()
-def branches(projects):
-    return Branches(parent_stream=projects, **auth_params)
-
-
-@pytest.fixture()
-def commits(projects):
-    return Commits(parent_stream=projects, repository_part=True, start_date=str(start_date), **auth_params)
+CONFIG = BASE_CONFIG | {"projects_list": ["p_1"]}
 
 
 @pytest.mark.parametrize(
-    "stream, extra_mocks, expected_call_count",
+    ("stream_name", "extra_mocks"),
     (
-        ("projects", ({"url": "/api/v4/projects/p_1", "status_code": 403},), 1),
-        ("projects", ({"url": "/api/v4/projects/p_1", "status_code": 404},), 1),
+        ("projects", ({"url": "/api/v4/projects/p_1", "status_code": 403},)),
         (
             "branches",
-            ({"url": "/api/v4/projects/p_1", "json": [{"id": "p_1"}]}, {"url": "/api/v4/projects/p_1/branches", "status_code": 403}),
-            2,
-        ),
-        (
-            "branches",
-            ({"url": "/api/v4/projects/p_1", "json": [{"id": "p_1"}]}, {"url": "/api/v4/projects/p_1/branches", "status_code": 404}),
-            2,
+            (
+                {"url": "/api/v4/projects/p_1", "json": [{"id": "p_1"}]},
+                {"url": "/api/v4/projects/p_1/repository/branches", "status_code": 403},
+            ),
         ),
     ),
 )
-def test_should_retry(mocker, requests_mock, stream, extra_mocks, expected_call_count, request):
-    mocker.patch("time.sleep")
-    stream = request.getfixturevalue(stream)
+def test_should_retry(requests_mock, stream_name, extra_mocks):
+    requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
+    stream = get_stream_by_name(stream_name, CONFIG)
     for extra_mock in extra_mocks:
         requests_mock.get(**extra_mock)
 
-    for stream_slice in stream.stream_slices(sync_mode="full_refresh"):
-        records = list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
+    records = []
+    for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records.extend(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)))
     assert records == []
-    assert requests_mock.call_count == expected_call_count
+    assert requests_mock.call_count == len(extra_mocks) + 1
 
 
 test_cases = (
     (
         "jobs",
         (
-            (
-                "/api/v4/projects/p_1/pipelines",
-                [{"project_id": "p_1", "id": "build_project_p1"}],
-            ),
+            ("/api/v4/projects/p_1/pipelines", [{"project_id": "p_1", "id": "build_project_p1"}]),
             (
                 "/api/v4/projects/p_1/pipelines/build_project_p1/jobs",
-                [{"id": "j_1", "user": {"id": "u_1"}, "pipeline": {"id": "p_17"}, "runner": None, "commit": {"id": "c_23"}}],
+                [
+                    {
+                        "id": "j_1",
+                        "user": {"id": "u_1"},
+                        "pipeline": {"id": "p_17"},
+                        "runner": None,
+                        "commit": {"id": "c_23"},
+                    },
+                ],
             ),
         ),
-        [
-            {
-                "commit": {"id": "c_23"},
-                "commit_id": "c_23",
-                "id": "j_1",
-                "pipeline": {"id": "p_17"},
-                "pipeline_id": "p_17",
-                "project_id": "p_1",
-                "runner": None,
-                "runner_id": None,
-                "user": {"id": "u_1"},
-                "user_id": "u_1",
-            }
-        ],
+        {
+            "commit": {"id": "c_23"},
+            "commit_id": "c_23",
+            "id": "j_1",
+            "pipeline": {"id": "p_17"},
+            "pipeline_id": "p_17",
+            "project_id": "p_1",
+            "runner": None,
+            "runner_id": None,
+            "user": {"id": "u_1"},
+            "user_id": "u_1",
+        },
     ),
     (
         "tags",
-        (
-            (
-                "/api/v4/projects/p_1/repository/tags",
-                [{"commit": {"id": "c_1"}, "name": "t_1", "target": "ddc89"}],
-            ),
-        ),
-        [{"commit": {"id": "c_1"}, "commit_id": "c_1", "project_id": "p_1", "name": "t_1", "target": "ddc89"}],
+        (("/api/v4/projects/p_1/repository/tags", [{"commit": {"id": "c_1"}, "name": "t_1", "target": "ddc89"}]),),
+        {"commit": {"id": "c_1"}, "commit_id": "c_1", "project_id": "p_1", "name": "t_1", "target": "ddc89"},
     ),
     (
         "releases",
@@ -148,24 +80,22 @@ test_cases = (
                 [
                     {
                         "id": "r_1",
-                        "author": {"name": "John", "id": "666"},
+                        "author": {"name": "John", "id": "john"},
                         "commit": {"id": "abcd689"},
                         "milestones": [{"id": "m1", "title": "Q1"}, {"id": "m2", "title": "Q2"}],
                     }
                 ],
             ),
         ),
-        [
-            {
-                "author": {"id": "666", "name": "John"},
-                "author_id": "666",
-                "commit": {"id": "abcd689"},
-                "commit_id": "abcd689",
-                "id": "r_1",
-                "milestones": ["m1", "m2"],
-                "project_id": "p_1",
-            }
-        ],
+        {
+            "author": {"id": "john", "name": "John"},
+            "author_id": "john",
+            "commit": {"id": "abcd689"},
+            "commit_id": "abcd689",
+            "id": "r_1",
+            "milestones": ["m1", "m2"],
+            "project_id": "p_1",
+        },
     ),
     (
         "deployments",
@@ -175,104 +105,69 @@ test_cases = (
                 [
                     {
                         "id": "r_1",
-                        "user": {"name": "John", "id": "666", "username": "john"},
+                        "user": {"name": "John", "id": "john_123", "username": "john"},
                         "environment": {"name": "dev"},
                         "commit": {"id": "abcd689"},
                     }
                 ],
             ),
         ),
-        [
-            {
-                "id": "r_1",
-                "user": {"name": "John", "id": "666", "username": "john"},
-                "environment": {"name": "dev"},
-                "commit": {"id": "abcd689"},
-                "user_id": "666",
-                "environment_id": None,
-                "user_username": "john",
-                "user_full_name": "John",
-                "environment_name": "dev",
-                "project_id": "p_1",
-            }
-        ],
+        {
+            "id": "r_1",
+            "user": {"name": "John", "id": "john_123", "username": "john"},
+            "environment": {"name": "dev"},
+            "commit": {"id": "abcd689"},
+            "user_id": "john_123",
+            "environment_id": None,
+            "user_username": "john",
+            "user_full_name": "John",
+            "environment_name": "dev",
+            "project_id": "p_1",
+        }
     ),
     (
         "merge_request_commits",
         (
-            (
-                "/api/v4/projects/p_1/merge_requests",
-                [{"id": "mr_1", "iid": "mr_1", "project_id": "p_1"}],
-            ),
-            (
-                "/api/v4/projects/p_1/merge_requests/mr_1",
-                [
-                    {
-                        "id": "mrc_1",
-                    }
-                ],
-            ),
+            ("/api/v4/projects/p_1/merge_requests", [{"id": "mr_1", "iid": "mr_1", "project_id": "p_1"}]),
+            ("/api/v4/projects/p_1/merge_requests/mr_1/commits", [{"id": "mrc_1"}]),
         ),
-        [{"id": "mrc_1", "project_id": "p_1", "merge_request_iid": "mr_1"}],
+        {"id": "mrc_1", "project_id": "p_1", "merge_request_iid": "mr_1"},
     ),
 )
 
 
-@pytest.mark.parametrize("stream, response_mocks, expected_records", test_cases)
-def test_transform(requests_mock, stream, response_mocks, expected_records, request):
-    stream = request.getfixturevalue(stream)
+@pytest.mark.parametrize(("stream_name", "response_mocks", "expected_record"), test_cases)
+def test_transform(requests_mock, stream_name, response_mocks, expected_record):
+    requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
+    stream = get_stream_by_name(stream_name, CONFIG)
     requests_mock.get("/api/v4/projects/p_1", json=[{"id": "p_1"}])
 
     for url, json in response_mocks:
         requests_mock.get(url, json=json)
 
-    records_iter = iter(expected_records)
-    for stream_slice in stream.stream_slices(sync_mode="full_refresh"):
-        for record in stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice):
-            assert record == next(records_iter)
+    for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+            assert dict(record) == expected_record
 
 
-@pytest.mark.parametrize(
-    "stream, current_state, latest_record, new_state",
-    (
-        (
-            "pipelines",
-            {"219445": {"updated_at": "2022-12-14T17:07:34.005675+02:00"}, "211378": {"updated_at": "2021-03-11T08:56:40.001+02:00"}},
-            {"project_id": "219445", "updated_at": "2022-12-16T00:12:41.005675+02:00"},
-            {"219445": {"updated_at": "2022-12-16T00:12:41.005675+02:00"}, "211378": {"updated_at": "2021-03-11T08:56:40.001+02:00"}},
-        ),
-        (
-            "pipelines",
-            {"219445": {"updated_at": "2022-12-14T17:07:34.005675+02:00"}, "211378": {"updated_at": "2021-03-11T08:56:40.012001+02:00"}},
-            {"project_id": "211378", "updated_at": "2021-03-10T23:58:58.011+02:00"},
-            {"219445": {"updated_at": "2022-12-14T17:07:34.005675+02:00"}, "211378": {"updated_at": "2021-03-11T08:56:40.012001+02:00"}},
-        ),
-        (
-            "pipelines",
-            {},
-            {"project_id": "211378", "updated_at": "2021-03-10T23:58:58.010001+02:00"},
-            {"211378": {"updated_at": "2021-03-10T23:58:58.010001+02:00"}},
-        ),
-        (
-            "commits",
-            {"219445": {"created_at": "2022-12-14T17:07:34.005675+02:00"}, "211378": {"created_at": "2021-03-11T08:56:40.001+02:00"}},
-            {"project_id": "219445", "created_at": "2022-12-16T00:12:41.005675+02:00"},
-            {"219445": {"created_at": "2022-12-16T00:12:41.005675+02:00"}, "211378": {"created_at": "2021-03-11T08:56:40.001+02:00"}},
-        ),
-        (
-            "commits",
-            {"219445": {"created_at": "2022-12-14T17:07:34.005675+02:00"}, "211378": {"created_at": "2021-03-11T08:56:40.012001+02:00"}},
-            {"project_id": "211378", "created_at": "2021-03-10T23:58:58.011+02:00"},
-            {"219445": {"created_at": "2022-12-14T17:07:34.005675+02:00"}, "211378": {"created_at": "2021-03-11T08:56:40.012001+02:00"}},
-        ),
-        (
-            "commits",
-            {},
-            {"project_id": "211378", "created_at": "2021-03-10T23:58:58.010001+02:00"},
-            {"211378": {"created_at": "2021-03-10T23:58:58.010001+02:00"}},
-        ),
-    ),
-)
-def test_updated_state(stream, current_state, latest_record, new_state, request):
-    stream = request.getfixturevalue(stream)
-    assert stream.get_updated_state(current_state, latest_record) == new_state
+def test_stream_slices_child_stream(requests_mock):
+    commits = get_stream_by_name("commits", CONFIG)
+    requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
+    requests_mock.get(
+        url="https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
+        json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}],
+    )
+    stream_state = {"13082000": {""'created_at': "2021-03-10T23:58:1213"}}
+
+    slices = list(commits.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state))
+    assert slices
+
+
+def test_availability_strategy():
+    commits = get_stream_by_name("commits", CONFIG)
+    assert not commits.availability_strategy
+
+
+def test_request_params():
+    commits = get_stream_by_name("commits", CONFIG)
+    assert commits.retriever.requester.get_request_params() == {"with_stats": "true"}
