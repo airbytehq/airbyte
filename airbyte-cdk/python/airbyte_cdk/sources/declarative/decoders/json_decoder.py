@@ -4,7 +4,7 @@
 
 import json
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Union
+from typing import Any, Generator, Mapping
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -18,7 +18,7 @@ class JsonDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def decode(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any]]:
         try:
             body_json = response.json()
             if isinstance(body_json, dict):
@@ -36,7 +36,7 @@ class IterableDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def decode(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any]]:
         # TODO: how to handle simple string in extractor;
         #  see list_users in iterable:: response.body == b'user1@example.com\nuser2@example.com'
         #  possible option: we can wrap strings directly into records => {"record": {line.decode()}}
@@ -52,7 +52,7 @@ class JsonlDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def decode(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any]]:
         # TODO???: set delimiter? usually it is `\n` but maybe it would be useful to set optional?
         for record in response.iter_lines():
             yield json.loads(record)
