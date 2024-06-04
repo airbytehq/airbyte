@@ -40,6 +40,9 @@ Please follow the [Chargify documentation for generating an API key](https://dev
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
 | 0.4.1 | 2024-05-20 | [38444](https://github.com/airbytehq/airbyte/pull/38444) | [autopull] base image + poetry + up_to_date |

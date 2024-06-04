@@ -51,6 +51,9 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
 | 0.1.2   | 2024-05-30 | [38399](https://github.com/airbytehq/airbyte/pull/38399) | [autopull] base image + poetry + up_to_date |

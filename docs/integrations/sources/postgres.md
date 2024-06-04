@@ -307,6 +307,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.4.10  | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                                                              |
