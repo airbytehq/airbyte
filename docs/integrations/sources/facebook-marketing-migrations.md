@@ -6,7 +6,7 @@ The `AdsInsights` Reports now don't have the possibility to fetch the next root 
 - cost_per_conversion_lead
 - conversion_lead_rate
 
-### Refresh affected AdsInsights Report and clear data:
+### Refresh affected AdsInsights Report:
 
 1. Select **Connections** in the main navbar.
    1. Select the connection(s) affected by the update.
@@ -18,9 +18,9 @@ The `AdsInsights` Reports now don't have the possibility to fetch the next root 
    Any detected schema changes will be listed for your review.
    :::
 
-3. Navigate to a connection's **Settings** tab and click **Clear data** to clear all streams. This action will clear data for all streams in the connection. To clear data for a single stream navigate to the **Status** tab,  click the **three grey dots** next to the affected stream, and select **Clear data**. Do this for all affected streams in the connection.
+### Custom streams
 
-For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
+Custom streams will not be able to rely on `cost_per_conversion_lead` and `conversion_lead_rate` as `fields` anymore. Those streams will need to updated considering the fact that the information is not available in Facebook Marketing.
 
 ## Upgrading to 3.0.0
 
