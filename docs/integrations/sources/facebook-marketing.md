@@ -200,6 +200,9 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.2.0   | 2024-06-05 | [37625](https://github.com/airbytehq/airbyte/pull/37625) | Source Facebook-Marketing: Add Selectable Auth                                                                                                                                                                                                                                               |
@@ -350,5 +353,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 | 0.1.3   | 2021-02-15 | [1990](https://github.com/airbytehq/airbyte/pull/1990)   | Support Insights stream via async queries                                                                                                                                                                                                                                                         |
 | 0.1.2   | 2021-01-22 | [1699](https://github.com/airbytehq/airbyte/pull/1699)   | Add incremental support                                                                                                                                                                                                                                                                           |
 | 0.1.1   | 2021-01-15 | [1552](https://github.com/airbytehq/airbyte/pull/1552)   | Release Native Facebook Marketing Connector                                                                                                                                                                                                                                                       |
+
+</details>
 
 </HideInUI>

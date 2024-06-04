@@ -78,6 +78,9 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.5.1   | 2024-04-24 | [36645](https://github.com/airbytehq/airbyte/pull/36645) | Schema descriptions and CDK 0.80.0                                                                                                                                         |
@@ -112,3 +115,5 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 | 0.1.9   | 2021-10-06 | [5915](https://github.com/airbytehq/airbyte/pull/5915)   | Enable campaign_metrics stream                                                                                                                                             |
 | 0.1.8   | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915)   | Add new streams: campaign_metrics, events                                                                                                                                  |
 | 0.1.7   | 2021-09-20 | [6242](https://github.com/airbytehq/airbyte/pull/6242)   | Updated schema for: campaigns, lists, templates, metadata                                                                                                                  |
+
+</details>
