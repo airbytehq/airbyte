@@ -47,7 +47,7 @@ from .utils import (
 # the initial values should be saved once and tracked for each stream, inclusively.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
-LOOKBACK_WINDOW = datetime.timedelta(days=2)
+LOOKBACK_WINDOW = 2
 
 
 class ConfigurationError(Exception):

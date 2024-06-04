@@ -2241,6 +2241,8 @@
         "title": "Days in the past that we should refresh data",
         "description": "Since Google Analytics has a data processing latency, we should specify how many days in the past we should refresh the data",
         "examples": [2,3,4,7,14,28],
+        "minimum": 2,
+        "maximum": 60,
         "default": 2,
         "order": 6
       },
