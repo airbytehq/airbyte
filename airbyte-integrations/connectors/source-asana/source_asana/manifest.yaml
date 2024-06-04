@@ -29,7 +29,7 @@ definitions:
 
   requester:
     type: CustomRequester
-    class_name: source_asana.components.CustomAsanaRequester
+    class_name: source_asana.components.AsanaHttpRequester
     url_base: https://app.asana.com/api/1.0/
     http_method: GET
     authenticator:
@@ -60,30 +60,25 @@ definitions:
       cursor_value: '{{ response.get("sync", {}) }}'
       stop_condition: '{{ not response.get("sync", {}) }}'
 
-  paginator_base:
-    type: DefaultPaginator
-    page_token_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: offset
-    page_size_option:
-      type: RequestOption
-      field_name: limit
-      inject_into: request_parameter
-    pagination_strategy:
-      type: OffsetIncrement
-      page_size: 100
-
   retriever:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: NoPagination
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: offset
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 100
     requester:
       $ref: "#/definitions/requester"
-    request_parameters:
-      opt_fields: "{{ gid if response['gid'] else '' }}"
 
   base_stream:
     type: DeclarativeStream
@@ -105,8 +100,6 @@ definitions:
         use_cache: true
         request_parameters:
           workspace: "{{ stream_slice['workspace_gid'] }}"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
     $parameters:
@@ -133,8 +126,6 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/projects_partition_router"
 
@@ -156,8 +147,6 @@ definitions:
       path: "/sections/{{ stream_slice['section_gid'] }}"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/sections_compact_partition_router"
 
@@ -169,14 +158,14 @@ definitions:
       schema:
         $ref: "#/definitions/tasks_schema"
     $parameters:
-      path: "/projects/{{ stream_slice['project_id'] }}/tasks"
+      path: "/tasks"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
-      paginator:
-        $ref: "#/definitions/paginator_base"
+        request_parameters:
+          project: "{{ stream_slice.project_id }}"
       partition_router:
         $ref: "#/definitions/projects_partition_router"
 
@@ -201,8 +190,6 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/tasks_partition_router"
 
@@ -224,8 +211,6 @@ definitions:
       path: "/stories/{{ stream_slice['story_gid'] }}"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/stories_compact_partition_router"
 
@@ -241,8 +226,6 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
-      paginator:
-        $ref: "#/definitions/paginator_base"
     $parameters:
       path: "/workspaces"
 
@@ -261,11 +244,13 @@ definitions:
       schema:
         $ref: "#/definitions/tags_schema"
     $parameters:
-      path: "/workspaces/{{ stream_slice['workspace_gid'] }}/tags"
+      path: "/tags"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          workspace: "{{ stream_slice.workspace_gid }}"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
 
@@ -276,15 +261,16 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/users_schema"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          workspace: "{{ stream_slice.workspace_gid }}"
+      partition_router:
+        $ref: "#/definitions/workspaces_partition_router"
     $parameters:
       path: "/users"
-
-  users_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/users_stream"
-        parent_key: "gid"
-        partition_field: "users_gid"
 
   teams_stream:
     $ref: "#/definitions/base_stream"
@@ -297,8 +283,6 @@ definitions:
       path: "/organizations/{{ stream_slice['workspace_gid'] }}/teams"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
 
@@ -320,8 +304,6 @@ definitions:
       path: "/teams/{{ stream_slice['team_gid'] }}/team_memberships"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/teams_partition_router"
 
@@ -336,8 +318,6 @@ definitions:
       path: "/attachments"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
@@ -371,8 +351,6 @@ definitions:
       path: "/attachments/{{ stream_slice['attachments_gid'] }}"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/attachments_compact_partition_router"
 
@@ -392,8 +370,6 @@ definitions:
         request_parameters:
           owner: "{{ stream_slice['users_gid'] }}"
           workspace: "{{ stream_slice['workspace_gid'] }}"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -424,8 +400,6 @@ definitions:
       path: "/portfolios/{{ stream_slice['portfolios_gid'] }}"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/portfolios_compact_partition_router"
 
@@ -444,8 +418,6 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           portfolio: "{{ stream_slice['portfolios_gid'] }}"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/portfolios_compact_partition_router"
 
@@ -460,8 +432,6 @@ definitions:
       path: "/workspaces/{{ stream_slice['workspace_gid'] }}/custom_fields"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
 
@@ -476,8 +446,6 @@ definitions:
       path: "/organization_exports/{{ stream_slice.gid }}"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
       partition_router:
         - type: ListPartitionRouter
           values: "{{ config['organization_export_ids' ] }}"
@@ -1433,10 +1401,6 @@ definitions:
     additionalProperties: true
     type: object
     properties:
-      "type":
-        type:
-          - "null"
-          - string
       gid:
         type:
           - "null"
@@ -1472,6 +1436,10 @@ definitions:
           - "null"
           - string
       text:
+        type:
+          - "null"
+          - string
+      type:
         type:
           - "null"
           - string
@@ -1481,10 +1449,6 @@ definitions:
     additionalProperties: true
     type: object
     properties:
-      "type":
-        type:
-          - "null"
-          - string
       gid:
         type:
           - "null"
@@ -1520,6 +1484,10 @@ definitions:
           - "null"
           - string
       text:
+        type:
+          - "null"
+          - string
+      type:
         type:
           - "null"
           - string
