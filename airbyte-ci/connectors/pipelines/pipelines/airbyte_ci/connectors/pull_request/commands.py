@@ -69,9 +69,26 @@ from pipelines.helpers.connectors.command import run_connector_pipeline
     required=False,
     default=False,
 )
+@click.option(
+    "--auto-merge",
+    help="Add the auto-merge label.",
+    type=bool,
+    is_flag=True,
+    required=False,
+    default=False,
+)
 @click.pass_context
 async def pull_request(
-    ctx: click.Context, message: str, branch_id: str, report: bool, title: str, body: str, changelog: bool, bump: str | None, dry_run: bool
+    ctx: click.Context,
+    message: str,
+    branch_id: str,
+    report: bool,
+    title: str,
+    body: str,
+    changelog: bool,
+    bump: str | None,
+    dry_run: bool,
+    auto_merge: bool,
 ) -> bool:
     if not ctx.obj["ci_github_access_token"]:
         raise click.ClickException(
@@ -89,4 +106,5 @@ async def pull_request(
         changelog,
         bump,
         dry_run,
+        auto_merge,
     )

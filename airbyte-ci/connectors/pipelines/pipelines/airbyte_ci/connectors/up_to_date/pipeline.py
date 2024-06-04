@@ -196,6 +196,7 @@ class MakePullRequest(Step):
             changelog=changelog,
             bump=bump,
             dry_run=dry_run,
+            auto_merge=False,
         )
 
         results = report.steps_results

@@ -66,6 +66,7 @@ class CreatePullRequest(Step):
     input_body: str | None
     changelog: bool
     bump: str | None
+    auto_merge: bool
 
     title = "Create a pull request of changed files."
 
@@ -77,6 +78,7 @@ class CreatePullRequest(Step):
         input_title: str | None,
         input_body: str | None,
         dry_run: bool,
+        auto_merge: bool,
     ) -> None:
         super().__init__(context)
         self.message = message
@@ -84,6 +86,7 @@ class CreatePullRequest(Step):
         self.input_title = input_title
         self.input_body = input_body
         self.write = not dry_run
+        self.auto_merge = auto_merge
 
     async def _run(self) -> StepResult:
 
@@ -99,6 +102,7 @@ class CreatePullRequest(Step):
             message=self.message,
             input_title=self.input_title,
             input_body=self.input_body,
+            auto_merge=self.auto_merge,
         )
 
         return StepResult(step=self, status=StepStatus.SUCCESS, output={PULL_REQUEST_OUTPUT_ID: pull_request_number})
@@ -156,6 +160,7 @@ async def create_github_pull_request(
     message: str,
     input_title: str | None,
     input_body: str | None,
+    auto_merge: bool,
 ) -> int:
     if not context.ci_github_access_token:
         raise Exception("GitHub access token is required to create a pull request. Set the CI_GITHUB_ACCESS_TOKEN environment variable.")
@@ -292,6 +297,8 @@ async def create_github_pull_request(
 
             # TODO: could pass in additional labels
             label = repo.get_label("autopull")
+            if auto_merge:
+                pull_request.add_to_labels("auto-merge")
             pull_request.add_to_labels(label)
             logger.info(f"        Created pull request: {pull_request.html_url}")
             pull_request_number = pull_request.number
@@ -309,6 +316,7 @@ async def run_connector_pull_request_pipeline(
     changelog: bool,
     bump: str | None,
     dry_run: bool,
+    auto_merge: bool,
 ) -> Report:
     restore_original_state = RestorePullRequestState(context)
 
@@ -329,6 +337,7 @@ async def run_connector_pull_request_pipeline(
                     input_title=title,
                     input_body=body,
                     dry_run=dry_run,
+                    auto_merge=auto_merge,
                 ),
                 depends_on=[],
             )
@@ -387,6 +396,7 @@ async def run_connector_pull_request_pipeline(
                         input_title=title,
                         input_body=body,
                         dry_run=dry_run,
+                        auto_merge=auto_merge,
                     ),
                     depends_on=update_step_ids,
                 )
