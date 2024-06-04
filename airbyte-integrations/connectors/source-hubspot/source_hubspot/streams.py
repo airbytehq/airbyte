@@ -62,7 +62,11 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
 # strings, when are substrings of error messages should be retried
-TOKEN_EXPIRED_ERROR = ["oauth-token is expired", "oauth token used to make this call expired"]
+TOKEN_EXPIRED_ERROR = [
+    "oauth-token is expired",
+    "oauth token used to make this call expired",
+    "is not valid for this request"
+]
 TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR = "Max retries exceeded with url: /oauth/v1/token"
 
 
