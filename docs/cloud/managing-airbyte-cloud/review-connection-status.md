@@ -47,6 +47,6 @@ The stream status allows you to monitor each stream's latest status. The stream 
 
 Each stream shows the last record loaded to the destination. Toggle the header to display the exact datetime the last record was loaded.
 
-You can [clear](/operator-guides/reset.md) an individual stream without clearing all streams in a connection by clicking the three grey dots next to any stream.
+You can [clear](/operator-guides/clear) an individual stream without clearing all streams in a connection by clicking the three grey dots next to any stream.
 
 You can also navigate directly to the stream's configuration by click the three grey dots next to any stream and selecting "Open details" to be redirected to the stream configuration.
