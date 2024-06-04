@@ -114,12 +114,24 @@ definitions:
     $parameters:
       path: "/approvalStatuses"
 
+  locations_stream:
+    $ref: "#/definitions/base_stream"
+    name: "locations"
+    primary_key: "ID"      
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"
+    transformations:
+      $ref: "#/definitions/transformations_base"
+    $parameters:
+      path: "/locations"
+
 streams:
   - "#/definitions/subjects_stream"
   - "#/definitions/program_enrolments_stream"
   - "#/definitions/program_encounters_stream"
   - "#/definitions/encounters_stream"
   - "#/definitions/approval_status_stream"
+  - "#/definitions/locations_stream"
 
 check:
   type: CheckStream

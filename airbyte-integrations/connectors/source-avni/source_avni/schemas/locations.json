@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "type": "string"
+    },
+    "External ID": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Title": {
+      "type": "string"
+    },
+    "Type": {
+      "type": "string"
+    },
+    "Level": {
+      "type": "number"
+    },
+    "Voided": {
+      "type": "boolean"
+    },
+    "customProperties": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "additionalProperties": true
+    },
+    "last_modified_at": {
+      "type": "string",
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
+    "Parent": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "additionalProperties": true
+    },
+    "audit": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "Created at": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+        },
+        "Last modified at": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+        },
+        "Created by": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "Last modified by": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    }
+  }
+}
