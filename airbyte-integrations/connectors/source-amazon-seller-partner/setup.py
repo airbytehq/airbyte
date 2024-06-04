@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "boto3~=1.16", "pendulum~=2.1", "pycryptodome~=3.10", "xmltodict~=0.12"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "boto3~=1.16", "pendulum~=2.1", "pycryptodome~=3.10", "xmltodict~=0.12", "pandas~=2.2.2", "openpyxl~=3.1.3"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
