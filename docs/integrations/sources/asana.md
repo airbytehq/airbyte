@@ -103,6 +103,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.6.3 | 2024-06-03 | [38908](https://github.com/airbytehq/airbyte/pull/38908) | Replace AirbyteLogger with logging.Logger |
 | 0.6.2 | 2024-06-03 | [38908](https://github.com/airbytehq/airbyte/pull/38908) | Replace AirbyteLogger with logging.Logger |
 | 0.6.1 | 2023-11-13 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Fix hidden config access |
 | 0.6.0 | 2023-11-03 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Add new stream Portfolio Memberships with Parent Portfolio |
