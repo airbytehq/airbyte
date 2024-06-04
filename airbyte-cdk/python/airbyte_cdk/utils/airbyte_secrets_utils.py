@@ -4,7 +4,7 @@
 
 from typing import Any, List, Mapping
 
-import dpath.util
+import dpath
 
 
 def get_secret_paths(spec: Mapping[str, Any]) -> List[List[str]]:
@@ -45,7 +45,7 @@ def get_secrets(connection_specification: Mapping[str, Any], config: Mapping[str
     result = []
     for path in secret_paths:
         try:
-            result.append(dpath.util.get(config, path))
+            result.append(dpath.get(config, path))
         except KeyError:
             # Since we try to get paths to all known secrets in the spec, in the case of oneOfs, some secret fields may not be present
             # In that case, a KeyError is thrown. This is expected behavior.

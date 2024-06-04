@@ -229,6 +229,9 @@ In order to read large files from a remote location, this connector uses the [sm
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
 | 0.5.1   | 2024-05-03 | [37799](https://github.com/airbytehq/airbyte/pull/37799) | Add fastparquet engine for parquet file reader.                                                         |
@@ -295,3 +298,5 @@ In order to read large files from a remote location, this connector uses the [sm
 | 0.1.7   | 2020-12-16 | [1331](https://github.com/airbytehq/airbyte/pull/1331)   | Refactor Python base connector                                                                          |
 | 0.1.6   | 2020-12-08 | [1249](https://github.com/airbytehq/airbyte/pull/1249)   | Handle NaN values                                                                                       |
 | 0.1.5   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                                                 |
+
+</details>

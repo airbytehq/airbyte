@@ -99,8 +99,12 @@ None!
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.1.2 | 2024-06-03 | [38831](https://github.com/airbytehq/airbyte/pull/38831) | Bump CDK to allow and prefer versions `1.x` |
 | 6.1.1 | 2024-05-20 | [38256](https://github.com/airbytehq/airbyte/pull/38256) | Replace AirbyteLogger with logging.Logger |
 | 6.1.0 | 2024-04-08 | [36898](https://github.com/airbytehq/airbyte/pull/36898) | Update car prices and years |
 | 6.0.3 | 2024-03-15 | [36167](https://github.com/airbytehq/airbyte/pull/36167) | Make 'count' an optional config parameter. |
@@ -131,3 +135,5 @@ None!
 | 0.1.2   | 2022-05-26 | [13248](https://github.com/airbytehq/airbyte/pull/13293)                                                              | Test publication flow                                                                                           |
 | 0.1.1   | 2022-05-26 | [13235](https://github.com/airbytehq/airbyte/pull/13235)                                                              | Publish for AMD and ARM (M1 Macs) & remove User.birthdate                                                       |
 | 0.1.0   | 2022-04-12 | [11738](https://github.com/airbytehq/airbyte/pull/11738)                                                              | The Faker Source is created                                                                                     |
+
+</details>

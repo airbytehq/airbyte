@@ -41,10 +41,16 @@ Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
-| 0.3.0   | 2023-10-25 | [31070](https://github.com/airbytehq/airbyte/pull/31070) | Migrate to low-code framework                                                                            |
-| 0.2.0   | 2023-05-24 | [26491](https://github.com/airbytehq/airbyte/pull/26491) | Remove authSpecification from spec.json as OAuth is not supported by Qualaroo + update stream schema     |
-| 0.1.2   | 2022-05-24 | [13121](https://github.com/airbytehq/airbyte/pull/13121) | Fix `start_date` and `survey_ids` schema formatting. Separate source and stream files. Add stream_slices |
-| 0.1.1   | 2022-05-20 | [13042](https://github.com/airbytehq/airbyte/pull/13042) | Update stream specs                                                                                      |
-| 0.1.0   | 2021-08-18 | [8623](https://github.com/airbytehq/airbyte/pull/8623)   | New source: Qualaroo                                                                                     |
+| 0.3.1 | 2024-05-20 | [38381](https://github.com/airbytehq/airbyte/pull/38381) | [autopull] base image + poetry + up_to_date |
+| 0.3.0 | 2023-10-25 | [31070](https://github.com/airbytehq/airbyte/pull/31070) | Migrate to low-code framework |
+| 0.2.0 | 2023-05-24 | [26491](https://github.com/airbytehq/airbyte/pull/26491) | Remove authSpecification from spec.json as OAuth is not supported by Qualaroo + update stream schema |
+| 0.1.2 | 2022-05-24 | [13121](https://github.com/airbytehq/airbyte/pull/13121) | Fix `start_date` and `survey_ids` schema formatting. Separate source and stream files. Add stream_slices |
+| 0.1.1 | 2022-05-20 | [13042](https://github.com/airbytehq/airbyte/pull/13042) | Update stream specs |
+| 0.1.0 | 2021-08-18 | [8623](https://github.com/airbytehq/airbyte/pull/8623) | New source: Qualaroo |
+
+</details>

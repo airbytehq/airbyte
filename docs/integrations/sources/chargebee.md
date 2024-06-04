@@ -98,6 +98,9 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.5.1   | 2024-04-24 | [36633](https://github.com/airbytehq/airbyte/pull/36633) | Schema descriptions and CDK 0.80.0                                                                                                             |
@@ -131,5 +134,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 | 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067)   | Prepare connector for publishing                                                                                                               |
 | 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add entrypoint and bump version for connector                                                                                                  |
 | 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410)   | New Source: Chargebee                                                                                                                          |
+
+</details>
 
 </HideInUI>

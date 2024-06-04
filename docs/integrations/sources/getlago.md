@@ -30,8 +30,14 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.3.1 | 2024-05-21 | [38479](https://github.com/airbytehq/airbyte/pull/38479) | [autopull] base image + poetry + up_to_date |
 | 0.3.0   | 2023-10-05 | [#31099](https://github.com/airbytehq/airbyte/pull/31099) | Added customer_usage and wallet stream    |
 | 0.2.0   | 2023-09-19 | [#30572](https://github.com/airbytehq/airbyte/pull/30572) | Source GetLago: Support API URL           |
 | 0.1.0   | 2022-10-26 | [#18727](https://github.com/airbytehq/airbyte/pull/18727) | 🎉 New Source: getLago API [low-code CDK] |
+
+</details>
