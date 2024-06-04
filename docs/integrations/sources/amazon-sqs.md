@@ -99,6 +99,7 @@ Extra care should be taken to understand this risk before enabling this option.
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| 0.1.3 | 2024-06-03 | [38921](https://github.com/airbytehq/airbyte/pull/38921) | Replace AirbyteLogger with logging.Logger |
 | 0.1.2 | 2024-06-03 | [38921](https://github.com/airbytehq/airbyte/pull/38921) | Replace AirbyteLogger with logging.Logger |
 | 0.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
 | 0.1.0   | 2021-10-10 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000)  | Initial version                   |
