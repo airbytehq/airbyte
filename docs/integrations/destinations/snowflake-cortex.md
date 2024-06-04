@@ -24,7 +24,7 @@ You'll need the following information to configure the destination:
 - **Snowflake Password** - The password for your Snowflake account
 - **Snowflake Database** - The database name in Snowflake to load data into
 - **Snowflake Warehouse** - The warehouse name in Snowflake to use
-- **Snowflake Role** - The role name in Snowflake to use.
+- **Snowflake Role** - The role name in Snowflake to use. 
 
 
 ## Features
@@ -55,7 +55,7 @@ When specifying text fields, you can access nested fields in the record by using
 
 The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
 
-The stream name gets added as a metadata field `_ab_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are loaded. It is added as the `_ab_record_id` metadata field.
+The stream name gets added as a metadata field `_ab_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_ab_record_id` metadata field.
 
 ### Embedding
 
@@ -67,17 +67,20 @@ The connector can use one of the following embedding methods:
 
 For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
 
-### Snowflake Storage
+### Indexing/Data Storage 
 
-To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure you have set a database, and a data wareshouse before running the Snowflake Cortex destination. All streams will be indexed/stored into a table with the same name. The table will be created if it doesn't exist. The table will have the following columns:
-- `document_id` (string) - the unique identifier of the document, creating from appending the primary keys in the stream schema
-- `chunk_id` (string) - the unique identifier of the chunk, created by appending the chunk number to the document_id
-- `metadata` (variant) - the metadata of the document, stored as key-value pairs
-- `document_content` (string) - the text content of the chunk
-- `embedding` (vector) - the embedding of the chunk, stored as a list of floats
+To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure you have set a database, and a data wareshouse before running the Snowflake Cortex destination. All streams will be indexed/stored into a table with the same name. The table will be created if it doesn't exist. The table will have the following columns: 
+- document_id (string) - the unique identifier of the document, creating from appending the primary keys in the stream schema
+- chunk_id (string) - the unique identifier of the chunk, created by appending the chunk number to the document_id
+- metadata (variant) - the metadata of the document, stored as key-value pairs
+- page_content (string) - the text content of the chunk
+- embedding (vector) - the embedding of the chunk, stored as a list of floats
 
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -86,3 +89,5 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 | 0.1.2 | 2024-05-17 | [#38327](https://github.com/airbytehq/airbyte/pull/38327) | Fix chunking related issue.
 | 0.1.1 | 2024-05-15 | [#38206](https://github.com/airbytehq/airbyte/pull/38206) | Bug fixes.
 | 0.1.0 | 2024-05-13 | [#37333](https://github.com/airbytehq/airbyte/pull/36807) | Add support for Snowflake as a Vector destination.
+
+</details>
