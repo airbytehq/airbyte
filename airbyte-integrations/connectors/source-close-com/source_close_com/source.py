@@ -3,13 +3,13 @@
 #
 
 
+import logging
 from abc import ABC
 from base64 import b64encode
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -687,7 +687,7 @@ class Base64HttpAuthenticator(TokenAuthenticator):
 
 
 class SourceCloseCom(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = Base64HttpAuthenticator(auth=(config["api_key"], "")).get_auth_header()
             url = "https://api.close.com/api/v1/me"
