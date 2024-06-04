@@ -18,7 +18,7 @@ class JsonDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any]]:
+    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         try:
             body_json = response.json()
             if isinstance(body_json, dict):
@@ -36,7 +36,7 @@ class IterableDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any]]:
+    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         # TODO: how to handle simple string in extractor;
         #  see list_users in iterable:: response.body == b'user1@example.com\nuser2@example.com'
         #  possible option: we can wrap strings directly into records => {"record": {line.decode()}}
@@ -52,7 +52,7 @@ class JsonlDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any]]:
+    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         # TODO???: set delimiter? usually it is `\n` but maybe it would be useful to set optional?
         for record in response.iter_lines():
             yield json.loads(record)

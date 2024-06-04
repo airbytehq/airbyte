@@ -16,7 +16,7 @@ class Decoder:
     """
 
     @abstractmethod
-    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any]]:
+    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         """
         Decodes a requests.Response into a Mapping[str, Any] or an array
         :param response: the response to decode
