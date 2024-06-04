@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
-  dockerImageTag: 1.2.1
+  dockerImageTag: 1.2.2
   dockerRepository: airbyte/source-salesloft
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
   githubIssueLabel: source-salesloft
