@@ -39,6 +39,9 @@ The Copper source connector supports the following [sync modes](https://docs.air
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.3.5   | 2024-05-17 | [38214](https://github.com/airbytehq/airbyte/pull/38214)  | Make connector compatable with builder                                          |
@@ -49,3 +52,5 @@ The Copper source connector supports the following [sync modes](https://docs.air
 | 0.3.0   | 2023-08-10 | [**\***](https://github.com/airbytehq/airbyte/pull/*****) | Migrate to low code                                                             |
 | 0.2.0   | 2023-04-17 | [24824](https://github.com/airbytehq/airbyte/pull/24824)  | Add `opportunities` stream                                                      |
 | 0.1.0   | 2022-11-17 | [18848](https://github.com/airbytehq/airbyte/pull/18848)  | 🎉 New Source: Copper [python cdk]                                              |
+
+</details>

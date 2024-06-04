@@ -65,6 +65,9 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
 | 0.2.1   | 2023-05-30 | [27236](https://github.com/airbytehq/airbyte/pull/27236) | Autoformat code                                              |
@@ -75,3 +78,5 @@ You should now be ready to use the Google Directory connector in Airbyte.
 | 0.1.6   | 2021-11-02 | [7464](https://github.com/airbytehq/airbyte/pull/7464)   | Migrate to the CDK                                           |
 | 0.1.5   | 2021-10-20 | [6930](https://github.com/airbytehq/airbyte/pull/6930)   | Fix crash when a group don't have members                    |
 | 0.1.4   | 2021-10-19 | [7167](https://github.com/airbytehq/airbyte/pull/7167)   | Add organizations and phones to `users` schema               |
+
+</details>

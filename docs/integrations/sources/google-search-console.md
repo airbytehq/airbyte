@@ -212,6 +212,9 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
 | 1.4.3   | 2024-05-24 | [38649](https://github.com/airbytehq/airbyte/pull/38649) | Update deprecated auth package                                                                                                 |
@@ -255,5 +258,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 | 0.1.2   | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222)   | Correct Spec File                                                                                                              |
 | 0.1.1   | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315)   | Verify access to all sites when performing connection check                                                                    |
 | 0.1.0`  | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350)   | Initial Release                                                                                                                |
+
+</details>
 
 </HideInUI>

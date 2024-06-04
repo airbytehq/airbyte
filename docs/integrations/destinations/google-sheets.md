@@ -150,6 +150,9 @@ EXAMPLE:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
 | 0.2.5 | 2024-05-22 | [38516](https://github.com/airbytehq/airbyte/pull/38516) | [autopull] base image + poetry + up_to_date |
@@ -161,3 +164,5 @@ EXAMPLE:
 | 0.1.2 | 2022-10-31 | [18729](https://github.com/airbytehq/airbyte/pull/18729) | Fix empty headers list |
 | 0.1.1 | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved |
 | 0.1.0 | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release |
+
+</details>

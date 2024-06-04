@@ -43,6 +43,9 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.1.4   | 2024-05-28 | [38731](https://github.com/airbytehq/airbyte/pull/38731) | Make compatible with the builder                                                |
@@ -50,3 +53,5 @@ The following fields are required fields for the connector to work:
 | 0.1.2   | 2024-04-15 | [37203](https://github.com/airbytehq/airbyte/pull/37203) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1   | 2024-04-12 | [37203](https://github.com/airbytehq/airbyte/pull/37203) | schema descriptions                                                             |
 | 0.1.0   | 2022-10-21 | [18576](https://github.com/airbytehq/airbyte/pull/18576) | 🎉 New Source: Newsdata                                                         |
+
+</details>

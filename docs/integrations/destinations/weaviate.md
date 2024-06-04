@@ -85,6 +85,9 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                      |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.2.18 | 2024-05-15 | [38272](https://github.com/airbytehq/airbyte/pull/38272) | Replace AirbyteLogger with logging.Logger |
@@ -108,3 +111,5 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 | 0.2.0   | 2023-09-22 | [#30151](https://github.com/airbytehq/airbyte/pull/30151)  | Add embedding capabilities, overwrite and dedup support and API key auth mode, make certified. 🚨 Breaking changes - check migrations guide. |
 | 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects             |
 | 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                                                                                                                     |
+
+</details>

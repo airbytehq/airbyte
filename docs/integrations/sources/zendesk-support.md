@@ -162,6 +162,9 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.6.5   | 2024-05-23 | [38607](https://github.com/airbytehq/airbyte/pull/38607) | migrate to cursor based pagination in stream `Organization memberships`                                                                                                                                                            |
@@ -259,5 +262,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 0.1.2   | 2021-10-16 | [6513](https://github.com/airbytehq/airbyte/pull/6513)   | Fixed TicketComments stream                                                                                                                                                                                                        |
 | 0.1.1   | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787)   | Fixed incremental logic for the ticket_comments stream                                                                                                                                                                             |
 | 0.1.0   | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861)   | Created CDK native zendesk connector                                                                                                                                                                                               |
+
+</details>
 
 </HideInUI>

@@ -121,6 +121,9 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
 | 3.9.7 | 2024-05-15 | [38250](https://github.com/airbytehq/airbyte/pull/38250) | Replace AirbyteLogger with logging.Logger and upgrade to latest base image |
@@ -172,3 +175,5 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 | 0.1.2 | 2021-12-02 | [8292](https://github.com/airbytehq/airbyte/pull/8292) | Support reports |
 | 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.0 | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887) | Release TikTok Marketing CDK Connector |
+
+</details>

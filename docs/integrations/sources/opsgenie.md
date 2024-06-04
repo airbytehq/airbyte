@@ -49,6 +49,9 @@ The Opsgenie connector uses the most recent API version for each source of data.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.3.5   | 2024-04-19 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Updating to 0.80.0 CDK                                                          |
@@ -59,3 +62,5 @@ The Opsgenie connector uses the most recent API version for each source of data.
 | 0.3.0   | 2023-10-19 | [31552](https://github.com/airbytehq/airbyte/pull/31552) | Migrated to Low Code                                                            |
 | 0.2.0   | 2023-10-24 | [31777](https://github.com/airbytehq/airbyte/pull/31777) | Fix schema                                                                      |
 | 0.1.0   | 2022-09-14 | [16768](https://github.com/airbytehq/airbyte/pull/16768) | Initial Release                                                                 |
+
+</details>

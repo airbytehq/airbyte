@@ -29,7 +29,10 @@ This source allows you to synchronize the following data tables:
 
 Depending on the amount of team members and time logs the source provides a property to change the pagination size for the time logs query. Typically a pagination of 30 days is a correct balance between reliability and speed. But if you have a big amount of monthly entries you might want to change this value to a lower value.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
@@ -37,3 +40,5 @@ Depending on the amount of team members and time logs the source provides a prop
 | 0.1.2   | 2023-11-20 | [32680](https://github.com/airbytehq/airbyte/pull/32680) | Schema and CDK updates             |
 | 0.1.1   | 2022-06-08 | [12964](https://github.com/airbytehq/airbyte/pull/12964) | Update schema for time_logs stream |
 | 0.1.0   | 2021-11-26 | [8270](https://github.com/airbytehq/airbyte/pull/8270)   | New Source: My Hours               |
+
+</details>

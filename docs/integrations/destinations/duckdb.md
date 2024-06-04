@@ -111,6 +111,9 @@ This error may indicate that you are connecting with a `0.10.x` DuckDB client (a
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.4.1 | 2024-06-04 | [38959](https://github.com/airbytehq/airbyte/pull/38959) | [autopull] Upgrade base image to v1.2.1 |
@@ -125,3 +128,5 @@ This error may indicate that you are connecting with a `0.10.x` DuckDB client (a
 | 0.2.1   | 2022-10-20 | [#30600](https://github.com/airbytehq/airbyte/pull/30600) | Fix: schema name mapping                                                                                                                                                                                                                                                                                                                                                                               |
 | 0.2.0   | 2022-10-19 | [#29428](https://github.com/airbytehq/airbyte/pull/29428) | Add support for MotherDuck. Upgrade DuckDB version to `v0.8``.                                                                                                                                                                                                                                                                                                                                         |
 | 0.1.0   | 2022-10-14 | [17494](https://github.com/airbytehq/airbyte/pull/17494)  | New DuckDB destination                                                                                                                                                                                                                                                                                                                                                                                 |
+
+</details>

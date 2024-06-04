@@ -53,6 +53,9 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
 | 0.2.1   | 2024-05-21 | [38528](https://github.com/airbytehq/airbyte/pull/38528) | [autopull] base image + poetry + up_to_date                 |
@@ -68,3 +71,5 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 | 0.1.2   | 2021-12-07 | [8416](https://github.com/airbytehq/airbyte/pull/8416)   | Correct Incremental Function                                |
 | 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                             |
 | 0.1.0   | 2021-08-19 | [5521](https://github.com/airbytehq/airbyte/pull/5521)   | Initial Release. Source BigCommerce                         |
+
+</details>

@@ -63,6 +63,9 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
 | 1.0.2   | 2024-05-21 | [38548](https://github.com/airbytehq/airbyte/pull/38548) | Upgrade to CDK 1.0.0                                         |
@@ -73,3 +76,5 @@ The Freshsales connector should not run into Freshsales API limitations under no
 | 0.1.2   | 2022-07-14 | [0](https://github.com/airbytehq/airbyte/pull/0)         | Tune the `get_view_id` function                              |
 | 0.1.1   | 2021-12-24 | [9101](https://github.com/airbytehq/airbyte/pull/9101)   | Update fields and descriptions                               |
 | 0.1.0   | 2021-11-03 | [6963](https://github.com/airbytehq/airbyte/pull/6963)   | 🎉 New Source: Freshsales                                    |
+
+</details>

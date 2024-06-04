@@ -48,6 +48,9 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                                     |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
 | 0.2.5   | 2024-05-21 | [38139](https://github.com/airbytehq/airbyte/pull/38139)  | Make connector compatable with builder                 `                                    |
@@ -58,3 +61,5 @@ The following fields are required fields for the connector to work:
 | 0.2.0   | 2024-02-05 | [#34826](https://github.com/airbytehq/airbyte/pull/34826) | Fix catalog types for fields `bid_price` and `bid_size` in stream `quotes_historical_data`. |
 | 0.1.1   | 2022-12-19 | [#20600](https://github.com/airbytehq/airbyte/pull/20600) | Add quotes historical data stream                                                           |
 | 0.1.0   | 2022-10-21 | [#18302](https://github.com/airbytehq/airbyte/pull/18302) | New source                                                                                  |
+
+</details>

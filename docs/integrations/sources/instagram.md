@@ -111,6 +111,9 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
 | 3.0.9 | 2024-05-21 | [38554](https://github.com/airbytehq/airbyte/pull/38554) | Upgrade to API v19.0 |
@@ -148,5 +151,7 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 | 0.1.8 | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354) | Added check for empty state and fixed tests |
 | 0.1.7 | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805) | Add support for previous `STATE` format |
 | 0.1.6 | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210) | Refactor connector to use CDK: - improve error handling - fix sync fail with HTTP status 400 - integrate SAT |
+
+</details>
 
 </HideInUI>

@@ -68,6 +68,9 @@ This guide will walk through how to create the credentials you need to run this 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------ |
 | 0.4.2 | 2024-06-04 | [38963](https://github.com/airbytehq/airbyte/pull/38963) | [autopull] Upgrade base image to v1.2.1 |
@@ -76,3 +79,5 @@ This guide will walk through how to create the credentials you need to run this 
 | 0.3.2 | 2022-08-02 | [15231](https://github.com/airbytehq/airbyte/pull/15231) | Added min_last_updated_datetime support for Capital One items |
 | 0.3.1 | 2022-03-31 | [11104](https://github.com/airbytehq/airbyte/pull/11104) | Fix 100 record limit and added start_date |
 | 0.3.0 | 2022-01-05 | [7977](https://github.com/airbytehq/airbyte/pull/7977) | Migrate to Python CDK + add transaction stream |
+
+</details>

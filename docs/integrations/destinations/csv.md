@@ -73,6 +73,9 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 1.0.0   | 2022-12-20 | [17998](https://github.com/airbytehq/airbyte/pull/17998) | Breaking changes: non backwards compatible. Adds delimiter dropdown.            |
@@ -95,3 +98,5 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 | 0.1.2   | 2020-11-18 | [998](https://github.com/airbytehq/airbyte/pull/998)     | Adding incremental to the data model                                            |
 | 0.1.1   | 2020-11-10 | [895](https://github.com/airbytehq/airbyte/pull/895)     | bump versions: all destinations and source exchange rate                        |
 | 0.1.0   | 2020-10-21 | [676](https://github.com/airbytehq/airbyte/pull/676)     | Integrations Reorganization: Connectors                                         |
+
+</details>

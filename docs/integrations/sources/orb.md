@@ -60,6 +60,9 @@ an Orb Account and API Key.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | 1.2.2   | 2024-04-19 | [37211](https://github.com/airbytehq/airbyte/pull/37211) | Updating to 0.80.0 CDK                                                                                |
@@ -75,3 +78,5 @@ an Orb Account and API Key.
 | 0.1.1   | 2022-03-03 | [10839](https://github.com/airbytehq/airbyte/pull/10839) | Support ledger entries with numeric properties + schema fixes                                         |
 | 0.1.0   | 2022-02-01 |                                                          | New Source: Orb                                                                                       |
 | :---    | :---       | :---                                                     | :---                                                                                                  |
+
+</details>

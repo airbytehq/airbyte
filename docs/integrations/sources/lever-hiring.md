@@ -41,6 +41,9 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
 | 0.3.0   | 2024-05-08 | [36262](https://github.com/airbytehq/airbyte/pull/36262) | Migrate to Low Code               |
@@ -49,3 +52,5 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 | 0.1.2   | 2021-12-30 | [9214](https://github.com/airbytehq/airbyte/pull/9214)   | Update title and descriptions     |
 | 0.1.1   | 2021-12-16 | [7677](https://github.com/airbytehq/airbyte/pull/7677)   | OAuth Automated Authentication    |
 | 0.1.0   | 2021-09-22 | [6141](https://github.com/airbytehq/airbyte/pull/6141)   | Add Lever Hiring Source Connector |
+
+</details>

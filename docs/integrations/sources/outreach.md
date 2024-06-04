@@ -51,6 +51,9 @@ List of available streams:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
 | 1.0.0 | 2024-04-15 | [36602](https://github.com/airbytehq/airbyte/pull/36602) | Migrate to low code |
@@ -65,3 +68,5 @@ List of available streams:
 | 0.1.2 | 2022-07-04 | [14386](https://github.com/airbytehq/airbyte/pull/14386) | Fix stream schema and cursor field |
 | 0.1.1 | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
 | 0.1.0 | 2021-11-03 | [7507](https://github.com/airbytehq/airbyte/pull/7507) | Outreach Connector |
+
+</details>

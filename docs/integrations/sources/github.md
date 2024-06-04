@@ -210,6 +210,9 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1.7.5   | 2024-05-29 | [38341](https://github.com/airbytehq/airbyte/pull/38341)                                                          | add `max_waiting_time` to configuration                                                                                                                             |
@@ -334,5 +337,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708)                                                            | Fix bug with IssueEvents stream and add handling for rate limiting                                                                                                  |
 | 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590)                                                            | Fix schema in the `pull_request` stream                                                                                                                             |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)                                                            | New Source: GitHub                                                                                                                                                  |
+
+</details>
 
 </HideInUI>

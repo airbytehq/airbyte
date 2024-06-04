@@ -114,6 +114,9 @@ Using this feature requires additional configuration, when creating the source. 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2024-04-11 | [\#36050](https://github.com/airbytehq/airbyte/pull/36050) | Update to Dv2 Table Format and Remove normalization                                                 |
@@ -141,3 +144,5 @@ Using this feature requires additional configuration, when creating the source. 
 | 0.1.3   | 2021-05-28 | [\#3728](https://github.com/airbytehq/airbyte/pull/3973)   | Change dockerfile entrypoint                                                                        |
 | 0.1.2   | 2021-05-13 | [\#3367](https://github.com/airbytehq/airbyte/pull/3671)   | Fix handle symbols unicode                                                                          |
 | 0.1.1   | 2021-05-11 | [\#3566](https://github.com/airbytehq/airbyte/pull/3195)   | MS SQL Server Destination Release!                                                                  |
+
+</details>

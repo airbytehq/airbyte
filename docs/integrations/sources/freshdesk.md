@@ -67,6 +67,9 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
 | 3.1.0   | 2024-03-12 | [35699](https://github.com/airbytehq/airbyte/pull/35699) | Migrate to low-code                                                                   |
@@ -94,3 +97,5 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 | 0.2.9   | 2021-11-16 | [8017](https://github.com/airbytehq/airbyte/pull/8017)   | Bugfix an issue that caused the connector to not sync more than 50000 contacts        |
 | 0.2.8   | 2021-10-28 | [7486](https://github.com/airbytehq/airbyte/pull/7486)   | Include "requester" and "stats" fields in "tickets" stream                            |
 | 0.2.7   | 2021-10-13 | [6442](https://github.com/airbytehq/airbyte/pull/6442)   | Add start_date parameter to specification from which to start pulling data.           |
+
+</details>

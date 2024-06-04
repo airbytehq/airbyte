@@ -265,6 +265,9 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
 | 0.3.1   | 2024-04-19 | [37432](https://github.com/airbytehq/airbyte/pull/36267) | Fix empty response error for test stream                                                     |
@@ -310,5 +313,7 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 | 0.1.2   | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306)   | Support of Airbyte OAuth initialization flow                                                 |
 | 0.1.1   | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655)   | Corrected validation of empty custom report                                                  |
 | 0.1.0   | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290)   | Initial Release                                                                              |
+
+</details>
 
 </HideInUI>

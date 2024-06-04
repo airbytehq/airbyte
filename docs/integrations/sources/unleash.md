@@ -53,6 +53,11 @@ The API key that you are assigned is rate-limited.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                               |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------ |
 | 0.1.0   | 2022-11-30 | [#19923](https://github.com/airbytehq/airbyte/pull/19923) | 🎉 New source: Unleash [low-code CDK] |
+
+</details>

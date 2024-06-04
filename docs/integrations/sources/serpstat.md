@@ -47,7 +47,11 @@ The Serpstat source connector supports the following [sync modes](https://docs.a
 The maximum sync speed is limited by the number of requests per second per API key. See this limit in your [Serpstat account](https://serpstat.com/users/profile/).
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
 | 0.1.0   | 2023-08-21 | [28147](https://github.com/airbytehq/airbyte/pull/28147) | Release Serpstat Connector |
+
+</details>

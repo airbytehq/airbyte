@@ -169,6 +169,11 @@ Each table will contain 3 columns:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------- |
 | 0.0.1   | 2024-03-02 | [\#35775](https://github.com/airbytehq/airbyte/pull/35775) | Initial release |
+
+</details>

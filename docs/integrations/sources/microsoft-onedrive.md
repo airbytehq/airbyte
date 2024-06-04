@@ -121,6 +121,9 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
 | 0.2.1   | 2024-05-29 | [38676](https://github.com/airbytehq/airbyte/pull/38676) | Avoid error on empty stream when running discover                                               |
@@ -135,3 +138,5 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 | 0.1.2   | 2021-12-22 | [33745](https://github.com/airbytehq/airbyte/pull/33745) | Add ql and sl to metadata                                                                       |
 | 0.1.1   | 2021-12-15 | [33758](https://github.com/airbytehq/airbyte/pull/33758) | Fix for docs name                                                                               |
 | 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source                                                                                      |
+
+</details>

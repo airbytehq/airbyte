@@ -104,6 +104,9 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
 | 0.5.0   | 2023-11-30 | [32984](https://github.com/airbytehq/airbyte/pull/32984) | Add support for custom fields                                                                          |
@@ -116,3 +119,5 @@ The Close.com connector is subject to rate limits. For more information on this 
 | 0.2.1   | 2023-02-15 | [23074](https://github.com/airbytehq/airbyte/pull/23074) | Specified date formatting in specification                                                             |
 | 0.2.0   | 2022-11-04 | [18968](https://github.com/airbytehq/airbyte/pull/18968) | Migrate to Low-Code                                                                                    |
 | 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366)   | Initial release of Close.com connector for Airbyte                                                     |
+
+</details>

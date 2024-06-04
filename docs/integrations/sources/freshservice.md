@@ -52,6 +52,9 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
 | 1.3.6   | 2024-05-15 | [38195](https://github.com/airbytehq/airbyte/pull/38195) | Make connector compatible with builder                                                 |
@@ -66,3 +69,5 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 | 1.0.0   | 2023-05-02 | [25743](https://github.com/airbytehq/airbyte/pull/25743) | Correct data types in tickets, agents and requesters schemas to match Freshservice API |
 | 0.1.1   | 2021-12-28 | [9143](https://github.com/airbytehq/airbyte/pull/9143)   | Update titles and descriptions                                                         |
 | 0.1.0   | 2021-10-29 | [6967](https://github.com/airbytehq/airbyte/pull/6967)   | 🎉 New Source: Freshservice                                                            |
+
+</details>

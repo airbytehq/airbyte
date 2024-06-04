@@ -41,6 +41,9 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
 | 0.3.3 | 2024-05-20 | [38407](https://github.com/airbytehq/airbyte/pull/38407) | [autopull] base image + poetry + up_to_date |
@@ -49,3 +52,5 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 | 0.3.0 | 2023-10-25 | [31690](https://github.com/airbytehq/airbyte/pull/31690) | Migrate to low-code framework |
 | 0.2.0 | 2023-03-29 | [24655](https://github.com/airbytehq/airbyte/pull/24655) | Source Younium: Adding Booking and Account streams |
 | 0.1.0 | 2022-11-09 | [18758](https://github.com/airbytehq/airbyte/pull/18758) | 🎉 New Source: Younium [python cdk] |
+
+</details>

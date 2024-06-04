@@ -262,6 +262,9 @@ _where_ it is deployed.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
 | 2.0.10  | 2024-05-07 | [\#37660](https://github.com/airbytehq/airbyte/pull/37660) | Adopt CDK 0.33.2                                                                                         |
@@ -302,3 +305,5 @@ _where_ it is deployed.
 | 0.3.12  | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719)   | Improve handling of wide rows by buffering records based on their byte size rather than their count      |
 | 0.3.11  | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743)   | Add SSH Tunnel support                                                                                   |
 | 0.3.10  | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336)   | Destination Postgres: fix \u0000\(NULL\) value processing                                                |
+
+</details>

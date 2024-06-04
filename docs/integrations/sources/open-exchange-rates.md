@@ -41,7 +41,10 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 1. 1000 API calls per month.
 2. You won't be able to specify the `base` parameter, meaning that you will be dealing only with default base value which is USD.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -52,3 +55,5 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 | 0.2.1   | 2024-04-12 | [37208](https://github.com/airbytehq/airbyte/pull/37208)   | schema descriptions                                                             |
 | 0.2.0   | 2023-10-03 | [30983](https://github.com/airbytehq/airbyte/pull/30983)   | Migrate to low code                                                             |
 | 0.1.0   | 2022-11-15 | [19436](https://github.com/airbytehq/airbyte/issues/19436) | Created CDK native Open Exchange Rates connector                                |
+
+</details>

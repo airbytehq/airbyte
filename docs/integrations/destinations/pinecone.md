@@ -72,7 +72,10 @@ To get started, use the [Pinecone web UI or API](https://docs.pinecone.io/docs/q
 
 OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordingly.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
@@ -103,3 +106,5 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 | 0.0.3   | 2023-09-01 | [#30079](https://github.com/airbytehq/airbyte/pull/30079) | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade. |
 | 0.0.2   | 2023-08-31 | [#29442](https://github.com/airbytehq/airbyte/pull/29946) | Improve test coverage                                                                                                        |
 | 0.0.1   | 2023-08-29 | [#29539](https://github.com/airbytehq/airbyte/pull/29539) | Pinecone connector with some embedders                                                                                       |
+
+</details>

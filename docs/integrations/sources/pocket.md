@@ -52,9 +52,14 @@ curl --insecure -X POST -H 'Content-Type: application/json' -H 'X-Accept: applic
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.1.3   | 2024-04-19 | [37228](https://github.com/airbytehq/airbyte/pull/37228) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
 | 0.1.2   | 2024-04-15 | [37228](https://github.com/airbytehq/airbyte/pull/37228) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1   | 2024-04-12 | [37228](https://github.com/airbytehq/airbyte/pull/37228) | schema descriptions                                                             |
 | 0.1.0   | 2022-10-30 | [18655](https://github.com/airbytehq/airbyte/pull/18655) | 🎉 New Source: Pocket                                                           |
+
+</details>

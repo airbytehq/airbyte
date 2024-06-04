@@ -190,6 +190,9 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
 | 2.5.13  | 2024-05-23 | [38563](https://github.com/airbytehq/airbyte/pull/38563) | Use HttpClient to perform HTTP requests for bulk, authentication and schema discovery                                                |
@@ -295,5 +298,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 | 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification                                                            |
 | 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209)   | Fix bug with pagination for BULK API                                                                                                 |
 | 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619)   | Salesforce Aitbyte-Native Connector                                                                                                  |
+
+</details>
 
 </HideInUI>

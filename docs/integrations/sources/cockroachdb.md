@@ -93,6 +93,9 @@ Your database user should now be ready for use with Airbyte.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.2.2   | 2024-02-13 | [35234](https://github.com/airbytehq/airbyte/pull/35234) | Adopt CDK 0.20.4                                                                                                                          |
@@ -118,3 +121,5 @@ Your database user should now be ready for use with Airbyte.
 | 0.1.4   | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958)   | Add support for JdbcType.ARRAY                                                                                                            |
 | 0.1.3   | 2021-10-10 | [7819](https://github.com/airbytehq/airbyte/pull/7819)   | Fixed Datatype errors during Cockroach DB parsing                                                                                         |
 | 0.1.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699)   | Added json config validator                                                                                                               |
+
+</details>

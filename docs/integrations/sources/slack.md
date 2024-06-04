@@ -166,6 +166,9 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------| :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
 | 1.1.2   | 2024-05-23 | [38619](https://github.com/airbytehq/airbyte/pull/38619) | Fix cursor granularity for the `channel_messages` stream                             |
@@ -205,5 +208,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 | 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860)   | Fix reading threads issue                                                            |
 | 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683)   | Add float_ts primary key                                                             |
 | 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978)   | Release Slack CDK Connector                                                          |
+
+</details>
 
 </HideInUI>

@@ -259,6 +259,9 @@ The below table contains the configuraiton parameters available for this connect
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
 | 2.5.4 | 2024-05-20 | [38265](https://github.com/airbytehq/airbyte/pull/38265) | Replace AirbyteLogger with logging.Logger |
@@ -290,3 +293,5 @@ The below table contains the configuraiton parameters available for this connect
 | 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Removed base-python dependencies |
 | 0.1.1 | 2021-08-03 | [5155](https://github.com/airbytehq/airbyte/pull/5155) | Fixed start_date_min limit |
 | 0.1.0 | 2021-06-10 | [4240](https://github.com/airbytehq/airbyte/pull/4240) | PayPal Transaction Search API |
+
+</details>

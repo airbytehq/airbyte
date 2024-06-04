@@ -39,6 +39,9 @@ This Source is capable of syncing the following Streams:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
 | 0.2.1   | 2024-05-02 | [37597](https://github.com/airbytehq/airbyte/pull/37597) | Change `last_records` to `last_record`            |
@@ -47,3 +50,5 @@ This Source is capable of syncing the following Streams:
 | 0.1.2   | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Update fields in source-connectors specifications |
 | 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                   |
 | 0.1.0   | 2021-08-16 | [3787](https://github.com/airbytehq/airbyte/pull/5418)   | Add Native Shortio Source Connector               |
+
+</details>
