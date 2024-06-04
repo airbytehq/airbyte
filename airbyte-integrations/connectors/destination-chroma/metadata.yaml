@@ -5,7 +5,7 @@ data:
     cloud:
       enabled: false
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 0b75218b-f702-4a28-85ac-34d3d84c0fc2
