@@ -4,7 +4,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-  - "campaigns"
+    - "campaigns"
 
 definitions:
   bearer_authenticator:
@@ -18,7 +18,7 @@ definitions:
   transformer_remove_empty_fields:
     type: RemoveFields
     field_pointers:
-    - ["**"]
+      - ["**"]
     condition: "{{ property|string == '' }}"
 
   retriever:
@@ -67,11 +67,11 @@ definitions:
           sort_dir: "ASC"
           exclude_fields: "{{ parameters.get('data_field') }}._links"
     transformations:
-    - "#/definitions/transformer_remove_empty_fields"
+      - "#/definitions/transformer_remove_empty_fields"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
@@ -116,17 +116,17 @@ definitions:
             description: The timestamp when the automation was created
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           emails_sent:
             description: The number of emails sent as part of the automation
             type:
-              - 'null'
+              - "null"
               - number
           id:
             description: The unique identifier for the automation
             type:
-              - 'null'
+              - "null"
               - string
           recipients:
             description: Details about the recipients of the automation
@@ -134,17 +134,17 @@ definitions:
               list_id:
                 description: The ID of the recipient list
                 type:
-                  - 'null'
+                  - "null"
                   - string
               list_is_active:
                 description: Indicates if the recipient list is active
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               list_name:
                 description: The name of the recipient list
                 type:
-                  - 'null'
+                  - "null"
                   - string
               segment_opts:
                 description: Options related to segmenting recipients
@@ -154,31 +154,31 @@ definitions:
                     items:
                       additionalProperties: true
                       type:
-                        - 'null'
+                        - "null"
                         - object
                     type:
-                      - 'null'
+                      - "null"
                       - array
                   match:
                     description: Matching criteria for segmenting recipients
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   saved_segment_id:
                     description: The ID of the saved segment
                     type:
-                      - 'null'
+                      - "null"
                       - number
                 type:
-                  - 'null'
+                  - "null"
                   - object
               store_id:
                 description: The ID of the store associated with recipients
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
           report_summary:
             description: Summary of the report generated for the automation
@@ -186,35 +186,35 @@ definitions:
               click_rate:
                 description: The click-through rate for the automation
                 type:
-                  - 'null'
+                  - "null"
                   - number
               clicks:
                 description: The total number of clicks generated
                 type:
-                  - 'null'
+                  - "null"
                   - number
               open_rate:
                 description: The open rate for the automation
                 type:
-                  - 'null'
+                  - "null"
                   - number
               opens:
                 description: The total number of opens generated
                 type:
-                  - 'null'
+                  - "null"
                   - number
               subscriber_clicks:
                 description: Number of clicks per subscriber
                 type:
-                  - 'null'
+                  - "null"
                   - number
               unique_opens:
                 description: Number of unique opens recorded
                 type:
-                  - 'null'
+                  - "null"
                   - number
             type:
-              - 'null'
+              - "null"
               - object
           settings:
             description: Settings related to the automation
@@ -222,57 +222,57 @@ definitions:
               authenticate:
                 description: Indicates if authentication is set
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               auto_footer:
                 description: Automatically add footer to emails
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               from_name:
                 description: Sender's name
                 type:
-                  - 'null'
+                  - "null"
                   - string
               inline_css:
                 description: Include inline CSS in emails
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               reply_to:
                 description: Email address for replies
                 type:
-                  - 'null'
+                  - "null"
                   - string
               title:
                 description: Title of the automation
                 type:
-                  - 'null'
+                  - "null"
                   - string
               to_name:
                 description: Recipient's name field
                 type:
-                  - 'null'
+                  - "null"
                   - string
               use_conversation:
                 description: Enable conversation tracking
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
             type:
-              - 'null'
+              - "null"
               - object
           start_time:
             airbyte_type: timestamp_with_timezone
             description: The timestamp when the automation started
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           status:
             description: Current status of the automation
             type:
-              - 'null'
+              - "null"
               - string
           tracking:
             description: Tracking settings for the automation
@@ -283,40 +283,40 @@ definitions:
                   notes:
                     description: Additional notes for capsule tracking
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                 type:
-                  - 'null'
+                  - "null"
                   - object
               clicktale:
                 description: Clicktale tracking status
                 type:
-                  - 'null'
+                  - "null"
                   - string
               ecomm360:
                 description: Ecommerce tracking status
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               goal_tracking:
                 description: Goal tracking setup status
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               google_analytics:
                 description: Google Analytics tracking status
                 type:
-                  - 'null'
+                  - "null"
                   - string
               html_clicks:
                 description: HTML click tracking status
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               opens:
                 description: Open tracking status
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               salesforce:
                 description: Salesforce tracking details
@@ -324,23 +324,23 @@ definitions:
                   campaign:
                     description: Salesforce campaign tracking status
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                   notes:
                     description: Additional notes for Salesforce tracking
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
                 type:
-                  - 'null'
+                  - "null"
                   - object
               text_clicks:
                 description: Text click tracking status
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
             type:
-              - 'null'
+              - "null"
               - object
           trigger_settings:
             description: Settings related to the triggers of the automation
@@ -352,10 +352,10 @@ definitions:
                     description: Days of the week for triggering the automation
                     items:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     type:
-                      - 'null'
+                      - "null"
                       - array
                   hours:
                     description: Hourly trigger settings
@@ -363,31 +363,31 @@ definitions:
                       type:
                         description: Type of hourly triggering
                         type:
-                          - 'null'
+                          - "null"
                           - string
                     type:
-                      - 'null'
+                      - "null"
                       - object
                 type:
-                  - 'null'
+                  - "null"
                   - object
               workflow_emails_count:
                 description: Number of emails in the workflow
                 type:
-                  - 'null'
+                  - "null"
                   - number
               workflow_title:
                 description: Title of the workflow
                 type:
-                  - 'null'
+                  - "null"
                   - string
               workflow_type:
                 description: Type of workflow
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
   campaigns_stream:
     type: DeclarativeStream
@@ -407,23 +407,23 @@ definitions:
         description: A summary of an individual campaign's settings and content.
         properties:
           ab_split_opts:
-            description: "[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/)
-              options for a campaign."
+            description: "[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/) options for a campaign."
             properties:
               from_name_a:
                 description: For campaigns split on 'From Name', the name for Group A.
                 title: From Name Group A
                 type:
-                  - 'null'
+                  - "null"
                   - string
               from_name_b:
                 description: For campaigns split on 'From Name', the name for Group B.
                 title: From Name Group B
                 type:
-                  - 'null'
+                  - "null"
                   - string
               pick_winner:
-                description: How we should evaluate a winner. Based on 'opens', 'clicks',
+                description:
+                  How we should evaluate a winner. Based on 'opens', 'clicks',
                   or 'manual'.
                 enum:
                   - opens
@@ -431,21 +431,23 @@ definitions:
                   - manual
                 title: Pick Winner
                 type:
-                  - 'null'
+                  - "null"
                   - string
               reply_email_a:
-                description: For campaigns split on 'From Name', the reply-to address for
+                description:
+                  For campaigns split on 'From Name', the reply-to address for
                   Group A.
                 title: Reply Email Group A
                 type:
-                  - 'null'
+                  - "null"
                   - string
               reply_email_b:
-                description: For campaigns split on 'From Name', the reply-to address for
+                description:
+                  For campaigns split on 'From Name', the reply-to address for
                   Group B.
                 title: Reply Email Group B
                 type:
-                  - 'null'
+                  - "null"
                   - string
               send_time_a:
                 airbyte_type: timestamp_with_timezone
@@ -453,7 +455,7 @@ definitions:
                 format: date-time
                 title: Send Time Group A
                 type:
-                  - 'null'
+                  - "null"
                   - string
               send_time_b:
                 airbyte_type: timestamp_with_timezone
@@ -461,16 +463,17 @@ definitions:
                 format: date-time
                 title: Send Time Group B
                 type:
-                  - 'null'
+                  - "null"
                   - string
               send_time_winner:
                 description: The send time for the winning version.
                 title: Send Time Winner
                 type:
-                  - 'null'
+                  - "null"
                   - string
               split_size:
-                description: The size of the split groups. Campaigns split based on 'schedule'
+                description:
+                  The size of the split groups. Campaigns split based on 'schedule'
                   are forced to have a 50/50 split. Valid split integers are between 1-50.
                 maximum: 50
                 minimum: 1
@@ -484,36 +487,40 @@ definitions:
                   - schedule
                 title: Split Test
                 type:
-                  - 'null'
+                  - "null"
                   - string
               subject_a:
-                description: For campaigns split on 'Subject Line', the subject line for Group
+                description:
+                  For campaigns split on 'Subject Line', the subject line for Group
                   A.
                 title: Subject Line Group A
                 type:
-                  - 'null'
+                  - "null"
                   - string
               subject_b:
-                description: For campaigns split on 'Subject Line', the subject line for Group
+                description:
+                  For campaigns split on 'Subject Line', the subject line for Group
                   B.
                 title: Subject Line Group B
                 type:
-                  - 'null'
+                  - "null"
                   - string
               wait_time:
-                description: The amount of time to wait before picking a winner. This cannot
+                description:
+                  The amount of time to wait before picking a winner. This cannot
                   be changed after a campaign is sent.
                 title: Wait Time
                 type: integer
               wait_units:
-                description: How unit of time for measuring the winner ('hours' or 'days').
+                description:
+                  How unit of time for measuring the winner ('hours' or 'days').
                   This cannot be changed after a campaign is sent.
                 enum:
                   - hours
                   - days
                 title: Wait Time
                 type:
-                  - 'null'
+                  - "null"
                   - string
             readOnly: true
             title: A/B Testing Options
@@ -523,7 +530,7 @@ definitions:
             readOnly: true
             title: Archive URL
             type:
-              - 'null'
+              - "null"
               - string
           content_type:
             description: How the campaign's content is put together.
@@ -534,7 +541,7 @@ definitions:
               - multichannel
             title: Content Type
             type:
-              - 'null'
+              - "null"
               - string
           create_time:
             airbyte_type: timestamp_with_timezone
@@ -557,13 +564,15 @@ definitions:
                 title: Emails Canceled
                 type: integer
               emails_sent:
-                description: The total number of emails confirmed sent for this campaign so
+                description:
+                  The total number of emails confirmed sent for this campaign so
                   far.
                 readOnly: true
                 title: Emails Sent
                 type: integer
               enabled:
-                description: Whether Campaign Delivery Status is enabled for this account
+                description:
+                  Whether Campaign Delivery Status is enabled for this account
                   and campaign.
                 readOnly: true
                 title: Delivery Status Enabled
@@ -578,7 +587,7 @@ definitions:
                 readOnly: true
                 title: Campaign Delivery Status
                 type:
-                  - 'null'
+                  - "null"
                   - string
             title: Campaign Delivery Status
             type: object
@@ -597,21 +606,23 @@ definitions:
             readOnly: true
             title: Long Archive URL
             type:
-              - 'null'
+              - "null"
               - string
           needs_block_refresh:
-            description: Determines if the campaign needs its blocks refreshed by opening
+            description:
+              Determines if the campaign needs its blocks refreshed by opening
               the web-based campaign editor. Deprecated and will always return false.
             readOnly: true
             title: Needs Block Refresh
             type: boolean
           parent_campaign_id:
-            description: If this campaign is the child of another campaign, this identifies
+            description:
+              If this campaign is the child of another campaign, this identifies
               the parent campaign. For Example, for RSS or Automation children.
             readOnly: true
             title: Parent Campaign ID
             type:
-              - 'null'
+              - "null"
               - string
           recipients:
             description: List settings for the campaign.
@@ -620,7 +631,7 @@ definitions:
                 description: The unique list id.
                 title: List ID
                 type:
-                  - 'null'
+                  - "null"
                   - string
               list_is_active:
                 description: The status of the list used, namely if it's deleted or disabled.
@@ -632,21 +643,24 @@ definitions:
                 readOnly: true
                 title: List Name
                 type:
-                  - 'null'
+                  - "null"
                   - string
               recipient_count:
-                description: Count of the recipients on the associated list. Formatted as
+                description:
+                  Count of the recipients on the associated list. Formatted as
                   an integer.
                 readOnly: true
                 title: Recipient Count
                 type: integer
               segment_opts:
-                description: An object representing all segmentation options. This object
+                description:
+                  An object representing all segmentation options. This object
                   should contain a `saved_segment_id` to use an existing segment, or you can
                   create a new segment by including both `match` and `conditions` options.
                 properties:
                   conditions:
-                    description: Segment match conditions. There are multiple possible types,
+                    description:
+                      Segment match conditions. There are multiple possible types,
                       see the [condition types documentation](https://mailchimp.com/developer/marketing/docs/alternative-schemas/#segment-condition-schemas).
                     items:
                       oneOf:
@@ -665,9 +679,7 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: "The status of the member with regard to their campaign
-                              interaction. One of the following: opened, clicked, was sent,
-                              didn''t open, didn''t click, or was not sent."
+                              description: "The status of the member with regard to their campaign interaction. One of the following: opened, clicked, was sent, didn't open, didn't click, or was not sent."
                               enum:
                                 - open
                                 - click
@@ -679,7 +691,8 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: Either the web id value for a specific campaign or
+                              description:
+                                Either the web id value for a specific campaign or
                                 'any' to account for subscribers who have/have not interacted
                                 with any campaigns.
                               example: any
@@ -702,10 +715,7 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: "The status of the member with regard to the automation
-                              workflow. One of the following: has started the workflow, has
-                              completed the workflow, has not started the workflow, or has
-                              not completed the workflow."
+                              description: "The status of the member with regard to the automation workflow. One of the following: has started the workflow, has completed the workflow, has not started the workflow, or has not completed the workflow."
                               enum:
                                 - started
                                 - completed
@@ -715,9 +725,10 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: The web id for the automation workflow to segment
+                              description:
+                                The web id for the automation workflow to segment
                                 against.
-                              example: '2135217'
+                              example: "2135217"
                               title: Segment Data
                               type: string
                           required:
@@ -741,7 +752,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members have/have not interacted with a specific
+                              description:
+                                Members have/have not interacted with a specific
                                 poll in a Mailchimp email.
                               enum:
                                 - member
@@ -775,8 +787,7 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: "The status of a member''s interaction with a conversation.
-                              One of the following: has replied or has not replied."
+                              description: "The status of a member's interaction with a conversation. One of the following: has replied or has not replied."
                               enum:
                                 - member
                                 - notmember
@@ -784,7 +795,8 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: The web id value for a specific campaign or 'any'
+                              description:
+                                The web id value for a specific campaign or 'any'
                                 to account for subscribers who have/have not interacted with
                                 any campaigns.
                               example: any
@@ -804,16 +816,12 @@ definitions:
                               type: string
                               x-value: Date
                             extra:
-                              description: When segmenting on 'date' or 'campaign', the date
-                                for the segment formatted as YYYY-MM-DD or the web id for the
-                                campaign.
-                              example: '2015-01-30'
+                              description: When segmenting on 'date' or 'campaign', the date for the segment formatted as YYYY-MM-DD or the web id for the campaign.
+                              example: "2015-01-30"
                               title: Segment Extra Value
                               type: string
                             field:
-                              description: "The type of date field to segment on: The opt-in
-                              time for a signup, the date the subscriber was last updated,
-                              or the date of their last ecomm purchase."
+                              description: "The type of date field to segment on: The opt-in time for a signup, the date the subscriber was last updated, or the date of their last ecomm purchase."
                               enum:
                                 - timestamp_opt
                                 - info_changed
@@ -822,8 +830,7 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: "When the event took place:  Before, after, is a
-                              specific date, is not a specific date, is blank, or is not blank."
+                              description: "When the event took place:  Before, after, is a specific date, is not a specific date, is blank, or is not blank."
                               enum:
                                 - greater
                                 - less
@@ -837,8 +844,7 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: "What type of data to segment on: a specific date,
-                              a specific campaign, or the last campaign sent."
+                              description: "What type of data to segment on: a specific date, a specific campaign, or the last campaign sent."
                               example: date
                               title: Segment Data
                               type: string
@@ -863,8 +869,7 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: The operation to determine whether we select clients
-                                that match the value, or clients that do not match the value.
+                              description: The operation to determine whether we select clients that match the value, or clients that do not match the value.
                               enum:
                                 - client_is
                                 - client_not
@@ -897,7 +902,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member's language is or is not set to
+                              description:
+                                Whether the member's language is or is not set to
                                 a specific language.
                               enum:
                                 - is
@@ -931,7 +937,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members who have have a rating that is/not exactly
+                              description:
+                                Members who have have a rating that is/not exactly
                                 a given number or members who have a rating greater/less than
                                 a given number.
                               enum:
@@ -968,7 +975,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member's signup source was/was not a
+                              description:
+                                Whether the member's signup source was/was not a
                                 particular value.
                               enum:
                                 - source_is
@@ -1002,10 +1010,7 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: "The status of the member with regard to the survey.
-                              One of the following: has started the survey, has completed
-                              the survey, has not started the survey, or has not completed
-                              the survey."
+                              description: "The status of the member with regard to the survey. One of the following: has started the survey, has completed the survey, has not started the survey, or has not completed the survey."
                               enum:
                                 - started
                                 - completed
@@ -1016,7 +1021,7 @@ definitions:
                               type: string
                             value:
                               description: The unique ID of the SurveyMonkey survey.
-                              example: '32179586'
+                              example: "32179586"
                               title: Survey ID
                               type: string
                           required:
@@ -1060,14 +1065,16 @@ definitions:
                               type: string
                               x-value: Interests
                             field:
-                              description: Segmenting based on interest group information. This
+                              description:
+                                Segmenting based on interest group information. This
                                 should start with 'interests-' followed by the grouping id.
                                 Ex. 'interests-123'.
                               example: interests-123
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member is a part of one, all, or none
+                              description:
+                                Whether the member is a part of one, all, or none
                                 of the groups.
                               enum:
                                 - interestcontains
@@ -1077,13 +1084,14 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: An array containing strings, each representing a
+                              description:
+                                An array containing strings, each representing a
                                 group id.
                               items:
                                 example:
-                                  - '44401'
-                                  - '44405'
-                                  - '44409'
+                                  - "44401"
+                                  - "44405"
+                                  - "44409"
                                 type: string
                               title: Segment Value
                               type: array
@@ -1105,7 +1113,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: A member who has purchased from a category/specific
+                              description:
+                                A member who has purchased from a category/specific
                                 item that is/is not a specific name, where the category/item
                                 name contains/doesn't contain a specific phrase or string, or
                                 a category/item name that starts/ends with a string.
@@ -1126,7 +1135,8 @@ definitions:
                               type: string
                           title: Ecommerce Category Segment
                           type: object
-                        - description: Segment by average spent total, number of orders, total
+                        - description:
+                            Segment by average spent total, number of orders, total
                             number of products purchased, or average number of products per
                             order.
                           properties:
@@ -1136,7 +1146,8 @@ definitions:
                               type: string
                               x-value: EcommNumber
                             field:
-                              description: Segment by average spent total, number of orders,
+                              description:
+                                Segment by average spent total, number of orders,
                                 total number of products purchased, or average number of products
                                 per order.
                               enum:
@@ -1148,7 +1159,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members who have spent exactly, have not spent exactly,
+                              description:
+                                Members who have spent exactly, have not spent exactly,
                                 spent more, or spent less than the segment value.
                               enum:
                                 - is
@@ -1159,7 +1171,8 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: Members who have spent exactly, have not spent exactly,
+                              description:
+                                Members who have spent exactly, have not spent exactly,
                                 spent more, or spent less than this amount.
                               example: 42
                               title: Segment Operator
@@ -1185,7 +1198,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members who have have ('member') or have not ('notmember')
+                              description:
+                                Members who have have ('member') or have not ('notmember')
                                 purchased.
                               enum:
                                 - member
@@ -1195,7 +1209,8 @@ definitions:
                               type: string
                           title: Ecommerce Purchased Segment
                           type: object
-                        - description: Segment by amount spent on a single order or across all
+                        - description:
+                            Segment by amount spent on a single order or across all
                             orders.
                           properties:
                             condition_type:
@@ -1204,7 +1219,8 @@ definitions:
                               type: string
                               x-value: EcommSpent
                             field:
-                              description: Segment by amount spent on a single order or across
+                              description:
+                                Segment by amount spent on a single order or across
                                 all orders.
                               enum:
                                 - ecomm_spent_one
@@ -1213,7 +1229,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members who have spent 'more' or 'less' than then
+                              description:
+                                Members who have spent 'more' or 'less' than then
                                 specified value.
                               enum:
                                 - greater
@@ -1243,7 +1260,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members who have or have not purchased from a specific
+                              description:
+                                Members who have or have not purchased from a specific
                                 store.
                               enum:
                                 - is
@@ -1253,7 +1271,7 @@ definitions:
                               type: string
                             value:
                               description: The store id to segment against.
-                              example: '289'
+                              example: "289"
                               title: Segment Operator
                               type: string
                           title: Ecommerce Purchased Store Segment
@@ -1273,7 +1291,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the website URL is/not exactly, contains/doesn't
+                              description:
+                                Whether the website URL is/not exactly, contains/doesn't
                                 contain, starts with/ends with a string.
                               enum:
                                 - is
@@ -1310,7 +1329,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the website activity happened after, before,
+                              description:
+                                Whether the website activity happened after, before,
                                 or at a given timestamp.
                               enum:
                                 - greater
@@ -1321,7 +1341,7 @@ definitions:
                               type: string
                             value:
                               description: The date to check Goal activity against.
-                              example: '2015-07-20 19:45:21'
+                              example: "2015-07-20 19:45:21"
                               title: Segment Value
                               type: string
                           required:
@@ -1345,7 +1365,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members who are/are not apart of a 'similar subscribers'
+                              description:
+                                Members who are/are not apart of a 'similar subscribers'
                                 segment.
                               enum:
                                 - fuzzy_is
@@ -1405,7 +1426,8 @@ definitions:
                               type: string
                               x-value: IPGeoCountryState
                             field:
-                              description: Segmenting subscribers who are within a specific
+                              description:
+                                Segmenting subscribers who are within a specific
                                 location.
                               enum:
                                 - ipgeo
@@ -1413,7 +1435,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Segment members who are within a specific country
+                              description:
+                                Segment members who are within a specific country
                                 or US state.
                               enum:
                                 - ipgeocountry
@@ -1447,7 +1470,8 @@ definitions:
                               type: string
                               x-value: IPGeoIn
                             field:
-                              description: Segmenting subscribers who are within a specific
+                              description:
+                                Segmenting subscribers who are within a specific
                                 location.
                               enum:
                                 - ipgeo
@@ -1456,16 +1480,17 @@ definitions:
                               type: string
                             lat:
                               description: The latitude of the target location.
-                              example: '33.7489954'
+                              example: "33.7489954"
                               title: Segment Location Latitude
                               type: string
                             lng:
                               description: The longitude of the target location.
-                              example: '-84.3879824'
+                              example: "-84.3879824"
                               title: Segment Location Longitude
                               type: string
                             op:
-                              description: Segment members who are within a specific geographic
+                              description:
+                                Segment members who are within a specific geographic
                                 region.
                               enum:
                                 - ipgeoin
@@ -1500,7 +1525,8 @@ definitions:
                               title: Extra Data
                               type: integer
                             field:
-                              description: Segmenting subscribers who are within a specific
+                              description:
+                                Segmenting subscribers who are within a specific
                                 location.
                               enum:
                                 - ipgeo
@@ -1508,7 +1534,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Segment members who are within a specific US zip
+                              description:
+                                Segment members who are within a specific US zip
                                 code.
                               enum:
                                 - ipgeoinzip
@@ -1535,7 +1562,8 @@ definitions:
                               type: string
                               x-value: IPGeoUnknown
                             field:
-                              description: Segmenting subscribers who are within a specific
+                              description:
+                                Segmenting subscribers who are within a specific
                                 location.
                               enum:
                                 - ipgeo
@@ -1543,7 +1571,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Segment members for which location information is
+                              description:
+                                Segment members for which location information is
                                 unknown.
                               enum:
                                 - ipgeounknown
@@ -1563,7 +1592,8 @@ definitions:
                               type: string
                               x-value: IPGeoZip
                             field:
-                              description: Segmenting subscribers who are within a specific
+                              description:
+                                Segmenting subscribers who are within a specific
                                 location.
                               enum:
                                 - ipgeo
@@ -1571,7 +1601,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Segment members who are/are not within a specific
+                              description:
+                                Segment members who are/are not within a specific
                                 US zip code.
                               enum:
                                 - ipgeoiszip
@@ -1679,7 +1710,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members who have a rating that is/not or greater/less
+                              description:
+                                Members who have a rating that is/not or greater/less
                                 than the rating provided.
                               enum:
                                 - is
@@ -1760,7 +1792,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Members who are/not following a linked account on
+                              description:
+                                Members who are/not following a linked account on
                                 a given social network.
                               enum:
                                 - follow
@@ -1794,7 +1827,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member's address merge field contains/does
+                              description:
+                                Whether the member's address merge field contains/does
                                 not contain a value or is/is not blank.
                               enum:
                                 - contains
@@ -1814,7 +1848,8 @@ definitions:
                             - op
                           title: Address Merge Field Segment
                           type: object
-                        - description: Segment by an address-type merge field within a given
+                        - description:
+                            Segment by an address-type merge field within a given
                             distance.
                           properties:
                             condition_type:
@@ -1824,7 +1859,7 @@ definitions:
                               x-value: ZipMerge
                             extra:
                               description: The city or the zip being used to segment against.
-                              example: '30318'
+                              example: "30318"
                               title: Segment Extra
                               type: string
                             field:
@@ -1833,7 +1868,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member's address merge field is within
+                              description:
+                                Whether the member's address merge field is within
                                 a given distance from a city or zip.
                               enum:
                                 - geoin
@@ -1842,7 +1878,7 @@ definitions:
                               type: string
                             value:
                               description: The distance from the city/zip.
-                              example: '25'
+                              example: "25"
                               title: Segment Value
                               type: string
                           required:
@@ -1865,7 +1901,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member's birthday merge information is/is
+                              description:
+                                Whether the member's birthday merge information is/is
                                 not a certain date or is/is not blank.
                               enum:
                                 - is
@@ -1898,7 +1935,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member's merge information is/is not,
+                              description:
+                                Whether the member's merge information is/is not,
                                 is greater/less than a value or is/is not blank.
                               enum:
                                 - is
@@ -1933,7 +1971,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member's merge information is/is not
+                              description:
+                                Whether the member's merge information is/is not
                                 a value or is/is not blank.
                               enum:
                                 - is
@@ -1968,7 +2007,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the member's merge information is/is not,
+                              description:
+                                Whether the member's merge information is/is not,
                                 contains/does not contain, starts/ends with, or is greater/less
                                 than a value
                               enum:
@@ -1986,7 +2026,8 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: The value to segment a text or number merge field
+                              description:
+                                The value to segment a text or number merge field
                                 with.
                               example: Freddie's Jokes
                               title: Segment Value
@@ -2012,7 +2053,8 @@ definitions:
                               title: Segment Field
                               type: string
                             op:
-                              description: Whether the email address is/not exactly, contains/doesn't
+                              description:
+                                Whether the email address is/not exactly, contains/doesn't
                                 contain, starts/ends with a string.
                               enum:
                                 - is
@@ -2128,8 +2170,7 @@ definitions:
                               title: Segment Operator
                               type: string
                             value:
-                              description: "What type of data to segment on: a specific date,
-                              a specific campaign, or the last campaign sent."
+                              description: "What type of data to segment on: a specific date, a specific campaign, or the last campaign sent."
                               title: Segment Data
                               type: string
                           title: New Subscribers Prebuilt Segment
@@ -2146,7 +2187,8 @@ definitions:
                     title: Match Type
                     type: string
                   prebuilt_segment_id:
-                    description: The prebuilt segment id, if a prebuilt segment has been designated
+                    description:
+                      The prebuilt segment id, if a prebuilt segment has been designated
                       for this campaign.
                     example: subscribers-female
                     title: Prebuilt Segment Id
@@ -2158,12 +2200,13 @@ definitions:
                 title: Segment Options
                 type: object
               segment_text:
-                description: A description of the [segment](https://mailchimp.com/help/create-and-send-to-a-segment/)
+                description:
+                  A description of the [segment](https://mailchimp.com/help/create-and-send-to-a-segment/)
                   used for the campaign. Formatted as a string marked up with HTML.
                 readOnly: true
                 title: Segment Text
                 type:
-                  - 'null'
+                  - "null"
                   - string
             title: List
             type: object
@@ -2171,7 +2214,8 @@ definitions:
             description: For sent campaigns, a summary of opens, clicks, and e-commerce data.
             properties:
               click_rate:
-                description: The number of unique clicks divided by the total number of successful
+                description:
+                  The number of unique clicks divided by the total number of successful
                   deliveries.
                 readOnly: true
                 title: Click Rate
@@ -2190,13 +2234,15 @@ definitions:
                     title: Total Orders
                     type: integer
                   total_revenue:
-                    description: The total revenue for a campaign. Calculated as the sum of
+                    description:
+                      The total revenue for a campaign. Calculated as the sum of
                       all order totals minus shipping and tax totals.
                     readOnly: true
                     title: Total Revenue
                     type: number
                   total_spent:
-                    description: The total spent for a campaign. Calculated as the sum of
+                    description:
+                      The total spent for a campaign. Calculated as the sum of
                       all order totals with no deductions.
                     readOnly: true
                     title: Total Spent
@@ -2204,7 +2250,8 @@ definitions:
                 title: E-Commerce Report
                 type: object
               open_rate:
-                description: The number of unique opens divided by the total number of successful
+                description:
+                  The number of unique opens divided by the total number of successful
                   deliveries.
                 readOnly: true
                 title: Open Rate
@@ -2232,11 +2279,11 @@ definitions:
             title: Resendable
             type: boolean
           rss_opts:
-            description: "[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/)
-              options for a campaign."
+            description: "[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/) options for a campaign."
             properties:
               constrain_rss_img:
-                description: Whether to add CSS to images in the RSS feed to constrain their
+                description:
+                  Whether to add CSS to images in the RSS feed to constrain their
                   width in campaigns.
                 title: Constrain RSS Images
                 type: boolean
@@ -2245,7 +2292,7 @@ definitions:
                 format: uri
                 title: Feed URL
                 type:
-                  - 'null'
+                  - "null"
                   - string
               frequency:
                 description: The frequency of the RSS Campaign.
@@ -2255,7 +2302,7 @@ definitions:
                   - monthly
                 title: Frequency
                 type:
-                  - 'null'
+                  - "null"
                   - string
               last_sent:
                 airbyte_type: timestamp_with_timezone
@@ -2264,7 +2311,7 @@ definitions:
                 readOnly: true
                 title: Last Sent
                 type:
-                  - 'null'
+                  - "null"
                   - string
               schedule:
                 description: The schedule for sending the RSS Campaign.
@@ -2303,7 +2350,8 @@ definitions:
                     title: Daily Sending Days
                     type: object
                   hour:
-                    description: The hour to send the campaign in local time. Acceptable hours
+                    description:
+                      The hour to send the campaign in local time. Acceptable hours
                       are 0-23. For example, '4' would be 4am in [your account's default time
                       zone](https://mailchimp.com/help/set-account-defaults/).
                     maximum: 23
@@ -2311,7 +2359,8 @@ definitions:
                     title: Sending Hour
                     type: integer
                   monthly_send_date:
-                    description: The day of the month to send a monthly RSS Campaign. Acceptable
+                    description:
+                      The day of the month to send a monthly RSS Campaign. Acceptable
                       days are 0-31, where '0' is always the last day of a month. Months with
                       fewer than the selected number of days will not have an RSS campaign
                       sent out that day. For example, RSS Campaigns set to send on the 30th
@@ -2332,7 +2381,7 @@ definitions:
                       - saturday
                     title: Weekly Sending Day
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 title: Sending Schedule
                 type: object
@@ -2345,33 +2394,38 @@ definitions:
             readOnly: true
             title: Send Time
             type:
-              - 'null'
+              - "null"
               - string
           settings:
-            description: The settings for your campaign, including subject, from name, reply-to
+            description:
+              The settings for your campaign, including subject, from name, reply-to
               address, and more.
             properties:
               authenticate:
-                description: Whether Mailchimp [authenticated](https://mailchimp.com/help/about-email-authentication/)
+                description:
+                  Whether Mailchimp [authenticated](https://mailchimp.com/help/about-email-authentication/)
                   the campaign. Defaults to `true`.
                 title: Authentication
                 type: boolean
               auto_fb_post:
-                description: An array of [Facebook](https://mailchimp.com/help/connect-or-disconnect-the-facebook-integration/)
+                description:
+                  An array of [Facebook](https://mailchimp.com/help/connect-or-disconnect-the-facebook-integration/)
                   page ids to auto-post to.
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 title: Auto Post to Facebook
                 type: array
               auto_footer:
-                description: Automatically append Mailchimp's [default footer](https://mailchimp.com/help/about-campaign-footers/)
+                description:
+                  Automatically append Mailchimp's [default footer](https://mailchimp.com/help/about-campaign-footers/)
                   to the campaign.
                 title: Auto-Footer
                 type: boolean
               auto_tweet:
-                description: Automatically tweet a link to the [campaign archive](https://mailchimp.com/help/about-email-campaign-archives-and-pages/)
+                description:
+                  Automatically tweet a link to the [campaign archive](https://mailchimp.com/help/about-email-campaign-archives-and-pages/)
                   page when the campaign is sent.
                 title: Auto-Tweet
                 type: boolean
@@ -2381,7 +2435,8 @@ definitions:
                 title: Drag And Drop Campaign
                 type: boolean
               fb_comments:
-                description: Allows Facebook comments on the campaign (also force-enables
+                description:
+                  Allows Facebook comments on the campaign (also force-enables
                   the Campaign Archive toolbar). Defaults to `true`.
                 title: Facebook Comments
                 type: boolean
@@ -2389,13 +2444,13 @@ definitions:
                 description: If the campaign is listed in a folder, the id for that folder.
                 title: Folder ID
                 type:
-                  - 'null'
+                  - "null"
                   - string
               from_name:
                 description: The 'from' name on the campaign (not an email address).
                 title: From Name
                 type:
-                  - 'null'
+                  - "null"
                   - string
               inline_css:
                 description: Automatically inline the CSS included with the campaign content.
@@ -2405,19 +2460,19 @@ definitions:
                 description: The preview text for the campaign.
                 title: Campaign Preview Text
                 type:
-                  - 'null'
+                  - "null"
                   - string
               reply_to:
                 description: The reply-to email address for the campaign.
                 title: Reply To Address
                 type:
-                  - 'null'
+                  - "null"
                   - string
               subject_line:
                 description: The subject line for the campaign.
                 title: Campaign Subject Line
                 type:
-                  - 'null'
+                  - "null"
                   - string
               template_id:
                 description: The id for the template used in this campaign.
@@ -2433,14 +2488,15 @@ definitions:
                 description: The title of the campaign.
                 title: Campaign Title
                 type:
-                  - 'null'
+                  - "null"
                   - string
               to_name:
-                description: The campaign's custom 'To' name. Typically the first name [merge
+                description:
+                  The campaign's custom 'To' name. Typically the first name [merge
                   field](https://mailchimp.com/help/getting-started-with-merge-tags/).
                 title: To Name
                 type:
-                  - 'null'
+                  - "null"
                   - string
               use_conversation:
                 description: Use Mailchimp Conversation feature to manage out-of-office replies.
@@ -2449,26 +2505,27 @@ definitions:
             title: Campaign Settings
             type: object
           social_card:
-            description: The preview for the campaign, rendered by social networks like Facebook
+            description:
+              The preview for the campaign, rendered by social networks like Facebook
               and Twitter. [Learn more](https://mailchimp.com/help/enable-and-customize-social-cards/).
             properties:
               description:
                 description: A short summary of the campaign to display.
                 title: Campaign Description
                 type:
-                  - 'null'
+                  - "null"
                   - string
               image_url:
                 description: The url for the header image for the card.
                 title: Image URL
                 type:
-                  - 'null'
+                  - "null"
                   - string
               title:
                 description: The title for the card. Typically the subject line of the campaign.
                 title: Title
                 type:
-                  - 'null'
+                  - "null"
                   - string
             title: Campaign Social Card
             type: object
@@ -2490,53 +2547,62 @@ definitions:
             description: The tracking options for a campaign.
             properties:
               capsule:
-                description: Capsule tracking options for a campaign. Must be using Mailchimp's
+                description:
+                  Capsule tracking options for a campaign. Must be using Mailchimp's
                   built-in Capsule integration.
                 properties:
                   notes:
-                    description: Update contact notes for a campaign based on subscriber email
+                    description:
+                      Update contact notes for a campaign based on subscriber email
                       addresses.
                     title: Capsule Note
                     type: boolean
                 title: Capsule CRM Tracking
                 type: object
               clicktale:
-                description: The custom slug for [ClickTale](https://mailchimp.com/help/additional-tracking-options-for-campaigns/)
+                description:
+                  The custom slug for [ClickTale](https://mailchimp.com/help/additional-tracking-options-for-campaigns/)
                   tracking (max of 50 bytes).
                 title: ClickTale Analytics Tracking
                 type:
-                  - 'null'
+                  - "null"
                   - string
               ecomm360:
-                description: Whether to enable [eCommerce360](https://mailchimp.com/help/connect-your-online-store-to-mailchimp/)
+                description:
+                  Whether to enable [eCommerce360](https://mailchimp.com/help/connect-your-online-store-to-mailchimp/)
                   tracking.
                 title: E-commerce Tracking
                 type: boolean
               goal_tracking:
-                description: Whether to enable [Goal](https://mailchimp.com/help/about-connected-sites/)
+                description:
+                  Whether to enable [Goal](https://mailchimp.com/help/about-connected-sites/)
                   tracking.
                 title: Mailchimp Goal Tracking
                 type: boolean
               google_analytics:
-                description: The custom slug for [Google Analytics](https://mailchimp.com/help/integrate-google-analytics-with-mailchimp/)
+                description:
+                  The custom slug for [Google Analytics](https://mailchimp.com/help/integrate-google-analytics-with-mailchimp/)
                   tracking (max of 50 bytes).
                 title: Google Analytics Tracking
                 type:
-                  - 'null'
+                  - "null"
                   - string
               html_clicks:
-                description: Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/)
+                description:
+                  Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/)
                   in the HTML version of the campaign. Defaults to `true`. Cannot be set to
                   false for variate campaigns.
                 title: HTML Click Tracking
                 type: boolean
               opens:
-                description: Whether to [track opens](https://mailchimp.com/help/about-open-tracking/).
+                description:
+                  Whether to [track opens](https://mailchimp.com/help/about-open-tracking/).
                   Defaults to `true`. Cannot be set to false for variate campaigns.
                 title: Opens
                 type: boolean
               salesforce:
-                description: Salesforce tracking options for a campaign. Must be using Mailchimp's
+                description:
+                  Salesforce tracking options for a campaign. Must be using Mailchimp's
                   built-in [Salesforce integration](https://mailchimp.com/help/integrate-salesforce-with-mailchimp/).
                 properties:
                   campaign:
@@ -2544,14 +2610,16 @@ definitions:
                     title: Salesforce Campaign
                     type: boolean
                   notes:
-                    description: Update contact notes for a campaign based on subscriber email
+                    description:
+                      Update contact notes for a campaign based on subscriber email
                       addresses.
                     title: Salesforce Note
                     type: boolean
                 title: Salesforce CRM Tracking
                 type: object
               text_clicks:
-                description: Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/)
+                description:
+                  Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/)
                   in the plain-text version of the campaign. Defaults to `true`. Cannot be
                   set to false for variate campaigns.
                 title: Plain-Text Click Tracking
@@ -2559,7 +2627,8 @@ definitions:
             title: Campaign Tracking Options
             type: object
           type:
-            description: There are four types of [campaigns](https://mailchimp.com/help/getting-started-with-campaigns/)
+            description:
+              There are four types of [campaigns](https://mailchimp.com/help/getting-started-with-campaigns/)
               you can create in Mailchimp. A/B Split campaigns have been deprecated and variate
               campaigns should be used instead.
             enum:
@@ -2590,7 +2659,7 @@ definitions:
                       description: Unique ID for the combination.
                       title: ID
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     recipients:
                       description: The number of recipients for this combination.
@@ -2613,69 +2682,77 @@ definitions:
                 title: Combinations
                 type: array
               contents:
-                description: Descriptions of possible email contents. To set campaign contents,
+                description:
+                  Descriptions of possible email contents. To set campaign contents,
                   make a PUT request to /campaigns/{campaign_id}/content with the field 'variate_contents'.
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 readOnly: true
                 title: Content Descriptions
                 type: array
               from_names:
-                description: The possible from names. The number of from_names provided must
+                description:
+                  The possible from names. The number of from_names provided must
                   match the number of reply_to_addresses. If no from_names are provided, settings.from_name
                   will be used.
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 title: From Names
                 type: array
               reply_to_addresses:
-                description: The possible reply-to addresses. The number of reply_to_addresses
+                description:
+                  The possible reply-to addresses. The number of reply_to_addresses
                   provided must match the number of from_names. If no reply_to_addresses are
                   provided, settings.reply_to will be used.
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 title: Reply To Addresses
                 type: array
               send_times:
-                description: The possible send times to test. The times provided should be
+                description:
+                  The possible send times to test. The times provided should be
                   in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the
                   test_size will be set to 100% and winner_criteria will be ignored.
                 items:
                   airbyte_type: timestamp_with_timezone
                   format: date-time
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 title: Send Times
                 type: array
               subject_lines:
-                description: The possible subject lines to test. If no subject lines are provided,
+                description:
+                  The possible subject lines to test. If no subject lines are provided,
                   settings.subject_line will be used.
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 title: Subject Lines
                 type: array
               test_size:
-                description: The percentage of recipients to send the test combinations to,
+                description:
+                  The percentage of recipients to send the test combinations to,
                   must be a value between 10 and 100.
                 title: Test Size
                 type: integer
               wait_time:
-                description: The number of minutes to wait before choosing the winning campaign.
+                description:
+                  The number of minutes to wait before choosing the winning campaign.
                   The value of wait_time must be greater than 0 and in whole hours, specified
                   in minutes.
                 title: Wait Time
                 type: integer
               winner_criteria:
-                description: The combination that performs the best. This may be determined
+                description:
+                  The combination that performs the best. This may be determined
                   automatically by click rate, open rate, or total revenue -- or you may choose
                   manually based on the reporting data you find the most valuable. For Multivariate
                   Campaigns testing send_time, winner_criteria is ignored. For Multivariate
@@ -2688,27 +2765,29 @@ definitions:
                   - total_revenue
                 title: Winning Criteria
                 type:
-                  - 'null'
+                  - "null"
                   - string
               winning_campaign_id:
-                description: ID of the campaign that was sent to the remaining recipients
+                description:
+                  ID of the campaign that was sent to the remaining recipients
                   based on the winning combination.
                 readOnly: true
                 title: Winning Campaign ID
                 type:
-                  - 'null'
+                  - "null"
                   - string
               winning_combination_id:
                 description: ID for the winning combination.
                 readOnly: true
                 title: Winning Combination ID
                 type:
-                  - 'null'
+                  - "null"
                   - string
             title: A/B Test Options
             type: object
           web_id:
-            description: The ID used in the Mailchimp web application. View this campaign
+            description:
+              The ID used in the Mailchimp web application. View this campaign
               in your Mailchimp account at `https://{dc}.admin.mailchimp.com/campaigns/show/?id={web_id}`.
             readOnly: true
             title: Campaign Web ID
@@ -2722,11 +2801,11 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - stream: "#/definitions/lists_stream"
-          parent_key: id
-          partition_field: id
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
     state_migrations:
-    - type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "list_members"
       primary_key: ["id", "list_id"]
@@ -2744,65 +2823,65 @@ definitions:
           consents_to_one_to_one_messaging:
             description: Indicates if the member has consented to receive one-to-one messaging
             type:
-              - 'null'
+              - "null"
               - boolean
           contact_id:
             description: The unique identifier for the contact associated with the member
             type:
-              - 'null'
+              - "null"
               - string
           email_address:
             description: The email address of the member
             type:
-              - 'null'
+              - "null"
               - string
           email_client:
             description: The email client used by the member
             type:
-              - 'null'
+              - "null"
               - string
           email_type:
             description: The type of email address (e.g., html, text)
             type:
-              - 'null'
+              - "null"
               - string
           full_name:
             description: The full name of the member
             type:
-              - 'null'
+              - "null"
               - string
           id:
             description: The unique identifier for the member
             type:
-              - 'null'
+              - "null"
               - string
           interests:
             additionalProperties: true
             description: Interests or preferences of the member
             type:
-              - 'null'
+              - "null"
               - object
           ip_opt:
             description: The IP address where the member opted in
             type:
-              - 'null'
+              - "null"
               - string
           ip_signup:
             description: The IP address where the member signed up
             type:
-              - 'null'
+              - "null"
               - string
           language:
             description: The preferred language of the member
             type:
-              - 'null'
+              - "null"
               - string
           last_changed:
             airbyte_type: timestamp_with_timezone
             description: The date and time when the member was last changed
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           last_note:
             description: The last note added for the member
@@ -2812,30 +2891,30 @@ definitions:
                 description: The timestamp when the note was created
                 format: date-time
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_by:
                 description: The user who created the note
                 type:
-                  - 'null'
+                  - "null"
                   - string
               note:
                 description: The content of the note
                 type:
-                  - 'null'
+                  - "null"
                   - string
               note_id:
                 description: The unique identifier for the note
                 type:
-                  - 'null'
+                  - "null"
                   - integer
             type:
-              - 'null'
+              - "null"
               - object
           list_id:
             description: The unique identifier for the list to which the member belongs
             type:
-              - 'null'
+              - "null"
               - string
           location:
             description: Geographical location information of the member
@@ -2843,40 +2922,40 @@ definitions:
               country_code:
                 description: The two-letter country code of the member's location
                 type:
-                  - 'null'
+                  - "null"
                   - string
               dstoff:
                 description: Daylight saving time offset in seconds
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               gmtoff:
                 description: GMT offset in seconds
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               latitude:
                 description: The latitude of the member's location
                 type:
-                  - 'null'
+                  - "null"
                   - number
               longitude:
                 description: The longitude of the member's location
                 type:
-                  - 'null'
+                  - "null"
                   - number
               region:
                 description: The region or area of the member's location
                 type:
-                  - 'null'
+                  - "null"
                   - string
               timezone:
                 description: The timezone of the member's location
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
           marketing_permissions:
             description: Marketing permissions granted by the member
@@ -2884,36 +2963,36 @@ definitions:
               enabled:
                 description: Indicates if marketing permissions are enabled
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               marketing_permission_id:
                 description: The unique identifier for the marketing permission
                 type:
-                  - 'null'
+                  - "null"
                   - string
               text:
                 description: The text of the marketing permission
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
           member_rating:
             description: The rating score assigned to the member
             type:
-              - 'null'
+              - "null"
               - integer
           merge_fields:
             additionalProperties: true
             description: Merge fields data for the member
             type:
-              - 'null'
+              - "null"
               - object
           source:
             description: The source from which the member was added
             type:
-              - 'null'
+              - "null"
               - string
           stats:
             description: Statistics related to the member's email activities
@@ -2921,12 +3000,12 @@ definitions:
               avg_click_rate:
                 description: Average click rate of the member
                 type:
-                  - 'null'
+                  - "null"
                   - number
               avg_open_rate:
                 description: Average open rate of the member
                 type:
-                  - 'null'
+                  - "null"
                   - number
               ecommerce_data:
                 description: E-commerce data of the member
@@ -2934,28 +3013,28 @@ definitions:
                   currency_code:
                     description: The currency code used for transactions
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   number_of_orders:
                     description: Total number of orders placed by the member
                     type:
-                      - 'null'
+                      - "null"
                       - number
                   total_revenue:
                     description: Total revenue generated by the member
                     type:
-                      - 'null'
+                      - "null"
                       - number
                 type:
-                  - 'null'
+                  - "null"
                   - object
             type:
-              - 'null'
+              - "null"
               - object
           status:
             description: The subscription status of the member
             type:
-              - 'null'
+              - "null"
               - string
           tags:
             description: Tags associated with the member
@@ -2964,59 +3043,58 @@ definitions:
                 id:
                   description: The unique identifier for the tag
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                 name:
                   description: The name of the tag
                   type:
-                    - 'null'
+                    - "null"
                     - string
               type:
-                - 'null'
+                - "null"
                 - object
             type:
-              - 'null'
+              - "null"
               - array
           tags_count:
             description: The count of tags associated with the member
             type:
-              - 'null'
+              - "null"
               - integer
           timestamp_opt:
             airbyte_type: timestamp_with_timezone
             description: The timestamp when the member opted in
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           timestamp_signup:
             airbyte_type: timestamp_with_timezone
             description: The timestamp when the member signed up
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           unique_email_id:
             description: The unique email identifier for the member
             type:
-              - 'null'
+              - "null"
               - string
           unsubscribe_reason:
             description: Reason provided by the member for unsubscribing
             type:
-              - 'null'
+              - "null"
               - string
           vip:
             description: Indicates if the member is a VIP
             type:
-              - 'null'
+              - "null"
               - boolean
           web_id:
             description: The unique identifier for the member on the web
             type:
-              - 'null'
+              - "null"
               - integer
-
 
   lists_stream:
     type: DeclarativeStream
@@ -3040,7 +3118,7 @@ definitions:
             readOnly: true
             title: Beamer Address
             type:
-              - 'null'
+              - "null"
               - string
           campaign_defaults:
             description: Default values for campaigns created for this list.
@@ -3049,79 +3127,80 @@ definitions:
                 description: The default from email for campaigns sent to this list.
                 title: Sender's Email Address
                 type:
-                  - 'null'
+                  - "null"
                   - string
               from_name:
                 description: The default from name for campaigns sent to this list.
                 title: Sender's Name
                 type:
-                  - 'null'
+                  - "null"
                   - string
               language:
                 description: The default language for this list's forms.
                 title: Language
                 type:
-                  - 'null'
+                  - "null"
                   - string
               subject:
                 description: The default subject line for campaigns sent to this list.
                 title: Subject
                 type:
-                  - 'null'
+                  - "null"
                   - string
             title: Campaign Defaults
             type: object
           contact:
-            description: Contact information displayed in campaign footers to comply with
+            description:
+              Contact information displayed in campaign footers to comply with
               international spam laws.
             properties:
               address1:
                 description: The street address for the list contact.
                 title: Address
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address2:
                 description: The street address line 2 for the list contact.
                 title: Address
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 description: The city for the list contact.
                 title: City
                 type:
-                  - 'null'
+                  - "null"
                   - string
               company:
                 description: The company name for the list.
                 title: Company Name
                 type:
-                  - 'null'
+                  - "null"
                   - string
               country:
                 description: A two-character ISO3166 country code. Defaults to US if invalid.
                 title: Country Code
                 type:
-                  - 'null'
+                  - "null"
                   - string
               phone:
                 description: The phone number for the list contact.
                 title: Phone Number
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 description: The state for the list contact.
                 title: State
                 type:
-                  - 'null'
+                  - "null"
                   - string
               zip:
                 description: The postal or zip code for the list contact.
                 title: Postal Code
                 type:
-                  - 'null'
+                  - "null"
                   - string
             title: List Contact
             type: object
@@ -3134,12 +3213,14 @@ definitions:
             type: string
           double_optin:
             default: false
-            description: Whether or not to require the subscriber to confirm subscription
+            description:
+              Whether or not to require the subscriber to confirm subscription
               via email.
             title: Double Opt In
             type: boolean
           email_type_option:
-            description: Whether the list supports multiple formats for emails. When set to
+            description:
+              Whether the list supports multiple formats for emails. When set to
               `true`, subscribers can choose whether they want to receive HTML or plain-text
               emails. When set to `false`, subscribers will receive HTML emails, with a plain-text
               alternative backup.
@@ -3170,7 +3251,7 @@ definitions:
             description: Any list-specific modules installed for this list.
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             readOnly: true
             title: Modules
@@ -3179,39 +3260,41 @@ definitions:
             description: The name of the list.
             title: List Name
             type:
-              - 'null'
+              - "null"
               - string
           notify_on_subscribe:
             default: false
             description: The email address to send subscribe notifications to.
             title: Notify on Subscribe
             type:
-              - 'null'
+              - "null"
               - string
           notify_on_unsubscribe:
             default: false
             description: The email address to send unsubscribe notifications to.
             title: Notify on Unsubscribe
             type:
-              - 'null'
+              - "null"
               - string
           permission_reminder:
             description: The permission reminder for the list.
             title: Permission Reminder
             type:
-              - 'null'
+              - "null"
               - string
           stats:
             description: Stats for the list. Many of these are cached for at least five minutes.
             properties:
               avg_sub_rate:
-                description: The average number of subscriptions per month for the list (not
+                description:
+                  The average number of subscriptions per month for the list (not
                   returned if we haven't calculated it yet).
                 readOnly: true
                 title: Average Subscription Rate
                 type: number
               avg_unsub_rate:
-                description: The average number of unsubscriptions per month for the list
+                description:
+                  The average number of unsubscriptions per month for the list
                   (not returned if we haven't calculated it yet).
                 readOnly: true
                 title: Average Unsubscription Rate
@@ -3223,13 +3306,14 @@ definitions:
                 type: integer
               campaign_last_sent:
                 airbyte_type: timestamp_with_timezone
-                description: The date and time the last campaign was sent to this list in
+                description:
+                  The date and time the last campaign was sent to this list in
                   ISO 8601 format. This is updated when a campaign is sent to 10 or more recipients.
                 format: date-time
                 readOnly: true
                 title: Campaign Last Sent
                 type:
-                  - 'null'
+                  - "null"
                   - string
               cleaned_count:
                 description: The number of members cleaned from the list.
@@ -3237,13 +3321,15 @@ definitions:
                 title: Cleaned Count
                 type: integer
               cleaned_count_since_send:
-                description: The number of members cleaned from the list since the last campaign
+                description:
+                  The number of members cleaned from the list since the last campaign
                   was sent.
                 readOnly: true
                 title: Cleaned Count Since Send
                 type: integer
               click_rate:
-                description: The average click rate (a percentage represented as a number
+                description:
+                  The average click rate (a percentage represented as a number
                   between 0 and 100) per campaign for the list (not returned if we haven't
                   calculated it yet).
                 readOnly: true
@@ -3251,23 +3337,25 @@ definitions:
                 type: number
               last_sub_date:
                 airbyte_type: timestamp_with_timezone
-                description: The date and time of the last time someone subscribed to this
+                description:
+                  The date and time of the last time someone subscribed to this
                   list in ISO 8601 format.
                 format: date-time
                 readOnly: true
                 title: Date of Last List Subscribe
                 type:
-                  - 'null'
+                  - "null"
                   - string
               last_unsub_date:
                 airbyte_type: timestamp_with_timezone
-                description: The date and time of the last time someone unsubscribed from
+                description:
+                  The date and time of the last time someone unsubscribed from
                   this list in ISO 8601 format.
                 format: date-time
                 readOnly: true
                 title: Date of Last List Unsubscribe
                 type:
-                  - 'null'
+                  - "null"
                   - string
               member_count:
                 description: The number of active members in the list.
@@ -3275,7 +3363,8 @@ definitions:
                 title: Member Count
                 type: integer
               member_count_since_send:
-                description: The number of active members in the list since the last campaign
+                description:
+                  The number of active members in the list since the last campaign
                   was sent.
                 readOnly: true
                 title: Member Count Since Send
@@ -3286,20 +3375,23 @@ definitions:
                 title: Merge Var Count
                 type: integer
               open_rate:
-                description: The average open rate (a percentage represented as a number between
+                description:
+                  The average open rate (a percentage represented as a number between
                   0 and 100) per campaign for the list (not returned if we haven't calculated
                   it yet).
                 readOnly: true
                 title: Open Rate
                 type: number
               target_sub_rate:
-                description: The target number of subscriptions per month for the list to
+                description:
+                  The target number of subscriptions per month for the list to
                   keep it growing (not returned if we haven't calculated it yet).
                 readOnly: true
                 title: Average Subscription Rate
                 type: number
               total_contacts:
-                description: The number of contacts in the list, including subscribed, unsubscribed,
+                description:
+                  The number of contacts in the list, including subscribed, unsubscribed,
                   pending, cleaned, deleted, transactional, and those that need to be reconfirmed.
                 readOnly: true
                 title: Total Contacts
@@ -3310,7 +3402,8 @@ definitions:
                 title: Unsubscribe Count
                 type: integer
               unsubscribe_count_since_send:
-                description: The number of members who have unsubscribed since the last campaign
+                description:
+                  The number of members who have unsubscribed since the last campaign
                   was sent.
                 readOnly: true
                 title: Unsubscribe Count Since Send
@@ -3323,18 +3416,19 @@ definitions:
             readOnly: true
             title: Subscribe URL Long
             type:
-              - 'null'
+              - "null"
               - string
           subscribe_url_short:
             description: Our EepURL shortened version of this list's subscribe form.
             readOnly: true
             title: Subscribe URL Short
             type:
-              - 'null'
+              - "null"
               - string
           use_archive_bar:
             default: false
-            description: Whether campaigns for this list use the Archive Bar in archives by
+            description:
+              Whether campaigns for this list use the Archive Bar in archives by
               default.
             title: Use Archive Bar
             type: boolean
@@ -3345,10 +3439,11 @@ definitions:
               - prv
             title: Visibility
             type:
-              - 'null'
+              - "null"
               - string
           web_id:
-            description: The ID used in the Mailchimp web application. View this list in your
+            description:
+              The ID used in the Mailchimp web application. View this list in your
               Mailchimp account at `https://{dc}.admin.mailchimp.com/lists/members/?id={web_id}`.
             readOnly: true
             title: List Web ID
@@ -3362,14 +3457,14 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - stream: "#/definitions/lists_stream"
-          parent_key: id
-          partition_field: id
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
     transformations:
-    - type: AddFields
-      fields:
-      - path: ["list_id"]
-        value: "{{ stream_slice.id }}"
+      - type: AddFields
+        fields:
+          - path: ["list_id"]
+            value: "{{ stream_slice.id }}"
     $parameters:
       name: "tags"
       primary_key: "id"
@@ -3385,34 +3480,34 @@ definitions:
           id:
             description: Unique identifier of the tag.
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           name:
             description: Name of the tag.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           list_id:
             description: Identifier of the list to which the tag belongs.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
   interest_categories_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
     transformations:
-    - type: AddFields
-      fields:
-      - path: ["list_id"]
-        value: "{{ stream_slice.id }}"
+      - type: AddFields
+        fields:
+          - path: ["list_id"]
+            value: "{{ stream_slice.id }}"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - stream: "#/definitions/lists_stream"
-          parent_key: id
-          partition_field: id
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
     $parameters:
       name: "interest_categories"
       primary_key: "id"
@@ -3428,30 +3523,32 @@ definitions:
           list_id:
             description: The ID of the list to which this interest category belongs.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           id:
             description: The unique identifier for the interest category.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           title:
             description: The title or name of the interest category.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           display_order:
-            description: The order in which this interest category should be displayed
+            description:
+              The order in which this interest category should be displayed
               in the UI.
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           type:
-            description: The type of interest category, e.g., 'checkboxes', 'hidden',
+            description:
+              The type of interest category, e.g., 'checkboxes', 'hidden',
               'dropdown'.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
   interests_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -3460,13 +3557,14 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - stream: "#/definitions/interest_categories_stream"
-          parent_key: id
-          partition_field: id
+          - stream: "#/definitions/interest_categories_stream"
+            parent_key: id
+            partition_field: id
     $parameters:
       name: "interests"
       primary_key: "id"
-      path: "lists/{{ stream_slice.parent_slice.id }}/interest-categories/{{ stream_slice.id
+      path:
+        "lists/{{ stream_slice.parent_slice.id }}/interest-categories/{{ stream_slice.id
         }}/interests"
       data_field: "interests"
 
@@ -3477,37 +3575,39 @@ definitions:
         type: object
         properties:
           category_id:
-            description: Unique identifier for the category to which this interest
+            description:
+              Unique identifier for the category to which this interest
               belongs.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           list_id:
             description: Unique identifier for the list associated with this interest.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           id:
             description: Unique identifier for this specific interest.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             description: Name or label of the interest.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           subscriber_count:
             description: Number of subscribers who have selected this interest.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           display_order:
-            description: Numeric value representing the display order of this interest
+            description:
+              Numeric value representing the display order of this interest
               within its category.
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
   reports_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_incremental_stream"
@@ -3532,16 +3632,17 @@ definitions:
           campaign_title:
             description: The title of the campaign.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             title: Campaign Title
             readOnly: true
           type:
-            description: The type of campaign (regular, plain-text, ab_split, rss,
+            description:
+              The type of campaign (regular, plain-text, ab_split, rss,
               automation, variate, or auto).
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             title: Campaign Type
           list_id:
             description: The unique list id.
@@ -3556,22 +3657,22 @@ definitions:
           list_name:
             description: The name of the list.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             title: List Name
             readOnly: true
           subject_line:
             description: The subject line for the campaign.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             title: Campaign Subject Line
             readOnly: true
           preview_text:
             description: The preview text for the campaign.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             title: Campaign Preview Text
           emails_sent:
             description: The total number of emails sent for this campaign.
@@ -3589,18 +3690,19 @@ definitions:
           send_time:
             description: The date and time a campaign was sent in ISO 8601 format.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_with_timezone
             title: Send Time
             readOnly: true
           rss_last_send:
-            description: For RSS campaigns, the date and time of the last send in
+            description:
+              For RSS campaigns, the date and time of the last send in
               ISO 8601 format.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_with_timezone
             title: RSS Last Send
@@ -3619,12 +3721,14 @@ definitions:
                 type: integer
                 title: Soft Bounces
               syntax_errors:
-                description: The total number of addresses that were syntax-related
+                description:
+                  The total number of addresses that were syntax-related
                   bounces.
                 type: integer
                 title: Syntax Errors
           forwards:
-            description: An object describing the forwards and forward activity for
+            description:
+              An object describing the forwards and forward activity for
               the campaign.
             type: object
             title: Forwards
@@ -3651,16 +3755,18 @@ definitions:
                 type: integer
                 title: Unique Opens
               open_rate:
-                description: The number of unique opens divided by the total number
+                description:
+                  The number of unique opens divided by the total number
                   of successful deliveries.
                 type: number
                 title: Open Rate
               last_open:
-                description: The date and time of the last recorded open in ISO 8601
+                description:
+                  The date and time of the last recorded open in ISO 8601
                   format.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 format: date-time
                 airbyte_type: timestamp_with_timezone
                 title: Last Open
@@ -3674,7 +3780,8 @@ definitions:
                 type: integer
                 title: Total Clicks
               unique_clicks:
-                description: The total number of unique clicks for links across a
+                description:
+                  The total number of unique clicks for links across a
                   campaign.
                 type: integer
                 title: Unique Clicks
@@ -3683,16 +3790,18 @@ definitions:
                 type: integer
                 title: Unique Subscriber Clicks
               click_rate:
-                description: The number of unique clicks divided by the total number
+                description:
+                  The number of unique clicks divided by the total number
                   of successful deliveries.
                 type: number
                 title: Click Rate
               last_click:
-                description: The date and time of the last recorded click for the
+                description:
+                  The date and time of the last recorded click for the
                   campaign in ISO 8601 format.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 format: date-time
                 airbyte_type: timestamp_with_timezone
                 title: Last Click
@@ -3719,11 +3828,10 @@ definitions:
             title: Industry Stats
             properties:
               type:
-                description: "The type of business industry associated with your account.
-                  For example: retail, education, etc."
+                description: "The type of business industry associated with your account. For example: retail, education, etc."
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 title: Industry Type
               open_rate:
                 description: The industry open rate.
@@ -3750,37 +3858,43 @@ definitions:
                 type: number
                 title: Abuse Rate
           list_stats:
-            description: The average campaign statistics for your list. This won't
+            description:
+              The average campaign statistics for your list. This won't
               be present if we haven't calculated it yet for this list.
             type: object
             title: List Stats
             properties:
               sub_rate:
-                description: The average number of subscriptions per month for the
+                description:
+                  The average number of subscriptions per month for the
                   list.
                 type: number
                 title: Average Subscription Rate
                 readOnly: true
               unsub_rate:
-                description: The average number of unsubscriptions per month for the
+                description:
+                  The average number of unsubscriptions per month for the
                   list.
                 type: number
                 title: Average Unsubscription Rate
                 readOnly: true
               open_rate:
-                description: The average open rate (a percentage represented as a
+                description:
+                  The average open rate (a percentage represented as a
                   number between 0 and 100) per campaign for the list.
                 type: number
                 title: Open Rate
                 readOnly: true
               click_rate:
-                description: The average click rate (a percentage represented as a
+                description:
+                  The average click rate (a percentage represented as a
                   number between 0 and 100) per campaign for the list.
                 type: number
                 title: Click Rate
                 readOnly: true
           ab_split:
-            description: General stats about different groups of an A/B Split campaign.
+            description:
+              General stats about different groups of an A/B Split campaign.
               Does not return information about Multivariate Campaigns.
             type: object
             title: A/B Split Stats
@@ -3821,8 +3935,8 @@ definitions:
                   last_open:
                     description: The last open for Campaign A.
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                     title: Last Open
                     format: date-time
                     airbyte_type: timestamp_with_timezone
@@ -3866,8 +3980,8 @@ definitions:
                   last_open:
                     description: The last open for Campaign B.
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                     title: Last Open
                     format: date-time
                     airbyte_type: timestamp_with_timezone
@@ -3876,7 +3990,8 @@ definitions:
                     type: integer
                     title: Unique Opens
           timewarp:
-            description: An hourly breakdown of sends, opens, and clicks if a campaign
+            description:
+              An hourly breakdown of sends, opens, and clicks if a campaign
               is sent using timewarp.
             type: array
             title: Timewarp Stats
@@ -3884,7 +3999,8 @@ definitions:
               type: object
               properties:
                 gmt_offset:
-                  description: For campaigns sent with timewarp, the time zone group
+                  description:
+                    For campaigns sent with timewarp, the time zone group
                     the member is part of.
                   type: integer
                   title: GMT Offset
@@ -3895,8 +4011,8 @@ definitions:
                 last_open:
                   description: The date and time of the last open in ISO 8601 format.
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                   format: date-time
                   airbyte_type: timestamp_with_timezone
                   title: Last Open
@@ -3911,8 +4027,8 @@ definitions:
                 last_click:
                   description: The date and time of the last click in ISO 8601 format.
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                   format: date-time
                   airbyte_type: timestamp_with_timezone
                   title: Last Click
@@ -3925,7 +4041,8 @@ definitions:
                   type: integer
                   title: Bounces
           timeseries:
-            description: An hourly breakdown of the performance of the campaign over
+            description:
+              An hourly breakdown of the performance of the campaign over
               the first 24 hours.
             type: array
             title: Timeseries
@@ -3935,8 +4052,8 @@ definitions:
                 timestamp:
                   description: The date and time for the series in ISO 8601 format.
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                   format: date-time
                   airbyte_type: timestamp_with_timezone
                   title: Timestamp
@@ -3960,15 +4077,15 @@ definitions:
               share_url:
                 description: The URL for the VIP report.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 title: Report URL
                 readOnly: true
               share_password:
                 description: If password protected, the password for the VIP report.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 title: Report Password
                 readOnly: true
           ecommerce:
@@ -3982,13 +4099,15 @@ definitions:
                 title: Total Orders
                 readOnly: true
               total_spent:
-                description: The total spent for a campaign. Calculated as the sum
+                description:
+                  The total spent for a campaign. Calculated as the sum
                   of all order totals with no deductions.
                 type: number
                 title: Total Spent
                 readOnly: true
               total_revenue:
-                description: The total revenue for a campaign. Calculated as the sum
+                description:
+                  The total revenue for a campaign. Calculated as the sum
                   of all order totals minus shipping and tax totals.
                 type: number
                 title: Total Revenue
@@ -3996,8 +4115,8 @@ definitions:
               currency_code:
                 description: The currency code used for the campaign.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 title: Three letter currency code for this user
                 readOnly: true
                 example: USD
@@ -4007,7 +4126,8 @@ definitions:
             title: Campaign Delivery Status
             properties:
               enabled:
-                description: Whether Campaign Delivery Status is enabled for this
+                description:
+                  Whether Campaign Delivery Status is enabled for this
                   account and campaign.
                 type: boolean
                 title: Delivery Status Enabled
@@ -4020,17 +4140,18 @@ definitions:
               status:
                 description: The current state of a campaign delivery.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 title: Campaign Delivery Status
                 enum:
-                - delivering
-                - delivered
-                - canceling
-                - canceled
+                  - delivering
+                  - delivered
+                  - canceling
+                  - canceled
                 readOnly: true
               emails_sent:
-                description: The total number of emails confirmed sent for this campaign
+                description:
+                  The total number of emails confirmed sent for this campaign
                   so far.
                 type: integer
                 title: Emails Sent
@@ -4048,11 +4169,11 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - stream: "#/definitions/lists_stream"
-          parent_key: id
-          partition_field: id
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
     state_migrations:
-    - type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "segments"
       primary_key: "id"
@@ -4070,80 +4191,80 @@ definitions:
           id:
             description: Unique identifier for the segment
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           name:
             description: Name of the segment
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           member_count:
             description: Total number of members in the segment
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           type:
             description: Type of segment (static, dynamic)
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           created_at:
             description: The date and time when the segment was created
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           updated_at:
             description: The date and time when the segment was last updated
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           options:
             description: The available options for segment data
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               match:
                 description: Type of match applied for multiple conditions (all, any)
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               conditions:
                 description: Conditions set for segment filtering
                 type:
-                - 'null'
-                - array
+                  - "null"
+                  - array
                 items:
                   description: Specific conditions to filter segments
                   type:
-                  - 'null'
-                  - object
+                    - "null"
+                    - object
                   additionalProperties: true
                   properties:
                     condition_type:
                       description: Type of condition applied
                       type:
-                      - 'null'
-                      - string
+                        - "null"
+                        - string
                     field:
                       description: Field to which the condition is applied
                       type:
-                      - 'null'
-                      - string
+                        - "null"
+                        - string
                     op:
                       description: Operator used in the condition
                       type:
-                      - 'null'
-                      - string
+                        - "null"
+                        - string
           list_id:
             description: ID of the list to which the segment belongs
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
   segment_members_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -4152,15 +4273,15 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - stream: "#/definitions/segments_stream"
-          parent_key: id
-          partition_field: id
+          - stream: "#/definitions/segments_stream"
+            parent_key: id
+            partition_field: id
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
@@ -4170,13 +4291,13 @@ definitions:
       lookback_window: PT0.1S
       is_client_side_incremental: true
     transformations:
-    - type: AddFields
-      fields:
-      - path: ["segment_id"]
-        value: "{{ stream_slice.id }}"
-    - "#/definitions/transformer_remove_empty_fields"
+      - type: AddFields
+        fields:
+          - path: ["segment_id"]
+            value: "{{ stream_slice.id }}"
+      - "#/definitions/transformer_remove_empty_fields"
     state_migrations:
-    - type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "segment_members"
       primary_key: ["id", "segment_id"]
@@ -4194,183 +4315,185 @@ definitions:
           id:
             description: The unique identifier of the segment member.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           email_address:
             description: The email address of the segment member.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           unique_email_id:
             description: The unique identifier related to the email address.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           email_type:
             description: The type of email the segment member receives.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           status:
             description: The subscription status of the segment member.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           merge_fields:
             description: Additional information merged with the segment member data.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             additionalProperties: true
           interests:
             description: Interests or preferences of the segment member.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             additionalProperties: true
           stats:
-            description: Statistics related to the email engagement of the segment
+            description:
+              Statistics related to the email engagement of the segment
               member.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               avg_open_rate:
                 description: The average open rate of the segment member.
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               avg_click_rate:
                 description: The average click-through rate of the segment member.
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
           ip_signup:
             description: The IP address where the segment member signed up.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           timestamp_signup:
             description: The date and time when the segment member signed up.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           ip_opt:
             description: The IP address where the segment member opted in.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           timestamp_opt:
             description: The date and time when the segment member opted in.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           member_rating:
             description: The rating assigned to the segment member.
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           last_changed:
-            description: The date and time when the segment member record was last
+            description:
+              The date and time when the segment member record was last
               updated.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           language:
             description: The preferred language of the segment member.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           vip:
             description: Flag indicating if the segment member is a VIP.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           email_client:
             description: The client used by the segment member to access their email.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           location:
             description: Geographical location information of the segment member.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               latitude:
                 description: The latitude coordinate of the location.
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               longitude:
                 description: The longitude coordinate of the location.
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               gmtoff:
                 description: The GMT offset of the location.
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               dstoff:
                 description: The Daylight Saving Time offset of the location.
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               country_code:
                 description: The country code of the location.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               timezone:
                 description: The timezone of the location.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           last_note:
             description: The last note added for the segment member.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               note_id:
                 description: The unique identifier of the note.
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               created_at:
                 description: The date and time when the note was created.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 format: date-time
                 airbyte_type: timestamp_with_timezone
               created_by:
                 description: The user who created the note.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               note:
                 description: The content of the note.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           list_id:
             description: The identifier of the list to which the segment member belongs.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           segment_id:
             description: The identifier of the segment the member belongs to.
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
   unsubscribes_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -4379,15 +4502,15 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - stream: "#/definitions/campaigns_stream"
-          parent_key: id
-          partition_field: id
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: id
+            partition_field: id
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
@@ -4397,7 +4520,7 @@ definitions:
       lookback_window: PT0.1S
       is_client_side_incremental: true
     state_migrations:
-    - type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "unsubscribes"
       primary_key: ["campaign_id", "email_id", "timestamp"]
@@ -4415,51 +4538,51 @@ definitions:
           email_id:
             description: The unique ID of the unsubscribed email.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           email_address:
             description: The email address of the subscriber who unsubscribed.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           merge_fields:
             description: Additional information about the subscriber.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             additionalProperties: true
           vip:
             description: Indicates whether the subscriber was a VIP.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           timestamp:
             description: The date and time when the subscriber unsubscribed.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_with_timezone
           reason:
             description: The reason provided by the subscriber for unsubscribing.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           campaign_id:
             description: The ID of the campaign associated with the unsubscribe.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           list_id:
             description: The ID of the list from which the subscriber unsubscribed.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           list_is_active:
             description: Indicates whether the list is active or inactive.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
   email_activity_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -4468,9 +4591,9 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - stream: "#/definitions/campaigns_stream"
-          parent_key: id
-          partition_field: id
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: id
+            partition_field: id
       record_selector:
         type: RecordSelector
         extractor:
@@ -4481,7 +4604,7 @@ definitions:
       type: DatetimeBasedCursor
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
         type: MinMaxDatetime
@@ -4494,7 +4617,7 @@ definitions:
         type: RequestOption
       lookback_window: PT0.1S
     state_migrations:
-    - type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "email_activity"
       primary_key: ["timestamp", "email_id", "action"]
@@ -4522,7 +4645,8 @@ definitions:
             type: boolean
             title: The status of the list used.
           email_id:
-            description: The MD5 hash of the lowercase version of the list member's
+            description:
+              The MD5 hash of the lowercase version of the list member's
               email address.
             type: string
             title: email MD5 hash.
@@ -4533,53 +4657,52 @@ definitions:
           action:
             description: "One of the following actions: 'open', 'click', or 'bounce'"
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
             title: action
             enum:
-            - open
-            - click
-            - bounce
+              - open
+              - click
+              - bounce
           type:
-            description: "If the action is a 'bounce', the type of bounce received:
-              'hard', 'soft'."
+            description: "If the action is a 'bounce', the type of bounce received: 'hard', 'soft'."
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
             title: Type
             enum:
-            - hard
-            - soft
+              - hard
+              - soft
           timestamp:
             description: The date and time recorded for the action in ISO 8601 format.
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
             title: Action date and time
             format: date-time
             airbyte_type: timestamp_with_timezone
           url:
             description: If the action is a 'click', the URL on which the member clicked.
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
             title: Click url
           ip:
             description: The IP address recorded for the action.
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
             title: Action ip address
 streams:
-- "#/definitions/automations_stream"
-- "#/definitions/campaigns_stream"
-- "#/definitions/email_activity_stream"
-- "#/definitions/lists_stream"
-- "#/definitions/list_members_stream"
-- "#/definitions/tags_stream"
-- "#/definitions/interest_categories_stream"
-- "#/definitions/interests_stream"
-- "#/definitions/reports_stream"
-- "#/definitions/segments_stream"
-- "#/definitions/segment_members_stream"
-- "#/definitions/unsubscribes_stream"
+  - "#/definitions/automations_stream"
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/email_activity_stream"
+  - "#/definitions/lists_stream"
+  - "#/definitions/list_members_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/interest_categories_stream"
+  - "#/definitions/interests_stream"
+  - "#/definitions/reports_stream"
+  - "#/definitions/segments_stream"
+  - "#/definitions/segment_members_stream"
+  - "#/definitions/unsubscribes_stream"
