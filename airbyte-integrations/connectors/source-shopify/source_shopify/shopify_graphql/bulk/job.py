@@ -181,14 +181,17 @@ class ShopifyBulkManager:
         return self._job_state == ShopifyBulkJobStatus.CANCELED.value
 
     def _job_cancel(self) -> None:
-        # re-use of `self._session(*, **)` to make BULK Job cancel request
-        cancel_args = self._job_get_request_args(ShopifyBulkTemplates.cancel)
-        with self.session as cancel_job:
-            canceled_response = cancel_job.request(**cancel_args)
-            # mark the job was self-canceled
-            self._job_self_canceled = True
-            # check CANCELED Job health
-            self._job_healthcheck(canceled_response)
+        _, canceled_response = self._http_client.send_request(
+            http_method="POST",
+            url=self.base_url,
+            data=ShopifyBulkTemplates.cancel(self._job_id),
+            headers={"Content-Type": "application/graphql"},
+            request_kwargs={},
+        )
+        # mark the job was self-canceled
+        self._job_self_canceled = True
+        # check CANCELED Job health
+        self._job_healthcheck(canceled_response)
         # sleep to ensure the cancelation
         sleep(self._job_check_interval)
 
@@ -210,27 +213,19 @@ class ShopifyBulkManager:
         else:
             self.logger.info(pattern)
 
-    def _job_get_request_args(self, template: ShopifyBulkTemplates) -> Mapping[str, Any]:
-        return {
-            "method": "POST",
-            "url": self.base_url,
-            "data": template(self._job_id),
-            "headers": {"Content-Type": "application/graphql"},
-        }
-
     def _job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
         parsed_response = response.json().get("data", {}).get("node", {}) if response else None
         job_result_url = parsed_response.get("url") if parsed_response and not self._job_self_canceled else None
         if job_result_url:
             # save to local file using chunks to avoid OOM
             filename = self._tools.filename_from_url(job_result_url)
-            with self.session.get(job_result_url, stream=True) as response:
-                response.raise_for_status()
-                with open(filename, "wb") as file:
-                    for chunk in response.iter_content(chunk_size=self._retrieve_chunk_size):
-                        file.write(chunk)
-                    # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
-                    file.write(END_OF_FILE.encode())
+            _, response = self._http_client.send_request(http_method="GET", url=job_result_url, request_kwargs={"stream": True})
+            response.raise_for_status()
+            with open(filename, "wb") as file:
+                for chunk in response.iter_content(chunk_size=self._retrieve_chunk_size):
+                    file.write(chunk)
+                # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
+                file.write(END_OF_FILE.encode())
             return filename
 
     def _job_update_state(self, response: Optional[requests.Response] = None) -> None:
