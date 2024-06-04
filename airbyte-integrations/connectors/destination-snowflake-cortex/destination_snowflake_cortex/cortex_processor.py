@@ -333,27 +333,27 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             if not self.sql_config.cortex_embedding_model:
                 new_data[EMBEDDING_COLUMN] = embeddings[i]
 
-        self.file_writer.process_record_message(
-            record_msg=AirbyteRecordMessage(
-                namespace=record_msg.namespace,
-                stream=record_msg.stream,
-                data=new_data,
-                emitted_at=record_msg.emitted_at,
-            ),
-            stream_schema={
-                "type": "object",
-                "properties": {
-                    DOCUMENT_ID_COLUMN: {"type": "string"},
-                    CHUNK_ID_COLUMN: {"type": "string"},
-                    METADATA_COLUMN: {"type": "object"},
-                    DOCUMENT_CONTENT_COLUMN: {"type": "string"},
-                    EMBEDDING_COLUMN: {
-                        "type": "array",
-                        "items": {"type": "float"},
+            self.file_writer.process_record_message(
+                record_msg=AirbyteRecordMessage(
+                    namespace=record_msg.namespace,
+                    stream=record_msg.stream,
+                    data=new_data,
+                    emitted_at=record_msg.emitted_at,
+                ),
+                stream_schema={
+                    "type": "object",
+                    "properties": {
+                        DOCUMENT_ID_COLUMN: {"type": "string"},
+                        CHUNK_ID_COLUMN: {"type": "string"},
+                        METADATA_COLUMN: {"type": "object"},
+                        DOCUMENT_CONTENT_COLUMN: {"type": "string"},
+                        EMBEDDING_COLUMN: {
+                            "type": "array",
+                            "items": {"type": "float"},
+                        },
                     },
                 },
-            },
-        )
+            )
 
     def _get_table_by_name(
         self,
@@ -433,7 +433,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         primary_key = []
         for key in primary_keys:
             try:
-                primary_key.append(str(dpath.util.get(record_msg.data, key)))
+                primary_key.append(str(dpath.get(record_msg.data, key)))
             except KeyError:
                 primary_key.append("__not_found__")
         # return a stringified version of all primary keys
