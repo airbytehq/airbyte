@@ -792,6 +792,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 |---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| 4.17.0  | [#38907](https://github.com/airbytehq/airbyte/pull/38907)      |Add option to auto-merge PRs.                                                                               |
 | 4.16.0  | [#38772](https://github.com/airbytehq/airbyte/pull/38232)      | Add pipeline to replace usage of AirbyteLogger.                                                                               |
 | 4.15.7  | [#38772](https://github.com/airbytehq/airbyte/pull/38772)      | Fix regression test connector image retrieval.                                                                               |
 | 4.15.6  | [#38783](https://github.com/airbytehq/airbyte/pull/38783)  | Fix a variable access error with `repo_dir` in the `bump_version` command.                                                   |
