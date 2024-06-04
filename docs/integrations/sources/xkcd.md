@@ -22,6 +22,7 @@ XKCD does not perform rate limiting.
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
+| 0.1.3 | 2024-06-04 | [38973](https://github.com/airbytehq/airbyte/pull/38973) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.2 | 2024-05-20 | [38401](https://github.com/airbytehq/airbyte/pull/38401) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2022-10-24 | [18386](https://github.com/airbytehq/airbyte/pull/18386) | Readded xkcd to source def yaml |
 | 0.1.0 | 2022-10-17 | [18049](https://github.com/airbytehq/airbyte/pull/18049) | Initial version/release of the connector. |
