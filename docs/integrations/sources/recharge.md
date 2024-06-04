@@ -74,6 +74,9 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
 | 1.2.0   | 2024-03-13 | [35450](https://github.com/airbytehq/airbyte/pull/35450) | Migrated to low-code                                                                                                           |
@@ -105,3 +108,5 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 | 0.1.4   | 2021-11-05 | [7626](https://github.com/airbytehq/airbyte/pull/7626)   | Improve 'backoff' for HTTP requests                                                                                            |
 | 0.1.3   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Update `discount` and `order` schema                                                                                           |
 | 0.1.2   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Change `cursor_field` for Incremental streams                                                                                  |
+
+</details>
