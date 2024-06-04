@@ -241,6 +241,9 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
 | 0.4.4   | 2024-06-03 | [38904](https://github.com/airbytehq/airbyte/pull/38904) | Bump `python-cdk` version to use unstructured document format                                  |
@@ -262,3 +265,5 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 | 0.2.1   | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image              |
 | 0.2.0   | 2023-10-10 | [31336](https://github.com/airbytehq/airbyte/pull/31336) | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files                        |
 | 0.1.0   | 2023-02-17 | [23222](https://github.com/airbytehq/airbyte/pull/23222) | Initial release with full-refresh and incremental sync with JSONL files                      |
+
+</details>
