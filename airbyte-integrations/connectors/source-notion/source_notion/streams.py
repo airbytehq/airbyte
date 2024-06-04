@@ -11,7 +11,7 @@ import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
@@ -165,7 +165,7 @@ class StateValueWrapper(pydantic.BaseModel):
         return {pydantic.utils.ROOT_KEY: self.value}
 
 
-class IncrementalNotionStream(NotionStream, IncrementalMixin, ABC):
+class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
 
     cursor_field = "last_edited_time"
 
