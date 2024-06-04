@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-snowflake-cortex"
-version = "0.2.1"
+version = "0.2.2"
 description = "Airbyte destination implementation for Snowflake cortex."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -18,7 +18,7 @@ include = "destination_snowflake_cortex"
 
 [tool.poetry.dependencies.airbyte-cdk]
 # Version cnstrained by PyAirbyte (`airbyte`) version
-version = ">=1.0"
+version = "0.2.2"
 extras = ["vector-db-based"]
 
 [tool.poetry.dependencies]
@@ -37,7 +37,7 @@ coverage = "^7.5.3"
 destination-snowflake-cortex = "destination_snowflake_cortex.run:run"
 
 [tool.ruff]
-target-version = "py310"
+target-version = "0.2.2"
 preview = true
 line-length = 100
 
