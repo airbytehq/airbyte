@@ -110,31 +110,37 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------- |
-| 2.2.2   | 2024-01-11 | [34153](https://github.com/airbytehq/airbyte/pull/34153) | prepare for airbyte-lib                                                    |
-| 2.2.1   | 2023-11-06 | [31147](https://github.com/airbytehq/airbyte/pull/31147) | Bugfix: handle records with a null data field                              |
-| 2.2.0   | 2023-10-25 | [31707](https://github.com/airbytehq/airbyte/pull/31707) | Add new stream mail                                                        |
-| 2.1.0   | 2023-10-10 | [31184](https://github.com/airbytehq/airbyte/pull/31184) | Add new stream goals                                                       |
-| 2.0.1   | 2023-10-13 | [31151](https://github.com/airbytehq/airbyte/pull/31151) | Add additionalProperties in schemas to read custom fields                  |
-| 2.0.0   | 2023-08-09 | [29293](https://github.com/airbytehq/airbyte/pull/29293) | Migrated to Low-Code CDK                                                   |
-| 1.0.0   | 2023-06-29 | [27832](https://github.com/airbytehq/airbyte/pull/27832) | Remove `followers_count` field from `Products` stream                      |
-| 0.1.19  | 2023-07-05 | [27967](https://github.com/airbytehq/airbyte/pull/27967) | Update `OrganizationFields` and `ProductFields` with `display_field` field |
-| 0.1.18  | 2023-06-02 | [26892](https://github.com/airbytehq/airbyte/pull/26892) | Update `DialFields` schema with `pipeline_ids` property                    |
-| 0.1.17  | 2023-03-21 | [24282](https://github.com/airbytehq/airbyte/pull/24282) | Bugfix handle missed `cursor_field`                                        |
-| 0.1.16  | 2023-03-08 | [23789](https://github.com/airbytehq/airbyte/pull/23789) | Add 11 new streams                                                         |
-| 0.1.15  | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth                                                              |
-| 0.1.14  | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals"                |
-| 0.1.13  | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                                |
-| 0.1.12  | 2022-05-12 | [12806](https://github.com/airbytehq/airbyte/pull/12806) | Remove date-time format from schemas                                       |
-| 0.1.10  | 2022-04-26 | [11870](https://github.com/airbytehq/airbyte/pull/11870) | Add 3 streams: DealFields, OrganizationFields and PersonFields             |
-| 0.1.9   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description                                  |
-| 0.1.8   | 2021-11-16 | [7875](https://github.com/airbytehq/airbyte/pull/7875)   | Extend schema for "persons" stream                                         |
-| 0.1.7   | 2021-11-15 | [7968](https://github.com/airbytehq/airbyte/pull/7968)   | Update oAuth flow config                                                   |
-| 0.1.6   | 2021-10-05 | [6821](https://github.com/airbytehq/airbyte/pull/6821)   | Add OAuth support                                                          |
-| 0.1.5   | 2021-09-27 | [6441](https://github.com/airbytehq/airbyte/pull/6441)   | Fix normalization error                                                    |
-| 0.1.4   | 2021-08-26 | [5943](https://github.com/airbytehq/airbyte/pull/5943)   | Add organizations stream                                                   |
-| 0.1.3   | 2021-08-26 | [5642](https://github.com/airbytehq/airbyte/pull/5642)   | Remove date-time from deals stream                                         |
-| 0.1.2   | 2021-07-23 | [4912](https://github.com/airbytehq/airbyte/pull/4912)   | Update money type to support floating point                                |
-| 0.1.1   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | Update spec.json                                                           |
-| 0.1.0   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | 🎉 New source: Pipedrive connector                                         |
+| 2.2.3 | 2024-05-20 | [38405](https://github.com/airbytehq/airbyte/pull/38405) | [autopull] base image + poetry + up_to_date |
+| 2.2.2 | 2024-01-11 | [34153](https://github.com/airbytehq/airbyte/pull/34153) | prepare for airbyte-lib |
+| 2.2.1 | 2023-11-06 | [31147](https://github.com/airbytehq/airbyte/pull/31147) | Bugfix: handle records with a null data field |
+| 2.2.0 | 2023-10-25 | [31707](https://github.com/airbytehq/airbyte/pull/31707) | Add new stream mail |
+| 2.1.0 | 2023-10-10 | [31184](https://github.com/airbytehq/airbyte/pull/31184) | Add new stream goals |
+| 2.0.1 | 2023-10-13 | [31151](https://github.com/airbytehq/airbyte/pull/31151) | Add additionalProperties in schemas to read custom fields |
+| 2.0.0 | 2023-08-09 | [29293](https://github.com/airbytehq/airbyte/pull/29293) | Migrated to Low-Code CDK |
+| 1.0.0 | 2023-06-29 | [27832](https://github.com/airbytehq/airbyte/pull/27832) | Remove `followers_count` field from `Products` stream |
+| 0.1.19 | 2023-07-05 | [27967](https://github.com/airbytehq/airbyte/pull/27967) | Update `OrganizationFields` and `ProductFields` with `display_field` field |
+| 0.1.18 | 2023-06-02 | [26892](https://github.com/airbytehq/airbyte/pull/26892) | Update `DialFields` schema with `pipeline_ids` property |
+| 0.1.17 | 2023-03-21 | [24282](https://github.com/airbytehq/airbyte/pull/24282) | Bugfix handle missed `cursor_field` |
+| 0.1.16 | 2023-03-08 | [23789](https://github.com/airbytehq/airbyte/pull/23789) | Add 11 new streams |
+| 0.1.15 | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth |
+| 0.1.14 | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals" |
+| 0.1.13 | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state |
+| 0.1.12 | 2022-05-12 | [12806](https://github.com/airbytehq/airbyte/pull/12806) | Remove date-time format from schemas |
+| 0.1.10 | 2022-04-26 | [11870](https://github.com/airbytehq/airbyte/pull/11870) | Add 3 streams: DealFields, OrganizationFields and PersonFields |
+| 0.1.9 | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
+| 0.1.8 | 2021-11-16 | [7875](https://github.com/airbytehq/airbyte/pull/7875) | Extend schema for "persons" stream |
+| 0.1.7 | 2021-11-15 | [7968](https://github.com/airbytehq/airbyte/pull/7968) | Update oAuth flow config |
+| 0.1.6 | 2021-10-05 | [6821](https://github.com/airbytehq/airbyte/pull/6821) | Add OAuth support |
+| 0.1.5 | 2021-09-27 | [6441](https://github.com/airbytehq/airbyte/pull/6441) | Fix normalization error |
+| 0.1.4 | 2021-08-26 | [5943](https://github.com/airbytehq/airbyte/pull/5943) | Add organizations stream |
+| 0.1.3 | 2021-08-26 | [5642](https://github.com/airbytehq/airbyte/pull/5642) | Remove date-time from deals stream |
+| 0.1.2 | 2021-07-23 | [4912](https://github.com/airbytehq/airbyte/pull/4912) | Update money type to support floating point |
+| 0.1.1 | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686) | Update spec.json |
+| 0.1.0 | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686) | 🎉 New source: Pipedrive connector |
+
+</details>

@@ -47,7 +47,13 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                   | Subject                    |
 | :------ | :--------- | :------------------------------------------------------------- | :------------------------- |
-| 0.2.0   | 2021-11-09 | [29385](https://github.com/airbytehq/airbyte/pull/29385)       | Migrate TS CDK to Low code |
+| 0.2.1 | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |
+| 0.2.0 | 2021-11-09 | [29385](https://github.com/airbytehq/airbyte/pull/29385) | Migrate TS CDK to Low code |
 | 0.1.23  | 2021-11-09 | [126](https://github.com/faros-ai/airbyte-connectors/pull/126) | Add Customer.io source     |
+
+</details>

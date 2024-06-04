@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 2a51c92d-0fb4-4e54-94d2-cce631f24d1f
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/destination-xata
   githubIssueLabel: destination-xata
   icon: xata.svg
@@ -31,4 +31,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
 metadataSpecVersion: "1.0"

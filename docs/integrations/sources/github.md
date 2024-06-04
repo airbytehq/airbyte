@@ -210,8 +210,12 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
-| :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.7.5   | 2024-05-29 | [38341](https://github.com/airbytehq/airbyte/pull/38341)                                                          | add `max_waiting_time` to configuration                                                                                                                             |
 | 1.7.4   | 2024-05-21 | [38341](https://github.com/airbytehq/airbyte/pull/38341)                                                          | Update CDK authenticator package                                                                                                                                    |
 | 1.7.3   | 2024-05-20 | [38299](https://github.com/airbytehq/airbyte/pull/38299)                                                          | Fixed spec typo                                                                                                                                                     |
 | 1.7.2   | 2024-04-19 | [36636](https://github.com/airbytehq/airbyte/pull/36636)                                                          | Updating to 0.80.0 CDK                                                                                                                                              |
@@ -333,5 +337,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708)                                                            | Fix bug with IssueEvents stream and add handling for rate limiting                                                                                                  |
 | 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590)                                                            | Fix schema in the `pull_request` stream                                                                                                                             |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)                                                            | New Source: GitHub                                                                                                                                                  |
+
+</details>
 
 </HideInUI>

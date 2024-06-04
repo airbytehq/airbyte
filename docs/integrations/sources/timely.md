@@ -32,6 +32,9 @@ The Timely source connector supports the following [sync modes](https://docs.air
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.3.5   | 2024-05-20 | [38228](https://github.com/airbytehq/airbyte/pull/38228) | Make compatible with builder                                                    |
@@ -42,3 +45,5 @@ The Timely source connector supports the following [sync modes](https://docs.air
 | 0.3.0   | 2023-10-25 | [31002](https://github.com/airbytehq/airbyte/pull/31002) | Migrate to low-code framework                                                   |
 | 0.2.0   | 2023-10-23 | [31745](https://github.com/airbytehq/airbyte/pull/31745) | Fix schemas                                                                     |
 | 0.1.0   | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Initial release                                                                 |
+
+</details>
