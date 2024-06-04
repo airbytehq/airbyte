@@ -50,6 +50,7 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 0.3.7 | 2024-06-03 | [38920](https://github.com/airbytehq/airbyte/pull/38920) | Replace AirbyteLogger with logging.Logger |
 | 0.3.6 | 2024-06-03 | [38920](https://github.com/airbytehq/airbyte/pull/38920) | Replace AirbyteLogger with logging.Logger |
 | 0.3.5 | 2024-04-19 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Updating to 0.80.0 CDK |
 | 0.3.4 | 2024-04-18 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Manage dependencies with Poetry. |
