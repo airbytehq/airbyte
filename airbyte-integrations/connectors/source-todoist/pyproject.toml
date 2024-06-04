@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.2"
+version = "0.2.3"
 name = "source-todoist"
 description = "Source implementation for Todoist."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_todoist"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "1.0.0"
 
 [tool.poetry.scripts]
 source-todoist = "source_todoist.run:run"

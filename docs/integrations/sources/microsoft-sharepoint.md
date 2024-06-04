@@ -129,6 +129,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 The connector is restricted by normal Microsoft Graph [requests limitation](https://docs.microsoft.com/en-us/graph/throttling).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

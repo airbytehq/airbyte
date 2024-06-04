@@ -83,6 +83,7 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 </details>
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

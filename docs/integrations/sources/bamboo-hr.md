@@ -51,7 +51,7 @@ This page contains the setup guide and reference information for the [BambooHR](
 The BambooHR source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                   | Supported? |
-| :------------------------ | :--------- |
+|:--------------------------|:-----------|
 | Full Refresh Sync         | Yes        |
 | Incremental - Append Sync | No         |
 | SSL connection            | Yes        |
@@ -88,7 +88,8 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 0.3.0   | 2024-05-25 | [37452](https://github.com/airbytehq/airbyte/pull/37452) | Migrate to Low Code                                                             |
 | 0.2.6   | 2024-04-19 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Updating to 0.80.0 CDK                                                          |
 | 0.2.5   | 2024-04-18 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Manage dependencies with Poetry.                                                |
 | 0.2.4   | 2024-04-15 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Base image migration: remove Dockerfile and use the python-connector-base image |

@@ -108,6 +108,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 3.0.4 | 2024-05-21 | [38518](https://github.com/airbytehq/airbyte/pull/38518) | [autopull] base image + poetry + up_to_date |
 | `3.0.3` | 2024-03-22 | [36389](https://github.com/airbytehq/airbyte/pull/36389) | Add refresh token updater and add missing properties to streams    |
 | `3.0.2` | 2024-02-20 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Small typo in spec correction                                      |
 | `3.0.1` | 2023-11-06 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Upgrade to `airbyte-cdk>=0.52.10` to resolve refresh token issues  |
