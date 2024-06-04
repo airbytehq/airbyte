@@ -22,7 +22,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3981c999-bd7d-4afc-849b-e53dea90c948
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-lever-hiring
   githubIssueLabel: source-lever-hiring
   icon: icon.svg
