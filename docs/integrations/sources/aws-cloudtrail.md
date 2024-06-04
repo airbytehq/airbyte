@@ -51,6 +51,7 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.9 | 2024-06-03 | [38911](https://github.com/airbytehq/airbyte/pull/38911) | Replace AirbyteLogger with logging.Logger |
 | 0.1.8 | 2024-05-20 | [38448](https://github.com/airbytehq/airbyte/pull/38448) | [autopull] base image + poetry + up_to_date |
 | 0.1.7 | 2024-04-15 | [37122](https://github.com/airbytehq/airbyte/pull/37122) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.6 | 2024-04-12 | [37122](https://github.com/airbytehq/airbyte/pull/37122) | schema descriptions |
