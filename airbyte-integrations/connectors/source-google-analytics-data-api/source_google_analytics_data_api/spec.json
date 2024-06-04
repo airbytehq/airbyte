@@ -4,9 +4,7 @@
     "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Google Analytics (Data API) Spec",
     "type": "object",
-    "required": [
-      "property_ids"
-    ],
+    "required": ["property_ids"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -18,11 +16,7 @@
           {
             "title": "Authenticate via Google (Oauth)",
             "type": "object",
-            "required": [
-              "client_id",
-              "client_secret",
-              "refresh_token"
-            ],
+            "required": ["client_id", "client_secret", "refresh_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -61,9 +55,7 @@
           {
             "type": "object",
             "title": "Service Account Key Authentication",
-            "required": [
-              "credentials_json"
-            ],
+            "required": ["credentials_json"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -93,12 +85,7 @@
           "type": "string",
           "pattern": "^[0-9]*$"
         },
-        "examples": [
-          [
-            "1738294",
-            "5729978930"
-          ]
-        ]
+        "examples": [["1738294", "5729978930"]]
       },
       "date_ranges_start_date": {
         "type": "string",
@@ -107,9 +94,7 @@
         "format": "date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "pattern_descriptor": "YYYY-MM-DD",
-        "examples": [
-          "2021-01-01"
-        ],
+        "examples": ["2021-01-01"],
         "order": 2
       },
       "custom_reports_array": {
@@ -217,10 +202,7 @@
                                     "order": 2
                                   }
                                 },
-                                "required": [
-                                  "filter_name",
-                                  "value"
-                                ]
+                                "required": ["filter_name", "value"]
                               },
                               {
                                 "title": "inListFilter",
@@ -245,10 +227,7 @@
                                     "order": 1
                                   }
                                 },
-                                "required": [
-                                  "filter_name",
-                                  "values"
-                                ]
+                                "required": ["filter_name", "values"]
                               },
                               {
                                 "title": "numericFilter",
@@ -291,10 +270,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -308,10 +284,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   }
@@ -347,10 +320,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -364,10 +334,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   },
@@ -388,10 +355,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -405,10 +369,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   }
@@ -422,17 +383,11 @@
                             ]
                           }
                         },
-                        "required": [
-                          "field_name",
-                          "filter"
-                        ]
+                        "required": ["field_name", "filter"]
                       }
                     }
                   },
-                  "required": [
-                    "filter_type",
-                    "expressions"
-                  ]
+                  "required": ["filter_type", "expressions"]
                 },
                 {
                   "title": "orGroup",
@@ -498,10 +453,7 @@
                                     "order": 2
                                   }
                                 },
-                                "required": [
-                                  "filter_name",
-                                  "value"
-                                ]
+                                "required": ["filter_name", "value"]
                               },
                               {
                                 "title": "inListFilter",
@@ -526,10 +478,7 @@
                                     "order": 1
                                   }
                                 },
-                                "required": [
-                                  "filter_name",
-                                  "values"
-                                ]
+                                "required": ["filter_name", "values"]
                               },
                               {
                                 "title": "numericFilter",
@@ -572,10 +521,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -589,10 +535,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   }
@@ -628,10 +571,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -645,10 +585,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   },
@@ -669,10 +606,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -686,10 +620,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   }
@@ -703,17 +634,11 @@
                             ]
                           }
                         },
-                        "required": [
-                          "field_name",
-                          "filter"
-                        ]
+                        "required": ["field_name", "filter"]
                       }
                     }
                   },
-                  "required": [
-                    "filter_type",
-                    "expressions"
-                  ]
+                  "required": ["filter_type", "expressions"]
                 },
                 {
                   "title": "notExpression",
@@ -775,10 +700,7 @@
                                   "order": 2
                                 }
                               },
-                              "required": [
-                                "filter_name",
-                                "value"
-                              ]
+                              "required": ["filter_name", "value"]
                             },
                             {
                               "title": "inListFilter",
@@ -803,10 +725,7 @@
                                   "order": 1
                                 }
                               },
-                              "required": [
-                                "filter_name",
-                                "values"
-                              ]
+                              "required": ["filter_name", "values"]
                             },
                             {
                               "title": "numericFilter",
@@ -849,10 +768,7 @@
                                           "type": "string"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     },
                                     {
                                       "title": "doubleValue",
@@ -866,19 +782,12 @@
                                           "type": "number"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     }
                                   ]
                                 }
                               },
-                              "required": [
-                                "filter_name",
-                                "operation",
-                                "value"
-                              ]
+                              "required": ["filter_name", "operation", "value"]
                             },
                             {
                               "title": "betweenFilter",
@@ -905,10 +814,7 @@
                                           "type": "string"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     },
                                     {
                                       "title": "doubleValue",
@@ -922,10 +828,7 @@
                                           "type": "number"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     }
                                   ]
                                 },
@@ -946,10 +849,7 @@
                                           "type": "string"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     },
                                     {
                                       "title": "doubleValue",
@@ -963,10 +863,7 @@
                                           "type": "number"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     }
                                   ]
                                 }
@@ -980,10 +877,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "field_name",
-                        "filter"
-                      ]
+                      "required": ["field_name", "filter"]
                     }
                   }
                 },
@@ -1043,10 +937,7 @@
                               "order": 2
                             }
                           },
-                          "required": [
-                            "filter_name",
-                            "value"
-                          ]
+                          "required": ["filter_name", "value"]
                         },
                         {
                           "title": "inListFilter",
@@ -1071,10 +962,7 @@
                               "order": 1
                             }
                           },
-                          "required": [
-                            "filter_name",
-                            "values"
-                          ]
+                          "required": ["filter_name", "values"]
                         },
                         {
                           "title": "numericFilter",
@@ -1117,10 +1005,7 @@
                                       "type": "string"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 },
                                 {
                                   "title": "doubleValue",
@@ -1134,19 +1019,12 @@
                                       "type": "number"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 }
                               ]
                             }
                           },
-                          "required": [
-                            "filter_name",
-                            "operation",
-                            "value"
-                          ]
+                          "required": ["filter_name", "operation", "value"]
                         },
                         {
                           "title": "betweenFilter",
@@ -1173,10 +1051,7 @@
                                       "type": "string"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 },
                                 {
                                   "title": "doubleValue",
@@ -1190,10 +1065,7 @@
                                       "type": "number"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 }
                               ]
                             },
@@ -1214,10 +1086,7 @@
                                       "type": "string"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 },
                                 {
                                   "title": "doubleValue",
@@ -1231,27 +1100,17 @@
                                       "type": "number"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 }
                               ]
                             }
                           },
-                          "required": [
-                            "filter_name",
-                            "fromValue",
-                            "toValue"
-                          ]
+                          "required": ["filter_name", "fromValue", "toValue"]
                         }
                       ]
                     }
                   },
-                  "required": [
-                    "field_name",
-                    "filter"
-                  ]
+                  "required": ["field_name", "filter"]
                 }
               ]
             },
@@ -1325,10 +1184,7 @@
                                     "order": 2
                                   }
                                 },
-                                "required": [
-                                  "filter_name",
-                                  "value"
-                                ]
+                                "required": ["filter_name", "value"]
                               },
                               {
                                 "title": "inListFilter",
@@ -1353,10 +1209,7 @@
                                     "order": 1
                                   }
                                 },
-                                "required": [
-                                  "filter_name",
-                                  "values"
-                                ]
+                                "required": ["filter_name", "values"]
                               },
                               {
                                 "title": "numericFilter",
@@ -1399,10 +1252,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -1416,10 +1266,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   }
@@ -1455,10 +1302,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -1472,10 +1316,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   },
@@ -1496,10 +1337,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -1513,10 +1351,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   }
@@ -1530,17 +1365,11 @@
                             ]
                           }
                         },
-                        "required": [
-                          "field_name",
-                          "filter"
-                        ]
+                        "required": ["field_name", "filter"]
                       }
                     }
                   },
-                  "required": [
-                    "filter_type",
-                    "expressions"
-                  ]
+                  "required": ["filter_type", "expressions"]
                 },
                 {
                   "title": "orGroup",
@@ -1606,10 +1435,7 @@
                                     "order": 2
                                   }
                                 },
-                                "required": [
-                                  "filter_name",
-                                  "value"
-                                ]
+                                "required": ["filter_name", "value"]
                               },
                               {
                                 "title": "inListFilter",
@@ -1634,10 +1460,7 @@
                                     "order": 1
                                   }
                                 },
-                                "required": [
-                                  "filter_name",
-                                  "values"
-                                ]
+                                "required": ["filter_name", "values"]
                               },
                               {
                                 "title": "numericFilter",
@@ -1680,10 +1503,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -1697,10 +1517,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   }
@@ -1736,10 +1553,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -1753,10 +1567,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   },
@@ -1777,10 +1588,7 @@
                                             "type": "string"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       },
                                       {
                                         "title": "doubleValue",
@@ -1794,10 +1602,7 @@
                                             "type": "number"
                                           }
                                         },
-                                        "required": [
-                                          "value_type",
-                                          "value"
-                                        ]
+                                        "required": ["value_type", "value"]
                                       }
                                     ]
                                   }
@@ -1811,17 +1616,11 @@
                             ]
                           }
                         },
-                        "required": [
-                          "field_name",
-                          "filter"
-                        ]
+                        "required": ["field_name", "filter"]
                       }
                     }
                   },
-                  "required": [
-                    "filter_type",
-                    "expressions"
-                  ]
+                  "required": ["filter_type", "expressions"]
                 },
                 {
                   "title": "notExpression",
@@ -1883,10 +1682,7 @@
                                   "order": 2
                                 }
                               },
-                              "required": [
-                                "filter_name",
-                                "value"
-                              ]
+                              "required": ["filter_name", "value"]
                             },
                             {
                               "title": "inListFilter",
@@ -1911,10 +1707,7 @@
                                   "order": 1
                                 }
                               },
-                              "required": [
-                                "filter_name",
-                                "values"
-                              ]
+                              "required": ["filter_name", "values"]
                             },
                             {
                               "title": "numericFilter",
@@ -1957,10 +1750,7 @@
                                           "type": "string"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     },
                                     {
                                       "title": "doubleValue",
@@ -1974,19 +1764,12 @@
                                           "type": "number"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     }
                                   ]
                                 }
                               },
-                              "required": [
-                                "filter_name",
-                                "operation",
-                                "value"
-                              ]
+                              "required": ["filter_name", "operation", "value"]
                             },
                             {
                               "title": "betweenFilter",
@@ -2013,10 +1796,7 @@
                                           "type": "string"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     },
                                     {
                                       "title": "doubleValue",
@@ -2030,10 +1810,7 @@
                                           "type": "number"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     }
                                   ]
                                 },
@@ -2054,10 +1831,7 @@
                                           "type": "string"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     },
                                     {
                                       "title": "doubleValue",
@@ -2071,10 +1845,7 @@
                                           "type": "number"
                                         }
                                       },
-                                      "required": [
-                                        "value_type",
-                                        "value"
-                                      ]
+                                      "required": ["value_type", "value"]
                                     }
                                   ]
                                 }
@@ -2088,10 +1859,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "field_name",
-                        "filter"
-                      ]
+                      "required": ["field_name", "filter"]
                     }
                   }
                 },
@@ -2151,10 +1919,7 @@
                               "order": 2
                             }
                           },
-                          "required": [
-                            "filter_name",
-                            "value"
-                          ]
+                          "required": ["filter_name", "value"]
                         },
                         {
                           "title": "inListFilter",
@@ -2179,10 +1944,7 @@
                               "order": 1
                             }
                           },
-                          "required": [
-                            "filter_name",
-                            "values"
-                          ]
+                          "required": ["filter_name", "values"]
                         },
                         {
                           "title": "numericFilter",
@@ -2225,10 +1987,7 @@
                                       "type": "string"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 },
                                 {
                                   "title": "doubleValue",
@@ -2242,19 +2001,12 @@
                                       "type": "number"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 }
                               ]
                             }
                           },
-                          "required": [
-                            "filter_name",
-                            "operation",
-                            "value"
-                          ]
+                          "required": ["filter_name", "operation", "value"]
                         },
                         {
                           "title": "betweenFilter",
@@ -2281,10 +2033,7 @@
                                       "type": "string"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 },
                                 {
                                   "title": "doubleValue",
@@ -2298,10 +2047,7 @@
                                       "type": "number"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 }
                               ]
                             },
@@ -2322,10 +2068,7 @@
                                       "type": "string"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 },
                                 {
                                   "title": "doubleValue",
@@ -2339,27 +2082,17 @@
                                       "type": "number"
                                     }
                                   },
-                                  "required": [
-                                    "value_type",
-                                    "value"
-                                  ]
+                                  "required": ["value_type", "value"]
                                 }
                               ]
                             }
                           },
-                          "required": [
-                            "filter_name",
-                            "fromValue",
-                            "toValue"
-                          ]
+                          "required": ["filter_name", "fromValue", "toValue"]
                         }
                       ]
                     }
                   },
-                  "required": [
-                    "field_name",
-                    "filter"
-                  ]
+                  "required": ["field_name", "filter"]
                 }
               ]
             },
@@ -2395,10 +2128,7 @@
                       "items": {
                         "title": "Cohorts",
                         "type": "object",
-                        "required": [
-                          "dimension",
-                          "dateRange"
-                        ],
+                        "required": ["dimension", "dateRange"],
                         "properties": {
                           "name": {
                             "title": "Name",
@@ -2412,17 +2142,12 @@
                             "title": "Dimension",
                             "description": "Dimension used by the cohort. Required and only supports `firstSessionDate`",
                             "type": "string",
-                            "enum": [
-                              "firstSessionDate"
-                            ],
+                            "enum": ["firstSessionDate"],
                             "order": 1
                           },
                           "dateRange": {
                             "type": "object",
-                            "required": [
-                              "startDate",
-                              "endDate"
-                            ],
+                            "required": ["startDate", "endDate"],
                             "properties": {
                               "startDate": {
                                 "title": "Start Date",
@@ -2430,9 +2155,7 @@
                                 "format": "date",
                                 "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
                                 "pattern_descriptor": "YYYY-MM-DD",
-                                "examples": [
-                                  "2021-01-01"
-                                ],
+                                "examples": ["2021-01-01"],
                                 "order": 2
                               },
                               "endDate": {
@@ -2441,9 +2164,7 @@
                                 "format": "date",
                                 "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
                                 "pattern_descriptor": "YYYY-MM-DD",
-                                "examples": [
-                                  "2021-01-01"
-                                ],
+                                "examples": ["2021-01-01"],
                                 "order": 3
                               }
                             }
@@ -2454,10 +2175,7 @@
                     "cohortsRange": {
                       "type": "object",
                       "order": 1,
-                      "required": [
-                        "granularity",
-                        "endOffset"
-                      ],
+                      "required": ["granularity", "endOffset"],
                       "properties": {
                         "granularity": {
                           "title": "Granularity",
@@ -2505,25 +2223,14 @@
               ]
             }
           },
-          "required": [
-            "name",
-            "dimensions",
-            "metrics"
-          ]
+          "required": ["name", "dimensions", "metrics"]
         }
       },
       "window_in_days": {
         "type": "integer",
         "title": "Data Request Interval (Days)",
         "description": "The interval in days for each data request made to the Google Analytics API. A larger value speeds up data sync, but increases the chance of data sampling, which may result in inaccuracies. We recommend a value of 1 to minimize sampling, unless speed is an absolute priority over accuracy. Acceptable values range from 1 to 364. Does not apply to custom Cohort reports. More information is available in <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-data-api\">the documentation</a>.",
-        "examples": [
-          30,
-          60,
-          90,
-          120,
-          200,
-          364
-        ],
+        "examples": [30, 60, 90, 120, 200, 364],
         "minimum": 1,
         "maximum": 364,
         "default": 1,
@@ -2533,14 +2240,7 @@
         "type": "integer",
         "title": "Days in the past that we should refresh data",
         "description": "Since Google Analytics has a data processing latency, we should specify how many days in the past we should refresh the data",
-        "examples": [
-          2,
-          3,
-          4,
-          7,
-          14,
-          28
-        ],
+        "examples": [2,3,4,7,14,28],
         "minimum": 2,
         "maximum": 60,
         "default": 2,
@@ -2564,10 +2264,7 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": [
-      "credentials",
-      "auth_type"
-    ],
+    "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "Client",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
@@ -2575,17 +2272,11 @@
         "properties": {
           "access_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "access_token"
-            ]
+            "path_in_connector_config": ["credentials", "access_token"]
           },
           "refresh_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "refresh_token"
-            ]
+            "path_in_connector_config": ["credentials", "refresh_token"]
           }
         }
       },
@@ -2605,17 +2296,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_id"
-            ]
+            "path_in_connector_config": ["credentials", "client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_secret"
-            ]
+            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       }
