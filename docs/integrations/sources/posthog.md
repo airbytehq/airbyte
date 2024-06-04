@@ -68,6 +68,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| 1.0.2 | 2024-06-03 | [38909](https://github.com/airbytehq/airbyte/pull/38909) | Replace AirbyteLogger with logging.Logger |
 | 1.0.1 | 2024-06-03 | [38909](https://github.com/airbytehq/airbyte/pull/38909) | Replace AirbyteLogger with logging.Logger |
 | 1.0.0 | 2023-12-04 | [28593](https://github.com/airbytehq/airbyte/pull/28593) | Fix events.event type |
 | 0.1.15 | 2023-10-28 | [31265](https://github.com/airbytehq/airbyte/pull/31265) | Fix Events stream datetime format |
