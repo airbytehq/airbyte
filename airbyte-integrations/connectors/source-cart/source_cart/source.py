@@ -6,6 +6,7 @@ import base64
 import codecs
 import hashlib
 import hmac
+import logging
 import urllib.parse
 from enum import Enum
 from functools import wraps
@@ -13,7 +14,6 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -122,7 +122,7 @@ class SourceCart(AbstractSource):
         return authenticator
 
     @validate_config_values
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = self.get_auth(config)
             stream = Products(authenticator=authenticator, start_date=config["start_date"])
