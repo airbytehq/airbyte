@@ -2,7 +2,7 @@
 
 
 from datetime import timedelta
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
 
