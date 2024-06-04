@@ -33,7 +33,7 @@ If a sync starts to fail, it will automatically be disabled after multiple conse
 
 If a new major version of the connector has been released, you will also see a banner on this page indicating the cutoff date for the version. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you do not upgrade before the cutoff date, Airbyte will automatically disable your connection.
 
-Learn more about version upgrades in our [resolving breaking change documentation](/cloud/managing-airbyte-cloud/manage-schema-changes#resolving-breaking-changes).
+Learn more about version upgrades in our [resolving breaking change documentation](/using-airbyte/schema-change-management.md#resolving-breaking-changes).
 
 ## Review the stream status
 
@@ -47,6 +47,6 @@ The stream status allows you to monitor each stream's latest status. The stream 
 
 Each stream shows the last record loaded to the destination. Toggle the header to display the exact datetime the last record was loaded.
 
-You can [clear](/operator-guides/reset.md) an individual stream without clearing all streams in a connection by clicking the three grey dots next to any stream.
+You can [clear](/operator-guides/clear) an individual stream without clearing all streams in a connection by clicking the three grey dots next to any stream.
 
 You can also navigate directly to the stream's configuration by click the three grey dots next to any stream and selecting "Open details" to be redirected to the stream configuration.

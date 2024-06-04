@@ -53,6 +53,7 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.5   | 2024-05-20 | [38321](https://github.com/airbytehq/airbyte/pull/38321) | Make compatability with builder                                                 |
 | 0.3.4   | 2024-05-03 | [37592](https://github.com/airbytehq/airbyte/pull/37592) | Change `last_records` to `last_record`                                          |
 | 0.3.3   | 2024-04-19 | [37153](https://github.com/airbytehq/airbyte/pull/37153) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
 | 0.3.2   | 2024-04-15 | [37153](https://github.com/airbytehq/airbyte/pull/37153) | Base image migration: remove Dockerfile and use the python-connector-base image |
