@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-cdk"
-version = "1.1.0"
+version = "1.2.1"
 description = "A framework for writing Airbyte Connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -28,7 +28,7 @@ airbyte-protocol-models = ">=0.9.0, <1.0"
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
-dpath = "~2.0.1"
+dpath = "^2.1.6"
 genson = "1.2.2"
 isodate = "~0.6.1"
 Jinja2 = "~3.1.2"
