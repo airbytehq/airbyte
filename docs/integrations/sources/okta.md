@@ -81,8 +81,12 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                        |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.2.0   | 2024-05-16 | [36509](https://github.com/airbytehq/airbyte/pull/36509) | Migrate to Low Code                                                            |
 | 0.1.16  | 2023-07-07 | [20833](https://github.com/airbytehq/airbyte/pull/20833) | Fix infinite loop for GroupMembers stream                                      |
 | 0.1.15  | 2023-06-20 | [27533](https://github.com/airbytehq/airbyte/pull/27533) | Fixed group member stream and resource sets stream pagination                  |
 | 0.1.14  | 2022-12-24 | [20877](https://github.com/airbytehq/airbyte/pull/20877) | Disabled OAuth2.0 authorization method                                         |
@@ -100,3 +104,5 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 | 0.1.2   | 2021-07-01 | [4456](https://github.com/airbytehq/airbyte/pull/4456)   | Fix infinite pagination in logs stream                                         |
 | 0.1.1   | 2021-06-09 | [3937](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                   |
 | 0.1.0   | 2021-05-30 | [3563](https://github.com/airbytehq/airbyte/pull/3563)   | Initial Release                                                                |
+
+</details>

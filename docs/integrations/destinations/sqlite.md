@@ -72,6 +72,13 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------- |
-| 0.1.0   | 2022-07-25 | [15018](https://github.com/airbytehq/airbyte/pull/15018) | New SQLite destination |
+| 0.1.2 | 2024-05-22 | [38539](https://github.com/airbytehq/airbyte/pull/38539) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2024-05-21 | [38539](https://github.com/airbytehq/airbyte/pull/38539) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-07-25 | [15018](https://github.com/airbytehq/airbyte/pull/15018) | New SQLite destination |
+
+</details>

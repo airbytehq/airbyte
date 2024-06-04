@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.4"
+name = "source-tplcentral"
+description = "Source implementation for Tplcentral."
+authors = [ "Labanoras Tech <jv@labanoras.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/tplcentral"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_tplcentral"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+arrow = "==1.2.1"
+airbyte-cdk = "0.80.0"
+
+[tool.poetry.scripts]
+source-tplcentral = "source_tplcentral.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6.1"
+requests-mock = "^1.9.3"
+pytest = "^6.1"

@@ -121,6 +121,10 @@ mitmweb --rfile=http_dump.mitm
 
 We created a regression test suite to run tests to compare the outputs of connector commands on different versions of the same connector.
 
+## Validation tests
+
+The validation test suite makes assertions about the output of airbyte commands for the target version of the connector only.
+
 ## Tutorial(s)
 
 - [Loom Walkthrough (Airbyte Only)](https://www.loom.com/share/97c49d7818664b119cff6911a8a211a2?sid=4570a5b6-9c81-4db3-ba33-c74dc5845c3c)
@@ -135,7 +139,7 @@ You can run the existing test suites with the following command:
 #### With local connection objects (`config.json`, `catalog.json`, `state.json`)
 
 ```bash
-poetry run pytest src/live_tests/regression_tests \
+poetry run pytest src/live_tests \
  --connector-image=airbyte/source-faker \
  --config-path=<path-to-config-path> \
  --catalog-path=<path-to-catalog-path> \
@@ -149,7 +153,7 @@ poetry run pytest src/live_tests/regression_tests \
 The live connection objects will be fetched.
 
 ```bash
- poetry run pytest src/live_tests/regression_tests \
+ poetry run pytest src/live_tests \
  --connector-image=airbyte/source-faker \
  --target-version=dev \
  --control-version=latest \
@@ -257,23 +261,40 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ### Custom CLI Arguments
 
-| Argument                   | Description                                                                                                    | Required/Optional |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------- |
-| `--connector-image`        | Docker image name of the connector to debug (e.g., `airbyte/source-faker:latest`, `airbyte/source-faker:dev`). | Required          |
-| `--control-version`        | Version of the control connector for regression testing.                                                       | Required          |
-| `--target-version`         | Version of the connector being tested. (Defaults to dev)                                                       | Optional          |
-| `--pr-url`                 | URL of the pull request being tested.                                                                          | Required          |
-| `--connection-id`          | ID of the connection for live testing. If not provided, a prompt will appear to choose.                        | Optional          |
-| `--config-path`            | Path to the custom source configuration file.                                                                  | Optional          |
-| `--catalog-path`           | Path to the custom configured catalog file.                                                                    | Optional          |
-| `--state-path`             | Path to the custom state file.                                                                                 | Optional          |
-| `--http-cache`             | Use the HTTP cache for the connector.                                                                          | Optional          |
-| `--run-id`                 | Unique identifier for the test run. If not provided, a timestamp will be used.                                 | Optional          |
-| `--auto-select-connection` | Automatically select a connection for testing.                                                                 | Optional          |
-| `--stream`                 | Name of the stream to test. Can be specified multiple times to test multiple streams.                          | Optional          |
-| `--should-read-with-state` | Specify whether to read with state. If not provided, a prompt will appear to choose.                           | Optional          |
+| Argument                   | Description                                                                                                                                  | Required/Optional |
+|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------| ----------------- |
+| `--connector-image`        | Docker image name of the connector to debug (e.g., `airbyte/source-faker:latest`, `airbyte/source-faker:dev`).                               | Required          |
+| `--control-version`        | Version of the control connector for regression testing.                                                                                     | Required          |
+| `--target-version`         | Version of the connector being tested. (Defaults to dev)                                                                                     | Optional          |
+| `--pr-url`                 | URL of the pull request being tested.                                                                                                        | Required          |
+| `--connection-id`          | ID of the connection for live testing. If not provided, a prompt will appear to choose.                                                      | Optional          |
+| `--config-path`            | Path to the custom source configuration file.                                                                                                | Optional          |
+| `--catalog-path`           | Path to the custom configured catalog file.                                                                                                  | Optional          |
+| `--state-path`             | Path to the custom state file.                                                                                                               | Optional          |
+| `--http-cache`             | Use the HTTP cache for the connector.                                                                                                        | Optional          |
+| `--run-id`                 | Unique identifier for the test run. If not provided, a timestamp will be used.                                                               | Optional          |
+| `--auto-select-connection` | Automatically select a connection for testing.                                                                                               | Optional          |
+| `--stream`                 | Name of the stream to test. Can be specified multiple times to test multiple streams.                                                        | Optional          |
+| `--should-read-with-state` | Specify whether to read with state. If not provided, a prompt will appear to choose.                                                         | Optional          |
+| `--test-evaluation-mode`   | Whether to run tests in "diagnostic" mode or "strict" mode. In diagnostic mode, eligible tests will always pass unless there's an exception. | Optional          |
 
 ## Changelog
+
+### 0.17.4
+
+Fix control image when running tests in CI.
+
+### 0.17.3
+
+Pin requests dependency.
+
+### 0.17.2
+
+Fix duckdb dependency.
+
+### 0.17.1
+
+Bump the connection-retriever version to fix deprecated query.
 
 ### 0.17.0
 

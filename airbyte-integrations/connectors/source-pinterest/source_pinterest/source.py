@@ -5,12 +5,11 @@
 import copy
 import logging
 from base64 import standard_b64encode
-from typing import Any, List, Mapping, Tuple, Type
+from typing import Any, List, Mapping
 
 import pendulum
-import requests
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
@@ -30,35 +29,17 @@ from .reports.reports import (
     ProductGroupTargetingReport,
     ProductItemReport,
 )
-from .streams import (
-    AdAccountAnalytics,
-    AdAccounts,
-    AdAnalytics,
-    AdGroupAnalytics,
-    AdGroups,
-    Ads,
-    Audiences,
-    BoardPins,
-    Boards,
-    BoardSectionPins,
-    BoardSections,
-    CampaignAnalytics,
-    Campaigns,
-    Catalogs,
-    CatalogsFeeds,
-    CatalogsProductGroups,
-    ConversionTags,
-    CustomerLists,
-    Keywords,
-    PinterestStream,
-    UserAccountAnalytics,
-)
+from .streams import PinterestStream
 
 logger = logging.getLogger("airbyte")
 
 
-class SourcePinterest(AbstractSource):
-    def _validate_and_transform(self, config: Mapping[str, Any], amount_of_days_allowed_for_lookup: int = 89):
+class SourcePinterest(YamlDeclarativeSource):
+    def __init__(self) -> None:
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
+    @staticmethod
+    def _validate_and_transform(config: Mapping[str, Any], amount_of_days_allowed_for_lookup: int = 89) -> Mapping[str, Any]:
         config = copy.deepcopy(config)
         today = pendulum.today()
         latest_date_allowed_by_api = today.subtract(days=amount_of_days_allowed_for_lookup)
@@ -79,14 +60,15 @@ class SourcePinterest(AbstractSource):
 
         if not start_date or config["start_date"] < latest_date_allowed_by_api:
             logger.info(
-                f"Current start_date: {start_date} does not meet API report requirements. Resetting start_date to: {latest_date_allowed_by_api}"
+                f"Current start_date: {start_date} does not meet API report requirements. "
+                f"Resetting start_date to: {latest_date_allowed_by_api}"
             )
-            config["start_date"] = latest_date_allowed_by_api
+            config["start_date"] = latest_date_allowed_by_api.strftime("%Y-%m-%d")
 
         return config
 
     @staticmethod
-    def get_authenticator(config):
+    def get_authenticator(config) -> Oauth2Authenticator:
         config = config.get("credentials") or config
         credentials_base64_encoded = standard_b64encode(
             (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
@@ -101,58 +83,17 @@ class SourcePinterest(AbstractSource):
             refresh_token=config.get("refresh_token"),
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        config = self._validate_and_transform(config)
-        authenticator = self.get_authenticator(config)
-        url = f"{PinterestStream.url_base}user_account"
-        try:
-            auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
-            session = requests.get(url, headers=auth_headers)
-            session.raise_for_status()
-            return True, None
-        except requests.exceptions.HTTPError as e:
-            if "401 Client Error: Unauthorized for url" in str(e):
-                return False, f"Try to re-authenticate because current refresh token is not valid. {e}"
-            else:
-                return False, e
-        except requests.exceptions.RequestException as e:
-            return False, e
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = self.get_authenticator(config)
         report_config = self._validate_and_transform(config, amount_of_days_allowed_for_lookup=913)
-        config = self._validate_and_transform(config)
-        status = ",".join(config.get("status")) if config.get("status") else None
 
-        ad_accounts = AdAccounts(config)
-        ads = Ads(ad_accounts, config=config, status_filter=status)
-        ad_groups = AdGroups(ad_accounts, config=config, status_filter=status)
-        campaigns = Campaigns(ad_accounts, config=config, status_filter=status)
-        boards = Boards(config)
-        board_sections = BoardSections(boards, config=config)
-        return [
-            ad_accounts,
-            AdAccountAnalytics(ad_accounts, config=config),
-            ads,
-            AdAnalytics(ads, config=config),
-            ad_groups,
-            AdGroupAnalytics(ad_groups, config=config),
-            boards,
-            BoardPins(boards, config=config),
-            board_sections,
-            BoardSectionPins(board_sections, config=config),
-            campaigns,
-            CampaignAnalytics(campaigns, config=config),
+        declarative_streams = super().streams(config)
+        ad_accounts = [stream for stream in declarative_streams if stream.name == "ad_accounts"][0]
+
+        # Report streams involve async data fetch, which is currently not supported in low-code
+        report_streams = [
             CampaignAnalyticsReport(ad_accounts, config=report_config),
             CampaignTargetingReport(ad_accounts, config=report_config),
-            UserAccountAnalytics(None, config=config),
-            Keywords(ad_groups, config=config),
-            Audiences(ad_accounts, config=config),
-            ConversionTags(ad_accounts, config=config),
-            CustomerLists(ad_accounts, config=config),
-            Catalogs(config=config),
-            CatalogsFeeds(config=config),
-            CatalogsProductGroups(config=config),
             AdvertiserReport(ad_accounts, config=report_config),
             AdvertiserTargetingReport(ad_accounts, config=report_config),
             AdGroupReport(ad_accounts, config=report_config),
@@ -165,7 +106,9 @@ class SourcePinterest(AbstractSource):
             ProductItemReport(ad_accounts, config=report_config),
         ] + self.get_custom_report_streams(ad_accounts, config=report_config)
 
-    def get_custom_report_streams(self, parent, config: dict) -> List[Type[Stream]]:
+        return declarative_streams + report_streams
+
+    def get_custom_report_streams(self, parent, config: Mapping[str, Any]) -> List[Stream]:
         """return custom report streams"""
         custom_streams = []
         for report_config in config.get("custom_reports", []):
@@ -186,9 +129,6 @@ class SourcePinterest(AbstractSource):
 
             report_config = self._validate_and_transform(report_config, amount_of_days_allowed_for_lookup)
 
-            stream = CustomReport(
-                parent=parent,
-                config=report_config,
-            )
+            stream = CustomReport(parent=parent, config=report_config)
             custom_streams.append(stream)
         return custom_streams

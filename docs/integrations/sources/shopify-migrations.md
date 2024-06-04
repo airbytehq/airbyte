@@ -1,5 +1,33 @@
 # Shopify Migration Guide
 
+## Upgrading to 2.2.0
+This version updates the schema for countries as our testing caught that `provinces.tax_percentage` is a number and not an integer.
+
+### Action items required for 2.2.0
+- `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.
+
+## Upgrading to 2.1.0
+This version implements `Shopify GraphQL BULK Operations` to speed up the following streams:
+ - `Products`
+ - `Product Images`
+ - `Product Variants`
+
+* In the `Products` stream, the `published_scope` property is no longer available.
+* In the `Products` stream, the `images` property now contains only the `id` of the image. Refer to the `Product Images` stream instead.
+* In the `Products` stream, the `variants` property now contains only the `id` of the variant. Refer to the `Product Variants` stream instead.
+* In the `Products` stream, the `position` property is no longer available.
+* The `Product Variants` stream now has the cursor field `updated_at` instead of `id`.
+* In the `Product Variants` stream, the date-time fields, such as `created_at` and `updated_at`, now use `UTC` format without a timezone component.
+* In the `Product Variants` stream, the `presentment_prices.compare_at_price` property has changed from a `number` to an `object of strings`. This field was not populated in the `REST API` stream version, but it is correctly covered in the GraphQL stream version.
+* The `Product Variants` stream's `inventory_policy` and `inventory_management` properties now contain `uppercase string` values, instead of `lowercase`.
+* In the `Product Images` stream, the date-time fields, such as `created_at` and `updated_at`, now use `UTC` format without a timezone component.
+* In the `Product Images` stream, the `variant_ids` and `position` properties are no longer available. Refer to the `Product variants` stream instead.
+* Retrieving the `deleted` records for `Products`, `Product Images` and `Product Variants` streams are no longer available, due to the `GraphQL` limitations.
+
+### Action items required for 2.1.0
+- `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.
+
+
 ## Upgrading to 2.0.0
 
 This version implements `Shopify GraphQL BULK Operations` to speed up the following streams:

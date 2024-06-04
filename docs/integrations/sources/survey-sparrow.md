@@ -47,10 +47,16 @@ In order to get access token, follow these steps:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.4   | 2024-05-28 | [38695](https://github.com/airbytehq/airbyte/pull/38695) | Make compatibility with builder                                                 |
 | 0.2.3   | 2024-04-19 | [37267](https://github.com/airbytehq/airbyte/pull/37267) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
 | 0.2.2   | 2024-04-15 | [37267](https://github.com/airbytehq/airbyte/pull/37267) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1   | 2024-04-12 | [37267](https://github.com/airbytehq/airbyte/pull/37267) | schema descriptions                                                             |
 | 0.2.0   | 2022-11-18 | [19143](https://github.com/airbytehq/airbyte/pull/19143) | Allow users to change base_url based on account's location                      |
 | 0.1.0   | 2022-11-03 | [18395](https://github.com/airbytehq/airbyte/pull/18395) | Initial Release                                                                 |
+
+</details>

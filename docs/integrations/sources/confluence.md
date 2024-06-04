@@ -58,8 +58,12 @@ The Confluence connector should not run into Confluence API limitations under no
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.4   | 2024-05-14 | [38137](https://github.com/airbytehq/airbyte/pull/38137) | Make connector compatible with the builder                                      |
 | 0.2.3   | 2024-04-19 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
 | 0.2.2   | 2024-04-15 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1   | 2024-04-12 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | schema descriptions                                                             |
@@ -68,3 +72,5 @@ The Confluence connector should not run into Confluence API limitations under no
 | 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec                            |
 | 0.1.1   | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831)   | Fix: Spec was not pushed to cache                                               |
 | 0.1.0   | 2021-11-05 | [7241](https://github.com/airbytehq/airbyte/pull/7241)   | 🎉 New Source: Confluence                                                       |
+
+</details>

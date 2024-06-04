@@ -31,6 +31,13 @@ The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject        |
-| :------ | :--------- | :------------------------------------------------------- | :------------- |
+|:--------|:-----------| :------------------------------------------------------- | :------------- |
+| 0.1.2   | 2024-05-28 | [38660](https://github.com/airbytehq/airbyte/pull/38660) | Make connector compatible with Builder |
+| 0.1.1   | 2024-05-21 | [38494](https://github.com/airbytehq/airbyte/pull/38494) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-30 | [18657](https://github.com/airbytehq/airbyte/pull/18657) | Initial commit |
+
+</details>

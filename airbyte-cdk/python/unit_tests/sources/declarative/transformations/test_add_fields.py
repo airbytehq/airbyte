@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 import pytest
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.declarative.types import FieldPointer
+from airbyte_cdk.sources.types import FieldPointer
 
 
 @pytest.mark.parametrize(

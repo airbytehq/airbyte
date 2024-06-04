@@ -101,6 +101,12 @@ There is no published rate limit. However, since this data updates infrequently,
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.1.1 | 2024-05-21 | [38509](https://github.com/airbytehq/airbyte/pull/38509) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-17 | [#18075](https://github.com/airbytehq/airbyte/pull/18075) | 🎉 New Source: Gutendex API [low-code CDK] |
+
+</details>

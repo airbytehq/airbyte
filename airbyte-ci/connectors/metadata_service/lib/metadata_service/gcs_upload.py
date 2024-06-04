@@ -149,12 +149,11 @@ def _version_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.buc
     return upload_file_if_changed(metadata_file_path, bucket, version_path, disable_cache=True)
 
 
-def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
-    local_icon_path = metadata_file_path.parent / ICON_FILE_NAME
+def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, icon_file_path: Path) -> Tuple[bool, str]:
     latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, "latest")
-    if not local_icon_path.exists():
-        return False, f"No Icon found at {local_icon_path}"
-    return upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
+    if not icon_file_path.exists():
+        return False, f"No Icon found at {icon_file_path}"
+    return upload_file_if_changed(icon_file_path, bucket, latest_icon_path)
 
 
 def _doc_upload(
@@ -282,7 +281,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
-
+    icon_file_path = metadata_file_path.parent / ICON_FILE_NAME
     metadata_file_path = _apply_modifications_to_metadata_file(metadata_file_path, validator_opts)
 
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS, validator_opts)
@@ -299,7 +298,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     bucket = storage_client.bucket(bucket_name)
     docs_path = Path(validator_opts.docs_path)
 
-    icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path)
+    icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, icon_file_path)
 
     version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
 
