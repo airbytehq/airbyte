@@ -6,7 +6,7 @@ import logging
 import os
 import urllib
 from pathlib import Path
-from typing import Any, Mapping, Optional, Tuple, Union, Dict
+from typing import Any, Dict, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
@@ -208,7 +208,9 @@ class HttpClient:
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self._backoff_strategy.backoff_time(response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request])
+            custom_backoff_time = self._backoff_strategy.backoff_time(
+                response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request]
+            )
             error_message = (
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."

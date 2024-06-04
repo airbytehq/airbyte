@@ -3,14 +3,16 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Optional, Union, Any, Dict
+from typing import Any, Dict, Optional, Union
 
 import requests
 
 
 class BackoffStrategy(ABC):
     @abstractmethod
-    def backoff_time(self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any) -> Optional[float]:
+    def backoff_time(
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+    ) -> Optional[float]:
         """
         Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
 
