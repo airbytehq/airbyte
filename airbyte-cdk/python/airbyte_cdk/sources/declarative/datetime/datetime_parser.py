@@ -27,7 +27,7 @@ class DatetimeParser:
         # See https://stackoverflow.com/a/4974930
         if format == "%s":
             return datetime.datetime.fromtimestamp(int(date), tz=datetime.timezone.utc)
-        elif format == "%float_s":
+        elif format == "%s_as_float":
             return datetime.datetime.fromtimestamp(float(date), tz=datetime.timezone.utc)
         elif format == "%ms":
             return self._UNIX_EPOCH + datetime.timedelta(milliseconds=int(date))
@@ -43,7 +43,7 @@ class DatetimeParser:
         # See https://stackoverflow.com/a/4974930
         if format == "%s":
             return str(int(dt.timestamp()))
-        if format == "%float_s":
+        if format == "%s_as_float":
             return str(float(dt.timestamp()))
         if format == "%ms":
             # timstamp() returns a float representing the number of seconds since the unix epoch
