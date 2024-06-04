@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /organizations/users.php
           http_method: GET
         record_selector:
@@ -41,7 +41,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     segments:
       type: DeclarativeStream
       name: segments
@@ -50,7 +50,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /list.php
           http_method: GET
         record_selector:
@@ -61,7 +61,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/segments'
+          $ref: "#/schemas/segments"
     campaigns:
       type: DeclarativeStream
       name: campaigns
@@ -70,7 +70,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /campaign.php
           http_method: GET
         record_selector:
@@ -81,7 +81,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaigns'
+          $ref: "#/schemas/campaigns"
     templates:
       type: DeclarativeStream
       name: templates
@@ -90,7 +90,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /templates.php
           http_method: GET
         record_selector:
@@ -114,7 +114,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/templates'
+          $ref: "#/schemas/templates"
     automations:
       type: DeclarativeStream
       name: automations
@@ -123,7 +123,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /autoresponder.php
           http_method: GET
         record_selector:
@@ -134,7 +134,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/automations'
+          $ref: "#/schemas/automations"
     ab_tests:
       type: DeclarativeStream
       name: ab_tests
@@ -143,7 +143,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /split.php
           http_method: GET
         record_selector:
@@ -154,22 +154,22 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/ab_tests'
+          $ref: "#/schemas/ab_tests"
   base_requester:
     type: HttpRequester
     url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{config[''api_username'']}}'
-      password: '{{config[''api_password'']}}'
+      username: "{{config['api_username']}}"
+      password: "{{config['api_password']}}"
 
 streams:
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/segments'
-  - $ref: '#/definitions/streams/campaigns'
-  - $ref: '#/definitions/streams/templates'
-  - $ref: '#/definitions/streams/automations'
-  - $ref: '#/definitions/streams/ab_tests'
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/automations"
+  - $ref: "#/definitions/streams/ab_tests"
 
 spec:
   type: Spec
@@ -221,32 +221,32 @@ schemas:
       email:
         type:
           - string
-          - 'null'
+          - "null"
       first_name:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: integer
       is_owner:
         type:
           - boolean
-          - 'null'
+          - "null"
       last_name:
         type:
           - string
-          - 'null'
+          - "null"
       role:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           id:
             type: integer
           name:
             type:
               - string
-              - 'null'
+              - "null"
     required:
       - id
     additionalProperties: true
@@ -258,11 +258,11 @@ schemas:
       name:
         type:
           - string
-          - 'null'
+          - "null"
       subscribers_count:
         type:
           - integer
-          - 'null'
+          - "null"
     required:
       - id
     additionalProperties: true
@@ -272,42 +272,42 @@ schemas:
       completed_at:
         type:
           - string
-          - 'null'
+          - "null"
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: string
       name:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
       tags:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type: string
       template:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           id:
             type: string
           name:
             type:
               - string
-              - 'null'
+              - "null"
           preview_url:
             type:
               - string
-              - 'null'
+              - "null"
     required:
       - id
     additionalProperties: true
@@ -317,25 +317,25 @@ schemas:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: integer
       modified_at:
         type:
           - string
-          - 'null'
+          - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       preview_url:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
     additionalProperties: true
@@ -347,11 +347,11 @@ schemas:
       name:
         type:
           - string
-          - 'null'
+          - "null"
       sections:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type: object
           properties:
@@ -360,22 +360,22 @@ schemas:
             subject:
               type:
                 - string
-                - 'null'
+                - "null"
             template:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 id:
                   type: integer
                 name:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 preview_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
     required:
       - id
     additionalProperties: true
@@ -385,21 +385,21 @@ schemas:
       completed_at:
         type:
           - string
-          - 'null'
+          - "null"
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: integer
       name:
         type:
           - string
-          - 'null'
+          - "null"
       sections:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type: object
           properties:
@@ -408,34 +408,34 @@ schemas:
             subject:
               type:
                 - string
-                - 'null'
+                - "null"
             template:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 id:
                   type: integer
                 name:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 preview_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
       tags:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
     required:
       - id
     additionalProperties: true
