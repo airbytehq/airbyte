@@ -28,7 +28,7 @@ Clearing your data is required for the affected streams in order to continue syn
    1. Ensure the **Clear affected streams** option is checked to ensure your streams continue syncing successfully with the new schema.
 4. Select **Save connection**.
 
-This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
 
 ## Upgrading to 1.0.0
 
@@ -58,4 +58,4 @@ Clearing your data is required for the affected streams in order to continue syn
    1. Ensure the **Clear affected streams** option is checked to ensure your streams continue syncing successfully with the new schema.
 4. Select **Save connection**.
 
-This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
