@@ -548,7 +548,56 @@ class TestConcurrentReadProcessor(unittest.TestCase):
 
         exception_messages = list(handler.on_exception(exception))
         assert len(exception_messages) == 1
-        assert exception_messages[0].type == MessageType.TRACE
+        assert "StreamThreadException" in exception_messages[0].trace.error.stack_trace
+
+        assert list(handler.on_partition_complete_sentinel(PartitionCompleteSentinel(self._an_open_partition))) == [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                    ),
+                ),
+            )
+        ]
+        with pytest.raises(AirbyteTracedException):
+            handler.is_done()
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_given_underlying_exception_is_traced_exception_on_exception_return_trace_message_and_on_stream_complete_return_stream_status(self):
+        stream_instances_to_read_from = [self._stream, self._another_stream]
+
+        handler = ConcurrentReadProcessor(
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        handler.start_next_partition_generator()
+        handler.on_partition(self._an_open_partition)
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream)))
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream)))
+
+        another_stream = Mock(spec=AbstractStream)
+        another_stream.name = _STREAM_NAME
+        another_stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_ANOTHER_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+
+        underlying_exception = AirbyteTracedException()
+        exception = StreamThreadException(underlying_exception, _STREAM_NAME)
+
+        exception_messages = list(handler.on_exception(exception))
+        assert len(exception_messages) == 1
+        assert "AirbyteTracedException" in exception_messages[0].trace.error.stack_trace
 
         assert list(handler.on_partition_complete_sentinel(PartitionCompleteSentinel(self._an_open_partition))) == [
             AirbyteMessage(

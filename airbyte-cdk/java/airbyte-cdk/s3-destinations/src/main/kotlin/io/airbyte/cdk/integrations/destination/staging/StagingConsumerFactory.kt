@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.staging
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
+import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
@@ -17,18 +18,21 @@ import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
-import java.util.*
+import java.util.Optional
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
  * [AirbyteMessage] for processing
@@ -42,11 +46,10 @@ private constructor(
     private val config: JsonNode?,
     private val catalog: ConfiguredAirbyteCatalog?,
     private val purgeStagingData: Boolean,
-    private val typerDeduperValve: TypeAndDedupeOperationValve?,
     private val typerDeduper: TyperDeduper?,
     private val parsedCatalog: ParsedCatalog?,
     private val defaultNamespace: String?,
-    private val useDestinationsV2Columns: Boolean,
+    private val destinationColumns: JavaBaseConstants.DestinationColumns,
     // Optional fields
     private val bufferMemoryLimit: Optional<Long>,
     private val optimalBatchSizeBytes: Long,
@@ -64,11 +67,11 @@ private constructor(
         var config: JsonNode? = null
         var catalog: ConfiguredAirbyteCatalog? = null
         var purgeStagingData: Boolean = false
-        var typerDeduperValve: TypeAndDedupeOperationValve? = null
         var typerDeduper: TyperDeduper? = null
         var parsedCatalog: ParsedCatalog? = null
         var defaultNamespace: String? = null
-        var useDestinationsV2Columns: Boolean = false
+        var destinationColumns: JavaBaseConstants.DestinationColumns =
+            JavaBaseConstants.DestinationColumns.LEGACY
 
         // Optional fields
         private var bufferMemoryLimit = Optional.empty<Long>()
@@ -100,11 +103,10 @@ private constructor(
                 config,
                 catalog,
                 purgeStagingData,
-                typerDeduperValve,
                 typerDeduper,
                 parsedCatalog,
                 defaultNamespace,
-                useDestinationsV2Columns,
+                destinationColumns,
                 bufferMemoryLimit,
                 optimalBatchSizeBytes,
                 (if (dataTransformer != null) dataTransformer else IdentityDataTransformer())!!
@@ -114,17 +116,10 @@ private constructor(
 
     fun createAsync(): SerializedAirbyteMessageConsumer {
         val typerDeduper = this.typerDeduper!!
-        val typerDeduperValve = this.typerDeduperValve!!
         val stagingOperations = this.stagingOperations!!
 
         val writeConfigs: List<WriteConfig> =
-            createWriteConfigs(
-                namingResolver,
-                config,
-                catalog,
-                parsedCatalog,
-                useDestinationsV2Columns
-            )
+            createWriteConfigs(namingResolver, config, catalog, parsedCatalog, destinationColumns)
         val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> =
             streamDescToWriteConfig(writeConfigs)
         val flusher =
@@ -133,10 +128,8 @@ private constructor(
                 stagingOperations,
                 database,
                 catalog,
-                typerDeduperValve,
-                typerDeduper,
                 optimalBatchSizeBytes,
-                useDestinationsV2Columns
+                destinationColumns
             )
         return AsyncStreamConsumer(
             outputRecordCollector!!,
@@ -164,7 +157,6 @@ private constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(StagingConsumerFactory::class.java)
 
         private val SYNC_DATETIME: Instant = Instant.now()
 
@@ -177,11 +169,10 @@ private constructor(
             config: JsonNode?,
             catalog: ConfiguredAirbyteCatalog,
             purgeStagingData: Boolean,
-            typerDeduperValve: TypeAndDedupeOperationValve,
             typerDeduper: TyperDeduper,
             parsedCatalog: ParsedCatalog?,
             defaultNamespace: String?,
-            useDestinationsV2Columns: Boolean
+            destinationColumns: JavaBaseConstants.DestinationColumns
         ): Builder {
             val builder = Builder()
             builder.outputRecordCollector = outputRecordCollector
@@ -191,11 +182,10 @@ private constructor(
             builder.config = config
             builder.catalog = catalog
             builder.purgeStagingData = purgeStagingData
-            builder.typerDeduperValve = typerDeduperValve
             builder.typerDeduper = typerDeduper
             builder.parsedCatalog = parsedCatalog
             builder.defaultNamespace = defaultNamespace
-            builder.useDestinationsV2Columns = useDestinationsV2Columns
+            builder.destinationColumns = destinationColumns
             return builder
         }
 
@@ -224,19 +214,15 @@ private constructor(
                     streamDescToWriteConfig[streamIdentifier] = config
                 }
             }
-            if (!conflictingStreams.isEmpty()) {
+            if (conflictingStreams.isNotEmpty()) {
+                var affectedStreamsAsString =
+                    conflictingStreams.joinToString(", ") { config: WriteConfig ->
+                        config.namespace + "." + config.streamName
+                    }
                 val message =
-                    String.format(
-                        "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-                        conflictingStreams
-                            .stream()
-                            .map<String>(
-                                Function<WriteConfig, String> { config: WriteConfig ->
-                                    config.namespace + "." + config.streamName
-                                }
-                            )
-                            .collect(Collectors.joining(", "))
-                    )
+                    "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using " +
+                        "\${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. " +
+                        "Affected streams: $affectedStreamsAsString"
                 throw ConfigErrorException(message)
             }
             return streamDescToWriteConfig
@@ -263,20 +249,18 @@ private constructor(
             config: JsonNode?,
             catalog: ConfiguredAirbyteCatalog?,
             parsedCatalog: ParsedCatalog?,
-            useDestinationsV2Columns: Boolean
+            destinationColumns: JavaBaseConstants.DestinationColumns
         ): List<WriteConfig> {
-            return catalog!!
-                .streams
-                .stream()
-                .map(toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns))
-                .toList()
+            return catalog!!.streams.map {
+                toWriteConfig(namingResolver, config, parsedCatalog, destinationColumns).apply(it)
+            }
         }
 
         private fun toWriteConfig(
             namingResolver: NamingConventionTransformer?,
             config: JsonNode?,
             parsedCatalog: ParsedCatalog?,
-            useDestinationsV2Columns: Boolean
+            destinationColumns: JavaBaseConstants.DestinationColumns
         ): Function<ConfiguredAirbyteStream, WriteConfig> {
             return Function<ConfiguredAirbyteStream, WriteConfig> { stream: ConfiguredAirbyteStream
                 ->
@@ -289,19 +273,26 @@ private constructor(
 
                 val outputSchema: String
                 val tableName: String
-                if (useDestinationsV2Columns) {
-                    val streamId = parsedCatalog!!.getStream(abStream.namespace, streamName).id
-                    outputSchema = streamId.rawNamespace!!
-                    tableName = streamId.rawName!!
-                } else {
-                    outputSchema =
-                        getOutputSchema(abStream, config!!["schema"].asText(), namingResolver)
-                    tableName = namingResolver!!.getRawTableName(streamName)
+                when (destinationColumns) {
+                    JavaBaseConstants.DestinationColumns.V2_WITH_META,
+                    JavaBaseConstants.DestinationColumns.V2_WITHOUT_META,
+                    JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION -> {
+                        val streamId = parsedCatalog!!.getStream(abStream.namespace, streamName).id
+                        outputSchema = streamId.rawNamespace
+                        tableName = streamId.rawName
+                    }
+                    JavaBaseConstants.DestinationColumns.LEGACY -> {
+                        outputSchema =
+                            getOutputSchema(abStream, config!!["schema"].asText(), namingResolver)
+                        tableName =
+                            @Suppress("deprecation") namingResolver!!.getRawTableName(streamName)
+                    }
                 }
-                val tmpTableName = namingResolver!!.getTmpTableName(streamName)
+                val tmpTableName =
+                    @Suppress("deprecation") namingResolver!!.getTmpTableName(streamName)
                 val syncMode = stream.destinationSyncMode
 
-                val writeConfig: WriteConfig =
+                val writeConfig =
                     WriteConfig(
                         streamName,
                         abStream.namespace,
@@ -311,7 +302,7 @@ private constructor(
                         syncMode,
                         SYNC_DATETIME
                     )
-                LOGGER.info("Write config: {}", writeConfig)
+                LOGGER.info { "Write config: $writeConfig" }
                 writeConfig
             }
         }

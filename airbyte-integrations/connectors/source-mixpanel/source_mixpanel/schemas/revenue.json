@@ -3,20 +3,25 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "Date for which the revenue data is recorded",
       "type": ["null", "string"],
       "format": "date"
     },
     "datetime": {
+      "description": "Date and time for which the revenue data is recorded",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "count": {
+      "description": "Number of revenue transactions for the specified date",
       "type": ["null", "integer"]
     },
     "paid_count": {
+      "description": "Number of successful paid transactions for the specified date",
       "type": ["null", "integer"]
     },
     "amount": {
+      "description": "Total revenue amount for the specified date",
       "type": ["null", "number"],
       "multipleOf": 1e-20
     }

@@ -6,7 +6,7 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import pendulum
 import requests
@@ -17,7 +17,7 @@ from .utils import get_parent_stream_values, transform_data
 
 logger = logging.getLogger("airbyte")
 
-LINKEDIN_VERSION_API = "202305"
+LINKEDIN_VERSION_API = "202404"
 
 
 class LinkedinAdsStream(HttpStream, ABC):
@@ -64,26 +64,13 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        To paginate through results, begin with a start value of 0 and a count value of N.
-        To get the next page, set start value to N, while the count value stays the same.
-        We have reached the end of the dataset when the response contains fewer elements than the `count` parameter request.
-        https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
+        Cursor based pagination using the pageSize and pageToken parameters.
         """
         parsed_response = response.json()
-        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
-
-        # Note: The API might return fewer records than requested within the limits during pagination.
-        # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
-        paging_params = parsed_response.get("paging", {})
-        is_end_of_records = (
-            paging_params["total"] - paging_params["start"] <= self.records_limit
-            if all(param in paging_params for param in ("total", "start"))
-            else True
-        )
-
-        if is_elements_less_than_limit and is_end_of_records:
+        if parsed_response.get("metadata", {}).get("nextPageToken"):
+            return {"pageToken": parsed_response["metadata"]["nextPageToken"]}
+        else:
             return None
-        return {"start": paging_params.get("start") + self.records_limit}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -96,7 +83,7 @@ class LinkedinAdsStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {"count": self.records_limit, "q": "search"}
+        params = {"pageSize": self.records_limit, "q": "search"}
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -130,6 +117,44 @@ class LinkedinAdsStream(HttpStream, ABC):
         return super().should_retry(response)
 
 
+class OffsetPaginationMixin:
+    """Mixin for offset based pagination for endpoints tha tdoesnt support cursor based pagination"""
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"count": self.records_limit, "q": "search"}
+        if next_page_token:
+            params.update(**next_page_token)
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        To paginate through results, begin with a start value of 0 and a count value of N.
+        To get the next page, set start value to N, while the count value stays the same.
+        We have reached the end of the dataset when the response contains fewer elements than the `count` parameter request.
+        https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
+        """
+        parsed_response = response.json()
+        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
+
+        # Note: The API might return fewer records than requested within the limits during pagination.
+        # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
+        paging_params = parsed_response.get("paging", {})
+        is_end_of_records = (
+            paging_params["total"] - paging_params["start"] <= self.records_limit
+            if all(param in paging_params for param in ("total", "start"))
+            else True
+        )
+
+        if is_elements_less_than_limit and is_end_of_records:
+            return None
+        return {"start": paging_params.get("start") + self.records_limit}
+
+
 class Accounts(LinkedinAdsStream):
     """
     Get Accounts data. More info about LinkedIn Ads / Accounts:
@@ -158,12 +183,19 @@ class Accounts(LinkedinAdsStream):
         Override request_params() to have the ability to accept the specific account_ids from user's configuration.
         If we have list of account_ids, we need to make sure that the request_params are encoded correctly,
         We will get HTTP Error 500, if we use standard requests.urlencode methods to parse parameters,
-        so the urlencode(..., safe=":(),") is used instead, to keep the values as they are.
+        so the urlencode(..., safe=":(),%") is used instead, to keep the values as they are.
         """
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if self.accounts:
-            params["search"] = f"(id:(values:List({self.accounts})))"
-        return urlencode(params, safe="():,%")
+            # Construct the URN for each account ID
+            accounts = [f"urn:li:sponsoredAccount:{account_id}" for account_id in self.config.get("account_ids")]
+
+            # Join the URNs into a single string, separated by commas, and URL encode only this part
+            encoded_accounts = quote(",".join(accounts), safe=",")
+
+            # Insert the encoded account IDs into the overall structure, keeping colons and parentheses outside safe
+            params["search"] = f"(id:(values:List({encoded_accounts})))"
+        return urlencode(params, safe=":(),%")
 
 
 class IncrementalLinkedinAdsStream(LinkedinAdsStream):
@@ -227,7 +259,7 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
 
 
-class AccountUsers(LinkedInAdsStreamSlicing):
+class AccountUsers(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     """
     Get AccountUsers data using `account_id` slicing. More info about LinkedIn Ads / AccountUsers:
     https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts
@@ -365,7 +397,7 @@ class Creatives(LinkedInAdsStreamSlicing):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
-class Conversions(LinkedInAdsStreamSlicing):
+class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     """
     Get Conversions data using `account_id` slicing.
     https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account

@@ -37,8 +37,6 @@ internal class SerialStagingConsumerFactoryTest {
                         )
                     ),
                     mock(),
-                    mock(),
-                    mock()
                 )
             }
 

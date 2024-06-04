@@ -3,288 +3,375 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "ID of the issue.",
       "type": ["null", "integer"]
     },
     "iid": {
+      "description": "Internal ID of the issue.",
       "type": ["null", "integer"]
     },
     "project_id": {
+      "description": "ID of the project to which the issue belongs.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title of the issue.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the issue.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "State of the issue.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the issue was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when the issue was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "closed_at": {
+      "description": "Date and time when the issue was closed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "labels": {
+      "description": "Labels associated with the issue.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "assignees": {
+      "description": "List of users assigned to the issue.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "type": {
+      "description": "Type of the issue.",
       "type": ["null", "string"]
     },
     "user_notes_count": {
+      "description": "Number of user notes added to the issue.",
       "type": ["null", "integer"]
     },
     "merge_requests_count": {
+      "description": "Number of merge requests associated with the issue.",
       "type": ["null", "integer"]
     },
     "upvotes": {
+      "description": "Number of upvotes for the issue.",
       "type": ["null", "integer"]
     },
     "downvotes": {
+      "description": "Number of downvotes for the issue.",
       "type": ["null", "integer"]
     },
     "due_date": {
+      "description": "Due date set for the issue.",
       "type": ["null", "string"]
     },
     "confidential": {
+      "description": "Indicates if the issue is confidential.",
       "type": ["null", "boolean"]
     },
     "discussion_locked": {
+      "description": "Indicates if discussion is locked for the issue.",
       "type": ["null", "boolean"]
     },
     "issue_type": {
+      "description": "Type of issue.",
       "type": ["null", "string"]
     },
     "web_url": {
+      "description": "URL of the issue in GitLab.",
       "type": ["null", "string"]
     },
     "time_stats": {
+      "description": "Time statistics related to the issue.",
       "type": ["null", "object"]
     },
     "task_completion_status": {
+      "description": "Task completion status for the issue.",
       "type": ["null", "object"]
     },
     "blocking_issues_count": {
+      "description": "Number of blocking issues for this issue.",
       "type": ["null", "integer"]
     },
     "has_tasks": {
+      "description": "Indicates if the issue has tasks.",
       "type": ["null", "boolean"]
     },
     "_links": {
+      "description": "Links related to the GitLab issue.",
       "type": ["null", "object"]
     },
     "references": {
+      "description": "References related to the issue.",
       "type": ["null", "object"]
     },
     "moved_to_id": {
+      "description": "ID of the issue to which this issue has been moved.",
       "type": ["null", "integer", "string"]
     },
     "service_desk_reply_to": {
+      "description": "Service desk reply to information for the issue.",
       "type": ["null", "string"]
     },
     "author": {
+      "description": "Details of the author of the issue.",
       "type": ["null", "object"],
       "properties": {
         "state": {
+          "description": "State of the author's account.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the author.",
           "type": ["null", "string"]
         },
         "web_url": {
+          "description": "URL of the author's GitLab profile.",
           "type": ["null", "string"]
         },
         "avatar_url": {
+          "description": "URL of the author's avatar image.",
           "type": ["null", "string"]
         },
         "username": {
+          "description": "Username of the author.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the author.",
           "type": ["null", "integer"]
         },
         "locked": {
+          "description": "Indicates if the author's account is locked.",
           "type": ["null", "boolean"]
         }
       }
     },
     "author_id": {
+      "description": "ID of the author of the issue.",
       "type": ["null", "integer"]
     },
     "assignee": {
+      "description": "Details of the user assigned to the issue.",
       "type": ["null", "object"],
       "properties": {
         "state": {
+          "description": "State of the assignee account.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the assignee.",
           "type": ["null", "string"]
         },
         "web_url": {
+          "description": "URL of the assignee's GitLab profile.",
           "type": ["null", "string"]
         },
         "avatar_url": {
+          "description": "URL of the assignee's avatar image.",
           "type": ["null", "string"]
         },
         "username": {
+          "description": "Username of the assignee.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the assignee.",
           "type": ["null", "integer"]
         },
         "locked": {
+          "description": "Indicates if the assignee account is locked.",
           "type": ["null", "boolean"]
         }
       }
     },
     "assignee_id": {
+      "description": "ID of the user assigned to the issue.",
       "type": ["null", "integer"]
     },
     "closed_by": {
+      "description": "Details of the user who closed the issue.",
       "type": ["null", "object"],
       "properties": {
         "state": {
+          "description": "State of the user's account who closed the issue.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the user who closed the issue.",
           "type": ["null", "string"]
         },
         "web_url": {
+          "description": "URL of the user's GitLab profile who closed the issue.",
           "type": ["null", "string"]
         },
         "avatar_url": {
+          "description": "URL of the user's avatar image.",
           "type": ["null", "string"]
         },
         "username": {
+          "description": "Username of the user who closed the issue.",
           "type": ["null", "string"]
         },
         "human_readable_end_date": {
+          "description": "Human-readable end date of the user.",
           "type": ["null", "string"]
         },
         "human_readable_timestamp": {
+          "description": "Human-readable timestamp of the user.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the user who closed the issue.",
           "type": ["null", "integer"]
         },
         "locked": {
+          "description": "Indicates if the user's account is locked.",
           "type": ["null", "boolean"]
         }
       }
     },
     "closed_by_id": {
+      "description": "ID of the user who closed the issue.",
       "type": ["null", "integer"]
     },
     "milestone": {
+      "description": "Milestone associated with the issue.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "milestone_id": {
+      "description": "ID of the milestone associated with the issue.",
       "type": ["null", "integer"]
     },
     "subscribed": {
+      "description": "Indicates if the user is subscribed to the issue.",
       "type": ["null", "boolean"]
     },
     "weight": {
+      "description": "Weight assigned to the issue.",
       "type": ["null", "integer"]
     },
     "task_status": {
+      "description": "Status of tasks associated with the issue.",
       "type": ["null", "string"]
     },
     "severity": {
+      "description": "Severity level of the issue.",
       "type": ["null", "string"]
     },
     "iteration": {
+      "description": "Details of the iteration to which the issue belongs.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "ID of the iteration.",
           "type": ["null", "integer"]
         },
         "iid": {
+          "description": "Internal ID of the iteration.",
           "type": ["null", "integer"]
         },
         "sequence": {
+          "description": "Order sequence of the iteration.",
           "type": ["null", "integer"]
         },
         "group_id": {
+          "description": "ID of the group to which the iteration belongs.",
           "type": ["null", "integer"]
         },
         "title": {
+          "description": "Title of the iteration.",
           "type": ["null", "string"]
         },
         "description": {
+          "description": "Description of the iteration.",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "State of the iteration.",
           "type": ["null", "integer"]
         },
         "created_at": {
+          "description": "Date and time when the iteration was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "updated_at": {
+          "description": "Date and time when the iteration was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "start_date": {
+          "description": "Start date of the iteration.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "due_date": {
+          "description": "Due date set for the iteration.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "web_url": {
+          "description": "URL of the iteration in GitLab.",
           "type": ["null", "string"]
         }
       }
     },
     "epic": {
+      "description": "Details of the epic to which the issue belongs.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "ID of the epic.",
           "type": ["null", "integer"]
         },
         "iid": {
+          "description": "Internal ID of the epic.",
           "type": ["null", "integer"]
         },
         "title": {
+          "description": "Title of the epic.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "URL of the epic in GitLab.",
           "type": ["null", "string"]
         },
         "group_id": {
+          "description": "ID of the group to which the epic belongs.",
           "type": ["null", "integer"]
         },
         "locked": {
+          "description": "Indicates if the epic is locked.",
           "type": ["null", "boolean"]
         },
         "human_readable_end_date": {
+          "description": "Human-readable end date of the epic.",
           "type": ["null", "string"]
         },
         "human_readable_timestamp": {
+          "description": "Human-readable timestamp of the epic.",
           "type": ["null", "string"]
         }
       }
     },
     "epic_iid": {
+      "description": "Internal ID of the epic the issue belongs to.",
       "type": ["null", "integer"]
     }
   }

@@ -9,17 +9,24 @@ This page contains the setup guide and reference information for the SAP Fieldgl
 
 ## Supported sync modes
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ## Supported Streams
 
-* [Active Worker Download](https://api.sap.com/api/activeWorkerDownload/resource)
+- [Active Worker Download](https://api.sap.com/api/activeWorkerDownload/resource)
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                    |
-|:--------|:-----------| :----------- |:-----------------------------------------------------------|
-| 0.1.0   | 2022-10-22 | https://github.com/airbytehq/airbyte/pull/18656 | Initial commit |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                    | Subject                                     |
+| :------ | :--------- | :---------------------------------------------- |:--------------------------------------------|
+| 0.1.2 | 2024-05-28 | [38689](https://github.com/airbytehq/airbyte/pull/38689) | Make connector compatible with Builder      |
+| 0.1.1 | 2024-05-20 | [38384](https://github.com/airbytehq/airbyte/pull/38384) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-22 | https://github.com/airbytehq/airbyte/pull/18656 | Initial commit                              |
+
+</details>

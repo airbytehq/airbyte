@@ -28,7 +28,7 @@ class ShopifyStream(HttpStream, ABC):
     logger = logging.getLogger("airbyte")
 
     # Latest Stable Release
-    api_version = "2023-07"
+    api_version = "2024-04"
     # Page size
     limit = 250
 
@@ -642,7 +642,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
             session=self._session,
-            base_url=f"{self.url_base}/{self.path()}",
+            base_url=f"{self.url_base}{self.path()}",
             stream_name=self.name,
         )
         # overide the default job slice size, if provided (it's auto-adjusted, later on)
@@ -772,9 +772,11 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self,
         response: requests.Response,
         stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        # get results fetched from COMPLETED BULK Job or `None`
-        filename = self.job_manager.job_check(response)
+    ) -> Optional[Iterable[Mapping[str, Any]]]:
+        # process the CREATED Job prior to other actions
+        self.job_manager.job_process_created(response)
+        # get results fetched from COMPLETED BULK Job
+        filename = self.job_manager.job_check_for_completion()
         # the `filename` could be `None`, meaning there are no data available for the slice period.
         if filename:
             # add `shop_url` field to each record produced

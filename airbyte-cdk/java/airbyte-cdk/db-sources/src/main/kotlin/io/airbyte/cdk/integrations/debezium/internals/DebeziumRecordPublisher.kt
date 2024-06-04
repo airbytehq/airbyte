@@ -7,13 +7,13 @@ import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.debezium.engine.spi.OffsetCommitPolicy
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * The purpose of this class is to initialize and spawn the debezium engine with the right
  * properties to fetch records
@@ -24,7 +24,7 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
     private val hasClosed = AtomicBoolean(false)
     private val isClosing = AtomicBoolean(false)
-    private val thrownError = AtomicReference<Throwable?>()
+    private val thrownError = AtomicReference<Throwable>()
     private val engineLatch = CountDownLatch(1)
 
     fun start(
@@ -37,8 +37,8 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                 .using(
                     debeziumPropertiesManager.getDebeziumProperties(
                         offsetManager,
-                        schemaHistoryManager
-                    )
+                        schemaHistoryManager,
+                    ),
                 )
                 .using(OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying { e: ChangeEvent<String?, String?> ->
@@ -57,11 +57,10 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                     }
                 }
                 .using { success: Boolean, message: String?, error: Throwable? ->
-                    LOGGER.info(
-                        "Debezium engine shutdown. Engine terminated successfully : {}",
-                        success
-                    )
-                    LOGGER.info(message)
+                    LOGGER.info {
+                        "Debezium engine shutdown. Engine terminated successfully : $success"
+                    }
+                    LOGGER.info { message }
                     if (!success) {
                         if (error != null) {
                             thrownError.set(error)
@@ -74,6 +73,25 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                     }
                     engineLatch.countDown()
                 }
+                .using(
+                    object : DebeziumEngine.ConnectorCallback {
+                        override fun connectorStarted() {
+                            LOGGER.info { "DebeziumEngine notify: connector started" }
+                        }
+
+                        override fun connectorStopped() {
+                            LOGGER.info { "DebeziumEngine notify: connector stopped" }
+                        }
+
+                        override fun taskStarted() {
+                            LOGGER.info { "DebeziumEngine notify: task started" }
+                        }
+
+                        override fun taskStopped() {
+                            LOGGER.info { "DebeziumEngine notify: task stopped" }
+                        }
+                    },
+                )
                 .build()
 
         // Run the engine asynchronously ...
@@ -108,7 +126,5 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
         }
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DebeziumRecordPublisher::class.java)
-    }
+    companion object {}
 }

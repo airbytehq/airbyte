@@ -11,6 +11,7 @@ Understanding the following limitations will help you more effectively manage Ai
 - Max number of destinations in a workspace: 20\*
 - Max number of streams that can be returned by a source in a discover call: 1K
 - Max number of streams that can be configured to sync in a single connection: 1K
+- Max number of fields that can be selected to sync in a single connection: 20k
 - Size of a single record: 20MB\*\*
 
 ---

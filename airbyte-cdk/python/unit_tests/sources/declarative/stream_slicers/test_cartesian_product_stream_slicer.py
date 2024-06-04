@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.types import StreamSlice
 
 
 @pytest.mark.parametrize(

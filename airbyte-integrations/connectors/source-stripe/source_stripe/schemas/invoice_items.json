@@ -2,176 +2,230 @@
   "type": ["null", "object"],
   "properties": {
     "amount": {
+      "description": "The amount associated with the invoice item",
       "type": ["null", "integer"]
     },
     "metadata": {
+      "description": "Custom metadata associated with the invoice item.",
       "type": ["null", "object"],
       "properties": {}
     },
     "plan": {
+      "description": "Information about the subscription plan associated with the invoice item.",
       "type": ["null", "object", "string"],
       "properties": {
         "nickname": {
+          "description": "The nickname of the plan",
           "type": ["null", "string"]
         },
         "tiers": {
+          "description": "Tiers within the plan that affect the pricing of the invoice item.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "The flat amount for the tier",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "The unit amount for the tier",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "The maximum value of the tier",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "object": {
+          "description": "The object type of the plan",
           "type": ["null", "string"]
         },
         "aggregate_usage": {
+          "description": "The usage aggregation rule for the plan",
           "type": ["null", "string"]
         },
         "created": {
+          "description": "The creation timestamp of the plan",
           "type": ["null", "integer"]
         },
         "statement_description": {
+          "description": "The description on customer's statement for the plan",
           "type": ["null", "string"]
         },
         "product": {
+          "description": "The product associated with the plan",
           "type": ["null", "string"]
         },
         "statement_descriptor": {
+          "description": "The statement descriptor of the plan",
           "type": ["null", "string"]
         },
         "interval_count": {
+          "description": "The number of intervals between plan charges",
           "type": ["null", "integer"]
         },
         "transform_usage": {
+          "description": "The transformation rules for usage allowed",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the plan",
           "type": ["null", "string"]
         },
         "amount": {
+          "description": "The amount of the plan",
           "type": ["null", "integer"]
         },
         "interval": {
+          "description": "The billing interval of the plan",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "The unique identifier of the plan",
           "type": ["null", "string"]
         },
         "trial_period_days": {
+          "description": "The trial period days for the plan",
           "type": ["null", "integer"]
         },
         "usage_type": {
+          "description": "The usage type allowed for the plan",
           "type": ["null", "string"]
         },
         "active": {
+          "description": "Indicates if the plan is active",
           "type": ["null", "boolean"]
         },
         "tiers_mode": {
+          "description": "The pricing mode for the tiers",
           "type": ["null", "string"]
         },
         "billing_scheme": {
+          "description": "The billing scheme of the plan",
           "type": ["null", "string"]
         },
         "livemode": {
+          "description": "Indicates if the plan is in live mode",
           "type": ["null", "boolean"]
         },
         "currency": {
+          "description": "The currency code of the plan",
           "type": ["null", "string"]
         },
         "metadata": {
+          "description": "Custom metadata associated with the plan.",
           "type": ["null", "object"],
           "properties": {}
         },
         "updated": {
+          "description": "The last update timestamp of the plan",
           "type": ["null", "string"]
         }
       }
     },
     "invoice": {
+      "description": "The invoice associated with the item",
       "type": ["null", "string"]
     },
     "period": {
+      "description": "Period during which the invoice item applies.",
       "type": ["null", "object"],
       "properties": {
         "end": {
+          "description": "The end date of the billing period",
           "type": ["null", "integer"]
         },
         "start": {
+          "description": "The start date of the billing period",
           "type": ["null", "integer"]
         }
       }
     },
     "quantity": {
+      "description": "The quantity of the item",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "A description of the invoice item",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "The date of the invoice item",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The last update timestamp of the invoice item",
       "type": ["null", "integer"]
     },
     "object": {
+      "description": "The object type of the item",
       "type": ["null", "string"]
     },
     "subscription": {
+      "description": "The subscription associated with the item",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the invoice item",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates if the item is in live mode",
       "type": ["null", "boolean"]
     },
     "discountable": {
+      "description": "Indicates if the item can be discounted",
       "type": ["null", "boolean"]
     },
     "unit_amount": {
+      "description": "The unit amount of the invoice item",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency code of the amount",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "The customer associated with the invoice item",
       "type": ["null", "string"]
     },
     "proration": {
+      "description": "Indicates if the item is prorated",
       "type": ["null", "boolean"]
     },
     "subscription_item": {
+      "description": "The subscription item related to the invoice item",
       "type": ["null", "string"]
     },
     "price": {
+      "description": "The price of the invoice item",
       "$ref": "price.json"
     },
     "test_clock": {
+      "description": "A test clock for the item",
       "type": ["null", "string"]
     },
     "discounts": {
+      "description": "Discount details applied to the invoice item.",
       "type": ["null", "array"],
       "items": {
+        "description": "Discount items applied to the invoice item",
         "type": ["null", "string"]
       }
     },
     "tax_rates": {
+      "description": "The tax rates applied to the item",
       "$ref": "tax_rates.json"
     },
     "unit_amount_decimal": {
+      "description": "The decimal unit amount of the invoice item",
       "type": ["null", "string"]
     },
     "is_deleted": {
+      "description": "Indicates if the item is deleted",
       "type": ["null", "boolean"]
     }
   }

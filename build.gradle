@@ -139,6 +139,8 @@ allprojects {
         // This is also required, to prevent stderr spam starting with
         //   "OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader cl..."
         jvmArgs "-Xshare:off"
+        // needed because we make ThreadLocal.get(Thread) accessible in IntegrationRunner.stopOrphanedThreads
+        jvmArgs "--add-opens=java.base/java.lang=ALL-UNNAMED"
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
         // which on a developer's laptop is more likely to be PST.
@@ -188,15 +190,6 @@ allprojects {
     }
 
     dependencies {
-        // Lombok dependencies.
-        def lombok = "org.projectlombok:lombok:1.18.30"
-        compileOnly lombok
-        annotationProcessor lombok
-        testCompileOnly lombok
-        testAnnotationProcessor lombok
-        testFixturesCompileOnly lombok
-        testFixturesAnnotationProcessor lombok
-
         // JUnit dependencies.
         def vAssertJ = "3.25.3"
         def vJUnit = "5.10.2"
@@ -213,6 +206,7 @@ allprojects {
         testImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
         testImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
         testImplementation "org.assertj:assertj-core:${vAssertJ}"
+        testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 
         testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"

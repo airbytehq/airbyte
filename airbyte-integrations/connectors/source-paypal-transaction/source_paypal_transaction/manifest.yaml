@@ -23,7 +23,9 @@ definitions:
       client_secret: "{{ config['client_secret'] }}"
       refresh_request_body:
         Content-Type: application/x-www-form-urlencoded
-      token_refresh_endpoint: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/oauth2/token'
+      token_refresh_endpoint:
+        'https://api-m.{{ "sandbox." if config["is_sandbox"]
+        }}paypal.com/v1/oauth2/token'
       grant_type: client_credentials
       expires_in_name: expires_in
       access_token_name: access_token
@@ -72,7 +74,9 @@ definitions:
           type: CompositeErrorHandler
           error_handlers:
             - type: DefaultErrorHandler
-              description: "Handle HTTP 400 with error message: Data for the given start date is not available. "
+              description:
+                "Handle HTTP 400 with error message: Data for the given start
+                date is not available. "
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
@@ -83,7 +87,8 @@ definitions:
           - path:
               - transaction_updated_date
             value: >-
-              {{ format_datetime(record['transaction_info']['transaction_updated_date'], '%Y-%m-%dT%H:%M:%SZ') }}
+              {{ format_datetime(record['transaction_info']['transaction_updated_date'],
+              '%Y-%m-%dT%H:%M:%SZ') }}
       - type: AddFields
         fields:
           - path:
@@ -99,7 +104,8 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ max( format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+          {{ max( format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%SZ'),
+          day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -108,7 +114,8 @@ definitions:
       end_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+          {{ format_datetime(config.get('end_date') if config.get('end_date') else
+          now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
       end_time_option:
         type: RequestOption
         field_name: end_date
@@ -120,8 +127,525 @@ definitions:
       path: "v1/reporting/transactions"
       field_path: transaction_details
 
-  #Stream balances
-  #Paypal API only has V1 for this stream
+    #Stream balances
+    #Paypal API only has V1 for this stream
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          transaction_info:
+            description: Detailed information about the transaction
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              paypal_reference_id:
+                description: Reference ID of the transaction in PayPal
+                type:
+                  - "null"
+                  - string
+                maxLength: 24
+              paypal_reference_id_type:
+                description: Type of reference ID in PayPal
+                type:
+                  - "null"
+                  - string
+                maxLength: 3
+                minLength: 3
+              protection_eligibility:
+                description: Eligibility for protection in the transaction
+                type:
+                  - "null"
+                  - string
+                maxLength: 2
+              paypal_account_id:
+                description: ID of the PayPal account used in the transaction
+                type:
+                  - "null"
+                  - string
+                maxLength: 24
+              transaction_id:
+                description: ID of the transaction
+                type:
+                  - "null"
+                  - string
+                maxLength: 24
+              transaction_event_code:
+                description: Event code associated with the transaction
+                type:
+                  - "null"
+                  - string
+                maxLength: 5
+              transaction_initiation_date:
+                description: Date and time when the transaction was initiated
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              transaction_updated_date:
+                description: Date and time when the transaction was last updated
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              transaction_amount:
+                description: Total amount of the transaction
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  currency_code:
+                    description: Currency code of the transaction amount
+                    type: string
+                    maxLength: 3
+                    minLength: 3
+                  value:
+                    description: Value of the transaction amount
+                    type: string
+                    maxLength: 32
+              fee_amount:
+                description: Fee amount for the transaction
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  currency_code:
+                    description: Currency code of the fee amount
+                    type: string
+                    maxLength: 3
+                    minLength: 3
+                  value:
+                    description: Value of the fee amount
+                    type: string
+                    maxLength: 32
+              insurance_amount:
+                description: Insurance amount for the transaction
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  currency_code:
+                    description: Currency code of the insurance amount
+                    type: string
+                    maxLength: 3
+                    minLength: 3
+                  value:
+                    description: Value of the insurance amount
+                    type: string
+                    maxLength: 32
+              shipping_amount:
+                description: Shipping amount for the transaction
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  currency_code:
+                    description: Currency code of the shipping amount
+                    type: string
+                    maxLength: 3
+                    minLength: 3
+                  value:
+                    description: Value of the shipping amount
+                    type: string
+                    maxLength: 32
+              shipping_discount_amount:
+                description: Discount amount applied to shipping
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  currency_code:
+                    description: Currency code of the discount amount
+                    type: string
+                    maxLength: 3
+                    minLength: 3
+                  value:
+                    description: Value of the discount amount
+                    type: string
+                    maxLength: 32
+              transaction_status:
+                description: Status of the transaction
+                type:
+                  - "null"
+                  - string
+                maxLength: 1
+              transaction_subject:
+                description: Subject or purpose of the transaction
+                type:
+                  - "null"
+                  - string
+                maxLength: 256
+              transaction_note:
+                description: Note or comment related to the transaction
+                type:
+                  - "null"
+                  - string
+              invoice_id:
+                description: ID of the invoice related to the transaction
+                type:
+                  - "null"
+                  - string
+                maxLength: 127
+              custom_field:
+                description: Custom field associated with the transaction
+                type:
+                  - "null"
+                  - string
+                maxLength: 127
+          transaction_id:
+            description: Unique ID of the transaction
+            type:
+              - "null"
+              - string
+            maxLength: 24
+          transaction_initiation_date:
+            description: Date and time when the transaction was initiated
+            type:
+              - "null"
+              - string
+            format: date-time
+          transaction_updated_date:
+            description: Date and time when the transaction was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          payer_info:
+            description: Information about the payer
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              account_id:
+                description: ID of the payer's account
+                type:
+                  - "null"
+                  - string
+                maxLength: 13
+              email_address:
+                description: Email address of the payer
+                type:
+                  - "null"
+                  - string
+                maxLength: 256
+              address_status:
+                description: Status of the provided address
+                type:
+                  - "null"
+                  - string
+                maxLength: 1
+              payer_status:
+                description: Status of the payer's account
+                type:
+                  - "null"
+                  - string
+                maxLength: 1
+              payer_name:
+                description: Name of the payer
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  given_name:
+                    description: Given name of the payer
+                    type:
+                      - "null"
+                      - string
+                    maxLength: 256
+                  surname:
+                    description: Surname of the payer
+                    type:
+                      - "null"
+                      - string
+                    maxLength: 256
+                  alternate_full_name:
+                    description: Alternate full name of the payer
+                    type:
+                      - "null"
+                      - string
+                    maxLength: 256
+              country_code:
+                description: Country code of the payer
+                type:
+                  - "null"
+                  - string
+                maxLength: 3
+          shipping_info:
+            description: Shipping information
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              name:
+                description: Name associated with the shipping information
+                type:
+                  - "null"
+                  - string
+                maxLength: 500
+              address:
+                description: Address for shipping
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  line1:
+                    description: First line of the shipping address
+                    type:
+                      - "null"
+                      - string
+                  line2:
+                    description: Second line of the shipping address
+                    type:
+                      - "null"
+                      - string
+                  city:
+                    description: City for the shipping address
+                    type:
+                      - "null"
+                      - string
+                    maxLength: 256
+                  country_code:
+                    description: Country code of the shipping address
+                    type:
+                      - "null"
+                      - string
+                    maxLength: 3
+                  postal_code:
+                    description: Postal code of the shipping address
+                    type:
+                      - "null"
+                      - string
+                    maxLength: 256
+          cart_info:
+            description: Details of items in the cart
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              item_details:
+                description: Details of individual items in the cart
+                type: array
+                items:
+                  description: Properties of an item in the cart
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    item_code:
+                      description: Code representing the item
+                      type:
+                        - "null"
+                        - string
+                      maxLength: 1000
+                    item_name:
+                      description: Name of the item
+                      type:
+                        - "null"
+                        - string
+                      maxLength: 256
+                    item_description:
+                      description: Description of the item
+                      type:
+                        - "null"
+                        - string
+                    item_quantity:
+                      description: Quantity of the item
+                      type:
+                        - "null"
+                        - string
+                    item_unit_price:
+                      description: Unit price of the item
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        currency_code:
+                          description: Currency code of the unit price
+                          type: string
+                          maxLength: 3
+                          minLength: 3
+                        value:
+                          description: Value of the unit price
+                          type: string
+                          maxLength: 32
+                    item_amount:
+                      description: Amount of the item
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        currency_code:
+                          description: Currency code of the item amount
+                          type: string
+                          maxLength: 3
+                          minLength: 3
+                        value:
+                          description: Value of the item amount
+                          type: string
+                          maxLength: 32
+                    tax_amounts:
+                      description: Tax amounts associated with the item
+                      type: array
+                      items:
+                        description: Properties of tax amount
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          tax_amount:
+                            description: Amount of tax
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              currency_code:
+                                description: Currency code of the tax amount
+                                type: string
+                                maxLength: 3
+                                minLength: 3
+                              value:
+                                description: Value of the tax amount
+                                type: string
+                                maxLength: 32
+                    total_item_amount:
+                      description: Total amount of the item
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        currency_code:
+                          description: Currency code of the total item amount
+                          type: string
+                          maxLength: 3
+                          minLength: 3
+                        value:
+                          description: Value of the total item amount
+                          type: string
+                          maxLength: 32
+                    invoice_number:
+                      description: Invoice number associated with the item
+                      type:
+                        - "null"
+                        - string
+                      maxLength: 200
+          store_info:
+            description: Information about the store
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              store_id:
+                description: ID of the store
+                type:
+                  - "null"
+                  - string
+                maxLength: 100
+              terminal_id:
+                description: ID of the terminal
+                type:
+                  - "null"
+                  - string
+                maxLength: 60
+          auction_info:
+            description: Information related to an auction
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              auction_site:
+                description: Site where the auction is taking place
+                type:
+                  - "null"
+                  - string
+                maxLength: 200
+              auction_item_site:
+                description: Site where the auction item is listed
+                type:
+                  - "null"
+                  - string
+              auction_buyer_id:
+                description: ID of the buyer in the auction
+                type:
+                  - "null"
+                  - string
+                maxLength: 500
+              auction_closing_date:
+                description: Closing date and time of the auction
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          incentive_info:
+            description: Details of any incentives applied
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              incentive_details:
+                description: Details of individual incentives
+                type: array
+                items:
+                  description: Properties of an incentive
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    incentive_type:
+                      description: Type of the incentive
+                      type:
+                        - "null"
+                        - string
+                      maxLength: 500
+                    incentive_code:
+                      description: Code representing the incentive
+                      type:
+                        - "null"
+                        - string
+                      maxLength: 200
+                    incentive_amount:
+                      description: Amount of the incentive
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        currency_code:
+                          description: Currency code of the incentive amount
+                          type: string
+                          maxLength: 3
+                          minLength: 3
+                        value:
+                          description: Value of the incentive amount
+                          type: string
+                          maxLength: 32
+                    incentive_program_code:
+                      description: Program code associated with the incentive
+                      type:
+                        - "null"
+                        - string
+                      maxLength: 100
   balances_stream:
     type: DeclarativeStream
     primary_key: as_of_time
@@ -156,7 +680,8 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ max( format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
+          {{ max( format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%SZ'),
+          day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -165,8 +690,102 @@ definitions:
     $parameters:
       path: "v1/reporting/balances"
 
-  #New Stream - List Product
-  #Paypal API only has V1 for this stream
+    #New Stream - List Product
+    #Paypal API only has V1 for this stream
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          balances:
+            description: Object containing information about the account balances.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                currency:
+                  description: The currency used for the account balances.
+                  type:
+                    - "null"
+                    - string
+                primary:
+                  description: Indicates if the balance is the primary account balance.
+                  type:
+                    - "null"
+                    - boolean
+                total_balance:
+                  description: Total balance in the account, including all funds.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    currency_code:
+                      description: The currency code for the total balance.
+                      type:
+                        - "null"
+                        - string
+                    value:
+                      description: The numerical value of the total balance.
+                      type:
+                        - "null"
+                        - string
+                available_balance:
+                  description: Available balance in the account.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    currency_code:
+                      description: The currency code for the available balance.
+                      type:
+                        - "null"
+                        - string
+                    value:
+                      description: The numerical value of the available balance.
+                      type:
+                        - "null"
+                        - string
+                withheld_balance:
+                  description: Balance that is currently being withheld or pending.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    currency_code:
+                      description: The currency code for the withheld balance.
+                      type:
+                        - "null"
+                        - string
+                    value:
+                      description: The numerical value of the withheld balance.
+                      type:
+                        - "null"
+                        - string
+          account_id:
+            description:
+              The unique identifier of the account associated with the
+              balances data.
+            type:
+              - "null"
+              - string
+          as_of_time:
+            description: The timestamp when the balances data was reported.
+            type: string
+          last_refresh_time:
+            description:
+              The timestamp when the balances data was last refreshed or
+              updated.
+            type:
+              - "null"
+              - string
   list_products_stream:
     type: DeclarativeStream
     primary_key: id
@@ -198,10 +817,65 @@ definitions:
       path: "v1/catalogs/products"
       field_path: products
 
-  # New Stream - Show Product Details
-  #Paypal API only has V1 for this stream
-  #This can't be incremental as there is no time filtering. If you need to have the updates, you need to Append in the full_sync
-  # This stream works, however has some challenges with performance. Whith a big catalog it can take up to 3 hrs.
+    # New Stream - Show Product Details
+    #Paypal API only has V1 for this stream
+    #This can't be incremental as there is no time filtering. If you need to have the updates, you need to Append in the full_sync
+    # This stream works, however has some challenges with performance. Whith a big catalog it can take up to 3 hrs.
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the product
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the product
+            type:
+              - "null"
+              - string
+          description:
+            description: Detailed information or features of the product
+            type:
+              - "null"
+              - string
+          create_time:
+            description: The time when the product was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          links:
+            description: List of links related to the fetched products.
+            type: array
+            items:
+              description: Individual link item in the list.
+              type: object
+              additionalProperties: true
+              properties:
+                href:
+                  description: The URL for the link
+                  type:
+                    - "null"
+                    - string
+                rel:
+                  description: Relationship of the linked resource to the product
+                  type:
+                    - "null"
+                    - string
+                method:
+                  description:
+                    HTTP method used for the link (GET, POST, PUT, DELETE,
+                    etc.)
+                  type:
+                    - "null"
+                    - string
   show_product_details_stream:
     type: DeclarativeStream
     primary_key: id
@@ -227,8 +901,89 @@ definitions:
             stream:
               $ref: "#/definitions/list_products_stream"
 
-  #Stream List Disputes
-  #Paypal API only has V1 for this stream
+    #Stream List Disputes
+    #Paypal API only has V1 for this stream
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the product
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the product
+            type:
+              - "null"
+              - string
+          description:
+            description: The detailed description of the product
+            type:
+              - "null"
+              - string
+          type:
+            description: The type or category of the product
+            type:
+              - "null"
+              - string
+          category:
+            description: The category to which the product belongs
+            type:
+              - "null"
+              - string
+          image_url:
+            description: The URL to the image representing the product
+            type:
+              - "null"
+              - string
+          home_url:
+            description: The URL for the home page of the product
+            type:
+              - "null"
+              - string
+          create_time:
+            description: The date and time when the product was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          update_time:
+            description: The date and time when the product was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          links:
+            description: Contains links related to the product details.
+            type: array
+            items:
+              description: Individual link properties for a specific product.
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                href:
+                  description: The URL associated with the link
+                  type:
+                    - "null"
+                    - string
+                rel:
+                  description: The relationship of the link to the product
+                  type:
+                    - "null"
+                    - string
+                method:
+                  description: The HTTP method used for the link
+                  type:
+                    - "null"
+                    - string
   list_disputes_stream:
     type: DeclarativeStream
     primary_key: dispute_id
@@ -267,13 +1022,17 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('dispute_start_date') if config.get('dispute_start_date') else (now_utc() - duration('P179D')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}"
+        datetime:
+          "{{ format_datetime(config.get('dispute_start_date') if config.get('dispute_start_date')
+          else (now_utc() - duration('P179D')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z'
+          }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       end_datetime:
         type: MinMaxDatetime
         #Adding a time delta as the API has a problem with the slice being too close to the now_utc. Set to 30M
         datetime: >-
-          {{ format_datetime(config.get('dispute_end_date') if config.get('dispute_end_date') else (now_utc() - duration('PT30M')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z'}}
+          {{ format_datetime(config.get('dispute_end_date') if config.get('dispute_end_date')
+          else (now_utc() - duration('PT30M')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z'}}
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_time_option:
         type: RequestOption
@@ -289,8 +1048,133 @@ definitions:
       path: "v1/customer/disputes"
       field_path: items
 
-  #Stream Search Invoices
-  # Currently it does not support incremental sync as metadata does not contain last_update_date
+    #Stream Search Invoices
+    # Currently it does not support incremental sync as metadata does not contain last_update_date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          dispute_id:
+            description: The unique identifier for the dispute.
+            type:
+              - "null"
+              - string
+          create_time:
+            description: The timestamp when the dispute was created.
+            type: string
+            format: date-time
+          update_time:
+            description: The timestamp when the dispute was last updated.
+            type: string
+            format: date-time
+          updated_time_cut:
+            description: The cut-off timestamp for the last update.
+            type: string
+            format: date-time
+          status:
+            description: The current status of the dispute.
+            type:
+              - "null"
+              - string
+          reason:
+            description: The reason for the dispute.
+            type:
+              - "null"
+              - string
+          dispute_state:
+            description: The current state of the dispute.
+            type:
+              - "null"
+              - string
+          dispute_amount:
+            description: Details about the disputed amount.
+            type:
+              - "null"
+              - object
+            properties:
+              currency_code:
+                description: The currency code of the disputed amount.
+                type:
+                  - "null"
+                  - string
+              value:
+                description: The value of the disputed amount.
+                type:
+                  - "null"
+                  - string
+          links:
+            description: Links related to the dispute.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                href:
+                  description: The URL link.
+                  type:
+                    - "null"
+                    - string
+                rel:
+                  description: The relation of the link to the resource.
+                  type:
+                    - "null"
+                    - string
+                method:
+                  description: The HTTP method for the link.
+                  type:
+                    - "null"
+                    - string
+          disputed_transactions:
+            description: Details of transactions involved in the dispute.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                buyer_transaction_id:
+                  description: The transaction ID of the buyer.
+                  type:
+                    - "null"
+                    - string
+                seller:
+                  description: Details of the seller involved in the dispute.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    merchant_id:
+                      description: The merchant ID of the seller.
+                      type:
+                        - "null"
+                        - string
+          outcome:
+            description: The outcome of the dispute resolution.
+            type:
+              - "null"
+              - string
+          dispute_life_cycle_stage:
+            description: The stage in the life cycle of the dispute.
+            type:
+              - "null"
+              - string
+          dispute_channel:
+            description: The channel through which the dispute was initiated.
+            type:
+              - "null"
+              - string
   search_invoices_stream:
     type: DeclarativeStream
     primary_key: id
@@ -322,14 +1206,1012 @@ definitions:
           creation_date_range:
             start: "{{ config.get('start_date') }}"
             end: >-
-              {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+              {{ format_datetime(config.get('end_date') if config.get('end_date')
+              else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
     $parameters:
       field_path: items
       path: "v2/invoicing/search-invoices"
 
-  #Stream List Payments
-  #Currently uses V1 which is about to be derecated
-  #But there is no endpoint in v2 for listing payments
+    #Stream List Payments
+    #Currently uses V1 which is about to be derecated
+    #But there is no endpoint in v2 for listing payments
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier of the invoice
+            type:
+              - "null"
+              - string
+          status:
+            description: Current status of the invoice
+            type:
+              - "null"
+              - string
+          primary_recipients:
+            description: Primary recipients associated with the invoice
+            type:
+              - "null"
+              - array
+            items:
+              description: Details of each primary recipient
+              type:
+                - "null"
+                - object
+              properties:
+                billing_info:
+                  description: Billing information of the primary recipient
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    business_name:
+                      description: Business name of the primary recipient
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name details of the primary recipient
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        prefix:
+                          description: Prefix of the primary recipient's name
+                          type:
+                            - "null"
+                            - string
+                        given_name:
+                          description: Given name of the primary recipient
+                          type:
+                            - "null"
+                            - string
+                        surname:
+                          description: Surname of the primary recipient
+                          type:
+                            - "null"
+                            - string
+                        middle_name:
+                          description: Middle name of the primary recipient
+                          type:
+                            - "null"
+                            - string
+                        suffix:
+                          description: Suffix of the primary recipient's name
+                          type:
+                            - "null"
+                            - string
+                        alternate_full_name:
+                          description: Alternate full name of the primary recipient
+                          type:
+                            - "null"
+                            - string
+                        full_name:
+                          description: Full name of the primary recipient
+                          type:
+                            - "null"
+                            - string
+                    address:
+                      description: Billing address details
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        address_line_1:
+                          description: Address line 1 for billing
+                          type:
+                            - "null"
+                            - string
+                        address_line_2:
+                          description: Address line 2 for billing
+                          type:
+                            - "null"
+                            - string
+                        address_line_3:
+                          description: Address line 3 for billing
+                          type:
+                            - "null"
+                            - string
+                        address_line_4:
+                          description: Address line 4 for billing
+                          type:
+                            - "null"
+                            - string
+                        admin_area_1:
+                          description: Primary administrative area for billing
+                          type:
+                            - "null"
+                            - string
+                        admin_area_2:
+                          description: Secondary administrative area for billing
+                          type:
+                            - "null"
+                            - string
+                        admin_area_3:
+                          description: Tertiary administrative area for billing
+                          type:
+                            - "null"
+                            - string
+                        postal_code:
+                          description: Postal code for billing
+                          type:
+                            - "null"
+                            - string
+                        country_code:
+                          description: Country code for billing
+                          type:
+                            - "null"
+                            - string
+                        address_details:
+                          description: Additional details related to the address
+                          type:
+                            - "null"
+                            - object
+                        phones:
+                          description: List of phone numbers for billing
+                          type:
+                            - "null"
+                            - array
+                        additiona_info:
+                          description: Additional information related to the address
+                          type:
+                            - "null"
+                            - string
+                        email_address:
+                          description: Email address for billing
+                          type:
+                            - "null"
+                            - string
+                        language:
+                          description: Language preference for billing
+                          type:
+                            - "null"
+                            - string
+                shipping_info:
+                  description: Shipping information for the primary recipient
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    business_name:
+                      description: Business name associated with the shipping
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name details for shipping
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        prefix:
+                          description: Prefix for shipping name
+                          type:
+                            - "null"
+                            - string
+                        given_name:
+                          description: Given name for shipping
+                          type:
+                            - "null"
+                            - string
+                        surname:
+                          description: Surname for shipping
+                          type:
+                            - "null"
+                            - string
+                        middle_name:
+                          description: Middle name for shipping
+                          type:
+                            - "null"
+                            - string
+                        suffix:
+                          description: Suffix for shipping name
+                          type:
+                            - "null"
+                            - string
+                        alternate_full_name:
+                          description: Alternate full name for shipping
+                          type:
+                            - "null"
+                            - string
+                        full_name:
+                          description: Full name for shipping
+                          type:
+                            - "null"
+                            - string
+                    address:
+                      description: Shipping address details
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        address_line_1:
+                          description: Address line 1 for shipping
+                          type:
+                            - "null"
+                            - string
+                        address_line_2:
+                          description: Address line 2 for shipping
+                          type:
+                            - "null"
+                            - string
+                        address_line_3:
+                          description: Address line 3 for shipping
+                          type:
+                            - "null"
+                            - string
+                        address_line_4:
+                          description: Address line 4 for shipping
+                          type:
+                            - "null"
+                            - string
+                        admin_area_1:
+                          description: Primary administrative area for shipping
+                          type:
+                            - "null"
+                            - string
+                        admin_area_2:
+                          description: Secondary administrative area for shipping
+                          type:
+                            - "null"
+                            - string
+                        admin_area_3:
+                          description: Tertiary administrative area for shipping
+                          type:
+                            - "null"
+                            - string
+                        postal_code:
+                          description: Postal code for shipping
+                          type:
+                            - "null"
+                            - string
+                        country_code:
+                          description: Country code for shipping
+                          type:
+                            - "null"
+                            - string
+                        address_details:
+                          description:
+                            Additional details related to the shipping
+                            address
+                          type:
+                            - "null"
+                            - object
+          additional_recipients:
+            description: List of additional recipients associated with the invoice
+            type:
+              - "null"
+              - array
+          detail:
+            description: Detailed information about the invoice
+            type:
+              - "null"
+              - object
+            properties:
+              reference:
+                description: Reference information associated with the invoice
+                type:
+                  - "null"
+                  - string
+              note:
+                description: Additional notes or messages related to the invoice
+                type:
+                  - "null"
+                  - string
+              terms_and_conditions:
+                description: Terms and conditions specified for the invoice
+                type:
+                  - "null"
+                  - string
+              memo:
+                description: Additional notes or memo related to the invoice
+                type:
+                  - "null"
+                  - string
+              attachments:
+                description: List of attachments associated with the invoice
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Details of each attachment
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: Unique identifier of the attachment
+                      type:
+                        - "null"
+                        - string
+                    reference_url:
+                      description: URL reference to the attachment
+                      type:
+                        - "null"
+                        - string
+                    content_type:
+                      description: Type of content in the attachment
+                      type:
+                        - "null"
+                        - string
+                    size:
+                      description: Size of the attachment
+                      type:
+                        - "null"
+                        - string
+                    create_time:
+                      description: Creation time of the attachment
+                      type:
+                        - "null"
+                        - string
+              currency_code:
+                description: Currency code of the invoice
+                type:
+                  - "null"
+                  - string
+              invoice_number:
+                description: Unique invoice number
+                type:
+                  - "null"
+                  - string
+              invoice_date:
+                description: Date on which the invoice was created
+                type:
+                  - "null"
+                  - string
+                format: date
+              payment_term:
+                description: Payment terms associated with the invoice
+                type:
+                  - "null"
+                  - object
+                properties:
+                  term_type:
+                    description: Type of payment term (e.g., Net 30)
+                    type:
+                      - "null"
+                      - string
+                  due_date:
+                    description: Due date for the invoice payment
+                    type:
+                      - "null"
+                      - string
+                    format: date
+              metadata:
+                description: Metadata information related to the invoice
+                type:
+                  - "null"
+                  - object
+                properties:
+                  created_by:
+                    description: Details of the user who created the invoice
+                    type:
+                      - "null"
+                      - string
+                  last_updated_by:
+                    description: Details of the user who last updated the invoice
+                    type:
+                      - "null"
+                      - string
+                  create_time:
+                    description: Date and time when the invoice was created
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  last_update_time:
+                    description: Date and time of the last update made to the invoice
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  cancelled_by:
+                    description: Details of the user who cancelled the invoice
+                    type:
+                      - "null"
+                      - string
+                  last_seen_by:
+                    description: Details of the user who last viewed the invoice
+                    type:
+                      - "null"
+                      - string
+                  recipient_view_url:
+                    description: URL for the recipient to view the invoice
+                    type:
+                      - "null"
+                      - string
+                  invoicer_view_url:
+                    description: URL for the invoicer to view the invoice
+                    type:
+                      - "null"
+                      - string
+                  cancel_time:
+                    description: Date and time when the invoice was cancelled
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  first_sent_time:
+                    description: Date and time when the invoice was first sent
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  last_sent_time:
+                    description: Date and time when the invoice was last sent
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  created_by_flow:
+                    description: Flow information of the user who created the invoice
+                    type:
+                      - "null"
+                      - string
+          last_update_time:
+            description: Date and time of the last update made to the invoice
+            type:
+              - "null"
+              - string
+            format: date-time
+          invoicer:
+            description: Information about the invoicer associated with the invoice
+            type:
+              - "null"
+              - object
+            properties:
+              business_name:
+                description: Business name of the invoicer
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name details of the invoicer
+                type:
+                  - "null"
+                  - object
+                properties:
+                  prefix:
+                    description: Prefix of the invoicer's name
+                    type:
+                      - "null"
+                      - string
+                  given_name:
+                    description: Given name of the invoicer
+                    type:
+                      - "null"
+                      - string
+                  surname:
+                    description: Surname of the invoicer
+                    type:
+                      - "null"
+                      - string
+                  middle_name:
+                    description: Middle name of the invoicer
+                    type:
+                      - "null"
+                      - string
+                  suffix:
+                    description: Suffix of the invoicer's name
+                    type:
+                      - "null"
+                      - string
+                  alternate_full_name:
+                    description: Alternate full name of the invoicer
+                    type:
+                      - "null"
+                      - string
+                  full_name:
+                    description: Full name of the invoicer
+                    type:
+                      - "null"
+                      - string
+                address:
+                  description: Address details of the invoicer
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    address_line_1:
+                      description: Address line 1 of the invoicer
+                      type:
+                        - "null"
+                        - string
+                    address_line_2:
+                      description: Address line 2 of the invoicer
+                      type:
+                        - "null"
+                        - string
+                    address_line_3:
+                      description: Address line 3 of the invoicer
+                      type:
+                        - "null"
+                        - string
+                    admin_area_1:
+                      description: Primary administrative area of the invoicer
+                      type:
+                        - "null"
+                        - string
+                    admin_area_2:
+                      description: Secondary administrative area of the invoicer
+                      type:
+                        - "null"
+                        - string
+                    admin_area_3:
+                      description: Tertiary administrative area of the invoicer
+                      type:
+                        - "null"
+                        - string
+                    postal_code:
+                      description: Postal code of the invoicer
+                      type:
+                        - "null"
+                        - string
+                    country_code:
+                      description: Country code of the invoicer
+                      type:
+                        - "null"
+                        - string
+                    address_details:
+                      description: Additional address details
+                      type:
+                        - "null"
+                        - object
+                  phones:
+                    description: List of phone numbers associated with the invoicer
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      description: Details of each phone number
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        country_code:
+                          description: Country code of the phone number
+                          type:
+                            - "null"
+                            - string
+                        national_number:
+                          description: National number of the phone number
+                          type:
+                            - "null"
+                            - string
+                        extension_number:
+                          description: Extension number of the phone number
+                          type:
+                            - "null"
+                            - string
+                        phone_type:
+                          description: Type of the phone number
+                          type:
+                            - "null"
+                            - string
+                  website:
+                    description: Website URL of the invoicer
+                    type:
+                      - "null"
+                      - string
+                  tax_id:
+                    description: Tax ID of the invoicer
+                    type:
+                      - "null"
+                      - string
+                  additional_notes:
+                    description: Additional notes related to the address
+                    type:
+                      - "null"
+                      - string
+                  email_address:
+                    description: Email address of the invoicer
+                    type:
+                      - "null"
+                      - string
+          configuration:
+            description: Configuration settings related to the invoice
+            type:
+              - "null"
+              - object
+            properties:
+              tax_calculated_after_discount:
+                description:
+                  Flag indicating whether taxes are calculated after applying
+                  discounts
+                type:
+                  - "null"
+                  - string
+              tax_inclusive:
+                description:
+                  Flag indicating whether taxes are included in the invoice
+                  total
+                type:
+                  - "null"
+                  - string
+              allow_tip:
+                description: Flag indicating whether tips are allowed for the invoice
+                type:
+                  - "null"
+                  - string
+              partial_payment:
+                description: Details about partial payment settings
+                type:
+                  - "null"
+                  - object
+                properties:
+                  allow_partial_payment:
+                    description: Flag indicating whether partial payments are allowed
+                    type:
+                      - "null"
+                      - string
+                  minimum_amount_due:
+                    description: Minimum amount due for partial payment
+                    type:
+                      - "null"
+                      - object
+              template_id:
+                description: Unique identifier of the template used for the invoice
+                type:
+                  - "null"
+                  - string
+          amount:
+            description: Detailed breakdown of the invoice amount
+            type:
+              - "null"
+              - object
+            properties:
+              currency_code:
+                description: Currency code of the invoice amount
+                type:
+                  - "null"
+                  - string
+              value:
+                description: Total value of the invoice amount
+                type:
+                  - "null"
+                  - string
+              breakdown:
+                description:
+                  Detailed breakdown of individual components contributing
+                  to the total amount
+                type:
+                  - "null"
+                  - object
+                properties:
+                  item_total:
+                    description: Total amount of items listed in the invoice
+                    type:
+                      - "null"
+                      - object
+                  discount:
+                    description: Discount applied to the invoice amount
+                    type:
+                      - "null"
+                      - object
+                  tax_total:
+                    description: Total tax amount included in the invoice
+                    type:
+                      - "null"
+                      - object
+                  shipping:
+                    description: Shipping charges included in the invoice
+                    type:
+                      - "null"
+                      - object
+                  custom:
+                    description: Custom amount included in the invoice
+                    type:
+                      - "null"
+                      - object
+          due_amount:
+            description: Due amount remaining to be paid for the invoice
+            type:
+              - "null"
+              - object
+            properties:
+              currency_code:
+                description: Currency code of the due amount
+                type:
+                  - "null"
+                  - string
+              value:
+                description: Value of the due amount
+                type:
+                  - "null"
+                  - string
+          gratuity:
+            description: Gratuity amount included in the invoice
+            type:
+              - "null"
+              - object
+            properties:
+              currency_code:
+                description: Currency code of the gratuity amount
+                type:
+                  - "null"
+                  - string
+              value:
+                description: Value of the gratuity amount
+                type:
+                  - "null"
+                  - string
+          payments:
+            description: Payment transactions associated with the invoice
+            transactions:
+              description: List of payment transactions associated with the invoice
+              type:
+                - "null"
+                - array
+              items:
+                description: Details of each payment transaction
+                type:
+                  - "null"
+                  - object
+                properties:
+                  payment_id:
+                    description: Unique identifier of the payment
+                    type:
+                      - "null"
+                      - string
+                  note:
+                    description: Additional note related to the transaction
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    description: Type of payment transaction
+                    type:
+                      - "null"
+                      - string
+                  payment_date:
+                    description: Date and time of the payment transaction
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  method:
+                    description: Payment method used for the transaction
+                    type:
+                      - "null"
+                      - string
+                  amount:
+                    description: Amount of the transaction
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      currency_code:
+                        description: Currency code of the transaction amount
+                        type:
+                          - "null"
+                          - string
+                      value:
+                        description: Value of the transaction amount
+                        type:
+                          - "null"
+                          - string
+                  shipping_info:
+                    description:
+                      Shipping information associated with the payment
+                      transaction
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      business_name:
+                        description: Business name associated with the shipping
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        description: Name details for shipping
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          prefix:
+                            description: Prefix for shipping name
+                            type:
+                              - "null"
+                              - string
+                          given_name:
+                            description: Given name for shipping
+                            type:
+                              - "null"
+                              - string
+                          surname:
+                            description: Surname for shipping
+                            type:
+                              - "null"
+                              - string
+                          middle_name:
+                            description: Middle name for shipping
+                            type:
+                              - "null"
+                              - string
+                          suffix:
+                            description: Suffix for shipping name
+                            type:
+                              - "null"
+                              - string
+                          alternate_full_name:
+                            description: Alternate full name for shipping
+                            type:
+                              - "null"
+                              - string
+                          full_name:
+                            description: Full name for shipping
+                            type:
+                              - "null"
+                              - string
+                      address:
+                        description: Shipping address details
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          address_line_1:
+                            description: Address line 1 for shipping
+                            type:
+                              - "null"
+                              - string
+                          address_line_2:
+                            description: Address line 2 for shipping
+                            type:
+                              - "null"
+                              - string
+                          address_line_3:
+                            description: Address line 3 for shipping
+                            type:
+                              - "null"
+                              - string
+                          admin_area_1:
+                            description: Primary administrative area for shipping
+                            type:
+                              - "null"
+                              - string
+                          admin_area_2:
+                            description: Secondary administrative area for shipping
+                            type:
+                              - "null"
+                              - string
+                          admin_area_3:
+                            description: Tertiary administrative area for shipping
+                            type:
+                              - "null"
+                              - string
+                          postal_code:
+                            description: Postal code for shipping
+                            type:
+                              - "null"
+                              - string
+                          country_code:
+                            description: Country code for shipping
+                            type:
+                              - "null"
+                              - string
+                          address_details:
+                            description:
+                              Additional details related to the shipping
+                              address
+                            type:
+                              - "null"
+                              - object
+            paid_amount:
+              description: Amount paid for the invoice
+              type:
+                - "null"
+                - object
+              properties:
+                currency_code:
+                  description: Currency code of the paid amount
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: Value of the paid amount
+                  type:
+                    - "null"
+                    - string
+          refunds:
+            description: Refund transactions associated with the invoice
+            transactions:
+              description: List of refund transactions associated with the invoice
+              type:
+                - "null"
+                - array
+              items:
+                description: Details of each refund transaction
+                type:
+                  - "null"
+                  - object
+                properties:
+                  refund_id:
+                    description: Unique identifier of the refund transaction
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    description: Type of refund transaction
+                    type:
+                      - "null"
+                      - string
+                  refund_date:
+                    description: Date and time of the refund transaction
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  method:
+                    description: Method used for the refund transaction
+                    type:
+                      - "null"
+                      - string
+                  amount:
+                    description: Amount of the refund transaction
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      currency_code:
+                        description: Currency code of the refund transaction amount
+                        type:
+                          - "null"
+                          - string
+                      value:
+                        description: Value of the refund transaction amount
+                        type:
+                          - "null"
+                          - string
+            refund_amount:
+              description: Total amount refunded for the invoice
+              type:
+                - "null"
+                - object
+              properties:
+                currency_code:
+                  description: Currency code of the refund amount
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: Value of the refund amount
+                  type:
+                    - "null"
+                    - string
+          links:
+            description: Links associated with the invoice
+            type:
+              - "null"
+              - array
+            items:
+              description: Details of each link
+              type:
+                - "null"
+                - object
+              properties:
+                href:
+                  description: URL reference for the link
+                  type:
+                    - "null"
+                    - string
+                  format: uri
+                rel:
+                  description: Relation type of the link
+                  type:
+                    - "null"
+                    - string
+                method:
+                  description: HTTP method for accessing the link
+                  type:
+                    - "null"
+                    - string
   list_payments_stream:
     type: DeclarativeStream
     primary_key: id
@@ -356,7 +2238,9 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          start_time: "{{ stream_interval.start_time.strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          start_time:
+            "{{ stream_interval.start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+            }}"
           end_time: "{{ stream_interval.end_time.strftime('%Y-%m-%dT%H:%M:%SZ') }}"
     incremental_sync:
       type: DatetimeBasedCursor
@@ -369,7 +2253,8 @@ definitions:
       end_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{ format_datetime(config.get('end_date') if config.get('end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+          {{ format_datetime(config.get('end_date') if config.get('end_date') else
+          now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -385,6 +2270,495 @@ definitions:
       path: "v1/payments/payment"
       field_path: payments
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the payment.
+            type:
+              - "null"
+              - string
+          intent:
+            description: The intention or purpose behind the payment.
+            type:
+              - "null"
+              - string
+          state:
+            description: The state of the payment.
+            type:
+              - "null"
+              - string
+          cart:
+            description: Details of the cart associated with the payment.
+            type:
+              - "null"
+              - string
+          payer:
+            description: Details of the payer who made the payment
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              payment_method:
+                description: The payment method used by the payer.
+                type:
+                  - "null"
+                  - string
+              status:
+                description: The status of the payment.
+                type:
+                  - "null"
+                  - string
+              payer_info:
+                description: Information about the payer.
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  email:
+                    description: The email address of the payer.
+                    type:
+                      - "null"
+                      - string
+                  first_name:
+                    description: The first name of the payer.
+                    type:
+                      - "null"
+                      - string
+                  last_name:
+                    description: The last name of the payer.
+                    type:
+                      - "null"
+                      - string
+                  payer_id:
+                    description: The unique identifier for the payer.
+                    type:
+                      - "null"
+                      - string
+                  shipping_address:
+                    description: The shipping address of the payer.
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      recipient_name:
+                        description: The recipient's name at the shipping address.
+                        type:
+                          - "null"
+                          - string
+                      line1:
+                        description: The first line of the shipping address.
+                        type:
+                          - "null"
+                          - string
+                      city:
+                        description: The city in the shipping address.
+                        type:
+                          - "null"
+                          - string
+                      state:
+                        description: The state in the shipping address.
+                        type:
+                          - "null"
+                          - string
+                      postal_code:
+                        description: The postal code in the shipping address.
+                        type:
+                          - "null"
+                          - string
+                      country_code:
+                        description: The country code in the shipping address.
+                        type:
+                          - "null"
+                          - string
+                  phone:
+                    description: The phone number of the payer.
+                    type:
+                      - "null"
+                      - string
+                  country_code:
+                    description: The country code of the payer.
+                    type:
+                      - "null"
+                      - string
+          transactions:
+            description: List of transactions associated with the payment
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                reference_id:
+                  description: Reference ID associated with the transaction.
+                  type:
+                    - "null"
+                    - string
+                amount:
+                  description: The amount details of the transaction.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    total:
+                      description: Total amount of the transaction.
+                      type:
+                        - "null"
+                        - string
+                    currency:
+                      description: The currency used in the transaction.
+                      type:
+                        - "null"
+                        - string
+                    details:
+                      description: Additional details of the transaction amount.
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        subtotal:
+                          description: Subtotal amount of the transaction.
+                          type:
+                            - "null"
+                            - string
+                        shipping:
+                          description: Shipping cost for the transaction.
+                          type:
+                            - "null"
+                            - string
+                        insurance:
+                          description: Insurance fee for the transaction.
+                          type:
+                            - "null"
+                            - string
+                        handling_fee:
+                          description: Handling fee charged for the transaction.
+                          type:
+                            - "null"
+                            - string
+                        shipping_discount:
+                          description: Discount applied to shipping cost.
+                          type:
+                            - "null"
+                            - string
+                        discount:
+                          description: Discount applied to the transaction.
+                          type:
+                            - "null"
+                            - string
+                payee:
+                  description: Information about the payee.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    merchant_id:
+                      description: Merchant ID of the payee.
+                      type:
+                        - "null"
+                        - string
+                    email:
+                      description: Email address of the payee.
+                      type:
+                        - "null"
+                        - string
+                description:
+                  description: Description of the transaction.
+                  type:
+                    - "null"
+                    - string
+                item_list:
+                  description: List of items included in the transaction.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    items:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        description: Details of each item in the item list.
+                        type: object
+                        properties:
+                          name:
+                            description: Name of the item.
+                            type:
+                              - "null"
+                              - string
+                          description:
+                            description: Description of the item.
+                            type:
+                              - "null"
+                              - string
+                          price:
+                            description: Price of the item.
+                            type:
+                              - "null"
+                              - string
+                          currency:
+                            description: The currency of the item.
+                            type:
+                              - "null"
+                              - string
+                          tax:
+                            description: Tax applicable to the item.
+                            type:
+                              - "null"
+                              - string
+                          quantity:
+                            description: Quantity of the item.
+                            type:
+                              - "null"
+                              - integer
+                          image_url:
+                            description: URL of the image of the item.
+                            type:
+                              - "null"
+                              - string
+                    shipping_address:
+                      description: The shipping address for the item list.
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        recipient_name:
+                          description: Recipient's name in the shipping address.
+                          type:
+                            - "null"
+                            - string
+                        line1:
+                          description: First line of the shipping address.
+                          type:
+                            - "null"
+                            - string
+                        city:
+                          description: City in the shipping address.
+                          type:
+                            - "null"
+                            - string
+                        state:
+                          description: State in the shipping address.
+                          type:
+                            - "null"
+                            - string
+                        postal_code:
+                          description: Postal code in the shipping address.
+                          type:
+                            - "null"
+                            - string
+                        country_code:
+                          description: Country code in the shipping address.
+                          type:
+                            - "null"
+                            - string
+                related_resources:
+                  description: Related resources for the transaction.
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type: object
+                    properties:
+                      sale:
+                        description: Details of the sale related to the transaction.
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          id:
+                            description: Unique identifier for the sale.
+                            type:
+                              - "null"
+                              - string
+                          state:
+                            description: The state of the sale.
+                            type:
+                              - "null"
+                              - string
+                          amount:
+                            description: The amount details of the sale.
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              total:
+                                description: Total amount of the sale.
+                                type:
+                                  - "null"
+                                  - string
+                              currency:
+                                description: Currency used in the sale.
+                                type:
+                                  - "null"
+                                  - string
+                              details:
+                                description: Additional details of the sale amount.
+                                type:
+                                  - "null"
+                                  - object
+                                additionalProperties: true
+                                properties:
+                                  subtotal:
+                                    description: Subtotal amount of the sale.
+                                    type:
+                                      - "null"
+                                      - string
+                                  shipping:
+                                    description: Shipping cost for the sale.
+                                    type:
+                                      - "null"
+                                      - string
+                                  insurance:
+                                    description: Insurance fee for the sale.
+                                    type:
+                                      - "null"
+                                      - string
+                                  handling_fee:
+                                    description: Handling fee for the sale.
+                                    type:
+                                      - "null"
+                                      - string
+                                  shipping_discount:
+                                    description:
+                                      Discount applied to shipping cost
+                                      in the sale.
+                                    type:
+                                      - "null"
+                                      - string
+                                  discount:
+                                    description: Discount applied to the sale.
+                                    type:
+                                      - "null"
+                                      - string
+                          payment_mode:
+                            description: The payment mode used for the sale.
+                            type:
+                              - "null"
+                              - string
+                          protection_eligibility:
+                            description: Indicates if the sale is eligible for protection.
+                            type:
+                              - "null"
+                              - string
+                          protection_eligibility_type:
+                            description: Type of protection eligibility for the sale.
+                            type:
+                              - "null"
+                              - string
+                          transaction_fee:
+                            description: Details of the transaction fee for the sale.
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              value:
+                                description: Value of the transaction fee.
+                                type:
+                                  - "null"
+                                  - string
+                              currency:
+                                description: Currency of the transaction fee.
+                                type:
+                                  - "null"
+                                  - string
+                          purchase_unit_reference_id:
+                            description: Reference ID for the purchase unit.
+                            type:
+                              - "null"
+                              - string
+                          parent_payment:
+                            description: Parent payment associated with the sale.
+                            type:
+                              - "null"
+                              - string
+                          create_time:
+                            description: The date and time when the sale was created.
+                            type:
+                              - "null"
+                              - string
+                            format: date-time
+                          update_time:
+                            description:
+                              The date and time when the sale was last
+                              updated.
+                            type:
+                              - "null"
+                              - string
+                            format: date-time
+                          links:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                href:
+                                  description: The URL link related to the item.
+                                  type:
+                                    - "null"
+                                    - string
+                                rel:
+                                  description:
+                                    The relationship between the current
+                                    resource and the linked resource.
+                                  type:
+                                    - "null"
+                                    - string
+                                method:
+                                  description: The HTTP method used for the link.
+                                  type:
+                                    - "null"
+                                    - string
+          create_time:
+            description: The date and time when the payment was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          update_time:
+            description: The date and time when the payment was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          links:
+            description: Collection of links related to the payment
+            type: array
+            items:
+              type: object
+              properties:
+                href:
+                  description: The URL link related to the item.
+                  type:
+                    - "null"
+                    - string
+                rel:
+                  description:
+                    The relationship between the current resource and the
+                    linked resource.
+                  type:
+                    - "null"
+                    - string
+                method:
+                  description: The HTTP method used for the link.
+                  type:
+                    - "null"
+                    - string
 streams:
   - "#/definitions/transactions_stream"
   - "#/definitions/balances_stream"

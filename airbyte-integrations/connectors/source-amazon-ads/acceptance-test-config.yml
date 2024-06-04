@@ -56,6 +56,6 @@ acceptance_tests:
     tests:
       - spec_path: integration_tests/spec.json
         backward_compatibility_tests_config:
-          disable_for_version: 3.4.3
+          disable_for_version: 5.0.0
 connector_image: airbyte/source-amazon-ads:dev
 test_strictness_level: high

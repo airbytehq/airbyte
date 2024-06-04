@@ -66,7 +66,7 @@ internal class YamlListToStandardDefinitionsTest {
                     GOOD_DES_DEF_YAML
                 )
             Assertions.assertEquals(1, defs.size)
-            Assertions.assertEquals("Local JSON", defs[0].name)
+            Assertions.assertEquals("Local JSON", defs[0]!!.name)
         }
 
         @Test
