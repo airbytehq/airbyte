@@ -18,11 +18,14 @@ class JsonDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List[Any], Any]:
+    def decode(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         try:
-            return response.json()
+            body_json = response.json()
+            if isinstance(body_json, dict):
+                body_json = [body_json]
+            yield from body_json
         except requests.exceptions.JSONDecodeError:
-            return {}
+            yield from [{}]
 
 
 @dataclass

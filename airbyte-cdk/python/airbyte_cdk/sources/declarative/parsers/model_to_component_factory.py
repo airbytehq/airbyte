@@ -1090,8 +1090,10 @@ class ModelToComponentFactory:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else None
         requester = self._create_component_from_model(model=model.requester, decoder=decoder, config=config, name=name)
         record_selector = self._create_component_from_model(
-            model=model.record_selector, config=config, decoder=decoder, transformations=transformations
-        ,
+            model=model.record_selector,
+            config=config,
+            decoder=decoder,
+            transformations=transformations,
             client_side_incremental_sync=client_side_incremental_sync,
         )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()

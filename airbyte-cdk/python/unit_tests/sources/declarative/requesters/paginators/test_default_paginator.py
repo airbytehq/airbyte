@@ -239,13 +239,17 @@ def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
 
 
 @pytest.mark.parametrize(
-    "test_name, inject_on_first_request",
+    "inject_on_first_request",
     [
-        pytest.param("test_reset_inject_on_first_request", True),
-        pytest.param("test_reset_no_inject_on_first_request", False),
+        (True),
+        (False),
     ],
+    ids=[
+        "test_reset_inject_on_first_request",
+        "test_reset_no_inject_on_first_request",
+    ]
 )
-def test_reset(test_name, inject_on_first_request):
+def test_reset(inject_on_first_request):
     page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", parameters={})
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", parameters={})
     url_base = "https://airbyte.io"
@@ -255,7 +259,9 @@ def test_reset(test_name, inject_on_first_request):
         strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
     )
     initial_request_parameters = paginator.get_request_params()
-    paginator.next_page_token(MagicMock(), 2, {"a key": "a value"})
+    response = requests.Response()
+    response._content = json.dumps({}).encode("utf-8")
+    paginator.next_page_token(response, 2, {"a key": "a value"})
     request_parameters_for_second_request = paginator.get_request_params()
     paginator.reset()
     request_parameters_after_reset = paginator.get_request_params()

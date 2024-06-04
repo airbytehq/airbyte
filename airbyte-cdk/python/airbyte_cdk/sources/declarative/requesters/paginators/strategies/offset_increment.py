@@ -60,7 +60,7 @@ class OffsetIncrement(PaginationStrategy):
         decoded_response = self.decoder.decode(response)
 
         # Stop paginating when there are fewer records than the page size or the current page has no records
-        if (self._page_size and last_page_size < self._page_size.eval(self.config, response=decoded_response)) or last_page_size == 0:
+        if (self._page_size and last_page_size < self._page_size.eval(self.config, response=next(decoded_response))) or last_page_size == 0:
             return None
         else:
             self._offset += last_page_size
