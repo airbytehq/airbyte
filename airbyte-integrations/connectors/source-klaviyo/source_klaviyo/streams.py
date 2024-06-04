@@ -11,7 +11,7 @@ import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests import Response
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
@@ -124,6 +124,23 @@ class KlaviyoStream(HttpStream, ABC):
             self.logger.warning(repr(e))
 
 
+class KlaviyoSubStream(HttpSubStream, KlaviyoStream, ABC):
+
+    @property
+    @abstractmethod
+    def parent_field(self) -> Union[str, List[str]]:
+        """
+        Override to return the parent field used by this stream e.g: an campaign message entity might use campaign id as its parent field.
+        This is usually id based. This field's presence tells the framework this in an sub stream. Required for sub stream.
+        :return str: The name of the parent field.
+        """
+
+    def parse_response(self, response: Response, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            record[self.parent_field] = stream_slice["parent"]["id"]
+            yield record
+
+
 class IncrementalKlaviyoStream(KlaviyoStream, ABC):
     """Base class for all incremental streams, requires cursor_field to be declared"""
 
@@ -210,6 +227,7 @@ class IncrementalKlaviyoStreamWithArchivedRecords(IncrementalKlaviyoStream, ABC)
 class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
     """Docs: https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns"""
 
+    use_cache = True
     cursor_field = "updated_at"
     api_revision = "2023-06-15"
 
@@ -250,11 +268,48 @@ class CampaignsDetailed(Campaigns):
             record["campaign_message"] = campaign_message_response.json().get("data")
 
 
+class CampaignMessages(KlaviyoSubStream, IncrementalKlaviyoStream):
+    """Docs: https://developers.klaviyo.com/en/reference/get_campaign_campaign_messages"""
+
+    cursor_field = "updated_at"
+    parent_field = "campaign_id"
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        parent_id = stream_slice["parent"]["id"]
+        return f"campaigns/{parent_id}/campaign-messages"
+
+
 class Flows(IncrementalKlaviyoStreamWithArchivedRecords):
     """Docs: https://developers.klaviyo.com/en/reference/get_flows"""
 
+    use_cache = True
     cursor_field = "updated"
     state_checkpoint_interval = 50  # API can return maximum 50 records per page
 
     def path(self, **kwargs) -> str:
         return "flows"
+
+
+class FlowActions(KlaviyoSubStream, IncrementalKlaviyoStream):
+    """Docs: https://developers.klaviyo.com/en/reference/get_flow_flow_actions"""
+
+    use_cache = True
+    cursor_field = "updated"
+    parent_field = "flow_id"
+    state_checkpoint_interval = 50  # API can return maximum 50 records per page
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        parent_id = stream_slice["parent"]["id"]
+        return f"flows/{parent_id}/flow-actions"
+
+
+class FlowMessages(KlaviyoSubStream, IncrementalKlaviyoStream):
+    """Docs: https://developers.klaviyo.com/en/reference/get_flow_action_messages"""
+
+    cursor_field = "updated"
+    parent_field = "flow_action_id"
+    state_checkpoint_interval = 50  # API can return maximum 50 records per page
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        parent_id = stream_slice["parent"]["id"]
+        return f"flow-actions/{parent_id}/flow-messages"

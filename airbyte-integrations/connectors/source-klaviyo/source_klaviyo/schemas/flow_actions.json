@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "type": { "type": "string" },
+    "id": { "type": "string" },
+    "flow_id": { "type": "string" },
+    "updated": { "type": "string", "format": "date-time" },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "action_type": { "type": "string" },
+        "status": { "type": "string" },
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
+  }
+}

@@ -37,9 +37,12 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 - [Campaigns](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
 - [Campaigns Detailed](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
+- [Campaign Messages](https://developers.klaviyo.com/en/reference/get_campaign_campaign_messages)
 - [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
 - [Events](https://developers.klaviyo.com/en/reference/get_events)
 - [Flows](https://developers.klaviyo.com/en/reference/get_flows)
+- [Flow Actions](https://developers.klaviyo.com/en/reference/get_flow_flow_actions)
+- [Flow Messages](https://developers.klaviyo.com/en/reference/get_flow_action_messages)
 - [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
 - [Lists](https://developers.klaviyo.com/en/reference/get_lists)
 - [Lists Detailed](https://developers.klaviyo.com/en/reference/get_lists)
@@ -72,6 +75,7 @@ Stream `Lists Detailed` contains field `profile_count` in addition to info from 
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `2.6.3`  | 2024-02-05 | [34902](https://github.com/airbytehq/airbyte/pull/34902)   | Add `Campaign Messages` `Flow Actions` `Flow Messages` streams                                                                |
 | `2.6.2`  | 2024-05-08 | [37789](https://github.com/airbytehq/airbyte/pull/37789)   | Move stream schemas and spec to manifest                                                                                      |
 | `2.6.1`  | 2024-05-07 | [38010](https://github.com/airbytehq/airbyte/pull/38010)   | Add error handler for `5XX` status codes                                                                                      |
 | `2.6.0`  | 2024-04-19 | [37370](https://github.com/airbytehq/airbyte/pull/37370)   | Add streams `campaigns_detailed` and `lists_detailed`                                                                         |
