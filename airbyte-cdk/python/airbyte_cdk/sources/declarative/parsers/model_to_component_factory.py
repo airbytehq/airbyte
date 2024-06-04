@@ -333,12 +333,11 @@ class ModelToComponentFactory:
         declarative_stream: DeclarativeStreamModel,
     ) -> LegacyToPerPartitionStateMigration:
         retriever = declarative_stream.retriever
-        partition_router = retriever.partition_router  # type: ignore # CustomRetriever would inherit from SimpleRetriever and therefore have partition_router
-
         if not isinstance(retriever, SimpleRetrieverModel):
             raise ValueError(
                 f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(retriever)}"
             )
+        partition_router = retriever.partition_router
         if not isinstance(partition_router, (SubstreamPartitionRouterModel, CustomPartitionRouterModel)):
             raise ValueError(
                 f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(partition_router)}"
@@ -695,8 +694,7 @@ class ModelToComponentFactory:
         if model.response_filters:
             for response_filter_model in model.response_filters:
                 response_filters.append(self._create_component_from_model(model=response_filter_model, config=config))
-        else:
-            response_filters.append(HttpResponseFilter(config=config, parameters=model.parameters or {}))
+        response_filters.append(HttpResponseFilter(config=config, parameters=model.parameters or {}))
 
         return DefaultErrorHandler(
             backoff_strategies=backoff_strategies,
@@ -792,7 +790,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_http_response_filter(model: HttpResponseFilterModel, config: Config, **kwargs: Any) -> HttpResponseFilter:
-        if model.action is not None:
+        if model.action:
             action = ResponseAction(model.action.value)
         else:
             action = None

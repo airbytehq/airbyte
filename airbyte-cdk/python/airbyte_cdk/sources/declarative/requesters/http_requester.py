@@ -20,6 +20,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
+from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
@@ -205,6 +206,8 @@ class HttpRequester(Requester):
             return 0
         if self.error_handler is None:
             return self._DEFAULT_MAX_RETRY
+        if isinstance(self.error_handler, CompositeErrorHandler):
+            return self.error_handler.max_retries
         return self.error_handler.max_retries  # type: ignore # parent class does not have max_retries
 
     @property
@@ -214,6 +217,8 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return self._DEFAULT_MAX_TIME
+        if isinstance(self.error_handler, CompositeErrorHandler):
+            return self.error_handler.max_time
         return self.error_handler.max_time  # type: ignore # parent class does not have max_time
 
     @property

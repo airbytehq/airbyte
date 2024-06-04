@@ -11,6 +11,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler as Http
 @dataclass
 class ErrorHandler(HttpErrorHandler, ABC):
     """
-    Defines whether a request was successful and how to handle a failure.
-    References Python CDK ErrorHandler
+    This interface exists to retain backwards compatability with connectors that reference the declarative ErrorHandler. As part of the effort to promote common interfaces to the Python CDK, this now extends the Python CDK ErrorHandler interface.
+
+    `ErrorHandler` defines how to handle errors that occur during the request process, returning an ErrorResolution object that defines how to proceed.
     """

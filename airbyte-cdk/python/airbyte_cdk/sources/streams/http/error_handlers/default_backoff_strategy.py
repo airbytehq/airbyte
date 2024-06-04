@@ -2,7 +2,7 @@
 
 
 from datetime import timedelta
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 
 import requests
 
@@ -18,11 +18,12 @@ class DefaultBackoffStrategy(BackoffStrategy):
         self.max_retries = max_retries
         self.max_time = max_time.total_seconds()
 
-    def backoff_time(self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]]) -> Optional[float]:
+    def backoff_time(self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any) -> Optional[float]:
         """
         Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
 
-        :param response:
+        :param response_or_exception: The response or exception that caused the backoff.
+        :param kwargs: Additional arguments that may be passed to the backoff strategy. Most commonly the attempt_count of the request.
         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
         to the default backoff behavior (e.g using an exponential algorithm).
         """

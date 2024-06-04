@@ -18,7 +18,9 @@ from airbyte_cdk.sources.types import Config
 @dataclass
 class HttpResponseFilter:
     """
-    Filter to select HttpResponses
+    Filter to select a response based on its HTTP status code, error message or a predicate.
+    If a response matches the filter, the response action, failure_type, and error message are returned as an ErrorResolution object.
+    For http_codes declared in the filter, the failure_type will default to `system_error`.
 
     Attributes:
         action (Union[ResponseAction, str]): action to execute if a request matches
@@ -40,16 +42,15 @@ class HttpResponseFilter:
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
 
-        if self.action is not None and (self.http_codes is None and self.predicate is None and self.error_message_contains is None):
-            raise ValueError("HttpResponseFilter requires a filter condition if an action is specified")
-
-        if self.action is not None and isinstance(self.action, str):
-            self.action = ResponseAction[self.action]
+        if self.action is not None:
+            if self.http_codes is None and self.predicate is None and self.error_message_contains is None:
+                raise ValueError("HttpResponseFilter requires a filter condition if an action is specified")
+            elif isinstance(self.action, str):
+                self.action = ResponseAction[self.action]
         self.http_codes = self.http_codes or set()
         if isinstance(self.predicate, str):
             self.predicate = InterpolatedBoolean(condition=self.predicate, parameters=parameters)
         self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, parameters=parameters)
-
         self._error_message_parser = JsonErrorMessageParser()
 
     def matches(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[ErrorResolution]:
@@ -64,7 +65,7 @@ class HttpResponseFilter:
             default_mapped_error_resolution = None
 
         if filter_action is not None:
-            default_error_message = default_mapped_error_resolution.error_message if default_mapped_error_resolution is not None else ""
+            default_error_message = default_mapped_error_resolution.error_message if default_mapped_error_resolution else ""
             error_message = None
             if isinstance(response_or_exception, requests.Response):
                 error_message = self._create_error_message(response_or_exception)
@@ -76,7 +77,8 @@ class HttpResponseFilter:
                 failure_type=failure_type,
                 error_message=error_message,
             )
-        elif default_mapped_error_resolution:
+
+        if (self.http_codes is None and self.predicate is None and self.error_message_contains is None) and default_mapped_error_resolution:
             return default_mapped_error_resolution
 
         return None
@@ -93,8 +95,8 @@ class HttpResponseFilter:
         if isinstance(response_or_exception, requests.Response):
             if (
                 response_or_exception.status_code in self.http_codes  # type: ignore # http_codes set is always initialized to a value in __post_init__
-                or (self._response_matches_predicate(response_or_exception))
-                or (self._response_contains_error_message(response_or_exception))
+                or self._response_matches_predicate(response_or_exception)
+                or self._response_contains_error_message(response_or_exception)
             ):
                 return self.action  # type: ignore # action is always cast to a ResponseAction not a str
         return None
