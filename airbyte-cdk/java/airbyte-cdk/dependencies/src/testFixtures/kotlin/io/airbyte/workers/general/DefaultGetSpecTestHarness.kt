@@ -13,9 +13,10 @@ import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.internal.AirbyteStreamFactory
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory
 import io.airbyte.workers.process.IntegrationLauncher
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DefaultGetSpecTestHarness
 @JvmOverloads
@@ -32,23 +33,22 @@ constructor(
             this.process = process
 
             val jobOutput = ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.SPEC)
-            LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process!!.errorStream, { msg: String -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
             val spec =
                 messagesByType
                     .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())!!
-                    .stream()
                     .map { obj: AirbyteMessage -> obj.spec }
-                    .findFirst()
+                    .firstOrNull()
 
             val failureReason =
                 TestHarnessUtils.getJobFailureReasonFromMessages(
                     ConnectorJobOutput.OutputType.SPEC,
                     messagesByType
                 )
-            failureReason!!.ifPresent { failureReason: FailureReason? ->
+            failureReason!!.ifPresent { failureReason: FailureReason ->
                 jobOutput.failureReason = failureReason
             }
 
@@ -57,8 +57,8 @@ constructor(
                 LOGGER.warn("Spec job subprocess finished with exit code {}", exitCode)
             }
 
-            if (spec.isPresent) {
-                jobOutput.spec = spec.get()
+            if (spec != null) {
+                jobOutput.spec = spec
             } else if (failureReason.isEmpty) {
                 TestHarnessUtils.throwWorkerException(
                     "Integration failed to output a spec struct and did not output a failure reason",
@@ -79,7 +79,5 @@ constructor(
         TestHarnessUtils.cancelProcess(process)
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultGetSpecTestHarness::class.java)
-    }
+    companion object {}
 }
