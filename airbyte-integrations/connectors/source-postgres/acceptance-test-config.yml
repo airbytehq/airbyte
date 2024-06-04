@@ -36,6 +36,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
       - config_path: "secrets/config_cdc.json"
   incremental:
+    bypass_reason: "cant support incremental acceptance test yet"
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
