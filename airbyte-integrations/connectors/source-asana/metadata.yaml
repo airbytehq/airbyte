@@ -10,10 +10,12 @@ data:
   releases:
     breakingChanges:
       1.0.0:
+        message: "This release introduces updated data type of the `name` field in the `events` stream. Users will need to reset this stream after upgrading. Please see migration guide for more details."
         upgradeDeadline: "2024-06-30"
-        message:
-          "This verison migrates the Asana connector to the low-code framework for greater maintainability.
-          !! Important: A bug in the events stream schema has been fixed."
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - events
   remoteRegistries:
     pypi:
       enabled: true
