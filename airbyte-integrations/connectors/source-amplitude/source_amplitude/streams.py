@@ -74,11 +74,11 @@ class Events(HttpStream, CheckpointMixin):
     @property
     def time_interval(self) -> dict:
         return {self.event_time_interval.get("size_unit"): self.event_time_interval.get("size")}
-    
+
     @property
     def state(self) -> Mapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: Mapping[str, Any]) -> Mapping[str, Any]:
         self._state = value
