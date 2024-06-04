@@ -1110,10 +1110,8 @@ class CRMSearchStream(IncrementalStream, ABC):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        print(f"CRMSearchStream init: {id(self)} Associations before set: {getattr(self, 'associations', 'Not Set')}")
         if not hasattr(self, 'associations'):
             self.associations = ["contacts"]  # Default initialization
-        print(f"CRMSearchStream init: {id(self)} Associations after set: {self.associations}")
         self._state = None
         self._include_archived_only = include_archived_only
 
@@ -2167,14 +2165,10 @@ class Companies(CRMSearchStream):
     scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
     def __init__(self, custom_object_list=None, **kwargs):
-        print(f"Companies init start: {id(self)} Associations before super: {getattr(self, 'associations', 'Not Set')}")
         super().__init__(**kwargs)
-        print(f"Companies init after super: {id(self)} Associations: {self.associations}")
         if custom_object_list:
-            print(f"Adding custom objects: {custom_object_list}")
             self.associations.extend(custom_object_list)
             self.scopes.add("crm.objects.custom.read")
-        print(f"Companies init end: {id(self)} Final associations: {self.associations}")
 
 
 class Contacts(CRMSearchStream):
