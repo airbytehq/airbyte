@@ -433,7 +433,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         primary_key = []
         for key in primary_keys:
             try:
-                primary_key.append(str(dpath.util.get(record_msg.data, key)))
+                primary_key.append(str(dpath.get(record_msg.data, key)))
             except KeyError:
                 primary_key.append("__not_found__")
         # return a stringified version of all primary keys
