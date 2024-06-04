@@ -266,7 +266,8 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 2.4.3   | 2024-06-03 | [38865](https://github.com/airbytehq/airbyte/pull/38865) | Enforce unique property IDs                                                            |
 | 2.4.2   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field       |
 | 2.4.1   | 2024-02-09 | [35073](https://github.com/airbytehq/airbyte/pull/35073) | Manage dependencies with Poetry.                                                       |
 | 2.4.0   | 2024-02-07 | [34951](https://github.com/airbytehq/airbyte/pull/34951) | Replace the spec parameter from previous version to convert all `conversions:*` fields |
