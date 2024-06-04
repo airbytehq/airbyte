@@ -191,8 +191,7 @@ This is a good solution if:
 
 - There is not a well-defined cursor candidate to use for Standard incremental mode.
 - You want to replace a previously configured full-refresh sync.
-- You are replicating Postgres tables less than 500GB.
-- Your database doesn't incur heavy writes that would lead to transaction ID wrap around
+- Your database doesn't incur heavy writes that would lead to transaction ID wraparound.
 - You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication.
 
 ## Connecting with SSL or SSH Tunneling
