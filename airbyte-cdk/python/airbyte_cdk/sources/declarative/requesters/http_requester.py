@@ -543,9 +543,10 @@ class HttpRequester(Requester):
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
         if log_formatter:
+            formatter = log_formatter
             self.message_repository.log_message(
                 Level.DEBUG,
-                lambda: log_formatter(response),
+                lambda: formatter(response),
             )
         if self._should_retry(response):
             custom_backoff_time = self._backoff_time(response)
