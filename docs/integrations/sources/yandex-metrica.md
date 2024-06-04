@@ -87,6 +87,9 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 1.0.4   | 2024-04-19 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Updating to 0.80.0 CDK                                                          |
@@ -95,3 +98,5 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 | 1.0.1   | 2024-04-12 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | schema descriptions                                                             |
 | 1.0.0   | 2023-03-20 | [24188](https://github.com/airbytehq/airbyte/pull/24188) | Migrate to Beta; Change state structure                                         |
 | 0.1.0   | 2022-09-09 | [15061](https://github.com/airbytehq/airbyte/pull/15061) | 🎉 New Source: Yandex metrica                                                   |
+
+</details>

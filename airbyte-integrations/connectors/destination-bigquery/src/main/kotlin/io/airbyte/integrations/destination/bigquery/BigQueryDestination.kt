@@ -43,6 +43,7 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils.*
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDV2Migration
 import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDestinationState
+import io.airbyte.integrations.destination.bigquery.migrators.BigqueryAirbyteMetaAndGenerationIdMigration
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryGcsStorageOperation
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler
@@ -226,7 +227,11 @@ class BigQueryDestination : BaseConnector(), Destination {
             )
         val destinationHandler = BigQueryDestinationHandler(bigquery, datasetLocation)
 
-        val migrations = listOf(BigQueryDV2Migration(sqlGenerator, bigquery))
+        val migrations =
+            listOf(
+                BigQueryDV2Migration(sqlGenerator, bigquery),
+                BigqueryAirbyteMetaAndGenerationIdMigration(bigquery),
+            )
 
         if (uploadingMethod == UploadingMethod.STANDARD) {
             val bigQueryClientChunkSize = getBigQueryClientChunkSize(config)
@@ -289,7 +294,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                         bigQueryGcsStorageOperations,
                         initialStatus,
                         FileUploadFormat.CSV,
-                        V2_WITHOUT_META,
+                        V2_WITH_GENERATION,
                         disableTD
                     )
                 },

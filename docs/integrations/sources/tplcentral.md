@@ -44,7 +44,15 @@ Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
-| 0.1.1   | 2022-11-01 | [18763](https://github.com/airbytehq/airbyte/pull/18763) | Check if `url_base` parameter is set to HTTPS URL. |
-| 0.1.0   | 2021-08-18 | [7322](https://github.com/airbytehq/airbyte/pull/7322)   | New Source: 3PL Central                            |
+| 0.1.4 | 2024-06-03 | [38919](https://github.com/airbytehq/airbyte/pull/38919) | Replace AirbyteLogger with logging.Logger |
+| 0.1.3 | 2024-06-03 | [38919](https://github.com/airbytehq/airbyte/pull/38919) | Replace AirbyteLogger with logging.Logger |
+| 0.1.2 | 2024-05-20 | [38403](https://github.com/airbytehq/airbyte/pull/38403) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2022-11-01 | [18763](https://github.com/airbytehq/airbyte/pull/18763) | Check if `url_base` parameter is set to HTTPS URL. |
+| 0.1.0 | 2021-08-18 | [7322](https://github.com/airbytehq/airbyte/pull/7322) | New Source: 3PL Central |
+
+</details>

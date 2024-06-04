@@ -117,10 +117,16 @@ The output SQS message would contain:
 <something>value</something>
 ```
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| 0.1.3 | 2024-05-21 | [38493](https://github.com/airbytehq/airbyte/pull/38493) | [autopull] base image + poetry + up_to_date |
 | 0.1.2   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector              |
 | 0.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
 | 0.1.0   | 2021-10-27 | [#0000](https://github.com/airbytehq/airbyte/pull/0000)   | Initial version                   |
+
+</details>

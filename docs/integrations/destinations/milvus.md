@@ -109,10 +109,14 @@ vector_store.fields.append("text")
 vector_store.similarity_search("test")
 ```
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.15 | 2024-05-20 | [38276](https://github.com/airbytehq/airbyte/pull/38276) | Replace AirbyteLogger with logging.Logger |
 | 0.0.14  | 2024-3-22  | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities                                                                                         |
 | 0.0.13  | 2024-3-22  | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Move to poetry; Fix tests                                                                                                                           |
 | 0.0.12  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                                                                                               |
@@ -127,3 +131,5 @@ vector_store.similarity_search("test")
 | 0.0.3   | 2023-09-29 | [#30820](https://github.com/airbytehq/airbyte/pull/30820) | Update CDK                                                                                                                                          |
 | 0.0.2   | 2023-08-25 | [#30689](https://github.com/airbytehq/airbyte/pull/30689) | Update CDK to support azure OpenAI embeddings and text splitting options, make sure primary key field is not accidentally set, promote to certified |
 | 0.0.1   | 2023-08-12 | [#29442](https://github.com/airbytehq/airbyte/pull/29442) | Milvus connector with some embedders                                                                                                                |
+
+</details>

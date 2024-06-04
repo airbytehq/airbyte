@@ -2,9 +2,10 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f9b6c538-ee12-42fe-8d4b-0c10f5955417
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-tplcentral
   githubIssueLabel: source-tplcentral
+  icon: tplcentral.svg
   license: MIT
   name: TPLcentral
   remoteRegistries:
@@ -27,4 +28,6 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
 metadataSpecVersion: "1.0"
