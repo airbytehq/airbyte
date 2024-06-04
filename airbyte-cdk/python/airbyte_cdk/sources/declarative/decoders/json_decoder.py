@@ -25,7 +25,7 @@ class JsonDecoder(Decoder):
                 body_json = [body_json]
             yield from body_json
         except requests.exceptions.JSONDecodeError:
-            yield from [{}]
+            yield {}
 
 
 @dataclass
