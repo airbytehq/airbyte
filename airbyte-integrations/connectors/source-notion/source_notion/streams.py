@@ -183,7 +183,7 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
@@ -212,7 +212,6 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
             stream_state = None
 
         self.state = stream_state or {}
-
 
         try:
             for record in super().read_records(sync_mode, stream_state=stream_state, **kwargs):
