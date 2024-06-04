@@ -78,6 +78,7 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| 0.2.11 | 2024-06-03 | [38914](https://github.com/airbytehq/airbyte/pull/38914) | Replace AirbyteLogger with logging.Logger |
 | 0.2.10 | 2024-06-03 | [38914](https://github.com/airbytehq/airbyte/pull/38914) | Replace AirbyteLogger with logging.Logger |
 | 0.2.9 | 2024-05-20 | [38396](https://github.com/airbytehq/airbyte/pull/38396) | [autopull] base image + poetry + up_to_date |
 | 0.2.8 | 2022-12-07 | [20182](https://github.com/airbytehq/airbyte/pull/20182) | Fix schema transformation issue |
