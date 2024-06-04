@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 raw_data = (
     "app_type",
     "custom_data",

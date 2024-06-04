@@ -14,7 +14,7 @@
     "campaign": {
       "type": ["null", "string"]
     },
-     "event_name": {
+    "event_name": {
       "type": ["null", "string"]
     },
     "event_unique_users": {

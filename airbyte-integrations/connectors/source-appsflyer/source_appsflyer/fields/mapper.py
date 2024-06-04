@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 field_map = {
     "Agency/PMD (af_prt)": "af_prt",
     "Media Source (pid)": "media_source",
