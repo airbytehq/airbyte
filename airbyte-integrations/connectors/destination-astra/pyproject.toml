@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-astra"
-version = "0.1.3"
+version = "0.1.4"
 description = "Airbyte destination implementation for Astra DB."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -18,7 +18,7 @@ include = "destination_astra"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
+airbyte-cdk = {version = "0.1.4", extras = ["vector-db-based"]}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"
