@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Dict, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -32,5 +32,7 @@ class ConstantBackoffStrategy(BackoffStrategy):
         else:
             self.backoff_time_in_seconds = InterpolatedString.create(self.backoff_time_in_seconds, parameters=parameters)
 
-    def backoff_time(self, response_or_exception: Optional[Union[requests.Response, Exception]], attempt_count: int) -> Optional[float]:  # type: ignore # attempt_count maintained for compatibility with low code CDK
+    def backoff_time(
+        self, response_or_exception: Optional[Union[requests.Response, Exception]], **kwarg: Dict[Any, Any]
+    ) -> Optional[float]:
         return self.backoff_time_in_seconds.eval(self.config)  # type: ignore # backoff_time_in_seconds is always cast to an interpolated string

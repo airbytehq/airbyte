@@ -20,12 +20,12 @@ class DefaultErrorHandler(ErrorHandler):
     """
     Default error handler.
 
-    By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.
+    By default, the handler will only use the `DEFAULT_ERROR_MAPPING` that is part of the Python CDK's `HttpStatusErrorHandler`.
 
-    If the response is successful, then return SUCCESS
+    If the response is successful, then a SUCCESS_RESOLUTION is returned.
     Otherwise, iterate over the response_filters.
     If any of the filter match the response, then return the appropriate status.
-    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.
+    When `DefaultErrorHandler.backoff_time()` is invoked, iterate sequentially over the backoff_strategies and return the first non-None backoff time, else return None.
 
     Sample configs:
 
@@ -109,22 +109,12 @@ class DefaultErrorHandler(ErrorHandler):
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
 
+        if self.response_filters:
+            for response_filter in self.response_filters:
+                matched_error_resolution = response_filter.matches(response_or_exception=response_or_exception)
+                if matched_error_resolution:
+                    return matched_error_resolution
         if isinstance(response_or_exception, requests.Response):
-
-            request = response_or_exception.request
-
-            if request not in self._last_request_to_attempt_count:
-                self._last_request_to_attempt_count = {request: 1}
-            else:
-                self._last_request_to_attempt_count[request] += 1
-            if self.response_filters:
-
-                for response_filter in self.response_filters:
-                    matched_error_resolution = response_filter.matches(response_or_exception=response_or_exception)
-
-                    if matched_error_resolution is not None:
-                        return matched_error_resolution
-
             if response_or_exception.ok:
                 return SUCCESS_RESOLUTION
 

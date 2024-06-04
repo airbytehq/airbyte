@@ -6,7 +6,7 @@ import logging
 import os
 import urllib
 from pathlib import Path
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Tuple, Union, Dict
 
 import requests
 import requests_cache
@@ -72,6 +72,7 @@ class HttpClient:
         else:
             self._backoff_strategies = [DefaultBackoffStrategy()]
         self._error_message_parser = error_message_parser or JsonErrorMessageParser()
+        self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
 
     @property
     def cache_filename(self) -> str:
@@ -199,6 +200,11 @@ class HttpClient:
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
 
+        if request not in self._request_attempt_count:
+            self._request_attempt_count[request] = 1
+        else:
+            self._request_attempt_count[request] += 1
+
         self._logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
@@ -247,7 +253,7 @@ class HttpClient:
             custom_backoff_time = None
             for backoff_strategy in self._backoff_strategies:
                 if hasattr(backoff_strategy, "backoff_time"):
-                    backoff_time = backoff_strategy.backoff_time(response if response is not None else exc)
+                    backoff_time = backoff_strategy.backoff_time(response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request])
                     if backoff_time:
                         custom_backoff_time = backoff_time
                         break
