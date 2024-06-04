@@ -4,7 +4,7 @@
 
 from typing import Any, Dict, List, Literal, Optional, Union
 
-import dpath.util
+import dpath
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
@@ -264,7 +264,7 @@ class VectorDBConfigModel(BaseModel):
     @staticmethod
     def remove_discriminator(schema: Dict[str, Any]) -> None:
         """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/**/discriminator")
+        dpath.delete(schema, "properties/**/discriminator")
 
     @classmethod
     def schema(cls, by_alias: bool = True, ref_template: str = "") -> Dict[str, Any]:
