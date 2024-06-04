@@ -63,6 +63,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.0.5 | 2024-06-03 | [38913](https://github.com/airbytehq/airbyte/pull/38913) | Replace AirbyteLogger with logging.Logger |
 | 1.0.4 | 2024-06-03 | [38913](https://github.com/airbytehq/airbyte/pull/38913) | Replace AirbyteLogger with logging.Logger |
 | 1.0.3 | 2024-04-19 | [37246](https://github.com/airbytehq/airbyte/pull/37246) | Updating to 0.80.0 CDK |
 | 1.0.2 | 2024-04-12 | [37246](https://github.com/airbytehq/airbyte/pull/37246) | schema descriptions |
