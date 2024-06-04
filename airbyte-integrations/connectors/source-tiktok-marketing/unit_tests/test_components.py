@@ -1,8 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
+import datetime
 from unittest.mock import MagicMock
 
+import pendulum
 import pytest
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_tiktok_marketing import SourceTiktokMarketing
@@ -10,6 +12,7 @@ from source_tiktok_marketing.components.advertiser_ids_partition_router import (
     MultipleAdvertiserIdsPartitionRouter,
     SingleAdvertiserIdPartitionRouter,
 )
+from source_tiktok_marketing.components.hourly_datetime_based_cursor import HourlyDatetimeBasedCursor
 from source_tiktok_marketing.components.semi_incremental_record_filter import PerPartitionRecordFilter
 
 
@@ -149,9 +152,40 @@ def test_record_filter(records, state, slice, expected):
         parameters={"partition_field": "advertiser_id"},
         condition="{{ record['start_time'] >= stream_state.get('start_time', config.get('start_date', '')) }}"
     )
-    filtered_records = record_filter.filter_records(
+    filtered_records = list(record_filter.filter_records(
         records=records,
         stream_state=state,
         stream_slice=StreamSlice(partition=slice, cursor_slice={})
-    )
+    ))
     assert filtered_records == expected
+
+
+def test_hourly_datetime_based_cursor():
+    config = {"credentials": {"auth_type": "oauth2.0", "advertiser_id": "11111111111"}, "start_date": "2022-01-01", "end_date": "2022-01-02"}
+
+    cursor = HourlyDatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="{{ config.get('start_date', '2016-09-01') }}", datetime_format="%Y-%m-%d", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="{{ config.get('end_date', today_utc()) }}", datetime_format="%Y-%m-%d", parameters={}),
+        config=config,
+        cursor_field="stat_time_hour",
+        datetime_format="%Y-%m-%d",
+        cursor_datetime_formats=["%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"],
+        parameters={}
+    )
+    partition_daterange = cursor._partition_daterange(
+        start=pendulum.parse(config["start_date"]), end=pendulum.parse(config["end_date"]), step=pendulum.duration(days=1)
+    )
+    assert partition_daterange == [
+        {"start_time": "2022-01-01", "end_time": "2022-01-02"}, 
+        {"start_time": "2022-01-02", "end_time": "2022-01-02"}
+    ]
+
+    partition_daterange = cursor._partition_daterange(
+        start=pendulum.parse("2022-01-01 10:00:00"),
+        end=pendulum.parse(config["end_date"]),
+        step=pendulum.duration(days=1)
+    )
+    assert partition_daterange == [
+        {"start_time": "2022-01-01", "end_time": "2022-01-02"},
+        {"start_time": "2022-01-02", "end_time": "2022-01-02"}
+    ]
