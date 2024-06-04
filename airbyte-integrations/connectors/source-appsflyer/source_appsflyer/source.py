@@ -3,6 +3,7 @@
 #
 
 import csv
+import logging
 from abc import ABC
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -12,7 +13,6 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping,
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -113,7 +113,7 @@ class AppsflyerStream(HttpStream, ABC):
         else:
             return super().backoff_time(response)
 
-        AirbyteLogger().log("INFO", f"Rate limit exceded. Retry in {wait_time} seconds.")
+        logging.getLogger("airbyte").log("INFO", f"Rate limit exceded. Retry in {wait_time} seconds.")
         return wait_time
 
     @transformer.registerCustomTransform
@@ -312,7 +312,7 @@ class SourceAppsflyer(AbstractSource):
 
     def is_start_date_before_earliest_date(self, start_date, earliest_date):
         if start_date <= earliest_date:
-            AirbyteLogger().log("INFO", f"Start date over 90 days, using start_date: {earliest_date}")
+            logging.getLogger("airbyte").log("INFO", f"Start date over 90 days, using start_date: {earliest_date}")
             return earliest_date
 
         return start_date
@@ -324,7 +324,7 @@ class SourceAppsflyer(AbstractSource):
         start_date = parse_date(config.get("start_date") or pendulum.today(timezone), timezone)
         config["start_date"] = self.is_start_date_before_earliest_date(start_date, earliest_date)
         config["end_date"] = pendulum.now(timezone)
-        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
+        logging.getLogger("airbyte").log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
         auth = NoAuth()
         return [
             InAppEvents(authenticator=auth, **config),
