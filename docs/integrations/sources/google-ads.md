@@ -307,6 +307,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.1 | 2024-06-04 | [38948](https://github.com/airbytehq/airbyte/pull/38948) | [autopull] Upgrade base image to v1.2.1 |
 | `3.5.0`  | 2024-05-22 | [37840](https://github.com/airbytehq/airbyte/pull/37840) | Fix custom GAQL queries default value                                                                                                |
 | `3.4.3`  | 2024-05-20 | [38270](https://github.com/airbytehq/airbyte/pull/38270) | Replace AirbyteLogger with logging.Logger                                                                                            |
 | `3.4.2`  | 2024-04-24 | [36638](https://github.com/airbytehq/airbyte/pull/36638) | Schema descriptions and CDK 0.80.0                                                                                                   |
