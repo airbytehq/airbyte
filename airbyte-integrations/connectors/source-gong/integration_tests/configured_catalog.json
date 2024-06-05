@@ -20,7 +20,7 @@
     },
     {
       "stream": {
-        "name": "extensive_calls",
+        "name": "extensiveCalls",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
