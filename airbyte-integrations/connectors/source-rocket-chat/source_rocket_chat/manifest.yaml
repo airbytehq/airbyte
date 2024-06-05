@@ -17,11 +17,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /teams.list
           http_method: GET
           request_headers:
-            X-User-Id: '{{ config[''user_id''] }}'
+            X-User-Id: "{{ config['user_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -45,7 +45,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/teams'
+          $ref: "#/schemas/teams"
     rooms:
       type: DeclarativeStream
       name: rooms
@@ -54,11 +54,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /rooms.get
           http_method: GET
           request_headers:
-            X-User-Id: '{{ config[''user_id''] }}'
+            X-User-Id: "{{ config['user_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -68,7 +68,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/rooms'
+          $ref: "#/schemas/rooms"
     channels:
       type: DeclarativeStream
       name: channels
@@ -77,11 +77,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /channels.list
           http_method: GET
           request_headers:
-            X-User-Id: '{{ config[''user_id''] }}'
+            X-User-Id: "{{ config['user_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -105,7 +105,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/channels'
+          $ref: "#/schemas/channels"
     roles:
       type: DeclarativeStream
       name: roles
@@ -114,11 +114,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /roles.list
           http_method: GET
           request_headers:
-            X-User-Id: '{{ config[''user_id''] }}'
+            X-User-Id: "{{ config['user_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -128,7 +128,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/roles'
+          $ref: "#/schemas/roles"
     subscriptions:
       type: DeclarativeStream
       name: subscriptions
@@ -137,11 +137,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /subscriptions.get
           http_method: GET
           request_headers:
-            X-User-Id: '{{ config[''user_id''] }}'
+            X-User-Id: "{{ config['user_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -151,7 +151,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/subscriptions'
+          $ref: "#/schemas/subscriptions"
     users:
       type: DeclarativeStream
       name: users
@@ -160,11 +160,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users.list
           http_method: GET
           request_headers:
-            X-User-Id: '{{ config[''user_id''] }}'
+            X-User-Id: "{{ config['user_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -188,25 +188,25 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
-    url_base: '{{ config[''endpoint''] }}/api/v1'
+    url_base: "{{ config['endpoint'] }}/api/v1"
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''token''] }}'
+      api_token: "{{ config['token'] }}"
       inject_into:
         type: RequestOption
         field_name: X-Auth-Token
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/teams'
-  - $ref: '#/definitions/streams/rooms'
-  - $ref: '#/definitions/streams/channels'
-  - $ref: '#/definitions/streams/roles'
-  - $ref: '#/definitions/streams/subscriptions'
-  - $ref: '#/definitions/streams/users'
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/rooms"
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/users"
 
 spec:
   type: Spec
@@ -259,39 +259,39 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - integer
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       _updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       createdBy:
         type:
-          - 'null'
+          - "null"
           - object
       name:
         type:
-          - 'null'
+          - "null"
           - string
       numberOfUsers:
         type:
-          - 'null'
+          - "null"
           - integer
       roomId:
         type:
-          - 'null'
+          - "null"
           - string
       rooms:
         type:
-          - 'null'
+          - "null"
           - integer
   rooms:
     type: object
@@ -300,79 +300,79 @@ schemas:
     properties:
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       _updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
       broadcast:
         type:
-          - 'null'
+          - "null"
           - boolean
       customFields:
         type:
-          - 'null'
+          - "null"
           - object
       default:
         type:
-          - 'null'
+          - "null"
           - boolean
       description:
         type:
-          - 'null'
+          - "null"
           - string
       encrypted:
         type:
-          - 'null'
+          - "null"
           - boolean
       federated:
         type:
-          - 'null'
+          - "null"
           - boolean
       fname:
         type:
-          - 'null'
+          - "null"
           - string
       lastMessage:
         type:
-          - 'null'
+          - "null"
           - object
       lm:
         type:
-          - 'null'
+          - "null"
           - string
       msgs:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       ro:
         type:
-          - 'null'
+          - "null"
           - boolean
       sysMes:
         type:
-          - 'null'
+          - "null"
           - boolean
       t:
         type:
-          - 'null'
+          - "null"
           - string
       ts:
         type:
-          - 'null'
+          - "null"
           - string
       u:
         type:
-          - 'null'
+          - "null"
           - object
       usersCount:
         type:
-          - 'null'
+          - "null"
           - integer
   channels:
     type: object
@@ -381,71 +381,71 @@ schemas:
     properties:
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       _updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
       broadcast:
         type:
-          - 'null'
+          - "null"
           - boolean
       default:
         type:
-          - 'null'
+          - "null"
           - boolean
       description:
         type:
-          - 'null'
+          - "null"
           - string
       encrypted:
         type:
-          - 'null'
+          - "null"
           - boolean
       fname:
         type:
-          - 'null'
+          - "null"
           - string
       msgs:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       ro:
         type:
-          - 'null'
+          - "null"
           - boolean
       sysMes:
         type:
-          - 'null'
+          - "null"
           - boolean
       t:
         type:
-          - 'null'
+          - "null"
           - string
       teamId:
         type:
-          - 'null'
+          - "null"
           - string
       teamMain:
         type:
-          - 'null'
+          - "null"
           - boolean
       ts:
         type:
-          - 'null'
+          - "null"
           - string
       u:
         type:
-          - 'null'
+          - "null"
           - object
       usersCount:
         type:
-          - 'null'
+          - "null"
           - integer
   roles:
     type: object
@@ -454,27 +454,27 @@ schemas:
     properties:
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       mandatory2fa:
         type:
-          - 'null'
+          - "null"
           - boolean
       name:
         type:
-          - 'null'
+          - "null"
           - string
       protected:
         type:
-          - 'null'
+          - "null"
           - boolean
       scope:
         type:
-          - 'null'
+          - "null"
           - string
   subscriptions:
     type: object
@@ -483,63 +483,63 @@ schemas:
     properties:
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       _updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
       alert:
         type:
-          - 'null'
+          - "null"
           - boolean
       fname:
         type:
-          - 'null'
+          - "null"
           - string
       groupMentions:
         type:
-          - 'null'
+          - "null"
           - integer
       ls:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       open:
         type:
-          - 'null'
+          - "null"
           - boolean
       rid:
         type:
-          - 'null'
+          - "null"
           - string
       roles:
         type:
-          - 'null'
+          - "null"
           - array
       t:
         type:
-          - 'null'
+          - "null"
           - string
       ts:
         type:
-          - 'null'
+          - "null"
           - string
       u:
         type:
-          - 'null'
+          - "null"
           - object
       unread:
         type:
-          - 'null'
+          - "null"
           - integer
       userMentions:
         type:
-          - 'null'
+          - "null"
           - integer
   users:
     type: object
@@ -548,45 +548,45 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       active:
         type:
-          - 'null'
+          - "null"
           - boolean
       emails:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: object
       lastLogin:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       nameInsensitive:
         type:
-          - 'null'
+          - "null"
           - string
       roles:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       username:
         type:
-          - 'null'
+          - "null"
           - string
