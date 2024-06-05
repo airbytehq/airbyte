@@ -52,6 +52,7 @@ The SurveyCTO source connector supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------- |
+| 0.1.4 | 2024-06-04 | [38993](https://github.com/airbytehq/airbyte/pull/38993) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-05-20 | [38439](https://github.com/airbytehq/airbyte/pull/38439) | [autopull] base image + poetry + up_to_date |
 | 0.1.2 | 2023-07-27 | [28512](https://github.com/airbytehq/airbyte/pull/28512) | Added Check Connection |
 | 0.1.1 | 2023-04-25 | [24784](https://github.com/airbytehq/airbyte/pull/24784) | Fix incremental sync |

@@ -80,6 +80,7 @@ RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.1.2 | 2024-06-04 | [38937](https://github.com/airbytehq/airbyte/pull/38937) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.1 | 2024-05-20 | [38382](https://github.com/airbytehq/airbyte/pull/38382) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |
 
