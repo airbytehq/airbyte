@@ -118,7 +118,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
         state_date = end_date
         if sync_mode == SyncMode.incremental:
             if self.state and self.state.get(self.cursor_field):
-                state_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%d')
+                state_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%dT%H:%M:%S.%f')
 
             self.state = {self.cursor_field: end_date}
 
