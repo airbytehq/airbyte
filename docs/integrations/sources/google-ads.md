@@ -305,6 +305,9 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
 | `3.5.0`  | 2024-05-22 | [37840](https://github.com/airbytehq/airbyte/pull/37840) | Fix custom GAQL queries default value                                                                                                |
@@ -417,3 +420,5 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 | `0.1.3`  | 2021-07-23 | [4788](https://github.com/airbytehq/airbyte/pull/4788)   | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams                                         |
 | `0.1.2`  | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                      |
 | `0.1.1`  | 2021-06-23 | [4288](https://github.com/airbytehq/airbyte/pull/4288)   | Fix `Bugfix: Correctly declare required parameters`                                                                                  |
+
+</details>
