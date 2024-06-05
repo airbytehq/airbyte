@@ -42,7 +42,7 @@ class IterableDecoder(Decoder):
         #  see list_users in iterable:: response.body == b'user1@example.com\nuser2@example.com'
         #  possible option: we can wrap strings directly into records => {"record": {line.decode()}}
         for line in response.iter_lines():
-            yield line.decode()
+            yield {"record": line.decode()}
 
 
 @dataclass
