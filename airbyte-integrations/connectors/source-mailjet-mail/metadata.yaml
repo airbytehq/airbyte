@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 56582331-5de2-476b-b913-5798de77bbdf
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-mailjet-mail
   githubIssueLabel: source-mailjet-mail
   icon: mailjetmail.svg
@@ -26,12 +26,18 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-MAILJET-MAIL__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  # Disabled acceptanceTests
+  # They are not passing
+  # Low/No Airbyte Cloud Usage
+  #
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-MAILJET-MAIL__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795
 metadataSpecVersion: "1.0"

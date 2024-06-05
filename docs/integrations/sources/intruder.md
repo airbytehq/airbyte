@@ -30,6 +30,12 @@ Intruder.io APIs are under rate limits for the number of API calls allowed per A
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.1.1 | 2024-05-21 | [38495](https://github.com/airbytehq/airbyte/pull/38495) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-30 | [#18668](https://github.com/airbytehq/airbyte/pull/18668) | 🎉 New Source: Intruder.io API [low-code CDK] |
+
+</details>

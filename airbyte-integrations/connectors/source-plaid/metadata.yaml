@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.2
   dockerRepository: airbyte/source-plaid
   githubIssueLabel: source-plaid
   icon: plaid.svg
@@ -26,12 +26,17 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-PLAID__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  # Disabling the acceptanceTests suite for now
+  # They are not passing
+  # No Airbyte Cloud usage
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-PLAID__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795
 metadataSpecVersion: "1.0"

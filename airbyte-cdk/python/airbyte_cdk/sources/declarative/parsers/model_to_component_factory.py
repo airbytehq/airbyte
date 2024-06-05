@@ -7,7 +7,7 @@ from __future__ import annotations
 import importlib
 import inspect
 import re
-from typing import Any, Callable, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
@@ -27,6 +27,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import (
     CursorFactory,
@@ -558,6 +559,8 @@ class ModelToComponentFactory:
         end_datetime: Union[str, MinMaxDatetime, None] = None
         if model.is_data_feed and model.end_datetime:
             raise ValueError("Data feed does not support end_datetime")
+        if model.is_data_feed and model.is_client_side_incremental:
+            raise ValueError("`Client side incremental` cannot be applied with `data feed`. Choose only 1 from them.")
         if model.end_datetime:
             end_datetime = (
                 model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
@@ -611,6 +614,18 @@ class ModelToComponentFactory:
         stop_condition_on_cursor = (
             model.incremental_sync and hasattr(model.incremental_sync, "is_data_feed") and model.incremental_sync.is_data_feed
         )
+        client_side_incremental_sync = None
+        if (
+            model.incremental_sync
+            and hasattr(model.incremental_sync, "is_client_side_incremental")
+            and model.incremental_sync.is_client_side_incremental
+        ):
+            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, PerPartitionCursor)):
+                raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
+            client_side_incremental_sync = {
+                "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
+                "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
+            }
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:
@@ -622,6 +637,7 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             stream_slicer=combined_slicers,
             stop_condition_on_cursor=stop_condition_on_cursor,
+            client_side_incremental_sync=client_side_incremental_sync,
             transformations=transformations,
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
@@ -982,11 +998,19 @@ class ModelToComponentFactory:
         config: Config,
         *,
         transformations: List[RecordTransformation],
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> RecordSelector:
         assert model.schema_normalization is not None  # for mypy
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
+        if client_side_incremental_sync:
+            record_filter = ClientSideIncrementalRecordFilterDecorator(
+                config=config,
+                parameters=model.parameters,
+                condition=model.record_filter.condition if model.record_filter else None,
+                **client_side_incremental_sync,
+            )
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
         return RecordSelector(
@@ -1038,10 +1062,16 @@ class ModelToComponentFactory:
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config, name=name)
-        record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
+        record_selector = self._create_component_from_model(
+            model=model.record_selector,
+            config=config,
+            transformations=transformations,
+            client_side_incremental_sync=client_side_incremental_sync,
+        )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
         cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
