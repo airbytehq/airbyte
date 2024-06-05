@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1
+Python 3.11 compatibility bugfixes
+
 ## 1.2.0
 add client side incremental sync
 
