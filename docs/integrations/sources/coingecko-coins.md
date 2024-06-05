@@ -52,6 +52,7 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
+| 0.1.2 | 2024-06-04 | [38971](https://github.com/airbytehq/airbyte/pull/38971) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.1 | 2024-05-21 | [38515](https://github.com/airbytehq/airbyte/pull/38515) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2023-04-30 | [25558](https://github.com/airbytehq/airbyte/pull/25558) | Make manifest.yaml connector builder-friendly |
 | 0.1.0 | 2022-10-20 | [18248](https://github.com/airbytehq/airbyte/pull/18248) | New source |
