@@ -299,7 +299,10 @@ The json objects can have the following formats:
 Output files can be compressed. The default option is GZIP compression. If compression is selected,
 the output filename will have an extra extension (GZIP: `.jsonl.gz`).
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                 |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
@@ -312,3 +315,5 @@ the output filename will have an extra extension (GZIP: `.jsonl.gz`).
 | 0.1.2   | 2023-02-01 | [22220](https://github.com/airbytehq/airbyte/pull/22220)  | Fix race condition in test, table metadata, add Airbyte sync fields to table definition |
 | 0.1.1   | 2022-12-13 | [19907](https://github.com/airbytehq/airbyte/pull/19907)  | Fix parsing empty object in schema                                                      |
 | 0.1.0   | 2022-11-17 | [18695](https://github.com/airbytehq/airbyte/pull/18695)  | Initial Commit                                                                          |
+
+</details>
