@@ -132,8 +132,6 @@ protected constructor(driverClassName: String) :
 
         val database = createDatabase(config)
 
-        precheckDatabase(database, config)
-
         logPreSyncDebugData(database, catalog)
 
         val fullyQualifiedTableNameToInfo =
@@ -181,14 +179,6 @@ protected constructor(driverClassName: String) :
             Exceptions.toRuntime { this.close() }
             LOGGER.info { "Closed database connection pool." }
         }
-    }
-
-    // Optional - perform some rechecks before read.
-    // For example, postgres source connector can check if the database has
-    // xmin wraparound
-    @Throws(SQLException::class)
-    protected open fun precheckDatabase(database: Database, config: JsonNode) {
-        /* no-op */
     }
 
     // Optional - perform any initialization logic before read. For example, source connector

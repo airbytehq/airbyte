@@ -345,17 +345,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return database;
   }
 
-  @Override
-  protected void precheckDatabase(final JdbcDatabase database, final JsonNode config) throws SQLException {
-    if (isXmin(config)) {
-      if (PostgresQueryUtils.getXminStatus(database).getNumWraparound() > 0) {
-        throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
-            "which makes this sync option inefficient and can lead to higher credit consumption. " +
-            "Please change the replication method to CDC or cursor based.");
-      }
-    }
-  }
-
   public static Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties =
         config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
@@ -512,6 +501,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final XminStatus xminStatus;
       try {
         xminStatus = PostgresQueryUtils.getXminStatus(database);
+        if (xminStatus.getNumWraparound() > 0) {
+            throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
+                    "which makes this sync option inefficient and can lead to higher credit consumption. " +
+                    "Please change the replication method to CDC or cursor based.");
+        }
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
