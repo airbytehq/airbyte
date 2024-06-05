@@ -282,6 +282,7 @@ refunds_api_objects = [
                     "charge": "ch_3NYB8LAHLf1oYfwN3P6BxdKj",
                     "created": 1653299388,
                     "currency": "usd",
+                    "updated": 1653299388,
                 },
                 {
                     "id": "re_Lf1oYfwN3EZRDIfF3NYB8LAH",
@@ -290,20 +291,25 @@ refunds_api_objects = [
                     "charge": "ch_YfwN3P6BxdKj3NYB8LAHLf1o",
                     "created": 1679568588,
                     "currency": "eur",
+                    "updated": 1679568588,
                 },
             ],
-            [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}],
+            [{"created[gte]": 1632409215, "created[lte]": 1663945215}, {"created[gte]": 1663945216, "created[lte]": 1692802815}],
             "refunds",
             "full_refresh",
             {},
         ),
         (
             {
-                "/v1/refunds": [
+                "/v1/refunds":
+                [
                     {
                         "json": {
-                            "data": [refunds_api_objects[-1]],
-                            "has_more": False,
+                            "data": {
+                                "object": "list",
+                                "data": [refunds_api_objects[-1]],
+                                "has_more": False,
+                            }
                         }
                     },
                 ],
@@ -333,7 +339,6 @@ def test_created_cursor_incremental_stream(
     stream = stream_by_name(stream_name, {"lookback_window_days": 14, **config})
     for url, response in requests_mock_map.items():
         requests_mock.get(url, response)
-
     slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
     assert slices == expected_slices
     records = read_from_stream(stream, sync_mode, state)
