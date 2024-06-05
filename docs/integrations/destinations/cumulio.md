@@ -53,7 +53,7 @@ _If you have any questions or want to get started with Cumul.io, don't hesitate 
 | Feature                                                                  | Supported?\(Yes/No\) | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
 | :----------------------------------------------------------------------- | :------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Namespaces](https://docs.airbyte.com/understanding-airbyte/namespaces/) | Yes                  | (**_Highly recommended_**) A **concatenation of the namespace and stream name** will be used as a unique identifier for the related Cumul.io dataset (using [Tags](https://academy.cumul.io/article/mam7lkdt)) and ensures next synchronizations can target the same dataset. Use this property to **ensure identically named destination streams** from different connections **do not coincide**! |
-| [Reset data](https://docs.airbyte.com/operator-guides/reset)             | Yes                  | **Existing data** in a dataset is **not deleted** upon resetting a stream in Airbyte, however the next synchronization batch will replace all existing data. This ensures that the dataset is never empty (e.g. upon disabling the synchronization), which would otherwise result in "No data" upon querying it.                                                                                    |
+| [Clear data](https://docs.airbyte.com/operator-guides/clear)             | Yes                  | **Existing data** in a dataset is **not deleted** upon resetting a stream in Airbyte, however the next synchronization batch will replace all existing data. This ensures that the dataset is never empty (e.g. upon disabling the synchronization), which would otherwise result in "No data" upon querying it.                                                                                    |
 
 ### Airbyte data types support
 
@@ -154,9 +154,15 @@ data less frequently** rather than _smaller amounts of data more frequently_!
     5. From there on out, you can replace/append data for this dataset based on the tag (already
        implemented).
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                             |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.2 | 2024-05-20 | [38371](https://github.com/airbytehq/airbyte/pull/38371) | [autopull] base image + poetry + up_to_date |
 | 0.1.1   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                |
 | 0.1.0   | 2023-02-16 |                                                           | Initial release of Cumul.io's Destination connector |
+
+</details>
