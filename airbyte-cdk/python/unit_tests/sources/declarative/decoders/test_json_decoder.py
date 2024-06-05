@@ -10,8 +10,8 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder, J
 @pytest.mark.parametrize(
     "response_body, expected_json",
     [
-        ("", {}),
-        ('{"healthcheck": {"status": "ok"}}', {"healthcheck": {"status": "ok"}})
+        ("", [{}]),
+        ('{"healthcheck": {"status": "ok"}}', [{"healthcheck": {"status": "ok"}}])
     ],
 
 )
