@@ -378,7 +378,7 @@ if [ -z "$dockerDetachedMode" ]; then
   TelemetryDockerUp &
 fi
 
-docker compose up $dockerDetachedMode
+AIRBYTE_INSTALLATION_ID="${telemetryUserUUID}" docker compose up $dockerDetachedMode
 
 # $? is the exit code of the last command. So here: docker compose up
 if test $? -ne 0; then
