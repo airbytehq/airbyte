@@ -73,6 +73,9 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
 | 1.1.0   | 2023-08-31 | [28941](https://github.com/airbytehq/airbyte/pull/28941) | Migrate connector to low-code                |
@@ -81,3 +84,5 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 | 0.1.2   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description    |
 | 0.1.1   | 2021-11-10 | [7617](https://github.com/airbytehq/airbyte/pull/7617)   | Fix get_update state                         |
 | 0.1.0   | 2021-10-13 | [6998](https://github.com/airbytehq/airbyte/pull/6998)   | Initial Release                              |
+
+</details>

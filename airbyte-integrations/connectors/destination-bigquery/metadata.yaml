@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 2.5.1
+  dockerImageTag: 2.6.1
   dockerRepository: airbyte/destination-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   githubIssueLabel: destination-bigquery
@@ -77,26 +77,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_IMPERSONATE_FAIL_CREDS
-          fileName: credentials-impersonate-fail.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_IMPERSONATE__CREDS
-          fileName: credentials-impersonate.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_NO_GCS_CREATE_ROLE
-          fileName: copy_gcs_no_create_roles_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_NO_GCS_WRITE_ROLE
-          fileName: copy_gcs_no_write_roles_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_NO_PUBLIC_SCHEMA_EDIT_ROLE
           fileName: credentials-no-edit-public-schema-role.json
           secretStore:
@@ -104,21 +84,6 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_STANDARD
           fileName: credentials-standard.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_WITH_MISSED_DATASET_CREATION_ROLE__CREDS
-          fileName: credentials-with-missed-dataset-creation-role.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS__CREDS
-          fileName: credentials.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS__CREDS_OAUTH
-          fileName: credentials_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

@@ -206,11 +206,17 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.1.4   | 2024-05-24 | [38610](https://github.com/airbytehq/airbyte/pull/38610) | Updated the source `API Version` to `2024-04` |
-| 2.1.3   | 2024-05-23 | [38464](https://github.com/airbytehq/airbyte/pull/38464) | Added missing fields to `Products` stream |
-| 2.1.2   | 2024-05-23 | [38352](https://github.com/airbytehq/airbyte/pull/38352) | Migrated `Order Risks` stream to `GraphQL BULK` |
+| :------ |:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.2.2 | 2024-06-04 | [39019](https://github.com/airbytehq/airbyte/pull/39019) | [autopull] Upgrade base image to v1.2.1 |
+| 2.2.1 | 2024-05-30 | [38769](https://github.com/airbytehq/airbyte/pull/38769) | Have products stream return all the tags comma separated |
+| 2.2.0 | 2024-05-29 | [38746](https://github.com/airbytehq/airbyte/pull/38746) | Updated countries schema |
+| 2.1.4 | 2024-05-24 | [38610](https://github.com/airbytehq/airbyte/pull/38610) | Updated the source `API Version` to `2024-04` |
+| 2.1.3 | 2024-05-23 | [38464](https://github.com/airbytehq/airbyte/pull/38464) | Added missing fields to `Products` stream |
+| 2.1.2 | 2024-05-23 | [38352](https://github.com/airbytehq/airbyte/pull/38352) | Migrated `Order Risks` stream to `GraphQL BULK` |
 | 2.1.1 | 2024-05-20 | [38251](https://github.com/airbytehq/airbyte/pull/38251) | Replace AirbyteLogger with logging.Logger |
 | 2.1.0 | 2024-05-02 | [37767](https://github.com/airbytehq/airbyte/pull/37767) | Migrated `Products`, `Product Images` and `Product Variants` to `GraphQL BULK` |
 | 2.0.8 | 2024-05-02 | [37589](https://github.com/airbytehq/airbyte/pull/37589) | Added retry for known HTTP Errors for BULK streams |
@@ -281,5 +287,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 | 0.1.5   | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Added `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                                                                                                                                                                                                                                                                         |
 | 0.1.4   | 2021-06-09 | [3926](https://github.com/airbytehq/airbyte/pull/3926)   | New attributes to Orders schema                                                                                                                                                                                                                                                                                                                                                           |
 | 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787)   | Added Native Shopify Source Connector                                                                                                                                                                                                                                                                                                                                                     |
+
+</details>
 
 </HideInUI>

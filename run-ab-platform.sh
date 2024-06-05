@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-VERSION=0.61.0
+VERSION=0.62.0
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
+
+readonly scriptVersion="$VERSION"
 
 # text color escape codes (please note \033 == \e but OSX doesn't respect the \e)
 blue_text='\033[94m'
@@ -56,6 +58,7 @@ readonly eventStateSuccess="succeeded"
 readonly eventTypeDownload="download"
 readonly eventTypeInstall="install"
 readonly eventTypeRefresh="refresh"
+readonly eventTypeUninstall="uninstall"
 
 telemetrySuccess=false
 telemetrySessionULID=""
@@ -120,26 +123,39 @@ TelemetryDockerUp()
   # for up to 1200 seconds (20 minutes), check to see if the server services is in a running state
   end=$((SECONDS+1200))
   while [ $SECONDS -lt $end ]; do
-    webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep server | cut -d ":" -f2 | xargs)
+    webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep ^server | cut -d ":" -f2 | xargs)
     if [ "$webappState" = "running" ]; then
       TelemetrySend $eventStateSuccess $eventTypeInstall
-      break
+      return
     fi
     sleep 1
   done
 
-  TelemetrySend "failed" "install" "webapp was not running within 1200 seconds"
+  TelemetrySend $eventStateFailed $eventTypeInstall "webapp was not running within 1200 seconds"
 }
 
 readonly telemetryKey="kpYsVGLgxEqD5OuSZAQ9zWmdgBlyiaej"
 readonly telemetryURL="https://api.segment.io/v1/track"
-TelemetrySend()
+
+TelemetrySendTrap()
 {
   if $telemetrySuccess; then
     # due to how traps work, we don't want to send a failure for exiting docker after we sent a success
     return
   fi
 
+  # start, failed, success
+  local state=$1
+  # install, uninstall
+  local event=$2
+  # optional error
+  local err=${3:-""}
+
+  TelemetrySend "$state" "$event" "$err"
+}
+
+TelemetrySend()
+{
   if $telemetryEnabled; then
     # start, failed, success
     local state=$1
@@ -158,7 +174,7 @@ TelemetrySend()
     "session_id":"$telemetrySessionULID",
     "state":"$state",
     "os":"$OSTYPE",
-    "script_version":"$VERSION",
+    "script_version":"$scriptVersion",
     "error":"$err"
   },
   "timestamp":"$now",
@@ -246,16 +262,16 @@ for argument in $args; do
   case $argument in
     -d | --download)
       TelemetrySend $eventStateStarted $eventTypeDownload
-      trap 'TelemetrySend $eventStateFailed $eventTypeDownload "sigint"' SIGINT
-      trap 'TelemetrySend $eventStateFailed $eventTypeDownload "sigterm"' SIGTERM
+      trap 'TelemetrySendTrap $eventStateFailed $eventTypeDownload "sigint"' SIGINT
+      trap 'TelemetrySendTrap $eventStateFailed $eventTypeDownload "sigterm"' SIGTERM
       Download
       TelemetrySend $eventStateSuccess $eventTypeDownload
       exit
       ;;
     -r | --refresh)
       TelemetrySend $eventStateStarted $eventTypeRefresh
-      trap 'TelemetrySend $eventStateFailed $eventTypeRefresh "sigint"' SIGINT
-      trap 'TelemetrySend $eventStateFailed $eventTypeRefresh "sigterm"' SIGTERM
+      trap 'TelemetrySendTrap $eventStateFailed $eventTypeRefresh "sigint"' SIGINT
+      trap 'TelemetrySendTrap $eventStateFailed $eventTypeRefresh "sigterm"' SIGTERM
       DeleteLocalAssets
       Download
       TelemetrySend $eventStateSuccess $eventTypeRefresh
@@ -283,8 +299,8 @@ for argument in $args; do
 done
 
 TelemetrySend $eventStateStarted $eventTypeInstall
-trap 'TelemetrySend $eventStateFailed $eventTypeInstall "sigint"' SIGINT
-trap 'TelemetrySend $eventStateFailed $eventTypeInstall "sigterm"' SIGTERM
+trap 'TelemetrySendTrap $eventStateFailed $eventTypeInstall "sigint"' SIGINT
+trap 'TelemetrySendTrap $eventStateFailed $eventTypeInstall "sigterm"' SIGTERM
 
 ########## Pointless Banner for street cred ##########
 # Make sure the console is huuuge
@@ -337,7 +353,10 @@ if test $? -ne 0; then
   echo -e "$red_text""please consider removing old containers""$default_text"
   TelemetrySend $eventStateFailed $eventTypeInstall "docker compose failed"
 else
-  TelemetrySend $eventStateSuccess $eventTypeInstall
+  if [ -z "$dockerDetachedMode" ]; then
+    # not running in detached mode
+    TelemetrySend $eventStateSuccess $eventTypeUninstall
+  fi
 fi
 
 ########## Ending Docker ##########

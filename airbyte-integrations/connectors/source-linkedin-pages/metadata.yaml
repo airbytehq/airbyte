@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.5
   dockerRepository: airbyte/source-linkedin-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   githubIssueLabel: source-linkedin-pages
@@ -34,4 +34,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
 metadataSpecVersion: "1.0"
