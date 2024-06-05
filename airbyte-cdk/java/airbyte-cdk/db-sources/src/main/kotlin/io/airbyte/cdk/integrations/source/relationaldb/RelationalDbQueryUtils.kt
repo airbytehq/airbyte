@@ -17,14 +17,17 @@ private val LOGGER = KotlinLogging.logger {}
 object RelationalDbQueryUtils {
 
     @JvmStatic
-    fun getIdentifierWithQuoting(identifier: String, quoteString: String): String {
+    fun getIdentifierWithQuoting(identifier: String?, quoteString: String): String {
         // double-quoted values within a database name or column name should be wrapped with extra
         // quoteString
-        return if (identifier.startsWith(quoteString) && identifier.endsWith(quoteString)) {
-            quoteString + quoteString + identifier + quoteString + quoteString
-        } else {
-            quoteString + identifier + quoteString
+        if (identifier != null) {
+            return if (identifier.startsWith(quoteString) && identifier.endsWith(quoteString)) {
+                quoteString + quoteString + identifier + quoteString + quoteString
+            } else {
+                quoteString + identifier + quoteString
+            }
         }
+        return quoteString + quoteString
     }
 
     @JvmStatic
