@@ -50,7 +50,11 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
             log.info {
                 "Buffer flush complete for stream ${streamConfig.id.originalName} (${FileUtils.byteCountToDisplaySize(it.byteCount)}) to staging"
             }
-            storageOperation.writeToStage(streamConfig, writeBuffer)
+            if (it.byteCount != 0L) {
+                storageOperation.writeToStage(streamConfig, writeBuffer)
+            } else {
+                log.info { "Skipping writing to storage since there are no bytes to write" }
+            }
         }
     }
 }
