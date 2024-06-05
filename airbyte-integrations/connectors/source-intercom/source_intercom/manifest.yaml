@@ -2385,9 +2385,6 @@ definitions:
       requester:
         $ref: "#/definitions/requester_incremental_search"
         request_headers:
-          # API version header
-          # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
-          # https://github.com/airbytehq/oncall/issues/4514
           Intercom-Version: "2.11"
           Accept: "application/json"
     $parameters:
