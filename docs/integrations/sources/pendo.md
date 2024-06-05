@@ -59,6 +59,9 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.1.6 | 2024-06-04 | [39069](https://github.com/airbytehq/airbyte/pull/39069) | [autopull] Upgrade base image to v1.2.1 |
@@ -68,3 +71,5 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 | 0.1.2 | 2024-04-15 | [37220](https://github.com/airbytehq/airbyte/pull/37220) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37220](https://github.com/airbytehq/airbyte/pull/37220) | schema descriptions |
 | 0.1.0 | 2023-03-14 | [3563](https://github.com/airbytehq/airbyte/pull/3563) | Initial Release |
+
+</details>

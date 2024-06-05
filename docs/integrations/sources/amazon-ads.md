@@ -125,7 +125,10 @@ Information about expected report generation waiting time can be found [here](ht
 | `array`                  | `array`      |
 | `object`                 | `object`     |
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
@@ -190,3 +193,5 @@ Information about expected report generation waiting time can be found [here](ht
 | 0.1.2   | 2021-10-01 | [6367](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback |
 | 0.1.1   | 2021-09-22 | [6367](https://github.com/airbytehq/airbyte/pull/6367)   | Add seller and vendor filters to profiles stream                                                                |
 | 0.1.0   | 2021-08-13 | [5023](https://github.com/airbytehq/airbyte/pull/5023)   | Initial version                                                                                                 |
+
+</details>
