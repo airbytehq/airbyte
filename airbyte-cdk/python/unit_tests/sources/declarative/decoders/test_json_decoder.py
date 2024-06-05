@@ -30,7 +30,7 @@ def test_json_decoder(requests_mock, response_body, expected_json):
     ],
     ids=["empty_response", "one_line_json", "multi_line_json"]
 )
-def test_json_decoder(requests_mock, response_body, expected_json):
+def test_jsonl_decoder(requests_mock, response_body, expected_json):
     requests_mock.register_uri("GET", "https://airbyte.io/", text=response_body)
     response = requests.get("https://airbyte.io/")
     assert list(JsonlDecoder(parameters={}).decode(response)) == expected_json
