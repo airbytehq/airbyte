@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /issues
           http_method: GET
         record_selector:
@@ -42,7 +42,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/issues'
+          $ref: "#/schemas/issues"
     occurrences_issues:
       type: DeclarativeStream
       name: occurrences_issues
@@ -51,7 +51,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /issues/{{ stream_slice.id }}/occurrences
           http_method: GET
         record_selector:
@@ -80,11 +80,11 @@ definitions:
                 parent_key: id
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/issues'
+                  $ref: "#/definitions/streams/issues"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/occurrences_issues'
+          $ref: "#/schemas/occurrences_issues"
     scans:
       type: DeclarativeStream
       name: scans
@@ -93,7 +93,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /scans
           http_method: GET
         record_selector:
@@ -118,7 +118,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/scans'
+          $ref: "#/schemas/scans"
     targets:
       type: DeclarativeStream
       name: targets
@@ -127,7 +127,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /targets
           http_method: GET
         record_selector:
@@ -152,19 +152,19 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/targets'
+          $ref: "#/schemas/targets"
   base_requester:
     type: HttpRequester
     url_base: https://api.intruder.io/v1
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''access_token''] }}'
+      api_token: "{{ config['access_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/issues'
-  - $ref: '#/definitions/streams/occurrences_issues'
-  - $ref: '#/definitions/streams/scans'
-  - $ref: '#/definitions/streams/targets'
+  - $ref: "#/definitions/streams/issues"
+  - $ref: "#/definitions/streams/occurrences_issues"
+  - $ref: "#/definitions/streams/scans"
+  - $ref: "#/definitions/streams/targets"
 
 spec:
   type: Spec
@@ -198,39 +198,39 @@ schemas:
     properties:
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       occurrences:
         type:
-          - 'null'
+          - "null"
           - string
       remediation:
         type:
-          - 'null'
+          - "null"
           - string
       severity:
         type:
-          - 'null'
+          - "null"
           - string
       snooze_reason:
         type:
-          - 'null'
+          - "null"
           - string
       snooze_until:
         type:
-          - 'null'
+          - "null"
           - string
       snoozed:
         type:
-          - 'null'
+          - "null"
           - boolean
       title:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   occurrences_issues:
@@ -239,35 +239,35 @@ schemas:
     properties:
       age:
         type:
-          - 'null'
+          - "null"
           - string
       extra_info:
         type:
-          - 'null'
+          - "null"
           - object
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       port:
         type:
-          - 'null'
+          - "null"
           - integer
       snooze_reason:
         type:
-          - 'null'
+          - "null"
           - string
       snooze_until:
         type:
-          - 'null'
+          - "null"
           - string
       snoozed:
         type:
-          - 'null'
+          - "null"
           - boolean
       target:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   scans:
@@ -276,15 +276,15 @@ schemas:
     properties:
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       status:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   targets:
@@ -293,14 +293,14 @@ schemas:
     properties:
       address:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       tags:
         type:
-          - 'null'
+          - "null"
           - array
     additionalProperties: true
