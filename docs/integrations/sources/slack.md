@@ -170,7 +170,8 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
-|:--------| :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+|:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------|
+| 1.1.3   | 2024-06-05 | [39121](https://github.com/airbytehq/airbyte/pull/39121) | Change cursor format for `channel_messages` stream to `%s_as_float`                  |
 | 1.1.2   | 2024-05-23 | [38619](https://github.com/airbytehq/airbyte/pull/38619) | Fix cursor granularity for the `channel_messages` stream                             |
 | 1.1.1   | 2024-05-02 | [36661](https://github.com/airbytehq/airbyte/pull/36661) | Schema descriptions                                                                  |
 | 1.1.0   | 2024-04-18 | [37332](https://github.com/airbytehq/airbyte/pull/37332) | Add the capability to sync from private channels                                     |
