@@ -62,10 +62,16 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| :------ | :--------- | :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| 1.2.2   | 2024-05-28 | [38578](https://github.com/airbytehq/airbyte/pull/38578) | Make connector Builder compatible                                                                           |
 | 1.2.1   | 2024-04-02 | [36775](https://github.com/airbytehq/airbyte/pull/36775) | Migrate to base image, manage dependencies with Poetry, and stop using last_records interpolation variable. |
 | 1.2.0   | 2023-08-13 | [29288](https://github.com/airbytehq/airbyte/pull/29288) | Migrate python cdk to low-code                                                                              |
 | 1.1.0   | 2023-07-10 | [27797](https://github.com/airbytehq/airbyte/pull/27797) | Add `rows` stream                                                                                           |
 | 1.0.0   | 2023-07-10 | [28093](https://github.com/airbytehq/airbyte/pull/28093) | Update `docs` and `pages` schemas                                                                           |
 | 0.1.0   | 2022-11-17 | [18675](https://github.com/airbytehq/airbyte/pull/18675) | 🎉 New source: Coda [python cdk]                                                                            |
+
+</details>

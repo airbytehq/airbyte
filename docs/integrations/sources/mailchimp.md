@@ -121,6 +121,9 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
 | 2.0.3   | 2024-05-02 | [36649](https://github.com/airbytehq/airbyte/pull/36649) | Schema descriptions                                                        |
@@ -166,5 +169,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 | 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning                                              |
 | 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties                                  |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                    |
+
+</details>
 
 </HideInUI>
