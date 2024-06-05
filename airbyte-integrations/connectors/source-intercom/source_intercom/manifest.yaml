@@ -2392,8 +2392,6 @@ definitions:
       path: "tickets/search"
       data_field: "tickets"
       page_size: 150
-
-    # activity logs stream is incremental based on created_at field
     schema_loader:
       type: InlineSchemaLoader
       schema:
