@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.5.4"
+version = "2.5.5"
 name = "source-paypal-transaction"
 description = "Source implementation for Paypal Transaction."
 authors = [ "Airbyte <contact@airbyte.io>",]
