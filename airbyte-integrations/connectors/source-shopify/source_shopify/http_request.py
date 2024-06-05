@@ -21,6 +21,8 @@ TRANSIENT_EXCEPTIONS = (
     exceptions.SSLError,
 ) + RESPONSE_CONSUMPTION_EXCEPTIONS
 
+_NO_ERROR_RESOLUTION = ErrorResolution(ResponseAction.SUCCESS, None, None)
+
 
 class ShopifyErrorHandler(ErrorHandler):
     def __init__(self, stream_name: str = "<no specified stream>") -> None:
@@ -35,10 +37,13 @@ class ShopifyErrorHandler(ErrorHandler):
             )
         elif isinstance(response, requests.Response):
             if response.ok:
-                return ErrorResolution(ResponseAction.IGNORE, None, None)
+                return _NO_ERROR_RESOLUTION
 
-        return ErrorResolution(
-            ResponseAction.FAIL,
-            FailureType.system_error,
-            f"An error occurred: {response.content.decode() if response else '<unknown error>'}",
-        )
+            if response.status_code == 429 or response.status_code >= 500:
+                return ErrorResolution(
+                    ResponseAction.RETRY,
+                    FailureType.transient_error,
+                    f"Status code `{response.status_code}` is considered transient. Try again later. (full error message is {response.content})",
+                )
+
+        return _NO_ERROR_RESOLUTION  # Not all the error handling is defined here so it assumes the previous code will handle the error if there is one
