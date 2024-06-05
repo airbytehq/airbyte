@@ -1486,11 +1486,11 @@ class Deals(CRMSearchStream):
 
     entity = "deal"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
 
     def __init__(self, custom_object_list=None, **kwargs):
+        self.associations = ["contacts", "companies", "line_items"]
         super().__init__(**kwargs)
         if custom_object_list:
             self.associations.extend(custom_object_list)
@@ -2160,11 +2160,11 @@ class Workflows(ClientSideIncrementalStream):
 class Companies(CRMSearchStream):
     entity = "company"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
     def __init__(self, custom_object_list=None, **kwargs):
+        self.associations = ["contacts"]
         super().__init__(**kwargs)
         if custom_object_list:
             self.associations.extend(custom_object_list)
@@ -2174,11 +2174,11 @@ class Companies(CRMSearchStream):
 class Contacts(CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
-    associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
     def __init__(self, custom_object_list=None, **kwargs):
+        self.associations = ["contacts", "companies"]
         super().__init__(**kwargs)
         if custom_object_list:
             self.associations.extend(custom_object_list)
@@ -2254,12 +2254,12 @@ class Products(CRMObjectIncrementalStream):
 
 class Tickets(CRMSearchStream):
     entity = "ticket"
-    associations = ["contacts", "deals", "companies"]
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
 
     def __init__(self, custom_object_list=None, **kwargs):
+        self.associations = ["contacts", "deals", "companies"]
         super().__init__(**kwargs)
         if custom_object_list:
             self.associations.extend(custom_object_list)
