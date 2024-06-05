@@ -1,21 +1,24 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
+import json
 from datetime import datetime, timedelta
 from typing import Any, Dict
 from unittest import TestCase
 
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from airbyte_cdk.test.mock_http.request import HttpRequest
-from airbyte_protocol.models import FailureType, SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+
+_AN_ERROR_RESPONSE = HttpResponse(json.dumps({"errors": ["an error"]}))
+from airbyte_protocol.models import SyncMode
 from freezegun import freeze_time
+from requests.exceptions import ConnectionError
 from source_shopify import SourceShopify
 from unit_tests.integration.api.authentication import grant_all_scopes, set_up_shop
 from unit_tests.integration.api.bulk import (
     JobCreationResponseBuilder,
     JobStatusResponseBuilder,
     MetafieldOrdersJobResponseBuilder,
+    create_job_creation_body,
     create_job_creation_request,
     create_job_status_request,
 )
@@ -75,21 +78,106 @@ class GraphQlBulkStreamTest(TestCase):
         assert output.errors == []
         assert len(output.records) == 2
 
-    def test_given_connection_error_when_read_then_fail_to_sync(self) -> None:
+    def test_given_errors_on_job_creation_when_read_then_do_not_retry(self) -> None:
         """
-        We want to fix this behavior in a subsequent release so that instead, we retry and have records being emitted
+        The purpose of this test is to document the current behavior as I'm not sure we have an example of such errors on the job creation
         """
+        job_creation_request = create_job_creation_request(_SHOP_NAME, _JOB_START_DATE, _JOB_END_DATE)
+        self._http_mocker.post(job_creation_request, _AN_ERROR_RESPONSE)
+
+        self._read(_get_config(_JOB_START_DATE))
+
+        self._http_mocker.assert_number_of_calls(job_creation_request, 1)
+
+    def test_given_response_is_not_json_on_job_creation_when_read_then_retry(self) -> None:
+        job_creation_request = create_job_creation_request(_SHOP_NAME, _JOB_START_DATE, _JOB_END_DATE)
+        self._http_mocker.post(
+            job_creation_request,
+            [
+                HttpResponse("This is not json"),
+                JobCreationResponseBuilder().with_bulk_operation_id(_BULK_OPERATION_ID).build(),  # This will never get called (see assertion below)
+            ]
+        )
+
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(_JOB_RESULT_URL),
+            MetafieldOrdersJobResponseBuilder().with_record().with_record().build(),
+        )
+
+        output = self._read(_get_config(_JOB_START_DATE))
+
+        assert output.errors == []
+        assert len(output.records) == 2
+
+    def test_given_connection_error_on_job_creation_when_read_then_retry_job_creation(self) -> None:
         inner_mocker = self._http_mocker.__getattribute__("_mocker")
         inner_mocker.register_uri(  # TODO the testing library should have the ability to generate ConnectionError. As this might not be trivial, we will wait for another case before implementing
             "POST",
             _URL_GRAPHQL,
             [{"exc": ConnectionError("ConnectionError")}, {"text": JobCreationResponseBuilder().with_bulk_operation_id(_BULK_OPERATION_ID).build().body, "status_code": 200}],
+            additional_matcher=lambda request: request.text == create_job_creation_body(_JOB_START_DATE, _JOB_END_DATE)
+        )
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(_JOB_RESULT_URL),
+            MetafieldOrdersJobResponseBuilder().with_record().with_record().build(),
         )
 
         output = self._read(_get_config(_JOB_START_DATE))
 
-        assert list(map(lambda error: error.trace.error.failure_type, output.errors)) == [FailureType.system_error, FailureType.config_error]  # The actual error followed by the error that crashes the python app
-        assert "ConnectionError" in output.errors[0].__str__()
+        assert output.errors == []
+
+    def test_given_retryable_error_on_first_get_job_status_when_read_then_retry(self) -> None:
+        self._http_mocker.post(
+            create_job_creation_request(_SHOP_NAME, _JOB_START_DATE, _JOB_END_DATE),
+            JobCreationResponseBuilder().with_bulk_operation_id(_BULK_OPERATION_ID).build(),
+        )
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            [
+                _AN_ERROR_RESPONSE,
+                JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
+            ]
+        )
+        self._http_mocker.get(
+            HttpRequest(_JOB_RESULT_URL),
+            MetafieldOrdersJobResponseBuilder().with_record().with_record().build(),
+        )
+
+        output = self._read(_get_config(_JOB_START_DATE))
+
+        assert output.errors == []
+        assert len(output.records) == 2
+
+    def test_given_retryable_error_on_get_job_status_when_read_then_retry(self) -> None:
+        self._http_mocker.post(
+            create_job_creation_request(_SHOP_NAME, _JOB_START_DATE, _JOB_END_DATE),
+            JobCreationResponseBuilder().with_bulk_operation_id(_BULK_OPERATION_ID).build(),
+        )
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            [
+                JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID).build(),
+                HttpResponse(json.dumps({"errors": ["an error"]})),
+                JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
+            ]
+        )
+        self._http_mocker.get(
+            HttpRequest(_JOB_RESULT_URL),
+            MetafieldOrdersJobResponseBuilder().with_record().with_record().build(),
+        )
+
+        output = self._read(_get_config(_JOB_START_DATE))
+
+        assert output.errors == []
+        assert len(output.records) == 2
 
     def _read(self, config):
         catalog = CatalogBuilder().with_stream(_BULK_STREAM, SyncMode.full_refresh).build()

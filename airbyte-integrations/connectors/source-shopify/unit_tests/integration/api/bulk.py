@@ -13,7 +13,7 @@ def _create_job_url(shop_name: str) -> str:
     return f"https://{shop_name}.myshopify.com/admin/api/{ShopifyStream.api_version}/graphql.json"
 
 
-def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_boundary: datetime) -> HttpRequest:
+def create_job_creation_body(lower_boundary: datetime, upper_boundary: datetime):
     query = """ {
   orders(
     query: "updated_at:>='%LOWER_BOUNDARY_TOKEN%' AND updated_at:<='%UPPER_BOUNDARY_TOKEN%'"
@@ -44,9 +44,13 @@ def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_
 }"""
     query = query.replace("%LOWER_BOUNDARY_TOKEN%", lower_boundary.isoformat()).replace("%UPPER_BOUNDARY_TOKEN%", upper_boundary.isoformat())
     prepared_query = ShopifyBulkTemplates.prepare(query)
+    return json.dumps({"query": prepared_query})
+
+
+def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_boundary: datetime) -> HttpRequest:
     return HttpRequest(
         url=_create_job_url(shop_name),
-        body=json.dumps({"query": prepared_query})
+        body=create_job_creation_body(lower_boundary, upper_boundary)
     )
 
 
@@ -122,6 +126,19 @@ class JobStatusResponseBuilder:
                 }
             }
         }
+
+    def with_running_status(self, bulk_operation_id: str) -> "JobStatusResponseBuilder":
+        self._template["data"]["node"] = {
+          "id": bulk_operation_id,
+          "status": "RUNNING",
+          "errorCode": None,
+          "createdAt": "2024-05-28T18:57:54Z",
+          "objectCount": "10",
+          "fileSize": None,
+          "url": None,
+          "partialDataUrl": None,
+        }
+        return self
 
     def with_completed_status(self, bulk_operation_id: str, job_result_url: str) -> "JobStatusResponseBuilder":
         self._template["data"]["node"] = {
