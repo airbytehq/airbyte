@@ -67,7 +67,7 @@ class HttpRequester(Requester):
     message_repository: MessageRepository = NoopMessageRepository()
     use_cache: bool = False
     stream_response: bool = False
-    decoder: Optional[Decoder] = None
+    decoder: Decoder = JsonDecoder(parameters={})
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
@@ -86,7 +86,6 @@ class HttpRequester(Requester):
         self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
         self._parameters = parameters
-        self.decoder = self.decoder or JsonDecoder(parameters={})
         self._session = self.request_cache()
         self._session.mount(
             "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
