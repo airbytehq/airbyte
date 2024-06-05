@@ -27,6 +27,9 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.1.4   | 2024-05-20 | [38215](https://github.com/airbytehq/airbyte/pull/38215)  | Make connector compatible with builder                                          |
@@ -34,3 +37,5 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 | 0.1.2   | 2024-04-15 | [37180](https://github.com/airbytehq/airbyte/pull/37180)  | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1   | 2024-04-12 | [37180](https://github.com/airbytehq/airbyte/pull/37180)  | schema descriptions                                                             |
 | 0.1.0   | 2022-10-29 | [#18651](https://github.com/airbytehq/airbyte/pull/18651) | 🎉 New source: Ip2whois [low-code SDK]                                          |
+
+</details>
