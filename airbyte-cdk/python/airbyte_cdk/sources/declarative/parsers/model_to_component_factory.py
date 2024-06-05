@@ -784,7 +784,7 @@ class ModelToComponentFactory:
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
         return ExponentialBackoffStrategy(factor=model.factor or 5, parameters=model.parameters or {}, config=config)
 
-    def create_http_requester(self, model: HttpRequesterModel, decoder: Optional[Decoder], config: Config, *, name: str) -> HttpRequester:
+    def create_http_requester(self, model: HttpRequesterModel, decoder: Decoder, config: Config, *, name: str) -> HttpRequester:
         authenticator = (
             self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name, decoder=decoder)
             if model.authenticator

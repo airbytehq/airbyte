@@ -791,7 +791,7 @@ def test_default_parse_response_error_message_not_json(requests_mock):
     requests_mock.register_uri("GET", "mock://test.com/not_json", text="this is not json")
     response = requests.get("mock://test.com/not_json")
 
-    message = HttpRequester.parse_response_error_message(response)
+    message = HttpRequester.parse_response_error_message(response, decoder=JsonDecoder(parameters={}))
     assert message is None
 
 
