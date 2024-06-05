@@ -37,7 +37,12 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject          |
 | ------- | ---------- | -------------------------------------------------------- | ---------------- |
 | 0.1.1 | 2024-05-20 | [38373](https://github.com/airbytehq/airbyte/pull/38373) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version. |
+
+</details>

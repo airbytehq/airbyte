@@ -10,6 +10,7 @@ import abc
 import io
 import queue
 import sys
+import warnings
 from collections import defaultdict
 from typing import TYPE_CHECKING, cast, final
 
@@ -248,10 +249,16 @@ class RecordProcessorBase(abc.ABC):
                 state_msg = cast(AirbyteStateMessage, message.state)
                 if state_msg.type in {AirbyteStateType.GLOBAL, AirbyteStateType.LEGACY}:
                     self._pending_state_messages[f"_{state_msg.type}"].append(state_msg)
-                else:
+                elif state_msg.type is AirbyteStateType.STREAM:
                     stream_state = cast(AirbyteStreamState, state_msg.stream)
                     stream_name = stream_state.stream_descriptor.name
                     self._pending_state_messages[stream_name].append(state_msg)
+                else:
+                    warnings.warn(
+                        f"Unexpected state message type. State message was: {state_msg}",
+                        stacklevel=2,
+                    )
+                    self._pending_state_messages[f"_{state_msg.type}"].append(state_msg)
 
             else:
                 # Ignore unexpected or unhandled message types:
