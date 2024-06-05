@@ -37,6 +37,9 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
 | 0.3.2   | 2024-05-14 | [38144](https://github.com/airbytehq/airbyte/pull/38144) | Make connector compatible with Builder                                  |
@@ -44,3 +47,5 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 | 0.3.0   | 2023-05-30 | [22642](https://github.com/airbytehq/airbyte/pull/22642) | Add `idea_comments`, `idea_endorsements`, and `idea_categories` streams |
 | 0.2.0   | 2023-05-26 | [26666](https://github.com/airbytehq/airbyte/pull/26666) | Fix integration test and schemas                                        |
 | 0.1.0   | 2022-11-02 | [18883](https://github.com/airbytehq/airbyte/pull/18893) | 🎉 New Source: Aha                                                      |
+
+</details>
