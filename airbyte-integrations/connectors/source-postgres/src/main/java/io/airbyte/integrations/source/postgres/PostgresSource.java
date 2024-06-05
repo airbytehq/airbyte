@@ -286,7 +286,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
-  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final JsonNode config) {
     final AirbyteCatalog catalog = super.discover(config);
 
     if (isCdc(config)) {
@@ -467,6 +467,16 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         final JsonNode databaseConfig = database.getDatabaseConfig();
         // Empty try statement as we only need to verify that the connection can be created.
         try (final Connection connection = PostgresReplicationConnection.createConnection(databaseConfig)) {}
+      });
+    }
+
+    if (isXmin(config)) {
+      checkOperations.add(database -> {
+        if (PostgresQueryUtils.getXminStatus(database).getNumWraparound() > 0) {
+          throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
+              "which makes this sync option inefficient and can lead to higher credit consumption. " +
+              "Please change the replication method to CDC or cursor based.");
+        }
       });
     }
 
@@ -830,11 +840,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
     // finalListOfStreamsToBeSyncedViaCtid will be initialized as part of state manager initialization
     // for non CDC only.
-    if (!ctidStateManager.getFileNodeHandler().hasFileNode(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(
-        airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace()))) {
-      LOGGER.info("stream " + airbyteStream + " will not sync in resumeable full refresh mode.");
-      return false;
-
+    // ctidStateManager will only be initialized in read operation. It will not be there for discover.
+    if (ctidStateManager != null) {
+      if (!ctidStateManager.getFileNodeHandler().hasFileNode(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(
+          airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace()))) {
+        LOGGER.info("stream " + airbyteStream + " will not sync in resumeable full refresh mode.");
+        return false;
+      }
     }
 
     final FileNodeHandler fileNodeHandler =

@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.10"
+name = "source-aws-cloudtrail"
+description = "Source implementation for Aws Cloudtrail."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/aws-cloudtrail"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_aws_cloudtrail"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+boto3 = "==1.17.112"
+airbyte-cdk = "^0"
+
+[tool.poetry.scripts]
+source-aws-cloudtrail = "source_aws_cloudtrail.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6.1"
+pytest = "^6.1"
+requests-mock = "^1.9.3"

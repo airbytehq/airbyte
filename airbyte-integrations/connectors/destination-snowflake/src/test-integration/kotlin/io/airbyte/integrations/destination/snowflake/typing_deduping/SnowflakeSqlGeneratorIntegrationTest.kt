@@ -17,7 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeTypeAndDedupe
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts
-import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.SnowflakeSourceOperations
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.dumpFinalTable
@@ -44,7 +44,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
         get() = SnowflakeSqlGenerator(0)
 
     override val destinationHandler: SnowflakeDestinationHandler
-        get() = SnowflakeDestinationHandler(databaseName, database, namespace.toUpperCase())
+        get() = SnowflakeDestinationHandler(databaseName, database, namespace.uppercase())
 
     override fun buildStreamId(
         namespace: String,
@@ -63,14 +63,14 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
 
     @Throws(SQLException::class)
     override fun createNamespace(namespace: String) {
-        database!!.execute(
+        database.execute(
             "CREATE SCHEMA IF NOT EXISTS \"" + namespace.uppercase(Locale.getDefault()) + '"'
         )
     }
 
     @Throws(Exception::class)
     override fun createRawTable(streamId: StreamId) {
-        database!!.execute(
+        database.execute(
             StringSubstitutor(
                     java.util.Map.of(
                         "raw_table_id",
@@ -112,7 +112,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
 
     @Throws(SQLException::class)
     override fun teardownNamespace(namespace: String) {
-        database!!.execute(
+        database.execute(
             "DROP SCHEMA IF EXISTS \"" + namespace.uppercase(Locale.getDefault()) + '"'
         )
     }
@@ -143,7 +143,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                 .map { row: String -> "($row)" }
                 .collect(Collectors.joining(","))
 
-        database!!.execute(
+        database.execute(
             StringSubstitutor(
                     java.util.Map.of(
                         "final_table_id",
@@ -237,7 +237,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                 }
                 .map { row: String -> "($row)" }
                 .collect(Collectors.joining(","))
-        database!!.execute(
+        database.execute(
             StringSubstitutor(
                     java.util.Map.of(
                         "raw_table_id",
@@ -283,19 +283,19 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
         // unquoted
         // identifiers.
         val tableKind =
-            database!!
+            database
                 .queryJsons(
                     java.lang.String.format(
                         "SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";",
                         "USERS_FINAL",
-                        namespace.toUpperCase()
+                        namespace.uppercase()
                     )
                 )
                 .stream()
                 .map<String> { record: JsonNode -> record["kind"].asText() }
                 .findFirst()
         val columns =
-            database!!
+            database
                 .queryJsons(
                     """
         SELECT column_name, data_type, numeric_precision, numeric_scale
@@ -307,15 +307,13 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
         
         """.trimIndent(),
                     databaseName!!,
-                    namespace.toUpperCase(),
+                    namespace.uppercase(),
                     "USERS_FINAL"
                 )
                 .stream()
                 .collect(
-                    Collectors.toMap<JsonNode, String, String>(
-                        Function<JsonNode, String> { record: JsonNode ->
-                            record["COLUMN_NAME"].asText()
-                        },
+                    Collectors.toMap(
+                        { record: JsonNode -> record["COLUMN_NAME"].asText() },
                         Function<JsonNode, String> toMap@{ record: JsonNode ->
                             val type = record["DATA_TYPE"].asText()
                             if (type == "NUMBER") {
@@ -367,7 +365,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
 
     @Throws(Exception::class)
     override fun createV1RawTable(v1RawTable: StreamId) {
-        database!!.execute(
+        database.execute(
             java.lang.String.format(
                 """
             CREATE SCHEMA IF NOT EXISTS %s;
@@ -403,7 +401,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                         .map { v: String -> if ("NULL" == v) v else StringUtils.wrap(v, "$$") }
                         .collect(Collectors.joining(","))
                 }
-                .map { row: String? -> "(%s)".formatted(row) }
+                .map { row: String -> "($row)" }
                 .collect(Collectors.joining(","))
         val insert =
             StringSubstitutor(
@@ -424,7 +422,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
             
             """.trimIndent()
                 )
-        database!!.execute(insert)
+        database.execute(insert)
     }
 
     @Throws(Exception::class)
@@ -436,7 +434,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                     JavaBaseConstants.COLUMN_NAME_DATA
                 )
                 .collect(Collectors.joining(","))
-        return database!!.bufferedResultSetQuery<JsonNode>(
+        return database.bufferedResultSetQuery<JsonNode>(
             { connection: Connection ->
                 connection
                     .createStatement()
@@ -577,33 +575,31 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
         val createTableModified: List<List<String>> =
             createTable.transactions
                 .stream()
-                .map<List<String>>(
-                    Function { transaction: List<String> ->
-                        transaction
-                            .stream()
-                            .map { statement: String ->
-                                Arrays.stream(
-                                        statement
-                                            .split(System.lineSeparator().toRegex())
-                                            .dropLastWhile { it.isEmpty() }
-                                            .toTypedArray()
+                .map<List<String>> { transaction: List<String> ->
+                    transaction
+                        .stream()
+                        .map { statement: String ->
+                            Arrays.stream(
+                                    statement
+                                        .split(System.lineSeparator().toRegex())
+                                        .dropLastWhile { it.isEmpty() }
+                                        .toTypedArray()
+                                )
+                                .map { line: String ->
+                                    if (
+                                        !line.contains("CLUSTER") &&
+                                            (line.contains("id1") ||
+                                                line.contains("id2") ||
+                                                line.contains("ID1") ||
+                                                line.contains("ID2"))
                                     )
-                                    .map { line: String ->
-                                        if (
-                                            !line.contains("CLUSTER") &&
-                                                (line.contains("id1") ||
-                                                    line.contains("id2") ||
-                                                    line.contains("ID1") ||
-                                                    line.contains("ID2"))
-                                        )
-                                            line.replace(",", " NOT NULL,")
-                                        else line
-                                    }
-                                    .collect(Collectors.joining("\r\n"))
-                            }
-                            .toList()
-                    }
-                )
+                                        line.replace(",", " NOT NULL,")
+                                    else line
+                                }
+                                .collect(Collectors.joining("\r\n"))
+                        }
+                        .toList()
+                }
                 .toList()
         destinationHandler.execute(Sql(createTableModified))
         initialStates =
@@ -1844,15 +1840,15 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
             Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")))
         private var databaseName = config[JdbcUtils.DATABASE_KEY].asText()
         private var dataSource: DataSource =
-            SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-        private var database: JdbcDatabase = SnowflakeDatabase.getDatabase(dataSource)
+            SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
+        private var database: JdbcDatabase = SnowflakeDatabaseUtils.getDatabase(dataSource)
 
         @JvmStatic
         @BeforeAll
         fun setupSnowflake(): Unit {
             dataSource =
-                SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-            database = SnowflakeDatabase.getDatabase(dataSource)
+                SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
+            database = SnowflakeDatabaseUtils.getDatabase(dataSource)
         }
 
         @JvmStatic

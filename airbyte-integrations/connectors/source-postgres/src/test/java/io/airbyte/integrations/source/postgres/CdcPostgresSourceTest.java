@@ -119,6 +119,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
+  protected void addIsResumableFlagForNonPkTable(final AirbyteStream stream) {
+    stream.setIsResumable(true);
+  }
+
+  @Override
   @BeforeEach
   protected void setup() {
     super.setup();
@@ -167,6 +172,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     testdb
         .with("CREATE USER %s PASSWORD '%s';", cleanUserReplicationName, testdb.getPassword())
         .with("ALTER USER %s REPLICATION;", cleanUserReplicationName)
+        // the following GRANT statements guarantees check will not fail at table permission check stage
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", modelsSchema(), cleanUserReplicationName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", modelsSchema(), cleanUserReplicationName)
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", randomSchema(), cleanUserReplicationName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", randomSchema(), cleanUserReplicationName)
         .onClose("DROP OWNED BY %s;", cleanUserReplicationName)
         .onClose("DROP USER %s;", cleanUserReplicationName);
     final JsonNode testConfig = config();
@@ -180,6 +190,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final var cleanUserVanillaName = testdb.withNamespace("vanilla_user");
     testdb
         .with("CREATE USER %s PASSWORD '%s';", cleanUserVanillaName, testdb.getPassword())
+        // the following GRANT statements guarantees check will not fail at table permission check stage
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", modelsSchema(), cleanUserVanillaName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", modelsSchema(), cleanUserVanillaName)
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", randomSchema(), cleanUserVanillaName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", randomSchema(), cleanUserVanillaName)
         .onClose("DROP OWNED BY %s;", cleanUserVanillaName)
         .onClose("DROP USER %s;", cleanUserVanillaName);
     final JsonNode testConfig = config();
