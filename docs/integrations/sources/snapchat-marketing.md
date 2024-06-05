@@ -119,8 +119,12 @@ Snapchat Marketing API has limitations to 1000 items per page.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| 0.6.2   | 2024-15-22 | [38574](https://github.com/airbytehq/airbyte/pull/38574) | Update authenticator package                                                   |
 | 0.6.1   | 2024-04-24 | [36662](https://github.com/airbytehq/airbyte/pull/36662) | Schema descriptions                                                            |
 | 0.6.0   | 2024-04-10 | [30586](https://github.com/airbytehq/airbyte/pull/30586) | Add `attribution_windows`,`action_report_time` as optional configurable params |
 | 0.5.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                |
@@ -144,3 +148,5 @@ Snapchat Marketing API has limitations to 1000 items per page.
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                |
 | 0.1.1   | 2021-07-29 | [5072](https://github.com/airbytehq/airbyte/pull/5072)   | Fix bug with incorrect stream_state value                                      |
 | 0.1.0   | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843)   | Initial release supporting the Snapchat Marketing API                          |
+
+</details>

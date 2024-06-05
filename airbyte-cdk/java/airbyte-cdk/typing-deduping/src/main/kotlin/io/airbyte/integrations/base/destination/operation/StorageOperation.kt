@@ -24,14 +24,11 @@ interface StorageOperation<Data> {
     fun cleanupStage(streamId: StreamId)
 
     /** Write data to stage. */
-    fun writeToStage(streamId: StreamId, data: Data)
+    fun writeToStage(streamConfig: StreamConfig, data: Data)
 
     /*
      *  ==================== Final Table Operations ================================
      */
-
-    /** Create final namespace extracted from [StreamId] */
-    fun createFinalNamespace(streamId: StreamId)
 
     /** Create final table extracted from [StreamId] */
     fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean)

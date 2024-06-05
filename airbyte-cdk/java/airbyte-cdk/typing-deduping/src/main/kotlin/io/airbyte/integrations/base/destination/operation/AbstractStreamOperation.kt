@@ -37,7 +37,6 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
         val stream = destinationInitialStatus.streamConfig
         storageOperation.prepareStage(stream.id, stream.destinationSyncMode)
         if (!disableTypeDedupe) {
-            storageOperation.createFinalNamespace(stream.id)
             // Prepare final tables based on sync mode.
             finalTmpTableSuffix = prepareFinalTable(destinationInitialStatus)
         } else {

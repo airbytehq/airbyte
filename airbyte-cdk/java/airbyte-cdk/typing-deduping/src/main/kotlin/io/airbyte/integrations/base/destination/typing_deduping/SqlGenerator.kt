@@ -29,7 +29,7 @@ interface SqlGenerator {
     fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql
 
     /**
-     * Used to create either the airbyte_internal or final schemas if they don't exist
+     * TODO delete this; superseded by [DestinationHandler.createNamespaces]
      *
      * @param schema the schema to create
      * @return SQL to create the schema if it does not exist
