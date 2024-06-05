@@ -1,24 +1,25 @@
 {
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "creationDate": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "isActive": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "lastModified": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ownerId": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

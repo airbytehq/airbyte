@@ -1,175 +1,123 @@
 {
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "ChoiceOrder": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "Choices": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "Display": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         }
       }
     },
     "ColumnLabels": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "Display": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "IsLabelDefault": {
-            "type": "boolean"
+            "type": ["boolean", "null"]
           }
         }
       }
     },
     "Configuration": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "QuestionDescriptionOption": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
     "DataExportTag": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "DataVisibility": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "Hidden": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "Private": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         }
       }
     },
     "DefaultChoices": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "GradingData": {
-      "type": "array"
+      "type": ["array", "null"]
     },
     "Language": {
-      "type": "object",
-      "anyOf": [
-        {
-          "type": "array"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "DE": {
-              "type": "object",
-              "properties": {
-                "QuestionText": {
-                  "type": "string"
-                }
-              }
-            },
-            "ES-ES": {
-              "type": "object",
-              "properties": {
-                "QuestionText": {
-                  "type": "string"
-                }
-              }
-            },
-            "FR": {
-              "type": "object",
-              "properties": {
-                "QuestionText": {
-                  "type": "string"
-                }
-              }
-            },
-            "IT": {
-              "type": "object",
-              "properties": {
-                "QuestionText": {
-                  "type": "string"
-                }
-              }
-            },
-            "PT": {
-              "type": "object",
-              "properties": {
-                "QuestionText": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      ]
+      "type": ["object", "null"]
     },
     "NextAnswerId": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "NextChoiceId": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "QuestionDescription": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "QuestionID": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "QuestionText": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "QuestionText_Unsafe": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "QuestionType": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "SearchSource": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "AllowFreeResponse": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
     "Selector": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "Validation": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "Settings": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
             "ForceResponse": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "ForceResponseType": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "Type": {
-              "type": "string"
+              "type": ["string", "null"]
             }
           }
         }
       }
     },
     "survey_id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   }
 }

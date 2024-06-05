@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "responseId": {
       "type": ["string", "null"]
