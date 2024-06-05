@@ -1,1008 +1,1169 @@
-version: "0.29.0"
+version: 0.79.1
 
-definitions:
-
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: []
-
-  requester:
-    type: HttpRequester
-    url_base: "https://platform.devtest.ringcentral.com/restapi/v1.0"
-    http_method: "GET"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['auth_token'] }}"
-
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: "DefaultPaginator"
-        page_size_option:
-          type: "RequestOption"
-          inject_into: "request_parameter"
-          field_name: "perPage"
-        pagination_strategy:
-          type: "PageIncrement"
-          page_size: 100
-        page_token_option:
-          type: "RequestOption"
-          inject_into: "request_parameter"
-          field_name: "page"
-      requester:
-        $ref: "#/definitions/requester"
-
-  base_stream_without_pagination:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: "NoPagination"
-      requester:
-        $ref: "#/definitions/requester"
-
-  user_business_hours_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    retriever:
-      $ref: "#/definitions/base_stream_without_pagination/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["schedule"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
-          }}/business-hours"
-    name: "user_business_hours"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: User business hours Schema
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          weeklyRanges:
-            type:
-            - 'null'
-            - object
-            properties:
-              monday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-              tuesday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-              wednesday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-              thursday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-              friday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-  company_business_hours_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    retriever:
-      $ref: "#/definitions/base_stream_without_pagination/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["schedule"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/business-hours"
-    name: "company_business_hours"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Business hours Schema
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          weeklyRanges:
-            type:
-            - 'null'
-            - object
-            properties:
-              monday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-              tuesday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-              wednesday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-              thursday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-              friday:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    from:
-                      type:
-                      - 'null'
-                      - string
-                    to:
-                      type:
-                      - 'null'
-                      - string
-  callblock_settings_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    retriever:
-      $ref: "#/definitions/base_stream_without_pagination/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["greetings"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
-          }}/caller-blocking"
-    name: "callblock_settings"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Callblock settings Schema
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          type:
-            type:
-            - 'null'
-            - string
-          preset:
-            type:
-            - 'null'
-            - object
-            properties:
-              uri:
-                type:
-                - 'null'
-                - string
-              id:
-                type:
-                - 'null'
-                - string
-              name:
-                type:
-                - 'null'
-                - string
-  blocked_allowed_phonenumbers_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    retriever:
-      $ref: "#/definitions/base_stream_without_pagination/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
-          }}/caller-blocking/phone-numbers"
-    primary_key: "id"
-    name: "blocked_allowed_phonenumbers"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Blocked_Allowed phoneNumber Schema
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          uri:
-            type:
-            - 'null'
-            - string
-          id:
-            type:
-            - 'null'
-            - string
-          phoneNumber:
-            type:
-            - 'null'
-            - string
-          status:
-            type:
-            - 'null'
-            - string
-          label:
-            type:
-            - 'null'
-            - string
-  forwarding_numbers_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
-          }}/forwarding-number"
-    primary_key: "id"
-    name: "forwarding_numbers"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Forwarding numbers Schema
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          phoneNumber:
-            type:
-            - 'null'
-            - string
-          label:
-            type:
-            - 'null'
-            - string
-          type:
-            type:
-            - 'null'
-            - string
-          features:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - string
-          flipNumber:
-            type:
-            - 'null'
-            - string
-  company_call_handling_rules_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/answering-rule"
-    primary_key: "id"
-    name: "company_call_handling_rules"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Company call handling rules
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          uri:
-            type:
-            - 'null'
-            - string
-          id:
-            type:
-            - 'null'
-            - string
-          type:
-            type:
-            - 'null'
-            - string
-          name:
-            type:
-            - 'null'
-            - string
-          enabled:
-            type:
-            - 'null'
-            - boolean
-  user_call_records_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
-          }}/call-log"
-    primary_key: "id"
-    name: "user_call_records"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: User Call Schema
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          uri:
-            type:
-            - 'null'
-            - string
-          id:
-            type:
-            - 'null'
-            - string
-          sessionId:
-            type:
-            - 'null'
-            - string
-          telephonySessionId:
-            type:
-            - 'null'
-            - string
-          startTime:
-            type:
-            - 'null'
-            - string
-          duration:
-            type:
-            - 'null'
-            - number
-          type:
-            type:
-            - 'null'
-            - string
-          direction:
-            type:
-            - 'null'
-            - string
-          action:
-            type:
-            - 'null'
-            - string
-          result:
-            type:
-            - 'null'
-            - string
-          to:
-            type:
-            - 'null'
-            - object
-            properties:
-              phoneNumber:
-                type:
-                - 'null'
-                - string
-              location:
-                type:
-                - 'null'
-                - string
-          from:
-            type:
-            - 'null'
-            - object
-            properties:
-              phoneNumber:
-                type:
-                - 'null'
-                - string
-              name:
-                type:
-                - 'null'
-                - string
-          message:
-            type:
-            - 'null'
-            - object
-            properties:
-              uri:
-                type:
-                - 'null'
-                - string
-              id:
-                type:
-                - 'null'
-                - string
-              type:
-                type:
-                - 'null'
-                - string
-  user_active_calls_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
-          }}/active-calls"
-    primary_key: "id"
-    name: "user_active_calls"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: User Call Schema
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          uri:
-            type:
-            - 'null'
-            - string
-          id:
-            type:
-            - 'null'
-            - string
-          sessionId:
-            type:
-            - 'null'
-            - string
-          telephonySessionId:
-            type:
-            - 'null'
-            - string
-          startTime:
-            type:
-            - 'null'
-            - string
-          duration:
-            type:
-            - 'null'
-            - number
-          type:
-            type:
-            - 'null'
-            - string
-          direction:
-            type:
-            - 'null'
-            - string
-          action:
-            type:
-            - 'null'
-            - string
-          result:
-            type:
-            - 'null'
-            - string
-          to:
-            type:
-            - 'null'
-            - object
-            properties:
-              phoneNumber:
-                type:
-                - 'null'
-                - string
-              location:
-                type:
-                - 'null'
-                - string
-          from:
-            type:
-            - 'null'
-            - object
-            properties:
-              phoneNumber:
-                type:
-                - 'null'
-                - string
-              name:
-                type:
-                - 'null'
-                - string
-          message:
-            type:
-            - 'null'
-            - object
-            properties:
-              uri:
-                type:
-                - 'null'
-                - string
-              id:
-                type:
-                - 'null'
-                - string
-              type:
-                type:
-                - 'null'
-                - string
-  call_monitoring_groups_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/call-monitoring-groups"
-    primary_key: "id"
-    name: "call_monitoring_groups"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Call Monitoring Groups Schema
-        additionalProperties: true
-        type: object
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          name:
-            type:
-            - 'null'
-            - string
-  call_queues_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/call-queues"
-    primary_key: "id"
-    name: "call_queues"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Call Queues Schema
-        additionalProperties: true
-        type: object
-        properties:
-          uri:
-            type:
-            - 'null'
-            - string
-          id:
-            type:
-            - 'null'
-            - string
-          extensionNumber:
-            type:
-            - 'null'
-            - string
-          name:
-            type:
-            - 'null'
-            - string
-  call_record_settings_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    retriever:
-      $ref: "#/definitions/base_stream_without_pagination/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["greetings"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/account/{{ config['account_id'] }}/call-recording"
-    name: "call_record_settings"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Call Record Settings Schema
-        additionalProperties: true
-        type: object
-        properties:
-          type:
-            type:
-            - 'null'
-            - string
-          mode:
-            type:
-            - 'null'
-            - string
-  greetings_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/dictionary/greeting"
-    primary_key: "id"
-    name: "greetings"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Greetings Schema
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          uri:
-            type:
-            - 'null'
-            - string
-          id:
-            type:
-            - 'null'
-            - string
-          name:
-            type:
-            - 'null'
-            - string
-          usageType:
-            type:
-            - 'null'
-            - string
-          contentUri:
-            type:
-            - 'null'
-            - string
-          type:
-            type:
-            - 'null'
-            - string
-          category:
-            type:
-            - 'null'
-            - string
-          text:
-            type:
-            - 'null'
-            - string
-  ivr_prompts_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/dictionary/greeting"
-    primary_key: "id"
-    name: "ivr_prompts"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: IVR Prompts
-        additionalProperties: true
-        type:
-        - 'null'
-        - object
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          uri:
-            type:
-            - 'null'
-            - string
-          contentType:
-            type:
-            - 'null'
-            - string
-          filename:
-            type:
-            - 'null'
-            - string
-          contentUri:
-            type:
-            - 'null'
-            - string
-          type:
-            type:
-            - 'null'
-            - string
-          text:
-            type:
-            - 'null'
-            - string
-          name:
-            type:
-            - 'null'
-            - string
-          usageType:
-            type:
-            - 'null'
-            - string
-          category:
-            type:
-            - 'null'
-            - string
-  fax_cover_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/dictionary/fax-cover-page"
-    primary_key: "id"
-    name: "fax_cover"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Fax Cover Schema
-        additionalProperties: true
-        type: object
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          name:
-            type:
-            - 'null'
-            - string
-streams:
-- $ref: "#/definitions/user_business_hours_stream"
-- $ref: "#/definitions/company_business_hours_stream"
-- $ref: "#/definitions/callblock_settings_stream"
-- $ref: "#/definitions/blocked_allowed_phonenumbers_stream"
-- $ref: "#/definitions/forwarding_numbers_stream"
-- $ref: "#/definitions/company_call_handling_rules_stream"
-- $ref: "#/definitions/user_call_records_stream"
-- $ref: "#/definitions/user_active_calls_stream"
-- $ref: "#/definitions/call_monitoring_groups_stream"
-- $ref: "#/definitions/call_queues_stream"
-- $ref: "#/definitions/call_record_settings_stream"
-- $ref: "#/definitions/greetings_stream"
-- $ref: "#/definitions/ivr_prompts_stream"
-- $ref: "#/definitions/fax_cover_stream"
+type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-  - "user_business_hours"
-  - "company_business_hours"
-  - "callblock_settings"
-  - "blocked_allowed_phonenumbers"
-  - "forwarding_numbers"
-  - "company_call_handling_rules"
-  - "user_call_records"
-  - "user_active_calls"
-  - "call_monitoring_groups"
-  - "call_queues"
-  - "call_record_settings"
-  - "greetings"
-  - "ivr_prompts"
-  - "fax_cover"
+    - user_business_hours
+    - company_business_hours
+    - callblock_settings
+    - blocked_allowed_phonenumbers
+    - forwarding_numbers
+    - company_call_handling_rules
+    - user_call_records
+    - user_active_calls
+    - call_monitoring_groups
+    - call_queues
+    - call_record_settings
+    - greetings
+    - ivr_prompts
+    - fax_cover
 
-spec: 
+definitions:
+  streams:
+    user_business_hours:
+      type: DeclarativeStream
+      name: user_business_hours
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: >-
+            /account/{{ config['account_id'] }}/extension/{{
+            config['extension_id'] }}/business-hours
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - schedule
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/user_business_hours'
+    company_business_hours:
+      type: DeclarativeStream
+      name: company_business_hours
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /account/{{ config['account_id'] }}/business-hours
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - schedule
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/company_business_hours'
+    callblock_settings:
+      type: DeclarativeStream
+      name: callblock_settings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: >-
+            /account/{{ config['account_id'] }}/extension/{{
+            config['extension_id'] }}/caller-blocking
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - greetings
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/callblock_settings'
+    blocked_allowed_phonenumbers:
+      type: DeclarativeStream
+      name: blocked_allowed_phonenumbers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: >-
+            /account/{{ config['account_id'] }}/extension/{{
+            config['extension_id'] }}/caller-blocking/phone-numbers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/blocked_allowed_phonenumbers'
+    forwarding_numbers:
+      type: DeclarativeStream
+      name: forwarding_numbers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: >-
+            /account/{{ config['account_id'] }}/extension/{{
+            config['extension_id'] }}/forwarding-number
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/forwarding_numbers'
+    company_call_handling_rules:
+      type: DeclarativeStream
+      name: company_call_handling_rules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /account/{{ config['account_id'] }}/answering-rule
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/company_call_handling_rules'
+    user_call_records:
+      type: DeclarativeStream
+      name: user_call_records
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: >-
+            /account/{{ config['account_id'] }}/extension/{{
+            config['extension_id'] }}/call-log
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/user_call_records'
+    user_active_calls:
+      type: DeclarativeStream
+      name: user_active_calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: >-
+            /account/{{ config['account_id'] }}/extension/{{
+            config['extension_id'] }}/active-calls
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/user_active_calls'
+    call_monitoring_groups:
+      type: DeclarativeStream
+      name: call_monitoring_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /account/{{ config['account_id'] }}/call-monitoring-groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/call_monitoring_groups'
+    call_queues:
+      type: DeclarativeStream
+      name: call_queues
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /account/{{ config['account_id'] }}/call-queues
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/call_queues'
+    call_record_settings:
+      type: DeclarativeStream
+      name: call_record_settings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /account/{{ config['account_id'] }}/call-recording
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - greetings
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/call_record_settings'
+    greetings:
+      type: DeclarativeStream
+      name: greetings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /dictionary/greeting
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/greetings'
+    ivr_prompts:
+      type: DeclarativeStream
+      name: ivr_prompts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /dictionary/greeting
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/ivr_prompts'
+    fax_cover:
+      type: DeclarativeStream
+      name: fax_cover
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /dictionary/fax-cover-page
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/fax_cover'
+  base_requester:
+    type: HttpRequester
+    url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config[''auth_token''] }}'
+
+streams:
+  - $ref: '#/definitions/streams/user_business_hours'
+  - $ref: '#/definitions/streams/company_business_hours'
+  - $ref: '#/definitions/streams/callblock_settings'
+  - $ref: '#/definitions/streams/blocked_allowed_phonenumbers'
+  - $ref: '#/definitions/streams/forwarding_numbers'
+  - $ref: '#/definitions/streams/company_call_handling_rules'
+  - $ref: '#/definitions/streams/user_call_records'
+  - $ref: '#/definitions/streams/user_active_calls'
+  - $ref: '#/definitions/streams/call_monitoring_groups'
+  - $ref: '#/definitions/streams/call_queues'
+  - $ref: '#/definitions/streams/call_record_settings'
+  - $ref: '#/definitions/streams/greetings'
+  - $ref: '#/definitions/streams/ivr_prompts'
+  - $ref: '#/definitions/streams/fax_cover'
+
+spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/ringcentral
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: RingCentral Spec
     type: object
-    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
     required:
-      - auth_token
       - account_id
+      - auth_token
       - extension_id
     properties:
-      auth_token:
-        title: Auth Token
-        type: string
-        description: Token could be recieved by following instructions at https://developers.ringcentral.com/api-reference/authentication
-        airbyte_secret: true
       account_id:
+        type: string
         title: Account Id
-        type: string
         description: >
-          Could be seen at response to basic api call to an endpoint with ~ operator. 
-          Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+          Could be seen at response to basic api call to an endpoint with ~
+          operator.  Example-
+          (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
         airbyte_secret: true
+        order: 0
+      auth_token:
+        type: string
+        title: Auth Token
+        description: >-
+          Token could be recieved by following instructions at
+          https://developers.ringcentral.com/api-reference/authentication
+        airbyte_secret: true
+        order: 1
       extension_id:
-        title: Extension Id
         type: string
+        title: Extension Id
         description: >
-          Could be seen at response to basic api call to an endpoint with ~ operator. 
-          Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+          Could be seen at response to basic api call to an endpoint with ~
+          operator.  Example-
+          (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
         airbyte_secret: true
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    user_business_hours: false
+    company_business_hours: false
+    callblock_settings: false
+    blocked_allowed_phonenumbers: false
+    forwarding_numbers: false
+    company_call_handling_rules: false
+    user_call_records: false
+    user_active_calls: false
+    call_monitoring_groups: false
+    call_queues: false
+    call_record_settings: false
+    greetings: false
+    ivr_prompts: false
+    fax_cover: false
+
+schemas:
+  user_business_hours:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      weeklyRanges:
+        type:
+          - 'null'
+          - object
+        properties:
+          friday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+          monday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+          thursday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+          tuesday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+          wednesday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+    title: User business hours Schema
+  company_business_hours:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      weeklyRanges:
+        type:
+          - 'null'
+          - object
+        properties:
+          friday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+          monday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+          thursday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+          tuesday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+          wednesday:
+            type:
+              - 'null'
+              - array
+            items:
+              type:
+                - 'null'
+                - object
+              properties:
+                from:
+                  type:
+                    - 'null'
+                    - string
+                to:
+                  type:
+                    - 'null'
+                    - string
+    title: Business hours Schema
+  callblock_settings:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      preset:
+        type:
+          - 'null'
+          - object
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          uri:
+            type:
+              - 'null'
+              - string
+    title: Callblock settings Schema
+  blocked_allowed_phonenumbers:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - 'null'
+          - string
+      label:
+        type:
+          - 'null'
+          - string
+      phoneNumber:
+        type:
+          - 'null'
+          - string
+      status:
+        type:
+          - 'null'
+          - string
+      uri:
+        type:
+          - 'null'
+          - string
+    title: Blocked_Allowed phoneNumber Schema
+  forwarding_numbers:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      features:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      flipNumber:
+        type:
+          - 'null'
+          - string
+      id:
+        type:
+          - 'null'
+          - string
+      label:
+        type:
+          - 'null'
+          - string
+      phoneNumber:
+        type:
+          - 'null'
+          - string
+    title: Forwarding numbers Schema
+  company_call_handling_rules:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      enabled:
+        type:
+          - 'null'
+          - boolean
+      id:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      uri:
+        type:
+          - 'null'
+          - string
+    title: Company call handling rules
+  user_call_records:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      action:
+        type:
+          - 'null'
+          - string
+      direction:
+        type:
+          - 'null'
+          - string
+      duration:
+        type:
+          - 'null'
+          - number
+      from:
+        type:
+          - 'null'
+          - object
+        properties:
+          name:
+            type:
+              - 'null'
+              - string
+          phoneNumber:
+            type:
+              - 'null'
+              - string
+      id:
+        type:
+          - 'null'
+          - string
+      message:
+        type:
+          - 'null'
+          - object
+        properties:
+          type:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - string
+          uri:
+            type:
+              - 'null'
+              - string
+      result:
+        type:
+          - 'null'
+          - string
+      sessionId:
+        type:
+          - 'null'
+          - string
+      startTime:
+        type:
+          - 'null'
+          - string
+      telephonySessionId:
+        type:
+          - 'null'
+          - string
+      to:
+        type:
+          - 'null'
+          - object
+        properties:
+          location:
+            type:
+              - 'null'
+              - string
+          phoneNumber:
+            type:
+              - 'null'
+              - string
+      uri:
+        type:
+          - 'null'
+          - string
+    title: User Call Schema
+  user_active_calls:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      action:
+        type:
+          - 'null'
+          - string
+      direction:
+        type:
+          - 'null'
+          - string
+      duration:
+        type:
+          - 'null'
+          - number
+      from:
+        type:
+          - 'null'
+          - object
+        properties:
+          name:
+            type:
+              - 'null'
+              - string
+          phoneNumber:
+            type:
+              - 'null'
+              - string
+      id:
+        type:
+          - 'null'
+          - string
+      message:
+        type:
+          - 'null'
+          - object
+        properties:
+          type:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - string
+          uri:
+            type:
+              - 'null'
+              - string
+      result:
+        type:
+          - 'null'
+          - string
+      sessionId:
+        type:
+          - 'null'
+          - string
+      startTime:
+        type:
+          - 'null'
+          - string
+      telephonySessionId:
+        type:
+          - 'null'
+          - string
+      to:
+        type:
+          - 'null'
+          - object
+        properties:
+          location:
+            type:
+              - 'null'
+              - string
+          phoneNumber:
+            type:
+              - 'null'
+              - string
+      uri:
+        type:
+          - 'null'
+          - string
+    title: User Call Schema
+  call_monitoring_groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+    title: Call Monitoring Groups Schema
+  call_queues:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      extensionNumber:
+        type:
+          - 'null'
+          - string
+      id:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      uri:
+        type:
+          - 'null'
+          - string
+    title: Call Queues Schema
+  call_record_settings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      mode:
+        type:
+          - 'null'
+          - string
+    title: Call Record Settings Schema
+  greetings:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      category:
+        type:
+          - 'null'
+          - string
+      contentUri:
+        type:
+          - 'null'
+          - string
+      id:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      text:
+        type:
+          - 'null'
+          - string
+      uri:
+        type:
+          - 'null'
+          - string
+      usageType:
+        type:
+          - 'null'
+          - string
+    title: Greetings Schema
+  ivr_prompts:
+    type:
+      - 'null'
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - 'null'
+          - string
+      category:
+        type:
+          - 'null'
+          - string
+      contentType:
+        type:
+          - 'null'
+          - string
+      contentUri:
+        type:
+          - 'null'
+          - string
+      filename:
+        type:
+          - 'null'
+          - string
+      id:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      text:
+        type:
+          - 'null'
+          - string
+      uri:
+        type:
+          - 'null'
+          - string
+      usageType:
+        type:
+          - 'null'
+          - string
+    title: IVR Prompts
+  fax_cover:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+    title: Fax Cover Schema
