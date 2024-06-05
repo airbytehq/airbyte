@@ -63,8 +63,12 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.7   | 2024-05-28 | [38176](https://github.com/airbytehq/airbyte/pull/38176) | Make connector compatible with Builder                                          |
 | 0.2.6   | 2024-05-02 | [37594](https://github.com/airbytehq/airbyte/pull/37594) | Change `last_recrods` to `last_record`                                          |
 | 0.2.5   | 2024-04-19 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Updating to 0.80.0 CDK                                                          |
 | 0.2.4   | 2024-04-18 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Manage dependencies with Poetry.                                                |
@@ -74,3 +78,5 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 | 0.2.0   | 2023-08-05 | [29122](https://github.com/airbytehq/airbyte/pull/29122) | Migrate to Low Code                                                             |
 | 0.1.1   | 2023-02-13 | [22939](https://github.com/airbytehq/airbyte/pull/22939) | Specified date formatting in specification                                      |
 | 0.1.0   | 2021-11-09 | [8056](https://github.com/airbytehq/airbyte/pull/8056)   | New Source: Mailgun                                                             |
+
+</details>
