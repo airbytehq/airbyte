@@ -70,6 +70,7 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.8 | 2024-06-04 | [38968](https://github.com/airbytehq/airbyte/pull/38968) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.7 | 2024-06-03 | [38915](https://github.com/airbytehq/airbyte/pull/38915) | Replace AirbyteLogger with logging.Logger |
 | 0.1.6 | 2024-06-03 | [38915](https://github.com/airbytehq/airbyte/pull/38915) | Replace AirbyteLogger with logging.Logger |
 | 0.1.5 | 2024-05-20 | [38443](https://github.com/airbytehq/airbyte/pull/38443) | [autopull] base image + poetry + up_to_date |
