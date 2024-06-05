@@ -2,13 +2,11 @@
   "results": [
     {
       "name": "pets",
-      "properties": [
-      ]
+      "properties": []
     },
     {
       "name": "cars",
-      "properties": [
-      ]
+      "properties": []
     }
   ]
 }

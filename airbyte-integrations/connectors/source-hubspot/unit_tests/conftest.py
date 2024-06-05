@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import patch
+
 import pytest
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API
-from unittest.mock import patch
 
 NUMBER_OF_PROPERTIES = 2000
 

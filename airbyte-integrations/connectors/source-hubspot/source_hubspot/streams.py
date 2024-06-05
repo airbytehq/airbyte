@@ -1110,7 +1110,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        if not hasattr(self, 'associations'):
+        if not hasattr(self, "associations"):
             self.associations = ["contacts"]  # Default initialization
         self._state = None
         self._include_archived_only = include_archived_only
@@ -2276,7 +2276,7 @@ class CustomObject(CRMSearchStream, ABC):
         "crm.objects.contacts.read",
         "crm.objects.companies.read",
         "crm.objects.deals.read",
-        "tickets"
+        "tickets",
     }
 
     def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], **kwargs):
