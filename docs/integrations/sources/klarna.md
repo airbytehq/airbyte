@@ -57,6 +57,9 @@ Connector will handle an issue with rate limiting as Klarna returns 429 status c
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.2.5 | 2024-06-04 | [39045](https://github.com/airbytehq/airbyte/pull/39045) | [autopull] Upgrade base image to v1.2.1 |
@@ -66,3 +69,5 @@ Connector will handle an issue with rate limiting as Klarna returns 429 status c
 | 0.2.1 | 2024-04-12 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | schema descriptions |
 | 0.2.0 | 2023-10-23 | [31003](https://github.com/airbytehq/airbyte/pull/31003) | Migrate to low-code |
 | 0.1.0 | 2022-10-24 | [18385](https://github.com/airbytehq/airbyte/pull/18385) | Klarna Settlements Payout and Transactions API |
+
+</details>
