@@ -92,11 +92,12 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 1.0.4   | 2024-04-19 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Updating to 0.80.0 CDK                                                          |
-| 1.0.3   | 2024-04-18 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Manage dependencies with Poetry.                                                |
-| 1.0.2   | 2024-04-15 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 1.0.1   | 2024-04-12 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | schema descriptions                                                             |
-| 1.0.0   | 2023-03-20 | [24188](https://github.com/airbytehq/airbyte/pull/24188) | Migrate to Beta; Change state structure                                         |
-| 0.1.0   | 2022-09-09 | [15061](https://github.com/airbytehq/airbyte/pull/15061) | 🎉 New Source: Yandex metrica                                                   |
+| 1.0.5 | 2024-06-04 | [38999](https://github.com/airbytehq/airbyte/pull/38999) | [autopull] Upgrade base image to v1.2.1 |
+| 1.0.4 | 2024-04-19 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Updating to 0.80.0 CDK |
+| 1.0.3 | 2024-04-18 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Manage dependencies with Poetry. |
+| 1.0.2 | 2024-04-15 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.0.1 | 2024-04-12 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | schema descriptions |
+| 1.0.0 | 2023-03-20 | [24188](https://github.com/airbytehq/airbyte/pull/24188) | Migrate to Beta; Change state structure |
+| 0.1.0 | 2022-09-09 | [15061](https://github.com/airbytehq/airbyte/pull/15061) | 🎉 New Source: Yandex metrica |
 
 </details>

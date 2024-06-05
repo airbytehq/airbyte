@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.4"
+version = "1.0.5"
 name = "source-yandex-metrica"
 description = "Source implementation for Yandex Metrica."
 authors = [ "Airbyte <contact@airbyte.io>",]
