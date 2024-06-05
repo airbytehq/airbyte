@@ -56,9 +56,10 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.0.1 | 2024-06-04 | [38972](https://github.com/airbytehq/airbyte/pull/38972) | [autopull] Upgrade base image to v1.2.1 |
 | 1.0.0 | 2024-04-15 | [36602](https://github.com/airbytehq/airbyte/pull/36602) | Migrate to low code |
-| 0.5.4 | 2024-04-19 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Updating to 0.80.0 CDK                                                          |
-| 0.5.3 | 2024-04-18 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Manage dependencies with Poetry.                                                |
+| 0.5.4 | 2024-04-19 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Updating to 0.80.0 CDK |
+| 0.5.3 | 2024-04-18 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Manage dependencies with Poetry. |
 | 0.5.2 | 2024-04-15 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.5.1 | 2024-04-12 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Schema descriptions |
 | 0.5.0 | 2023-09-20 | [30639](https://github.com/airbytehq/airbyte/pull/30639) | Add Call Purposes and Call Dispositions streams |
