@@ -52,12 +52,13 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.5   | 2024-05-28 | [38691](https://github.com/airbytehq/airbyte/pull/38691) | Make compatibility with builder                                                 |
-| 0.2.4   | 2024-04-19 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Updating to 0.80.0 CDK                                                          |
-| 0.2.3   | 2024-04-18 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Manage dependencies with Poetry.                                                |
-| 0.2.2   | 2024-04-15 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.1   | 2024-04-12 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | schema descriptions                                                             |
-| 0.2.0   | 2023-10-20 | [30991](https://github.com/airbytehq/airbyte/pull/30991) | Migrate to Low-code Framework                                                   |
-| 0.1.0   | 2022-11-08 | [18595](https://github.com/airbytehq/airbyte/pull/18595) | Adding Visma e-conomic as a source                                              |
+| 0.2.6 | 2024-06-04 | [38982](https://github.com/airbytehq/airbyte/pull/38982) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.5 | 2024-05-28 | [38691](https://github.com/airbytehq/airbyte/pull/38691) | Make compatibility with builder |
+| 0.2.4 | 2024-04-19 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Updating to 0.80.0 CDK |
+| 0.2.3 | 2024-04-18 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | schema descriptions |
+| 0.2.0 | 2023-10-20 | [30991](https://github.com/airbytehq/airbyte/pull/30991) | Migrate to Low-code Framework |
+| 0.1.0 | 2022-11-08 | [18595](https://github.com/airbytehq/airbyte/pull/18595) | Adding Visma e-conomic as a source |
 
 </details>
