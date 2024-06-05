@@ -55,9 +55,15 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.1.3   | 2024-04-19 | [37244](https://github.com/airbytehq/airbyte/pull/37244) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
-| 0.1.2   | 2024-04-15 | [37244](https://github.com/airbytehq/airbyte/pull/37244) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.1.1   | 2024-04-12 | [37244](https://github.com/airbytehq/airbyte/pull/37244) | schema descriptions                                                             |
+| 0.1.4 | 2024-06-04 | [38950](https://github.com/airbytehq/airbyte/pull/38950) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.3 | 2024-04-19 | [37244](https://github.com/airbytehq/airbyte/pull/37244) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
+| 0.1.2 | 2024-04-15 | [37244](https://github.com/airbytehq/airbyte/pull/37244) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.1 | 2024-04-12 | [37244](https://github.com/airbytehq/airbyte/pull/37244) | schema descriptions |
 | 0.1.0   | 2022-11-02 | TBA                                                      | First Commit                                                                    |
+
+</details>

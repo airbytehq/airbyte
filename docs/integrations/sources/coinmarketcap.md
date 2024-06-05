@@ -34,8 +34,13 @@ Coinmarketcap APIs are under rate limits for the number of API calls allowed per
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
 | 0.1.2   | 2024-05-13 | [38134](https://github.com/airbytehq/airbyte/pull/38134)  | Make connector compatabile with builder         |
 | 0.1.1   | 2022-11-01 | [18790](https://github.com/airbytehq/airbyte/pull/18790)  | Correct coinmarket spec                         |
 | 0.1.0   | 2022-10-29 | [18565](https://github.com/airbytehq/airbyte/pull/18565)  | 🎉 New Source: Coinmarketcap API [low-code CDK] |
+
+</details>

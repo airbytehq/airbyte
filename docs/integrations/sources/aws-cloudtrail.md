@@ -49,13 +49,21 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.1.7   | 2024-04-15 | [37122](https://github.com/airbytehq/airbyte/pull/37122) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.1.6   | 2024-04-12 | [37122](https://github.com/airbytehq/airbyte/pull/37122) | schema descriptions                                                             |
-| 0.1.5   | 2023-02-15 | [23083](https://github.com/airbytehq/airbyte/pull/23083) | Specified date formatting in specification                                      |
-| 0.1.4   | 2022-04-11 | [11763](https://github.com/airbytehq/airbyte/pull/11763) | Upgrade to Python 3.9                                                           |
-| 0.1.3   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications                               |
-| 0.1.2   | 2021-08-04 | [5152](https://github.com/airbytehq/airbyte/pull/5152)   | Fix connector spec.json                                                         |
-| 0.1.1   | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                 |
-| 0.1.0   | 2021-06-23 | [4122](https://github.com/airbytehq/airbyte/pull/4122)   | Initial release supporting the LookupEvent API                                  |
+| 0.1.10 | 2024-06-03 | [38911](https://github.com/airbytehq/airbyte/pull/38911) | Replace AirbyteLogger with logging.Logger |
+| 0.1.9 | 2024-06-03 | [38911](https://github.com/airbytehq/airbyte/pull/38911) | Replace AirbyteLogger with logging.Logger |
+| 0.1.8 | 2024-05-20 | [38448](https://github.com/airbytehq/airbyte/pull/38448) | [autopull] base image + poetry + up_to_date |
+| 0.1.7 | 2024-04-15 | [37122](https://github.com/airbytehq/airbyte/pull/37122) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.6 | 2024-04-12 | [37122](https://github.com/airbytehq/airbyte/pull/37122) | schema descriptions |
+| 0.1.5 | 2023-02-15 | [23083](https://github.com/airbytehq/airbyte/pull/23083) | Specified date formatting in specification |
+| 0.1.4 | 2022-04-11 | [11763](https://github.com/airbytehq/airbyte/pull/11763) | Upgrade to Python 3.9 |
+| 0.1.3 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
+| 0.1.2 | 2021-08-04 | [5152](https://github.com/airbytehq/airbyte/pull/5152) | Fix connector spec.json |
+| 0.1.1 | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.1.0 | 2021-06-23 | [4122](https://github.com/airbytehq/airbyte/pull/4122) | Initial release supporting the LookupEvent API |
+
+</details>
