@@ -60,10 +60,14 @@ an Orb Account and API Key.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 1.2.2   | 2024-04-19 | [37211](https://github.com/airbytehq/airbyte/pull/37211) | Updating to 0.80.0 CDK                                                                                |
-| 1.2.1   | 2024-04-12 | [37211](https://github.com/airbytehq/airbyte/pull/37211) | schema descriptions                                                                                   |
+| 1.2.3 | 2024-06-04 | [39015](https://github.com/airbytehq/airbyte/pull/39015) | [autopull] Upgrade base image to v1.2.1 |
+| 1.2.2 | 2024-04-19 | [37211](https://github.com/airbytehq/airbyte/pull/37211) | Updating to 0.80.0 CDK |
+| 1.2.1 | 2024-04-12 | [37211](https://github.com/airbytehq/airbyte/pull/37211) | schema descriptions |
 | 1.2.0   | 2024-03-19 | [x](https://github.com/airbytehq/airbyte/pull/x)         | Expose `end_date`parameter                                                                            |
 | 1.1.2   | 2024-03-13 | [x](https://github.com/airbytehq/airbyte/pull/x)         | Fix window to 30 days for events query timesframe start and query                                     |
 | 1.1.1   | 2024-02-07 | [35005](https://github.com/airbytehq/airbyte/pull/35005) | Pass timeframe_start, timeframe_end to events query                                                   |
@@ -75,3 +79,5 @@ an Orb Account and API Key.
 | 0.1.1   | 2022-03-03 | [10839](https://github.com/airbytehq/airbyte/pull/10839) | Support ledger entries with numeric properties + schema fixes                                         |
 | 0.1.0   | 2022-02-01 |                                                          | New Source: Orb                                                                                       |
 | :---    | :---       | :---                                                     | :---                                                                                                  |
+
+</details>
