@@ -48,6 +48,9 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.1.6   | 2024-04-28 | [37230](https://github.com/airbytehq/airbyte/pull/37230) | Make connector compatible with Builder                                                         |
@@ -57,3 +60,5 @@ The following fields are required fields for the connector to work:
 | 0.1.2   | 2024-04-12 | [37230](https://github.com/airbytehq/airbyte/pull/37230) | schema descriptions                                                             |
 | 0.1.1   | 2023-02-13 | [22908](https://github.com/airbytehq/airbyte/pull/22908) | Specified date formatting in specificatition                                    |
 | 0.1.0   | 2022-11-02 | [18842](https://github.com/airbytehq/airbyte/pull/18842) | New source                                                                      |
+
+</details>
