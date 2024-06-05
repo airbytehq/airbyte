@@ -54,13 +54,14 @@ The Opsgenie connector uses the most recent API version for each source of data.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.5   | 2024-04-19 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Updating to 0.80.0 CDK                                                          |
-| 0.3.4   | 2024-04-18 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Manage dependencies with Poetry.                                                |
-| 0.3.3   | 2024-04-15 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.3.2   | 2024-04-12 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | schema descriptions                                                             |
-| 0.3.1   | 2024-02-14 | [35269](https://github.com/airbytehq/airbyte/pull/35269) | Fix parsing of updated_at timestamps in alerts                                  |
-| 0.3.0   | 2023-10-19 | [31552](https://github.com/airbytehq/airbyte/pull/31552) | Migrated to Low Code                                                            |
-| 0.2.0   | 2023-10-24 | [31777](https://github.com/airbytehq/airbyte/pull/31777) | Fix schema                                                                      |
-| 0.1.0   | 2022-09-14 | [16768](https://github.com/airbytehq/airbyte/pull/16768) | Initial Release                                                                 |
+| 0.3.6 | 2024-06-04 | [39035](https://github.com/airbytehq/airbyte/pull/39035) | [autopull] Upgrade base image to v1.2.1 |
+| 0.3.5 | 2024-04-19 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Updating to 0.80.0 CDK |
+| 0.3.4 | 2024-04-18 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Manage dependencies with Poetry. |
+| 0.3.3 | 2024-04-15 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.3.2 | 2024-04-12 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | schema descriptions |
+| 0.3.1 | 2024-02-14 | [35269](https://github.com/airbytehq/airbyte/pull/35269) | Fix parsing of updated_at timestamps in alerts |
+| 0.3.0 | 2023-10-19 | [31552](https://github.com/airbytehq/airbyte/pull/31552) | Migrated to Low Code |
+| 0.2.0 | 2023-10-24 | [31777](https://github.com/airbytehq/airbyte/pull/31777) | Fix schema |
+| 0.1.0 | 2022-09-14 | [16768](https://github.com/airbytehq/airbyte/pull/16768) | Initial Release |
 
 </details>
