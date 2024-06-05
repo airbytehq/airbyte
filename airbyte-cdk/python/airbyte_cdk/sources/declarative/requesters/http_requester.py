@@ -67,7 +67,7 @@ class HttpRequester(Requester):
     message_repository: MessageRepository = NoopMessageRepository()
     use_cache: bool = False
     stream_response: bool = False
-    decoder: Decoder = None
+    decoder: Optional[Decoder] = None
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
