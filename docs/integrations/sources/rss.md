@@ -38,8 +38,10 @@ None
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 1.0.1   | 2024-04-30 | [37535](https://github.com/airbytehq/airbyte/pull/37535) | Fix incremental sync           |
-| 1.0.0   | 2024-04-20 | [36418](https://github.com/airbytehq/airbyte/pull/36418) | Migrate python cdk to low code |
-| 0.1.0   | 2022-10-12 | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
+| 1.0.2 | 2024-06-04 | [39085](https://github.com/airbytehq/airbyte/pull/39085) | [autopull] Upgrade base image to v1.2.1 |
+| 1.0.1 | 2024-04-30 | [37535](https://github.com/airbytehq/airbyte/pull/37535) | Fix incremental sync |
+| 1.0.0 | 2024-04-20 | [36418](https://github.com/airbytehq/airbyte/pull/36418) | Migrate python cdk to low code |
+| 0.1.0 | 2022-10-12 | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
+
 
 </details>
