@@ -6,7 +6,7 @@ data:
     hosts:
       - api.zenloop.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795
+    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:04ce17faf949ef4090d06a1a1f704eb4687fc3c5f750944149a400e2a9eaa0e1
   connectorSubtype: api
   connectorType: source
   definitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794

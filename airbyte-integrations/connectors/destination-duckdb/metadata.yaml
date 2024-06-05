@@ -1,6 +1,6 @@
 data:
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795
+    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:04ce17faf949ef4090d06a1a1f704eb4687fc3c5f750944149a400e2a9eaa0e1
   connectorSubtype: database
   connectorType: destination
   definitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610

@@ -18,7 +18,7 @@ data:
           memory_limit: 2Gi
           memory_request: 2Gi
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795
+    baseImage: docker.io/airbyte/python-connector-base:1.2.1@sha256:04ce17faf949ef4090d06a1a1f704eb4687fc3c5f750944149a400e2a9eaa0e1
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 65de8962-48c9-11ee-be56-0242ac120002
