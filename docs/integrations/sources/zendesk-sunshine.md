@@ -63,6 +63,9 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.2.4   | 2024-04-19 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | Updating to 0.80.0 CDK                                                          |
@@ -73,3 +76,5 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 | 0.1.2   | 2023-08-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976)   | Fix schemas and tests                                                           |
 | 0.1.1   | 2021-11-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976)   | Add oauth2.0 support                                                            |
 | 0.1.0   | 2021-07-08 | [4359](https://github.com/airbytehq/airbyte/pull/4359)   | Initial Release                                                                 |
+
+</details>

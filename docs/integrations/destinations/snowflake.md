@@ -261,6 +261,9 @@ desired namespace.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:----------------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.9.0           | 2024-05-23 | [\#38658](https://github.com/airbytehq/airbyte/pull/38658) | Adapting to newer interfaces from #38107                                                                                                                         |
@@ -454,3 +457,5 @@ desired namespace.
 | 0.3.12          | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                                                                                     |
 | 0.3.11          | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                                                                                        |
 | 0.3.10          | 2021-07-12 | [\#4713](https://github.com/airbytehq/airbyte/pull/4713)   | Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake                                                                             |
+
+</details>
