@@ -78,6 +78,9 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
 | 0.3.0   | 2024-03-07 | [35867](https://github.com/airbytehq/airbyte/pull/35867) | Migrated to `YamlDeclarativeSource (Low-code)` Airbyte CDK                                                       |
@@ -99,3 +102,5 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 | 0.1.2   | 2021-08-17 | [5476](https://github.com/airbytehq/airbyte/pull/5476)   | Correct field unread to boolean type                                                                             |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                  |
 | 0.1.0   | 2021-05-03 | [3088](https://github.com/airbytehq/airbyte/pull/3088)   | Initial release                                                                                                  |
+
+</details>
