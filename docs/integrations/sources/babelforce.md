@@ -42,9 +42,15 @@ There are no performance consideration in the current version.
 
 Generate a API access key ID and token using the [Babelforce documentation](https://help.babelforce.com/hc/en-us/articles/360044753932-API-documentation-and-endpoints-an-introduction-)
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.2.0   | 2023-08-24 | [29314](https://github.com/airbytehq/airbyte/pull/29314) | Migrate to Low Code         |
-| 0.1.0   | 2022-05-09 | [12700](https://github.com/airbytehq/airbyte/pull/12700) | Introduce Babelforce source |
+| 0.2.1 | 2024-05-21 | [38523](https://github.com/airbytehq/airbyte/pull/38523) | [autopull] base image + poetry + up_to_date |
+| 0.2.0 | 2023-08-24 | [29314](https://github.com/airbytehq/airbyte/pull/29314) | Migrate to Low Code |
+| 0.1.0 | 2022-05-09 | [12700](https://github.com/airbytehq/airbyte/pull/12700) | Introduce Babelforce source |
+
+</details>

@@ -96,7 +96,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   @Override
   protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
     AtomicLong count = new AtomicLong(0L);
-    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    stateMessages.stream().forEach(
+        stateMessage -> count.addAndGet(stateMessage.getSourceStats() != null ? stateMessage.getSourceStats().getRecordCount().longValue() : 0L));
     assertEquals(totalCount, count.get());
   }
 
@@ -242,6 +243,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   @Override
   protected boolean supportResumableFullRefresh() {
     return true;
+  }
+
+  @Override
+  protected void addIsResumableFlagForNonPkTable(final AirbyteStream stream) {
+    stream.setIsResumable(false);
   }
 
   @Test

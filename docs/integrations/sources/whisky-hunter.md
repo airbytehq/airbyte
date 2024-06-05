@@ -33,6 +33,13 @@ There is no published rate limit. However, since this data updates infrequently,
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
-| 0.1.0   | 2022-10-12 | [17918](https://github.com/airbytehq/airbyte/pull/17918) | Initial release supporting the Whisky Hunter API |
+| 0.1.2 | 2024-06-05 | [38841](https://github.com/airbytehq/airbyte/pull/38841) | Make compatible with builder |
+| 0.1.1 | 2024-05-21 | [38508](https://github.com/airbytehq/airbyte/pull/38508) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-10-12 | [17918](https://github.com/airbytehq/airbyte/pull/17918) | Initial release supporting the Whisky Hunter API |
+
+</details>

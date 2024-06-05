@@ -26,7 +26,13 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.1.1   | 2023-04-27 | [25598](https://github.com/airbytehq/airbyte/pull/25598) | Use region specific API server |
-| 0.1.0   | 2022-10-06 | [17559](https://github.com/airbytehq/airbyte/pull/17559) | The Genesys Source is created  |
+| 0.1.1 | 2024-05-20 | [38450](https://github.com/airbytehq/airbyte/pull/38450) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2023-04-27 | [25598](https://github.com/airbytehq/airbyte/pull/25598) | Use region specific API server |
+| 0.1.0 | 2022-10-06 | [17559](https://github.com/airbytehq/airbyte/pull/17559) | The Genesys Source is created |
+
+</details>
