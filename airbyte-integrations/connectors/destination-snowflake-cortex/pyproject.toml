@@ -18,7 +18,7 @@ include = "destination_snowflake_cortex"
 
 [tool.poetry.dependencies.airbyte-cdk]
 # Version cnstrained by PyAirbyte (`airbyte`) version
-version = "0.2.2"
+version = ">=1.0"
 extras = ["vector-db-based"]
 
 [tool.poetry.dependencies]
@@ -37,7 +37,7 @@ coverage = "^7.5.3"
 destination-snowflake-cortex = "destination_snowflake_cortex.run:run"
 
 [tool.ruff]
-target-version = "0.2.2"
+target-version = "py310"
 preview = true
 line-length = 100
 
