@@ -60,7 +60,13 @@ The Tyntec SMS connector should not run into limitations under normal usage. Ple
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------ |
+| 0.1.2 | 2024-06-04 | [39043](https://github.com/airbytehq/airbyte/pull/39043) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.1 | 2024-05-21 | [38500](https://github.com/airbytehq/airbyte/pull/38500) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-11-02 | [18883](https://github.com/airbytehq/airbyte/pull/18883) | 🎉 New Source: Tyntec SMS |
+
+</details>
