@@ -3,26 +3,45 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the discount code",
       "type": ["null", "integer"]
     },
     "price_rule_id": {
+      "description": "The identifier of the price rule associated with the discount code",
       "type": ["null", "integer"]
     },
     "code": {
+      "description": "The discount code that customers can use during checkout to apply the discount",
       "type": ["null", "string"]
     },
     "usage_count": {
+      "description": "The number of times the discount code has been used by customers",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the discount code was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the discount code was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "summary": {
+      "description": "A brief summary or description of the discount code",
+      "type": ["null", "string"]
+    },
+    "discount_type": {
+      "description": "The type of discount applied by the discount code, such as a percentage or fixed amount off",
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier for the discount code in the Shopify Admin GraphQL API",
+      "type": ["null", "string"]
+    },
     "shop_url": {
+      "description": "The URL of the shop where the discount code is applicable",
       "type": ["null", "string"]
     }
   }

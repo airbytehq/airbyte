@@ -7,65 +7,43 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      #Test with Prod credentials (Make sure you purt the right ones)
+      # Test with Prod credentials (Make sure you purt the right ones)
       - spec_path: "source_paypal_transaction/spec.yaml"
         config_path: secrets/config.json
-        backward_compatibility_tests_config:
-          disable_for_version: "0.1.13"
   connection:
     tests:
-      #Test With Prod Credentials
+      # Test With Prod Credentials
       - config_path: secrets/config.json
         status: succeed
-      #Test with Invalid Credentials
+      # Test with Invalid Credentials
       - config_path: integration_tests/sample_files/invalid_config.json
         status: failed
-      #Test with Sandbox Credentials
-      # - config_path: secrets/config_sandbox.json
-      #   status: succeed
   discovery:
     tests:
       - config_path: secrets/config.json
-        # - config_path: secrets/config_sandbox.json
-        backward_compatibility_tests_config:
-          disable_for_version: "2.0.0" # Change in cursor field for transactions stream
   basic_read:
     tests:
-      #Test Prod Environment - Uncomment and change according to your prod setup
-      #Change the expected records, remember to align them with the timeframe you have selected
-      #Do not select streams that take more than 5 mins to load data as that can lead to timeouts
-      #You can comment the lines if you are sure you have data for the below streams.
+      # Test Prod Environment - Uncomment and change according to your prod setup
+      # Change the expected records, remember to align them with the timeframe you have selected
+      # Do not select streams that take more than 5 mins to load data as that can lead to timeouts
+      # You can comment the lines if you are sure you have data for the below streams.
       - config_path: secrets/config.json
-        # - config_path: secrets/config_sandbox.json
         empty_streams:
           - name: show_product_details
             bypass_reason: "Products may not exist"
-          - name: list_products
-            bypass_reason: "Product List may be too big causing timeout errors"
           - name: search_invoices
             bypass_reason: "Order makes the diff fail."
-          #Have to add for testing PR CI.
+          # Have to add for testing PR CI.
           - name: list_disputes
             bypass_reason: "Disputes may not exist."
-        ignored_fields:
-          balances:
-            - name: last_refresh_time
-              bypass_reason: "field changes during every read"
-          list_products:
-            - name: description
-              bypass_reason: "Sometimes it is not contained in the response"
         timeout_seconds: 3200
         expect_records:
           path: "integration_tests/sample_files/expected_records_sandbox.jsonl"
-          #path: "integration_tests/sample_files/expected_records.jsonl"
-          extra_fields: yes
           exact_order: yes
-          extra_records: no
         fail_on_extra_columns: False
   incremental:
     tests:
       - config_path: secrets/config.json
-        # - config_path: secrets/config_sandbox.json
         configured_catalog_path: integration_tests/incremental_catalog.json
         future_state:
           future_state_path: integration_tests/sample_files/abnormal_state.json
@@ -73,7 +51,6 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: secrets/config.json
-        # - config_path: secrets/config_sandbox.json
         configured_catalog_path: integration_tests/full_refresh_catalog.json
         ignored_fields:
           balances:

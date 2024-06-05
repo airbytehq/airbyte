@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.2.4"
+name = "source-strava"
+description = "Source implementation for Strava."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/strava"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_strava"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "0.80.0"
+
+[tool.poetry.scripts]
+source-strava = "source_strava.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6.1"
+pytest = "^6.2"
+requests-mock = "^1.9.3"

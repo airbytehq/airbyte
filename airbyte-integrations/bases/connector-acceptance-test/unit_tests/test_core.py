@@ -12,7 +12,12 @@ from airbyte_protocol.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateStats,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
@@ -592,87 +597,178 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             assert configured_catalog == test_core.build_configured_catalog_from_custom_catalog.return_value
 
 
+_DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
+
+
 @pytest.mark.parametrize(
-    "schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation",
+    "schema, ignored_fields, expect_records_config, records, expected_records_by_stream, primary_key, expectation",
     [
-        ({"type": "object"}, {}, ExpectedRecordsConfig(path="foobar"), {"aa": 23}, {}, does_not_raise()),
-        ({"type": "object"}, {}, ExpectedRecordsConfig(path="foobar"), {}, {}, does_not_raise()),
+        # given no expected records and actual has one empty record
+        ({"type": "object"}, {}, _DEFAULT_RECORD_CONFIG, [{}], {}, None, does_not_raise()),
+        # given no expected records but actual has one record that match schema
+        ({"type": "object"}, {}, _DEFAULT_RECORD_CONFIG, [{"aa": 23}], {}, None, does_not_raise()),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
             {},
-            ExpectedRecordsConfig(path="foobar"),
-            {"aa": 23},
+            _DEFAULT_RECORD_CONFIG,
+            [{"aa": 23}],
             {},
+            None,
             pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
         ),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
             {},
-            ExpectedRecordsConfig(path="foobar"),
-            {"created": "23"},
+            _DEFAULT_RECORD_CONFIG,
+            [{"created": "23"}],
             {},
+            None,
             does_not_raise(),
         ),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
             {},
-            ExpectedRecordsConfig(path="foobar"),
-            {"root": {"created": "23"}},
+            _DEFAULT_RECORD_CONFIG,
+            [{"root": {"created": "23"}}],
             {},
+            None,
             pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
         ),
         # Recharge shop stream case
         (
             {"type": "object", "properties": {"shop": {"type": ["null", "object"]}, "store": {"type": ["null", "object"]}}},
             {},
-            ExpectedRecordsConfig(path="foobar"),
-            {"shop": {"a": "23"}, "store": {"b": "23"}},
+            _DEFAULT_RECORD_CONFIG,
+            [{"shop": {"a": "23"}, "store": {"b": "23"}}],
             {},
+            None,
             does_not_raise(),
         ),
-        # Fail when expected and actual records are not equal
+        # Given stream without primary key with different record
         (
             {"type": "object"},
             {},
-            ExpectedRecordsConfig(path="foobar"),
-            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
+            _DEFAULT_RECORD_CONFIG,
+            [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
-            pytest.raises(Failed, match="Stream test_stream: All expected records must be produced"),
+            None,
+            does_not_raise(),
+        ),
+        # Given stream without primary key and more actual than expected
+        (
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}
+            ],
+            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            None,
+            does_not_raise(),
         ),
         # Expected and Actual records are not equal but we ignore fast changing field
         (
             {"type": "object"},
             {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
-            ExpectedRecordsConfig(path="foobar"),
-            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
+            _DEFAULT_RECORD_CONFIG,
+            [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            None,
             does_not_raise(),
-        ),
-        # Fail when expected and actual records are not equal and exact_order=True
-        (
-            {"type": "object"},
-            {},
-            ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
-            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
-            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
-            pytest.raises(AssertionError, match="Stream test_stream: Mismatch of record order or values"),
         ),
         # Expected and Actual records are not equal but we ignore fast changing field (for case when exact_order=True)
         (
             {"type": "object"},
             {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
-            ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
-            {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
+            ExpectedRecordsConfig(exact_order=True, path="foobar"),
+            [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}]},
+            None,
+            does_not_raise(),
+        ),
+        # Expected is in actual but not in order (for case when exact_order=True)
+        (
+                {"type": "object"},
+                {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
+                ExpectedRecordsConfig(exact_order=True, path="foobar"),
+                [{"constant_field": "not in order"}, {"constant_field": "must equal"}],
+                {"test_stream": [{"constant_field": "must equal"}]},
+                None,
+                does_not_raise(),
+        ),
+        # Match by primary key
+        (
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [{"primary_key": "a primary_key"}],
+            {"test_stream": [{"primary_key": "a primary_key"}]},
+            [["primary_key"]],
+            does_not_raise(),
+        ),
+        # Match by primary key when actual has added fields
+        (
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [{"primary_key": "a primary_key", "a field that should be ignored": "ignored value"}],
+            {"test_stream": [{"primary_key": "a primary_key"}]},
+            [["primary_key"]],
+            does_not_raise(),
+        ),
+        # Match by primary key when non primary key field values differ
+        (
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [{"primary_key": "a primary_key", "matching key": "value 1"}],
+            {"test_stream": [{"primary_key": "a primary_key", "non matching key": "value 2"}]},
+            [["primary_key"]],
+            does_not_raise(),
+        ),
+        # Match nested primary key
+        (
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [{"top_level_field": {"child_field": "a primary_key"}, "matching key": "value 1"}],
+            {"test_stream": [{"top_level_field": {"child_field": "a primary_key"}, "matching key": "value 1"}]},
+            [["top_level_field", "child_field"]],
+            does_not_raise(),
+        ),
+        # Match composite primary key
+        (
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [{"primary_key_1": "a primary_key_1", "primary_key_2": "a primary_key_2"}],
+            {"test_stream": [{"primary_key_1": "a primary_key_1", "primary_key_2": "a primary_key_2"}]},
+            [["primary_key_1"], ["primary_key_2"]],
+            does_not_raise(),
+        ),
+        # Match composite and nested primary key
+        (
+            {"type": "object"},
+            {},
+            _DEFAULT_RECORD_CONFIG,
+            [{"primary_key_1": "a primary_key_1", "primary_key_2_1": {"primary_key_2_2": "primary_key_2"}}],
+            {"test_stream": [{"primary_key_1": "a primary_key_1", "primary_key_2_1": {"primary_key_2_2": "primary_key_2"}}]},
+            [["primary_key_1"], ["primary_key_2_1", "primary_key_2_2"]],
             does_not_raise(),
         ),
     ],
 )
-async def test_read(mocker, schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation):
+async def test_read(mocker, schema, ignored_fields, expect_records_config, records, expected_records_by_stream, primary_key, expectation):
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
+                stream=AirbyteStream.parse_obj({
+                    "name": "test_stream",
+                    "json_schema": schema,
+                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_primary_key": primary_key
+                }),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
             )
@@ -680,7 +776,7 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
     )
     docker_runner_mock = mocker.MagicMock(
         call_read=mocker.AsyncMock(
-            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))]
+            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111)) for record in records]
         )
     )
     t = test_core.TestBasicRead()
@@ -692,83 +788,12 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
             should_validate_schema=True,
             should_validate_data_points=False,
             should_validate_stream_statuses=False,
+            should_validate_state_messages=False,
             should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream=expected_records_by_stream,
             docker_runner=docker_runner_mock,
             ignored_fields=ignored_fields,
-            detailed_logger=MagicMock(),
-            certified_file_based_connector=False,
-        )
-
-
-@pytest.mark.parametrize(
-    "config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail",
-    [
-        (True, True, True),
-        (True, False, False),
-        (False, False, False),
-        (False, True, False),
-    ],
-)
-@pytest.mark.parametrize("additional_properties", [True, False, None])
-async def test_fail_on_extra_columns(
-    mocker, config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail, additional_properties
-):
-    schema = {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}}
-    if additional_properties:
-        schema["additionalProperties"] = additional_properties
-
-    record = {"field_1": "value", "field_2": "value"}
-    if record_has_unexpected_column:
-        record["surprise_field"] = "value"
-
-    configured_catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
-                sync_mode="full_refresh",
-                destination_sync_mode="overwrite",
-            )
-        ]
-    )
-    docker_runner_mock = mocker.MagicMock(
-        call_read=mocker.AsyncMock(
-            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))]
-        )
-    )
-
-    t = test_core.TestBasicRead()
-    if expectation_should_fail:
-        with pytest.raises(Failed, match="test_stream"):
-            await t.test_read(
-                connector_config=None,
-                configured_catalog=configured_catalog,
-                expect_records_config=ExpectedRecordsConfig(path="foobar"),
-                should_validate_schema=True,
-                should_validate_data_points=False,
-                should_validate_stream_statuses=False,
-                should_fail_on_extra_columns=config_fail_on_extra_columns,
-                empty_streams=set(),
-                expected_records_by_stream={},
-                docker_runner=docker_runner_mock,
-                ignored_fields=None,
-                detailed_logger=MagicMock(),
-                certified_file_based_connector=False,
-            )
-    else:
-        t.test_read(
-            connector_config=None,
-            configured_catalog=configured_catalog,
-            expect_records_config=ExpectedRecordsConfig(path="foobar"),
-            should_validate_schema=True,
-            should_validate_data_points=False,
-            should_validate_stream_statuses=False,
-            should_fail_on_extra_columns=config_fail_on_extra_columns,
-            empty_streams=set(),
-            expected_records_by_stream={},
-            docker_runner=docker_runner_mock,
-            ignored_fields=None,
             detailed_logger=MagicMock(),
             certified_file_based_connector=False,
         )
@@ -1459,10 +1484,11 @@ async def test_read_validate_async_output_stream_statuses(mocker):
     await t.test_read(
         connector_config=None,
         configured_catalog=configured_catalog,
-        expect_records_config=ExpectedRecordsConfig(path="foobar"),
+        expect_records_config=_DEFAULT_RECORD_CONFIG,
         should_validate_schema=False,
         should_validate_data_points=False,
         should_validate_stream_statuses=True,
+        should_validate_state_messages=False,
         should_fail_on_extra_columns=False,
         empty_streams=set(),
         expected_records_by_stream={},
@@ -1559,10 +1585,11 @@ async def test_read_validate_stream_statuses_exceptions(mocker, output):
         await t.test_read(
             connector_config=None,
             configured_catalog=configured_catalog,
-            expect_records_config=ExpectedRecordsConfig(path="foobar"),
+            expect_records_config=_DEFAULT_RECORD_CONFIG,
             should_validate_schema=False,
             should_validate_data_points=False,
             should_validate_stream_statuses=True,
+            should_validate_state_messages=False,
             should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream={},
@@ -1680,3 +1707,105 @@ async def test_all_supported_file_types_present(mocker, file_types_found, should
             await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)
     else:
         await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)
+
+@pytest.mark.parametrize(
+    ("state_message_params", "should_fail"),
+    (
+            ({"type": AirbyteStateType.STREAM, "sourceStats": AirbyteStateStats(recordCount=1.0)}, False),
+            ({"type": AirbyteStateType.STREAM}, True),
+            ({"type": AirbyteStateType.LEGACY}, True),
+            ({}, True),  # Case where state was not emitted
+
+    ),
+)
+async def test_read_validate_async_output_state_messages(mocker, state_message_params, should_fail):
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream.parse_obj({"name": f"test_stream_0", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}),
+                sync_mode="full_refresh",
+                destination_sync_mode="overwrite",
+            )
+        ]
+    )
+    stream = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name='test_stream_0', namespace=None),
+        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True)
+    )
+    async_stream_output = [
+        AirbyteMessage(
+            type=Type.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.STARTED
+                ),
+            ),
+        ),
+        AirbyteMessage(
+            type=Type.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=114,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.RUNNING
+                ),
+            ),
+        ),
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_0", data={"a": 1}, emitted_at=111)),
+        AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(stream=stream, **state_message_params)),
+        AirbyteMessage(
+            type=Type.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=120,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.COMPLETE
+                ),
+            ),
+        )
+    ]
+
+    if not state_message_params:
+        async_stream_output.pop()
+        print(async_stream_output)
+    docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(return_value=async_stream_output))
+
+    t = test_core.TestBasicRead()
+
+    if should_fail:
+        with pytest.raises((AssertionError, AttributeError)):
+            await t.test_read(
+                connector_config=None,
+                configured_catalog=configured_catalog,
+                expect_records_config=_DEFAULT_RECORD_CONFIG,
+                should_validate_schema=False,
+                should_validate_data_points=False,
+                should_validate_stream_statuses=True,
+                should_validate_state_messages=True,
+                should_fail_on_extra_columns=False,
+                empty_streams=set(),
+                expected_records_by_stream={},
+                docker_runner=docker_runner_mock,
+                ignored_fields=None,
+                detailed_logger=MagicMock(),
+                certified_file_based_connector=False
+            )
+    else:
+        await t.test_read(
+            connector_config=None,
+            configured_catalog=configured_catalog,
+            expect_records_config=_DEFAULT_RECORD_CONFIG,
+            should_validate_schema=False,
+            should_validate_data_points=False,
+            should_validate_stream_statuses=True,
+            should_validate_state_messages=True,
+            should_fail_on_extra_columns=False,
+            empty_streams=set(),
+            expected_records_by_stream={},
+            docker_runner=docker_runner_mock,
+            ignored_fields=None,
+            detailed_logger=MagicMock(),
+            certified_file_based_connector=False
+        )

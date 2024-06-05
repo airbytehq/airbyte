@@ -4,84 +4,58 @@ products: cloud, oss-enterprise
 
 # Manage your workspace
 
-A workspace in Airbyte allows you to collaborate with other users and manage connections together. On Airbyte Cloud it will allow you to share billing details for a workspace.
-
-:::info
-Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.
-:::
+A workspace in Airbyte allows you to collaborate with other users and manage connections together.
 
 ## Add users to your workspace
 
-To add a user to your workspace:
+1. To add a user to your workspace, go to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General** and click **+ New member**.
 
-1. Go to the **Settings** via the side navigation in Airbyte.
+2. On the **Add new member** dialog, enter the email address of the user you want to invite to your workspace. Click **Add new member**.
 
-2. Click **Workspace** > **Access Management**.
-
-3. Click **+ New user**.
-
-4. On the **Add new users** dialog, enter the email address of the user you want to invite to your workspace. 
-
-5. Click **Send invitation**.
-
-    :::info
-    The user will have access to only the workspace you invited them to. They will be added as a workspace admin by default.
-    :::
+:::info
+The user will have access to only the workspace you invited them to. They will be added with a role of `Workspace Admin`, which has the ability to add or delete other users and make changes to connections and connectors in the workspace.
+:::
 
 ## Remove users from your workspace​
 
-To remove a user from your workspace:
+1. To remove a user from your workspace, to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General**. In the workspace role column, click the down carat and select **Remove user**.
 
-1. Go to the **Settings** via the side navigation in Airbyte.
+2. Complete removal by clicking **Remove** in the confirmation modal.
 
-2. Click **Workspace** > **Access Management**.
-
-3. Click **Remove** next to the user’s email.
-
-4. The **Remove user** dialog displays. Click **Remove**.
+:::tip
+Organization admins cannot be removed from a workspace. Reach out to Airbyte Support if you need assistance removing an organization admin.
+:::
 
 ## Rename a workspace
 
-To rename a workspace:
-
-1. Go to the **Settings** via the side navigation in Airbyte.
-
-2. Click **Workspace** > **General**.
-
-3. In the **Workspace name** field, enter the new name for your workspace. 
-
-4. Click **Save changes**.
+To rename a workspace, go to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General**. In the **Workspace name** field, enter the new name for your workspace. Click **Save changes**.
 
 ## Delete a workspace
 
-To delete a workspace:
+To delete a workspace, go to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General**. In the **Danger!** section, click **Delete your workspace**.
 
-1. Go to the **Settings** via the side navigation in Airbyte.
+## Managing multiple workspaces
 
-2. Click **Workspace** > **General**.
+You can have access to one or multiple workspaces with Airbyte Cloud, which gives you flexibility in managing user access and billing. Workspaces can also be linked through an organization, which allows you to collaborate with team members and share workspaces across your team.
 
-3. In the **Delete your workspace** section, click **Delete**.
+:::info
+Organizations are only available in Airbyte Cloud through Cloud Teams. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to take advantage of organization features.
+:::
 
-## Single workspace vs. multiple workspaces
- 
-You can use one or multiple workspaces with Airbyte Cloud, which gives you flexibility in managing user access and billing.
- 
-### Access
-| Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
-|----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| Single               | All users in a workspace have access to the same data.                        | If you add a user to a workspace, you cannot limit their access to specific data within that workspace.                                     |
-| Multiple             | You can create multiple workspaces to allow certain users to access the data. | Since you have to manage user access for each workspace individually, it can get complicated if you have many users in multiple workspaces. | 
- 
-### Billing
-| Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
-|----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| Single               | You can use the same payment method for all purchases.                        | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace).                                     |
-| Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example, different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces. |
+### Billing across multiple workspaces
+
+Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize billing across workspaces.
+
+## Managing User Roles
+
+Airbyte offers multiple user roles to enable teams to securely access workspaces or organizations. Some roles are only available to certain products.
+
+| Role                                                                                                                    | Cloud | Cloud Teams | Enterprise |
+| ----------------------------------------------------------------------------------------------------------------------- | ----- | ----------- | ---------- |
+| **Organization Admin:** Administer the whole organization, create workspaces in it, and manage organization permissions |       | ✅          | ✅         |
+| **Workspace Admin:** Administer the workspace, create workspace permissions                                             | ✅    |             |            |
+| **Workspace Reader:** View information within a workspace, cannot modify anything within a workspace                    |       | ✅          | ✅         |
 
 ## Switch between multiple workspaces
 
-To switch between workspaces:
-
-1. Click the current workspace name under the Airbyte logo in the navigation bar.
-
-2. Search for the workspace or click the name of the workspace you want to switch to.
+To switch between workspaces, click the current workspace name under the Airbyte logo in the navigation bar. Search for the workspace or click the name of the workspace you want to switch to.

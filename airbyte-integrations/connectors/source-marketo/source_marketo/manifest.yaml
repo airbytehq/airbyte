@@ -1,0 +1,186 @@
+version: 0.79.1
+type: DeclarativeSource
+
+definitions:
+  # Authenticator
+  authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['client_id'] }}"
+    client_secret: "{{ config['client_secret'] }}"
+    token_refresh_endpoint: "{{ config['domain_url'] }}/identity/oauth/token"
+    grant_type: client_credentials
+
+  # Requester
+  requester:
+    type: HttpRequester
+    url_base: "{{ config['domain_url'].rstrip('/') }}/"
+    authenticator: "#/definitions/authenticator"
+    http_method: GET
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [400, 403]
+          error_message: Unable to connect to Marketo API with the provided credentials
+
+  # Selector
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["result"]
+
+  # Paginators
+  cursor_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('nextPageToken') }}"
+      page_size: 300
+    page_size_option:
+      type: RequestOption
+      field_name: "batchSize"
+      inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: "nextPageToken"
+      inject_into: request_parameter
+
+  offset_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 200
+    page_size_option:
+      type: RequestOption
+      field_name: "batchSize"
+      inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: "offset"
+      inject_into: request_parameter
+
+  # Retrievers
+  base_retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/cursor_paginator"
+
+  semi_incremental_retriever:
+    $ref: "#/definitions/base_retriever"
+    record_selector:
+      $ref: "#/definitions/selector"
+      record_filter:
+        type: RecordFilter
+        condition: "{{ record['createdAt'] >= stream_state.get('createdAt', config['start_date']) }}"
+
+  # Base streams
+  base_full_refresh_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+    retriever: "#/definitions/base_retriever"
+
+  base_semi_incremental_stream:
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/semi_incremental_retriever"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "createdAt"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime: "{{ config['start_date'] }}"
+
+  base_incremental_stream:
+    $ref: "#/definitions/base_full_refresh_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updatedAt"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime: "{{ config['start_date'] }}"
+      end_datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+      cursor_granularity: "PT1S"
+      step: "P{{ config.get('window_in_days', 30) }}D"
+      start_time_option:
+        type: RequestOption
+        field_name: "earliestUpdatedAt"
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: "latestUpdatedAt"
+        inject_into: request_parameter
+
+  # Full refresh streams
+  activity_types_stream:
+    # API Docs: https://developers.marketo.com/rest-api/lead-database/activities/#describe
+    name: "activity_types"
+    $ref: "#/definitions/base_full_refresh_stream"
+    $parameters:
+      path: "rest/v1/activities/types.json"
+
+  segmentations_stream:
+    # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET
+    name: "segmentations"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      paginator: "#/definitions/offset_paginator"
+    $parameters:
+      path: "rest/asset/v1/segmentation.json"
+
+  # Semi-Incremental streams
+  campaigns_stream:
+    # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
+    name: "campaigns"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "rest/v1/campaigns.json"
+
+  lists_stream:
+    # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
+    name: "lists"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "rest/v1/lists.json"
+
+  # Incremental streams
+  programs_stream:
+    # API Docs: https://developers.marketo.com/rest-api/assets/programs/#by_date_range
+    name: "programs"
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+        page_size_option:
+          type: RequestOption
+          field_name: "maxReturn"
+          inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["createdAt"]
+            value: "{{ format_datetime(record['createdAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
+          - type: AddedFieldDefinition
+            path: ["updatedAt"]
+            value: "{{ format_datetime(record['updatedAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
+    $parameters:
+      path: "rest/asset/v1/programs.json"
+
+streams:
+  # Full refresh streams
+  - "#/definitions/activity_types_stream"
+  - "#/definitions/segmentations_stream"
+
+  # Semi-Incremental streams
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/lists_stream"
+
+  # Incremental streams
+  - "#/definitions/programs_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - programs

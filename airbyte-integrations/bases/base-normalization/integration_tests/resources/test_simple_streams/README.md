@@ -1,9 +1,10 @@
 # test_simple_streams
 
-## Exchange Rate 
+## Exchange Rate
 
 This test suite is focusing on testing a simple stream (non-nested) of data similar to `source-exchangerates` using two different
 `destination_sync_modes`:
+
 - `incremental` + `overwrite` with stream `exchange_rate`
 - `incremental` + `append_dedup` with stream `dedup_exchange_rate`
 

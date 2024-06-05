@@ -285,7 +285,7 @@ def test_process_multiple_chunks_with_relevant_fields():
                 "text: Special tokens like",
                 "<|endoftext|> are treated like regular",
                 "text",
-            ]
+            ],
         ),
         (
             "Custom separator",

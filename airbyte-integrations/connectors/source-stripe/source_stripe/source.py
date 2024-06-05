@@ -4,12 +4,11 @@
 
 import logging
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -20,9 +19,9 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, ConcurrentCursor, CursorField, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
@@ -111,7 +110,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             )
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
         self.validate_and_fill_with_defaults(config)
         stripe.api_key = config["client_secret"]
         try:
@@ -520,11 +519,27 @@ class SourceStripe(ConcurrentSourceAdapter):
         ]
 
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
-        return [self._to_concurrent(stream, self._start_date_to_timestamp(config), state_manager) for stream in streams]
+        return [
+            self._to_concurrent(
+                stream,
+                datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc),
+                timedelta(days=config["slice_range"]),
+                state_manager,
+            )
+            for stream in streams
+        ]
 
-    def _to_concurrent(self, stream: Stream, fallback_start, state_manager: ConnectorStateManager) -> Stream:
+    def _to_concurrent(
+        self, stream: Stream, fallback_start: datetime, slice_range: timedelta, state_manager: ConnectorStateManager
+    ) -> Stream:
         if stream.name in self._streams_configured_as_full_refresh:
-            return StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
+            return StreamFacade.create_from_stream(
+                stream,
+                self,
+                entrypoint_logger,
+                self._create_empty_state(),
+                FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository),
+            )
 
         state = state_manager.get_stream_state(stream.name, stream.namespace)
         slice_boundary_fields = self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream))
@@ -541,6 +556,9 @@ class SourceStripe(ConcurrentSourceAdapter):
                 cursor_field,
                 slice_boundary_fields,
                 fallback_start,
+                converter.get_end_provider(),
+                timedelta(seconds=0),
+                slice_range,
             )
             return StreamFacade.create_from_stream(stream, self, entrypoint_logger, state, cursor)
 

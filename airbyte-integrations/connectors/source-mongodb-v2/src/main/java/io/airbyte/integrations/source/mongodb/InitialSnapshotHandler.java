@@ -6,34 +6,28 @@ package io.airbyte.integrations.source.mongodb;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.*;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
+import io.airbyte.integrations.source.mongodb.MongoUtil.CollectionStatistics;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.SyncMode;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.bson.BsonDocument;
-import org.bson.BsonInt32;
-import org.bson.BsonInt64;
-import org.bson.BsonObjectId;
-import org.bson.BsonString;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.bson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,19 +47,16 @@ public class InitialSnapshotHandler {
                                                                   final List<ConfiguredAirbyteStream> streams,
                                                                   final MongoDbStateManager stateManager,
                                                                   final MongoDatabase database,
-                                                                  final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
-                                                                  final Instant emittedAt,
-                                                                  final int checkpointInterval,
-                                                                  final boolean isEnforceSchema) {
+                                                                  final MongoDbSourceConfig config,
+                                                                  final boolean decorateWithStartedStatus,
+                                                                  final boolean decorateWithCompletedStatus) {
+    final boolean isEnforceSchema = config.getEnforceSchema();
+    final var checkpointInterval = config.getCheckpointInterval();
     return streams
         .stream()
-        .peek(airbyteStream -> {
-          if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
-            LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
-        })
-        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
+          final var namespace = airbyteStream.getStream().getNamespace();
           final var collection = database.getCollection(collectionName);
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
@@ -85,39 +76,27 @@ public class InitialSnapshotHandler {
           final Optional<MongoDbStreamState> existingState =
               stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
 
-          // The filter determines the starting point of this iterator based on the state of this collection.
-          // If a state exists, it will use that state to create a query akin to
-          // "where _id > [last saved state] order by _id ASC".
-          // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
-          final Bson filter = existingState
-              .map(state -> Filters.gt(MongoConstants.ID_FIELD,
-                  switch (state.idType()) {
-            case STRING -> new BsonString(state.id());
-            case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
-            case INT -> new BsonInt32(Integer.parseInt(state.id()));
-            case LONG -> new BsonInt64(Long.parseLong(state.id()));
-          }))
-              // if nothing was found, return a new BsonDocument
-              .orElseGet(BsonDocument::new);
-
-          // When schema is enforced we query for the selected fields
-          // Otherwise we retreive the entire set of fields
-          final var cursor = isEnforceSchema ? collection.find()
-              .filter(filter)
-              .projection(fields)
-              .sort(Sorts.ascending(MongoConstants.ID_FIELD))
-              .allowDiskUse(true)
-              .cursor()
-              : collection.find()
-                  .filter(filter)
-                  .sort(Sorts.ascending(MongoConstants.ID_FIELD))
-                  .allowDiskUse(true)
-                  .cursor();
-
+          final Optional<CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(database, airbyteStream);
+          final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema,
+              MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream));
           final var stateIterator =
-              new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION, isEnforceSchema);
-          return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
+              new SourceStateIterator<>(recordIterator, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
+                  MongoConstants.CHECKPOINT_DURATION));
+          final var iterator = AutoCloseableIterators.fromIterator(stateIterator, recordIterator::close, null);
+
+          List<AutoCloseableIterator<AirbyteMessage>> itList = Stream.of(iterator).collect(Collectors.toList());
+          if (decorateWithStartedStatus) {
+            itList.addFirst(new StreamStatusTraceEmitterIterator(
+                new AirbyteStreamStatusHolder(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(collectionName, namespace),
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+          }
+
+          if (decorateWithCompletedStatus) {
+            itList.addLast(new StreamStatusTraceEmitterIterator(
+                new AirbyteStreamStatusHolder(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(collectionName, namespace),
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+          }
+          return (itList.size() == 1) ? iterator : AutoCloseableIterators.concatWithEagerClose(itList);
         })
         .toList();
   }

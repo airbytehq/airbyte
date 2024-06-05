@@ -92,6 +92,11 @@ ERROR_MAP = {
         "failure_msg": "Error in query: unexpected end of query.",
         "error_type": "queryError",
     },
+    "UNRECOGNIZED_FIELD": {
+        "failure_code": QueryErrorEnum.QueryError.UNRECOGNIZED_FIELD,
+        "failure_msg": "unrecognized field in the query.",
+        "error_type": "queryError",
+    },
     "RESOURCE_EXHAUSTED": {"failure_code": QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED, "failure_msg": "msg4", "error_type": "quotaError"},
     "UNEXPECTED_ERROR": {
         "failure_code": AuthorizationErrorEnum.AuthorizationError.UNKNOWN,

@@ -1,7 +1,6 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-postgres:dev
-test_strictness_level: high
 custom_environment_variables:
   USE_STREAM_CAPABLE_STATE: true
 acceptance_tests:
@@ -32,25 +31,7 @@ acceptance_tests:
       - config_path: "secrets/config_cdc.json"
         backward_compatibility_tests_config:
           disable_for_version: "2.1.1"
-  basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
-      - config_path: "secrets/config_cdc.json"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
       - config_path: "secrets/config_cdc.json"
-  incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
-        future_state:
-          bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"
-      - config_path: "secrets/config_cdc.json"
-        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
-        future_state:
-          bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"

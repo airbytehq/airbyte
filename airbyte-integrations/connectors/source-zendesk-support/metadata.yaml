@@ -11,13 +11,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 2.2.8
+  dockerImageTag: 2.6.5
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
   license: ELv2
-  maxSecondsBetweenMessages: 10800
+  maxSecondsBetweenMessages: 60
   name: Zendesk Support
   remoteRegistries:
     pypi:
@@ -35,9 +35,7 @@ data:
         message: "`cursor_field` for `Tickets` stream is changed to `generated_timestamp`"
         upgradeDeadline: "2023-07-19"
       2.0.0:
-        message:
-          The `Deleted Tickets` stream was removed. Deleted tickets are still
-          available from the Tickets stream.
+        message: The `Deleted Tickets` stream was removed. Deleted tickets are still available from the Tickets stream.
         upgradeDeadline: "2023-10-04"
   suggestedStreams:
     streams:
@@ -57,4 +55,24 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZENDESK-SUPPORT_OAUTH_CRED
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-ZENDESK-SUPPORT_TOKEN_CRED
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_ZENDESK_SUPPORT_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

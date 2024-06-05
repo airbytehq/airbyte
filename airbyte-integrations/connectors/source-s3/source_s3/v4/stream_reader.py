@@ -12,7 +12,7 @@ import boto3.session
 import pendulum
 import pytz
 import smart_open
-from airbyte_cdk.models import FailureType
+from airbyte_cdk import FailureType
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -56,6 +56,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
             raise ValueError("Source config is missing; cannot create the S3 client.")
+
         if self._s3_client is None:
             client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
 

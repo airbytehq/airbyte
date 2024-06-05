@@ -15,7 +15,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 042ce96f-1158-4662-9543-e2ff015be97a
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/destination-astra
   githubIssueLabel: destination-astra
   icon: astra.svg
@@ -27,4 +27,21 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/astra
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ASTRA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ASTRA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

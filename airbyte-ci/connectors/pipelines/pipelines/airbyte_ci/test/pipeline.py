@@ -139,7 +139,7 @@ def prepare_container_for_poe_tasks(
     airbyte_repo_dir: dagger.Directory,
     airbyte_ci_package_config: AirbyteCiPackageConfiguration,
     poetry_package_path: Path,
-    is_ci: bool,
+    pipeline_context_params: Dict,
 ) -> dagger.Container:
     """Prepare a container to run poe tasks for a poetry package.
 
@@ -148,7 +148,7 @@ def prepare_container_for_poe_tasks(
         airbyte_repo_dir (dagger.Directory): The airbyte repo directory.
         airbyte_ci_package_config (AirbyteCiPackageConfiguration): The airbyte ci package configuration.
         poetry_package_path (Path): The path to the poetry package in the airbyte repo.
-        is_ci (bool): Whether the container is running in a CI environment.
+        pipeline_context_params (Dict): The pipeline context parameters.
 
     Returns:
         dagger.Container: The container to run poe tasks for the poetry package.
@@ -162,6 +162,7 @@ def prepare_container_for_poe_tasks(
     container = get_poetry_base_container(dagger_client)
 
     # Set the CI environment variable
+    is_ci = pipeline_context_params["is_ci"]
     if is_ci:
         container = container.with_env_variable("CI", "true")
 
@@ -190,8 +191,48 @@ def prepare_container_for_poe_tasks(
     # Set working directory to the poetry package directory
     container = container.with_workdir(f"/airbyte/{poetry_package_path}")
 
+    # If a package from `airbyte-platform-internal` is required, modify the entry in pyproject.toml to use https instead of ssh,
+    # when run in Github Actions
+    # This is currently required for getting the connection-retriever package, for regression tests.
+    if is_ci:
+        container = (
+            container.with_exec(
+                [
+                    "sed",
+                    "-i",
+                    "-E",
+                    r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
+                    "pyproject.toml",
+                ]
+            )
+            .with_exec(
+                [
+                    "poetry",
+                    "source",
+                    "add",
+                    "--priority=supplemental",
+                    "airbyte-platform-internal-source",
+                    "https://github.com/airbytehq/airbyte-platform-internal.git",
+                ]
+            )
+            .with_exec(
+                [
+                    "poetry",
+                    "config",
+                    "http-basic.airbyte-platform-internal-source",
+                    "octavia-squidington-iii",
+                    pipeline_context_params["ci_github_access_token"].value,
+                ]
+            )
+            .with_exec(["poetry", "lock", "--no-update"])
+        )
+
     # Install the poetry package
-    container = container.with_exec(["poetry", "install"] + [f"--with={group}" for group in airbyte_ci_package_config.extra_poetry_groups])
+    container = container.with_exec(
+        ["poetry", "install"]
+        + [f"--with={group}" for group in airbyte_ci_package_config.optional_poetry_groups]
+        + [f"--extras={extra}" for extra in airbyte_ci_package_config.poetry_extras]
+    )
     return container
 
 
@@ -270,7 +311,7 @@ async def run_poe_tasks_for_package(
     package_dir = await get_poetry_package_dir(airbyte_repo_dir, poetry_package_path)
     package_config = await get_airbyte_ci_package_config(package_dir)
     container = prepare_container_for_poe_tasks(
-        dagger_client, airbyte_repo_dir, package_config, poetry_package_path, pipeline_context_params["is_ci"]
+        dagger_client, airbyte_repo_dir, package_config, poetry_package_path, pipeline_context_params
     )
     logger = logging.getLogger(str(poetry_package_path))
 

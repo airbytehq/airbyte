@@ -31,66 +31,69 @@
       "type": ["null", "string"]
     },
     "data": {
-      "company_name": {
-        "type": ["null", "string"]
-      },
-      "email": {
-        "type": ["null", "string"],
-        "format": "email"
-      },
-      "first_name": {
-        "type": ["null", "string"]
-      },
-      "last_name": {
-        "type": ["null", "string"]
-      },
-      "address": {
-        "type": ["null", "string"]
-      },
-      "city": {
-        "type": ["null", "string"]
-      },
-      "state": {
-        "type": ["null", "string"]
-      },
-      "phone": {
-        "type": ["null", "string"]
-      },
-      "title": {
-        "type": ["null", "string"]
-      },
-      "industry": {
-        "type": ["null", "string"]
-      },
-      "snippet": {
-        "type": ["null", "string"]
-      },
-      "snippet1": {
-        "type": ["null", "string"]
-      },
-      "snippet2": {
-        "type": ["null", "string"]
-      },
-      "snippet3": {
-        "type": ["null", "string"]
-      },
-      "snippet4": {
-        "type": ["null", "string"]
-      },
-      "twitch_name": {
-        "type": ["null", "string"]
-      },
-      "linkedin": {
-        "type": ["null", "string"]
-      },
-      "twitter": {
-        "type": ["null", "string"]
-      },
-      "facebook": {
-        "type": ["null", "string"]
-      },
-      "salesforce_id": {
-        "type": ["null", "string"]
+      "type": "object",
+      "properties": {
+        "company_name": {
+          "type": ["null", "string"]
+        },
+        "email": {
+          "type": ["null", "string"],
+          "format": "email"
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "address": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "industry": {
+          "type": ["null", "string"]
+        },
+        "snippet": {
+          "type": ["null", "string"]
+        },
+        "snippet1": {
+          "type": ["null", "string"]
+        },
+        "snippet2": {
+          "type": ["null", "string"]
+        },
+        "snippet3": {
+          "type": ["null", "string"]
+        },
+        "snippet4": {
+          "type": ["null", "string"]
+        },
+        "twitch_name": {
+          "type": ["null", "string"]
+        },
+        "linkedin": {
+          "type": ["null", "string"]
+        },
+        "twitter": {
+          "type": ["null", "string"]
+        },
+        "facebook": {
+          "type": ["null", "string"]
+        },
+        "salesforce_id": {
+          "type": ["null", "string"]
+        }
       }
     }
   }

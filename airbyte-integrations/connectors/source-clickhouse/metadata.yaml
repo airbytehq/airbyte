@@ -27,5 +27,6 @@ data:
   supportLevel: community
   tags:
     - language:java
-    - language:python
+  connectorTestSuitesOptions:
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

@@ -1,7 +1,7 @@
 # Facebook Pages
 
 :::danger
-The Facebook Pages API utilized by this connector has been deprecated.  You will not be able to make a successful connection.  If you would like to make a community contribution or track API upgrade status, visit: https://github.com/airbytehq/airbyte/issues/25515.
+The Facebook Pages API utilized by this connector has been deprecated. You will not be able to make a successful connection. If you would like to make a community contribution or track API upgrade status, visit: https://github.com/airbytehq/airbyte/issues/25515.
 :::
 
 This page contains the setup guide and reference information for the Facebook Pages source connector.
@@ -61,10 +61,10 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Supported Streams
 
-- [Page](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/#overview)
-- [Post](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/feed)
-- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/insights)
-- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v15.0/insights)
+- [Page](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/#overview)
+- [Post](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/feed)
+- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/insights)
+- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v19.0/insights)
 
 ## Data type map
 
@@ -83,8 +83,12 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.0.0   | 2024-03-14 | [36015](https://github.com/airbytehq/airbyte/pull/36015) | Upgrade Facebook API to v19.0                                             |
 | 0.3.0   | 2023-06-26 | [27728](https://github.com/airbytehq/airbyte/pull/27728) | License Update: Elv2                                                      |
 | 0.2.5   | 2023-04-13 | [26939](https://github.com/airbytehq/airbyte/pull/26939) | Add advancedAuth to the connector spec                                    |
 | 0.2.4   | 2023-04-13 | [25143](https://github.com/airbytehq/airbyte/pull/25143) | Update insight metrics request params                                     |
@@ -99,3 +103,5 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 | 0.1.2   | 2021-10-18 | [7128](https://github.com/airbytehq/airbyte/pull/7128)   | Upgrade Facebook API to v.12                                              |
 | 0.1.1   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification |
 | 0.1.0   | 2021-09-01 | [5158](https://github.com/airbytehq/airbyte/pull/5158)   | Initial Release                                                           |
+
+</details>

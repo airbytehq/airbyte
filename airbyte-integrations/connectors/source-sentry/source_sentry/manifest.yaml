@@ -1,105 +1,175 @@
-version: "0.29.0"
+version: 0.57.0
+type: DeclarativeSource
+
 definitions:
-  page_size: 50
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
-  selector:
+    file_path: "./source_sentry/schemas/{{ parameters['name'] }}.json"
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['auth_token'] }}"
+  requester:
+    type: HttpRequester
+    url_base: "https://{{ config['hostname'] }}/api/0/"
+    http_method: GET
+    request_headers: {}
+    authenticator:
+      $ref: "#/definitions/authenticator"
+  record_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
       field_path: []
-  requester:
-    type: HttpRequester
-    url_base: "https://{{ config.hostname }}/api/0/"
-    http_method: "GET"
-    authenticator:
-      type: "BearerAuthenticator"
-      api_token: "{{ config.auth_token }}"
+  filter_record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
   paginator:
     type: DefaultPaginator
-    page_size: "#/definitions/page_size"
-    limit_option:
-      inject_into: "request_parameter"
-      field_name: ""
     page_token_option:
       type: RequestOption
-      inject_into: "request_parameter"
-      field_name: "cursor"
+      inject_into: request_parameter
+      field_name: cursor
     pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ headers.link.next.cursor }}"
-      stop_condition: "{{ headers.link.next.results != 'true' }}"
+      type: CursorPagination
+      cursor_value: '{{ headers["link"].get("next", {}).get("cursor", {}) }}'
+      stop_condition: '{{ headers["link"]["next"]["results"] == "false" }}'
   retriever:
     type: SimpleRetriever
-
-streams:
-  - type: DeclarativeStream
-    $parameters:
-      # https://docs.sentry.io/api/events/list-a-projects-events/
-      name: "events"
-    primary_key: "id"
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/record_selector"
+    paginator:
+      $ref: "#/definitions/paginator"
+    partition_router: []
+  retriever_with_filter:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/record_selector"
+      record_filter:
+        condition: "{{ record[parameters['cursor_field']] > stream_state.get(parameters['cursor_field'], '') }}"
+    paginator:
+      $ref: "#/definitions/paginator"
+    partition_router: []
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "{{ parameters['cursor_field'] }}"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1900-01-01T00:00:00.0Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    is_data_feed: true
+  base_stream_full_refresh:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
+  base_stream_incremental:
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/retriever_with_filter"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+
+  # Stream Events https://docs.sentry.io/api/events/list-a-projects-error-events/
+  events:
+    type: DeclarativeStream
+    $parameters:
+      name: "events"
+      primary_key: "id"
+      path: "projects/{{ config['organization'] }}/{{ config['project'] }}/events/"
+      cursor_field: "dateCreated"
+    retriever:
+      type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        path: "projects/{{config.organization}}/{{config.project}}/events/"
         request_parameters:
           full: "true"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+        record_filter:
+          condition: "{{ record[parameters['cursor_field']] > stream_state.get(parameters['cursor_field'], '') }}"
       paginator:
         $ref: "#/definitions/paginator"
-  - type: DeclarativeStream
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+
+  # Stream Issues https://docs.sentry.io/api/events/list-a-projects-issues/
+  issues:
+    type: DeclarativeStream
     $parameters:
       name: "issues"
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
+      primary_key: "id"
+      path: "projects/{{ config['organization'] }}/{{ config['project'] }}/issues/"
+      cursor_field: "lastSeen"
     retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
+      type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        path: "projects/{{config.organization}}/{{config.project}}/issues/"
         request_parameters:
-          statsPeriod: ""
-          query: ""
+          query: "lastSeen:>{{ stream_state.get(parameters['cursor_field']) or '1900-01-01T00:00:00.0Z' if stream_state else '1900-01-01T00:00:00.0Z' }}"
+      record_selector:
+        $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/paginator"
-  - type: DeclarativeStream
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+
+  # Stream Projects https://docs.sentry.io/api/projects/list-your-projects/
+  projects:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream_incremental"
     $parameters:
       name: "projects"
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "projects/"
-      paginator:
-        $ref: "#/definitions/paginator"
-  - type: DeclarativeStream
+      primary_key: "id"
+      path: "projects/"
+      cursor_field: "dateCreated"
+
+  # Stream Project Detail https://docs.sentry.io/api/projects/retrieve-a-project/
+  project_detail:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream_full_refresh"
     $parameters:
       name: "project_detail"
-    primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "projects/{{config.organization}}/{{config.project}}/"
-      paginator:
-        type: NoPagination
+      primary_key: "id"
+      path: "projects/{{ config['organization'] }}/{{ config['project'] }}/"
+
+  # Stream Releases https://docs.sentry.io/api/projects/retrieve-a-project/
+  releases:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream_incremental"
+    $parameters:
+      name: "releases"
+      primary_key: "id"
+      path: "organizations/{{ config['organization'] }}/releases/"
+      cursor_field: "dateCreated"
+
+streams:
+  - $ref: "#/definitions/events"
+  - $ref: "#/definitions/issues"
+  - $ref: "#/definitions/projects"
+  - $ref: "#/definitions/project_detail"
+  - $ref: "#/definitions/releases"
+
 check:
   type: CheckStream
-  stream_names: ["project_detail"]
+  stream_names:
+    - project_detail
+
+metadata:
+  autoImportSchema:
+    events: true
+    issues: true
+    projects: true
+    project_detail: true
+    releases: true

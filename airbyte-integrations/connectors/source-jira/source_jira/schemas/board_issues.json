@@ -3,72 +3,93 @@
   "type": "object",
   "properties": {
     "expand": {
+      "description": "A parameter indicating the details to be included in the response",
       "type": "string"
     },
     "id": {
+      "description": "The unique identifier of the issue",
       "type": "string"
     },
     "self": {
+      "description": "URL of the issue",
       "type": "string"
     },
     "key": {
+      "description": "The unique key of the issue",
       "type": "string"
     },
     "fields": {
+      "description": "Fields associated with the issues on the board",
       "type": "object",
       "properties": {
         "flagged": {
+          "description": "Indicator if the issue is flagged for attention",
           "type": ["null", "boolean"]
         },
         "sprint": {
+          "description": "Details of the sprint in which the issue resides",
           "type": ["null", "object"]
         },
         "closedSprints": {
+          "description": "List of sprints that are closed related to the issue",
           "type": ["null", "object"]
         },
         "description": {
+          "description": "Description of the issue",
           "type": ["null", "string"]
         },
         "project": {
+          "description": "Details of the project to which the issue is associated",
           "type": ["null", "object"]
         },
         "comment": {
+          "description": "Comments made on the issue",
           "type": ["null", "array"],
           "items": {
             "type": "object"
           }
         },
         "epic": {
+          "description": "Information about the epic the issue belongs to",
           "type": ["null", "object"]
         },
         "worklog": {
+          "description": "Log of work done on the issue",
           "type": ["null", "array"],
           "items": {
             "type": "object"
           }
         },
+        "created": {
+          "description": "The date and time when the issue was created",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "updated": {
+          "description": "The date and time when the issue was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "timetracking": {
+          "description": "Information related to time tracking for the issue",
           "type": ["null", "object"]
         }
       }
     },
     "boardId": {
+      "description": "The unique identifier of the board where the issue belongs",
       "type": "integer"
     },
     "created": {
+      "description": "The date and time when the issue was created",
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "This field transformed from fields attr",
       "readOnly": true
     },
     "updated": {
+      "description": "The date and time when the issue was last updated",
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "This field transformed from fields attr",
       "readOnly": true
     }
   }

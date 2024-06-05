@@ -27,7 +27,7 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils import AirbyteTracedException
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
@@ -126,7 +126,8 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
 
     config = {}
     catalog = _create_configured_catalog(source._streams)
-    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, None)
+    # FIXME this is currently unused in this test
+    # messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, None)
     messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, None)
 
     expected_messages = [
@@ -267,7 +268,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
             ),
         ),
     ]
-    _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source)
+    _verify_messages(expected_messages, messages_from_concurrent_source)
 
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
@@ -283,53 +284,9 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
     messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, AirbyteTracedException)
     messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, AirbyteTracedException)
 
-    expected_messages = [
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream="stream0",
-                data=records[0],
-                emitted_at=1577836800000,
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
-                ),
-            ),
-        ),
-    ]
-    _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source)
+    _assert_status_messages(messages_from_abstract_source, messages_from_concurrent_source)
+    _assert_record_messages(messages_from_abstract_source, messages_from_concurrent_source)
+    _assert_errors(messages_from_abstract_source, messages_from_concurrent_source)
 
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
@@ -344,55 +301,40 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
     config = {}
     catalog = _create_configured_catalog(source._streams)
     messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, AirbyteTracedException)
-    messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, RuntimeError)
+    messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, AirbyteTracedException)
 
-    expected_messages = [
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream="stream0",
-                data=records[0],
-                emitted_at=1577836800000,
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
-                ),
-            ),
-        ),
-    ]
-    _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source)
+    _assert_status_messages(messages_from_abstract_source, messages_from_concurrent_source)
+    _assert_record_messages(messages_from_abstract_source, messages_from_concurrent_source)
+    _assert_errors(messages_from_abstract_source, messages_from_concurrent_source)
+
+
+def _assert_status_messages(messages_from_abstract_source, messages_from_concurrent_source):
+    status_from_concurrent_source = [message for message in messages_from_concurrent_source if message.type == MessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS]
+
+    assert status_from_concurrent_source
+    _verify_messages(
+        [message for message in messages_from_abstract_source if message.type == MessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS],
+        status_from_concurrent_source,
+    )
+
+
+def _assert_record_messages(messages_from_abstract_source, messages_from_concurrent_source):
+    records_from_concurrent_source = [message for message in messages_from_concurrent_source if message.type == MessageType.RECORD]
+
+    assert records_from_concurrent_source
+    _verify_messages(
+        [message for message in messages_from_abstract_source if message.type == MessageType.RECORD],
+        records_from_concurrent_source,
+    )
+
+
+def _assert_errors(messages_from_abstract_source, messages_from_concurrent_source):
+    errors_from_concurrent_source = [message for message in messages_from_concurrent_source if message.type == MessageType.TRACE and message.trace.type == TraceType.ERROR]
+    errors_from_abstract_source = [message for message in messages_from_abstract_source if message.type == MessageType.TRACE and message.trace.type == TraceType.ERROR]
+
+    assert errors_from_concurrent_source
+    # exceptions might differ from both framework hence we only assert the count
+    assert len(errors_from_concurrent_source) == len(errors_from_abstract_source)
 
 
 def _init_logger():
@@ -409,9 +351,8 @@ def _init_sources(stream_slice_to_partitions, state, logger):
 
 
 def _init_source(stream_slice_to_partitions, state, logger, source):
-    cursor = NoopCursor()
     streams = [
-        StreamFacade.create_from_stream(_MockStream(stream_slices, f"stream{i}"), source, logger, state, cursor)
+        StreamFacade.create_from_stream(_MockStream(stream_slices, f"stream{i}"), source, logger, state, FinalStateCursor(stream_name=f"stream{i}", stream_namespace=None, message_repository=InMemoryMessageRepository()))
         for i, stream_slices in enumerate(stream_slice_to_partitions)
     ]
     source.set_streams(streams)
@@ -443,7 +384,7 @@ def _read_from_source(source, logger, config, catalog, state, expected_exception
     return messages
 
 
-def _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source):
+def _verify_messages(expected_messages, messages_from_concurrent_source):
     assert _compare(expected_messages, messages_from_concurrent_source)
 
 

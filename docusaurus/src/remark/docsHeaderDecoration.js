@@ -1,5 +1,6 @@
 const visit = require("unist-util-visit").visit;
 const { isDocsPage, getRegistryEntry } = require("./utils");
+const { isPypiConnector } = require("../connector_registry");
 
 const toAttributes = (props) =>
   Object.entries(props).map(([key, value]) => ({
@@ -10,7 +11,8 @@ const toAttributes = (props) =>
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
-    if (!isDocsPage(vfile)) return;
+    const docsPageInfo = isDocsPage(vfile);
+    if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
 
@@ -30,7 +32,7 @@ const plugin = () => {
         node.attributes = toAttributes({
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
-          isPypiPublished: false,
+          isPypiPublished: isPypiConnector(registryEntry),
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,

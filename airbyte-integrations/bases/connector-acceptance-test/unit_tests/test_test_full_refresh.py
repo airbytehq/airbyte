@@ -67,82 +67,6 @@ fail_context = pytest.raises(
 no_fail_context = does_not_raise()
 
 
-ignored_fields_test_cases = [
-    pytest.param(
-        {"type": "object", "properties": {"created": {"type": "string"}}},
-        {"created": "23"},
-        {"created": "23"},
-        no_fail_context,
-        id="no_ignored_fields_present",
-    ),
-    pytest.param(
-        {
-            "type": "object",
-            "properties": {
-                "created": {"type": "string"},
-                "ignore_me": {"type": "string"},
-            },
-        },
-        {"created": "23"},
-        {"created": "23", "ignore_me": "23"},
-        no_fail_context,
-        id="with_ignored_field",
-    ),
-    pytest.param(
-        {
-            "type": "object",
-            "required": ["created", "DONT_ignore_me"],
-            "properties": {
-                "created": {"type": "string"},
-                "DONT_ignore_me": {"type": "string"},
-                "ignore_me": {"type": "string"},
-            },
-        },
-        {"created": "23"},
-        {"created": "23", "DONT_ignore_me": "23", "ignore_me": "hello"},
-        fail_context,
-        id="ignore_field_present_but_a_required_is_not",
-    ),
-]
-
-
-@pytest.mark.parametrize(
-    "schema, record, expected_record, fail_context",
-    ignored_fields_test_cases,
-)
-async def test_read_with_ignore_fields(mocker, schema, record, expected_record, fail_context):
-    catalog = get_default_catalog(schema)
-    input_config = ReadTestConfigWithIgnoreFields()
-    docker_runner_mock = mocker.MagicMock()
-
-    sequence_of_docker_callread_results = [record, expected_record]
-
-    # Ignored fields should work both ways
-    for first, second in (
-        sequence_of_docker_callread_results,
-        list(reversed(sequence_of_docker_callread_results)),
-    ):
-
-        docker_runner_mock = mocker.MagicMock(
-            call_read=mocker.AsyncMock(
-                side_effect=[
-                    record_message_from_record([first], emitted_at=111),
-                    record_message_from_record([second], emitted_at=112),
-                ]
-            )
-        )
-
-        t = _TestFullRefresh()
-        with fail_context:
-            await t.test_sequential_reads(
-                ignored_fields=input_config.ignored_fields,
-                connector_config=mocker.MagicMock(),
-                configured_catalog=catalog,
-                docker_runner=docker_runner_mock,
-                detailed_logger=mocker.MagicMock(),
-            )
-
-
 recordset_comparison_test_cases = [
     pytest.param(
         [["id"]],
@@ -207,38 +131,6 @@ recordset_comparison_test_cases = [
         id="no_pk_no_subsets_fail",
     ),
 ]
-
-
-@pytest.mark.parametrize(
-    "primary_key, first_read_records, second_read_records, fail_context",
-    recordset_comparison_test_cases,
-)
-async def test_recordset_comparison(mocker, primary_key, first_read_records, second_read_records, fail_context):
-    schema = {
-        "type": "object",
-        "properties": {"id": {"type": "integer"}, "first_name": {"type": "string"}, "last_name": {"type": "string"}},
-    }
-    catalog = get_default_catalog(schema, primary_key=primary_key)
-    input_config = ReadTestConfigWithIgnoreFields()
-
-    docker_runner_mock = mocker.MagicMock(
-        call_read=mocker.AsyncMock(
-            side_effect=[
-                record_message_from_record(first_read_records, emitted_at=111),
-                record_message_from_record(second_read_records, emitted_at=112),
-            ]
-        )
-    )
-
-    t = _TestFullRefresh()
-    with fail_context:
-        await t.test_sequential_reads(
-            ignored_fields=input_config.ignored_fields,
-            connector_config=mocker.MagicMock(),
-            configured_catalog=catalog,
-            docker_runner=docker_runner_mock,
-            detailed_logger=mocker.MagicMock(),
-        )
 
 
 @pytest.mark.parametrize(

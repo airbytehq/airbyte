@@ -27,9 +27,10 @@ class OrbStream(HttpStream, ABC):
     page_size = 50
     url_base = ORB_API_BASE_URL
 
-    def __init__(self, start_date: Optional[pendulum.DateTime] = None, **kwargs):
+    def __init__(self, start_date: Optional[pendulum.DateTime] = None, end_date: Optional[pendulum.DateTime] = None, **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
+        self.end_date = end_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -143,6 +144,10 @@ class IncrementalOrbStream(OrbStream, ABC):
             # This may (reasonably) override the existing `created_at[gte]` set based on the start_date
             # of the stream, as configured.
             params[f"{self.cursor_field}[gte]"] = state_based_start_timestamp
+
+        if self.end_date:
+            params[f"{self.cursor_field}[lte]"] = self.end_date
+
         return params
 
 
@@ -150,6 +155,8 @@ class Customers(IncrementalOrbStream):
     """
     API Docs: https://docs.withorb.com/reference/list-customers
     """
+
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "customers"
@@ -590,9 +597,11 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         # Build up a list of the subset of ledger entries we are expected
         # to enrich with event metadata.
         event_id_to_ledger_entries = {}
+
         for entry in ledger_entries:
             maybe_event_id: Optional[str] = entry.get("event_id")
             if maybe_event_id:
+                created_at_timestamp = pendulum.parse(entry.get("created_at", pendulum.now()))
                 # There can be multiple entries with the same event ID
                 event_id_to_ledger_entries[maybe_event_id] = event_id_to_ledger_entries.get(maybe_event_id, []) + [entry]
 
@@ -621,7 +630,11 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
         # The events endpoint is a `POST` endpoint which expects a list of
         # event_ids to filter on
-        request_filter_json = {"event_ids": list(event_id_to_ledger_entries)}
+        request_filter_json = {
+            "event_ids": list(event_id_to_ledger_entries),
+            "timeframe_start": created_at_timestamp.to_iso8601_string(),
+            "timeframe_end": created_at_timestamp.add(days=30).to_iso8601_string(),
+        }
 
         # Prepare request with self._session, which should
         # automatically deal with the authentication header.
@@ -629,7 +642,11 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         prepared_request = self._session.prepare_request(requests.Request(**args))
         events_response: requests.Response = self._session.send(prepared_request)
         # Error for invalid responses
-        events_response.raise_for_status()
+        if events_response.status_code != 200:
+            self.logger.info(request_filter_json)
+            self.logger.error(events_response.text)
+            events_response.raise_for_status()
+
         paginated_events_response_body = events_response.json()
 
         if paginated_events_response_body["pagination_metadata"]["has_more"]:
@@ -721,14 +738,13 @@ class SourceOrb(AbstractSource):
         subscription_usage_grouping_key = config.get("subscription_usage_grouping_key")
         plan_id = config.get("plan_id")
         start_date = to_datetime(config.get("start_date"))
-        # this field is not exposed to spec, used only for testing purposes
         end_date = to_datetime(config.get("end_date"))
 
         if not self.input_keys_mutually_exclusive(string_event_properties_keys, numeric_event_properties_keys):
             raise ValueError("Supplied property keys for string and numeric valued property values must be mutually exclusive.")
 
         return [
-            Customers(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
+            Customers(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date, end_date=end_date),
             Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Plans(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Invoices(authenticator=authenticator, lookback_window_days=lookback_window),

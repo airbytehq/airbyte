@@ -7,11 +7,13 @@ package io.airbyte.integrations.destination.postgres;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.testutils.ContainerFactory.NamedContainerModifier;
 import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -39,27 +41,30 @@ public class PostgresTestDatabase extends
 
   }
 
-  public static enum ContainerModifier {
+  public enum ContainerModifier implements NamedContainerModifier<PostgreSQLContainer<?>> {
 
-    ASCII("withASCII"),
-    CONF("withConf"),
-    NETWORK("withNetwork"),
-    SSL("withSSL"),
-    WAL_LEVEL_LOGICAL("withWalLevelLogical"),
-    CERT("withCert"),
+    ASCII(PostgresContainerFactory::withASCII),
+    CONF(PostgresContainerFactory::withConf),
+    NETWORK(PostgresContainerFactory::withNetwork),
+    SSL(PostgresContainerFactory::withSSL),
+    CERT(PostgresContainerFactory::withCert),
     ;
 
-    private String methodName;
+    private Consumer<PostgreSQLContainer<?>> modifer;
 
-    private ContainerModifier(String methodName) {
-      this.methodName = methodName;
+    private ContainerModifier(final Consumer<PostgreSQLContainer<?>> modifer) {
+      this.modifer = modifer;
+    }
+
+    @Override
+    public Consumer<PostgreSQLContainer<?>> modifier() {
+      return modifer;
     }
 
   }
 
   static public PostgresTestDatabase in(BaseImage baseImage, ContainerModifier... modifiers) {
-    String[] methodNames = Stream.of(modifiers).map(im -> im.methodName).toList().toArray(new String[0]);
-    final var container = new PostgresContainerFactory().shared(baseImage.reference, methodNames);
+    final var container = new PostgresContainerFactory().shared(baseImage.reference, modifiers);
     return new PostgresTestDatabase(container).initialized();
   }
 
@@ -185,9 +190,9 @@ public class PostgresTestDatabase extends
           .with("is_test", true)
           .with("replication_method", Jsons.jsonNode(ImmutableMap.builder()
               .put("method", "CDC")
-              .put("replication_slot", testDatabase.getReplicationSlotName())
-              .put("publication", testDatabase.getPublicationName())
-              .put("initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
+              .put("replication_slot", getTestDatabase().getReplicationSlotName())
+              .put("publication", getTestDatabase().getPublicationName())
+              .put("initial_waiting_seconds", ConfigBuilder.DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
               .put("lsn_commit_behaviour", LsnCommitBehaviour)
               .build()));
     }

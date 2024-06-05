@@ -3,47 +3,62 @@
   "type": ["null", "object"],
   "properties": {
     "timestamp": {
+      "description": "Timestamp when the subscription change data was fetched",
       "type": ["null", "integer"]
     },
     "portalId": {
+      "description": "ID of the portal related to the subscription changes",
       "type": ["null", "integer"]
     },
     "recipient": {
+      "description": "Recipient of the subscription change notification",
       "type": ["null", "string"]
     },
     "normalizedEmailId": {
+      "description": "Normalized email identifier associated with the subscription",
       "type": ["null", "string"]
     },
     "changes": {
+      "description": "List of all subscription changes",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of each subscription change",
         "type": ["null", "object"],
         "properties": {
           "change": {
+            "description": "Details of the change that occurred",
             "type": ["null", "string"]
           },
           "timestamp": {
+            "description": "Timestamp when the subscription change occurred",
             "type": ["null", "integer"]
           },
           "source": {
+            "description": "Source of the subscription change",
             "type": ["null", "string"]
           },
           "portalId": {
+            "description": "ID of the portal associated with the subscription change",
             "type": ["null", "integer"]
           },
           "subscriptionId": {
+            "description": "Unique identifier for the subscription affected by the change",
             "type": ["null", "integer"]
           },
           "changeType": {
+            "description": "Type of change (e.g., add, remove, update)",
             "type": ["null", "string"]
           },
           "causedByEvent": {
+            "description": "Event that triggered the subscription change",
             "type": ["null", "object"],
             "properties": {
               "id": {
+                "description": "Unique identifier for the event that caused the change",
                 "type": ["null", "string"]
               },
               "created": {
+                "description": "Timestamp when the event that caused the change occurred",
                 "type": ["null", "integer"]
               }
             }

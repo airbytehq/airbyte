@@ -3,27 +3,34 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for this cost rate entry.",
       "type": ["null", "integer"]
     },
     "parent_id": {
+      "description": "The parent identifier if this cost rate is a child entry.",
       "type": "integer"
     },
     "amount": {
+      "description": "The cost rate amount associated with this data entry.",
       "type": ["null", "number"]
     },
     "start_date": {
+      "description": "The start date from which the cost rate is valid. Only applicable for intervals.",
       "type": ["null", "string"],
       "format": "date"
     },
     "end_date": {
+      "description": "The end date for which the cost rate is valid. Only applicable for intervals.",
       "type": ["null", "string"],
       "format": "date"
     },
     "created_at": {
+      "description": "The timestamp indicating when this cost rate entry was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The timestamp for the last update made to this cost rate entry.",
       "type": ["null", "string"],
       "format": "date-time"
     }

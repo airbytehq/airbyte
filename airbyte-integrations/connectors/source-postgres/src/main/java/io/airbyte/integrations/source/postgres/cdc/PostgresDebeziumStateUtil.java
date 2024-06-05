@@ -100,6 +100,7 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
 
     final LogSequenceNumber logSequenceNumber = LogSequenceNumber.valueOf(savedOffset.getAsLong());
 
+    LOGGER.info("Committing upto LSN: {}", savedOffset.getAsLong());
     try (final BaseConnection pgConnection = (BaseConnection) PostgresReplicationConnection.createConnection(jdbcConfig)) {
       ChainedLogicalStreamBuilder streamBuilder = pgConnection
           .getReplicationAPI()

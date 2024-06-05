@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-search-metrics
-  registries: # Removed from registries due to LEGACY STATE
+  registries:
     cloud:
       enabled: false
     oss:
@@ -21,8 +21,9 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/search-metrics
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"

@@ -211,9 +211,9 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    System.out.println("TEARING_DOWN_SCHEMAS: " + TEST_SCHEMAS);
+    System.out.println("TEARING_DOWN_SCHEMAS: " + getTestSchemas());
     getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText())));
-    for (final String schema : TEST_SCHEMAS) {
+    for (final String schema : getTestSchemas()) {
       getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schema)));
     }
     getDatabase().query(ctx -> ctx.execute(String.format("drop user if exists %s;", USER_WITHOUT_CREDS)));
@@ -239,11 +239,6 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected int getMaxRecordValueLimit() {
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
-  }
-
-  @Override
-  protected int getGenerateBigStringAddExtraCharacters() {
-    return 1;
   }
 
 }

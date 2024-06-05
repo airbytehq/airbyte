@@ -7,28 +7,15 @@ final var cdkVersion = {
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'java-test-fixtures'
 
     group 'io.airbyte.cdk'
-
-    def artifactBaseName = 'airbyte-cdk-' + project.name
-    // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
     project.version = cdkVersion
 
     publishing {
         publications {
-            main(MavenPublication) {
-                groupId = 'io.airbyte.cdk'
-                artifactId = artifactBaseName
-                version = project.version
+            cdk(MavenPublication) {
                 from components.java
-            }
-            testFixtures(MavenPublication) {
-                groupId = 'io.airbyte.cdk'
-                artifactId = artifactBaseName + '-test-fixtures'
-                version = project.version
-                artifact project.tasks.testFixturesJar
             }
         }
         // This repository is only defined and used in the context of an artifact publishing
@@ -46,11 +33,8 @@ allprojects {
         }
     }
 
-    project.configurations {
-        testImplementation.extendsFrom implementation
-        testFixturesImplementation.extendsFrom implementation
-        testFixturesRuntimeOnly.extendsFrom runtimeOnly
-    }
+    // This is necessary because the mockit.kotlin any() generates a bunch of bad casts
+    spotbugsTest.omitVisitors = ['FindBadCast2']
 }
 
 description = "Airbyte Connector Development Kit (CDK) for Java."

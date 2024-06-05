@@ -16,7 +16,8 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
 7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 8. For **Requests per minute**, enter the number of requests per minute that this source allowed to use. The Freshdesk rate limit is 50 requests per minute per app per account.
-9. Click **Set up source**.
+9. For **Lookback Window**, you may specify a number of days back from the current stream state to re-read data for the **Satisfaction Ratings** stream. This helps capture updates made to existing ratings after their initial creation. However, keep in mind that records updated before (stream_state - lookback_window) won't be synced. To ensure no data loss, we recommend using a full refresh. The default lookback window is set to 14 days.
+10. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -66,9 +67,13 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 3.0.7 | 2024-02-12 | [35187](https://github.com/airbytehq/airbyte/pull/35187) | Manage dependencies with Poetry. |
+| 3.1.0   | 2024-03-12 | [35699](https://github.com/airbytehq/airbyte/pull/35699) | Migrate to low-code                                                                   |
+| 3.0.7   | 2024-02-12 | [35187](https://github.com/airbytehq/airbyte/pull/35187) | Manage dependencies with Poetry.                                                      |
 | 3.0.6   | 2024-01-10 | [34101](https://github.com/airbytehq/airbyte/pull/34101) | Base image migration: remove Dockerfile and use the python-connector-base image       |
 | 3.0.5   | 2023-11-30 | [33000](https://github.com/airbytehq/airbyte/pull/33000) | Base image migration: remove Dockerfile and use the python-connector-base image       |
 | 3.0.4   | 2023-06-24 | [27680](https://github.com/airbytehq/airbyte/pull/27680) | Fix formatting                                                                        |
@@ -92,3 +97,5 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 | 0.2.9   | 2021-11-16 | [8017](https://github.com/airbytehq/airbyte/pull/8017)   | Bugfix an issue that caused the connector to not sync more than 50000 contacts        |
 | 0.2.8   | 2021-10-28 | [7486](https://github.com/airbytehq/airbyte/pull/7486)   | Include "requester" and "stats" fields in "tickets" stream                            |
 | 0.2.7   | 2021-10-13 | [6442](https://github.com/airbytehq/airbyte/pull/6442)   | Add start_date parameter to specification from which to start pulling data.           |
+
+</details>

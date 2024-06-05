@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,10 +37,12 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -239,7 +240,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
 
     assertEquals(0, recordMessages.size());
-    assertEquals(1, stateMessages.size());
+    // Expect 1 state message from initial load and 1 from incremental load.
+    assertEquals(2, stateMessages.size());
 
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     assertNotNull(lastStateMessage.getGlobal().getSharedState());
@@ -510,7 +512,13 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
     // Re-run the sync to prove that a config error is thrown due to invalid resume token
-    assertThrows(Exception.class, () -> runRead(configuredCatalog, state));
+    List<AirbyteMessage> messages1 = runRead(configuredCatalog, state);
+    List<AirbyteMessage> records = messages1.stream().filter(r -> r.getType() == Type.RECORD).toList();
+    // In this sync, there should be no records expected - only error trace messages indicating that the
+    // offset is not valid.
+    assertEquals(0, records.size());
+    List<AirbyteMessage> traceMessages = messages1.stream().filter(r -> r.getType() == Type.TRACE).toList();
+    assertOplogErrorTracePresent(traceMessages);
   }
 
   @Test
@@ -567,6 +575,36 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertTrue(targetPosition.isSameOffset(offsetA, offsetB));
   }
 
+  @Test
+  void testStreamStatusTraces() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+
+    // Start a sync with one stream
+    final List<AirbyteMessage> messages = runRead(configuredCatalog);
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(messages);
+    final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
+    final List<AirbyteTraceMessage> statusTraceMessages = filterStatusTraceMessages(messages);
+
+    assertEquals(recordCount, recordMessages.size());
+    assertEquals(recordCount + 1, stateMessages.size());
+    assertEquals(2, statusTraceMessages.size());
+
+    final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
+
+    final var result = mongoClient.getDatabase(databaseName).getCollection(collectionName).insertOne(createDocument(1));
+    final var insertedId = result.getInsertedId();
+
+    // Start another sync that finds the insert change
+    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, Jsons.jsonNode(List.of(lastStateMessage)));
+    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
+    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
+    final List<AirbyteTraceMessage> statusTraceMessages2 = filterStatusTraceMessages(messages2);
+
+    assertEquals(1, recordMessages2.size());
+    assertEquals(1, stateMessages2.size());
+    assertEquals(2, statusTraceMessages2.size());
+  }
+
   private ConfiguredAirbyteStream convertToConfiguredAirbyteStream(final AirbyteStream airbyteStream, final SyncMode syncMode) {
     return new ConfiguredAirbyteStream()
         .withSyncMode(syncMode)
@@ -584,6 +622,12 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private List<AirbyteStateMessage> filterStateMessages(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == AirbyteMessage.Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  private List<AirbyteTraceMessage> filterStatusTraceMessages(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(m -> m.getType() == Type.TRACE &&
+        m.getTrace().getType() == AirbyteTraceMessage.Type.STREAM_STATUS).map(AirbyteMessage::getTrace)
         .collect(Collectors.toList());
   }
 
@@ -651,6 +695,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     } else {
       assertNull(data.get(CDC_DELETED_AT));
     }
+  }
+
+  private void assertOplogErrorTracePresent(List<AirbyteMessage> traceMessages) {
+    final boolean oplogTracePresent = traceMessages
+        .stream()
+        .anyMatch(trace -> trace.getTrace().getType().equals(AirbyteTraceMessage.Type.ERROR)
+            && trace.getTrace().getError().getMessage().contains("Saved offset is not valid"));
+    assertTrue(oplogTracePresent);
   }
 
 }
