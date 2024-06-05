@@ -65,6 +65,9 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
 | 0.1.7 | 2024-06-03 | [38915](https://github.com/airbytehq/airbyte/pull/38915) | Replace AirbyteLogger with logging.Logger |
@@ -74,3 +77,5 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 | 0.1.3 | 2022-08-12 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream |
 | 0.1.2 | 2021-12-23 | [14212](https://github.com/airbytehq/airbyte/pull/14212) | Adding incremental load capability |
 | 0.1.1 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
+
+</details>
