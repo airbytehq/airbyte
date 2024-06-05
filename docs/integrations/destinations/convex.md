@@ -57,6 +57,7 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.2 | 2024-06-04 | [39083](https://github.com/airbytehq/airbyte/pull/39083) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.1   | 2024-05-21 | [38527](https://github.com/airbytehq/airbyte/pull/38527) | [autopull] base image + poetry + up_to_date                        |
 | 0.2.0   | 2023-05-15 | [26103](https://github.com/airbytehq/airbyte/pull/26103) | 🐛 Update Convex destination connector to fix overwrite sync mode |
 | 0.1.0   | 2023-01-05 | [21287](https://github.com/airbytehq/airbyte/pull/21287) | 🎉 New Destination: Convex                                        |
