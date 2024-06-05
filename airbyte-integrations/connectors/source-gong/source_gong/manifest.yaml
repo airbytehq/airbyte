@@ -80,588 +80,65 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/calls"
-    extensive_calls_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "extensive_calls"
+    extensiveCalls:
+      type: DeclarativeStream
+      name: "extensiveCalls"
       primary_key: [["metaData", "id"]]
-      path: "/calls/extensive"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        extractor:
-          field_path: ["calls"]
-      paginator:
-        $ref: "#/definitions/retriever/paginator"
-        page_size_option:
-          field_name: "limit"
-          inject_into: "body_json"
-        page_token_option:
-          type: RequestOption
-          field_name: "cursor"
-          inject_into: "body_json"
-      requester:
-        $ref: "#/definitions/requester"
-        http_method: "POST"
-        request_body_json:
-          filter:
-            fromDateTime: "{{ config['start_date'] }}"
-          contentSelector:
-            exposedFields:
-              parties: true
-              content:
-                structure: true
-                topics: true
-                trackers: true
-                trackerOccurrences: true
-                pointsOfInterest: true
-                brief: true
-                outline: true
-                highlights: true
-                callOutcome: true
-                keyPoints: true
-              interaction:
-                speakers: true
-                video: true
-                personInteractionStats: true
-                questions: true
-              collaboration:
-                publicComments: true
-              media: true
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        properties:
-          metaData:
-            description: "call's metadata."
-            type:
-              - object
-              - "null"
-            properties:
-              id:
-                description: "Unique identifier for the call."
-                type:
-                  - "null"
-                  - string
-              url:
-                description: "URL associated with the call."
-                type:
-                  - "null"
-                  - string
-              title:
-                description: "Title or headline of the call."
-                type:
-                  - "null"
-                  - string
-              scheduled:
-                description: "Scheduled date and time of the call."
-                type:
-                  - "null"
-                  - string
-                format: date-time
-              started:
-                description: "Start date and time of the call."
-                type:
-                  - "null"
-                  - string
-                format: date-time
-              duration:
-                description: "Duration of the call in seconds."
-                type:
-                  - "null"
-                  - integer
-              primaryUserId:
-                description: "Unique identifier for the primary user involved in the call."
-                type:
-                  - "null"
-                  - string
-              direction:
-                description: "Direction of the call (inbound/outbound)."
-                type:
-                  - "null"
-                  - string
-              system:
-                description: "System information related to the call."
-                type:
-                  - "null"
-                  - string
-              scope:
-                description: "Scope or extent of the call."
-                type:
-                  - "null"
-                  - string
-              media:
-                description: "Media type used for communication (voice, video, etc.)."
-                type:
-                  - "null"
-                  - string
-              language:
-                description: "Language used in the call."
-                type:
-                  - "null"
-                  - string
-              workspaceId:
-                description: "Identifier for the workspace to which the call belongs."
-                type:
-                  - "null"
-                  - string
-              sdrDisposition:
-                description: "Disposition set by the sales development representative."
-                type:
-                  - "null"
-                  - string
-              clientUniqueId:
-                description: "Unique identifier for the client related to the call."
-                type:
-                  - "null"
-                  - string
-              customData:
-                description: "Custom data associated with the call."
-                type:
-                  - "null"
-                  - string
-              purpose:
-                description: "Purpose or topic of the call."
-                type:
-                  - "null"
-                  - string
-              meetingUrl:
-                description: "URL for accessing the meeting associated with the call."
-                type:
-                  - "null"
-                  - string
-              isPrivate:
-                description: "Indicates if the call is private or not."
-                type:
-                  - "null"
-                  - boolean
-              calendarEventId:
-                description: "Unique identifier for the calendar event associated with the call."
-                type:
-                  - "null"
-                  - string
-          context:
-            description: "A list of the agenda of each part of the call."
-            properties:
-              system:
-                description: "External system name. Allowed: Salesforce, HubSpot, MicrosoftDynamic, Generic."
-                type:
-                  - "null"
-                  - string
-              objects:
-                description: "List of objects within the external system."
-                type: array
-                items:
-                  type: object
-                  properties:
-                    objectType:
-                      description: "Object Type. Allowed: Opportunity, Account"
-                      type:
-                        - "null"
-                        - string
-                    objectId:
-                      description: "Object ID."
-                      type:
-                        - "null"
-                        - string
-                    fields:
-                      description: "array<External object data>."
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          name:
-                            description: "Field name. For Account supported fields are: Name, Website, Industry and all the custom fields. For Opportunity supported fields are Name, LeadSource, Type, StageName, Probability, Amount, CloseDate and all the custom fields."
-                            type:
-                              - "null"
-                              - string
-                          value:
-                            description: "Field value."
-                            type:
-                              - "null"
-                              - object
-                    timing:
-                      description: "Timing of object. Allowed: Now, TimeOfCall."
-                      type:
-                        - "null"
-                        - string
-          parties:
-            description: "A list of the call's participants"
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                affiliation:
-                  description: "Whether the participant is from the company or not. Allowed: Internal, External, Unknown"
-                  type:
-                    - string
-                    - "null"
-                emailAddress:
-                  description: "Email address."
-                  type:
-                    - string
-                    - "null"
-                id:
-                  description: "Unique ID of the participant in the call."
-                  type:
-                    - string
-                    - "null"
-                methods:
-                  description: "Whether the participant was invited to the meeting or only attended the call. Allowed: Invitee, Attendee."
-                  type:
-                    - array
-                    - "null"
-                  items:
-                    type:
-                      - string
-                      - "null"
-                name:
-                  description: "The name of the participant."
-                  type:
-                    - string
-                    - "null"
-                phoneNumber:
-                  description: "The phone number of the participant."
-                  type:
-                    - string
-                    - "null"
-                speakerId:
-                  description: "Unique ID of a participant that spoke in the call. References to this id will appear in the '/v2/calls/transcript' endpoint response."
-                  type:
-                    - string
-                    - "null"
-                title:
-                  description: "The job title of the participant."
-                  type:
-                    - string
-                    - "null"
-                userId:
-                  description: "The user ID of the participant within the Gong system, if the participant exists in the system."
-                  type:
-                    - string
-                    - "null"
-                context:
-                  description: "A list of links to external systems such as CRM, Dialer, Case Management, etc."
-                  type:
-                    - object
-                    - "null"
-          content:
-            description: "Analysis of the interaction content."
-            type:
-              - object
-              - "null"
-            properties:
-              brief:
-                type:
-                  - string
-                  - "null"
-              highlights:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    items:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          startTimes:
-                            type:
-                              - array
-                              - "null"
-                            items:
-                              type:
-                                - number
-                                - "null"
-                          text:
-                            type:
-                              - string
-                              - "null"
-                    title:
-                      type:
-                        - string
-                        - "null"
-              keyPoints:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    text:
-                      type:
-                        - string
-                        - "null"
-              outline:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    duration:
-                      type:
-                        - number
-                        - "null"
-                    items:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          startTime:
-                            type:
-                              - number
-                              - "null"
-                          text:
-                            type:
-                              - string
-                              - "null"
-                    section:
-                      type:
-                        - string
-                        - "null"
-                    startTime:
-                      type:
-                        - number
-                        - "null"
-              pointsOfInterest:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  actionItems:
-                    type:
-                      - array
-                      - "null"
-                    items:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        snippet:
-                          type:
-                            - string
-                            - "null"
-                        snippetEndTime:
-                          type:
-                            - number
-                            - "null"
-                        snippetStartTime:
-                          type:
-                            - number
-                            - "null"
-                        speakerID:
-                          type:
-                            - string
-                            - "null"
-              topics:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    duration:
-                      type:
-                        - number
-                        - "null"
-                    name:
-                      type:
-                        - string
-                        - "null"
-              trackers:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    type:
-                      type:
-                        - string
-                        - "null"
-                    count:
-                      type:
-                        - number
-                        - "null"
-                    id:
-                      type:
-                        - string
-                        - "null"
-                    name:
-                      type:
-                        - string
-                        - "null"
-                    occurrences:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          speakerId:
-                            type:
-                              - string
-                              - "null"
-                          startTime:
-                            type:
-                              - number
-                              - "null"
-                    phrases:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          count:
-                            type:
-                              - number
-                              - "null"
-                          occurrences:
-                            type:
-                              - array
-                              - "null"
-                            items:
-                              type:
-                                - object
-                                - "null"
-                              properties:
-                                speakerId:
-                                  type:
-                                    - string
-                                    - "null"
-                                startTime:
-                                  type:
-                                    - number
-                                    - "null"
-                          phrase:
-                            type:
-                              - string
-                              - "null"
-          interaction:
-            description: "Metrics collected around the interaction during the call."
-            type:
-              - object
-              - "null"
-            properties:
-              interactionStats:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    name:
-                      type:
-                        - string
-                        - "null"
-                    value:
-                      type:
-                        - number
-                        - "null"
-              questions:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  companyCount:
-                    type:
-                      - number
-                      - "null"
-                  nonCompanyCount:
-                    type:
-                      - number
-                      - "null"
-              speakers:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    id:
-                      type:
-                        - string
-                        - "null"
-                    talkTime:
-                      type:
-                        - number
-                        - "null"
-                    userId:
-                      type:
-                        - string
-                        - "null"
-              video:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    duration:
-                      type:
-                        - number
-                        - "null"
-                    name:
-                      type:
-                        - string
-                        - "null"
-          collaboration:
-            description: "Collaboration information added to the call"
-            type:
-              - object
-              - "null"
-            properties:
-          media:
-            description: "The media urls of the call."
-            properties:
-              audioUrl:
-                description: "If true and exist, add audio url of the call. The url will be available for 8 hours."
-                type:
-                  - "null"
-                  - string
-              videoUrl:
-                description: "If true and exist, add video url of the call. The url will be available for 8 hours."
-                type:
-                  - "null"
-                  - string
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls/extensive
+          http_method: POST
+          request_body_json:
+            filter:
+              fromDateTime: "{{ config['start_date'] }}"
+            contentSelector:
+              exposedFields:
+                parties: true
+                content:
+                  structure: true
+                  topics: true
+                  trackers: true
+                  trackerOccurrences: true
+                  pointsOfInterest: true
+                  brief: true
+                  outline: true
+                  highlights: true
+                  callOutcome: true
+                  keyPoints: true
+                interaction:
+                  speakers: true
+                  video: true
+                  personInteractionStats: true
+                  questions: true
+                collaboration:
+                  publicComments: true
+                media: true
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - calls
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: "cursor"
+            inject_into: "body_json"
+          page_size_option:
+            field_name: "limit"
+            inject_into: "body_json"
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.records.cursor }}"
+            stop_condition: "{{ 'records' not in response }}"
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/extensiveCalls"
     scorecards:
       type: DeclarativeStream
       name: scorecards
@@ -794,6 +271,7 @@ metadata:
   autoImportSchema:
     users: false
     calls: false
+    extensiveCalls: false
     scorecards: false
     answeredScorecards: false
 
@@ -991,6 +469,539 @@ schemas:
           - "null"
           - string
         description: Identifier for the workspace to which the call belongs.
+  extensiveCalls:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      metaData:
+        description: "call's metadata."
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            description: "Unique identifier for the call."
+            type:
+              - "null"
+              - string
+          url:
+            description: "URL associated with the call."
+            type:
+              - "null"
+              - string
+          title:
+            description: "Title or headline of the call."
+            type:
+              - "null"
+              - string
+          scheduled:
+            description: "Scheduled date and time of the call."
+            type:
+              - "null"
+              - string
+            format: date-time
+          started:
+            description: "Start date and time of the call."
+            type:
+              - "null"
+              - string
+            format: date-time
+          duration:
+            description: "Duration of the call in seconds."
+            type:
+              - "null"
+              - integer
+          primaryUserId:
+            description: "Unique identifier for the primary user involved in the call."
+            type:
+              - "null"
+              - string
+          direction:
+            description: "Direction of the call (inbound/outbound)."
+            type:
+              - "null"
+              - string
+          system:
+            description: "System information related to the call."
+            type:
+              - "null"
+              - string
+          scope:
+            description: "Scope or extent of the call."
+            type:
+              - "null"
+              - string
+          media:
+            description: "Media type used for communication (voice, video, etc.)."
+            type:
+              - "null"
+              - string
+          language:
+            description: "Language used in the call."
+            type:
+              - "null"
+              - string
+          workspaceId:
+            description: "Identifier for the workspace to which the call belongs."
+            type:
+              - "null"
+              - string
+          sdrDisposition:
+            description: "Disposition set by the sales development representative."
+            type:
+              - "null"
+              - string
+          clientUniqueId:
+            description: "Unique identifier for the client related to the call."
+            type:
+              - "null"
+              - string
+          customData:
+            description: "Custom data associated with the call."
+            type:
+              - "null"
+              - string
+          purpose:
+            description: "Purpose or topic of the call."
+            type:
+              - "null"
+              - string
+          meetingUrl:
+            description: "URL for accessing the meeting associated with the call."
+            type:
+              - "null"
+              - string
+          isPrivate:
+            description: "Indicates if the call is private or not."
+            type:
+              - "null"
+              - boolean
+          calendarEventId:
+            description: "Unique identifier for the calendar event associated with the call."
+            type:
+              - "null"
+              - string
+      context:
+        description: "A list of the agenda of each part of the call."
+        properties:
+          system:
+            description: "External system name. Allowed: Salesforce, HubSpot, MicrosoftDynamic, Generic."
+            type:
+              - "null"
+              - string
+          objects:
+            description: "List of objects within the external system."
+            type: array
+            items:
+              type: object
+              properties:
+                objectType:
+                  description: "Object Type. Allowed: Opportunity, Account"
+                  type:
+                    - "null"
+                    - string
+                objectId:
+                  description: "Object ID."
+                  type:
+                    - "null"
+                    - string
+                fields:
+                  description: "array<External object data>."
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: "Field name. For Account supported fields are: Name, Website, Industry and all the custom fields. For Opportunity supported fields are Name, LeadSource, Type, StageName, Probability, Amount, CloseDate and all the custom fields."
+                        type:
+                          - "null"
+                          - string
+                      value:
+                        description: "Field value."
+                        type:
+                          - "null"
+                          - object
+                timing:
+                  description: "Timing of object. Allowed: Now, TimeOfCall."
+                  type:
+                    - "null"
+                    - string
+      parties:
+        description: "A list of the call's participants"
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            affiliation:
+              description: "Whether the participant is from the company or not. Allowed: Internal, External, Unknown"
+              type:
+                - string
+                - "null"
+            emailAddress:
+              description: "Email address."
+              type:
+                - string
+                - "null"
+            id:
+              description: "Unique ID of the participant in the call."
+              type:
+                - string
+                - "null"
+            methods:
+              description: "Whether the participant was invited to the meeting or only attended the call. Allowed: Invitee, Attendee."
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            name:
+              description: "The name of the participant."
+              type:
+                - string
+                - "null"
+            phoneNumber:
+              description: "The phone number of the participant."
+              type:
+                - string
+                - "null"
+            speakerId:
+              description: "Unique ID of a participant that spoke in the call. References to this id will appear in the '/v2/calls/transcript' endpoint response."
+              type:
+                - string
+                - "null"
+            title:
+              description: "The job title of the participant."
+              type:
+                - string
+                - "null"
+            userId:
+              description: "The user ID of the participant within the Gong system, if the participant exists in the system."
+              type:
+                - string
+                - "null"
+            context:
+              description: "A list of links to external systems such as CRM, Dialer, Case Management, etc."
+              type:
+                - object
+                - "null"
+      content:
+        description: "Analysis of the interaction content."
+        type:
+          - object
+          - "null"
+        properties:
+          brief:
+            type:
+              - string
+              - "null"
+          highlights:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                items:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      startTimes:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      text:
+                        type:
+                          - string
+                          - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+          keyPoints:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                text:
+                  type:
+                    - string
+                    - "null"
+          outline:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                duration:
+                  type:
+                    - number
+                    - "null"
+                items:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      startTime:
+                        type:
+                          - number
+                          - "null"
+                      text:
+                        type:
+                          - string
+                          - "null"
+                section:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - number
+                    - "null"
+          pointsOfInterest:
+            type:
+              - object
+              - "null"
+            properties:
+              actionItems:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    snippet:
+                      type:
+                        - string
+                        - "null"
+                    snippetEndTime:
+                      type:
+                        - number
+                        - "null"
+                    snippetStartTime:
+                      type:
+                        - number
+                        - "null"
+                    speakerID:
+                      type:
+                        - string
+                        - "null"
+          topics:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                duration:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          trackers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                count:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                occurrences:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      speakerId:
+                        type:
+                          - string
+                          - "null"
+                      startTime:
+                        type:
+                          - number
+                          - "null"
+                phrases:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      count:
+                        type:
+                          - number
+                          - "null"
+                      occurrences:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            speakerId:
+                              type:
+                                - string
+                                - "null"
+                            startTime:
+                              type:
+                                - number
+                                - "null"
+                      phrase:
+                        type:
+                          - string
+                          - "null"
+      interaction:
+        description: "Metrics collected around the interaction during the call."
+        type:
+          - object
+          - "null"
+        properties:
+          interactionStats:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+          questions:
+            type:
+              - object
+              - "null"
+            properties:
+              companyCount:
+                type:
+                  - number
+                  - "null"
+              nonCompanyCount:
+                type:
+                  - number
+                  - "null"
+          speakers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                talkTime:
+                  type:
+                    - number
+                    - "null"
+                userId:
+                  type:
+                    - string
+                    - "null"
+          video:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                duration:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      collaboration:
+        description: "Collaboration information added to the call"
+        type:
+          - object
+          - "null"
+        properties:
+      media:
+        description: "The media urls of the call."
+        properties:
+          audioUrl:
+            description: "If true and exist, add audio url of the call. The url will be available for 8 hours."
+            type:
+              - "null"
+              - string
+          videoUrl:
+            description: "If true and exist, add video url of the call. The url will be available for 8 hours."
+            type:
+              - "null"
+              - string
   scorecards:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
