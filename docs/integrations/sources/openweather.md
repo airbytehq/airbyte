@@ -33,6 +33,9 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.2.4   | 2024-05-25 | [38601](https://github.com/airbytehq/airbyte/pull/38601) | Make compatible with the builder.                                               |
@@ -44,3 +47,5 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 | 0.1.5   | 2022-06-21 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | No changes. Used connector to test publish workflow changes.                    |
 | 0.1.4   | 2022-04-27 | [12397](https://github.com/airbytehq/airbyte/pull/12397) | No changes. Used connector to test publish workflow changes.                    |
 | 0.1.0   | 2021-10-27 | [7434](https://github.com/airbytehq/airbyte/pull/7434)   | Initial release                                                                 |
+
+</details>
