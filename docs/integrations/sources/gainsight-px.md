@@ -74,8 +74,9 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
-| 0.1.2   | 2024-05-28 | [38669](https://github.com/airbytehq/airbyte/pull/38669) | Make connector compatible with Builder  |
-| 0.1.1   | 2024-05-03 | [37593](https://github.com/airbytehq/airbyte/pull/37593) | Changed `last_records` to `last_record` |
-| 0.1.0   | 2023-05-10 | [26998](https://github.com/airbytehq/airbyte/pull/26998) | Initial PR                              |
+| 0.1.3 | 2024-06-04 | [38979](https://github.com/airbytehq/airbyte/pull/38979) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.2 | 2024-05-28 | [38669](https://github.com/airbytehq/airbyte/pull/38669) | Make connector compatible with Builder |
+| 0.1.1 | 2024-05-03 | [37593](https://github.com/airbytehq/airbyte/pull/37593) | Changed `last_records` to `last_record` |
+| 0.1.0 | 2023-05-10 | [26998](https://github.com/airbytehq/airbyte/pull/26998) | Initial PR |
 
 </details>
