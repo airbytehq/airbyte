@@ -22,7 +22,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /incidents
           http_method: GET
         record_selector:
@@ -34,7 +34,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/incidents'
+          $ref: "#/schemas/incidents"
     incident_logs:
       type: DeclarativeStream
       name: incident_logs
@@ -43,7 +43,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /incidents/{{ stream_partition.incident_id }}/log_entries
           http_method: GET
         record_selector:
@@ -59,11 +59,11 @@ definitions:
                 parent_key: id
                 partition_field: incident_id
                 stream:
-                  $ref: '#/definitions/streams/incidents'
+                  $ref: "#/definitions/streams/incidents"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/incident_logs'
+          $ref: "#/schemas/incident_logs"
     teams:
       type: DeclarativeStream
       name: teams
@@ -72,7 +72,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /teams
           http_method: GET
         record_selector:
@@ -84,7 +84,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/teams'
+          $ref: "#/schemas/teams"
     services:
       type: DeclarativeStream
       name: services
@@ -93,7 +93,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /services
           http_method: GET
         record_selector:
@@ -105,7 +105,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/services'
+          $ref: "#/schemas/services"
     users:
       type: DeclarativeStream
       name: users
@@ -114,7 +114,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
         record_selector:
@@ -126,7 +126,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     priorities:
       type: DeclarativeStream
       name: priorities
@@ -135,7 +135,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /priorities
           http_method: GET
         record_selector:
@@ -147,25 +147,25 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/priorities'
+          $ref: "#/schemas/priorities"
   base_requester:
     type: HttpRequester
     url_base: https://api.pagerduty.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: 'Token token={{ config[''token''] }}'
+      api_token: "Token token={{ config['token'] }}"
       inject_into:
         type: RequestOption
         field_name: Authorization
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/incidents'
-  - $ref: '#/definitions/streams/incident_logs'
-  - $ref: '#/definitions/streams/teams'
-  - $ref: '#/definitions/streams/services'
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/priorities'
+  - $ref: "#/definitions/streams/incidents"
+  - $ref: "#/definitions/streams/incident_logs"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/services"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/priorities"
 
 spec:
   type: Spec
@@ -266,1687 +266,1687 @@ schemas:
   incidents:
     type:
       - object
-      - 'null'
+      - "null"
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       acknowledgements:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             acknowledger:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 html_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 self:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 summary:
                   type:
                     - string
-                    - 'null'
+                    - "null"
             at:
               type:
                 - string
-                - 'null'
+                - "null"
       alert_counts:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           all:
             type:
               - number
-              - 'null'
+              - "null"
           resolved:
             type:
               - number
-              - 'null'
+              - "null"
           triggered:
             type:
               - number
-              - 'null'
+              - "null"
       alert_grouping:
         type:
           - string
-          - 'null'
+          - "null"
       assigned_via:
         type:
           - string
-          - 'null'
+          - "null"
       assignments:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             assignee:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 html_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 self:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 summary:
                   type:
                     - string
-                    - 'null'
+                    - "null"
             at:
               type:
                 - string
-                - 'null'
+                - "null"
       basic_alert_grouping:
         type:
           - string
-          - 'null'
+          - "null"
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       description:
         type:
           - string
-          - 'null'
+          - "null"
       escalation_policy:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           html_url:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           self:
             type:
               - string
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
       first_trigger_log_entry:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           html_url:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           self:
             type:
               - string
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
       html_url:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - string
-          - 'null'
+          - "null"
       incident_key:
         type:
           - string
-          - 'null'
+          - "null"
       incident_number:
         type:
           - number
-          - 'null'
+          - "null"
       incidents_responders:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             escalation_policy_requests:
               type:
                 - array
-                - 'null'
+                - "null"
               items:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             incident:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 html_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 self:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 summary:
                   type:
                     - string
-                    - 'null'
+                    - "null"
             message:
               type:
                 - string
-                - 'null'
+                - "null"
             requested_at:
               type:
                 - string
-                - 'null'
+                - "null"
             requester:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 avatar_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 html_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 job_title:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 self:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 summary:
                   type:
                     - string
-                    - 'null'
+                    - "null"
             state:
               type:
                 - string
-                - 'null'
+                - "null"
             updated_at:
               type:
                 - string
-                - 'null'
+                - "null"
             user:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 avatar_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 html_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 job_title:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 self:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 summary:
                   type:
                     - string
-                    - 'null'
+                    - "null"
       is_mergeable:
         type: boolean
       last_status_change_at:
         type:
           - string
-          - 'null'
+          - "null"
       last_status_change_by:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           html_url:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           self:
             type:
               - string
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
       pending_actions:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       priority:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           account_id:
             type:
               - string
-              - 'null'
+              - "null"
           color:
             type:
               - string
-              - 'null'
+              - "null"
           created_at:
             type:
               - string
-              - 'null'
+              - "null"
           description:
             type:
               - string
-              - 'null'
+              - "null"
           html_url:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type:
               - string
-              - 'null'
+              - "null"
           order:
             type:
               - number
-              - 'null'
+              - "null"
           schema_version:
             type:
               - number
-              - 'null'
+              - "null"
           self:
             type:
               - string
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
           updated_at:
             type:
               - string
-              - 'null'
+              - "null"
       resolved_at:
         type:
           - string
-          - 'null'
+          - "null"
       responder_requests:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             incident:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 html_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 self:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 summary:
                   type:
                     - string
-                    - 'null'
+                    - "null"
             message:
               type:
                 - string
-                - 'null'
+                - "null"
             requested_at:
               type:
                 - string
-                - 'null'
+                - "null"
             requester:
               type:
                 - object
-                - 'null'
+                - "null"
               properties:
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 html_url:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 self:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 summary:
                   type:
                     - string
-                    - 'null'
+                    - "null"
             responder_request_targets:
               type:
                 - array
-                - 'null'
+                - "null"
               items:
                 type:
                   - object
-                  - 'null'
+                  - "null"
                 properties:
                   responder_request_target:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       type:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       id:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       incidents_responders:
                         type:
                           - array
-                          - 'null'
+                          - "null"
                         items:
                           type:
                             - object
-                            - 'null'
+                            - "null"
                           properties:
                             incident:
                               type:
                                 - object
-                                - 'null'
+                                - "null"
                               properties:
                                 type:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 html_url:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 id:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 self:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 summary:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                             message:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             requested_at:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             requester:
                               type:
                                 - object
-                                - 'null'
+                                - "null"
                               properties:
                                 type:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 avatar_url:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 html_url:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 id:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 job_title:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 self:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 summary:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                             state:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             updated_at:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             user:
                               type:
                                 - object
-                                - 'null'
+                                - "null"
                               properties:
                                 type:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 avatar_url:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 html_url:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 id:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 job_title:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 self:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                                 summary:
                                   type:
                                     - string
-                                    - 'null'
+                                    - "null"
                       summary:
                         type:
                           - string
-                          - 'null'
+                          - "null"
       self:
         type:
           - string
-          - 'null'
+          - "null"
       service:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
           html_url:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           self:
             type:
               - string
-              - 'null'
+              - "null"
           summary:
             type:
               - string
-              - 'null'
+              - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_requests:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       summary:
         type:
           - string
-          - 'null'
+          - "null"
       teams:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       title:
         type:
           - string
-          - 'null'
+          - "null"
       updated_at:
         type:
           - string
-          - 'null'
+          - "null"
       urgency:
         type:
           - string
-          - 'null'
+          - "null"
     title: Incidents Schema
   incident_logs:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       action:
         type:
-          - 'null'
+          - "null"
           - string
       agent:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           html_url:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           self:
             type:
-              - 'null'
+              - "null"
               - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
       assignees:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             html_url:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             self:
               type:
-                - 'null'
+                - "null"
                 - string
             summary:
               type:
-                - 'null'
+                - "null"
                 - string
       channel:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           new_priority:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               account_id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               color:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               created_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               description:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               html_url:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               order:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               schema_version:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               self:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               summary:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               updated_at:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           notification:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               address:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               conferenceAddress:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               status:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           old_priority:
             type:
-              - 'null'
+              - "null"
               - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
       channels:
         type:
-          - 'null'
+          - "null"
           - string
       contexts:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       escalation_policy:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           escalation_rules:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 escalation_delay_in_minutes:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 targets:
                   type:
-                    - 'null'
+                    - "null"
                     - array
                   items:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       type:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       html_url:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       id:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       self:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       summary:
                         type:
-                          - 'null'
+                          - "null"
                           - string
           html_url:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           num_loops:
             type:
-              - 'null'
+              - "null"
               - number
           on_call_handoff_notifications:
             type:
-              - 'null'
+              - "null"
               - string
           privilege:
             type:
-              - 'null'
+              - "null"
               - string
           self:
             type:
-              - 'null'
+              - "null"
               - string
           services:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 html_url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 self:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 summary:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
           teams:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
       event_details:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           description:
             type:
-              - 'null'
+              - "null"
               - string
       html_url:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       incident:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           html_url:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           self:
             type:
-              - 'null'
+              - "null"
               - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
       level:
         type:
-          - 'null'
+          - "null"
           - number
       message:
         type:
-          - 'null'
+          - "null"
           - string
       responder:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           html_url:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           self:
             type:
-              - 'null'
+              - "null"
               - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
       responders_list:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             html_url:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             self:
               type:
-                - 'null'
+                - "null"
                 - string
             summary:
               type:
-                - 'null'
+                - "null"
                 - string
       self:
         type:
-          - 'null'
+          - "null"
           - string
       service:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           html_url:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           self:
             type:
-              - 'null'
+              - "null"
               - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
       summary:
         type:
-          - 'null'
+          - "null"
           - string
       teams:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       user:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           html_url:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           self:
             type:
-              - 'null'
+              - "null"
               - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
     title: Incident Logs schema
   teams:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       default_role:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       html_url:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       parent:
         type:
-          - 'null'
+          - "null"
           - string
       self:
         type:
-          - 'null'
+          - "null"
           - string
       summary:
         type:
-          - 'null'
+          - "null"
           - string
     title: Teams Schema
   services:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       acknowledgement_timeout:
         type:
-          - 'null'
+          - "null"
           - string
       addons:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       alert_creation:
         type:
-          - 'null'
+          - "null"
           - string
       alert_grouping:
         type:
-          - 'null'
+          - "null"
           - string
       alert_grouping_parameters:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           config:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               recommended_time_window:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               time_window:
                 type:
-                  - 'null'
+                  - "null"
                   - number
       alert_grouping_timeout:
         type:
-          - 'null'
+          - "null"
           - string
       auto_resolve_timeout:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       escalation_policy:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           html_url:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           self:
             type:
-              - 'null'
+              - "null"
               - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
       html_url:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       incident_urgency_rule:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           urgency:
             type:
-              - 'null'
+              - "null"
               - string
       integrations:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             html_url:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             self:
               type:
-                - 'null'
+                - "null"
                 - string
             summary:
               type:
-                - 'null'
+                - "null"
                 - string
       last_incident_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       response_play:
         type:
-          - 'null'
+          - "null"
           - string
       scheduled_actions:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       self:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       summary:
         type:
-          - 'null'
+          - "null"
           - string
       support_hours:
         type:
-          - 'null'
+          - "null"
           - string
       teams:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
     title: Services schema
   users:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       avatar_url:
         type:
-          - 'null'
+          - "null"
           - string
       billed:
         type: boolean
       color:
         type:
-          - 'null'
+          - "null"
           - string
       contact_methods:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             html_url:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             self:
               type:
-                - 'null'
+                - "null"
                 - string
             summary:
               type:
-                - 'null'
+                - "null"
                 - string
       coordinated_incidents:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             incident:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 html_url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 self:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 summary:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             message:
               type:
-                - 'null'
+                - "null"
                 - string
             requested_at:
               type:
-                - 'null'
+                - "null"
                 - string
             requester:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 html_url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 self:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 summary:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             state:
               type:
-                - 'null'
+                - "null"
                 - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       html_url:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       invitation_sent:
         type: boolean
       job_title:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       notification_rules:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             html_url:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             self:
               type:
-                - 'null'
+                - "null"
                 - string
             summary:
               type:
-                - 'null'
+                - "null"
                 - string
       role:
         type:
-          - 'null'
+          - "null"
           - string
       self:
         type:
-          - 'null'
+          - "null"
           - string
       summary:
         type:
-          - 'null'
+          - "null"
           - string
       teams:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             html_url:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             self:
               type:
-                - 'null'
+                - "null"
                 - string
             summary:
               type:
-                - 'null'
+                - "null"
                 - string
       time_zone:
         type:
-          - 'null'
+          - "null"
           - string
     title: Users Schema
   priorities:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       account_id:
         type:
-          - 'null'
+          - "null"
           - string
       color:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       html_url:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       order:
         type:
-          - 'null'
+          - "null"
           - number
       schema_version:
         type:
-          - 'null'
+          - "null"
           - number
       self:
         type:
-          - 'null'
+          - "null"
           - string
       summary:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
     title: Priorities schema
