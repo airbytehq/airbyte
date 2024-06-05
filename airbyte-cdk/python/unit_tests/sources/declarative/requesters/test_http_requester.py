@@ -13,6 +13,7 @@ import requests
 import requests_cache
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
@@ -24,7 +25,6 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException,
 from airbyte_cdk.sources.types import Config
 from requests import PreparedRequest
 from requests_cache import CachedResponse
-from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 
 
 @pytest.fixture
