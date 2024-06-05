@@ -34,6 +34,7 @@ class IterableDecoder(Decoder):
     Decoder strategy that returns the string content of the response, if any.
     """
 
+    is_stream_response = True
     parameters: InitVar[Mapping[str, Any]]
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
@@ -50,6 +51,7 @@ class JsonlDecoder(Decoder):
     Decoder strategy that returns the json-encoded content of the response, if any.
     """
 
+    is_stream_response = True
     parameters: InitVar[Mapping[str, Any]]
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:

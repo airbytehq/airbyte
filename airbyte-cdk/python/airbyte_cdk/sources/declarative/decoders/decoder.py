@@ -15,11 +15,17 @@ class Decoder:
     Decoder strategy to transform a requests.Response into a Mapping[str, Any]
     """
 
+    @property
+    def is_stream_response(self) -> bool:
+        """
+        Set to True if you'd like to use stream=True option in http requester
+        """
+        return False
+
     @abstractmethod
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         """
         Decodes a requests.Response into a Mapping[str, Any] or an array
         :param response: the response to decode
-        :return: Mapping or array describing the response
+        :return: Generator of Mapping describing the response
         """
-        pass

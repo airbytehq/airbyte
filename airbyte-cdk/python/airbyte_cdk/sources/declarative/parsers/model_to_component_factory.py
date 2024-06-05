@@ -810,10 +810,7 @@ class ModelToComponentFactory:
 
         assert model.use_cache is not None  # for mypy
 
-        if isinstance(decoder, JsonlDecoder):
-            stream_response_line_by_line = True
-        else:
-            stream_response_line_by_line = False
+        stream_response_line_by_line = decoder.is_stream_response
 
         return HttpRequester(
             name=name,
