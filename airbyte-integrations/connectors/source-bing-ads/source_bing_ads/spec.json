@@ -79,6 +79,13 @@
         "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format. If not set, data from previous and current calendar year will be replicated.",
         "order": 6
       },
+      "reports_end_date": {
+        "type": "string",
+        "title": "Reports replication end date",
+        "format": "date",
+        "description": "The end date until which to end replicating report data. Any data generated after this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
+        "order": 7
+      },
       "lookback_window": {
         "title": "Lookback window",
         "description": "Also known as attribution or conversion window. How far into the past to look for records (in days). If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. Used only for performance report streams in incremental mode without specified Reports Start Date.",
@@ -86,12 +93,12 @@
         "default": 0,
         "minimum": 0,
         "maximum": 90,
-        "order": 7
+        "order": 8
       },
       "custom_reports": {
         "title": "Custom Reports",
         "description": "You can add your Custom Bing Ads report by creating one.",
-        "order": 8,
+        "order": 9,
         "type": "array",
         "items": {
           "title": "Custom Report Config",

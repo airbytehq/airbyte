@@ -59,15 +59,16 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
 7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
-10. For _Custom Reports_ - see [custom reports](#custom-reports) section, list of custom reports object:
-11. For _Report Name_ enter the name that you want for your custom report.
-12. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
-13. For _Columns_ add list columns of Reporting Data Object that you want to see in the custom report.
-14. For _Aggregation_ add time aggregation. See [report aggregation](#report-aggregation) section.
-15. Click **Authenticate your Bing Ads account**.
-16. Log in and authorize the Bing Ads account.
-17. Click **Set up source**.
+9. For **Reports Replication End Date**, enter the date in YYYY-MM-DD format. This date should be before or equal to the specified Reports Replication Start Date. If this field is blank, Airbyte will replicate data up to the current date.
+10. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
+11. For _Custom Reports_ - see [custom reports](#custom-reports) section, list of custom reports object:
+12. For _Report Name_ enter the name that you want for your custom report.
+13. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
+14. For _Columns_ add list columns of Reporting Data Object that you want to see in the custom report.
+15. For _Aggregation_ add time aggregation. See [report aggregation](#report-aggregation) section.
+16. Click **Authenticate your Bing Ads account**.
+17. Log in and authorize the Bing Ads account.
+18. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -82,12 +83,13 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
 7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
-10. For _Custom Reports_ - see [custom reports](#custom-reports) section:
-11. For _Report Name_ enter the name that you want for your custom report.
-12. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
-13. For _Columns_ add columns of Reporting Data Object that you want to see in the custom report.
-14. For _Aggregation_ select time aggregation. See [report aggregation](#report-aggregation) section.
+9. For **Reports Replication End Date**, enter the date in YYYY-MM-DD format. This date should be before or equal to the specified Reports Replication Start Date. If this field is blank, Airbyte will replicate data up to the current date.
+10. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
+11. For _Custom Reports_ - see [custom reports](#custom-reports) section:
+12. For _Report Name_ enter the name that you want for your custom report.
+13. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
+14. For _Columns_ add columns of Reporting Data Object that you want to see in the custom report.
+15. For _Aggregation_ select time aggregation. See [report aggregation](#report-aggregation) section.
 
 15. Click **Set up source**.
 <!-- /env:oss -->

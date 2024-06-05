@@ -130,6 +130,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     ) -> Mapping[str, Any]:
         stream_slice = kwargs["stream_slice"]
         start_date = self.get_start_date(stream_state, account_id)
+        end_date = self.client.reports_end_date
 
         reporting_service = self.client.get_service("ReportingService")
         request_time_zone = reporting_service.factory.create("ReportTimeZone")
@@ -138,7 +139,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         report_time.ReportTimeZone = request_time_zone.GreenwichMeanTimeDublinEdinburghLisbonLondon
         if start_date:
             report_time.CustomDateRangeStart = self.get_request_date(reporting_service, start_date)
-            report_time.CustomDateRangeEnd = self.get_request_date(reporting_service, datetime.utcnow())
+            report_time.CustomDateRangeEnd = self.get_request_date(reporting_service, end_date)
             report_time.PredefinedTime = None
         else:
             report_time.CustomDateRangeStart = None
@@ -161,7 +162,6 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
                 return pendulum.parse(stream_state[account_id][self.cursor_field])
 
         return self.client.reports_start_date
-
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
@@ -253,6 +253,11 @@ class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, AB
             return start_date.subtract(days=self.config["lookback_window"])
         else:
             return start_date
+        
+    def get_end_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+        end_date = super().get_end_date(stream_state, account_id)
+
+        return end_date
 
 
 class BudgetSummaryReport(BingAdsReportingServiceStream):
