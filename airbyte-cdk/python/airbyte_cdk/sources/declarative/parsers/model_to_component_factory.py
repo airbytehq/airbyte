@@ -825,6 +825,7 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
             message_repository=self._message_repository,
             use_cache=model.use_cache,
+            decoder=decoder,
             stream_response=stream_response_line_by_line,
         )
 

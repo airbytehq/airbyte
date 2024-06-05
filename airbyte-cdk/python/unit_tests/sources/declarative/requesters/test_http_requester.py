@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException,
 from airbyte_cdk.sources.types import Config
 from requests import PreparedRequest
 from requests_cache import CachedResponse
+from sources.declarative.decoders import JsonDecoder
 
 
 @pytest.fixture
@@ -782,7 +783,7 @@ def test_default_parse_response_error_message(api_response: dict, expected_messa
     response = MagicMock()
     response.json.return_value = api_response
 
-    message = HttpRequester.parse_response_error_message(response)
+    message = HttpRequester.parse_response_error_message(response, decoder=JsonDecoder(parameters={}))
     assert message == expected_message
 
 

@@ -15,6 +15,7 @@ import requests
 import requests_cache
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.sources.declarative.decoders import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -66,6 +67,7 @@ class HttpRequester(Requester):
     message_repository: MessageRepository = NoopMessageRepository()
     use_cache: bool = False
     stream_response: bool = False
+    decoder: Decoder = None
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
@@ -84,7 +86,7 @@ class HttpRequester(Requester):
         self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
         self._parameters = parameters
-        self.decoder = JsonDecoder(parameters={})
+        self.decoder = self.decoder or JsonDecoder(parameters={})
         self._session = self.request_cache()
         self._session.mount(
             "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
@@ -570,23 +572,24 @@ class HttpRequester(Requester):
         if response_status.action == ResponseAction.FAIL:
             error_message = (
                 response_status.error_message
-                or f"Request to {response.request.url} failed with status code {response.status_code} and error message {HttpRequester.parse_response_error_message(response)}"
+                or f"Request to {response.request.url} failed with status code {response.status_code} and error message {HttpRequester.parse_response_error_message(response, self.decoder)}"
             )
             raise ReadException(error_message)
         elif response_status.action == ResponseAction.IGNORE:
             self.logger.info(
-                f"Ignoring response for failed request with error message {HttpRequester.parse_response_error_message(response)}"
+                f"Ignoring response for failed request with error message {HttpRequester.parse_response_error_message(response, self.decoder)}"
             )
 
         return response
 
     @classmethod
-    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
+    def parse_response_error_message(cls, response: requests.Response, decoder: Decoder) -> Optional[str]:
         """
         Parses the raw response object from a failed request into a user-friendly error message.
         By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
 
         :param response:
+        :param decoder:
         :return: A user-friendly message that indicates the cause of the error
         """
 
@@ -612,7 +615,7 @@ class HttpRequester(Requester):
             return None
 
         try:
-            body = response.json()
+            body = next(decoder.decode(response))
             error = _try_get_error(body)
             return str(error) if error else None
         except requests.exceptions.JSONDecodeError:
