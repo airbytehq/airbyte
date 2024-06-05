@@ -49,6 +49,9 @@ This source is capable of syncing the following core streams:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
 | 0.2.8   | 2024-05-14 | [38142](https://github.com/airbytehq/airbyte/pull/38142) | Make compatible with the builder                                                                     |
@@ -65,3 +68,5 @@ This source is capable of syncing the following core streams:
 | 0.1.2   | 2022-01-06 | [9333](https://github.com/airbytehq/airbyte/pull/9333)   | Add incremental sync mode to streams in `integration_tests/configured_catalog.json`                  |
 | 0.1.1   | 2022-01-04 | [9275](https://github.com/airbytehq/airbyte/pull/9275)   | Fix pagination handling for `survey_responses`, `bounces` and `unsubscribes` streams                 |
 | 0.1.0   | 2021-10-27 | [4551](https://github.com/airbytehq/airbyte/pull/4551)   | Add Delighted source connector                                                                       |
+
+</details>
