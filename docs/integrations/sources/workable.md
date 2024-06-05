@@ -49,6 +49,12 @@ The Workable source connector supports the following [sync modes](https://docs.a
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
-| 0.1.0   | 2022-10-15 | [18033](https://github.com/airbytehq/airbyte/pull/18033) | New Source: Workable |
+| 0.1.1 | 2024-05-21 | [38503](https://github.com/airbytehq/airbyte/pull/38503) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-10-15 | [18033](https://github.com/airbytehq/airbyte/pull/18033) | New Source: Workable |
+
+</details>

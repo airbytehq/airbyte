@@ -417,8 +417,15 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.27  | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                                                              |
+| 4.0.26 | 2024-05-16 | [38292](https://github.com/airbytehq/airbyte/pull/38292) | Improve cursor value query to return only one row |
+| 4.0.25  | 2024-05-29 | [38775](https://github.com/airbytehq/airbyte/pull/38775) | Publish CDK                                                                                                                                                                |
+| 4.0.24  | 2024-05-23  | [38640](https://github.com/airbytehq/airbyte/pull/38640)   | Sync sending trace status messages indicating progress.                                                                                         |
 | 4.0.23  | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208)   | disable counts in full refresh stream in state message.                                                                                         |
 | 4.0.22  | 2024-05-14 | [38196](https://github.com/airbytehq/airbyte/pull/38196) | Bump jdbc driver version to 12.6.1.jre11 |
 | 4.0.21  | 2024-05-07 | [38054](https://github.com/airbytehq/airbyte/pull/38054) | Resumeable refresh should run only if there is source defined pk. |
@@ -554,3 +561,5 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172)                                                            | Support incremental sync                                                                                                                        |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038)                                                            | Change JDBC sources to discover more than standard schemas                                                                                      |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)                                                            | Add connectors using an index YAML file                                                                                                         |
+
+</details>

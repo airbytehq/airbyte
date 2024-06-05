@@ -48,7 +48,13 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                   | Subject                              |
 | :------ | :--------- | :------------------------------------------------------------- | :----------------------------------- |
-| 0.2.0   | 2023-10-20 | [31160](https://github.com/airbytehq/airbyte/pull/31160)       | Migrate to low code                  |
+| 0.2.1 | 2024-05-20 | [38429](https://github.com/airbytehq/airbyte/pull/38429) | [autopull] base image + poetry + up_to_date |
+| 0.2.0 | 2023-10-20 | [31160](https://github.com/airbytehq/airbyte/pull/31160) | Migrate to low code |
 | 0.1.23  | 2021-11-12 | [125](https://github.com/faros-ai/airbyte-connectors/pull/125) | Add Pagerduty source and destination |
+
+</details>

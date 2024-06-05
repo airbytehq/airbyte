@@ -173,6 +173,9 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
 | 2.1.2   | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions                                                                                             |
@@ -215,3 +218,5 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                                 |
 | 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610)   | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default |
 | 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285)   | Initial release of Native LinkedIn Ads connector for Airbyte                                                    |
+
+</details>
