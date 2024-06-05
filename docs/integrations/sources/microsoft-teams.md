@@ -157,12 +157,18 @@ This source requires **Application permissions**. Follow these [instructions](ht
 
 Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-app-configuration?tabs=python#instantiate-the-msal-application) the confidential client application with a client secret and [calling](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-acquire-token?tabs=python) AcquireTokenForClient from [Microsoft Authentication Library \(MSAL\) for Python](https://github.com/AzureAD/microsoft-authentication-library-for-python)
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 1.1.0   | 2024-03-24 | [36223](https://github.com/airbytehq/airbyte/pull/36223) | Migration to low code          |
-| 1.0.0   | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates                 |
-| 0.2.5   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions |
-| 0.2.4   | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807)   | Implement OAuth support        |
-| 0.2.3   | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469)   | Migrate to the CDK             |
+| 1.1.1 | 2024-06-04 | [39046](https://github.com/airbytehq/airbyte/pull/39046) | [autopull] Upgrade base image to v1.2.1 |
+| 1.1.0 | 2024-03-24 | [36223](https://github.com/airbytehq/airbyte/pull/36223) | Migration to low code |
+| 1.0.0 | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates |
+| 0.2.5 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
+| 0.2.4 | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807) | Implement OAuth support |
+| 0.2.3 | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469) | Migrate to the CDK |
+
+</details>
