@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "destination-duckdb"
-version = "0.3.5"
+version = "0.4.1"
 description = "Destination implementation for Duckdb."
 authors = ["Simon Späti, Airbyte"]
 license = "MIT"
@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.8"
 airbyte-cdk = "^0.51.6"
-duckdb = "0.9.2"
+duckdb = "0.10.3"
 pyarrow = "15.0.2"
 
 [tool.poetry.group.dev.dependencies]
@@ -18,10 +18,25 @@ ruff = "^0.0.286"
 black = "^23.7.0"
 mypy = "^1.5.1"
 faker = "24.4.0"
+coverage = "^7.5.3"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+test = { shell = "pytest" }
+
+coverage = { shell = "coverage run -m pytest && coverage report" }
+coverage-report = { shell = "coverage report" }
+coverage-html = { shell = "coverage html -d htmlcov && open htmlcov/index.html" }
+coverage-reset = { shell = "coverage erase" }
+
+check = { shell = "ruff check . && mypy ." }
+
+fix = { shell = "ruff format . && ruff check --fix -s || ruff format ." }
+fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ruff format ." }
+fix-and-check = { shell = "poe fix && poe check" }
 
 [tool.poetry.scripts]
 destination-duckdb = "destination_duckdb.run:run"

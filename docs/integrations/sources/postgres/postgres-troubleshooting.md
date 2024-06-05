@@ -12,9 +12,16 @@
   - Resetting a single table within the connection without resetting the rest of the destination tables in that connection
 - Changing a column data type or removing a column might break connections.
 
+### Xmin Limitations
+There are some notable shortcomings associated with the Xmin replication method:
+- Unsupported DDL operations : This replication method cannot support row deletions.
+- Performance : Requires a full table scan, so can lead to poor performance.
+- Row-level granularity : The xmin column is stored at the row level. This means that a row will still be synced if it had been modified, regardless of whether the modification corresponded to the subset of columns the user is interested in.
+- Transaction ID (XID) wraparound : the transaction ID (aka xid) is represented by a 32-bit integer and has an upper limit value of 4,294,967,295. Once this value is reached, the xid wraps around and stops increasing monotonically. At this point, the xmin column cannot be reliably used as a cursor, which can lead to resyncing data that had already been synced. Also see the trouble-shooting section on Xmin wraparound below.
+
 ### Version Requirements
 
-- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
+- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
@@ -48,6 +55,31 @@
 - `NUMERIC/DECIMAL`
 - `CHAR/NCHAR/NVARCHAR/VARCHAR/LONGVARCHAR`
 - `BINARY/BLOB`
+
+### Vendor-Specific Connector Limitations
+
+:::warning
+
+Not all implementations or deployments of a database will be the same. This section lists specific limitations and known issues with the connector based on _how_ or
+_where_ it is deployed.
+
+:::
+
+#### AWS Aurora
+
+AWS Aurora implements a [CDC caching layer](https://aws.amazon.com/blogs/database/achieve-up-to-17x-lower-replication-lag-with-the-new-write-through-cache-for-aurora-postgresql/) that is incompatible with Airbyte's CDC implementation. To use Airbyte with AWS Aurora, disable the CDC caching layer. Disable CDC caching by setting the [`rds.logical_wal_cache`](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Replication.Logical.html) parameter to `0` in the AWS Aurora parameter group.
+
+In addition, if you are seeing timeout errors, set [`apg_write_forward.idle_session_timeout`](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-write-forwarding-apg.html#aurora-global-database-write-forwarding-params-apg) to 1200000 (20 minutes) in the AWS Aurora parameter group.
+
+#### TimescaleDB
+
+While postgres compatible, TimescaleDB does not support CDC replication.
+
+In some cases with a highly-compressed database, you may receive an error like `transparent decompression only supports tableoid system column`. This error indicates that the cursor column chosen for the sync is compressed and cannot be used. To resolve this issue, you can change the cursor column to a non-compressed column.
+
+#### Azure PG Flex
+
+When using CDC with Azure PG Flex, if a failover to a new leader happens, your CDC replication slot will not be re-created automatically. You will need to manually re-create the replication slot on the new leader, and initiate a reset of the connection in Airbyte.
 
 ## Troubleshooting
 
@@ -85,6 +117,10 @@ The root causes is that the WALs needed for the incremental sync has been remove
 ### Temporary File Size Limit
 
 Some larger tables may encounter an error related to the temporary file size limit such as `temporary file size exceeds temp_file_limit`. To correct this error increase the [temp_file_limit](https://postgresqlco.nf/doc/en/param/temp_file_limit/).
+
+### Xmin Wraparound
+
+When a database experiences Xmin wraparound, the replication performance will be degraded. Furthermore, data that has already been synced may be resynced again. When setting up a Postgres source connector or at the beginning of the sync, the connector will check if an Xmin wraparound exists. If so, the connector returns a config error, reminding the user to switch to the CDC replication method.
 
 ### (Advanced) Custom JDBC Connection Strings
 

@@ -34,6 +34,12 @@ The free plan allows 250 calls per month, you won't get beyond these limits with
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.0   | 2022-09-08 | [16473](https://github.com/airbytehq/airbyte/pull/16473) | Initial release |
+| 0.1.1 | 2024-05-20 | [38438](https://github.com/airbytehq/airbyte/pull/38438) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-09-08 | [16473](https://github.com/airbytehq/airbyte/pull/16473) | Initial release |
+
+</details>

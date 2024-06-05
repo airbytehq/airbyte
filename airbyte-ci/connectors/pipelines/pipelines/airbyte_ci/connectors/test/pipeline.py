@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING
 import anyio
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionIncrementCheck
 from pipelines.helpers.execution.run_steps import StepToRun, run_steps
@@ -29,11 +29,11 @@ LANGUAGE_MAPPING = {
 }
 
 
-def get_test_steps(context: ConnectorContext) -> STEP_TREE:
+def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
     """Get all the tests steps according to the connector language.
 
     Args:
-        context (ConnectorContext): The current connector context.
+        context (ConnectorTestContext): The current connector context.
 
     Returns:
         STEP_TREE: The list of tests steps.
@@ -45,7 +45,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
         return []
 
 
-async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
+async def run_connector_test_pipeline(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """
     Compute the steps to run for a connector test pipeline.
     """

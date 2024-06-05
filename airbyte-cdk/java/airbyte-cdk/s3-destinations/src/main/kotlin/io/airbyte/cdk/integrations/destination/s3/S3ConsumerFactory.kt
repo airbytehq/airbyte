@@ -16,14 +16,13 @@ import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
-import org.apache.commons.io.FileUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class S3ConsumerFactory {
     fun create(
@@ -54,35 +53,31 @@ class S3ConsumerFactory {
         writeConfigs: List<WriteConfig>
     ): OnStartFunction {
         return OnStartFunction {
-            LOGGER.info("Preparing bucket in destination started for {} streams", writeConfigs.size)
+            LOGGER.info {
+                "Preparing bucket in destination started for ${writeConfigs.size} streams"
+            }
             for (writeConfig in writeConfigs) {
                 if (writeConfig.syncMode == DestinationSyncMode.OVERWRITE) {
                     val namespace = writeConfig.namespace
                     val stream = writeConfig.streamName
                     val outputBucketPath = writeConfig.outputBucketPath
                     val pathFormat = writeConfig.pathFormat
-                    LOGGER.info(
-                        "Clearing storage area in destination started for namespace {} stream {} bucketObject {} pathFormat {}",
-                        namespace,
-                        stream,
-                        outputBucketPath,
-                        pathFormat
-                    )
+                    LOGGER.info {
+                        "Clearing storage area in destination started for namespace $namespace " +
+                            "stream $stream bucketObject $outputBucketPath pathFormat $pathFormat"
+                    }
                     storageOperations.cleanUpBucketObject(
                         namespace,
                         stream,
                         outputBucketPath,
                         pathFormat
                     )
-                    LOGGER.info(
-                        "Clearing storage area in destination completed for namespace {} stream {} bucketObject {}",
-                        namespace,
-                        stream,
-                        outputBucketPath
-                    )
+                    LOGGER.info {
+                        "Clearing storage area in destination completed for namespace $namespace stream $stream bucketObject $outputBucketPath"
+                    }
                 }
             }
-            LOGGER.info("Preparing storage area in destination completed.")
+            LOGGER.info { "Preparing storage area in destination completed." }
         }
     }
 
@@ -91,24 +86,14 @@ class S3ConsumerFactory {
         writeConfigs: List<WriteConfig>,
         catalog: ConfiguredAirbyteCatalog?
     ): FlushBufferFunction {
-        val pairToWriteConfig =
-            writeConfigs
-                .stream()
-                .collect(
-                    Collectors.toUnmodifiableMap(
-                        Function { config: WriteConfig -> toNameNamespacePair(config) },
-                        Function.identity()
-                    )
-                )
+        val pairToWriteConfig = writeConfigs.associateBy { toNameNamespacePair(it) }
 
         return FlushBufferFunction {
             pair: AirbyteStreamNameNamespacePair,
             writer: SerializableBuffer ->
-            LOGGER.info(
-                "Flushing buffer for stream {} ({}) to storage",
-                pair.name,
-                FileUtils.byteCountToDisplaySize(writer.byteCount)
-            )
+            LOGGER.info {
+                "Flushing buffer for stream ${pair.name} ({FileUtils.byteCountToDisplaySize(writer.byteCount)}) to storage"
+            }
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream %s that was not in the catalog. \ncatalog: %s",
@@ -130,7 +115,7 @@ class S3ConsumerFactory {
                     )
                 }
             } catch (e: Exception) {
-                LOGGER.error("Failed to flush and upload buffer to storage:", e)
+                LOGGER.error(e) { "Failed to flush and upload buffer to storage:" }
                 throw RuntimeException("Failed to upload buffer to storage", e)
             }
         }
@@ -142,7 +127,7 @@ class S3ConsumerFactory {
     ): OnCloseFunction {
         return OnCloseFunction { hasFailed: Boolean, _: Map<StreamDescriptor, StreamSyncSummary> ->
             if (hasFailed) {
-                LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size)
+                LOGGER.info { "Cleaning up destination started for ${writeConfigs.size} streams" }
                 for (writeConfig in writeConfigs) {
                     storageOperations.cleanUpBucketObject(
                         writeConfig.fullOutputPath,
@@ -150,13 +135,13 @@ class S3ConsumerFactory {
                     )
                     writeConfig.clearStoredFiles()
                 }
-                LOGGER.info("Cleaning up destination completed.")
+                LOGGER.info { "Cleaning up destination completed." }
             }
         }
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(S3ConsumerFactory::class.java)
+
         private val SYNC_DATETIME: DateTime = DateTime.now(DateTimeZone.UTC)
 
         private fun createWriteConfigs(
@@ -164,11 +149,7 @@ class S3ConsumerFactory {
             config: S3DestinationConfig,
             catalog: ConfiguredAirbyteCatalog?
         ): List<WriteConfig> {
-            return catalog!!
-                .streams
-                .stream()
-                .map(toWriteConfig(storageOperations, config))
-                .collect(Collectors.toList())
+            return catalog!!.streams.map { toWriteConfig(storageOperations, config).apply(it) }
         }
 
         private fun toWriteConfig(
@@ -202,7 +183,7 @@ class S3ConsumerFactory {
                         fullOutputPath!!,
                         syncMode
                     )
-                LOGGER.info("Write config: {}", writeConfig)
+                LOGGER.info { "Write config: $writeConfig" }
                 writeConfig
             }
         }

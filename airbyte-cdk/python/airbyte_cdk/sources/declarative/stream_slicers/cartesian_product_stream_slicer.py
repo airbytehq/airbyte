@@ -8,7 +8,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass
@@ -103,7 +103,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
         sub_slices = (s.stream_slices() for s in self.stream_slicers)
         product = itertools.product(*sub_slices)
         for stream_slice_tuple in product:
-            partition = dict(ChainMap(*[s.partition for s in stream_slice_tuple]))
+            partition = dict(ChainMap(*[s.partition for s in stream_slice_tuple]))  # type: ignore # ChainMap expects a MutableMapping[Never, Never] for reasons
             cursor_slices = [s.cursor_slice for s in stream_slice_tuple if s.cursor_slice]
             if len(cursor_slices) > 1:
                 raise ValueError(f"There should only be a single cursor slice. Found {cursor_slices}")

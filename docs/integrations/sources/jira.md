@@ -120,10 +120,15 @@ Check out common troubleshooting issues for the Jira connector on our Airbyte Fo
 
 The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                          |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.1   | 2024-05-20 | [38341](https://github.com/airbytehq/airbyte/pull/38341)   | Update CDK authenticator package                                                                                                  |
+| 2.0.0   | 2024-04-20 | [37374](https://github.com/airbytehq/airbyte/pull/37374)   | Migrate to low-code and fix `Project Avatars` stream                                                                                                             |
 | 1.2.2   | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | Updating to 0.80.0 CDK                                                                                                                                           |
 | 1.2.1   | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | schema descriptions                                                                                                                                              |
 | 1.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)   | Pin airbyte-cdk version to `^0`                                                                                                                                  |
@@ -184,3 +189,5 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 | 0.2.5   | 2021-06-09 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973)   | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support.                                                                                          |
 | 0.2.4   |            |                                                            | Implementing base_read acceptance test dived by stream groups.                                                                                                   |
 | 0.2.3   |            |                                                            | Implementing incremental sync. Migrated to airbyte-cdk. Adding all available entities in Jira Cloud.                                                             |
+
+</details>

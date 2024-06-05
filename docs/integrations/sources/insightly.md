@@ -67,8 +67,12 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.5   | 2024-05-14 | [38140](https://github.com/airbytehq/airbyte/pull/38140) | Make compatible with builder                                                    |
 | 0.2.4   | 2024-04-19 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Updating to 0.80.0 CDK                                                          |
 | 0.2.3   | 2024-04-18 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Manage dependencies with Poetry.                                                |
 | 0.2.2   | 2024-04-15 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Base image migration: remove Dockerfile and use the python-connector-base image |
@@ -78,3 +82,5 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 | 0.1.2   | 2023-03-23 | [24422](https://github.com/airbytehq/airbyte/pull/24422) | Fix incremental timedelta causing missing records                               |
 | 0.1.1   | 2022-11-11 | [19356](https://github.com/airbytehq/airbyte/pull/19356) | Fix state date parse bug                                                        |
 | 0.1.0   | 2022-10-19 | [18164](https://github.com/airbytehq/airbyte/pull/18164) | Release Insightly CDK Connector                                                 |
+
+</details>
