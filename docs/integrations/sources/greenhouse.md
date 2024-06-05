@@ -69,6 +69,9 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2024-05-15 | [38258](https://github.com/airbytehq/airbyte/pull/38258) | Update Application incremental stream cursor and add `custom_field` and `keyed_custom_field` columns                                                                 |
@@ -92,3 +95,5 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 | 0.2.6   | 2021-11-08 | [7607](https://github.com/airbytehq/airbyte/pull/7607)   | Implement demographics streams support. Update SAT for demographics streams                                                                                          |
 | 0.2.5   | 2021-09-22 | [6377](https://github.com/airbytehq/airbyte/pull/6377)   | Refactor the connector to use CDK. Implement additional stream support                                                                                               |
 | 0.2.4   | 2021-09-15 | [6238](https://github.com/airbytehq/airbyte/pull/6238)   | Add identification of accessible streams for API keys with limited permissions                                                                                       |
+
+</details>

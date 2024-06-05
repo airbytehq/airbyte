@@ -69,6 +69,9 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
 | 0.1.9   | 2024-04-19 | [37188](https://github.com/airbytehq/airbyte/pull/37188) | Updating to 0.80.0 CDK                                                      |
@@ -80,3 +83,5 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 | 0.1.3   | 2021-11-24 | [8169](https://github.com/airbytehq/airbyte/pull/8169)   | Source Linnworks: refactor stream StockLocations                            |
 | 0.1.2   | 2021-11-23 | [8177](https://github.com/airbytehq/airbyte/pull/8177)   | Source Linnworks: add stream ProcessedOrderDetails                          |
 | 0.1.0   | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588)   | New Source: Linnworks                                                       |
+
+</details>
