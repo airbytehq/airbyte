@@ -3,9 +3,9 @@
 #
 
 
+import logging
 from typing import Any, List, Mapping, Tuple, Union
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -36,7 +36,7 @@ from .streams import (
 
 
 class SourceAsana(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             workspaces_stream = Workspaces(authenticator=self._get_authenticator(config))
             next(workspaces_stream.read_records(sync_mode=SyncMode.full_refresh))
