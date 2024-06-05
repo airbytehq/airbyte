@@ -6,7 +6,7 @@ data:
     hosts:
       - "*.salesforce.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0-rc.1@sha256-9b5ff57bb8c91f41c3bdc74a1a355fa46ee2df75f57f799a7fe685b84e15201c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0-rc.1@sha256:9b5ff57bb8c91f41c3bdc74a1a355fa46ee2df75f57f799a7fe685b84e15201c
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
