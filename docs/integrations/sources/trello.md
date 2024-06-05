@@ -78,6 +78,9 @@ The Trello connector should not run into Trello API limitations under normal usa
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
 | 1.0.3   | 2024-04-30 | [37598](https://github.com/airbytehq/airbyte/pull/37598) | Changed last records to last record                                                |
@@ -95,3 +98,5 @@ The Trello connector should not run into Trello API limitations under normal usa
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                    |
 | 0.1.1   | 2021-10-12 | [6968](https://github.com/airbytehq/airbyte/pull/6968)   | Add oAuth flow support                                                             |
 | 0.1.0   | 2021-08-18 | [5501](https://github.com/airbytehq/airbyte/pull/5501)   | Release Trello CDK Connector                                                       |
+
+</details>
