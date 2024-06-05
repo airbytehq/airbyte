@@ -2953,4 +2953,4 @@ streams:
 
 check:
   stream_names:
-    - "tickets"
+    - "tags"
