@@ -2377,6 +2377,565 @@ definitions:
             type:
               - "null"
               - integer
+  tickets:
+    $ref: "#/definitions/stream_incremental_search"
+    primary_key: [["id"]]
+    retriever:
+      $ref: "#/definitions/stream_incremental_search/retriever"
+      requester:
+        $ref: "#/definitions/requester_incremental_search"
+        request_headers:
+          # API version header
+          # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
+          # https://github.com/airbytehq/oncall/issues/4514
+          Intercom-Version: "2.11"
+          Accept: "application/json"
+    $parameters:
+      name: "tickets"
+      path: "tickets/search"
+      data_field: "tickets"
+      page_size: 150
+
+    # activity logs stream is incremental based on created_at field
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        "$ref": "#/definitions/ticket"
+  ticket:
+    type: object
+    properties:
+      type:
+        description: Always ticket.
+        type:
+          - "null"
+          - string
+      id:
+        description: The unique identifier for the ticket which is given by Intercom.
+        type:
+          - "null"
+          - string
+      ticket_id:
+        description: The ID of the Ticket used in the Intercom Inbox and Messenger. Do not use ticket_id for API queries.
+        type:
+          - "null"
+          - string
+      category:
+        description: 'Category of the Ticket. Enum: "Customer" "Back-office" "Tracker".'
+        type:
+          - "null"
+          - string
+      ticket_attributes:
+        "$ref": "#/definitions/ticket_custom_attributes"
+      ticket_state:
+        description: 'The state the ticket is currently in. Enum: "submitted" "in_progress" "waiting_on_customer" "resolved".'
+        type:
+          - "null"
+          - string
+      ticket_state_internal_label:
+        description: The state the ticket is currently in, in a human readable form - visible in Intercom.
+        type:
+          - "null"
+          - string
+      ticket_state_external_label:
+        description: The state the ticket is currently in, in a human readable form - visible to customers, in the messenger, email and tickets portal.
+        type:
+          - "null"
+          - string
+      ticket_type:
+        "$ref": "#/definitions/ticket_type"
+      contacts:
+        "$ref": "#/definitions/ticket_contacts"
+      admin_assignee_id:
+        description: The id representing the admin assigned to the ticket.
+        type:
+          - "null"
+          - string
+      team_assignee_id:
+        description: The id representing the team assigned to the ticket.
+        type:
+          - "null"
+          - string
+      created_at:
+        description: The time the ticket was created as a UTC Unix timestamp.
+        type:
+          - "null"
+          - integer
+      updated_at:
+        description: The last time the ticket was updated as a UTC Unix timestamp.
+        type:
+          - "null"
+          - integer
+      open:
+        description: Whether or not the ticket is open. If false, the ticket is closed.
+        type:
+          - "null"
+          - boolean
+      snoozed_until:
+        description: The time the ticket will be snoozed until as a UTC Unix timestamp. If null, the ticket is not currently snoozed.
+        type:
+          - "null"
+          - integer
+      linked_objects:
+        "$ref": "#/definitions/linked_object_list"
+      ticket_parts:
+        "$ref": "#/definitions/ticket_parts"
+      is_shared:
+        description: Whether or not the ticket is shared with the customer.
+        type:
+          - "null"
+          - boolean
+  ticket_contacts:
+    title: Contacts
+    type: object
+    x-tags:
+      - Tickets
+    description: The list of contacts affected by a ticket.
+    properties:
+      type:
+        type: string
+        description: always contact.list
+        enum:
+          - contact.list
+        example: contact.list
+      contacts:
+        type: array
+        description: The list of contacts affected by this ticket.
+        items:
+          "$ref": "#/definitions/contact_reference"
+  contact_reference:
+    title: Contact Reference
+    type: object
+    description: reference to contact object
+    properties:
+      type:
+        type: string
+        description: always contact
+        enum:
+          - contact
+        example: contact
+      id:
+        type: string
+        description: The unique identifier for the contact which is given by Intercom.
+        example: 5ba682d23d7cf92bef87bfd4
+      external_id:
+        type: string
+        nullable: true
+        description: The unique identifier for the contact which is provided by the Client.
+        example: f3b87a2e09d514c6c2e79b9a
+  ticket_custom_attributes:
+    title: Ticket Attributes
+    type: object
+    description: An object containing the different attributes associated to the ticket as key-value pairs. For the default title and description attributes, the keys are `_default_title_` and `_default_description_`.
+    additionalProperties:
+      anyOf:
+        - type: string
+          nullable: true
+        - type: number
+        - type: boolean
+        - type: array
+        - "$ref": "#/definitions/file_attribute"
+    example:
+      _default_title_: Found a bug
+      _default_description_: The button's not working
+  ticket_type:
+    description: A ticket type, used to define the data fields to be captured in a ticket.
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: The id representing the ticket type.
+        type: string
+      category:
+        description: Category of the Ticket Type.
+        type: string
+        enum:
+          - Customer
+          - Back-office
+          - Tracker
+      name:
+        description: The name of the ticket type
+        type: string
+      description:
+        description: The description of the ticket type
+        type: string
+      icon:
+        description: The icon of the ticket type
+        type: string
+      workspace_id:
+        description: The id of the workspace that the ticket type belongs to.
+        type: string
+      ticket_type_attributes:
+        "$ref": "#/definitions/ticket_type_attribute_list"
+      archived:
+        description: Whether the ticket type is archived or not.
+        type: boolean
+      created_at:
+        description: The date and time the ticket type was created.
+        type: integer
+        format: timestamp
+      updated_at:
+        description: The date and time the ticket type was last updated.
+        type: integer
+        format: timestamp
+  ticket_type_attribute:
+    title: Ticket Type Attribute
+    type: object
+    description:
+      Ticket type attribute, used to define each data field to be captured
+      in a ticket.
+    nullable: true
+    properties:
+      type:
+        type: string
+        description: String representing the object's type. Always has the value
+          `ticket_type_attribute`.
+        example: ticket_type_attribute
+      id:
+        type: string
+        description: The id representing the ticket type attribute.
+        example: "1"
+      workspace_id:
+        type: string
+        description:
+          The id of the workspace that the ticket type attribute belongs
+          to.
+        example: ecahpwf5
+      name:
+        type: string
+        description: The name of the ticket type attribute
+        example: Title
+      description:
+        type: string
+        description: The description of the ticket type attribute
+        example: Bug title.
+      data_type:
+        type: string
+        description:
+          'The type of the data attribute (allowed values: "string list
+          integer decimal boolean datetime files")'
+        example: string
+      input_options:
+        type: object
+        description: Input options for the attribute
+        example: "multiline: true"
+      order:
+        type: integer
+        description: The order of the attribute against other attributes
+        example: 1
+      required_to_create:
+        type: boolean
+        description: Whether the attribute is required or not for teammates.
+        default: false
+        example: false
+      required_to_create_for_contacts:
+        type: boolean
+        description: Whether the attribute is required or not for contacts.
+        default: false
+        example: false
+      visible_on_create:
+        type: boolean
+        description: Whether the attribute is visible or not to teammates.
+        default: true
+        example: false
+      visible_to_contacts:
+        type: boolean
+        description: Whether the attribute is visible or not to contacts.
+        default: true
+        example: false
+      default:
+        type: boolean
+        description: Whether the attribute is built in or not.
+        example: true
+      ticket_type_id:
+        type: integer
+        description: The id of the ticket type that the attribute belongs to.
+        example: 42
+      archived:
+        type: boolean
+        description: Whether the ticket type attribute is archived or not.
+        example: false
+      created_at:
+        type: integer
+        format: timestamp
+        description: The date and time the ticket type attribute was created.
+      updated_at:
+        type: integer
+        format: timestamp
+        description: The date and time the ticket type attribute was last updated.
+  ticket_type_attribute_list:
+    title: Ticket Type Attributes
+    type: object
+    description: A list of attributes associated with a given ticket type.
+    properties:
+      type:
+        type: string
+        description: String representing the object's type. Always has the value
+          `ticket_type_attributes.list`.
+      ticket_type_attributes:
+        type: array
+        description:
+          A list of ticket type attributes associated with a given ticket
+          type.
+        items:
+          "$ref": "#/definitions/ticket_type_attribute"
+  linked_object_list:
+    title: Linked Objects
+    type: object
+    description:
+      An object containing metadata about linked conversations and linked
+      tickets. Up to 1000 can be returned.
+    properties:
+      type:
+        type: string
+        description: Always list.
+        enum:
+          - list
+        example: list
+      total_count:
+        type: integer
+        description: The total number of linked objects.
+        example: 100
+      has_more:
+        type: boolean
+        description: Whether or not there are more linked objects than returned.
+        example: false
+      data:
+        type: array
+        description: An array containing the linked conversations and linked tickets.
+        items:
+          "$ref": "#/definitions/linked_object"
+  linked_object:
+    title: Linked Object
+    type: object
+    description: A linked conversation or ticket.
+    properties:
+      type:
+        type: string
+        description: ticket or conversation
+        enum:
+          - ticket
+          - conversation
+        example: ticket
+      id:
+        type: string
+        description: The ID of the linked object
+        example: "7583"
+      category:
+        type: string
+        description: Category of the Linked Ticket Object.
+        enum:
+          - Customer
+          - Back-office
+          - Tracker
+          -
+        example: Customer
+        nullable: true
+  ticket_parts:
+    title: Ticket Parts
+    type: object
+    description: A list of Ticket Part objects for each note and event in the ticket. There is a limit of 500 parts.
+    properties:
+      type:
+        type: string
+        description: ""
+        enum:
+          - ticket_part.list
+        example: ticket_part.list
+      ticket_parts:
+        title: Tickt Parts
+        type: array
+        description: A list of Ticket Part objects for each ticket. There is a limit of 500 parts.
+        items:
+          "$ref": "#/definitions/ticket_part"
+      total_count:
+        type: integer
+        description: ""
+        example: 2
+  ticket_part:
+    title: Ticket Part
+    type: object
+    x-tags:
+      - Tickets
+    description: A Ticket Part represents a message in the ticket.
+    properties:
+      type:
+        type: string
+        description: Always ticket_part
+        example: ticket_part
+      id:
+        type: string
+        description: The id representing the ticket part.
+        example: "3"
+      part_type:
+        type: string
+        description: The type of ticket part.
+        example: comment
+      body:
+        type: string
+        nullable: true
+        description: The message body, which may contain HTML.
+        example: "<p>Okay!</p>"
+      previous_ticket_state:
+        type: string
+        enum:
+          - submitted
+          - in_progress
+          - waiting_on_customer
+          - resolved
+        description: The previous state of the ticket.
+        example: submitted
+      ticket_state:
+        type: string
+        enum:
+          - submitted
+          - in_progress
+          - waiting_on_customer
+          - resolved
+        description: The state of the ticket.
+        example: submitted
+      created_at:
+        type: integer
+        format: date-time
+        description: The time the ticket part was created.
+        example: 1663597223
+      updated_at:
+        type: integer
+        format: date-time
+        description: The last time the ticket part was updated.
+        example: 1663597260
+      assigned_to:
+        "$ref": "#/definitions/reference"
+        nullable: true
+        description:
+          The id of the admin that was assigned the ticket by this ticket_part
+          (null if there has been no change in assignment.)
+      author:
+        "$ref": "#/definitions/ticket_part_author"
+      attachments:
+        title: Ticket part attachments
+        type: array
+        description: A list of attachments for the part.
+        items:
+          "$ref": "#/definitions/part_attachment"
+      external_id:
+        type: string
+        nullable: true
+        description: The external id of the ticket part
+        example: abcd1234
+      redacted:
+        type: boolean
+        description: Whether or not the ticket part has been redacted.
+        example: false
+  ticket_part_author:
+    title: Ticket part author
+    type: object
+    description:
+      The author that wrote or triggered the part. Can be a bot, admin,
+      team or user.
+    properties:
+      type:
+        type: string
+        description: The type of the author
+        example: admin
+        enum:
+          - admin
+          - bot
+          - team
+          - user
+      id:
+        type: string
+        description: The id of the author
+        example: "274"
+      name:
+        type: string
+        nullable: true
+        description: The name of the author
+        example: Operator
+      email:
+        type: string
+        format: email
+        description: The email of the author
+        example: operator+abcd1234@intercom.io
+  reference:
+    title: Reference
+    type: object
+    description: reference to another object
+    properties:
+      type:
+        type: string
+        description: ""
+        example: contact
+      id:
+        type: string
+        nullable: true
+        description: ""
+        example: 1a2b3c
+  file_attribute:
+    title: File
+    type: object
+    description: The value describing a file upload set for a custom attribute
+    properties:
+      type:
+        type: string
+        example: upload
+      name:
+        type: string
+        description: The name of the file
+        example: Screenshot.png
+      url:
+        type: string
+        description: The url of the file. This is a temporary URL and will expire after 30 minutes.
+        example: https://intercom-attachments-1.com/.../Screenshot.png
+      content_type:
+        type: string
+        description: The type of file
+        example: image/png
+      filesize:
+        type: integer
+        description: The size of the file in bytes
+        example: 11308309
+      width:
+        type: integer
+        description: The width of the file in pixels, if applicable
+        example: 3024
+      height:
+        type: integer
+        description: The height of the file in pixels, if applicable
+        example: 1964
+  part_attachment:
+    title: Part attachment
+    type: object
+    description: The file attached to a part
+    properties:
+      type:
+        type: string
+        description: The type of attachment
+        example: upload
+      name:
+        type: string
+        description: The name of the attachment
+        example: example.png
+      url:
+        type: string
+        description: The URL of the attachment
+        example: https://picsum.photos/200/300
+      content_type:
+        type: string
+        description: The content type of the attachment
+        example: image/png
+      filesize:
+        type: integer
+        description: The size of the attachment
+        example: 100
+      width:
+        type: integer
+        description: The width of the attachment
+        example: 100
+      height:
+        type: integer
+        description: The height of the attachment
+        example: 100
 streams:
   - "#/definitions/activity_logs"
   - "#/definitions/admins"
@@ -2390,7 +2949,8 @@ streams:
   - "#/definitions/conversations"
   - "#/definitions/conversation_parts"
   - "#/definitions/company_segments"
+  - "#/definitions/tickets"
 
 check:
   stream_names:
-    - "tags"
+    - "tickets"
