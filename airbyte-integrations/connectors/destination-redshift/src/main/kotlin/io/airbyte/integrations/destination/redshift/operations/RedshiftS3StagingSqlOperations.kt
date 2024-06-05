@@ -141,6 +141,9 @@ class RedshiftS3StagingSqlOperations(
             if (keyEncryptingKey == null) {
                 ""
             } else {
+                // TODO This is broken (it's using Snowflake SQL syntax).
+                // Leaving it here since the rest of the plumbing seems reasonable,
+                // but we should fix this eventually.
                 String.format(
                     " encryption = (type = 'aws_cse' master_key = '%s')",
                     BASE64_ENCODER.encodeToString(keyEncryptingKey)
