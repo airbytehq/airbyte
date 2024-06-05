@@ -28,7 +28,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /account/{{ config['account_id'] }}/extension/{{
             config['extension_id'] }}/business-hours
@@ -42,14 +42,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_business_hours'
+          $ref: "#/schemas/user_business_hours"
     company_business_hours:
       type: DeclarativeStream
       name: company_business_hours
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /account/{{ config['account_id'] }}/business-hours
           http_method: GET
         record_selector:
@@ -61,14 +61,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/company_business_hours'
+          $ref: "#/schemas/company_business_hours"
     callblock_settings:
       type: DeclarativeStream
       name: callblock_settings
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /account/{{ config['account_id'] }}/extension/{{
             config['extension_id'] }}/caller-blocking
@@ -82,7 +82,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/callblock_settings'
+          $ref: "#/schemas/callblock_settings"
     blocked_allowed_phonenumbers:
       type: DeclarativeStream
       name: blocked_allowed_phonenumbers
@@ -91,7 +91,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /account/{{ config['account_id'] }}/extension/{{
             config['extension_id'] }}/caller-blocking/phone-numbers
@@ -105,7 +105,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/blocked_allowed_phonenumbers'
+          $ref: "#/schemas/blocked_allowed_phonenumbers"
     forwarding_numbers:
       type: DeclarativeStream
       name: forwarding_numbers
@@ -114,7 +114,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /account/{{ config['account_id'] }}/extension/{{
             config['extension_id'] }}/forwarding-number
@@ -141,7 +141,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/forwarding_numbers'
+          $ref: "#/schemas/forwarding_numbers"
     company_call_handling_rules:
       type: DeclarativeStream
       name: company_call_handling_rules
@@ -150,7 +150,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /account/{{ config['account_id'] }}/answering-rule
           http_method: GET
         record_selector:
@@ -175,7 +175,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/company_call_handling_rules'
+          $ref: "#/schemas/company_call_handling_rules"
     user_call_records:
       type: DeclarativeStream
       name: user_call_records
@@ -184,7 +184,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /account/{{ config['account_id'] }}/extension/{{
             config['extension_id'] }}/call-log
@@ -211,7 +211,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_call_records'
+          $ref: "#/schemas/user_call_records"
     user_active_calls:
       type: DeclarativeStream
       name: user_active_calls
@@ -220,7 +220,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /account/{{ config['account_id'] }}/extension/{{
             config['extension_id'] }}/active-calls
@@ -247,7 +247,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_active_calls'
+          $ref: "#/schemas/user_active_calls"
     call_monitoring_groups:
       type: DeclarativeStream
       name: call_monitoring_groups
@@ -256,7 +256,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /account/{{ config['account_id'] }}/call-monitoring-groups
           http_method: GET
         record_selector:
@@ -281,7 +281,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/call_monitoring_groups'
+          $ref: "#/schemas/call_monitoring_groups"
     call_queues:
       type: DeclarativeStream
       name: call_queues
@@ -290,7 +290,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /account/{{ config['account_id'] }}/call-queues
           http_method: GET
         record_selector:
@@ -315,14 +315,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/call_queues'
+          $ref: "#/schemas/call_queues"
     call_record_settings:
       type: DeclarativeStream
       name: call_record_settings
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /account/{{ config['account_id'] }}/call-recording
           http_method: GET
         record_selector:
@@ -334,7 +334,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/call_record_settings'
+          $ref: "#/schemas/call_record_settings"
     greetings:
       type: DeclarativeStream
       name: greetings
@@ -343,7 +343,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /dictionary/greeting
           http_method: GET
         record_selector:
@@ -368,7 +368,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/greetings'
+          $ref: "#/schemas/greetings"
     ivr_prompts:
       type: DeclarativeStream
       name: ivr_prompts
@@ -377,7 +377,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /dictionary/greeting
           http_method: GET
         record_selector:
@@ -402,7 +402,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/ivr_prompts'
+          $ref: "#/schemas/ivr_prompts"
     fax_cover:
       type: DeclarativeStream
       name: fax_cover
@@ -411,7 +411,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /dictionary/fax-cover-page
           http_method: GET
         record_selector:
@@ -436,29 +436,29 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/fax_cover'
+          $ref: "#/schemas/fax_cover"
   base_requester:
     type: HttpRequester
     url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''auth_token''] }}'
+      api_token: "{{ config['auth_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/user_business_hours'
-  - $ref: '#/definitions/streams/company_business_hours'
-  - $ref: '#/definitions/streams/callblock_settings'
-  - $ref: '#/definitions/streams/blocked_allowed_phonenumbers'
-  - $ref: '#/definitions/streams/forwarding_numbers'
-  - $ref: '#/definitions/streams/company_call_handling_rules'
-  - $ref: '#/definitions/streams/user_call_records'
-  - $ref: '#/definitions/streams/user_active_calls'
-  - $ref: '#/definitions/streams/call_monitoring_groups'
-  - $ref: '#/definitions/streams/call_queues'
-  - $ref: '#/definitions/streams/call_record_settings'
-  - $ref: '#/definitions/streams/greetings'
-  - $ref: '#/definitions/streams/ivr_prompts'
-  - $ref: '#/definitions/streams/fax_cover'
+  - $ref: "#/definitions/streams/user_business_hours"
+  - $ref: "#/definitions/streams/company_business_hours"
+  - $ref: "#/definitions/streams/callblock_settings"
+  - $ref: "#/definitions/streams/blocked_allowed_phonenumbers"
+  - $ref: "#/definitions/streams/forwarding_numbers"
+  - $ref: "#/definitions/streams/company_call_handling_rules"
+  - $ref: "#/definitions/streams/user_call_records"
+  - $ref: "#/definitions/streams/user_active_calls"
+  - $ref: "#/definitions/streams/call_monitoring_groups"
+  - $ref: "#/definitions/streams/call_queues"
+  - $ref: "#/definitions/streams/call_record_settings"
+  - $ref: "#/definitions/streams/greetings"
+  - $ref: "#/definitions/streams/ivr_prompts"
+  - $ref: "#/definitions/streams/fax_cover"
 
 spec:
   type: Spec
@@ -518,501 +518,501 @@ metadata:
 schemas:
   user_business_hours:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       weeklyRanges:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           friday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           monday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           thursday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           tuesday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           wednesday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
     title: User business hours Schema
   company_business_hours:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       weeklyRanges:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           friday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           monday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           thursday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           tuesday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
           wednesday:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 from:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 to:
                   type:
-                    - 'null'
+                    - "null"
                     - string
     title: Business hours Schema
   callblock_settings:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       preset:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           uri:
             type:
-              - 'null'
+              - "null"
               - string
     title: Callblock settings Schema
   blocked_allowed_phonenumbers:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       label:
         type:
-          - 'null'
+          - "null"
           - string
       phoneNumber:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       uri:
         type:
-          - 'null'
+          - "null"
           - string
     title: Blocked_Allowed phoneNumber Schema
   forwarding_numbers:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       features:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       flipNumber:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       label:
         type:
-          - 'null'
+          - "null"
           - string
       phoneNumber:
         type:
-          - 'null'
+          - "null"
           - string
     title: Forwarding numbers Schema
   company_call_handling_rules:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       enabled:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       uri:
         type:
-          - 'null'
+          - "null"
           - string
     title: Company call handling rules
   user_call_records:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       action:
         type:
-          - 'null'
+          - "null"
           - string
       direction:
         type:
-          - 'null'
+          - "null"
           - string
       duration:
         type:
-          - 'null'
+          - "null"
           - number
       from:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           name:
             type:
-              - 'null'
+              - "null"
               - string
           phoneNumber:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       message:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           uri:
             type:
-              - 'null'
+              - "null"
               - string
       result:
         type:
-          - 'null'
+          - "null"
           - string
       sessionId:
         type:
-          - 'null'
+          - "null"
           - string
       startTime:
         type:
-          - 'null'
+          - "null"
           - string
       telephonySessionId:
         type:
-          - 'null'
+          - "null"
           - string
       to:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           location:
             type:
-              - 'null'
+              - "null"
               - string
           phoneNumber:
             type:
-              - 'null'
+              - "null"
               - string
       uri:
         type:
-          - 'null'
+          - "null"
           - string
     title: User Call Schema
   user_active_calls:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       action:
         type:
-          - 'null'
+          - "null"
           - string
       direction:
         type:
-          - 'null'
+          - "null"
           - string
       duration:
         type:
-          - 'null'
+          - "null"
           - number
       from:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           name:
             type:
-              - 'null'
+              - "null"
               - string
           phoneNumber:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       message:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           uri:
             type:
-              - 'null'
+              - "null"
               - string
       result:
         type:
-          - 'null'
+          - "null"
           - string
       sessionId:
         type:
-          - 'null'
+          - "null"
           - string
       startTime:
         type:
-          - 'null'
+          - "null"
           - string
       telephonySessionId:
         type:
-          - 'null'
+          - "null"
           - string
       to:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           location:
             type:
-              - 'null'
+              - "null"
               - string
           phoneNumber:
             type:
-              - 'null'
+              - "null"
               - string
       uri:
         type:
-          - 'null'
+          - "null"
           - string
     title: User Call Schema
   call_monitoring_groups:
@@ -1022,11 +1022,11 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
     title: Call Monitoring Groups Schema
   call_queues:
@@ -1036,19 +1036,19 @@ schemas:
     properties:
       extensionNumber:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       uri:
         type:
-          - 'null'
+          - "null"
           - string
     title: Call Queues Schema
   call_record_settings:
@@ -1058,99 +1058,99 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       mode:
         type:
-          - 'null'
+          - "null"
           - string
     title: Call Record Settings Schema
   greetings:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       category:
         type:
-          - 'null'
+          - "null"
           - string
       contentUri:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       text:
         type:
-          - 'null'
+          - "null"
           - string
       uri:
         type:
-          - 'null'
+          - "null"
           - string
       usageType:
         type:
-          - 'null'
+          - "null"
           - string
     title: Greetings Schema
   ivr_prompts:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       category:
         type:
-          - 'null'
+          - "null"
           - string
       contentType:
         type:
-          - 'null'
+          - "null"
           - string
       contentUri:
         type:
-          - 'null'
+          - "null"
           - string
       filename:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       text:
         type:
-          - 'null'
+          - "null"
           - string
       uri:
         type:
-          - 'null'
+          - "null"
           - string
       usageType:
         type:
-          - 'null'
+          - "null"
           - string
     title: IVR Prompts
   fax_cover:
@@ -1160,10 +1160,10 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
     title: Fax Cover Schema
