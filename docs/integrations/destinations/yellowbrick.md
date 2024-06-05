@@ -177,3 +177,4 @@ Each table will contain 3 columns:
 | 0.0.2   | 2024-05-17 | [\#38329](https://github.com/airbytehq/airbyte/pull/38329) | Update CDK      |
 | 0.0.1   | 2024-03-02 | [\#35775](https://github.com/airbytehq/airbyte/pull/35775) | Initial release |
 
+</details>
