@@ -33,17 +33,12 @@ In order to connect, you need:
 - Database URL: navigate to the configuration tab in your workspace and copy the
   `Workspace API base URL`.
 
-## Changelog
-
-<details>
-  <summary>Expand to review</summary>
+## CHANGELOG
 
 | Version | Date       | Pull Request                                              | Subject                        |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------- |
-| 0.1.4 | 2024-06-03 | [38899](https://github.com/airbytehq/airbyte/pull/38899) | Replace AirbyteLogger with logging.Logger |
+| 0.1.4 | 2024-06-04 | [39088](https://github.com/airbytehq/airbyte/pull/39088) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-05-21 | [38499](https://github.com/airbytehq/airbyte/pull/38499) | [autopull] base image + poetry + up_to_date |
 | 0.1.2   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector           |
 | 0.1.1   | 2023-06-21 | [#27542](https://github.com/airbytehq/airbyte/pull/27542) | Mark api_key as Airbyte Secret |
 | 0.1.0   | 2023-06-14 | [#24192](https://github.com/airbytehq/airbyte/pull/24192) | New Destination Connector Xata |
-
-</details>
