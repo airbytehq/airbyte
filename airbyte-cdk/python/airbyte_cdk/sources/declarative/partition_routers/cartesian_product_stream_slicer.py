@@ -7,12 +7,13 @@ from collections import ChainMap
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass
-class CartesianProductStreamSlicer(StreamSlicer):
+class CartesianProductStreamSlicer(PartitionRouter):
     """
     Stream slicers that iterates over the cartesian product of input stream slicers
     Given 2 stream slicers with the following slices:
@@ -29,10 +30,10 @@ class CartesianProductStreamSlicer(StreamSlicer):
     ]
 
     Attributes:
-        stream_slicers (List[StreamSlicer]): Underlying stream slicers. The RequestOptions (e.g: Request headers, parameters, etc..) returned by this slicer are the combination of the RequestOptions of its input slicers. If there are conflicts e.g: two slicers define the same header or request param, the conflict is resolved by taking the value from the first slicer, where ordering is determined by the order in which slicers were input to this composite slicer.
+        stream_slicers (List[PartitionRouter]): Underlying stream slicers. The RequestOptions (e.g: Request headers, parameters, etc..) returned by this slicer are the combination of the RequestOptions of its input slicers. If there are conflicts e.g: two slicers define the same header or request param, the conflict is resolved by taking the value from the first slicer, where ordering is determined by the order in which slicers were input to this composite slicer.
     """
 
-    stream_slicers: List[StreamSlicer]
+    stream_slicers: List[PartitionRouter]
     parameters: InitVar[Mapping[str, Any]]
 
     def get_request_params(
@@ -113,7 +114,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
                 cursor_slice = {}
             yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
-    def set_parent_state(self, stream_state: StreamState) -> None:
+    def set_initial_state(self, stream_state: StreamState) -> None:
         """
         Set the state of the parent streams.
 
@@ -137,9 +138,9 @@ class CartesianProductStreamSlicer(StreamSlicer):
         }
         """
         for stream_slicer in self.stream_slicers:
-            stream_slicer.set_parent_state(stream_state)
+            stream_slicer.set_initial_state(stream_state)
 
-    def get_parent_state(self) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """
         Get the state of the parent streams.
 
@@ -160,7 +161,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
         """
         combined_state: dict[str, StreamState] = {}
         for s in self.stream_slicers:
-            parent_state = s.get_parent_state()
+            parent_state = s.get_stream_state()
             if parent_state:
                 combined_state.update(parent_state)
         return combined_state
