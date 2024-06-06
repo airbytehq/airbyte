@@ -7,7 +7,7 @@ import os
 import urllib
 from dataclasses import InitVar, dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Mapping, MutableMapping, Optional, Union, Dict
 from urllib.parse import urljoin
 
 import requests
@@ -90,6 +90,8 @@ class HttpRequester(Requester):
 
         if isinstance(self._authenticator, AuthBase):
             self._session.auth = self._authenticator
+
+        self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
     # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
@@ -481,6 +483,11 @@ class HttpRequester(Requester):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
+        if self._request_attempt_count.get(request) is None:
+            self._request_attempt_count[request] = 1
+        else:
+            self._request_attempt_count[request] += 1
+
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
@@ -516,7 +523,7 @@ class HttpRequester(Requester):
             self.logger.info(error_resolution.error_message or log_message)
 
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self.error_handler.backoff_time(response) if self.error_handler is not None else None  # type: ignore # parent class does not have backoff_time
+            custom_backoff_time = self.error_handler.backoff_time(response, attempt_count=self._request_attempt_count[request]) if self.error_handler is not None else None  # type: ignore # parent class does not have backoff_time
             error_message = f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action} with message: {error_resolution.error_message if error_resolution.error_message else None}"
             if custom_backoff_time:
                 raise UserDefinedBackoffException(

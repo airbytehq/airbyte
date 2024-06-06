@@ -11,8 +11,8 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler, HttpResponseFilter
-from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 SOME_BACKOFF_TIME = 60
 
@@ -32,17 +32,17 @@ SOME_BACKOFF_TIME = 60
             (
                 "_with_http_response_status_400",
                 400,
-                HttpStatusErrorHandler.DEFAULT_ERROR_MAPPING[400],
+                DEFAULT_ERROR_MAPPING[400],
             ),
             (
                 "_with_http_response_status_404",
                 404,
-                HttpStatusErrorHandler.DEFAULT_ERROR_MAPPING[404],
+                DEFAULT_ERROR_MAPPING[404],
             ),
             (
                 "_with_http_response_status_408",
                 408,
-                HttpStatusErrorHandler.DEFAULT_ERROR_MAPPING[408],
+                DEFAULT_ERROR_MAPPING[408],
             ),
             (
                 "_with_unmapped_http_status_418",

@@ -637,7 +637,7 @@ def test_stub_custom_backoff_http_stream(mocker):
     req.status_code = 429
 
     requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
-    requester._backoff_time = lambda _: 0.5
+    requester.error_handler.backoff_time = lambda _, attempt_count : 0.5
 
     requester._session.send.return_value = req
 
