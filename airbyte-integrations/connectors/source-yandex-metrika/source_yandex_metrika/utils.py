@@ -12,12 +12,12 @@ def daterange_days_list(date_from: datetime, date_to: datetime, days_delta: int 
     ranges = []
     while cursor_date <= date_to:
         if cursor_date + timedelta(days=days_delta) > date_to:
-            ranges.append({"date_from": cursor_date.strftime(DATE_FORMAT), "date_to": date_to.strftime(DATE_FORMAT)})
+            ranges.append({"date_from": cursor_date, "date_to": date_to})
             break
         ranges.append(
             {
-                "date_from": cursor_date.strftime(DATE_FORMAT),
-                "date_to": (cursor_date + timedelta(days=days_delta - 1)).strftime(DATE_FORMAT),
+                "date_from": cursor_date,
+                "date_to": cursor_date + timedelta(days=days_delta - 1),
             }
         )
         cursor_date += timedelta(days=days_delta)
