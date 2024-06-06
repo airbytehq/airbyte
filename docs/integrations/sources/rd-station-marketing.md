@@ -47,6 +47,7 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.1.6 | 2024-06-06 | [39228](https://github.com/airbytehq/airbyte/pull/39228) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.5 | 2024-06-03 | [38916](https://github.com/airbytehq/airbyte/pull/38916) | Replace AirbyteLogger with logging.Logger |
 | 0.1.4 | 2024-06-03 | [38916](https://github.com/airbytehq/airbyte/pull/38916) | Replace AirbyteLogger with logging.Logger |
 | 0.1.3 | 2024-05-20 | [38372](https://github.com/airbytehq/airbyte/pull/38372) | [autopull] base image + poetry + up_to_date |
