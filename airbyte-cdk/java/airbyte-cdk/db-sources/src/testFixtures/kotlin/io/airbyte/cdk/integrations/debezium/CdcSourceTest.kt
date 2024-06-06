@@ -101,6 +101,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected abstract fun addCdcMetadataColumns(stream: AirbyteStream?)
 
+    protected abstract fun addIsResumableFlagForNonPkTable(stream: AirbyteStream?)
+
     protected abstract fun addCdcDefaultCursorField(stream: AirbyteStream?)
 
     protected abstract fun assertExpectedStateMessages(stateMessages: List<AirbyteStateMessage>)
@@ -111,7 +113,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         expectedStreamStatus: AirbyteStreamStatusTraceMessage
     ) {
         var actualMessage = allMessages[idx]
-        Assertions.assertEquals(AirbyteMessage.Type.TRACE, actualMessage.type)
+        Assertions.assertEquals(
+            AirbyteMessage.Type.TRACE,
+            actualMessage.type,
+            "[Debug] all Message: $allMessages"
+        )
         var traceMessage = actualMessage.trace
         Assertions.assertNotNull(traceMessage.streamStatus)
         Assertions.assertEquals(expectedStreamStatus, traceMessage.streamStatus)
@@ -575,6 +581,25 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val state = Jsons.jsonNode(listOf(stateAfterFirstBatch[stateAfterFirstBatch.size - 1]))
         val secondBatchIterator = source().read(config()!!, configuredCatalog, state)
         val dataFromSecondBatch = AutoCloseableIterators.toListAndClose(secondBatchIterator)
+
+        assertStreamStatusTraceMessageIndex(
+            0,
+            dataFromSecondBatch,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            dataFromSecondBatch.size - 1,
+            dataFromSecondBatch,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
 
         val stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch)
         assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch)
@@ -1434,6 +1459,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val streams = expectedCatalog.streams
         // stream with PK
         streams[0].sourceDefinedCursor = true
+        streams[0].isResumable = true
         addCdcMetadataColumns(streams[0])
         addCdcDefaultCursorField(streams[0])
 
@@ -1449,6 +1475,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         streamWithoutPK.supportedSyncModes = java.util.List.of(SyncMode.FULL_REFRESH)
         addCdcDefaultCursorField(streamWithoutPK)
         addCdcMetadataColumns(streamWithoutPK)
+        addIsResumableFlagForNonPkTable(streamWithoutPK)
 
         val randomStream =
             CatalogHelpers.createAirbyteStream(
@@ -1465,6 +1492,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .withSourceDefinedPrimaryKey(
                     java.util.List.of(java.util.List.of(COL_ID + "_random")),
                 )
+                .withIsResumable(true)
 
         addCdcDefaultCursorField(randomStream)
         addCdcMetadataColumns(randomStream)

@@ -67,6 +67,9 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
 | 0.2.2 | 2024-05-21 | [38489](https://github.com/airbytehq/airbyte/pull/38489) | [autopull] base image + poetry + up_to_date |
@@ -78,3 +81,6 @@ The Braintree connector should not run into Braintree API limitations under norm
 | 0.1.2 | 2021-12-22 | [9042](https://github.com/airbytehq/airbyte/pull/9042) | Fix `$ref` in schema and spec |
 | 0.1.1 | 2021-10-27 | [7432](https://github.com/airbytehq/airbyte/pull/7432) | Dispute model should accept multiple Evidences |
 | 0.1.0 | 2021-08-17 | [5362](https://github.com/airbytehq/airbyte/pull/5362) | Initial version |
+
+</details>
+

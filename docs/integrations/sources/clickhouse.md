@@ -75,6 +75,9 @@ Using this feature requires additional configuration, when creating the source. 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
 | 0.2.2   | 2024-02-13 | [35235](https://github.com/airbytehq/airbyte/pull/35235)   | Adopt CDK 0.20.4                                                                                          |
@@ -95,7 +98,11 @@ Using this feature requires additional configuration, when creating the source. 
 | 0.1.3   | 20.10.2021 | [\#7127](https://github.com/airbytehq/airbyte/pull/7127)   | Added SSL connections support.                                                                            |
 | 0.1.2   | 13.08.2021 | [\#4699](https://github.com/airbytehq/airbyte/pull/4699)   | Added json config validator.                                                                              |
 
-## CHANGELOG source-clickhouse-strict-encrypt
+</details>
+
+## Changelog: source-clickhouse-strict-encrypt
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                   |
 | :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -113,3 +120,5 @@ Using this feature requires additional configuration, when creating the source. 
 | 0.1.2   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371)                                                          | Fixed incorrect handling "\n" in ssh key                                                                                                  |
 | 0.1.1   | 20.10.2021 | [\#7327](https://github.com/airbytehq/airbyte/pull/7327)                                                          | Added support for connection via SSH tunnel(aka Bastion server).                                                                          |
 | 0.1.0   | 20.10.2021 | [\#7127](https://github.com/airbytehq/airbyte/pull/7127)                                                          | Added source-clickhouse-strict-encrypt that supports SSL connections only.                                                                |
+
+</details>
