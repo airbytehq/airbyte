@@ -6,11 +6,11 @@ data:
     hosts:
       - "*"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 95bcc041-1d1a-4c2e-8802-0ca5b1bfa36a
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.3.6
   dockerRepository: airbyte/source-orbit
   documentationUrl: https://docs.airbyte.com/integrations/sources/orbit
   githubIssueLabel: source-orbit
