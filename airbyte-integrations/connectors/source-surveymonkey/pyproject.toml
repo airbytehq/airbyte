@@ -17,7 +17,7 @@ include = "source_surveymonkey"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "0.90.0"
 vcrpy = "==4.1.1"
 urllib3 = "==1.26.18"
 
