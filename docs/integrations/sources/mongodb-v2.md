@@ -194,6 +194,9 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
 | 1.3.15  | 2024-05-30 | [38781](https://github.com/airbytehq/airbyte/pull/38781) | Sync sending trace status messages indicating progress.                                                       |
@@ -267,3 +270,5 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 | 0.1.2   | 2021-10-07 | [6860](https://github.com/airbytehq/airbyte/pull/6860)   | Added filter to avoid MongoDb system collections                                                          |
 | 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364)   | Source MongoDb: added support via TLS/SSL                                                                 |
 | 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530)   | New source: MongoDb ported to java                                                                        |
+
+</details>

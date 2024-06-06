@@ -120,7 +120,10 @@ Check out common troubleshooting issues for the Jira connector on our Airbyte Fo
 
 The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -186,3 +189,5 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 | 0.2.5   | 2021-06-09 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973)   | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support.                                                                                          |
 | 0.2.4   |            |                                                            | Implementing base_read acceptance test dived by stream groups.                                                                                                   |
 | 0.2.3   |            |                                                            | Implementing incremental sync. Migrated to airbyte-cdk. Adding all available entities in Jira Cloud.                                                             |
+
+</details>
