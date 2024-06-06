@@ -76,7 +76,11 @@ class HttpResponseFilter:
                 error_message=error_message,
             )
 
-        if ((isinstance(self.http_codes, list) and len(self.http_codes)) is None and self.predicate is None and self.error_message_contains is None) and default_mapped_error_resolution:
+        if (
+            (isinstance(self.http_codes, list) and len(self.http_codes)) is None
+            and self.predicate is None
+            and self.error_message_contains is None
+        ) and default_mapped_error_resolution:
             return default_mapped_error_resolution
 
         return None

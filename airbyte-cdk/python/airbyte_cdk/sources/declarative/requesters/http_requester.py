@@ -7,7 +7,7 @@ import os
 import urllib
 from dataclasses import InitVar, dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping, MutableMapping, Optional, Union, Dict
+from typing import Any, Callable, Dict, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 import requests
