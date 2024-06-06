@@ -108,14 +108,17 @@ class SchemaInferrer:
             if "items" in node:
                 self._clean(node["items"])
 
-            # this check needs to follow the "anyOf" cleaning as it might populate `type`
-            if isinstance(node["type"], list):
-                if _NULL_TYPE in node["type"]:
-                    # we want to make sure null is always at the end as it makes schemas more readable
-                    node["type"].remove(_NULL_TYPE)
-                node["type"].append(_NULL_TYPE)
-            else:
-                node["type"] = [node["type"], _NULL_TYPE]
+            # this check needs to follow the `anyOf`` cleaning as it might populate `type`
+            # we either have a remaining `anyOf` entry, or we have `type` defined, but not both
+            if "anyOf" not in node:
+                if isinstance(node["type"], list):
+                    if _NULL_TYPE in node["type"]:
+                        # we want to make sure null is always at the end as it makes schemas more readable
+                        node["type"].remove(_NULL_TYPE)
+                    node["type"].append(_NULL_TYPE)
+                else:
+                    # if there's only a single defined type, we always want to allow null as well
+                    node["type"] = [node["type"], _NULL_TYPE]
         return node
 
     def _add_required_properties(self, node: InferredSchema) -> InferredSchema:
