@@ -54,6 +54,7 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.11 | 2024-06-06 | [39246](https://github.com/airbytehq/airbyte/pull/39246) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.10 | 2024-06-03 | [38911](https://github.com/airbytehq/airbyte/pull/38911) | Replace AirbyteLogger with logging.Logger |
 | 0.1.9 | 2024-06-03 | [38911](https://github.com/airbytehq/airbyte/pull/38911) | Replace AirbyteLogger with logging.Logger |
 | 0.1.8 | 2024-05-20 | [38448](https://github.com/airbytehq/airbyte/pull/38448) | [autopull] base image + poetry + up_to_date |
