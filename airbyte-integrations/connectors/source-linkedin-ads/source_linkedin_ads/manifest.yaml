@@ -503,7 +503,7 @@ definitions:
         record_selector:
           type: RecordSelector
           $parameters:
-            transformations: ''
+            transformations: ""
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -516,7 +516,7 @@ definitions:
         paginator:
           type: DefaultPaginator
           $parameters:
-            url_base: 'https://api.linkedin.com/rest/'
+            url_base: "https://api.linkedin.com/rest/"
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
@@ -540,7 +540,7 @@ definitions:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
-        step: P30D
+        step: P200D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"

@@ -9,21 +9,24 @@ from urllib.parse import urlencode, urljoin
 import pendulum
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-
 from isodate import Duration, parse_duration
 
-from .utils import transform_data, ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE
+from .utils import ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE, transform_data
+
 
 @dataclass
 class SafeEncodeHttpRequester(HttpRequester):
@@ -155,6 +158,28 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
 
 @dataclass
 class LinkedInAdsCustomRetriever(SimpleRetriever):
+
+    partition_router: Optional[Union[List[StreamSlicer], StreamSlicer]] = SinglePartitionRouter(parameters={})
+
+    def stream_slices(self) -> Iterable[Optional[StreamSlice]]:  # type: ignore
+        """
+        Specifies the slices for this stream. See the stream slicing section of the docs for more information.
+        """
+        partition_router = (
+            CartesianProductStreamSlicer(self.partition_router, parameters={})
+            if isinstance(self.partition_router, list)
+            else self.partition_router
+        )
+
+        stream_slicer = PerPartitionCursor(
+            cursor_factory=CursorFactory(
+                lambda: self.stream_slicer,
+            ),
+            partition_router=partition_router,
+        )
+
+        return stream_slicer.stream_slices()
+
     def read_records(
         self,
         records_schema: Mapping[str, Any],
