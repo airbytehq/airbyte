@@ -41,6 +41,7 @@ You'll need the following information to configure the Timeplus destination:
 
 | Version | Date       | Pull Request                                              | Subject              |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------- |
+| 0.1.4 | 2024-06-06 | [39301](https://github.com/airbytehq/airbyte/pull/39301) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.3 | 2024-06-03 | [38901](https://github.com/airbytehq/airbyte/pull/38901) | Replace AirbyteLogger with logging.Logger |
 | 0.1.2 | 2024-05-21 | [38491](https://github.com/airbytehq/airbyte/pull/38491) | [autopull] base image + poetry + up_to_date |
 | 0.1.1   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector |
