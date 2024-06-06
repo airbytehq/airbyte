@@ -37,7 +37,8 @@ Launchdarkly APIs are under rate limits for the number of API calls allowed per 
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
-| 0.1.1   | 2024-05-28 | [38694](https://github.com/airbytehq/airbyte/pull/38694) | Make compatible with builder                    |
+| 0.1.2 | 2024-06-06 | [39245](https://github.com/airbytehq/airbyte/pull/39245) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.1 | 2024-05-28 | [38694](https://github.com/airbytehq/airbyte/pull/38694) | Make compatible with builder |
 | 0.1.0   | 2022-10-30 | [#18660](https://github.com/airbytehq/airbyte/pull/18660) | 🎉 New Source: Launchdarkly API [low-code CDK] |
 
 </details>
