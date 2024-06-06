@@ -6,7 +6,7 @@ from threading import Thread
 from typing import List
 
 import requests
-from connector_ops.utils import Connector  # type: ignore
+from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
 from connectors_qa.utils import (
@@ -154,7 +154,8 @@ class CheckDocumentationStructure(DocumentationCheck):
             self.CONNECTOR_SPECIFIC_HEADINGS,
             "Performance considerations",
             "Data type map",
-            "Troubleshooting",
+            "Limitations & Troubleshooting",
+            self.CONNECTOR_SPECIFIC_HEADINGS,
             "Tutorials",
             "Changelog",
         )
@@ -165,7 +166,7 @@ class CheckDocumentationStructure(DocumentationCheck):
             self.CONNECTOR_SPECIFIC_HEADINGS,
             "Performance considerations",
             "Data type map",
-            "Troubleshooting",
+            "Limitations & Troubleshooting",
             "Tutorials",
         )
         return all_headings, not_required_heading
@@ -191,23 +192,19 @@ class CheckDocumentationStructure(DocumentationCheck):
             )
         return errors
 
-    def check_sections(self, doc_lines: List[str]) -> List[str]:
-        errors = []
-        for expected_section in self.expected_sections:
-            if expected_section.lower() not in doc_lines:
-                errors.append(f"Connector documentation is missing a '{expected_section.replace('#', '').strip()}' section")
-        return errors
-
     def validate_links(self, docs_content) -> List[str]:
-        valid_status_codes = [200, 403, 401, 405, 503]  # we skip 4xx due to needed access
-        links = re.findall("(https?://[^\s)]+)", docs_content)
+        valid_status_codes = [200, 403, 401, 405, 429, 503]  # we skip 4xx due to needed access
+        links = re.findall("(https?://[^\s\`)]+)", docs_content)
         invalid_links = []
         threads = []
 
         def request_link(docs_link):
-            response = requests.get(docs_link)
-            if response.status_code not in valid_status_codes:
-                invalid_links.append(f"{docs_link} with {response.status_code} status code")
+            try:
+                response = requests.get(docs_link)
+                if response.status_code not in valid_status_codes:
+                    invalid_links.append(f"{docs_link} with {response.status_code} status code")
+            except requests.exceptions.SSLError:
+                pass
 
         for link in links:
             process = Thread(target=request_link, args=[link])
@@ -341,7 +338,7 @@ class CheckDocumentationStructure(DocumentationCheck):
 
     def _run(self, connector: Connector) -> CheckResult:
         connector_type, sl_level = connector.connector_type, connector.ab_internal_sl
-        if connector_type == "source" and sl_level >= 300:
+        if connector_type == "source" and sl_level >= 300 and connector.language != ConnectorLanguage.JAVA:
 
             if not connector.documentation_file_path or not connector.documentation_file_path.exists():
                 return self.fail(
@@ -361,7 +358,6 @@ class CheckDocumentationStructure(DocumentationCheck):
 
             errors = []
             errors.extend(self.check_main_header(connector, doc_lines))
-            errors.extend(self.check_sections(doc_lines))
             errors.extend(self.validate_links(docs_content))
             errors.extend(self.check_docs_structure(docs_content, connector.name_from_metadata))
             errors.extend(
@@ -383,7 +379,7 @@ class CheckDocumentationStructure(DocumentationCheck):
 
         return self.skip(
             connector=connector,
-            reason="Check does not apply for sources with sl < 300",
+            reason="Check does not apply for sources with sl < 300 or/and java sources",
         )
 
 

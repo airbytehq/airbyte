@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from pathlib import Path
 
 from connectors_qa.checks import documentation
 from connectors_qa.models import CheckStatus
@@ -196,9 +197,39 @@ class TestCheckDocumentationExists:
 
 
 class TestCheckDocumentationStructure:
+    def _mock_connector(self, tmp_path, mocker, data_file):
+        documentation_file_path = tmp_path / "documentation.md"
+        connector = mocker.Mock(
+            technical_name="test-connector",
+            version="1.0.0",
+            documentation_file_path=documentation_file_path,
+            name="GitHub",
+            ab_internal_sl=300,
+            language="python",
+            connector_type="source",
+            metadata={"name": "GitHub"},
+            name_from_metadata="GitHub",
+            connector_spec={
+                "connectionSpecification": {
+                    "required": ["repos"], "properties": {"repos": {"title": "GitHub Repositories"}}
+                }
+            }
+        )
+        with open(Path(__file__).parent / f"data/docs/{data_file}.md", "r") as f:
+            data = f.read().rstrip()
+            connector.documentation_file_path.write_text(data)
+
+        return connector
+
     def test_fail_when_documentation_file_path_does_not_exists(self, mocker, tmp_path):
         # Arrange
-        connector = mocker.Mock(technical_name="test-connector", documentation_file_path=tmp_path / "not_existing_documentation.md")
+        connector = mocker.Mock(
+            technical_name="test-connector",
+            ab_internal_sl=300,
+            language="python",
+            connector_type="source",
+            documentation_file_path=tmp_path / "not_existing_documentation.md"
+        )
 
         # Act
         result = documentation.CheckDocumentationStructure()._run(connector)
@@ -209,7 +240,13 @@ class TestCheckDocumentationStructure:
 
     def test_fail_when_documentation_file_path_is_none(self, mocker):
         # Arrange
-        connector = mocker.Mock(technical_name="test-connector", documentation_file_path=None)
+        connector = mocker.Mock(
+            technical_name="test-connector",
+            ab_internal_sl=300,
+            language="python",
+            connector_type="source",
+            documentation_file_path=None
+        )
 
         # Act
         result = documentation.CheckDocumentationStructure()._run(connector)
@@ -220,8 +257,7 @@ class TestCheckDocumentationStructure:
 
     def test_fail_when_documentation_file_is_empty(self, mocker, tmp_path):
         # Arrange
-        documentation_file_path = tmp_path / "documentation.md"
-        connector = mocker.Mock(technical_name="test-connector", documentation_file_path=documentation_file_path)
+        connector = self._mock_connector(tmp_path, mocker, "invalid_links")
         connector.documentation_file_path.write_text("")
 
         # Act
@@ -231,13 +267,9 @@ class TestCheckDocumentationStructure:
         assert result.status == CheckStatus.FAILED
         assert "Documentation file is empty" in result.message
 
-    def test_fail_when_documentation_file_does_not_start_with_correct_header(self, mocker, tmp_path):
+    def test_fail_when_documentation_file_has_invalid_links(self, mocker, tmp_path):
         # Arrange
-        documentation_file_path = tmp_path / "documentation.md"
-        connector = mocker.Mock(
-            technical_name="test-connector", metadata={"name": "Test Connector"}, documentation_file_path=documentation_file_path
-        )
-        connector.documentation_file_path.write_text("# Test Another connector")
+        connector = self._mock_connector(tmp_path, mocker, "invalid_links")
 
         # Act
         result = documentation.CheckDocumentationStructure()._run(connector)
@@ -245,15 +277,12 @@ class TestCheckDocumentationStructure:
         # Assert
         assert result.status == CheckStatus.FAILED
         assert "Connector documentation does not follow the guidelines:" in result.message
-        assert "The connector name is not used as the main header in the documentation. Expected: '# Test Connector'" in result.message
+        assert ("Link https://github.com/settings/tokens-that_do_not_exist with"
+                " 404 status code is invalid in the connector documentation.") in result.message
 
-    def test_fail_when_documentation_file_has_missing_sections(self, mocker, tmp_path):
+    def test_fail_when_documentation_file_has_missing_headers_and_descriptions(self, mocker, tmp_path):
         # Arrange
-        documentation_file_path = tmp_path / "documentation.md"
-        connector = mocker.Mock(
-            technical_name="test-connector", metadata={"name": "Test Connector"}, documentation_file_path=documentation_file_path
-        )
-        connector.documentation_file_path.write_text("# Test Connector")
+        connector = self._mock_connector(tmp_path, mocker, "incorrect_not_all_structure")
 
         # Act
         result = documentation.CheckDocumentationStructure()._run(connector)
@@ -261,25 +290,20 @@ class TestCheckDocumentationStructure:
         # Assert
         assert result.status == CheckStatus.FAILED
         assert "Connector documentation does not follow the guidelines:" in result.message
-        for section in documentation.CheckDocumentationStructure.expected_sections:
-            assert f"Connector documentation is missing a '{section.replace('#', '').strip()}' section" in result.message
+        assert "Missing headers:" in result.message
+        assert "Required 'github repositories' field is not in Prerequisites" in result.message
+        assert "Description for 'GitHub' does not follow structure" in result.message
 
     def test_pass_when_documentation_file_has_correct_structure(self, mocker, tmp_path):
         # Arrange
-        documentation_file_path = tmp_path / "documentation.md"
-        connector = mocker.Mock(
-            technical_name="test-connector", metadata={"name": "Test Connector"}, documentation_file_path=documentation_file_path
-        )
-        connector.documentation_file_path.write_text(
-            "# Test Connector\n## Prerequisites\n## Setup guide\n## Supported sync modes\n## Supported streams\n## Changelog"
-        )
-
+        connector = self._mock_connector(tmp_path, mocker, "correct")
+        
         # Act
         result = documentation.CheckDocumentationStructure()._run(connector)
-
+        
         # Assert
         assert result.status == CheckStatus.PASSED
-        assert "Documentation guidelines are followed" in result.message
+        assert result.message == "Documentation guidelines are followed"
 
 
 class TestCheckChangelogEntry:

@@ -63,11 +63,11 @@ def required_titles_from_spec(spec: dict[str, Any]) -> tuple[list[str], bool]:
         return [], False
 
     spec_properties = spec["properties"].keys()
-    creds = ["credentials", "client_id", "client_secret", "access_token", "refresh_token"]
+    creds = ["credentials", "client_id", "client_secret", "access_token", "refresh_token", "authorization"]
 
-    if "credentials" in spec["required"] or "client_id" in spec["required"] or "client_secret" in spec_required:
+    if any(x in spec_required for x in creds):
         has_credentials = True
-    if "credentials" in spec["required"] or "client_id" in spec["required"] or "client_secret" in spec_properties:
+    if any(x in spec_properties for x in creds):
         has_credentials = True
     if has_credentials:
         [spec_required.remove(cred) for cred in creds if cred in spec_required]
