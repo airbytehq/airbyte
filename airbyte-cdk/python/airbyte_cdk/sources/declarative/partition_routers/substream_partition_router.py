@@ -139,7 +139,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                     # we need to read all records for slice to update the parent stream cursor
                     stream_slices_for_parent = []
 
-                    # only stream_slice param is used in the declarative stream
+                    # only stream_slice param is used in the declarative stream, stream state is set in PerPartitionCursor set_initial_state
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
