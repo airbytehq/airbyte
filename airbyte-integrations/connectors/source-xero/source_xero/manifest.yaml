@@ -1,4 +1,4 @@
-version: 1.0.0
+version: 1.0.1
 
 definitions:
   selector:
@@ -13,8 +13,26 @@ definitions:
     url_base: "https://api.xero.com/api.xro/2.0/"
     http_method: "GET"
     authenticator:
-      type: "BearerAuthenticator"
-      api_token: "{{ config['access_token'] }}"
+      type: "OAuthAuthenticator"
+      refresh_request_body: { }
+      token_refresh_endpoint: https://identity.xero.com/connect/token
+      grant_type: client_credentials
+      client_id: '{{ config["client_id"] }}'
+      client_secret: '{{ config["client_secret"] }}'
+      scopes:
+        - offline_access
+        - accounting.transactions.read
+        - accounting.reports.read
+        - accounting.budgets.read
+        - accounting.reports.tenninetynine.read
+        - accounting.journals.read
+        - accounting.settings.read
+        - accounting.contacts.read
+        - accounting.attachments.read
+        - assets.read files.read projects.read
+        - openid
+      expires_in_name: expires_in
+      access_token_name: access_token
     request_headers:
       "Xero-Tenant-Id": "{{ config['tenant_id'] }}"
       "Accept": "application/json"
@@ -2752,15 +2770,22 @@ spec:
     title: Xero Spec
     type: object
     required:
-      - access_token
+      - client_id
+      - client_secret
       - tenant_id
       - start_date
     additionalProperties: true
     properties:
-      access_token:
+      client_id:
         type: string
-        title: Access Token
-        description: "Enter your Xero application's access token"
+        title: Client ID
+        description: "Enter your Xero application's Client ID"
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        title: Client Secret
+        description: "Enter your Xero application's Client Secret"
         airbyte_secret: true
         order: 0
       tenant_id:
