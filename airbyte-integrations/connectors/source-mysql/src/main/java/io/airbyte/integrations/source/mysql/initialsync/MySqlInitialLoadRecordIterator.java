@@ -86,7 +86,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   @CheckForNull
   @Override
   protected AirbyteRecordData computeNext() {
-    if (Duration.between(startInstant, Instant.now()).compareTo(Duration.ofMinutes(1)) > 0) {
+    if (Duration.between(startInstant, Instant.now()).compareTo(Duration.ofHours(8)) > 0) {
       LOGGER.info("Sync ran for too long - sending a transient error");
       throw new TransientErrorException("Cancelling sync because initial load taking too long");
     }
