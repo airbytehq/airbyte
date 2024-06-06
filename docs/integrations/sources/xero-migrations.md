@@ -1,5 +1,13 @@
 # Xero Migration Guide
 
+## Upgrading to 1.0.1
+
+Rather that generating the `access_token`, you can now use the `client_id` and `client_secret` to authenticate your source.
+
+We've changed the grant_type to `client_credentials` to offset the authentication flow to Xero. This will allow you to authenticate your source with the `client_id` and `client_secret` instead of the `access_token`.
+
+Visit the Xero documentation - https://developer.xero.com/documentation/guides/oauth2/auth-flow for more detailed information about how to get access token.
+
 ## Upgrading to 1.0.0
 
 The authentication schema is now using `access_token` instead of Oauth 2.0. Visit the Xero documentation - https://developer.xero.com/documentation/guides/oauth2/pkce-flow for more detailed information about how to get access token.
