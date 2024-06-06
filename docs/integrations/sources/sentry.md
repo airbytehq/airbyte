@@ -44,9 +44,12 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 | `object`            | `object`     |
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| 0.5.3 | 2024-06-06 | [39180](https://github.com/airbytehq/airbyte/pull/39180) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.2 | 2024-05-20 | [38263](https://github.com/airbytehq/airbyte/pull/38263) | Replace AirbyteLogger with logging.Logger |
 | 0.5.1 | 2024-04-01 | [36731](https://github.com/airbytehq/airbyte/pull/36731) | Add `%Y-%m-%dT%H:%M:%S%z` to date time formats. |
 | 0.5.0 | 2024-03-27 | [35755](https://github.com/airbytehq/airbyte/pull/35755) | Migrate to low-code. |
@@ -72,3 +75,5 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 | 0.1.2 | 2021-12-28 | [15345](https://github.com/airbytehq/airbyte/pull/15345) | Migrate to config-based framework |
 | 0.1.1 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
 | 0.1.0 | 2021-10-12 | [6975](https://github.com/airbytehq/airbyte/pull/6975) | New Source: Sentry |
+
+</details>
