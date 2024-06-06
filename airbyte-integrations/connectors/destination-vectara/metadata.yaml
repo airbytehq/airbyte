@@ -9,11 +9,11 @@ data:
     cloud:
       enabled: true
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: database
   connectorType: destination
   definitionId: 102900e7-a236-4c94-83e4-a4189b99adc2
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/destination-vectara
   githubIssueLabel: destination-vectara
   icon: vectara.svg
