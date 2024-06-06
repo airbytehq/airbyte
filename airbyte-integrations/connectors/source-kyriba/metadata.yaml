@@ -30,11 +30,13 @@ data:
     - cdk:python
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE_KYRIBA__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+    # Disable acceptance tests for now
+    # No / Low airbyte cloud usage
+    # - suite: acceptanceTests
+    #   testSecrets:
+    #     - name: SECRET_SOURCE_KYRIBA__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
