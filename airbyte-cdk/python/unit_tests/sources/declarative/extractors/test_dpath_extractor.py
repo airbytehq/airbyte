@@ -51,6 +51,12 @@ def create_response(body: Union[Dict, bytes]):
             b'{"data": [{"id": 1}, {"id": 2}]}\n{"data": [{"id": 3}, {"id": 4}]}',
             [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}],
         ),
+        (
+            ["data"],
+            decoder_jsonl,
+            b'{"data": [{"id": 1, "text_field": "This is a text\\n. New paragraph start here."}]}\n{"data": [{"id": 2, "text_field": "This is another text\\n. New paragraph start here."}]}',
+            [{"id": 1, "text_field": "This is a text\n. New paragraph start here."}, {"id": 2, "text_field": "This is another text\n. New paragraph start here."}],
+        ),
     ],
     ids=[
         "test_extract_from_array",
@@ -67,6 +73,7 @@ def create_response(body: Union[Dict, bytes]):
         "test_extract_from_root_jsonl",
         "test_extract_from_array_jsonl",
         "test_extract_from_array_multiline_jsonl",
+        "test_extract_from_array_multiline_with_escape_character_jsonl",
     ],
 )
 def test_dpath_extractor(field_path: List, decoder: Decoder, body, expected_records: List):
