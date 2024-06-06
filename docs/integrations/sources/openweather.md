@@ -38,14 +38,15 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.4   | 2024-05-25 | [38601](https://github.com/airbytehq/airbyte/pull/38601) | Make compatible with the builder.                                               |
-| 0.2.3   | 2024-04-19 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
-| 0.2.2   | 2024-04-15 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.1   | 2024-04-12 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | schema descriptions                                                             |
-| 0.2.0   | 2023-08-31 | [29983](https://github.com/airbytehq/airbyte/pull/29983) | Migrate to Low Code Framework                                                   |
-| 0.1.6   | 2022-06-21 | [16136](https://github.com/airbytehq/airbyte/pull/16136) | Update openweather onecall api to 3.0.                                          |
-| 0.1.5   | 2022-06-21 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | No changes. Used connector to test publish workflow changes.                    |
-| 0.1.4   | 2022-04-27 | [12397](https://github.com/airbytehq/airbyte/pull/12397) | No changes. Used connector to test publish workflow changes.                    |
-| 0.1.0   | 2021-10-27 | [7434](https://github.com/airbytehq/airbyte/pull/7434)   | Initial release                                                                 |
+| 0.2.5 | 2024-06-06 | [39170](https://github.com/airbytehq/airbyte/pull/39170) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.4 | 2024-05-25 | [38601](https://github.com/airbytehq/airbyte/pull/38601) | Make compatible with the builder. |
+| 0.2.3 | 2024-04-19 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | schema descriptions |
+| 0.2.0 | 2023-08-31 | [29983](https://github.com/airbytehq/airbyte/pull/29983) | Migrate to Low Code Framework |
+| 0.1.6 | 2022-06-21 | [16136](https://github.com/airbytehq/airbyte/pull/16136) | Update openweather onecall api to 3.0. |
+| 0.1.5 | 2022-06-21 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | No changes. Used connector to test publish workflow changes. |
+| 0.1.4 | 2022-04-27 | [12397](https://github.com/airbytehq/airbyte/pull/12397) | No changes. Used connector to test publish workflow changes. |
+| 0.1.0 | 2021-10-27 | [7434](https://github.com/airbytehq/airbyte/pull/7434) | Initial release |
 
 </details>
