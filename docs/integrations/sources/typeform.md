@@ -101,32 +101,33 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
-| 1.2.8   | 2024-05-02 | [36667](https://github.com/airbytehq/airbyte/pull/36667) | Schema descriptions                                                                             |
-| 1.2.7   | 2024-04-30 | [37599](https://github.com/airbytehq/airbyte/pull/37599) | Changed last_records to last_record                                                             |
-| 1.2.6   | 2024-03-13 | [36164](https://github.com/airbytehq/airbyte/pull/36164) | Unpin CDK version                                                                               |
-| 1.2.5   | 2024-02-12 | [35152](https://github.com/airbytehq/airbyte/pull/35152) | Manage dependencies with Poetry.                                                                |
-| 1.2.4   | 2024-01-24 | [34484](https://github.com/airbytehq/airbyte/pull/34484) | Fix pagination stop condition                                                                   |
-| 1.2.3   | 2024-01-11 | [34145](https://github.com/airbytehq/airbyte/pull/34145) | prepare for airbyte-lib                                                                         |
-| 1.2.2   | 2023-12-12 | [33345](https://github.com/airbytehq/airbyte/pull/33345) | Fix single use refresh token authentication                                                     |
-| 1.2.1   | 2023-12-04 | [32775](https://github.com/airbytehq/airbyte/pull/32775) | Add 499 status code handling                                                                    |
-| 1.2.0   | 2023-11-29 | [32745](https://github.com/airbytehq/airbyte/pull/32745) | Add `response_type` field to `responses` schema                                                 |
-| 1.1.2   | 2023-10-27 | [31914](https://github.com/airbytehq/airbyte/pull/31914) | Fix pagination for stream Responses                                                             |
-| 1.1.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                 |
-| 1.1.0   | 2023-09-04 | [29916](https://github.com/airbytehq/airbyte/pull/29916) | Migrate to Low-Code Framework                                                                   |
-| 1.0.0   | 2023-06-26 | [27240](https://github.com/airbytehq/airbyte/pull/27240) | Add OAuth support                                                                               |
-| 0.3.0   | 2023-06-23 | [27653](https://github.com/airbytehq/airbyte/pull/27653) | Add `form_id` to records of `responses` stream                                                  |
-| 0.2.0   | 2023-06-17 | [27455](https://github.com/airbytehq/airbyte/pull/27455) | Add missing schema fields in `forms`, `themes`, `images`, `workspaces`, and `responses` streams |
-| 0.1.12  | 2023-02-21 | [22824](https://github.com/airbytehq/airbyte/pull/22824) | Specified date formatting in specification                                                      |
-| 0.1.11  | 2023-02-20 | [23248](https://github.com/airbytehq/airbyte/pull/23248) | Store cursor value as a string                                                                  |
-| 0.1.10  | 2023-01-07 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Certification to Beta                                                                           |
-| 0.1.9   | 2022-08-30 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Improve `metadata.referer` url parsing                                                          |
-| 0.1.8   | 2022-08-09 | [15435](https://github.com/airbytehq/airbyte/pull/15435) | Update Forms stream schema                                                                      |
-| 0.1.7   | 2022-06-20 | [13935](https://github.com/airbytehq/airbyte/pull/13935) | Update Responses stream schema                                                                  |
-| 0.1.6   | 2022-05-23 | [12280](https://github.com/airbytehq/airbyte/pull/12280) | Full Stream Coverage                                                                            |
-| 0.1.4   | 2021-12-08 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                                        |
-| 0.1.3   | 2021-12-07 | [8466](https://github.com/airbytehq/airbyte/pull/8466)   | Change Check Connection Function Logic                                                          |
-| 0.1.2   | 2021-10-11 | [6571](https://github.com/airbytehq/airbyte/pull/6571)   | Support pulling data from a select set of forms                                                 |
-| 0.1.1   | 2021-09-06 | [5799](https://github.com/airbytehq/airbyte/pull/5799)   | Add missed choices field to responses schema                                                    |
-| 0.1.0   | 2021-07-10 | [4541](https://github.com/airbytehq/airbyte/pull/4541)   | Initial release for Typeform API supporting Forms and Responses streams                         |
+| 1.2.9 | 2024-06-06 | [39199](https://github.com/airbytehq/airbyte/pull/39199) | [autopull] Upgrade base image to v1.2.2 |
+| 1.2.8 | 2024-05-02 | [36667](https://github.com/airbytehq/airbyte/pull/36667) | Schema descriptions |
+| 1.2.7 | 2024-04-30 | [37599](https://github.com/airbytehq/airbyte/pull/37599) | Changed last_records to last_record |
+| 1.2.6 | 2024-03-13 | [36164](https://github.com/airbytehq/airbyte/pull/36164) | Unpin CDK version |
+| 1.2.5 | 2024-02-12 | [35152](https://github.com/airbytehq/airbyte/pull/35152) | Manage dependencies with Poetry. |
+| 1.2.4 | 2024-01-24 | [34484](https://github.com/airbytehq/airbyte/pull/34484) | Fix pagination stop condition |
+| 1.2.3 | 2024-01-11 | [34145](https://github.com/airbytehq/airbyte/pull/34145) | prepare for airbyte-lib |
+| 1.2.2 | 2023-12-12 | [33345](https://github.com/airbytehq/airbyte/pull/33345) | Fix single use refresh token authentication |
+| 1.2.1 | 2023-12-04 | [32775](https://github.com/airbytehq/airbyte/pull/32775) | Add 499 status code handling |
+| 1.2.0 | 2023-11-29 | [32745](https://github.com/airbytehq/airbyte/pull/32745) | Add `response_type` field to `responses` schema |
+| 1.1.2 | 2023-10-27 | [31914](https://github.com/airbytehq/airbyte/pull/31914) | Fix pagination for stream Responses |
+| 1.1.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.1.0 | 2023-09-04 | [29916](https://github.com/airbytehq/airbyte/pull/29916) | Migrate to Low-Code Framework |
+| 1.0.0 | 2023-06-26 | [27240](https://github.com/airbytehq/airbyte/pull/27240) | Add OAuth support |
+| 0.3.0 | 2023-06-23 | [27653](https://github.com/airbytehq/airbyte/pull/27653) | Add `form_id` to records of `responses` stream |
+| 0.2.0 | 2023-06-17 | [27455](https://github.com/airbytehq/airbyte/pull/27455) | Add missing schema fields in `forms`, `themes`, `images`, `workspaces`, and `responses` streams |
+| 0.1.12 | 2023-02-21 | [22824](https://github.com/airbytehq/airbyte/pull/22824) | Specified date formatting in specification |
+| 0.1.11 | 2023-02-20 | [23248](https://github.com/airbytehq/airbyte/pull/23248) | Store cursor value as a string |
+| 0.1.10 | 2023-01-07 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Certification to Beta |
+| 0.1.9 | 2022-08-30 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Improve `metadata.referer` url parsing |
+| 0.1.8 | 2022-08-09 | [15435](https://github.com/airbytehq/airbyte/pull/15435) | Update Forms stream schema |
+| 0.1.7 | 2022-06-20 | [13935](https://github.com/airbytehq/airbyte/pull/13935) | Update Responses stream schema |
+| 0.1.6 | 2022-05-23 | [12280](https://github.com/airbytehq/airbyte/pull/12280) | Full Stream Coverage |
+| 0.1.4 | 2021-12-08 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+| 0.1.3 | 2021-12-07 | [8466](https://github.com/airbytehq/airbyte/pull/8466) | Change Check Connection Function Logic |
+| 0.1.2 | 2021-10-11 | [6571](https://github.com/airbytehq/airbyte/pull/6571) | Support pulling data from a select set of forms |
+| 0.1.1 | 2021-09-06 | [5799](https://github.com/airbytehq/airbyte/pull/5799) | Add missed choices field to responses schema |
+| 0.1.0 | 2021-07-10 | [4541](https://github.com/airbytehq/airbyte/pull/4541) | Initial release for Typeform API supporting Forms and Responses streams |
 
 </details>
