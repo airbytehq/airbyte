@@ -18,7 +18,7 @@ class DefaultHttpResponseFilter(HttpResponseFilter):
 
         if isinstance(response_or_exception, (requests.Response, Exception)):
 
-            mapped_key = (
+            mapped_key: Union[int, type] = (
                 response_or_exception.status_code if isinstance(response_or_exception, requests.Response) else response_or_exception.__class__
             )
 
