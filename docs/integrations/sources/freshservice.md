@@ -57,17 +57,18 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
-| 1.3.6   | 2024-05-15 | [38195](https://github.com/airbytehq/airbyte/pull/38195) | Make connector compatible with builder                                                 |
-| 1.3.5   | 2024-04-19 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Updating to 0.80.0 CDK                                                                 |
-| 1.3.4   | 2024-04-18 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Manage dependencies with Poetry.                                                       |
-| 1.3.3   | 2024-04-15 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Base image migration: remove Dockerfile and use the python-connector-base image        |
-| 1.3.2   | 2024-04-12 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | schema descriptions                                                                    |
-| 1.3.1   | 2024-01-29 | [34633](https://github.com/airbytehq/airbyte/pull/34633) | Add backoff policy for `Requested Items` stream                                        |
-| 1.3.0   | 2024-01-15 | [29126](https://github.com/airbytehq/airbyte/pull/29126) | Add `Requested Items` stream                                                           |
-| 1.2.0   | 2023-08-06 | [29126](https://github.com/airbytehq/airbyte/pull/29126) | Migrated to Low-Code CDK                                                               |
-| 1.1.0   | 2023-05-09 | [25929](https://github.com/airbytehq/airbyte/pull/25929) | Add stream for customer satisfaction survey responses endpoint                         |
-| 1.0.0   | 2023-05-02 | [25743](https://github.com/airbytehq/airbyte/pull/25743) | Correct data types in tickets, agents and requesters schemas to match Freshservice API |
-| 0.1.1   | 2021-12-28 | [9143](https://github.com/airbytehq/airbyte/pull/9143)   | Update titles and descriptions                                                         |
-| 0.1.0   | 2021-10-29 | [6967](https://github.com/airbytehq/airbyte/pull/6967)   | 🎉 New Source: Freshservice                                                            |
+| 1.3.7 | 2024-06-06 | [39173](https://github.com/airbytehq/airbyte/pull/39173) | [autopull] Upgrade base image to v1.2.2 |
+| 1.3.6 | 2024-05-15 | [38195](https://github.com/airbytehq/airbyte/pull/38195) | Make connector compatible with builder |
+| 1.3.5 | 2024-04-19 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Updating to 0.80.0 CDK |
+| 1.3.4 | 2024-04-18 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Manage dependencies with Poetry. |
+| 1.3.3 | 2024-04-15 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.3.2 | 2024-04-12 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | schema descriptions |
+| 1.3.1 | 2024-01-29 | [34633](https://github.com/airbytehq/airbyte/pull/34633) | Add backoff policy for `Requested Items` stream |
+| 1.3.0 | 2024-01-15 | [29126](https://github.com/airbytehq/airbyte/pull/29126) | Add `Requested Items` stream |
+| 1.2.0 | 2023-08-06 | [29126](https://github.com/airbytehq/airbyte/pull/29126) | Migrated to Low-Code CDK |
+| 1.1.0 | 2023-05-09 | [25929](https://github.com/airbytehq/airbyte/pull/25929) | Add stream for customer satisfaction survey responses endpoint |
+| 1.0.0 | 2023-05-02 | [25743](https://github.com/airbytehq/airbyte/pull/25743) | Correct data types in tickets, agents and requesters schemas to match Freshservice API |
+| 0.1.1 | 2021-12-28 | [9143](https://github.com/airbytehq/airbyte/pull/9143) | Update titles and descriptions |
+| 0.1.0 | 2021-10-29 | [6967](https://github.com/airbytehq/airbyte/pull/6967) | 🎉 New Source: Freshservice |
 
 </details>
