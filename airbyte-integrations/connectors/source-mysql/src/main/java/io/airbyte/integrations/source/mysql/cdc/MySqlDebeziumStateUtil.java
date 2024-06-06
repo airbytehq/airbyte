@@ -65,7 +65,6 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
         return false;
       }
       final MySqlGtidSet gtidSetFromSavedState = new MySqlGtidSet(savedState.gtidSet().get());
-      // final GtidSet gtidSetFromSavedState = new GtidSet(savedState.gtidSet().get());
       // Get the GTID set that is available in the server
       final MySqlGtidSet availableGtidSet = new MySqlGtidSet(availableGtidStr.get());
       if (gtidSetFromSavedState.isContainedWithin(availableGtidSet)) {
