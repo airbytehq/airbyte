@@ -64,6 +64,12 @@ class FileBasedStreamConfig(BaseModel):
         description="When enabled, syncs will not validate or structure records against the stream's schema.",
         default=False,
     )
+    files_to_read_for_schema_discover: Optional[int] = Field(
+        title="Files To Read For Schema Discover",
+        description="The number of files which will be used to discover the schema for this stream.",
+        default=None,
+        gt=0,
+    )
 
     @validator("input_schema", pre=True)
     def validate_input_schema(cls, v: Optional[str]) -> Optional[str]:

@@ -187,34 +187,43 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
             return self.config.get_input_schema()  # type: ignore
-        elif self.config.schemaless:
+        if self.config.schemaless:
             return schemaless_schema
+
+        if self.config.files_to_read_for_schema_discover:
+            self.logger.info(
+                msg=(
+                    f"Only first {self.config.files_to_read_for_schema_discover} files will be used to infer schema "
+                    f"for stream {self.name} due to limitation in config."
+                )
+            )
+            files = self.list_first_n_files(self.config.files_to_read_for_schema_discover)
         else:
             files = self.list_files()
-            total_n_files = len(files)
 
-            if total_n_files == 0:
-                self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
-                return schemaless_schema
+        total_n_files = len(files)
+        if total_n_files == 0:
+            self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
+            return schemaless_schema
 
-            max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
-            if total_n_files > max_n_files_for_schema_inference:
-                # Use the most recent files for schema inference, so we pick up schema changes during discovery.
-                files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
-                self.logger.warn(
-                    msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
-                )
+        max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
+        if total_n_files > max_n_files_for_schema_inference:
+            # Use the most recent files for schema inference, so we pick up schema changes during discovery.
+            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
+            self.logger.warning(
+                msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
+            )
 
-            inferred_schema = self.infer_schema(files)
+        inferred_schema = self.infer_schema(files)
 
-            if not inferred_schema:
-                raise InvalidSchemaError(
-                    FileBasedSourceError.INVALID_SCHEMA_ERROR,
-                    details=f"Empty schema. Please check that the files are valid for format {self.config.format}",
-                    stream=self.name,
-                )
+        if not inferred_schema:
+            raise InvalidSchemaError(
+                FileBasedSourceError.INVALID_SCHEMA_ERROR,
+                details=f"Empty schema. Please check that the files are valid for format {self.config.format}",
+                stream=self.name,
+            )
 
-            schema = {"type": "object", "properties": inferred_schema}
+        schema = {"type": "object", "properties": inferred_schema}
 
         return schema
 

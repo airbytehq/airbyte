@@ -419,6 +419,12 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "default": False,
                                     "type": "boolean",
                                 },
+                                "files_to_read_for_schema_discover": {
+                                    "title": "Files To Read For Schema Discover",
+                                    "description": "The number of files which will be used to discover the schema for this stream.",
+                                    "exclusiveMinimum": 0,
+                                    "type": "integer",
+                                }
                             },
                             "required": ["name", "format"],
                         },
@@ -812,6 +818,79 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                 "stream": "stream1",
             },
         ]
+    )
+).build()
+
+multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("multi_csv_stream_n_file_exceeds_config_limit_for_inference")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "csv"},
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                    "files_to_read_for_schema_discover": 2,
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3", "col4"),
+                        ("val11c", "val12c", "val13c", "val14c"),
+                        ("val21c", "val22c", "val23c", "val24c"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
+                }
+            ]
+        }
     )
 ).build()
 
