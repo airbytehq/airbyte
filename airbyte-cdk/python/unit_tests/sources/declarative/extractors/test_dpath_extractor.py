@@ -8,7 +8,7 @@ from typing import Dict, List, Union
 import pytest
 import requests
 from airbyte_cdk import Decoder
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder, JsonlDecoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder, JsonlDecoder, IterableDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 
 config = {"field": "record_array"}
@@ -16,6 +16,7 @@ parameters = {"parameters_field": "record_array"}
 
 decoder_json = JsonDecoder(parameters={})
 decoder_jsonl = JsonlDecoder(parameters={})
+decoder_iterable = IterableDecoder(parameters={})
 
 
 def create_response(body: Union[Dict, bytes]):
@@ -57,6 +58,12 @@ def create_response(body: Union[Dict, bytes]):
             b'{"data": [{"id": 1, "text_field": "This is a text\\n. New paragraph start here."}]}\n{"data": [{"id": 2, "text_field": "This is another text\\n. New paragraph start here."}]}',
             [{"id": 1, "text_field": "This is a text\n. New paragraph start here."}, {"id": 2, "text_field": "This is another text\n. New paragraph start here."}],
         ),
+        (
+            [],
+            decoder_iterable,
+            b'user1@example.com\nuser2@example.com',
+            [{"record": "user1@example.com"}, {"record": "user2@example.com"}],
+        ),
     ],
     ids=[
         "test_extract_from_array",
@@ -74,6 +81,7 @@ def create_response(body: Union[Dict, bytes]):
         "test_extract_from_array_jsonl",
         "test_extract_from_array_multiline_jsonl",
         "test_extract_from_array_multiline_with_escape_character_jsonl",
+        "test_extract_from_string_per_line_iterable",
     ],
 )
 def test_dpath_extractor(field_path: List, decoder: Decoder, body, expected_records: List):
