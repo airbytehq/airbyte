@@ -2,12 +2,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Mapping, Union, Type
-
-from requests import RequestException
+from typing import Mapping, Type, Union
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from requests import RequestException
 
 DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Type[Exception]], ErrorResolution] = {
     RequestException: ErrorResolution(
