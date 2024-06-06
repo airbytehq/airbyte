@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.5"
+version = "0.3.6"
 name = "source-copper"
 description = "Source implementation for Copper."
 authors = [ "Airbyte <contact@airbyte.io>",]
