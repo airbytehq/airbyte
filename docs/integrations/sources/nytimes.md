@@ -45,11 +45,12 @@ The New York Times connector should not run into limitations under normal usage.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.6   | 2024-06-5  | [39119](https://github.com/airbytehq/airbyte/pull/39119)     | Upgrade base image to 1.2.2                                                     |
 | 0.1.5   | 2024-04-19 | [37204](https://github.com/airbytehq/airbyte/pull/37204) | Updating to 0.80.0 CDK                                                          |
 | 0.1.4   | 2024-04-18 | [37204](https://github.com/airbytehq/airbyte/pull/37204) | Manage dependencies with Poetry.                                                |
 | 0.1.3   | 2024-04-15 | [37204](https://github.com/airbytehq/airbyte/pull/37204) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.2   | 2024-04-12 | [37204](https://github.com/airbytehq/airbyte/pull/37204) | schema descriptions                                                             |
 | 0.1.1   | 2023-02-13 | [22925](https://github.com/airbytehq/airbyte/pull/22925) | Specified date formatting in specification                                      |
-| 0.1.0   | 2022-11-01 | [18746](https://github.com/airbytehq/airbyte/pull/18746) | 🎉 New Source: New York Times                                                   |
+| 0.1.0   | 2022-11-01 | [18746](https://github.com/airbytehq/airbyte/pull/18746) | 🎉 New Source: New York Times                                                  |
 
 </details>
