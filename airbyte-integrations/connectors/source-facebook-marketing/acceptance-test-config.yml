@@ -6,9 +6,10 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "integration_tests/spec.json"
+        # the source now supports 2 auth types, thus we should skip the check,
+        # this change is intentional
         backward_compatibility_tests_config:
-          disable_for_version: "1.2.2"
-          previous_connector_version: "1.2.1"
+          disable_for_version: "3.1.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
