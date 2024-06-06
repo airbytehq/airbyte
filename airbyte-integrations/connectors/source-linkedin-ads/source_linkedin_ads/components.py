@@ -23,110 +23,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 from isodate import Duration, parse_duration
 
-from .utils import transform_data
-
-# Number of days ahead for date slices, from start date.
-WINDOW_IN_DAYS = 30
-# List of Reporting Metrics fields available for fetch
-ANALYTICS_FIELDS_V2: List = [
-    "actionClicks",
-    "adUnitClicks",
-    "approximateUniqueImpressions",
-    "cardClicks",
-    "cardImpressions",
-    "clicks",
-    "commentLikes",
-    "comments",
-    "companyPageClicks",
-    "conversionValueInLocalCurrency",
-    "costInLocalCurrency",
-    "costInUsd",
-    "dateRange",
-    "documentCompletions",
-    "documentFirstQuartileCompletions",
-    "documentMidpointCompletions",
-    "documentThirdQuartileCompletions",
-    "downloadClicks",
-    "externalWebsiteConversions",
-    "externalWebsitePostClickConversions",
-    "externalWebsitePostViewConversions",
-    "follows",
-    "fullScreenPlays",
-    "impressions",
-    "jobApplications",
-    "jobApplyClicks",
-    "landingPageClicks",
-    "leadGenerationMailContactInfoShares",
-    "leadGenerationMailInterestedClicks",
-    "likes",
-    "oneClickLeadFormOpens",
-    "oneClickLeads",
-    "opens",
-    "otherEngagements",
-    "pivotValues",
-    "postClickJobApplications",
-    "postClickJobApplyClicks",
-    "postClickRegistrations",
-    "postViewJobApplications",
-    "postViewJobApplyClicks",
-    "postViewRegistrations",
-    "reactions",
-    "registrations",
-    "sends",
-    "shares",
-    "talentLeads",
-    "textUrlClicks",
-    "totalEngagements",
-    "validWorkEmailLeads",
-    "videoCompletions",
-    "videoFirstQuartileCompletions",
-    "videoMidpointCompletions",
-    "videoStarts",
-    "videoThirdQuartileCompletions",
-    "videoViews",
-    "viralCardClicks",
-    "viralCardImpressions",
-    "viralClicks",
-    "viralCommentLikes",
-    "viralComments",
-    "viralCompanyPageClicks",
-    "viralDocumentCompletions",
-    "viralDocumentFirstQuartileCompletions",
-    "viralDocumentMidpointCompletions",
-    "viralDocumentThirdQuartileCompletions",
-    "viralDownloadClicks",
-    "viralExternalWebsiteConversions",
-    "viralExternalWebsitePostClickConversions",
-    "viralExternalWebsitePostViewConversions",
-    "viralFollows",
-    "viralFullScreenPlays",
-    "viralImpressions",
-    "viralJobApplications",
-    "viralJobApplyClicks",
-    "viralLandingPageClicks",
-    "viralLikes",
-    "viralOneClickLeadFormOpens",
-    "viralOneClickLeads",
-    "viralOtherEngagements",
-    "viralPostClickJobApplications",
-    "viralPostClickJobApplyClicks",
-    "viralPostClickRegistrations",
-    "viralPostViewJobApplications",
-    "viralPostViewJobApplyClicks",
-    "viralPostViewRegistrations",
-    "viralReactions",
-    "viralRegistrations",
-    "viralShares",
-    "viralTotalEngagements",
-    "viralVideoCompletions",
-    "viralVideoFirstQuartileCompletions",
-    "viralVideoMidpointCompletions",
-    "viralVideoStarts",
-    "viralVideoThirdQuartileCompletions",
-    "viralVideoViews",
-]
-FIELDS_CHUNK_SIZE = 18
-
+from .utils import transform_data, ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE
 
 @dataclass
 class SafeEncodeHttpRequester(HttpRequester):
@@ -224,19 +121,15 @@ class AnalyticsDatetimeBasedCursor(DatetimeBasedCursor):
 
                 fields = ",".join(fields_set)
                 date_slice_with_fields.append(
-                    StreamSlice(
-                        partition={},
-                        cursor_slice={
-                            start_field: self._format_datetime(start),
-                            end_field: self._format_datetime(end_date),
-                            "fields": fields,
-                            **date_range,
-                        },
-                    )
+                    {
+                        start_field: self._format_datetime(start),
+                        end_field: self._format_datetime(end_date),
+                        "fields": fields,
+                        **date_range,
+                    }
                 )
             dates.append(StreamSlice(partition={}, cursor_slice={"field_date_chunks": date_slice_with_fields}))
             start = next_start
-        print(dates)
         return dates
 
 
@@ -256,7 +149,6 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
         return record
 
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-
         for record in transform_data(response.json().get("elements")):
             yield self._date_time_to_rfc3339(record)
 
@@ -268,10 +160,9 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
-
         merged_records = defaultdict(dict)
-        for field_slice in stream_slice.get("field_date_chunks", []):
-            print(field_slice)
+        for field_slice in stream_slice.cursor_slice.get("field_date_chunks", []):
+            field_slice = StreamSlice(partition=stream_slice.partition, cursor_slice=field_slice)
             for record in super().read_records(records_schema, stream_slice=field_slice):
-                merged_records[f"{record[self.stream_slicer.cursor_field]}-{record['pivotValues']}"].update(record)
+                merged_records[f"{record['end_date']}-{record['pivotValues']}"].update(record)
         yield from merged_records.values()

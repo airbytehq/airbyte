@@ -1,4 +1,4 @@
-version: 0.89.0
+version: 1.3.0
 
 type: DeclarativeSource
 
@@ -470,6 +470,8 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
+          $parameters:
+            name: ad_campaign_analytics
           request_parameters:
             q: analytics
             pivot: "(value:CAMPAIGN)"
@@ -500,6 +502,8 @@ definitions:
                       https://www.linkedin.com/developers/apps.
         record_selector:
           type: RecordSelector
+          $parameters:
+            transformations: ''
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -511,6 +515,8 @@ definitions:
           schema_normalization: Default
         paginator:
           type: DefaultPaginator
+          $parameters:
+            url_base: 'https://api.linkedin.com/rest/'
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
