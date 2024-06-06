@@ -2238,8 +2238,8 @@
       },
       "lookback_window": {
         "type": "integer",
-        "title": "Days in the past that we should refresh data",
-        "description": "Since Google Analytics has a data processing latency, we should specify how many days in the past we should refresh the data",
+        "title": "Lookback window (Days)",
+        "description": "Since attribution changes after the event date, and Google Analytics has a data processing latency, we should specify how many days in the past we should refresh the data in every run. So if you set it at 5 days, in every sync it will fetch the last bookmark date minus 5 days.",
         "examples": [2,3,4,7,14,28],
         "minimum": 2,
         "maximum": 60,
