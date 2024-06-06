@@ -9,8 +9,11 @@ This page contains the setup guide and reference information for the [Zendesk Su
 ## Prerequisites
 
 - A Zendesk account with an Administrator role.
+- The unique Zendesk subdomain associated with the account.
 
 ## Setup guide
+
+## Set up Zendesk Support
 
 The Zendesk Support source connector supports two authentication methods:
 
@@ -50,12 +53,12 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 6. Click **Save**.
 <!-- /env:oss -->
 
-### Set up the Zendesk Support source connector
+### Set up the Zendesk Support connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Zendesk Support** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+4. Enter a name for the Zendesk Support connector.
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
 
@@ -74,7 +77,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 ## Supported sync modes
 
-The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -88,7 +91,7 @@ There are two types of incremental sync:
 2. Client-Side Incremental (API returns all available data and connector filters out only new records).
    :::
 
-## Supported streams
+## Supported Streams
 
 The Zendesk Support source connector supports the following streams:
 

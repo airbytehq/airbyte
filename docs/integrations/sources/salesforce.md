@@ -22,7 +22,9 @@ To use this connector, you'll need at least the Enterprise edition of Salesforce
 
 ## Setup guide
 
-### Step 1: (Optional, Recommended) Create a read-only Salesforce user
+## Step 1: Set up Salesforce
+
+### (Optional, Recommended) Create a read-only Salesforce user
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
 
@@ -66,12 +68,12 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+## For Airbyte Cloud:
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Salesforce** from the list of available sources.
-4. Enter a **Source name** of your choosing to help you identify this source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Salesforce from the Source type dropdown.
+4. Enter a name for the Salesforce connector.
 5. To authenticate:
    **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
@@ -83,9 +85,9 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+## For Airbyte Open Source:
 
-1. Navigate to your Airbyte Open Source dashboard.
+1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
@@ -102,7 +104,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 ## Supported sync modes
 
-The Salesforce source connector supports the following sync modes:
+The Salesforce source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)

@@ -9,8 +9,9 @@ This page contains the setup guide and reference information for the [Stripe](ht
 ## Prerequisites
 
 - Access to the Stripe account containing the data you wish to replicate
+- Stripe Account ID
 
-## Setup Guide
+## Setup guide
 
 :::note
 To authenticate the Stripe connector, you need to use a Stripe API key. Although you may use an existing key, we recommend that you create a new restricted key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate within Airbyte.
@@ -27,12 +28,12 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 
 For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
 
-### Step 2: Set up the Stripe source connector in Airbyte
+### Step 2: Set up the Stripe connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Stripe** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Stripe from the Source type dropdown.
+4. Enter a name for the Stripe connector.
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
@@ -57,12 +58,12 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 ## Supported sync modes
 
-The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 The Stripe source connector supports the following streams:
 
@@ -116,9 +117,9 @@ The Stripe source connector supports the following streams:
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
-### Data type mapping
+### Data type map
 
-The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
 
 ## Limitations & Troubleshooting
 
@@ -213,8 +214,6 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
 
 - Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
-
-### Data type mapping
 
 </details>
 

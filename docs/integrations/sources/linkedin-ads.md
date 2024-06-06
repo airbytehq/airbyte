@@ -1,12 +1,19 @@
 # LinkedIn Ads
 
-This page contains the setup guide and reference information for the LinkedIn Ads source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [LinkedIn Ads](https://learn.microsoft.com/en-us/linkedin/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - A LinkedIn Ads account with permission to access data from accounts you want to sync.
+- Start Date - a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
 
 ## Setup guide
+
+### Step 1: Set up LinkedIn Ads
 
 <!-- env:cloud -->
 
@@ -71,17 +78,18 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 <!-- /env:oss -->
 
-### Set up the LinkedIn Ads connector in Airbyte
+### Step 2: Set up the LinkedIn Ads connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **LinkedIn Ads** from the list of available sources.
-4. For **Source name**, enter a name for the LinkedIn Ads connector.
-5. To authenticate:
 
 <!-- env:cloud -->
 
 #### For Airbyte Cloud
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select LinkedIn Ads from the Source type dropdown.
+4. Enter a name for the LinkedIn Ads connector.
+5. To authenticate:
 
 - Select **OAuth2.0** from the Authentication dropdown, then click **Authenticate your LinkedIn Ads account**. Sign in to your account and click **Allow**.
 <!-- /env:cloud -->
@@ -90,6 +98,11 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 #### For Airbyte Open Source
 
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select LinkedIn Ads from the Source type dropdown.
+4. Enter a name for the LinkedIn Ads connector.
+5. To authenticate:
 - Select an option from the Authentication dropdown:
   1. **OAuth2.0:** Enter your **Client ID**, **Client Secret** and **Refresh Token**. Please note that the refresh token expires after 12 months.
   2. **Access Token:** Enter your **Access Token**. Please note that the access token expires after 60 days.
@@ -111,14 +124,14 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 ## Supported sync modes
 
-The LinkedIn Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The LinkedIn Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported streams
+## Supported Streams
 
 - [Accounts](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-2023-05#search-for-accounts)
 - [Account Users](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts)

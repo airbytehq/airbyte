@@ -2,7 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the Google Sheets source connector.
+This page contains the setup guide and reference information for the [Google Sheets](https://developers.google.com/sheets) source connector.
 
 </HideInUI>
 
@@ -26,6 +26,8 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 ## Setup guide
 
 The Google Sheets source connector supports authentication via either OAuth or Service Account Key Authentication.
+
+### Step 1: Set up Google Sheets
 
 <!-- env:cloud -->
 
@@ -72,12 +74,14 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 <!-- /env:oss -->
 
-### Set up the Google Sheets source connector in Airbyte
+### Set up the Google Sheets connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Sheets** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+#### For Airbyte Cloud: 
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Sheets from the Source type dropdown.
+4. Enter a name for the Google Sheets connector.
 5. Select your authentication method:
 <!-- env:cloud -->
 
@@ -114,18 +118,18 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 <HideInUI>
 
-### Output schema
+## Supported sync modes
+
+The Google Sheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+
+### Supported Streams
 
 Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
 
 Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
-
-## Supported sync modes
-
-The Google Sheets source connector supports the following sync modes:
-
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
 ## Data type map
 

@@ -1,14 +1,27 @@
 # Facebook Marketing
 
-This page guides you through the process of setting up the Facebook Marketing source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Facebook Marketing](https://developers.facebook.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
 
+## Setup guide
+
+### Set up Facebook Marketing
+
 <!-- env:cloud -->
 
 #### For Airbyte Cloud
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
+4. Enter a name for the Facebook Marketing connector.
 
 If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
 
@@ -17,6 +30,11 @@ If you are not the owner/admin of the Ad account, you must be granted [permissio
 <!-- env:oss -->
 
 #### For Airbyte Open Source
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
+4. Enter a name for the Facebook Marketing connector.
 
 A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled and the following permissions:
 
@@ -27,7 +45,16 @@ A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API e
 
 <!-- /env:oss -->
 
-## Setup guide
+5. To authenticate the connection:
+
+   <!-- env:cloud -->
+
+   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Facebook account. Make sure you are logged into the right account, as Airbyte will authenticate the account you are currently logged in to.
+   <!-- /env:cloud -->
+   <!-- env:oss -->
+
+   **For Airbyte Open Source**: In the **Access Token** field, enter the access token you generated with your Facebook app.
+   <!-- /env:oss -->
 
 <!-- env:oss -->
 
@@ -52,23 +79,6 @@ You can use the [Access Token Tool](https://developers.facebook.com/tools/access
 :::
 
 <!-- /env:oss -->
-
-### Set up Facebook Marketing as a source in Airbyte
-
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account, or navigate to your Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Facebook Marketing** from the list of available sources.
-4. For **Source name**, enter a name for your Facebook Marketing connector.
-5. To authenticate the connection:
-
-   <!-- env:cloud -->
-
-   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Facebook account. Make sure you are logged into the right account, as Airbyte will authenticate the account you are currently logged in to.
-   <!-- /env:cloud -->
-   <!-- env:oss -->
-
-   **For Airbyte Open Source**: In the **Access Token** field, enter the access token you generated with your Facebook app.
-   <!-- /env:oss -->
 
 #### Facebook Marketing Source Settings
 
@@ -121,14 +131,14 @@ You can use the [Access Token Tool](https://developers.facebook.com/tools/access
 
 ## Supported sync modes
 
-The Facebook Marketing source connector supports the following sync modes:
+The Facebook Marketing source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives and AdAccount tables)
 
-## Supported streams
+## Supported Streams
 
 - [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
 - [AdAccount](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts)
@@ -189,7 +199,7 @@ Please be aware that some fields, such as `conversions` and `conversion_values`,
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
-## Data type mapping
+## Data type map
 
 | Integration Type | Airbyte Type |
 | :--------------: | :----------: |

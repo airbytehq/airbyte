@@ -2,13 +2,14 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the Google Search Console source connector.
+This page contains the setup guide and reference information for the [Google Search Console](https://developers.google.com) source connector.
 
 </HideInUI>
 
 ## Prerequisites
 
-- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Properties))
+- Google Account
+- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Property))
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
@@ -80,12 +81,12 @@ For more information on this topic, please refer to [this Google article](https:
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Search Console** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Search Console from the Source type dropdown.
+4. Enter a name for the Google Search Console connector.
 5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
 6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
@@ -109,7 +110,7 @@ For more information on this topic, please refer to [this Google article](https:
 
 ## Supported sync modes
 
-The Google Search Console Source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Search Console source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -120,7 +121,7 @@ The Google Search Console Source connector supports the following [sync modes](h
 The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.
 :::
 
-## Supported streams
+## Supported Streams
 
 - [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
 - [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)

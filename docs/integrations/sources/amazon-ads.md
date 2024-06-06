@@ -1,6 +1,10 @@
 # Amazon Ads
 
-This page contains the setup guide and reference information for the Amazon Ads source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Amazon Ads](https://advertising.amazon.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -29,13 +33,30 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
-4. Click **Authenticate your Amazon Ads account**.
-5. Log in and Authorize to the Amazon account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Amazon Ads from the Source type dropdown.
+4. Enter a name for the Amazon Ads connector.
+5. Click **Authenticate your Amazon Ads account**.
+6. Log in and Authorize to the Amazon account.
+7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
+8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
+11. Click **Set up source**.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set the name for your source. 
+3. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
+4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
+5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
 7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
@@ -63,7 +84,7 @@ If you have only agency profile, please use accounts associated with the profile
 
 ## Supported sync modes
 
-The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -114,7 +135,7 @@ Report data synchronization only covers the last 60 days - [details](https://adv
 
 Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
-### Data type mapping
+### Data type map
 
 | Integration Type         | Airbyte Type |
 | :----------------------- | :----------- |
@@ -149,7 +170,7 @@ Information about expected report generation waiting time can be found [here](ht
 | 3.2.0   | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                              |
 | 3.1.2   | 2023-08-16 | [29233](https://github.com/airbytehq/airbyte/pull/29233) | Add filter for Marketplace IDs                                                                                  |
 | 3.1.1   | 2023-08-28 | [29900](https://github.com/airbytehq/airbyte/pull/29900) | Add 404 handling for no associated with bid ad groups                                                           |
-| 3.1.0   | 2023-08-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |
+| 3.1.0   | 2023-08-08 | [29212](https://github.com/airbytehq/airbyte/pull/29212) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |
 | 3.0.0   | 2023-07-24 | [27868](https://github.com/airbytehq/airbyte/pull/27868) | Fix attribution report stream schemas                                                                           |
 | 2.3.1   | 2023-07-11 | [28155](https://github.com/airbytehq/airbyte/pull/28155) | Bugfix: validation error when record values are missing                                                         |
 | 2.3.0   | 2023-07-06 | [28002](https://github.com/airbytehq/airbyte/pull/28002) | Add sponsored_product_ad_group_suggested_keywords, sponsored_product_ad_group_bid_recommendations streams       |
