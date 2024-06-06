@@ -892,6 +892,68 @@ multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
             ]
         }
     )
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val11b",
+                    "col2": "val12b",
+                    "col3": "val13b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21b",
+                    "col2": "val22b",
+                    "col3": "val23b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val11c",
+                    "col2": "val12c",
+                    "col3": "val13c",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "c.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21c",
+                    "col2": "val22c",
+                    "col3": "val23c",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "c.csv",
+                },
+                "stream": "stream1",
+            },
+        ]
+    )
 ).build()
 
 invalid_csv_scenario: TestScenario[InMemoryFilesSource] = (
