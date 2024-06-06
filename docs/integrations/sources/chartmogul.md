@@ -65,11 +65,12 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.1   | 2024-05-14 | [38145](https://github.com/airbytehq/airbyte/pull/38145) | Make connector compatible with builder                                                                                           |
-| 1.0.0   | 2023-11-09 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Refactor CustomerCount stream into CustomerCountDaily, CustomerCountWeekly, CustomerCountMonthly, CustomerCountQuarterly Streams |
-| 0.2.1   | 2023-02-15 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Specified date formatting in specification                                                                                       |
-| 0.2.0   | 2022-11-15 | [19276](https://github.com/airbytehq/airbyte/pull/19276) | Migrate connector from Alpha (Python) to Beta (YAML)                                                                             |
-| 0.1.1   | 2022-03-02 | [10756](https://github.com/airbytehq/airbyte/pull/10756) | Add new stream: customer-count                                                                                                   |
-| 0.1.0   | 2022-01-10 | [9381](https://github.com/airbytehq/airbyte/pull/9381)   | New Source: Chartmogul                                                                                                           |
+| 1.0.2 | 2024-06-06 | [39289](https://github.com/airbytehq/airbyte/pull/39289) | [autopull] Upgrade base image to v1.2.2 |
+| 1.0.1 | 2024-05-14 | [38145](https://github.com/airbytehq/airbyte/pull/38145) | Make connector compatible with builder |
+| 1.0.0 | 2023-11-09 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Refactor CustomerCount stream into CustomerCountDaily, CustomerCountWeekly, CustomerCountMonthly, CustomerCountQuarterly Streams |
+| 0.2.1 | 2023-02-15 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Specified date formatting in specification |
+| 0.2.0 | 2022-11-15 | [19276](https://github.com/airbytehq/airbyte/pull/19276) | Migrate connector from Alpha (Python) to Beta (YAML) |
+| 0.1.1 | 2022-03-02 | [10756](https://github.com/airbytehq/airbyte/pull/10756) | Add new stream: customer-count |
+| 0.1.0 | 2022-01-10 | [9381](https://github.com/airbytehq/airbyte/pull/9381) | New Source: Chartmogul |
 
 </details>
