@@ -38,7 +38,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 <details>
 <summary>
-Expand to see details about Stripe connector limitations and troubleshooting.
+Expand to see details about Sentry connector limitations and troubleshooting.
 </summary>
 
 ### Connector limitations
