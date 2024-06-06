@@ -258,10 +258,6 @@ class SourceFacebookMarketing(AbstractSource):
                                 "type": "string",
                                 "path_in_connector_config": ["credentials", "access_token"],
                             },
-                            "auth_type": {
-                                "type": "string",
-                                "path_in_connector_config": ["credentials", "auth_type"],
-                            },
                         },
                     },
                     complete_oauth_server_input_specification={
@@ -282,10 +278,6 @@ class SourceFacebookMarketing(AbstractSource):
                             "client_secret": {
                                 "type": "string",
                                 "path_in_connector_config": ["credentials", "client_secret"],
-                            },
-                            "auth_type": {
-                                "type": "string",
-                                "path_in_connector_config": ["credentials", "auth_type"],
                             },
                         },
                     },
