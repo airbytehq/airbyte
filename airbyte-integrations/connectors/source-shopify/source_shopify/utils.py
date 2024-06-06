@@ -43,7 +43,7 @@ class ShopifyBadJsonError(AirbyteTracedException):
 
     def __init__(self, message, **kwargs) -> None:
         self.message = f"Reason: Bad JSON Response from the Shopify server. Details: {message}."
-        super().__init__(internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
+        super().__init__(internal_message=self.message, failure_type=FailureType.transient_error, **kwargs)
 
 
 class ShopifyConnectionError(AirbyteTracedException):
