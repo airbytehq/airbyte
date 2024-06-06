@@ -328,6 +328,7 @@ constructor(
         )
     }
 
+    // TODO update this to support generation_id
     protected open fun createV2RawTableFromV1Table(
         rawTableName: Name,
         namespace: String,
