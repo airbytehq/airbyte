@@ -18,8 +18,6 @@ Airbyte uses a tiered system for connectors to help you understand what to expec
 
 _[View the connector registries in full](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html)_
 
-##
-
 ## Sources
 
 <ConnectorRegistry type="source"/>
