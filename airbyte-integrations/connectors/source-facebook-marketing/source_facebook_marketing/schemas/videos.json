@@ -2,7 +2,8 @@
   "properties": {
     "account_id": {
       "description": "The ID of the Facebook account associated with the video.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "id": {
       "description": "Unique ID of the video.",
@@ -159,5 +160,8 @@
       "description": "Number of views on the video.",
       "type": ["null", "integer"]
     }
+  },
+  "_erd_relations": {
+    "account_id": "ad_account.id"
   }
 }

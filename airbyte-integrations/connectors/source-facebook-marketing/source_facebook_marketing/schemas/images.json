@@ -4,7 +4,8 @@
   "properties": {
     "account_id": {
       "description": "The unique identifier of the Facebook advertising account associated with the image data.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "id": {
       "description": "The unique identifier of the image data.",
@@ -75,5 +76,8 @@
       "description": "The width dimension of the image in pixels.",
       "type": ["null", "integer"]
     }
+  },
+  "_erd_relations": {
+    "account_id": "ad_account.id"
   }
 }

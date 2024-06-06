@@ -7,11 +7,13 @@
     },
     "account_id": {
       "description": "The unique identifier for the Facebook ad account.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "campaign_id": {
       "description": "The unique identifier for the campaign associated with the ad.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "adset_id": {
       "description": "The unique identifier for the ad set associated with the ad.",
@@ -541,5 +543,9 @@
         }
       }
     }
+  },
+  "_erd_relations": {
+    "account_id": "ad_account.id",
+    "campaign_id": "campaigns.id"
   }
 }

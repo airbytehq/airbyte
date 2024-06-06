@@ -18,7 +18,8 @@
     },
     "account_id": {
       "description": "The unique identifier of the Facebook ad account associated with the ad creative.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "actor_id": {
       "description": "The unique identifier of the actor associated with the ad creative.",
@@ -1491,5 +1492,8 @@
       "type": ["null", "string"]
     }
   },
-  "type": ["null", "object"]
+  "type": ["null", "object"],
+  "_erd_relations": {
+    "account_id": "ad_account.id"
+  }
 }

@@ -1,0 +1,442 @@
+ads_insights: {
+  shape: sql_table
+  account_currency: string
+account_id: string {constraint: foreign_key }
+account_name: string
+action_values: array
+actions: array
+ad_click_actions: array
+ad_id: string
+ad_impression_actions: array
+ad_name: string
+adset_id: string
+adset_name: string
+attribution_setting: string
+auction_bid: number
+auction_competitiveness: number
+auction_max_competitor_bid: number
+buying_type: string
+campaign_id: string {constraint: foreign_key }
+campaign_name: string
+canvas_avg_view_percent: number
+canvas_avg_view_time: number
+catalog_segment_actions: array
+catalog_segment_value: array
+catalog_segment_value_mobile_purchase_roas: array
+catalog_segment_value_omni_purchase_roas: array
+catalog_segment_value_website_purchase_roas: array
+clicks: int
+conversion_lead_rate: number
+conversion_rate_ranking: string
+conversion_values: array
+conversions: array
+converted_product_quantity: array
+converted_product_value: array
+cost_per_15_sec_video_view: array
+cost_per_2_sec_continuous_video_view: array
+cost_per_action_type: array
+cost_per_ad_click: array
+cost_per_conversion: array
+cost_per_conversion_lead: number
+cost_per_estimated_ad_recallers: number
+cost_per_inline_link_click: number
+cost_per_inline_post_engagement: number
+cost_per_outbound_click: array
+cost_per_thruplay: array
+cost_per_unique_action_type: array
+cost_per_unique_click: number
+cost_per_unique_inline_link_click: number
+cost_per_unique_outbound_click: array
+cpc: number
+cpm: number
+cpp: number
+created_time: string
+ctr: number
+date_start: string
+date_stop: string
+engagement_rate_ranking: string
+estimated_ad_recallers: number
+frequency: number
+full_view_impressions: number
+full_view_reach: number
+impressions: int
+inline_link_click_ctr: number
+inline_link_clicks: int
+inline_post_engagement: int
+instant_experience_clicks_to_open: number
+instant_experience_clicks_to_start: number
+instant_experience_outbound_clicks: array
+mobile_app_purchase_roas: array
+objective: string
+optimization_goal: string
+outbound_clicks: array
+outbound_clicks_ctr: array
+purchase_roas: array
+qualifying_question_qualify_answer_rate: number
+quality_ranking: string
+reach: int
+social_spend: number
+spend: number
+unique_actions: array
+unique_clicks: int
+unique_ctr: number
+unique_inline_link_click_ctr: number
+unique_inline_link_clicks: int
+unique_link_clicks_ctr: number
+unique_outbound_clicks: array
+unique_outbound_clicks_ctr: array
+updated_time: string
+video_15_sec_watched_actions: array
+video_30_sec_watched_actions: array
+video_avg_time_watched_actions: array
+video_continuous_2_sec_watched_actions: array
+video_p100_watched_actions: array
+video_p25_watched_actions: array
+video_p50_watched_actions: array
+video_p75_watched_actions: array
+video_p95_watched_actions: array
+video_play_actions: array
+video_play_curve_actions: array
+video_play_retention_0_to_15s_actions: array
+video_play_retention_20_to_60s_actions: array
+video_play_retention_graph_actions: array
+video_time_watched_actions: array
+website_ctr: array
+website_purchase_roas: array
+wish_bid: number
+}
+ads_insights.account_id -> ad_account.id
+ads_insights.campaign_id -> campaigns.id
+custom_audiences: {
+  shape: sql_table
+  id: string
+account_id: string {constraint: foreign_key }
+approximate_count_lower_bound: int
+approximate_count_upper_bound: int
+customer_file_source: string
+data_source: object
+delivery_status: object
+description: string
+is_value_based: bool
+lookalike_audience_ids: array
+lookalike_spec: object
+name: string
+operation_status: object
+opt_out_link: string
+page_deletion_marked_delete_time: int
+permission_for_actions: object
+pixel_id: string
+retention_days: int
+rule: string
+rule_aggregation: string
+sharing_status: object
+subtype: string
+time_content_updated: int
+time_created: int
+time_updated: int
+}
+custom_audiences.account_id -> ad_account.id
+custom_conversions: {
+  shape: sql_table
+  id: string
+account_id: string {constraint: foreign_key }
+business: string
+creation_time: string
+custom_event_type: string
+data_sources: array
+default_conversion_value: number
+description: string
+event_source_type: string
+first_fired_time: string
+is_archived: bool
+is_unavailable: bool
+last_fired_time: string
+name: string
+offline_conversion_data_set: string
+retention_days: number
+rule: string
+}
+custom_conversions.account_id -> ad_account.id
+ad_sets: {
+  shape: sql_table
+  name: string
+end_time: string
+promoted_object: object
+id: string
+account_id: string {constraint: foreign_key }
+updated_time: string
+daily_budget: number
+budget_remaining: number
+effective_status: string
+campaign_id: string {constraint: foreign_key }
+created_time: string
+start_time: string
+lifetime_budget: number
+targeting: object
+bid_info: object
+bid_strategy: string
+bid_amount: number
+bid_constraints: object
+adlabels: array
+}
+ad_sets.account_id -> ad_account.id
+ad_sets.campaign_id -> campaigns.id
+images: {
+  shape: sql_table
+  account_id: string {constraint: foreign_key }
+id: string
+name: string
+creatives: array
+original_height: int
+original_width: int
+permalink_url: string
+status: string
+url: string
+created_time: string
+hash: string
+url_128: string
+is_associated_creatives_in_adgroups: bool
+filename: string
+updated_time: string
+}
+images.account_id -> ad_account.id
+campaigns: {
+  shape: sql_table
+  account_id: string {constraint: foreign_key }
+adlabels: array
+bid_strategy: string
+boosted_object_id: string
+budget_rebalance_flag: bool
+budget_remaining: number
+buying_type: string
+daily_budget: number
+created_time: string
+configured_status: string
+effective_status: string
+id: string
+issues_info: array
+lifetime_budget: number
+name: string
+objective: string
+smart_promotion_type: string
+source_campaign_id: number
+special_ad_category: string
+special_ad_category_country: array
+spend_cap: number
+start_time: string
+status: string
+stop_time: string
+updated_time: string
+}
+campaigns.account_id -> ad_account.id
+ads: {
+  shape: sql_table
+  bid_type: string
+account_id: string {constraint: foreign_key }
+campaign_id: string {constraint: foreign_key }
+adset_id: string
+adlabels: array
+bid_amount: int
+bid_info: object
+status: string
+creative: object
+id: string
+updated_time: string
+created_time: string
+name: string
+targeting: object
+effective_status: string
+last_updated_by_app_id: string
+recommendations: array
+source_ad_id: string
+tracking_specs: array
+conversion_specs: array
+}
+ads.account_id -> ad_account.id
+ads.campaign_id -> campaigns.id
+ad_creatives: {
+  shape: sql_table
+  body: string
+object_story_id: string
+image_url: string
+id: string
+account_id: string {constraint: foreign_key }
+actor_id: string
+adlabels: array
+applink_treatment: string
+asset_feed_spec: object
+call_to_action_type: string
+effective_instagram_story_id: string
+effective_object_story_id: string
+title: string
+name: string
+image_crops: object
+instagram_actor_id: string
+instagram_permalink_url: string
+instagram_story_id: string
+link_og_id: string
+object_id: string
+object_story_spec: object
+object_type: string
+object_url: string
+product_set_id: string
+status: string
+template_url: string
+template_url_spec: object
+thumbnail_data_url: string
+thumbnail_url: string
+image_hash: string
+url_tags: string
+video_id: string
+link_url: string
+}
+ad_creatives.account_id -> ad_account.id
+ads_insights_action_breakdowns: {
+  shape: sql_table
+  action_device: string
+action_canvas_component_name: string
+action_carousel_card_id: string
+action_carousel_card_name: string
+action_destination: string
+action_reaction: string
+action_target_id: string
+action_type: string
+action_video_sound: string
+action_video_type: string
+}
+
+ad_account: {
+  shape: sql_table
+  account_id: string {constraint: primary_key }
+account_status: int
+age: number
+amount_spent: string
+balance: string
+business: object
+business_city: string
+business_country_code: string
+business_name: string
+business_state: string
+business_street: string
+business_street2: string
+business_zip: string
+can_create_brand_lift_study: bool
+capabilities: array
+created_time: string
+currency: string
+disable_reason: number
+end_advertiser: number
+end_advertiser_name: string
+extended_credit_invoice_group: object
+failed_delivery_checks: array
+fb_entity: number
+funding_source: number
+funding_source_details: object
+has_migrated_permissions: bool
+id: string
+io_number: number
+is_attribution_spec_system_default: bool
+is_direct_deals_enabled: bool
+is_in_3ds_authorization_enabled_market: bool
+is_notifications_enabled: bool
+is_personal: number
+is_prepay_account: bool
+is_tax_id_required: bool
+line_numbers: number
+media_agency: number
+min_campaign_group_spend_cap: number
+min_daily_budget: number
+name: string
+offsite_pixels_tos_accepted: bool
+owner: number
+partner: number
+rf_spec: object
+spend_cap: string
+tax_id: string
+tax_id_status: number
+tax_id_type: string
+timezone_id: number
+timezone_name: string
+timezone_offset_hours_utc: number
+tos_accepted: object
+user_tasks: array
+user_tos_accepted: object
+}
+
+videos: {
+  shape: sql_table
+  account_id: string {constraint: foreign_key }
+id: string
+ad_breaks: array
+backdated_time: string
+backdated_time_granularity: string
+content_category: string
+content_tags: array
+created_time: string
+custom_labels: array
+description: string
+embed_html: string
+embeddable: bool
+format: array
+is_crosspost_video: bool
+is_crossposting_eligible: bool
+is_episode: bool
+is_instagram_eligible: bool
+length: number
+live_status: string
+permalink_url: string
+post_views: int
+premiere_living_room_status: bool
+published: bool
+scheduled_publish_time: string
+source: string
+title: string
+universal_video_id: string
+updated_time: string
+views: int
+}
+videos.account_id -> ad_account.id
+activities: {
+  shape: sql_table
+  account_id: string {constraint: foreign_key }
+actor_id: string
+actor_name: string
+application_id: string
+application_name: string
+date_time_in_timezone: string
+event_time: string
+event_type: string
+extra_data: string
+object_id: string
+object_name: string
+object_type: string
+translated_event_type: string
+}
+activities.account_id -> ad_account.id
+ads_insights_breakdowns: {
+  shape: sql_table
+  ad_format_asset: string
+age: string
+app_id: string
+body_asset: string
+call_to_action_asset: string
+country: string
+description_asset: string
+device_platform: string
+dma: string
+frequency_value: string
+gender: string
+hourly_stats_aggregated_by_advertiser_time_zone: string
+hourly_stats_aggregated_by_audience_time_zone: string
+image_asset: string
+impression_device: string
+link_url_asset: string
+place_page_id: string
+platform_position: string
+product_id: string
+publisher_platform: string
+region: string
+skan_conversion_id: string
+title_asset: string
+video_asset: string
+}

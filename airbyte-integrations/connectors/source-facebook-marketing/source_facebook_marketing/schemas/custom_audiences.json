@@ -7,7 +7,8 @@
     },
     "account_id": {
       "description": "The ID of the Facebook account associated with the custom audience.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "approximate_count_lower_bound": {
       "description": "An estimated lower bound count of the size of the custom audience.",
@@ -206,5 +207,8 @@
       "description": "The time when the custom audience was last updated.",
       "type": ["null", "integer"]
     }
+  },
+  "_erd_relations": {
+    "account_id": "ad_account.id"
   }
 }

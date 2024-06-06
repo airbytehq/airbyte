@@ -54,7 +54,8 @@
     },
     "account_id": {
       "description": "The ID of the Facebook ad account to which the ad set belongs.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "updated_time": {
       "description": "The date and time when the ad set was last updated.",
@@ -75,7 +76,8 @@
     },
     "campaign_id": {
       "description": "The ID of the campaign associated with the ad set.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "created_time": {
       "description": "The date and time when the ad set was created.",
@@ -162,5 +164,9 @@
         }
       }
     }
+  },
+  "_erd_relations": {
+    "account_id": "ad_account.id",
+    "campaign_id": "campaigns.id"
   }
 }
