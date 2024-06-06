@@ -543,10 +543,6 @@
           "access_token": {
             "type": "string",
             "path_in_connector_config": ["credentials", "access_token"]
-          },
-          "auth_type": {
-            "type": "string",
-            "path_in_connector_config": ["credentials", "auth_type"]
           }
         }
       },
@@ -572,10 +568,6 @@
           "client_secret": {
             "type": "string",
             "path_in_connector_config": ["credentials", "client_secret"]
-          },
-          "auth_type": {
-            "type": "string",
-            "path_in_connector_config": ["credentials", "auth_type"]
           }
         }
       }
