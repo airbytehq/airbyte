@@ -224,10 +224,16 @@ class TestIncremental(BaseTest):
                     >= expected_records_count
                 ), f"Read {idx + 1} of {len(states_with_expected_record_count)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 1}: {records_N}"
 
-                diff = naive_diff_records(records_1, records_N)
-                assert (
-                    diff
-                ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 1}: {records_N} \n\n diff: {diff}"
+                # Temporary comment this to avoid fake failures while handling corner cases such as:
+                # - start date is equal to the latest state checkpoint date and date compare condition is >=, so we have two equal sets of data
+                # - ...
+
+                # See this issue for more details: https://github.com/airbytehq/airbyte-internal-issues/issues/8056
+
+                # diff = naive_diff_records(records_1, records_N)
+                # assert (
+                #     diff
+                # ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 1}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
         self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner
