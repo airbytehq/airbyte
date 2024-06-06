@@ -14,7 +14,7 @@ definitions:
     http_method: "GET"
     authenticator:
       type: "OAuthAuthenticator"
-      refresh_request_body: { }
+      refresh_request_body: {}
       token_refresh_endpoint: https://identity.xero.com/connect/token
       grant_type: client_credentials
       client_id: '{{ config["client_id"] }}'
