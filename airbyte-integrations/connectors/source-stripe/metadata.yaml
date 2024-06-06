@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.3.10
+  dockerImageTag: 5.4.0
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   githubIssueLabel: source-stripe
@@ -36,6 +36,12 @@ data:
       5.0.0:
         message: Version 5.0.0 introduces fixes for the `CheckoutSessions`, `CheckoutSessionsLineItems` and `Refunds` streams. The cursor field is changed for the `CheckoutSessionsLineItems` and `Refunds` streams. This will prevent data loss during incremental syncs. Also, the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream schemas have been updated.
         upgradeDeadline: "2023-12-11"
+      5.4.0:
+        message: Version 5.4.0 introduces fixes for the `Refunds` streams. The cursor field is changed from `created` to `updated`.
+        upgradeDeadline: "2024-07-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["refunds"]
   suggestedStreams:
     streams:
       - customers
