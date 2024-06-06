@@ -145,7 +145,7 @@ Make sure the database and schema have the `USAGE` privilege.
 ### Step 3: Set up Snowflake as a destination in Airbyte
 
 Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using
-username/password or OAuth 2.0:
+username/password or key pair authentication:
 
 ### Login and Password
 
@@ -160,19 +160,6 @@ username/password or OAuth 2.0:
 | Password                                                                                              | The password associated with the username.                                                                                                                                                                                           |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`                                      |
 | Disable Final Tables (Optional)                                                                       | Disables writing final Typed tables See [output schema](#output-schema). WARNING! The data format in \_airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions |
-
-### OAuth 2.0
-
-| Field                                                                                                 | Description                                                                                                                                                                                       |
-| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
-| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                     |
-| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                          |
-| Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                               |
-| OAuth2                                                                                                | The Login name and password to obtain auth token.                                                                                                                                                 |
-| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
 
 ### Key pair authentication
 
@@ -274,10 +261,15 @@ desired namespace.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:----------------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                            |
-| 3.8.3           | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | Bump CDK version                                                                            |
+| 3.9.1           | 2024-06-05 | [\#39135](https://github.com/airbytehq/airbyte/pull/39135) | Improved error handling for Staging files                                                                                                                        |
+| 3.9.0           | 2024-05-23 | [\#38658](https://github.com/airbytehq/airbyte/pull/38658) | Adapting to newer interfaces from #38107                                                                                                                         |
+| 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                                                                                      |
+| 3.8.3           | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | Bump CDK version                                                                                                                                                 |
 | 3.8.2           | 2024-05-22 | [\#38553](https://github.com/airbytehq/airbyte/pull/38553) | Remove `SwitchingDestination` and `AbstractJdbcDestination` dependency in destination                                                                            |
 | 3.8.1           | 2024-05-22 | [\#38568](https://github.com/airbytehq/airbyte/pull/38568) | Adopt latest CDK                                                                                                                                                 |
 | 3.8.0           | 2024-05-08 | [\#37715](https://github.com/airbytehq/airbyte/pull/37715) | Remove option for incremental typing and deduping                                                                                                                |
@@ -466,3 +458,5 @@ desired namespace.
 | 0.3.12          | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                                                                                     |
 | 0.3.11          | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                                                                                        |
 | 0.3.10          | 2021-07-12 | [\#4713](https://github.com/airbytehq/airbyte/pull/4713)   | Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake                                                                             |
+
+</details>

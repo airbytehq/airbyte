@@ -71,8 +71,12 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| 0.4.2 | 2024-06-04 | [39060](https://github.com/airbytehq/airbyte/pull/39060) | [autopull] Upgrade base image to v1.2.1 |
 | 0.4.1 | 2024-05-20 | [38424](https://github.com/airbytehq/airbyte/pull/38424) | [autopull] base image + poetry + up_to_date |
 | 0.4.0 | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999) | Add `monitors` and `service_level_objectives` Streams |
 | 0.3.0 | 2023-08-27 | [29885](https://github.com/airbytehq/airbyte/pull/29885) | Migrate to low code |
@@ -81,3 +85,5 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 | 0.2.0 | 2023-06-28 | [27784](https://github.com/airbytehq/airbyte/pull/27784) | Add necessary fields to schemas |
 | 0.1.1 | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562) | Update testing dependencies |
 | 0.1.0 | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150) | New Source: Datadog |
+
+</details>
