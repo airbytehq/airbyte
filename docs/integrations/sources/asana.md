@@ -101,8 +101,12 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                           |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.0.0   | 2024-04-15 | [36697](https://github.com/airbytehq/airbyte/pull/36697) | Migrate to low code                                               |
 | 0.6.1   | 2023-11-13 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Fix hidden config access                                          |
 | 0.6.0   | 2023-11-03 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Add new stream Portfolio Memberships with Parent Portfolio        |
 | 0.5.0   | 2023-10-30 | [31114](https://github.com/airbytehq/airbyte/pull/31114) | Add Portfolios stream                                             |
@@ -119,5 +123,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 | 0.1.2   | 2021-09-24 | [6402](https://github.com/airbytehq/airbyte/pull/6402)   | Fix SAT tests: update schemas and invalid_config.json file        |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add entrypoint and bump version for connector                     |
 | 0.1.0   | 2021-05-25 | [3510](https://github.com/airbytehq/airbyte/pull/3510)   | New Source: Asana                                                 |
+
+</details>
 
 </HideInUI>

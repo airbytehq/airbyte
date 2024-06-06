@@ -29,6 +29,12 @@ This Source is capable of syncing the following core Streams:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.1.0   | 2023-05-04 | [25790](https://github.com/airbytehq/airbyte/pull/25790) | Add Klaus API Source Connector |
+| 0.1.1 | 2024-05-20 | [38393](https://github.com/airbytehq/airbyte/pull/38393) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2023-05-04 | [25790](https://github.com/airbytehq/airbyte/pull/25790) | Add Klaus API Source Connector |
+
+</details>

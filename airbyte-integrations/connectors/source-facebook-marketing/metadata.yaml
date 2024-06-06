@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 2.1.9
+  dockerImageTag: 3.1.0
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
@@ -44,6 +44,12 @@ data:
               - "ads_insights_region"
               - "ads_insights_dma"
               - "ads_insights_action_product_id"
+      3.0.0:
+        message: "There are breaking schema changes to Custom Insights Streams that use body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset or video_asset.  If you use any of these streams, you will need to retest source configuration, refresh the source schema and clear affected streams after upgrading."
+        upgradeDeadline: "2024-06-14"
+      3.1.0:
+        message: "The `AdsInsights` Reports now don't have the possibility to fetch the root level properties `cost_per_conversion_lead` and `conversion_lead_rate`. These will therefore be removed."
+        upgradeDeadline: "2024-06-14"
   suggestedStreams:
     streams:
       - ads_insights
