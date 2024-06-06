@@ -28,6 +28,7 @@ This project supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.2 | 2024-06-04 | [39079](https://github.com/airbytehq/airbyte/pull/39079) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.1 | 2024-05-20 | [38410](https://github.com/airbytehq/airbyte/pull/38410) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2023-02-28 | [23593](https://github.com/airbytehq/airbyte/pull/23593) | Initial Release |
 

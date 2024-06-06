@@ -67,11 +67,9 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 
 ## Changelog
 
-<details>
-  <summary>Expand to review</summary>
-
 | Version                                                  | Date                                     | Pull Request                                              | Subject                                                  |
 | :------------------------------------------------------- | :--------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------- | ----------- |
+| 0.1.5 | 2024-06-04 | [39090](https://github.com/airbytehq/airbyte/pull/39090) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.4 | 2024-05-21 | [38510](https://github.com/airbytehq/airbyte/pull/38510) | [autopull] base image + poetry + up_to_date |
 | 0.1.3                                                    | 2024-03-05                               | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                     |
 | 0.1.2                                                    | 2023-02-11                               | [22855](https://github.com/airbytehq/airbyte/pull/22855)  | Fix compatibility                                        |
@@ -79,5 +77,3 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 | [21182](https://github.com/airbytehq/airbyte/pull/21182) | Remove protocol option and enforce HTTPS |
 |                                                          | 0.1.0                                    | 2022-01-09                                                | [20909](https://github.com/airbytehq/airbyte/pull/20909) | Destination |
 | Databend                                                 |
-
-</details>
