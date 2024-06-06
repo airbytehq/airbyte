@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, PerPartitionKeySerializer, StreamSlice
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record
 
 PARTITION = {
@@ -105,7 +105,7 @@ class MockedCursorBuilder:
 
 @pytest.fixture()
 def mocked_partition_router():
-    return Mock(spec=StreamSlicer)
+    return Mock(spec=PartitionRouter)
 
 
 @pytest.fixture()
@@ -192,7 +192,7 @@ def test_given_stream_slices_when_get_stream_state_then_return_updated_state(moc
     ]
 
     # Mock the get_parent_state method to return the parent state
-    mocked_partition_router.get_parent_state.return_value = {}
+    mocked_partition_router.get_stream_state.return_value = {}
 
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
     list(cursor.stream_slices())
@@ -453,7 +453,7 @@ def test_parent_state_is_set_for_per_partition_cursor(mocked_cursor_factory, moc
     ]
 
     # Mock the get_parent_state method to return the parent state
-    mocked_partition_router.get_parent_state.return_value = parent_state
+    mocked_partition_router.get_stream_state.return_value = parent_state
 
     # Initialize the PerPartitionCursor with the mocked cursor factory and partition router
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
@@ -469,7 +469,7 @@ def test_parent_state_is_set_for_per_partition_cursor(mocked_cursor_factory, moc
     assert cursor.get_stream_state()["parent_state"] == parent_state
 
     # Verify that set_parent_state was called on the partition router with the initial state
-    mocked_partition_router.set_parent_state.assert_called_once_with(initial_state)
+    mocked_partition_router.set_initial_state.assert_called_once_with(initial_state)
 
 
 def test_get_stream_state_includes_parent_state(mocked_cursor_factory, mocked_partition_router):
@@ -495,7 +495,7 @@ def test_get_stream_state_includes_parent_state(mocked_cursor_factory, mocked_pa
     ]
 
     # Mock the get_parent_state method to return the parent state
-    mocked_partition_router.get_parent_state.return_value = parent_state
+    mocked_partition_router.get_stream_state.return_value = parent_state
 
     # Initialize the PerPartitionCursor with the mocked cursor factory and partition router
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)

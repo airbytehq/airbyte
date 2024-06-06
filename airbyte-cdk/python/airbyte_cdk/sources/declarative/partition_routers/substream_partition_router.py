@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, 
 import dpath
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ class ParentStreamConfig:
 
 
 @dataclass
-class SubstreamPartitionRouter(StreamSlicer):
+class SubstreamPartitionRouter(PartitionRouter):
     """
     Partition router that iterates over the parent's stream records and emits slices
     Will populate the state with `partition_field` and `parent_slice` so they can be accessed by other components
@@ -164,7 +164,7 @@ class SubstreamPartitionRouter(StreamSlicer):
 
                     yield from stream_slices_for_parent
 
-    def set_parent_state(self, stream_state: StreamState) -> None:
+    def set_initial_state(self, stream_state: StreamState) -> None:
         """
         Set the state of the parent streams.
 
@@ -195,7 +195,7 @@ class SubstreamPartitionRouter(StreamSlicer):
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
 
-    def get_parent_state(self) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """
         Get the state of the parent streams.
 

@@ -360,7 +360,7 @@ def test_substream_slicer_parent_state_update_with_cursor(parent_stream_config, 
         pass  # This will process the slices and should update the parent state
 
     # Check if the parent state has been updated correctly
-    parent_state = partition_router.get_parent_state()
+    parent_state = partition_router.get_stream_state()
     assert parent_state == expected_state
 
 
