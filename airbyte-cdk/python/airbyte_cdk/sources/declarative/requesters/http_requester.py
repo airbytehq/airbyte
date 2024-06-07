@@ -208,8 +208,6 @@ class HttpRequester(Requester):
             return 0
         if self.error_handler is None:
             return self._DEFAULT_MAX_RETRY
-        if isinstance(self.error_handler, CompositeErrorHandler):
-            return self.error_handler.max_retries
         return self.error_handler.max_retries  # type: ignore # parent class does not have max_retries
 
     @property
@@ -219,8 +217,6 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return self._DEFAULT_MAX_TIME
-        if isinstance(self.error_handler, CompositeErrorHandler):
-            return self.error_handler.max_time
         return self.error_handler.max_time  # type: ignore # parent class does not have max_time
 
     @property

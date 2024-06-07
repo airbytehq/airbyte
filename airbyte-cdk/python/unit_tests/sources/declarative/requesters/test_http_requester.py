@@ -14,7 +14,7 @@ import requests_cache
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy, ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
@@ -985,3 +985,65 @@ def test_response_caching_with_enable_use_cache(http_requester_factory, requests
     assert isinstance(new_response, CachedResponse)
 
     assert len(response.json()) == len(new_response.json())
+
+def test_request_attempt_count_is_tracked_across_retries(http_requester_factory):
+    request_mock = MagicMock(spec=requests.PreparedRequest)
+    request_mock.headers = {}
+    request_mock.url = "https://example.com/deals"
+    request_mock.method = "GET"
+    request_mock.body = {}
+    backoff_strategy = ConstantBackoffStrategy(parameters={}, config={}, backoff_time_in_seconds=0.1)
+    error_handler = DefaultErrorHandler(parameters={}, config={}, max_retries=1, backoff_strategies=[backoff_strategy])
+    http_requester = http_requester_factory(error_handler=error_handler)
+    http_requester._session.send = MagicMock()
+    response = requests.Response()
+    response.status_code = 500
+    http_requester._session.send.return_value = response
+
+    with pytest.raises(UserDefinedBackoffException):
+        http_requester._send_with_retry(request_mock)
+
+    assert http_requester._request_attempt_count.get(request_mock) == http_requester.max_retries + 1
+
+
+def test_request_attempt_count_with_exponential_backoff_strategy(http_requester_factory):
+    request_mock = MagicMock(spec=requests.PreparedRequest)
+    request_mock.headers = {}
+    request_mock.url = "https://example.com/deals"
+    request_mock.method = "GET"
+    request_mock.body = {}
+    backoff_strategy = ExponentialBackoffStrategy(parameters={}, config={}, factor=0.1)
+    error_handler = DefaultErrorHandler(parameters={}, config={}, max_retries=2, backoff_strategies=[backoff_strategy])
+    http_requester = http_requester_factory(error_handler=error_handler)
+    http_requester._session.send = MagicMock()
+    response = requests.Response()
+    response.status_code = 500
+    http_requester._session.send.return_value = response
+
+    with pytest.raises(UserDefinedBackoffException):
+        http_requester._send_with_retry(request_mock)
+
+    assert http_requester._request_attempt_count.get(request_mock) == http_requester.max_retries + 1
+
+
+def test_requester_with_default_error_handler_with_multipe_backoffs_returns_first_none_null(http_requester_factory):
+    request_mock = MagicMock(spec=requests.PreparedRequest)
+    request_mock.headers = {}
+    request_mock.url = "https://example.com/deals"
+    request_mock.method = "GET"
+    request_mock.body = {}
+    backoff_strategy_1 = ConstantBackoffStrategy(parameters={}, config={}, backoff_time_in_seconds=0)
+    valid_backoff_time = 0.1
+    backoff_strategy_2 = ConstantBackoffStrategy(parameters={}, config={}, backoff_time_in_seconds=valid_backoff_time)
+    error_handler = DefaultErrorHandler(parameters={}, config={}, max_retries=1, backoff_strategies=[backoff_strategy_1, backoff_strategy_2])
+    http_requester = http_requester_factory(error_handler=error_handler)
+    http_requester._session.send = MagicMock()
+    response = requests.Response()
+    response.status_code = 500
+    http_requester._session.send.return_value = response
+
+    with pytest.raises(UserDefinedBackoffException):
+        http_requester._send_with_retry(request_mock)
+
+    assert http_requester._request_attempt_count.get(request_mock) == http_requester.max_retries + 1
+    assert http_requester.error_handler.backoff_time(request_mock, http_requester._request_attempt_count.get(request_mock)) == valid_backoff_time
