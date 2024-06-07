@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -19,6 +20,8 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.transformations import AddFields
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -186,6 +189,27 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
         merged_records = defaultdict(dict)
+
+        transformations = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=field["path"],
+                        value=InterpolatedString(string=field["value"], default=field["value"], parameters={}),
+                        value_type=type(""),
+                        parameters={},
+                    )
+                    for field in transformation.get("fields", [])
+                ],
+                parameters={},
+            )
+            for transformation in self.record_selector.transformations
+            if isinstance(transformation, dict)
+        ]
+
+        if transformations:
+            self.record_selector.transformations = transformations
+
         for field_slice in stream_slice.cursor_slice.get("field_date_chunks", []):
             field_slice = StreamSlice(partition=stream_slice.partition, cursor_slice=field_slice)
             for record in super().read_records(records_schema, stream_slice=field_slice):
