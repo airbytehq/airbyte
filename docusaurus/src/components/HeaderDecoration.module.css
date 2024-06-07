@@ -72,18 +72,12 @@ div.connectorMetadataCallout  {
   display: flex;
   flex-direction: row;
   align-items: center;
-
 }
 
-.iconWrapper {
-  margin-right: -5px;
+.metricIcon {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 12px;
-  width: 12px;
-}
-
-.iconWrapper > * {
-  fill: var(--color-blue-30);
+  width: 40px;
 }
