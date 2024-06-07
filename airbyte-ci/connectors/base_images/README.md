@@ -19,7 +19,7 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### Example for `airbyte/python-connector-base`:
 ```dockerfile
-FROM docker.io/python:3.9.19-slim-bookworm@sha256:b92e6f45b58d9cafacc38563e946f8d249d850db862cbbd8befcf7f49eef8209
+FROM docker.io/python:3.9.19-slim-bookworm@sha256:088d9217202188598aac37f8db0929345e124a82134ac66b8bb50ee9750b045b
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN pip install --upgrade pip==24.0 setuptools==70.0.0
 ENV POETRY_VIRTUALENVS_CREATE=false
@@ -38,13 +38,14 @@ RUN mkdir /usr/share/nltk_data
 
 ### `airbyte/python-connector-base`
 
-| Version    | Published | Docker Image Address                                                                                                       | Changelog                                                                                            |
-| ---------- | --------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| 1.2.1      | ✅        | docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795      | Upgrade to Python 3.9.19 + update pip and setuptools                                                 |
-| 1.2.0      | ✅        | docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9      | Add CDK system dependencies: nltk data, tesseract, poppler.                                          |
-| 1.2.0-rc.1 | ✅        | docker.io/airbyte/python-connector-base:1.2.0-rc.1@sha256:f6467768b75fb09125f6e6b892b6b48c98d9fe085125f3ff4adc722afb1e5b30 |                                                                                                      |
-| 1.1.0      | ✅        | docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c      | Install socat                                                                                        |
-| 1.0.0      | ✅        | docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27      | Initial release: based on Python 3.9.18, on slim-bookworm system, with pip==23.2.1 and poetry==1.6.1 |
+| Version | Published | Docker Image Address | Changelog | 
+|---------|-----------|--------------|-----------|
+|  1.2.2 | ✅| docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0 | Fix Python 3.9.19 image digest |
+|  1.2.1 | ✅| docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795 | Upgrade to Python 3.9.19 + update pip and setuptools |
+|  1.2.0 | ✅| docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9 | Add CDK system dependencies: nltk data, tesseract, poppler. |
+|  1.2.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:1.2.0-rc.1@sha256:f6467768b75fb09125f6e6b892b6b48c98d9fe085125f3ff4adc722afb1e5b30 |  |
+|  1.1.0 | ✅| docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c | Install socat |
+|  1.0.0 | ✅| docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27 | Initial release: based on Python 3.9.18, on slim-bookworm system, with pip==23.2.1 and poetry==1.6.1 |
 
 
 ## How to release a new base image version (example for Python)
