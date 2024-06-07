@@ -225,6 +225,9 @@ class SourceYandexMetrika(AbstractSource):
                     self.postprocess_raw_stream_slice(
                         stream_name=stream_instance.name, stream_slice=raw_slice, log_request_id=log_request_id
                     )
+                    for thread in threads_controller.threads:
+                        for record in thread.records:
+                            yield self._get_message(record_data_or_message=record, stream=stream_instance)
             yield from []
         else:
             yield from super()._read_full_refresh(logger, stream_instance, configured_stream, internal_config)
