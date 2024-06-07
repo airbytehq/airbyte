@@ -4,7 +4,7 @@ import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
 
 ## Introduction to Connectors
 
-Each source or destination is a connector. A source is an API, file, database, or data warehouse that you want to ingest data from. A A destination is a data warehouse, data lake, database, or an analytics tool where you want to load your ingested data. Connectors, therefore, can either pull data from a source, or push data to a destination. 
+Each source or destination is a connector. A source is an API, file, database, or data warehouse that you want to ingest data from. A destination is a data warehouse, data lake, database, or an analytics tool where you want to load your ingested data. Connectors, therefore, can either pull data from a source, or push data to a destination. 
 
 By browsing the catalog, you can see useful links to documentation, source code, and issues related to each connector. You'll also be able to see whether a connector is supported on our Open Source Software (OSS), our Cloud platform, or both. 
 
