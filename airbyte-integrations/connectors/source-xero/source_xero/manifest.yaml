@@ -2794,7 +2794,7 @@ spec:
         type: object
         oneOf:
           - type: object
-            title: OAuth Confidential Application
+            title: OAuth Custom Connection
             required:
               - auth_type
               - client_id
