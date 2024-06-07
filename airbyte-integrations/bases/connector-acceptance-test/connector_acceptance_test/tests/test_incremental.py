@@ -333,7 +333,7 @@ class TestIncremental(BaseTest):
                     ), f"Actual cursor value {actual_cursor_value} does not match pattern: {pattern}"
                     assert self._check_cursor_by_regex_match(
                         future_state_cursor_value, pattern
-                    ), f"Future cursor value {actual_cursor_value} does not match pattern: {pattern}"
+                    ), f"Future cursor value {future_state_cursor_value} does not match pattern: {pattern}"
                 else:
                     assert self._check_cursor_by_char_types(
                         actual_cursor_value, future_state_cursor_value
