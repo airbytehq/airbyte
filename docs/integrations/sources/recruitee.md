@@ -48,6 +48,12 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 0.1.0   | 2022-10-30 | [18671](https://github.com/airbytehq/airbyte/pull/18671) | New Source: Recruitee |
+| 0.1.1 | 2024-05-20 | [38452](https://github.com/airbytehq/airbyte/pull/38452) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-10-30 | [18671](https://github.com/airbytehq/airbyte/pull/18671) | New Source: Recruitee |
+
+</details>

@@ -84,8 +84,13 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0.3 | 2024-06-06 | [39197](https://github.com/airbytehq/airbyte/pull/39197) | [autopull] Upgrade base image to v1.2.2 |
+| 1.0.2 | 2024-05-21 | [38478](https://github.com/airbytehq/airbyte/pull/38478) | Update deprecated authenticator package |
 | 1.0.1 | 2024-05-20 | [38264](https://github.com/airbytehq/airbyte/pull/38264) | Replace AirbyteLogger with logging.Logger |
 | 1.0.0 | 2024-04-15 | [35776](https://github.com/airbytehq/airbyte/pull/35776) | Migration to low-code CDK. Breaking change that updates configuration keys, removes unsubscribe_groups stream, renames a stream to singlesend_stats, and adds the singlesends stream. |
 | 0.5.0 | 2024-03-26 | [36455](https://github.com/airbytehq/airbyte/pull/36455) | Unpin CDK version, add record counts to state messages |
@@ -106,5 +111,7 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 | 0.2.8   | 2022-06-07 | [13571](https://github.com/airbytehq/airbyte/pull/13571) | Add Message stream                                                                                                                                                                                                                                |
 | 0.2.7   | 2021-09-08 | [5910](https://github.com/airbytehq/airbyte/pull/5910)   | Add Single Sends Stats stream                                                                                                                                                                                                                     |
 | 0.2.6   | 2021-07-19 | [4839](https://github.com/airbytehq/airbyte/pull/4839)   | Gracefully handle malformed responses from the API                                                                                                                                                                                                |
+
+</details>
 
 </HideInUI>
