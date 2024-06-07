@@ -8,9 +8,12 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
+
+private val LOGGER = KotlinLogging.logger {}
 
 open class SourceStateIterator<T>(
     private val messageIterator: Iterator<T>,
@@ -71,6 +74,7 @@ open class SourceStateIterator<T>(
                 )
             }
             recordCount = 0L
+            LOGGER.info { "sending real state message: $finalStateMessageForStream" }
             return AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(finalStateMessageForStream)
@@ -84,7 +88,7 @@ open class SourceStateIterator<T>(
      * re-enable it once we do the work for project Counts: Emit Counts in Full Refresh
      */
     private fun shouldAttachCountWithState(): Boolean {
-        return stream?.syncMode != SyncMode.FULL_REFRESH
+        return true
     }
 
     // This method is used to check if we should emit a state message. If the record count is set to
