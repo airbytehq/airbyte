@@ -76,8 +76,8 @@ def test_client_side_record_filter_decorator_no_parent_stream(stream_state: Opti
         {"id": 4, "created_at": "2021-02-01"},
     ]
     date_time_based_cursor = DatetimeBasedCursor(
-                        start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
-                        end_datetime=MinMaxDatetime(datetime="2021-01-05", datetime_format="%Y-%m-%d", parameters={}),
+                        start_datetime=MinMaxDatetime(datetime="2021-01-01", parameters={}),
+                        end_datetime=MinMaxDatetime(datetime="2021-01-05", parameters={}),
                         step="P10Y",
                         cursor_field=InterpolatedString.create("created_at", parameters={}),
                         datetime_format="%Y-%m-%d",
