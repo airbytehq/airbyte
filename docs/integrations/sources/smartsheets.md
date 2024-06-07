@@ -112,8 +112,12 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 1.1.4 | 2024-06-06 | [39166](https://github.com/airbytehq/airbyte/pull/39166) | [autopull] Upgrade base image to v1.2.2 |
 | 1.1.3 | 2024-05-21 | [38505](https://github.com/airbytehq/airbyte/pull/38505) | [autopull] base image + poetry + up_to_date |
 | 1.1.2 | 2024-01-08 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
 | 1.1.1 | 2023-06-06 | [27096](https://github.com/airbytehq/airbyte/pull/27096) | Fix error when optional metadata fields are not set |
@@ -128,3 +132,5 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 | 0.1.10 | 2022-04-15 | [12077](https://github.com/airbytehq/airbyte/pull/12077) | Implement incremental read and improve code test coverage |
 | 0.1.9 | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns |
 | 0.1.8 | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792) | Added oauth support |
+
+</details>

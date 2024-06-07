@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=0.61.0
+VERSION=0.62.3
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
@@ -61,39 +61,70 @@ readonly eventTypeRefresh="refresh"
 readonly eventTypeUninstall="uninstall"
 
 telemetrySuccess=false
-telemetrySessionULID=""
+telemetrySessionUUID=""
+# Deprecated, use telemetryUserUUID instead
+# only here for backwards compatability reasons, can be removed when the following issues have been resolved:
+# - https://github.com/airbytehq/airbyte-internal-issues/issues/7758
+# - https://github.com/airbytehq/PyAirbyte/issues/219
 telemetryUserULID=""
+telemetryUserUUID=""
 telemetryEnabled=true
 # telemetry requires curl to be installed
 if ! command -v curl > /dev/null; then
   telemetryEnabled=false
 fi
 
+# TelemetryUUID echos a uuid value, or an empty string if no uuid can be genereated
+# Attempts to generate a uuid via the following methods: uuidgen, /proc/sys/kernel/random/uuid, openssl, python
+TelemetryUUID() {
+  local uuid
+
+  if command -v uuidgen > /dev/null; then
+    uuid=$(uuidgen)
+  elif [ -f /proc/sys/kernel/random/uuid ]; then
+    uuid=$(cat /proc/sys/kernel/random/uuid)
+  elif command -v openssl > /dev/null; then
+    local opensslUUID
+    opensslUUID=$(openssl rand -hex 16)
+    uuid=${opensslUUID:0:8}-${opensslUUID:8:4}-${opensslUUID:12:4}-${opensslUUID:16:4}-${opensslUUID:20:12}
+  elif command -v python > /dev/null; then
+    uuid=$(python -c "import uuid; print(uuid.uuid4())")
+  else
+    uuid=""
+  fi
+
+  echo $uuid
+}
+
 # TelemetryConfig configures the telemetry variables and will disable telemetry if it cannot be configured.
 TelemetryConfig()
 {
   # only attempt to do anything if telemetry is not disabled
   if $telemetryEnabled; then
-    telemetrySessionULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
+    telemetrySessionUUID=$(TelemetryUUID)
 
-    if [[ $telemetrySessionULID = "" || ${#telemetrySessionULID} -ne 26 ]]; then
-      # if we still don't have a ulid, give up on telemetry data
+    if [[ $telemetrySessionUUID = "" ]]; then
+      # if we still don't have a uuid, give up on telemetry data
       telemetryEnabled=false
       return
     fi
 
     # if we have an analytics file, use it
     if test -f ~/.airbyte/analytics.yml; then
+      # grab the deprecated ulid value, as we may still write it to the file if we write the file with a uuid
       telemetryUserULID=$(cat ~/.airbyte/analytics.yml | grep "anonymous_user_id" | cut -d ":" -f2 | xargs)
+
+      telemetryUserUUID=$(cat ~/.airbyte/analytics.yml | grep "analytics_id" | cut -d ":" -f2 | xargs)
     fi
-    # if the telemtery ulid is still undefined, attempt to create it and write the analytics file
-    if [[ $telemetryUserULID = "" || ${#telemetryUserULID} -ne 26 ]]; then
-      telemetryUserULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
-      if [[ $telemetryUserULID = "" || ${#telemetryUserULID} -ne 26 ]]; then
-        # if we still don't have a ulid, give up on telemetry data
+
+    # if the telemetery uuid is still undefined, attempt to create it and write the analytics file
+    if [[ $telemetryUserUUID = "" ]] ; then
+      telemetryUserUUID=$(TelemetryUUID)
+      if [[ $telemetryUserUUID = "" ]]; then
+        # if we still don't have a uuid, give up on telemetry data
         telemetryEnabled=false
       else
-        # we created a new ulid, write it out
+        # we created a new uuid, write it out
         echo "Thanks you for using Airbyte!"
         echo "Anonymous usage reporting is currently enabled. For more information, please see https://docs.airbyte.com/telemetry"
         mkdir -p ~/.airbyte
@@ -101,7 +132,9 @@ TelemetryConfig()
 # This file is used by Airbyte to track anonymous usage statistics.
 # For more information or to opt out, please see
 # - https://docs.airbyte.com/operator-guides/telemetry
+# Deprecated, use analytics_id instead
 anonymous_user_id: $telemetryUserULID
+analytics_id: $telemetryUserUUID
 EOL
       fi
     fi
@@ -167,11 +200,11 @@ TelemetrySend()
     local now=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
     local body=$(cat << EOL
 {
-  "anonymousId":"$telemetryUserULID",
+  "anonymousId":"$telemetryUserUUID",
   "event":"$event",
   "properties": {
     "deployment_method":"run_ab",
-    "session_id":"$telemetrySessionULID",
+    "session_id":"$telemetrySessionUUID",
     "state":"$state",
     "os":"$OSTYPE",
     "script_version":"$scriptVersion",
@@ -345,7 +378,7 @@ if [ -z "$dockerDetachedMode" ]; then
   TelemetryDockerUp &
 fi
 
-docker compose up $dockerDetachedMode
+AIRBYTE_INSTALLATION_ID="${telemetryUserUUID}" docker compose up $dockerDetachedMode
 
 # $? is the exit code of the last command. So here: docker compose up
 if test $? -ne 0; then
