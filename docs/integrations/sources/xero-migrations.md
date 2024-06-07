@@ -1,12 +1,30 @@
 # Xero Migration Guide
 
-## Upgrading to 1.0.1
+## Upgrading to 1.0.2
 
-Rather that generating the `access_token`, you can now use the `client_id` and `client_secret` to authenticate your source.
+You can now choose your preferred xero authentication method. You can choose between `client_credentials` and `bearer_token` authentication methods.
 
-We've changed the grant_type to `client_credentials` to offset the authentication flow to Xero. This will allow you to authenticate your source with the `client_id` and `client_secret` instead of the `access_token`.
+For the bearer strategy, please visit the [pkce-flow documentation](https://developer.xero.com/documentation/guides/oauth2/pkce-flow) for more detailed information about how to get access token.
+For the client_credentials strategy, please visit the [client-credentials-flow documentation](https://developer.xero.com/documentation/guides/oauth2/custom-connections) for more detailed information about how to set the authentication flow. 
 
-Visit the Xero documentation - https://developer.xero.com/documentation/guides/oauth2/auth-flow for more detailed information about how to get access token.
+### Using postman to get access token 
+- Move to Authorization tab of an empty http request and selected Oauth 2.0
+- Set use token type as `access token`
+- Set header prefix as `Bearer`
+- Set grant type as `Authorization code`
+- Check `Authorize using browser`
+- Set Auth URL as `https://login.xero.com/identity/connect/authorize`
+- Set Access token URL as `https://identity.xero.com/connect/token`
+- Set Client ID, Client secret, Scope defined as your Xero settings
+- Set state as any number Eg: `123`
+- Set Client Authentication as `Send as Basic Auth Header`
+  Click `Get New Access Token` for retrieving access token
+
+Then authorize your source with the required information. 
+1. Go to set up `The Source` page.
+2. Enter your Xero application's access token or Client ID and Client Secret.
+3. Click `Reset saved source` button.
+
 
 ## Upgrading to 1.0.0
 

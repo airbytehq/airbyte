@@ -2821,7 +2821,7 @@ spec:
                   - "Client_Secret"
                 airbyte_secret: true
           - type: object
-            title: OAuth2 Access Token
+            title: Bearer Access Token
             required:
               - access_token
               - auth_type
