@@ -1,11 +1,13 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isCdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidUtils.CtidStreams;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
@@ -16,15 +18,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A state manager for non resumable full refresh. It does not produce any meaningful state, but just serves as feeding into SourceStateIterator
- * so we can have counts.
+ * A state manager for non resumable full refresh. It does not produce any meaningful state, but
+ * just serves as feeding into SourceStateIterator so we can have counts.
  */
 public class CtidCountStateManager implements SourceStateMessageProducer<AirbyteMessage> {
 
   final CtidStateManager ctidStateManager;
   final JsonNode config;
+
   public CtidCountStateManager(final JsonNode config,
-      final CtidStateManager ctidStateManager) {
+                               final CtidStateManager ctidStateManager) {
     this.config = config;
     this.ctidStateManager = ctidStateManager;
   }
@@ -74,4 +77,5 @@ public class CtidCountStateManager implements SourceStateMessageProducer<Airbyte
   public boolean shouldEmitStateMessage(@Nullable ConfiguredAirbyteStream stream) {
     return false;
   }
+
 }

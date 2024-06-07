@@ -86,8 +86,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   @Override
   protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
     AtomicLong count = new AtomicLong(0L);
-    stateMessages.stream().forEach(stateMessage ->
-    count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
     assertEquals(totalCount, count.get());
   }
 

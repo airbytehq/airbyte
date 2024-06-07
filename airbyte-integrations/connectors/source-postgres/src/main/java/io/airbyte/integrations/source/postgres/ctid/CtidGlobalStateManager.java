@@ -61,12 +61,14 @@ public class CtidGlobalStateManager extends CtidStateManager {
     this.resumableFullRefreshStreams = new HashSet<>();
     this.nonResumableFullRefreshStreams = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
-      var pair = new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace());
+      var pair =
+          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace());
       if (!ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream) && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
         streamsThatHaveCompletedSnapshot.add(pair);
       }
 
-      if (fileNodeHandler.hasFileNode(new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()))
+      if (fileNodeHandler.hasFileNode(
+          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()))
           && configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
         this.resumableFullRefreshStreams.add(pair);
       } else if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {

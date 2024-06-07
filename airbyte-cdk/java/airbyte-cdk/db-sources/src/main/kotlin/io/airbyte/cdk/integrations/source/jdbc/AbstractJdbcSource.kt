@@ -180,21 +180,22 @@ abstract class AbstractJdbcSource<Datatype>(
         if (airbyteStream.syncMode == FULL_REFRESH) {
             var defaultProducer = getSourceStateProducerForNonResumableFullRefreshStream(database)
             if (defaultProducer != null) {
-                iterator = AutoCloseableIterators.transform(
-                    { autoCloseableIterator: AutoCloseableIterator<AirbyteMessage> ->
-                        SourceStateIterator(
-                            autoCloseableIterator,
-                            airbyteStream,
-                            defaultProducer,
-                            StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO)
+                iterator =
+                    AutoCloseableIterators.transform(
+                        { autoCloseableIterator: AutoCloseableIterator<AirbyteMessage> ->
+                            SourceStateIterator(
+                                autoCloseableIterator,
+                                airbyteStream,
+                                defaultProducer,
+                                StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO)
+                            )
+                        },
+                        iterator,
+                        AirbyteStreamUtils.convertFromNameAndNamespace(
+                            airbyteStream.stream.name,
+                            airbyteStream.stream.namespace
                         )
-                    },
-                    iterator,
-                    AirbyteStreamUtils.convertFromNameAndNamespace(
-                        airbyteStream.stream.name,
-                        airbyteStream.stream.namespace
                     )
-                )
             }
         }
 
@@ -204,7 +205,9 @@ abstract class AbstractJdbcSource<Datatype>(
         }
     }
 
-    protected open fun getSourceStateProducerForNonResumableFullRefreshStream(database: JdbcDatabase) : SourceStateMessageProducer<AirbyteMessage>? {
+    protected open fun getSourceStateProducerForNonResumableFullRefreshStream(
+        database: JdbcDatabase
+    ): SourceStateMessageProducer<AirbyteMessage>? {
         return null
     }
 
