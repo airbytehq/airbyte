@@ -986,6 +986,7 @@ def test_response_caching_with_enable_use_cache(http_requester_factory, requests
 
     assert len(response.json()) == len(new_response.json())
 
+
 def test_request_attempt_count_is_tracked_across_retries(http_requester_factory):
     request_mock = MagicMock(spec=requests.PreparedRequest)
     request_mock.headers = {}
