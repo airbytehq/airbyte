@@ -197,10 +197,29 @@ class FullRefreshConfig(BaseConfig):
     )
 
 
+class FutureStateCursorFormatStreamConfiguration(BaseConfig):
+    name: str
+    format: Optional[str] = Field(default=None, description="Expected format of the cursor value")
+
+
+class FutureStateCursorFormatConfiguration(BaseConfig):
+    format: Optional[str] = Field(
+        default=None,
+        description="The default format of the cursor value will be used for all streams except those defined in the streams section",
+    )
+    streams: List[FutureStateCursorFormatStreamConfiguration] = Field(
+        default_factory=list, description="Expected cursor value format for a particular stream"
+    )
+
+
 class FutureStateConfig(BaseConfig):
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
     missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missing streams with valid bypass reasons.")
     bypass_reason: Optional[str]
+    cursor_format: Optional[FutureStateCursorFormatConfiguration] = Field(
+        default_factory=FutureStateCursorFormatConfiguration,
+        description=("Expected cursor format"),
+    )
 
 
 class IncrementalConfig(BaseConfig):
