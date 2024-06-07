@@ -11,8 +11,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_kyve.utils import query_endpoint_in_gateway_endpoints
 from source_kyve.preprocessor import preprocess_tendermint_data_item
+from source_kyve.utils import query_endpoint_in_gateway_endpoints
 
 logger = logging.getLogger("airbyte")
 
@@ -78,8 +78,13 @@ class KYVEStream(HttpStream, IncrementalMixin):
             schema = {
                 "$schema": "http://json-schema.org/draft-04/schema#",
                 "type": "object",
-                "properties": {"height": {"type": "integer"}, "value": {"type": "any"}, "type": {"type": "string"}, "array_index":
-                    {"type": "integer"}, "offset": {"type": "string"}},
+                "properties": {
+                    "height": {"type": "integer"},
+                    "value": {"type": "any"},
+                    "type": {"type": "string"},
+                    "array_index": {"type": "integer"},
+                    "offset": {"type": "string"},
+                },
                 "required": ["key", "value"],
             }
         else:
@@ -94,15 +99,15 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return schema
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"/kyve/v1/bundles/{self.pool_id}"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # Set the pagesize in the request parameters
         params = {"pagination.limit": self.page_size}
@@ -119,11 +124,11 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return params
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         bundles = response.json().get("finalized_bundles")
         if not len(bundles):
@@ -155,8 +160,10 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
                             time.sleep(2 ^ retry_count)
                     else:
-                        raise Exception(f"failed to query bundle {bundle.get('id')} with storage_id = {storage_id} from storage_provider "
-                                        f"{storage_provider_id}")
+                        raise Exception(
+                            f"failed to query bundle {bundle.get('id')} with storage_id = {storage_id} from storage_provider "
+                            f"{storage_provider_id}"
+                        )
                 else:
                     logger.error(f"storage provider with id {storage_provider_id} is not supported ")
                     raise Exception("unsupported storage provider")
@@ -198,13 +205,14 @@ class KYVEStream(HttpStream, IncrementalMixin):
                 # smaller than start_key
                 if int(bundle.get("from_key")) <= self._start_key <= int(bundle.get("to_key")):
                     if self._tendermint_normalization:
-                        sliced_preprocessed_bundle = [row for row in preprocessed_bundle if self._start_key <= row.get("height")
-                                                      <= self._end_key]
+                        sliced_preprocessed_bundle = [
+                            row for row in preprocessed_bundle if self._start_key <= row.get("height") <= self._end_key
+                        ]
                         yield from sliced_preprocessed_bundle
                     else:
-                        decompressed_as_json = [data_item for data_item in decompressed_as_json if
-                                                self._start_key <= int(data_item.get("key"))
-                                                <= self._end_key]
+                        decompressed_as_json = [
+                            data_item for data_item in decompressed_as_json if self._start_key <= int(data_item.get("key")) <= self._end_key
+                        ]
                         yield from decompressed_as_json
                     continue
 
@@ -212,15 +220,15 @@ class KYVEStream(HttpStream, IncrementalMixin):
                 # bigger than end_key and stop the stream
                 if int(bundle.get("from_key")) <= self._end_key <= int(bundle.get("to_key")):
                     if self._tendermint_normalization:
-                        sliced_preprocessed_bundle = [row for row in preprocessed_bundle if
-                                                      self._start_key <= row.get("height")
-                                                      <= self._end_key]
+                        sliced_preprocessed_bundle = [
+                            row for row in preprocessed_bundle if self._start_key <= row.get("height") <= self._end_key
+                        ]
                         self._reached_end = True
                         yield from sliced_preprocessed_bundle
                     else:
-                        decompressed_as_json = [data_item for data_item in decompressed_as_json if
-                                                self._start_key <= int(data_item.get("key"))
-                                                <= self._end_key]
+                        decompressed_as_json = [
+                            data_item for data_item in decompressed_as_json if self._start_key <= int(data_item.get("key")) <= self._end_key
+                        ]
                         self._reached_end = True
                         yield from decompressed_as_json
                     return

@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import json
 
 
@@ -24,14 +26,6 @@ def get_event_rows(events, height, offset, type):
     if events is not None:
         for index, event in enumerate(events):
             # Convert event to JSON-serializable format
-            event_rows.append(
-                {
-                    "height": height,
-                    "value": event,
-                    "type": type,
-                    "array_index": index,
-                    "offset": offset
-                }
-            )
+            event_rows.append({"height": height, "value": event, "type": type, "array_index": index, "offset": offset})
 
     return event_rows

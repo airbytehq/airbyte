@@ -37,11 +37,10 @@ connectionSpecification:
     start_keys:
       type: string
       title: Start keys
-      description:
-        The start key defines, from which key the pipeline should
-        start to extract the data. Only recommended when the sync should 
-        start at a specific key with a predefined Bundle-Start-ID to prevent 
-        inefficiency. Right now, this is only supported for pools using the 
+      description: The start key defines, from which key the pipeline should
+        start to extract the data. Only recommended when the sync should
+        start at a specific key with a predefined Bundle-Start-ID to prevent
+        inefficiency. Right now, this is only supported for pools using the
         kyvejs/tendermint or kyvejs/tendermint-bsync runtime. (Comma separated)
       examples:
         - "0"
@@ -50,11 +49,10 @@ connectionSpecification:
     end_keys:
       type: string
       title: End keys
-      description:
-        The end key defines, until which key the pipeline should
+      description: The end key defines, until which key the pipeline should
         extract the data. Only recommended when the sync should
-        end at a specific key to prevent unnecessary data traffic. 
-        Right now, this is only supported for pools using the kyvejs/tendermint 
+        end at a specific key to prevent unnecessary data traffic.
+        Right now, this is only supported for pools using the kyvejs/tendermint
         or kyvejs/tendermint-bsync runtime. (Comma separated)
       examples:
         - "100"
@@ -64,7 +62,7 @@ connectionSpecification:
       title: Enable Tendermint normalization
       default: false
       description:
-        Normalizes block results object and writes each event of begin_block_events, end_block_events 
+        Normalizes block results object and writes each event of begin_block_events, end_block_events
         and txs_results in one row.
     max_pages:
       type: integer
