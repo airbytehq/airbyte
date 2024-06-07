@@ -1255,6 +1255,7 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       page_size_option:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
@@ -1293,6 +1294,7 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1653,6 +1655,26 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
+  JsonlDecoder:
+    title: Jsonl Decoder
+    description: Use this if the response consists of JSON objects separated by new lines (`\n`)
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [JsonlDecoder]
+  IterableDecoder:
+    title: Iterable Decoder
+    description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap it into a JSON object with the `record` key.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [IterableDecoder]
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -2286,7 +2308,10 @@ definitions:
       decoder:
         title: Decoder
         description: Component decoding the response so records can be extracted.
-        "$ref": "#/definitions/Decoder"
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true

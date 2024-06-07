@@ -536,6 +536,14 @@ class JsonDecoder(BaseModel):
     type: Literal['JsonDecoder']
 
 
+class JsonlDecoder(BaseModel):
+    type: Literal['JsonlDecoder']
+
+
+class IterableDecoder(BaseModel):
+    type: Literal['IterableDecoder']
+
+
 class MinMaxDatetime(BaseModel):
     type: Literal['MinMaxDatetime']
     datetime: str = Field(
@@ -805,10 +813,6 @@ class Decoder(BaseModel):
     __root__: Any
 
 
-class JsonlDecoder(BaseModel):
-    __root__: Any
-
-
 class AddedFieldDefinition(BaseModel):
     type: Literal['AddedFieldDefinition']
     path: List[str] = Field(
@@ -1002,7 +1006,7 @@ class DefaultPaginator(BaseModel):
     pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrement, PageIncrement] = Field(
         ..., description='Strategy defining how records are paginated.', title='Pagination Strategy'
     )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder]] = Field(
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
         None, description='Component decoding the response so records can be extracted.', title='Decoder'
     )
     page_size_option: Optional[RequestOption] = None
@@ -1018,7 +1022,7 @@ class DpathExtractor(BaseModel):
         examples=[['data'], ['data', 'records'], ['data', '{{ parameters.name }}'], ['data', '*', 'record']],
         title='Field Path',
     )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder]] = Field(None, title='Decoder')
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(None, title='Decoder')
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1338,7 +1342,9 @@ class SimpleRetriever(BaseModel):
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
     )
-    decoder: Optional[Decoder] = Field(None, description='Component decoding the response so records can be extracted.', title='Decoder')
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None, description='Component decoding the response so records can be extracted.', title='Decoder'
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
