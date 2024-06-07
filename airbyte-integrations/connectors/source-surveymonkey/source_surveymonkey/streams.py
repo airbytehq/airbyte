@@ -136,7 +136,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, CheckpointMixin, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            self.state = self.get_updated_state(self.state, record)
+            self.state = self._get_updated_state(self.state, record)
             yield record
 
     def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -144,6 +144,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, CheckpointMixin, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
+        current_stream_state = current_stream_state or {}
         state_value = max(current_stream_state.get(self.cursor_field, ""), latest_record.get(self.cursor_field, ""))
         return {self.cursor_field: state_value}
 
