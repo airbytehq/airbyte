@@ -24,10 +24,9 @@ poetry install --with dev
 
 ### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/goldcast-api)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_goldcast_api/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/goldcast-api) to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_goldcast_api/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
+See `sample_files/sample_config.json` for a sample config file. For simplicity, instructions are also included here: please refer to the offical Goldcast [documentation](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast) to generate a token.
 
 
 ### Locally running the connector

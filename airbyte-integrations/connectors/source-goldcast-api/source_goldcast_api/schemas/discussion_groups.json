@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Discussion Group Schema",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": { "type": "string" },
     "deleted": { "type": ["null", "string"] },
@@ -26,30 +27,5 @@
     "video_quality": { "type": ["null", "string"] },
     "event": { "type": "string" },
     "owner": { "type": "string" }
-  },
-  "required": [
-    "id",
-    "deleted",
-    "deleted_by_cascade",
-    "created_at",
-    "updated_at",
-    "rank",
-    "title",
-    "description",
-    "recording",
-    "capacity",
-    "sponsor_image",
-    "tags",
-    "mmid",
-    "shadow_mmid",
-    "starts_at",
-    "ends_at",
-    "is_live",
-    "is_booth",
-    "is_breakout",
-    "current",
-    "video_quality",
-    "event",
-    "owner"
-  ]
+  }
 }

@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Event Member Schema",
   "type": "array",
+  "additionalProperties": true,
   "properties": {
     "id": { "type": "integer" },
     "qrcode_encoding": { "type": "string" },
@@ -152,25 +153,5 @@
     },
     "blocked_by": { "type": ["null", "string"] },
     "status_updated_by": { "type": ["null", "string"] }
-  },
-  "required": [
-    "id",
-    "qrcode_encoding",
-    "event_role",
-    "event_role_list",
-    "created_at",
-    "updated_at",
-    "uuid",
-    "is_in_person",
-    "magic_link",
-    "qrcode_content",
-    "qrcode",
-    "view_as_attendee",
-    "blocked",
-    "attendance_status",
-    "status",
-    "event",
-    "user",
-    "organization_user"
-  ]
+  }
 }

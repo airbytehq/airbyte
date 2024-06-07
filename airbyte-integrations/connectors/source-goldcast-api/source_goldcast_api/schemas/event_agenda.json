@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Event Agenda Schema",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "broadcast": {
       "type": "array",
@@ -87,18 +88,7 @@
               },
               "path": { "type": ["null", "string"] },
               "organization": { "type": "string" }
-            },
-            "required": [
-              "id",
-              "urls",
-              "created_at",
-              "name",
-              "uploaded",
-              "asset_type",
-              "creation_type",
-              "transcode_status",
-              "organization"
-            ]
+            }
           },
           "surveys": { "type": "array", "items": {} },
           "expected_end_time": { "type": "string", "format": "date-time" },
@@ -193,66 +183,9 @@
           "sign_language_translator_user_id": { "type": ["null", "string"] },
           "moderator": { "type": "array", "items": {} },
           "speakers": { "type": "array", "items": { "type": "string" } }
-        },
-        "required": [
-          "id",
-          "video_assets",
-          "slide_assets",
-          "on_demand_asset",
-          "expected_end_time",
-          "allowed_end_time",
-          "allowed_start_time",
-          "manual_redirection_enabled",
-          "surveys",
-          "resources",
-          "kudo_config",
-          "video_qna_requests",
-          "created_at",
-          "updated_at",
-          "title",
-          "live_start_time",
-          "live_end_time",
-          "have_video_qna",
-          "have_text_qna",
-          "hide_watcher_count",
-          "show_watcher_count_speakers",
-          "have_polls",
-          "is_on_demand",
-          "is_live",
-          "recording",
-          "start_time",
-          "end_time",
-          "mmid",
-          "poll_channel_mmid",
-          "video_qna_channel_mmid",
-          "text_qna_channel_mmid",
-          "speaker_chat_mmid",
-          "live_captions_mmid",
-          "is_joinable",
-          "broadcast_type",
-          "is_hybrid_playing_simulive",
-          "isVbr",
-          "is_hls_low",
-          "is_hls_med",
-          "is_hls_high",
-          "is_recording",
-          "latest_recording_timestamp",
-          "recording_dir_prefix",
-          "current_playing_slide_number",
-          "screen_share_layout",
-          "sort_priority",
-          "medialive_channel_state",
-          "wordly_session_id",
-          "wordly_session_key",
-          "round_videos",
-          "show_active_speaker_only",
-          "is_available_on_demand",
-          "content_repurposing_enabled",
-          "event"
-        ]
+        }
       }
     },
     "items": { "type": "array" }
-  },
-  "required": ["broadcast", "items"]
+  }
 }

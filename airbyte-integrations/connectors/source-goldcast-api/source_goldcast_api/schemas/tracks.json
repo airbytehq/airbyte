@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Tracks Schema",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": { "type": "string" },
     "allowed_ticket_types": { "type": "array", "items": { "type": "string" } },
@@ -13,16 +14,5 @@
     "channel_mmid": { "type": ["null", "string"] },
     "sort_priority": { "type": "integer" },
     "event": { "type": "string" }
-  },
-  "required": [
-    "id",
-    "allowed_ticket_types",
-    "agenda_items",
-    "created_at",
-    "updated_at",
-    "custom",
-    "title",
-    "sort_priority",
-    "event"
-  ]
+  }
 }

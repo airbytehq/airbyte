@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Webinar Schema",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": { "type": "string" },
     "timezone": { "type": "string" },
@@ -20,16 +21,7 @@
         "organization": { "type": "string" },
         "role": { "type": "string" },
         "profile_picture_url": { "type": ["null", "string"] }
-      },
-      "required": [
-        "id",
-        "first_name",
-        "last_name",
-        "email",
-        "organization",
-        "role"
-      ],
-      "additionalProperties": false
+      }
     },
     "updated_by_user": {
       "type": "object",
@@ -41,16 +33,7 @@
         "organization": { "type": "string" },
         "role": { "type": "string" },
         "profile_picture_url": { "type": ["null", "string"] }
-      },
-      "required": [
-        "id",
-        "first_name",
-        "last_name",
-        "email",
-        "organization",
-        "role"
-      ],
-      "additionalProperties": false
+      }
     },
     "registrant_count": { "type": "integer" },
     "registration_cta_link": { "type": ["null", "string"] },
@@ -99,63 +82,7 @@
         "event_starts": { "type": "string", "format": "date-time" },
         "event_ends": { "type": "string", "format": "date-time" },
         "show_schedule": { "type": "boolean" }
-      },
-      "required": [
-        "pre_event",
-        "post_event",
-        "event_starts",
-        "event_ends",
-        "show_schedule"
-      ],
-      "additionalProperties": false
+      }
     }
-  },
-  "required": [
-    "id",
-    "timezone",
-    "manual_breakout",
-    "is_single_session",
-    "created_by_user",
-    "updated_by_user",
-    "registrant_count",
-    "deleted",
-    "deleted_by_cascade",
-    "created_at",
-    "updated_at",
-    "discussions_chat_disabled",
-    "discussion_room_tab_title",
-    "show_booths",
-    "booth_chat_disabled",
-    "booth_tab_title",
-    "booth_tab_title_2",
-    "show_attendees",
-    "p2p_chat_disabled",
-    "people_tab_title",
-    "speaker_tab_visible",
-    "speaker_tab_title",
-    "public_chat_disabled",
-    "gifs_enabled",
-    "is_text_qna_moderated",
-    "have_text_qna",
-    "have_video_qna",
-    "enable_live_captions",
-    "enable_live_captions_translations",
-    "email_alias_name",
-    "demo_request_message",
-    "broadcast_chat_disabled",
-    "anonymous_qna_enabled",
-    "show_answerers_identity",
-    "textqna_answerers_alias",
-    "is_title_visible",
-    "disable_enter_event_button",
-    "enable_tech_check",
-    "show_onboarding",
-    "logo_url",
-    "favicon",
-    "show_discussion_rooms",
-    "title",
-    "description",
-    "schedule"
-  ],
-  "additionalProperties": false
+  }
 }
