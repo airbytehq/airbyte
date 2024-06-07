@@ -19,8 +19,10 @@ class ShopifyBulkExceptions:
     class BulkJobError(BaseBulkException):
         """Raised when there are BULK Job Errors in response"""
 
-    class BulkJobUnknownError(BaseBulkException):
-        """Raised when BULK Job has FAILED with Unknown status"""
+    class BulkJobNonHandableError(BaseBulkException):
+        """Raised when there are non-actionable BULK Job Errors in response"""
+
+        failure_type: FailureType = FailureType.system_error
 
     class BulkJobBadResponse(BaseBulkException):
         """Raised when the requests.Response object could not be parsed"""

@@ -145,7 +145,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
     resumableFullRefreshStreams.forEach(stream -> {
       final CtidStatus ctidStatusForFullRefreshStream = generateCtidStatusForState(pair);
-      streamStates.add(getAirbyteStreamState(pair, Jsons.jsonNode(ctidStatusForFullRefreshStream)));
+      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ctidStatusForFullRefreshStream)));
     });
 
     return new AirbyteStateMessage()

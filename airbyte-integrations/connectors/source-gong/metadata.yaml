@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-gong
   documentationUrl: https://docs.airbyte.com/integrations/sources/gong
   githubIssueLabel: source-gong
@@ -28,4 +28,12 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_GONG_CREDS_OAUTH
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

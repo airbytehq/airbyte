@@ -123,7 +123,9 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                          |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.1   | 2024-05-20 | [38341](https://github.com/airbytehq/airbyte/pull/38341)   | Update CDK authenticator package                                                                                                  |
+| 2.0.0   | 2024-04-20 | [37374](https://github.com/airbytehq/airbyte/pull/37374)   | Migrate to low-code and fix `Project Avatars` stream                                                                                                             |
 | 1.2.2   | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | Updating to 0.80.0 CDK                                                                                                                                           |
 | 1.2.1   | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | schema descriptions                                                                                                                                              |
 | 1.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)   | Pin airbyte-cdk version to `^0`                                                                                                                                  |
