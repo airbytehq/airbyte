@@ -124,7 +124,7 @@ class Report:
                     gcs_url = await artifact.upload_to_gcs(
                         dagger_client=self.pipeline_context.dagger_client,
                         bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
-                        key=f"{self.report_output_prefix}/artifacts/{slugify(step_result.step.title)}/{upload_time}_{artifact.name}",
+                        key=f"{self.report_output_prefix}/artifacts/{slugify(step_result.step.title)}/{artifact.name}",
                         gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
                     )
                     self.pipeline_context.logger.info(f"Artifact {artifact.name} for {step_result.step.title} uploaded to {gcs_url}")

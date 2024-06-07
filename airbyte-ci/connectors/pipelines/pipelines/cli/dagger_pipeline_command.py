@@ -76,7 +76,6 @@ class DaggerPipelineCommand(click.Command):
 
         git_branch = ctx.obj["git_branch"]
         git_revision = ctx.obj["git_revision"]
-        pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
         ci_context = ctx.obj["ci_context"]
         ci_job_key = ctx.obj["ci_job_key"] if ctx.obj.get("ci_job_key") else ci_context
 
@@ -94,7 +93,6 @@ class DaggerPipelineCommand(click.Command):
             cmd,
             ci_job_key,
             sanitized_branch,
-            pipeline_start_timestamp,
             git_revision,
         ]
 
