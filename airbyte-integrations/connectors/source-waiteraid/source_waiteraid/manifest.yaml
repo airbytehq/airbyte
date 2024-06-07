@@ -83,23 +83,28 @@ schemas:
       all_seated:
         type:
           - "null"
-          - number
+          - integer
+          - string
       amount:
         type:
           - "null"
-          - number
+          - integer
+          - string
       arrived:
         type:
           - "null"
-          - number
+          - integer
+          - string
       booking_date:
         type:
           - "null"
-          - number
+          - integer
+          - string
       children_amount:
         type:
           - "null"
-          - number
+          - integer
+          - string
       comment:
         type:
           - "null"
@@ -107,7 +112,8 @@ schemas:
       confirmed:
         type:
           - "null"
-          - number
+          - integer
+          - string
       date:
         type:
           - "null"
@@ -115,7 +121,8 @@ schemas:
       end:
         type:
           - "null"
-          - number
+          - integer
+          - string
       guest:
         type: object
         properties:
@@ -146,7 +153,8 @@ schemas:
           id:
             type:
               - "null"
-              - number
+              - integer
+              - string
           lastname:
             type:
               - "null"
@@ -163,6 +171,7 @@ schemas:
             type:
               - "null"
               - string
+              - boolean
           postalcode:
             type:
               - "null"
@@ -170,6 +179,7 @@ schemas:
           restaurant_newsletter:
             type:
               - "null"
+              - string
               - boolean
           telephone:
             type:
@@ -178,31 +188,38 @@ schemas:
       guest_left:
         type:
           - "null"
-          - number
+          - integer
+          - string
       has_message:
         type:
           - "null"
-          - number
+          - integer
+          - string
       id:
         type:
           - "null"
-          - number
+          - integer
+          - string
       internet_booking:
         type:
           - "null"
-          - number
+          - integer
+          - string
       internet_booking_confirmed:
         type:
           - "null"
-          - number
+          - integer
+          - string
       langid:
         type:
           - "null"
-          - number
+          - integer
+          - string
       length:
         type:
           - "null"
-          - number
+          - integer
+          - string
       meal:
         type:
           - "null"
@@ -214,7 +231,8 @@ schemas:
       paid:
         type:
           - "null"
-          - number
+          - integer
+          - string
       payActivated:
         type:
           - "null"
@@ -234,19 +252,23 @@ schemas:
       placed:
         type:
           - "null"
-          - number
+          - integer
+          - string
       placed_manually:
         type:
           - "null"
-          - number
+          - integer
+          - string
       products:
         type:
           - "null"
-          - number
+          - integer
+          - string
       start:
         type:
           - "null"
-          - number
+          - integer
+          - string
       status:
         type:
           - "null"
@@ -254,11 +276,13 @@ schemas:
       table_ids:
         type:
           - "null"
-          - number
+          - array
+          - items:
+              type: string
       tables:
         type:
           - "null"
-          - number
+          - string
       time:
         type:
           - "null"
@@ -266,9 +290,12 @@ schemas:
       waitinbar:
         type:
           - "null"
-          - number
+          - integer
+          - string
       waitinlist:
         type:
           - "null"
-          - number
+          - integer
+          - string
     additionalProperties: true
+
