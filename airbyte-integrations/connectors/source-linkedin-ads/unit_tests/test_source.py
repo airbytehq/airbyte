@@ -175,7 +175,7 @@ class TestLinkedinAdsStream:
         assert expected == result
 
     def test_request_params(self):
-        expected = "pageSize=500&q=search&search=(id:(values:List(1,2)))"
+        expected = "pageSize=500&q=search&search=(id:(values:List(urn%3Ali%3AsponsoredAccount%3A1,urn%3Ali%3AsponsoredAccount%3A2)))"
         result = self.stream.request_params(stream_state={}, stream_slice={"account_id": 123})
         assert expected == result
 

@@ -17,7 +17,7 @@ import requests  # type: ignore
 import semver
 import yaml  # type: ignore
 from dagger import Container, Directory
-from pipelines import hacks
+from pipelines import hacks, main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
@@ -25,7 +25,9 @@ from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
+from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
+from slugify import slugify
 
 
 class VersionCheck(Step, ABC):
@@ -160,14 +162,9 @@ class QaChecks(SimpleDockerStep):
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
             ],
-            secrets={
-                k: v
-                for k, v in {
-                    "DOCKER_HUB_USERNAME": context.docker_hub_username_secret,
-                    "DOCKER_HUB_PASSWORD": context.docker_hub_password_secret,
-                }.items()
-                if v
-            },
+            secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
+            if context.docker_hub_username and context.docker_hub_password
+            else None,
             command=["connectors-qa", "run", f"--name={technical_name}"],
         )
 
@@ -211,14 +208,15 @@ class AcceptanceTests(Step):
             command += ["--numprocesses=auto"]  # Using pytest-xdist to run tests in parallel, auto means using all available cores
         return command
 
-    def __init__(self, context: ConnectorContext, concurrent_test_run: Optional[bool] = False) -> None:
+    def __init__(self, context: ConnectorContext, secrets: List[Secret], concurrent_test_run: Optional[bool] = False) -> None:
         """Create a step to run acceptance tests for a connector if it has an acceptance test config file.
 
         Args:
             context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
+            secrets (List[Secret]): List of secrets to mount to the connector container under test.
             concurrent_test_run (Optional[bool], optional): Whether to run acceptance tests in parallel. Defaults to False.
         """
-        super().__init__(context)
+        super().__init__(context, secrets)
         self.concurrent_test_run = concurrent_test_run
 
     async def get_cat_command(self, connector_dir: Directory) -> List[str]:
@@ -294,7 +292,7 @@ class AcceptanceTests(Step):
             .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
-            .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY))
+            .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY, self.secrets))
         )
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
@@ -347,6 +345,7 @@ class RegressionTests(Step):
         (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
         """
         run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
+        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
         run_pytest = " ".join(
             [
                 "poetry",
@@ -368,6 +367,7 @@ class RegressionTests(Step):
                 "--should-read-with-state",
                 str(self.should_read_with_state),
             ]
+            + selected_streams
         )
         run_pytest_with_proxy = dedent(
             f"""
@@ -401,6 +401,7 @@ class RegressionTests(Step):
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", True)
+        self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
@@ -416,12 +417,18 @@ class RegressionTests(Step):
         container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
         regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
         path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
-        await container.file(path_to_report).export(path_to_report)
 
         exit_code, stdout, stderr = await get_exec_result(container)
 
-        with open(path_to_report, "r") as fp:
-            regression_test_report = fp.read()
+        if "report.html" not in await container.directory(f"{regression_tests_artifacts_dir}/session_{self.run_id}").entries():
+            main_logger.exception(
+                "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
+            )
+            regression_test_report = None
+        else:
+            await container.file(path_to_report).export(path_to_report)
+            with open(path_to_report, "r") as fp:
+                regression_test_report = fp.read()
 
         return StepResult(
             step=self,
@@ -453,7 +460,9 @@ class RegressionTests(Step):
             # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
             # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
             # build their own.
-            .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
+            .with_new_file(
+                f"/tmp/{slugify(self.connector_image + ':' + self.target_version)}_container_id.txt", contents=str(target_container_id)
+            )
         )
 
         if self.context.is_ci:
@@ -485,7 +494,7 @@ class RegressionTests(Step):
                         "config",
                         "http-basic.airbyte-platform-internal-source",
                         self.github_user,
-                        self.context.ci_github_access_token or "",
+                        self.context.ci_github_access_token.value if self.context.ci_github_access_token else "",
                     ]
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)

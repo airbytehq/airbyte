@@ -129,46 +129,90 @@ poetry run ruff check pipelines
 
 At this point you can run `airbyte-ci` commands.
 
-- [`airbyte-ci` command group](#airbyte-ci)
-  - [Options](#options)
-- [`connectors` command subgroup](#connectors-command-subgroup)
-  - [Options](#options-1)
-- [`connectors list` command](#connectors-list-command)
-- [`connectors test` command](#connectors-test-command)
-  - [Examples](#examples-)
-  - [What it runs](#what-it-runs-)
-- [`connectors build` command](#connectors-build-command)
-  - [What it runs](#what-it-runs)
-- [`connectors publish` command](#connectors-publish-command)
-- [Examples](#examples)
-- [Options](#options-2)
-- [`connectors up_to_date` command](#up_to_date)
-- [`connectors bump_version` command](#connectors-bump_version)
-- [`connectors upgrade_cdk` command](#connectors-upgrade_cdk)
-- [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
-- [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
-- [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry)
-- [`connectors migrate_to_inline_schemas` command](#migrate_to_inline_schemas)
-- [`connectors pull_request` command](#pull_request)
-- [`format` command subgroup](#format-subgroup)
-  - [`format check` command](#format-check-command)
-  - [`format fix` command](#format-fix-command)
-- [`metadata` command subgroup](#metadata-command-subgroup)
-- [`metadata validate` command](#metadata-validate-command)
-  - [Example](#example)
-  - [Options](#options-3)
-- [`metadata upload` command](#metadata-upload-command)
-  - [Example](#example-1)
-  - [Options](#options-4)
-- [`metadata deploy orchestrator` command](#metadata-deploy-orchestrator-command)
-  - [Example](#example-2)
-  - [What it runs](#what-it-runs--1)
-- [`metadata test lib` command](#metadata-test-lib-command)
-  - [Example](#example-3)
-- [`metadata test orchestrator` command](#metadata-test-orchestrator-command)
-  - [Example](#example-4)
-- [`tests` command](#test-command)
-  - [Example](#example-5)
+- [Airbyte CI CLI](#airbyte-ci-cli)
+  - [What is it?](#what-is-it)
+  - [How to install](#how-to-install)
+    - [Requirements](#requirements)
+  - [Install or Update](#install-or-update)
+    - [Setting up connector secrets access](#setting-up-connector-secrets-access)
+    - [Updating the airbyte-ci tool](#updating-the-airbyte-ci-tool)
+  - [Checking the airbyte-ci install](#checking-the-airbyte-ci-install)
+  - [Cleaning the airbyte-ci install](#cleaning-the-airbyte-ci-install)
+  - [Disabling telemetry](#disabling-telemetry)
+  - [Installation for development](#installation-for-development)
+      - [Pre-requisites](#pre-requisites)
+      - [Installation](#installation)
+      - [Running Tests](#running-tests)
+      - [Checking Code Format (Pipelines)](#checking-code-format-pipelines)
+  - [Commands reference](#commands-reference)
+    - [`airbyte-ci` command group](#airbyte-ci-command-group)
+      - [Options](#options)
+    - [`connectors` command subgroup](#connectors-command-subgroup)
+      - [Options](#options-1)
+    - [`connectors list` command](#connectors-list-command)
+      - [Examples](#examples)
+    - [`connectors test` command](#connectors-test-command)
+      - [Examples](#examples-1)
+      - [What it runs](#what-it-runs)
+      - [Options](#options-2)
+      - [Extra parameters](#extra-parameters)
+    - [`connectors build` command](#connectors-build-command)
+      - [What it runs](#what-it-runs-1)
+    - [Options](#options-3)
+    - [`connectors publish` command](#connectors-publish-command)
+    - [Examples](#examples-2)
+    - [Options](#options-4)
+      - [What it runs](#what-it-runs-2)
+      - [Python registry publishing](#python-registry-publishing)
+    - [`connectors up_to_date` command](#connectors-up_to_date-command)
+    - [Examples](#examples-3)
+    - [Other things it could do](#other-things-it-could-do)
+    - [`connectors bump_version` command](#connectors-bump_version-command)
+    - [Examples](#examples-4)
+      - [Arguments](#arguments)
+    - [`connectors upgrade_cdk` command](#connectors-upgrade_cdk-command)
+    - [Examples](#examples-5)
+      - [Arguments](#arguments-1)
+    - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image-command)
+    - [Examples](#examples-6)
+    - [Options](#options-5)
+    - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image-command)
+      - [Examples](#examples-7)
+    - [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry-command)
+      - [Examples](#examples-8)
+    - [`connectors migrate_to_inline_schemas` command](#connectors-migrate_to_inline_schemas-command)
+      - [Examples](#examples-9)
+    - [`connectors pull_request` command](#connectors-pull_request-command)
+      - [Examples](#examples-10)
+    - [`format` command subgroup](#format-command-subgroup)
+    - [Options](#options-6)
+    - [Examples](#examples-11)
+    - [`format check all` command](#format-check-all-command)
+    - [`format fix all` command](#format-fix-all-command)
+    - [`poetry` command subgroup](#poetry-command-subgroup)
+    - [Options](#options-7)
+    - [Examples](#examples-12)
+    - [`publish` command](#publish-command)
+      - [Options](#options-8)
+    - [`metadata` command subgroup](#metadata-command-subgroup)
+    - [`metadata deploy orchestrator` command](#metadata-deploy-orchestrator-command)
+      - [Example](#example)
+      - [What it runs](#what-it-runs-3)
+    - [`tests` command](#tests-command)
+      - [Options](#options-9)
+      - [Examples](#examples-13)
+  - [Changelog](#changelog)
+  - [More info](#more-info)
+- [Troubleshooting](#troubleshooting)
+  - [Commands](#commands)
+    - [`make tools.airbyte-ci.check`](#make-toolsairbyte-cicheck)
+    - [`make tools.airbyte-ci.clean`](#make-toolsairbyte-ciclean)
+  - [Common issues](#common-issues)
+    - [`airbyte-ci` is not found](#airbyte-ci-is-not-found)
+  - [Development](#development)
+    - [`airbyte-ci` is not found](#airbyte-ci-is-not-found-1)
+    - [python3.10 not found](#python310-not-found)
+    - [Any type of pipeline failure](#any-type-of-pipeline-failure)
 
 ### <a id="airbyte-ci-command-group"></a>`airbyte-ci` command group
 
@@ -186,7 +230,7 @@ options to the `airbyte-ci` command group.**
 | `--is-local/--is-ci`                           | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
 | `--git-branch`                                 | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
 | `--git-revision`                               | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
-| `--diffed-branch`                              | `master`                 |                               | Branch to which the git diff will happen to detect new or modified files.                   |
+| `--diffed-branch`                              | `master`                        |                               | Branch to which the git diff will happen to detect new or modified files.                   |
 | `--gha-workflow-run-id`                        |                                 |                               | GHA CI only - The run id of the GitHub action workflow                                      |
 | `--ci-context`                                 | `manual`                        |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
 | `--pipeline-start-timestamp`                   | Current epoch time              | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
@@ -461,12 +505,12 @@ remoteRegistries:
 
 ### <a id="connectors-up_to_date"></a>`connectors up_to_date` command
 
-Meant to be run on a cron script. 
+Meant to be run on a cron script.
 
 Actions:
 
-* Upgrades dependecies to the current versions
-* Can make a pull request and bump version, changelog
+- Upgrades dependecies to the current versions
+- Can make a pull request and bump version, changelog
 
 ```
 Usage: airbyte-ci connectors up_to_date [OPTIONS]
@@ -484,19 +528,20 @@ Options:
 
 Get source-openweather up to date. If there are changes, bump the version and add to changelog:
 
-* `airbyte-ci connectors --name=source-openweather up_to_date`: upgrades main dependecies
-* `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
-* `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
-* `airbyte-ci connectors --name=source-openweather up_to_date --pull`: make a pull request for it
+- `airbyte-ci connectors --name=source-openweather up_to_date`: upgrades main dependecies
+- `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
+- `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
+- `airbyte-ci connectors --name=source-openweather up_to_date --pull`: make a pull request for it
+- `airbyte-ci connectors --name=source-openweather up_to_date --no-bump`: don't change the version or changelog
 
- ### Other things it could do
+### Other things it could do
 
-* upgrade it the latest base image
-* make sure it's the newest version of pytest
-* do a `poetry update` to update everything else
-* make the pull requests on a well known branch, replacing the last one if still open
-* bump the toml and metadata and changelog
-* also bump the manifest version of the CDK
+- upgrade it the latest base image
+- make sure it's the newest version of pytest
+- do a `poetry update` to update everything else
+- make the pull requests on a well known branch, replacing the last one if still open
+- bump the toml and metadata and changelog
+- also bump the manifest version of the CDK
 
 ### <a id="connectors-bump_version"></a>`connectors bump_version` command
 
@@ -538,6 +583,7 @@ Modify the selected connector metadata to use the latest base image version.
 
 Upgrade the base image for source-openweather:
 `airbyte-ci connectors --name=source-openweather upgrade_base_image`
+`airbyte-ci connectors --name=source-openweather upgrade_base_image --changelog --bump patch --pull-request-number 123`
 
 ### Options
 
@@ -569,6 +615,7 @@ Migrate connectors the poetry package manager.
 
 Migrate source-openweather to use the base image:
 `airbyte-ci connectors --name=source-openweather migrate-to-poetry`
+`airbyte-ci connectors --name=source-openweather migrate-to-poetry --changelog --bump patch`
 
 ### <a id="connectors-migrate_to_inline_schemas"></a>`connectors migrate_to_inline_schemas` command
 
@@ -616,7 +663,7 @@ Options:
 #### Examples
 
 Make a PR for all changes, bump the version and make a changelog in those PRs. They will be on the branch ci_update/round2/<connector-name>:
-`airbyte-ci connectors pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
+`airbyte-ci connectors --modified pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
 
 Do it just for a few connectors:
 `airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
@@ -744,7 +791,24 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-|---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+|---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| 4.17.0  | [#39321](https://github.com/airbytehq/airbyte/pull/39321)      | Bust the java connector build cache flow to get fresh yum packages on a daily basis.                                                                               |
+| 4.16.0  | [#38772](https://github.com/airbytehq/airbyte/pull/38232)      | Add pipeline to replace usage of AirbyteLogger.                                                                               |
+| 4.15.7  | [#38772](https://github.com/airbytehq/airbyte/pull/38772)      | Fix regression test connector image retrieval.                                                                               |
+| 4.15.6  | [#38783](https://github.com/airbytehq/airbyte/pull/38783)  | Fix a variable access error with `repo_dir` in the `bump_version` command.                                                   |
+| 4.15.5  | [#38732](https://github.com/airbytehq/airbyte/pull/38732)  | Update metadata deploy pipeline to 3.10                                                                                      |
+| 4.15.4  | [#38646](https://github.com/airbytehq/airbyte/pull/38646)  | Make airbyte-ci able to test external repos.                                                                                 |
+| 4.15.3  | [#38645](https://github.com/airbytehq/airbyte/pull/38645)  | Fix typo preventing correct secret mounting on Python connectors integration tests.                                          |
+| 4.15.2  | [#38628](https://github.com/airbytehq/airbyte/pull/38628)  | Introduce ConnectorTestContext to avoid trying fetching connector secret in the PublishContext.                              |
+| 4.15.1  | [#38615](https://github.com/airbytehq/airbyte/pull/38615)  | Do not eagerly fetch connector secrets.                                                                                      |
+| 4.15.0  | [#38322](https://github.com/airbytehq/airbyte/pull/38322)  | Introduce a SecretStore abstraction to fetch connector secrets from metadata files.                                          |
+| 4.14.1  | [#38582](https://github.com/airbytehq/airbyte/pull/38582)  | Fixed bugs in `up_to_date` flags, `pull_request` version change logic.                                                       |
+| 4.14.0  | [#38281](https://github.com/airbytehq/airbyte/pull/38281)  | Conditionally run test suites according to `connectorTestSuitesOptions` in metadata files.                                   |
+| 4.13.3  | [#38221](https://github.com/airbytehq/airbyte/pull/38221)  | Add dagster cloud dev deployment pipeline opitions                                                                           |
+| 4.13.2  | [#38246](https://github.com/airbytehq/airbyte/pull/38246)  | Remove invalid connector test step options.                                                                                  |
+| 4.13.1  | [#38020](https://github.com/airbytehq/airbyte/pull/38020)  | Add `auto_merge` as an internal package to test.                                                                             |
+| 4.13.0  | [#32715](https://github.com/airbytehq/airbyte/pull/32715)  | Tag connector metadata with git info                                                                                         |
+| 4.12.7  | [#37787](https://github.com/airbytehq/airbyte/pull/37787)  | Remove requirements on dockerhub credentials to run QA checks.                                                               |
 | 4.12.6  | [#36497](https://github.com/airbytehq/airbyte/pull/36497)  | Add airbyte-cdk to list of poetry packages for testing                                                                       |
 | 4.12.5  | [#37785](https://github.com/airbytehq/airbyte/pull/37785)  | Set the `--yes-auto-update` flag to `True` by default.                                                                       |
 | 4.12.4  | [#37786](https://github.com/airbytehq/airbyte/pull/37786)  | (fixed 4.12.2): Do not upload dagger log to GCP when no credentials are available.                                           |

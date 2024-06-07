@@ -5,14 +5,14 @@ The `Authenticator` defines how to configure outgoing HTTP requests to authentic
 Schema:
 
 ```yaml
-  Authenticator:
-    type: object
-    description: "Authenticator type"
-    anyOf:
-      - "$ref": "#/definitions/OAuth"
-      - "$ref": "#/definitions/ApiKeyAuthenticator"
-      - "$ref": "#/definitions/BearerAuthenticator"
-      - "$ref": "#/definitions/BasicHttpAuthenticator"
+Authenticator:
+  type: object
+  description: "Authenticator type"
+  anyOf:
+    - "$ref": "#/definitions/OAuth"
+    - "$ref": "#/definitions/ApiKeyAuthenticator"
+    - "$ref": "#/definitions/BearerAuthenticator"
+    - "$ref": "#/definitions/BasicHttpAuthenticator"
 ```
 
 ## Authenticators
@@ -25,19 +25,19 @@ The following definition will set the header "Authorization" with a value "Beare
 Schema:
 
 ```yaml
-  ApiKeyAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - header
-      - api_token
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      header:
-        type: string
-      api_token:
-        type: string
+ApiKeyAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - header
+    - api_token
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    header:
+      type: string
+    api_token:
+      type: string
 ```
 
 Example:
@@ -57,16 +57,16 @@ The following definition will set the header "Authorization" with a value "Beare
 Schema:
 
 ```yaml
-  BearerAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - api_token
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      api_token:
-        type: string
+BearerAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - api_token
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    api_token:
+      type: string
 ```
 
 Example:
@@ -87,18 +87,18 @@ The following definition will set the header "Authorization" with a value `Basic
 Schema:
 
 ```yaml
-  BasicHttpAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - username
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      username:
-        type: string
-      password:
-        type: string
+BasicHttpAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - username
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    username:
+      type: string
+    password:
+      type: string
 ```
 
 Example:
@@ -138,45 +138,45 @@ OAuth authentication is supported through the `OAuthAuthenticator`, which requir
 Schema:
 
 ```yaml
-  OAuth:
-    type: object
-    additionalProperties: true
-    required:
-      - token_refresh_endpoint
-      - client_id
-      - client_secret
-      - refresh_token
-      - access_token_name
-      - expires_in_name
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      token_refresh_endpoint:
+OAuth:
+  type: object
+  additionalProperties: true
+  required:
+    - token_refresh_endpoint
+    - client_id
+    - client_secret
+    - refresh_token
+    - access_token_name
+    - expires_in_name
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    token_refresh_endpoint:
+      type: string
+    client_id:
+      type: string
+    client_secret:
+      type: string
+    refresh_token:
+      type: string
+    scopes:
+      type: array
+      items:
         type: string
-      client_id:
-        type: string
-      client_secret:
-        type: string
-      refresh_token:
-        type: string
-      scopes:
-        type: array
-        items:
-          type: string
-        default: [ ]
-      token_expiry_date:
-        type: string
-      access_token_name:
-        type: string
-        default: "access_token"
-      expires_in_name:
-        type: string
-        default: "expires_in"
-      refresh_request_body:
-        type: object
-      grant_type:
-        type: string
-        default: "refresh_token"
+      default: []
+    token_expiry_date:
+      type: string
+    access_token_name:
+      type: string
+      default: "access_token"
+    expires_in_name:
+      type: string
+      default: "expires_in"
+    refresh_request_body:
+      type: object
+    grant_type:
+      type: string
+      default: "refresh_token"
 ```
 
 Example:
@@ -195,6 +195,7 @@ authenticator:
 JSON Web Token (JWT) authentication is supported through the `JwtAuthenticator`.
 
 Schema
+
 ```yaml
 JwtAuthenticator:
   title: JWT Authenticator
@@ -323,23 +324,23 @@ Example:
 
 ```yaml
 authenticator:
-    type: JwtAuthenticator
-    secret_key: "{{ config['secret_key'] }}"
-    base64_encode_secret_key: True
-    algorithm: RS256
-    token_duration: 3600
-    header_prefix: Bearer
-    jwt_headers:
-        kid: "{{ config['kid'] }}"
-        cty: "JWT"
-    additional_jwt_headers:
-        test: "{{ config['test']}}"
-    jwt_payload:
-        iss: "{{ config['iss'] }}"
-        sub: "sub value"
-        aud: "aud value"
-    additional_jwt_payload:
-        test: "test custom payload"
+  type: JwtAuthenticator
+  secret_key: "{{ config['secret_key'] }}"
+  base64_encode_secret_key: True
+  algorithm: RS256
+  token_duration: 3600
+  header_prefix: Bearer
+  jwt_headers:
+    kid: "{{ config['kid'] }}"
+    cty: "JWT"
+  additional_jwt_headers:
+    test: "{{ config['test']}}"
+  jwt_payload:
+    iss: "{{ config['iss'] }}"
+    sub: "sub value"
+    aud: "aud value"
+  additional_jwt_payload:
+    test: "test custom payload"
 ```
 
 ## More readings

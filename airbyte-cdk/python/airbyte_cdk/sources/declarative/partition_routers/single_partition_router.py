@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass

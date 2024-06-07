@@ -5,45 +5,59 @@
   "type": ["null", "object"],
   "properties": {
     "parent_step_sid": {
+      "description": "The SID of the parent step if this step is nested within another step.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name or identifier of the step.",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the step was last updated.",
       "type": ["null", "string"]
     },
     "transitioned_to": {
+      "description": "The state to which the step transitioned.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The SID of the account associated with the step data.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL for accessing detailed information about the step.",
       "type": ["null", "string"]
     },
     "context": {
+      "description": "Additional context or metadata related to the step.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier (SID) of the step.",
       "type": ["null", "string"]
     },
     "transitioned_from": {
+      "description": "The previous state from which the step transitioned.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the step was created.",
       "type": ["null", "string"]
     },
     "execution_sid": {
+      "description": "The SID of the execution this step belongs to.",
       "type": ["null", "string"]
     },
     "flow_sid": {
+      "description": "The SID of the flow to which this step belongs.",
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Contains related hypermedia links to navigate through the step data.",
       "type": ["null", "object"],
       "properties": {
         "step_context": {
+          "description": "Link to additional contextual information related to the step.",
           "type": ["null", "string"]
         }
       }

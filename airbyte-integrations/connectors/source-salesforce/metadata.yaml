@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.5.9
+  dockerImageTag: 2.5.13
   dockerRepository: airbyte/source-salesforce
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   githubIssueLabel: source-salesforce
@@ -32,4 +32,40 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-SALESFORCE_BULK_CREDS
+          fileName: config_bulk.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESFORCE_REST_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESFORCE_SANDBOX_CREDS
+          fileName: config_sandbox.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SALESFORCE_BULK_CREDS
+          fileName: config_bulk.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESFORCE_REST_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESFORCE_SANDBOX_CREDS
+          fileName: config_sandbox.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

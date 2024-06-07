@@ -10,14 +10,12 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 #### Features
 
-| Feature                        | Support | Notes                                                                                                                                                                                               |
-| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                |
+| Feature                        | Support | Notes                                                                                                                                                                                                    |
+| :----------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                     |
 | Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
-| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                     |
-| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                         |
-
-
+| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                          |
+| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                              |
 
 ## Getting started
 
@@ -235,13 +233,15 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 
 Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
+## Changelog
 
-## CHANGELOG
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
-| 0.4.6 | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285) | Adopt CDK 0.20.8 |
-| 0.4.5 | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745) | Adopt CDK 0.19.0 |
+| 0.4.6   | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285)   | Adopt CDK 0.20.8                                                                                                           |
+| 0.4.5   | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745)   | Adopt CDK 0.19.0                                                                                                           |
 | 0.4.4   | 2023-07-14 | [#28345](https://github.com/airbytehq/airbyte/pull/28345)  | Increment patch to trigger a rebuild                                                                                       |
 | 0.4.3   | 2023-07-05 | [#27936](https://github.com/airbytehq/airbyte/pull/27936)  | Internal code update                                                                                                       |
 | 0.4.2   | 2023-06-30 | [#27891](https://github.com/airbytehq/airbyte/pull/27891)  | Internal code update                                                                                                       |
@@ -279,3 +279,5 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 | 0.1.2   | 2021-09-12 | [\#5720](https://github.com/airbytehq/airbyte/issues/5720) | Added configurable block size for stream. Each stream is limited to 10,000 by GCS                                          |
 | 0.1.1   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery \(GCS Staging upload type\) |
 | 0.1.0   | 2021-07-16 | [\#4329](https://github.com/airbytehq/airbyte/pull/4784)   | Initial release.                                                                                                           |
+
+</details>
