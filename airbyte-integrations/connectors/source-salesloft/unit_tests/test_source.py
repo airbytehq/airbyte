@@ -5,7 +5,6 @@
 import logging
 
 import pytest
-
 from source_salesloft.source import SourceSalesloft
 
 
