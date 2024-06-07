@@ -792,9 +792,10 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 |---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| 4.17.0  | [#39321](https://github.com/airbytehq/airbyte/pull/39321)      | Bust the java connector build cache flow to get fresh yum packages on a daily basis.                                                                               |
-| 4.16.0  | [#38772](https://github.com/airbytehq/airbyte/pull/38232)      | Add pipeline to replace usage of AirbyteLogger.                                                                               |
-| 4.15.7  | [#38772](https://github.com/airbytehq/airbyte/pull/38772)      | Fix regression test connector image retrieval.                                                                               |
+| 4.17.1  | [#39341](https://github.com/airbytehq/airbyte/pull/39341)  | Fix `--use-local-cdk` option: change `no-deps` to `force-reinstall`                                                          |
+| 4.17.0  | [#39321](https://github.com/airbytehq/airbyte/pull/39321)  | Bust the java connector build cache flow to get fresh yum packages on a daily basis.                                         |
+| 4.16.0  | [#38772](https://github.com/airbytehq/airbyte/pull/38232)  | Add pipeline to replace usage of AirbyteLogger.                                                                              |
+| 4.15.7  | [#38772](https://github.com/airbytehq/airbyte/pull/38772)  | Fix regression test connector image retrieval.                                                                               |
 | 4.15.6  | [#38783](https://github.com/airbytehq/airbyte/pull/38783)  | Fix a variable access error with `repo_dir` in the `bump_version` command.                                                   |
 | 4.15.5  | [#38732](https://github.com/airbytehq/airbyte/pull/38732)  | Update metadata deploy pipeline to 3.10                                                                                      |
 | 4.15.4  | [#38646](https://github.com/airbytehq/airbyte/pull/38646)  | Make airbyte-ci able to test external repos.                                                                                 |
