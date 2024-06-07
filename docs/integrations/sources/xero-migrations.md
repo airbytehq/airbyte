@@ -1,6 +1,6 @@
 # Xero Migration Guide
 
-## Upgrading to 1.0.2
+## Upgrading to 2.0.0
 
 You can now choose your preferred xero authentication method. You can choose between `client_credentials` and `bearer_token` authentication methods.
 
