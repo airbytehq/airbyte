@@ -156,7 +156,7 @@ class IncrementalMessageStream(CheckpointMixin, ChanneledStream, ABC):
     @property
     def state(self) -> Mapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._state = value
