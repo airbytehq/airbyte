@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -16,7 +16,6 @@ class GainsightCsStream(HttpStream, ABC):
 
 
 class GainsightCsObjectStream(GainsightCsStream):
-    primary_key = "gsid"
     limit = 500
     json_schema = None
     offset = 0
@@ -43,10 +42,15 @@ class GainsightCsObjectStream(GainsightCsStream):
     def __init__(self, name: str, domain_url: str, **kwargs):
         super().__init__(domain_url, **kwargs)
         self.object_name = name
+        self._primary_key = None
 
     @property
     def name(self):
         return self.object_name
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._primary_key
 
     def dynamic_schema(self, full_schema, metadata):
         for field in metadata:
@@ -61,7 +65,7 @@ class GainsightCsObjectStream(GainsightCsStream):
     def http_method(self) -> str:
         return "POST"
 
-    def request_body_json(self, stream_state: Mapping[str, Any] | None, stream_slice: Mapping[str, Any] | None = None, next_page_token: Mapping[str, Any] | None = None) -> Mapping[str, Any] | None:
+    def request_body_json(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Optional[Union[Dict[str, Any], str]]:
         select_columns = self.get_select_columns()
         offset = self.offset if next_page_token is None else next_page_token
         request_body = {
@@ -104,6 +108,9 @@ class GainsightCsObjectStream(GainsightCsStream):
         except requests.exceptions.RequestException:
             self.json_schema = base_schema
 
+        # Workaround for missing gsid in many objects. Primary Key is either None or "Gsid".
+        if self.json_schema['properties'].get('Gsid') is not None:
+            self._primary_key = "Gsid"
         return self.json_schema
 
     def get_select_columns(self):
