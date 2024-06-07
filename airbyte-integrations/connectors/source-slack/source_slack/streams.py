@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from pendulum import DateTime
 
@@ -147,15 +148,24 @@ class Channels(ChanneledStream):
 
 
 # Incremental Streams
-class IncrementalMessageStream(ChanneledStream, ABC):
+class IncrementalMessageStream(CheckpointMixin, ChanneledStream, ABC):
     data_field = "messages"
     cursor_field = "float_ts"
     primary_key = ["channel_id", "ts"]
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return self._state
+    
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
 
     def __init__(self, default_start_date: DateTime, end_date: Optional[DateTime] = None, **kwargs):
         self._start_ts = default_start_date.timestamp()
         self._end_ts = end_date and end_date.timestamp()
         self.set_sub_primary_key()
+        self._state = None
         super().__init__(**kwargs)
 
     def set_sub_primary_key(self):
@@ -176,7 +186,7 @@ class IncrementalMessageStream(ChanneledStream, ABC):
             record[self.cursor_field] = float(record[self.sub_primary_key_2])
             yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         current_stream_state[self.cursor_field] = max(
             latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, self._start_ts)
@@ -195,7 +205,9 @@ class IncrementalMessageStream(ChanneledStream, ABC):
             # return an empty iterator
             # this is done to emit at least one state message when no slices are generated
             return iter([])
-        return super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
 
 
 class ChannelMessages(HttpSubStream, IncrementalMessageStream):
