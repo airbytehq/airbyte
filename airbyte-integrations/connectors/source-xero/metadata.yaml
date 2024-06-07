@@ -13,6 +13,11 @@ data:
       packageName: airbyte-source-xero
   releases:
     breakingChanges:
+      1.0.2:
+        upgradeDeadline: "2024-06-30"
+        message:
+          The authorization method was changed to support both OAuth strategy and Access Token. Due to changes in authorization, users will need to choose their preferred authentication method, and insert either the Client ID and Client Secret, or the access token within source Xero and reset source configuration. For more information, see our migration documentation for source Xero.
+          Important - The authentication scheme now can use either the access_token or OAuth strategy (client_credentials) from this version.
       1.0.0:
         upgradeDeadline: "2024-06-30"
         message:
