@@ -13,6 +13,7 @@ import requests
 import requests_cache
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy, ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
@@ -22,7 +23,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.types import Config
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import PreparedRequest
 from requests_cache import CachedResponse
 
@@ -692,7 +692,7 @@ def test_4xx_error_codes_http_stream(mocker, http_code):
     req.status_code = http_code
     requester._session.send.return_value = req
 
-    with pytest.raises(AirbyteTracedException):
+    with pytest.raises(ReadException):
         requester.send_request()
 
 
@@ -732,7 +732,7 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     requester._session.send.return_value = req
     requester._DEFAULT_RETRY_FACTOR = 0.01
 
-    with pytest.raises(AirbyteTracedException):
+    with pytest.raises(ReadException):
         requester.send_request()
 
 
@@ -933,7 +933,7 @@ def test_log_requests(should_log, status_code, should_retry, should_throw):
         with pytest.raises(DefaultBackoffException):
             requester.send_request(log_formatter=formatter if should_log else None)
     elif should_throw:
-        with pytest.raises(AirbyteTracedException):
+        with pytest.raises(ReadException):
             requester.send_request(log_formatter=formatter if should_log else None)
     else:
         requester.send_request(log_formatter=formatter if should_log else None)
