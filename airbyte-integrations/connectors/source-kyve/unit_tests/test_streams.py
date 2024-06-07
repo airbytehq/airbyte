@@ -184,9 +184,10 @@ def test_parse_response_error_on_finalized_bundle_fetching(patch_base_class, mon
     inputs = {"response": input_request, "stream_state": {}}
 
     mock_finalized_bundles_request = MagicMock(side_effect=IndexError)
+
     monkeypatch.setattr("requests.Response.json", mock_finalized_bundles_request)
 
-    with pytest.raises(StopIteration):
+    with pytest.raises(IndexError):
         next(stream.parse_response(**inputs))
 
 
