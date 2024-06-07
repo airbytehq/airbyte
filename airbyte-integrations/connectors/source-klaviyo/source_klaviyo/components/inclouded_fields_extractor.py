@@ -2,8 +2,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping
 from dataclasses import dataclass
+from typing import Any, Iterable, Mapping
 
 import dpath
 import requests
@@ -12,7 +12,6 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 
 @dataclass
 class KlaviyoIncludedFieldExtractor(DpathExtractor):
-
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         # Evaluate and retrieve the extraction paths
         evaluated_field_paths = [field_path.eval(self.config) for field_path in self._field_path]
@@ -24,8 +23,9 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
         yield from updated_records
 
     @staticmethod
-    def update_target_records_with_included(target_records: Iterable[Mapping[str, Any]],
-                                            included_records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+    def update_target_records_with_included(
+        target_records: Iterable[Mapping[str, Any]], included_records: Iterable[Mapping[str, Any]]
+    ) -> Iterable[Mapping[str, Any]]:
         for included_record in included_records:
             included_attributes = included_record.get("attributes", {})
             for target_record in target_records:

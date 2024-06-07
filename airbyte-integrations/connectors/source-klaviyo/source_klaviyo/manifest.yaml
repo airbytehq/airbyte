@@ -269,7 +269,7 @@ definitions:
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
-            path: [ "datetime" ]
+            path: ["datetime"]
             value: "{{ record.get('attributes', {}).get('datetime') }}"
     $parameters:
       path: "events/{{ stream_slice.event_id }}"
@@ -749,12 +749,12 @@ definitions:
         type: string
         format: date-time
       attributes:
-        type: [ "null", object ]
+        type: ["null", object]
         properties:
           timestamp:
             type: integer
           event_properties:
-            type: [ "null", object ]
+            type: ["null", object]
             additionalProperties: true
           datetime:
             type: string
@@ -762,25 +762,25 @@ definitions:
           uuid:
             type: string
       links:
-        type: [ "null", object ]
+        type: ["null", object]
         properties:
           self:
             type: string
       relationships:
-        type: [ "null", object ]
+        type: ["null", object]
         properties:
           profile:
-            type: [ "null", object ]
+            type: ["null", object]
             properties:
               data:
-                type: [ "null", object ]
+                type: ["null", object]
                 properties:
                   type:
                     type: string
                   id:
                     type: string
               links:
-                type: [ "null", object ]
+                type: ["null", object]
                 additionalProperties: true
                 properties:
                   self:
@@ -788,10 +788,10 @@ definitions:
                   related:
                     type: string
           metric:
-            type: [ "null", object ]
+            type: ["null", object]
             properties:
               data:
-                type: [ "null", object ]
+                type: ["null", object]
                 properties:
                   type:
                     type: string
@@ -800,7 +800,7 @@ definitions:
                   name:
                     type: string
               links:
-                type: [ "null", object ]
+                type: ["null", object]
                 additionalProperties: true
                 properties:
                   self:
