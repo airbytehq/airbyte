@@ -9,7 +9,6 @@ from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
 from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 

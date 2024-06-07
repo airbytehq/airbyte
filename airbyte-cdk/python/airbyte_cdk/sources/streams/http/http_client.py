@@ -6,7 +6,7 @@ import logging
 import os
 import urllib
 from pathlib import Path
-from typing import Any, List, Mapping, Optional, Tuple, Union, Dict
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
@@ -253,7 +253,9 @@ class HttpClient:
             custom_backoff_time = None
             for backoff_strategy in self._backoff_strategies:
                 if hasattr(backoff_strategy, "backoff_time"):
-                    backoff_time = backoff_strategy.backoff_time(response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request])
+                    backoff_time = backoff_strategy.backoff_time(
+                        response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request]
+                    )
                     if backoff_time:
                         custom_backoff_time = backoff_time
                         break
