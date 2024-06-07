@@ -8,6 +8,7 @@ import pytest
 from airbyte_cdk.sources.streams import Stream
 from airbyte_protocol.models import SyncMode
 from jsonref import requests
+
 from source_salesloft.source import SourceSalesloft
 
 
