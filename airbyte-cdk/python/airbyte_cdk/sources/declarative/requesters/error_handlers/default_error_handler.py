@@ -9,6 +9,7 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution
@@ -118,16 +119,18 @@ class DefaultErrorHandler(ErrorHandler):
             if response_or_exception.ok:
                 return SUCCESS_RESOLUTION
 
-        # Return default error resolution (retry)
-        return DEFAULT_ERROR_RESOLUTION
+        default_reponse_filter = DefaultHttpResponseFilter(parameters={}, config=self.config)
+        default_response_filter_resolution = default_reponse_filter.matches(response_or_exception)
+
+        return default_response_filter_resolution if default_response_filter_resolution else DEFAULT_ERROR_RESOLUTION
 
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int = 0
     ) -> Optional[float]:
         backoff = None
         if self.backoff_strategies:
-            for backoff_strategies in self.backoff_strategies:
-                backoff = backoff_strategies.backoff_time(response_or_exception, attempt_count)  # type: ignore # attempt_count maintained for compatibility with low code CDK
+            for backoff_strategy in self.backoff_strategies:
+                backoff = backoff_strategy.backoff_time(response_or_exception=response_or_exception, attempt_count=attempt_count)  # type: ignore # attempt_count maintained for compatibility with low code CDK
                 if backoff:
                     return backoff
         return backoff

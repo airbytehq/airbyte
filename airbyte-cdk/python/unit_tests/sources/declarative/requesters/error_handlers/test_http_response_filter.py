@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
 
 
 @pytest.mark.parametrize(
-    "action, http_codes, predicate, error_contains, error_message, response, expected_response_status",
+    "action, http_codes, predicate, error_contains, error_message, response, expected_error_resolution",
     [
         pytest.param(
             ResponseAction.FAIL,
@@ -85,16 +85,12 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "",
             {"status_code": 403, "headers": {"error": "authentication_error"}, "json": {"reason": "permission denied"}},
-            ErrorResolution(
-                response_action=ResponseAction.FAIL,
-                failure_type=FailureType.config_error,
-                error_message="Forbidden. You don't have permission to access this resource."
-            ),
+            None,
             id="test_response_does_not_match_filter",
         ),
     ],
 )
-def test_matches(requests_mock, action, http_codes, predicate, error_contains, error_message, response, expected_response_status):
+def test_matches(requests_mock, action, http_codes, predicate, error_contains, error_message, response, expected_error_resolution):
     requests_mock.register_uri(
         "GET",
         "https://airbyte.io/",
@@ -114,9 +110,9 @@ def test_matches(requests_mock, action, http_codes, predicate, error_contains, e
     )
 
     actual_response_status = response_filter.matches(response)
-    if expected_response_status:
-        assert actual_response_status.response_action == expected_response_status.response_action
-        assert actual_response_status.failure_type == expected_response_status.failure_type
-        assert actual_response_status.error_message == expected_response_status.error_message
+    if expected_error_resolution:
+        assert actual_response_status.response_action == expected_error_resolution.response_action
+        assert actual_response_status.failure_type == expected_error_resolution.failure_type
+        assert actual_response_status.error_message == expected_error_resolution.error_message
     else:
         assert actual_response_status is None

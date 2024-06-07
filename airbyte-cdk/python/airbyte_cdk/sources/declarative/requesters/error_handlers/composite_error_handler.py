@@ -55,6 +55,9 @@ class CompositeErrorHandler(ErrorHandler):
         for error_handler in self.error_handlers:
             matched_error_resolution = error_handler.interpret_response(response_or_exception)
 
+            if not isinstance(matched_error_resolution, ErrorResolution):
+                continue
+
             if matched_error_resolution.response_action == ResponseAction.SUCCESS:
                 return matched_error_resolution
 
@@ -63,8 +66,7 @@ class CompositeErrorHandler(ErrorHandler):
                 or matched_error_resolution.response_action == ResponseAction.IGNORE
             ):
                 return matched_error_resolution
-
-        if matched_error_resolution is not None:
+        if matched_error_resolution:
             return matched_error_resolution
 
         return DEFAULT_ERROR_RESOLUTION

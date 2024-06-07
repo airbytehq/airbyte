@@ -10,7 +10,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.streams.http.error_handlers import JsonErrorMessageParser
-from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config
 
@@ -29,8 +29,6 @@ class HttpResponseFilter:
         predicate (str): predicate to apply to determine if a request is matching
         error_message (Union[InterpolatedString, str): error message to display if the response matches the filter
     """
-
-    _DEFAULT_ERROR_MAPPING = HttpStatusErrorHandler.DEFAULT_ERROR_MAPPING
 
     config: Config
     parameters: InitVar[Mapping[str, Any]]
@@ -78,13 +76,17 @@ class HttpResponseFilter:
                 error_message=error_message,
             )
 
-        if (self.http_codes is None and self.predicate is None and self.error_message_contains is None) and default_mapped_error_resolution:
+        if (
+            (isinstance(self.http_codes, list) and len(self.http_codes)) is None
+            and self.predicate is None
+            and self.error_message_contains is None
+        ) and default_mapped_error_resolution:
             return default_mapped_error_resolution
 
         return None
 
     def _match_default_error_mapping(self, mapped_key: Union[int, type[Exception]]) -> Optional[ErrorResolution]:
-        return self._DEFAULT_ERROR_MAPPING.get(mapped_key)
+        return DEFAULT_ERROR_MAPPING.get(mapped_key)
 
     def _matches_filter(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[ResponseAction]:
         """

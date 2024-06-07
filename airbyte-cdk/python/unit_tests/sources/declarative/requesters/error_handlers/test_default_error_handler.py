@@ -11,8 +11,13 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler, HttpResponseFilter
-from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
+    DEFAULT_ERROR_RESOLUTION,
+    ErrorResolution,
+    FailureType,
+    ResponseAction,
+)
 
 SOME_BACKOFF_TIME = 60
 
@@ -32,17 +37,17 @@ SOME_BACKOFF_TIME = 60
             (
                 "_with_http_response_status_400",
                 400,
-                HttpStatusErrorHandler.DEFAULT_ERROR_MAPPING[400],
+                DEFAULT_ERROR_MAPPING[400],
             ),
             (
                 "_with_http_response_status_404",
                 404,
-                HttpStatusErrorHandler.DEFAULT_ERROR_MAPPING[404],
+                DEFAULT_ERROR_MAPPING[404],
             ),
             (
                 "_with_http_response_status_408",
                 408,
-                HttpStatusErrorHandler.DEFAULT_ERROR_MAPPING[408],
+                DEFAULT_ERROR_MAPPING[408],
             ),
             (
                 "_with_unmapped_http_status_418",
@@ -232,3 +237,30 @@ def create_response(status_code: int, headers=None, json_body=None):
     response_mock.json.return_value = json_body or {}
     response_mock.request = MagicMock(spec=requests.PreparedRequest)
     return response_mock
+
+
+def test_default_error_handler_with_unmapped_http_code():
+    error_handler = DefaultErrorHandler(config={}, parameters={})
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = 418
+    response_mock.ok = False
+    response_mock.headers = {}
+    actual_error_resolution = error_handler.interpret_response(response_mock)
+    assert actual_error_resolution == DEFAULT_ERROR_RESOLUTION
+
+
+def test_predicate_takes_precedent_over_default_mapped_error():
+    response_mock = create_response(404, json_body={"error": "test"})
+
+    response_filter = HttpResponseFilter(
+        action=ResponseAction.FAIL,
+        predicate="{{ 'error' in response }}",
+        config={},
+        parameters={},
+    )
+
+    error_handler = DefaultErrorHandler(config={}, parameters={}, response_filters=[response_filter])
+    actual_error_resolution = error_handler.interpret_response(response_mock)
+    assert actual_error_resolution.response_action == ResponseAction.FAIL
+    assert actual_error_resolution.failure_type == FailureType.system_error
+    assert actual_error_resolution.error_message == DEFAULT_ERROR_MAPPING.get(404).error_message
