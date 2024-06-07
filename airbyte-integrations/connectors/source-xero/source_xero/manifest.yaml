@@ -1,4 +1,4 @@
-version: 1.0.2
+version: 1.0.0
 
 definitions:
   selector:
@@ -14,7 +14,7 @@ definitions:
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     grant_type: client_credentials
-    refresh_request_body: { }
+    refresh_request_body: {}
     scopes:
       - offline_access
       - accounting.transactions.read
