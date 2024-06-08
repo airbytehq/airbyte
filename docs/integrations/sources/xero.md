@@ -31,9 +31,15 @@ This page contains the setup guide and reference information for the Xero source
 
 **For Airbyte Open Source:**
 
-Please follow [instruction](https://developer.xero.com/documentation/guides/oauth2/auth-flow/) to obtain all requirements:
+There is two currently supported ways to authenticate with Xero:
+
+For the bearer token strategy, please follow [instruction](https://developer.xero.com/documentation/guides/oauth2/pkce-flow/) to obtain all requirements:
+- Client ID
+
+For the OAuth client credentials, please follow [instructions](https://developer.xero.com/documentation/guides/oauth2/custom-connections) to obtain all requirements:
 - Client ID
 - Client Secret
+
 <!-- /env:oss -->
 
 ## Setup guide
@@ -60,6 +66,11 @@ Please follow [instruction](https://developer.xero.com/documentation/guides/oaut
 **For Airbyte Open Source:**
 
 1. Create an application in [Xero development center](https://developer.xero.com/app/manage/).
+
+For the client credentials, make sure you set the list of scopes mentioned above.
+
+You can optionally use postman to generate the required `access_token` needed for the source setup.
+
 <!-- /env:oss -->
 
 ## Supported sync modes
