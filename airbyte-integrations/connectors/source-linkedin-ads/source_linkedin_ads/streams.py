@@ -10,6 +10,7 @@ from urllib.parse import quote, urlencode
 
 import pendulum
 import requests
+from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -210,6 +211,15 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
             out : "k1"
         """
         return list(self.parent_values_map.keys())[0]
+    
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+    
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
 
     @property
     @abstractmethod
@@ -220,9 +230,16 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
     def state_checkpoint_interval(self) -> Optional[int]:
         """Define the checkpoint from the record output size."""
         return 100
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = {}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
+        print(f"Latest record: {latest_record}")
+        print(latest_record.get(self.cursor_field))
+        print(current_stream_state)
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field))}
 
 
@@ -256,7 +273,9 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
         parent_stream = self.parent_stream(config=self.config)
         for record in parent_stream.read_records(**kwargs):
             child_stream_slice = super().read_records(stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs)
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
+            for child_record in self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice):
+                self.state = self._get_updated_state(self.state, child_record)
+                yield child_record
 
 
 class AccountUsers(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
@@ -388,7 +407,7 @@ class Creatives(LinkedInAdsStreamSlicing):
         params.update({"q": "criteria"})
         return urlencode(params, safe="():,%")
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = (
             {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
             if not current_stream_state
@@ -425,7 +444,7 @@ class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
 
         return urlencode(params, safe="():,%")
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = (
             {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
             if not current_stream_state

@@ -327,8 +327,9 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         merged_records = defaultdict(dict)
         for field_slice in stream_slice.get("field_date_chunks", []):
-            for rec in super().read_records(stream_slice=field_slice, **kwargs):
-                merged_records[f"{rec[self.cursor_field]}-{rec['pivotValues']}"].update(rec)
+            for record in super().read_records(stream_slice=field_slice, **kwargs):
+                merged_records[f"{record[self.cursor_field]}-{record['pivotValues']}"].update(record)
+                self.state = self._get_updated_state(self.state, record)
         yield from merged_records.values()
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
