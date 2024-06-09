@@ -252,13 +252,12 @@ class HttpClient:
         elif error_resolution.response_action == ResponseAction.RETRY:
             custom_backoff_time = None
             for backoff_strategy in self._backoff_strategies:
-                if hasattr(backoff_strategy, "backoff_time"):
-                    backoff_time = backoff_strategy.backoff_time(
-                        response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request]
-                    )
-                    if backoff_time:
-                        custom_backoff_time = backoff_time
-                        break
+                backoff_time = backoff_strategy.backoff_time(
+                    response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request]
+                )
+                if backoff_time:
+                    custom_backoff_time = backoff_time
+                    break
             error_message = (
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
