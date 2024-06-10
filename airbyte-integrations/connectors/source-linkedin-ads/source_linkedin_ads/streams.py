@@ -211,15 +211,14 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
             out : "k1"
         """
         return list(self.parent_values_map.keys())[0]
-    
+
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
-
 
     @property
     @abstractmethod
@@ -230,7 +229,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
     def state_checkpoint_interval(self) -> Optional[int]:
         """Define the checkpoint from the record output size."""
         return 100
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = {}
