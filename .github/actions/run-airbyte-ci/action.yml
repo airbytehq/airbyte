@@ -79,7 +79,7 @@ inputs:
   airbyte_ci_binary_url:
     description: "URL to airbyte-ci binary"
     required: false
-    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+    default: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/e31fa6a/airbyte-ci
   python_registry_token:
     description: "Python registry API token to publish python package"
     required: false
@@ -105,7 +105,7 @@ runs:
       id: install-airbyte-ci
       uses: ./.github/actions/install-airbyte-ci
       with:
-        airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
+        airbyte_ci_binary_url: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/e31fa6a/airbyte-ci
         is_fork: ${{ inputs.is_fork }}
     - name: Run airbyte-ci
       id: run-airbyte-ci
