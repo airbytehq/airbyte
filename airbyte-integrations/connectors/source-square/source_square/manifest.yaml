@@ -31,6 +31,29 @@ definitions:
     request_headers:
       Square-Version: "2022-10-19"
       Content-Type: "application/json"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 30
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 404
+                - 403
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 401
+              error_message: Failed to authorize request. Please update your access token to continue using the source.
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
