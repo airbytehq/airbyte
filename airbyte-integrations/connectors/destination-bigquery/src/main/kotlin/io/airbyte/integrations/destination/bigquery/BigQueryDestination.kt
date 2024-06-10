@@ -56,7 +56,6 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
-import org.apache.commons.lang3.StringUtils
 
 private val log = KotlinLogging.logger {}
 
@@ -190,7 +189,6 @@ class BigQueryDestination : BaseConnector(), Destination {
     ): SerializedAirbyteMessageConsumer {
         val uploadingMethod = getLoadingMethod(config)
         val defaultNamespace = getDatasetId(config)
-        setDefaultStreamNamespace(catalog, defaultNamespace)
         val disableTypeDedupe = getDisableTypeDedupFlag(config)
         val datasetLocation = getDatasetLocation(config)
         val projectId = config[bqConstants.CONFIG_PROJECT_ID].asText()
@@ -222,6 +220,7 @@ class BigQueryDestination : BaseConnector(), Destination {
         val parsedCatalog =
             parseCatalog(
                 sqlGenerator,
+                defaultNamespace,
                 rawNamespaceOverride.orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
                 catalog,
             )
@@ -309,28 +308,18 @@ class BigQueryDestination : BaseConnector(), Destination {
         )
     }
 
-    private fun setDefaultStreamNamespace(catalog: ConfiguredAirbyteCatalog, namespace: String) {
-        // Set the default originalNamespace on streams with null originalNamespace. This means we
-        // don't
-        // need to repeat this
-        // logic in the rest of the connector.
-        // (record messages still need to handle null namespaces though, which currently happens in
-        // e.g.
-        // AsyncStreamConsumer#accept)
-        // This probably should be shared logic amongst destinations eventually.
-        for (stream in catalog.streams) {
-            if (StringUtils.isEmpty(stream.stream.namespace)) {
-                stream.stream.withNamespace(namespace)
-            }
-        }
-    }
-
     private fun parseCatalog(
         sqlGenerator: BigQuerySqlGenerator,
+        defaultNamespace: String,
         rawNamespaceOverride: String,
         catalog: ConfiguredAirbyteCatalog
     ): ParsedCatalog {
-        val catalogParser = CatalogParser(sqlGenerator, rawNamespaceOverride)
+        val catalogParser =
+            CatalogParser(
+                sqlGenerator,
+                defaultNamespace = defaultNamespace,
+                rawNamespace = rawNamespaceOverride,
+            )
 
         return catalogParser.parseCatalog(catalog)
     }

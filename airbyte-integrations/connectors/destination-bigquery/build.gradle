@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.36.8'
+    cdkVersionRequired = '0.37.1'
     features = [
             'db-destinations',
             'datastore-bigquery',
