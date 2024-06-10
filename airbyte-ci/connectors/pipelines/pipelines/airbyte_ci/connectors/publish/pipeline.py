@@ -3,8 +3,8 @@
 #
 
 import json
-import uuid
 import re
+import uuid
 from datetime import datetime
 from typing import Dict, List, Tuple
 
@@ -113,7 +113,7 @@ class UploadDependenciesToMetadataService(Step):
         connector_is_using_poetry = self.context.connector.is_using_poetry
 
         base_image_tag = self.context.metadata.get("connectorBuildOptions", {}).get("baseImage", "")
-        base_image_version_match = re.search(r':([0-9]+\.[0-9]+\.[0-9]+)@', base_image_tag)
+        base_image_version_match = re.search(r":([0-9]+\.[0-9]+\.[0-9]+)@", base_image_tag)
         connector_base_image_version = base_image_version_match.group(1) if base_image_version_match else ""
 
         dependencies_metadata = ConnectorDependenciesMetadata(
