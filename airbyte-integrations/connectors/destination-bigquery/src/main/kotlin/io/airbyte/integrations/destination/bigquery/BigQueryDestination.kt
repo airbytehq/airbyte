@@ -188,125 +188,7 @@ class BigQueryDestination : BaseConnector(), Destination {
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer {
-        val uploadingMethod = getLoadingMethod(config)
-        val defaultNamespace = getDatasetId(config)
-        setDefaultStreamNamespace(catalog, defaultNamespace)
-        val disableTypeDedupe = getDisableTypeDedupFlag(config)
-        val datasetLocation = getDatasetLocation(config)
-        val projectId = config[bqConstants.CONFIG_PROJECT_ID].asText()
-        val bigquery = getBigQuery(config)
-        val rawNamespaceOverride = getRawNamespaceOverride(bqConstants.RAW_DATA_DATASET)
-
-        addAllStringsInConfigForDeinterpolation(config)
-        val serviceAccountKey = config[bqConstants.CONFIG_CREDS]
-        if (serviceAccountKey != null) {
-            // If the service account key is a non-null string, we will try to
-            // deserialize it. Otherwise, we will let the Google library find it in
-            // the environment during the client initialization.
-            if (serviceAccountKey.isTextual) {
-                // There are cases where we fail to deserialize the service account key. In these
-                // cases, we
-                // shouldn't do anything.
-                // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd
-                // rather just let it
-                // go.
-                tryDeserialize(serviceAccountKey.asText()).ifPresent { obj: JsonNode ->
-                    addAllStringsInConfigForDeinterpolation(obj)
-                }
-            } else {
-                addAllStringsInConfigForDeinterpolation(serviceAccountKey)
-            }
-        }
-
-        val sqlGenerator = BigQuerySqlGenerator(projectId, datasetLocation)
-        val parsedCatalog =
-            parseCatalog(
-                sqlGenerator,
-                rawNamespaceOverride.orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
-                catalog,
-            )
-        val destinationHandler = BigQueryDestinationHandler(bigquery, datasetLocation)
-
-        val migrations =
-            listOf(
-                BigQueryDV2Migration(sqlGenerator, bigquery),
-                BigqueryAirbyteMetaAndGenerationIdMigration(bigquery),
-            )
-
-        if (uploadingMethod == UploadingMethod.STANDARD) {
-            val bigQueryClientChunkSize = getBigQueryClientChunkSize(config)
-            val bigQueryLoadingStorageOperation =
-                BigQueryDirectLoadingStorageOperation(
-                    bigquery,
-                    bigQueryClientChunkSize,
-                    BigQueryRecordFormatter(),
-                    sqlGenerator,
-                    destinationHandler,
-                    datasetLocation,
-                )
-            val syncOperation =
-                DefaultSyncOperation<BigQueryDestinationState>(
-                    parsedCatalog,
-                    destinationHandler,
-                    defaultNamespace,
-                    { initialStatus: DestinationInitialStatus<BigQueryDestinationState>, disableTD
-                        ->
-                        StandardStreamOperation(
-                            bigQueryLoadingStorageOperation,
-                            initialStatus,
-                            disableTD
-                        )
-                    },
-                    migrations,
-                    disableTypeDedupe,
-                )
-            return createDirectUploadConsumer(
-                outputRecordCollector,
-                syncOperation,
-                catalog,
-                defaultNamespace,
-            )
-        }
-
-        val gcsNameTransformer = GcsNameTransformer()
-        val gcsConfig = getGcsCsvDestinationConfig(config)
-        val keepStagingFiles = isKeepFilesInGcs(config)
-        val gcsOperations =
-            GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig)
-
-        val bigQueryGcsStorageOperations =
-            BigQueryGcsStorageOperation(
-                gcsOperations,
-                gcsConfig,
-                gcsNameTransformer,
-                keepStagingFiles,
-                bigquery,
-                sqlGenerator,
-                destinationHandler,
-            )
-        val syncOperation: SyncOperation =
-            DefaultSyncOperation<BigQueryDestinationState>(
-                parsedCatalog,
-                destinationHandler,
-                defaultNamespace,
-                { initialStatus: DestinationInitialStatus<BigQueryDestinationState>, disableTD ->
-                    StagingStreamOperations(
-                        bigQueryGcsStorageOperations,
-                        initialStatus,
-                        FileUploadFormat.CSV,
-                        V2_WITH_GENERATION,
-                        disableTD
-                    )
-                },
-                migrations,
-                disableTypeDedupe,
-            )
-        return createStagingConsumer(
-            outputRecordCollector,
-            syncOperation,
-            catalog,
-            defaultNamespace,
-        )
+        throw RuntimeException("edgao_debug_mock_error")
     }
 
     private fun setDefaultStreamNamespace(catalog: ConfiguredAirbyteCatalog, namespace: String) {
@@ -394,5 +276,9 @@ class BigQueryDestination : BaseConnector(), Destination {
 }
 
 fun main(args: Array<String>) {
-    throw RuntimeException("edgao_debug_mock_error")
+    addThrowableForDeinterpolation(BigQueryException::class.java)
+    val destination: Destination = BigQueryDestination()
+    log.info { "Starting Destination : ${destination.javaClass}" }
+    IntegrationRunner(destination).run(args)
+    log.info { "Completed Destination : ${destination.javaClass}" }
 }
