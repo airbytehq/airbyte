@@ -339,7 +339,15 @@ class Charges(IncrementalStripeStreamWithUpdates):
     """
     API docs: https://stripe.com/docs/api/charges/list
     """
-    event_types = ["charge.created","charge.updated"]
+    event_types = [
+        "charge.captured",
+        "charge.expired",
+        "charge.failed",
+        "charge.pending",
+        "charge.refunded",
+        "charge.succeeded",
+        "charge.updated"
+    ]
     cursor_field = "created"
 
     def path(self, **kwargs) -> str:
@@ -394,7 +402,13 @@ class Disputes(IncrementalStripeStreamWithUpdates):
     """
     API docs: https://stripe.com/docs/api/disputes/list
     """
-    event_types = ["charge.dispute.created", "charge.dispute.updated"]
+    event_types = [
+        "charge.dispute.created",
+        "charge.dispute.updated",
+        "charge.dispute.closed",
+        "charge.dispute.funds_reinstated",
+        "charge.dispute.funds_withdrawn"
+    ]
     cursor_field = "created"
 
     def path(self, **kwargs):

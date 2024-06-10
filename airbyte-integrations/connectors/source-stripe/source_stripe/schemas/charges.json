@@ -392,24 +392,65 @@
       "type": ["null", "string"]
     },
     "refunds": {
-      "type": ["null", "object"],
-      "properties": {
-        "object": {
-          "type": ["null", "string"]
-        },
-        "data": {
-          "type": ["null", "array"]
-        },
-        "has_more": {
-          "type": ["null", "boolean"]
-        },
-        "total_count": {
-          "type": ["null", "number"]
-        },
-        "url": {
-          "type": ["null", "string"]
+      "anyOf": [{
+          "type": ["null", "object"],
+          "properties": {
+            "object": {
+              "type": ["null", "string"]
+            },
+            "data": {
+              "type": ["null", "array"]
+            },
+            "has_more": {
+              "type": ["null", "boolean"]
+            },
+            "total_count": {
+              "type": ["null", "number"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            }
+          }
+       },{
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "object": {
+              "type": ["null", "string"]
+            },
+            "amount":{
+              "type": ["null", "integer"]
+            },
+            "balance_transaction": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            },
+            "created": {
+              "type": ["null", "integer"]
+            },
+            "payment_intent": {
+               "type": ["null", "string"]
+            },
+            "reason": {
+               "type": ["null", "string"]
+            },
+            "receipt_number": {
+               "type": ["null", "string"]
+            },
+            "statys": {
+               "type": ["null", "string"]
+            }
+          }
         }
-      }
+       }
+      ]
     },
     "application_fee": {
       "type": ["null", "string"]
