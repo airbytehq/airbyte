@@ -24,11 +24,10 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
-from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
+from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result, slugify
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
-from pipelines.helpers.utils import slugify
 
 
 class VersionCheck(Step, ABC):
