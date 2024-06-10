@@ -57,6 +57,8 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.3.12  | 2024-06-06 | [39103](https://github.com/airbytehq/airbyte/pull/39103) | Use `CheckpointMixin` for state management                                                   |
+| 0.3.11  | 2024-06-04 | [38988](https://github.com/airbytehq/airbyte/pull/38988) | [autopull] Upgrade base image to v1.2.1                                                      |
 | 0.3.10  | 2024-04-19 | [36631](https://github.com/airbytehq/airbyte/pull/36631) | Updating to 0.80.0 CDK                                                                       |
 | 0.3.9   | 2024-04-12 | [36631](https://github.com/airbytehq/airbyte/pull/36631) | schema descriptions                                                                          |
 | 0.3.8   | 2024-03-12 | [35987](https://github.com/airbytehq/airbyte/pull/35987) | Unpin CDK version                                                                            |
