@@ -1773,7 +1773,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val columnName1 = baseColumnName + "1"
         val columnName2 = baseColumnName + "2"
 
-        val catalogParser = CatalogParser(generator, rawNamespace)
+        // We're always setting a nonnull namespace, so the default namespace is never used.
+        // We just need to pass a value b/c it's nonnullable
+        val catalogParser = CatalogParser(generator, "unused", rawNamespace)
         val stream =
             catalogParser
                 .parseCatalog(

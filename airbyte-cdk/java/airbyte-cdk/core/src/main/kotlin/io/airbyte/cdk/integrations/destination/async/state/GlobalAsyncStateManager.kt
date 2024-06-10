@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destination.async.state
 
 import com.google.common.base.Preconditions
-import com.google.common.base.Strings
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
@@ -104,7 +103,6 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     fun trackState(
         message: PartialAirbyteMessage,
         sizeInBytes: Long,
-        defaultNamespace: String,
     ) {
         if (preState) {
             convertToGlobalIfNeeded(message)
@@ -113,7 +111,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         // stateType should not change after a conversion.
         Preconditions.checkArgument(stateType == extractStateType(message))
 
-        closeState(message, sizeInBytes, defaultNamespace)
+        closeState(message, sizeInBytes)
     }
 
     /**
@@ -323,10 +321,9 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private fun closeState(
         message: PartialAirbyteMessage,
         sizeInBytes: Long,
-        defaultNamespace: String,
     ) {
         val resolvedDescriptor: StreamDescriptor =
-            extractStream(message, defaultNamespace)
+            extractStream(message)
                 .orElse(
                     SENTINEL_GLOBAL_DESC,
                 )
@@ -424,38 +421,14 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                     UUID.randomUUID().toString(),
                 )
 
-        /**
-         * If the user has selected the Destination Namespace as the Destination default while
-         * setting up the connector, the platform sets the namespace as null in the StreamDescriptor
-         * in the AirbyteMessages (both record and state messages). The destination checks that if
-         * the namespace is empty or null, if yes then re-populates it with the defaultNamespace.
-         * See [io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer.accept] But
-         * destination only does this for the record messages. So when state messages arrive without
-         * a namespace and since the destination doesn't repopulate it with the default namespace,
-         * there is a mismatch between the StreamDescriptor from record messages and state messages.
-         * That breaks the logic of the state management class as [descToStateIdQ] needs to have
-         * consistent StreamDescriptor. This is why while trying to extract the StreamDescriptor
-         * from state messages, we check if the namespace is null, if yes then replace it with
-         * defaultNamespace to keep it consistent with the record messages.
-         */
         private fun extractStream(
             message: PartialAirbyteMessage,
-            defaultNamespace: String,
         ): Optional<StreamDescriptor> {
             if (
                 message.state?.type != null &&
                     message.state?.type == AirbyteStateMessage.AirbyteStateType.STREAM
             ) {
                 val streamDescriptor: StreamDescriptor? = message.state?.stream?.streamDescriptor
-                if (Strings.isNullOrEmpty(streamDescriptor?.namespace)) {
-                    return Optional.of(
-                        StreamDescriptor()
-                            .withName(
-                                streamDescriptor?.name,
-                            )
-                            .withNamespace(defaultNamespace),
-                    )
-                }
                 return streamDescriptor?.let { Optional.of(it) } ?: Optional.empty()
             }
             return Optional.empty()

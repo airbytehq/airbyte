@@ -45,7 +45,7 @@ internal class CatalogParserTest {
             StreamId(namespace, name, rawNamespace, namespace + "_abab_" + name, namespace, name)
         }
 
-        parser = CatalogParser(sqlGenerator)
+        parser = CatalogParser(sqlGenerator, "default_namespace")
     }
 
     /**
@@ -176,9 +176,22 @@ internal class CatalogParserTest {
         )
     }
 
+    @Test
+    fun testDefaultNamespace() {
+        val catalog =
+            parser.parseCatalog(
+                ConfiguredAirbyteCatalog()
+                    .withStreams(
+                        listOf(stream(null, "a", Jsons.deserialize("""{"type": "object"}""")))
+                    )
+            )
+
+        Assertions.assertEquals("default_namespace", catalog.streams[0].id.originalNamespace)
+    }
+
     companion object {
         private fun stream(
-            namespace: String,
+            namespace: String?,
             name: String,
             schema: JsonNode =
                 Jsons.deserialize(
