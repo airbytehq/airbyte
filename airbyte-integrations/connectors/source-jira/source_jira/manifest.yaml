@@ -368,6 +368,20 @@ definitions:
       path: "project/search"
       extract_field: "values"
 
+  _non_deleted_projects:
+    $ref: "#/definitions/projects_stream"
+    retriever:
+      $ref: "#/definitions/retriever_use_cache"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          expand: "description,lead"
+          status: "['live', 'archived']"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ not config.get('projects') or record.get('key') in config['projects'] }}"
+
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-get
   project_categories_stream:
     $ref: "#/definitions/full_refresh_stream"
@@ -781,7 +795,7 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/projects_stream"
+            stream: "#/definitions/_non_deleted_projects"
             parent_key: "id"
             partition_field: "project_id"
       record_selector:
@@ -817,7 +831,7 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/projects_stream"
+            stream: "#/definitions/_non_deleted_projects"
             parent_key: "key"
             partition_field: "project_key"
     $parameters:
@@ -835,7 +849,7 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/projects_stream"
+            stream: "#/definitions/_non_deleted_projects"
             parent_key: "id"
             partition_field: "project_id"
       record_selector:
@@ -871,7 +885,7 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/projects_stream"
+            stream: "#/definitions/_non_deleted_projects"
             parent_key: "key"
             partition_field: "project_key"
     transformations:
@@ -895,7 +909,7 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/projects_stream"
+            stream: "#/definitions/_non_deleted_projects"
             parent_key: "key"
             partition_field: "project_key"
     $parameters:
