@@ -24,11 +24,11 @@ data:
   githubIssueLabel: source-goldcast-api
   icon: goldcast-api.svg
   license: MIT
-  name: Goldcast Api
+  name: Goldcast
   releaseDate: TODO
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/goldcast-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/goldcast
   tags:
     - language:python
     - cdk:low-code
