@@ -2313,7 +2313,6 @@ class WebAnalyticsStream(CheckpointMixin, HttpSubStream, Stream):
             "$ref": "default_event_properties.json",
         }
         return ResourceSchemaLoader("source_hubspot")._resolve_schema_references(raw_schema=raw_schema)
-    
 
     def get_latest_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
