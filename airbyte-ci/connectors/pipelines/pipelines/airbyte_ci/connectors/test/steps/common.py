@@ -24,11 +24,10 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
-from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
+from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result, slugify
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
-from slugify import slugify
 
 
 class VersionCheck(Step, ABC):
@@ -288,7 +287,6 @@ class AcceptanceTests(Step):
             cat_container = self.dagger_client.container().from_(self.context.connector_acceptance_test_image)
 
         connector_container_id = await connector_under_test_container.id()
-
         cat_container = (
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
@@ -308,6 +306,17 @@ class AcceptanceTests(Step):
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
 
+    def get_is_hard_failure(self) -> bool:
+        """When a connector is not certified or the CI context is master, we consider the acceptance tests as hard failures:
+        The overall status of the pipeline will be FAILURE if the acceptance tests fail.
+        For marketplace connectors we defer to the IncrementalAcceptanceTests step to determine if the acceptance tests are hard failures:
+        If a new test is failing compared to the released version of the connector.
+
+        Returns:
+            bool: Whether a failure of acceptance tests should be considered a hard failures.
+        """
+        return self.context.connector.metadata.get("supportLevel") == "certified" or self.context.ci_context == CIContext.MASTER
+
     async def get_step_result(self, container: Container) -> StepResult:
         """Retrieve stdout, stderr and exit code from the executed CAT container.
         Pull the report logs from the container and create an Artifact object from it.
@@ -326,6 +335,10 @@ class AcceptanceTests(Step):
             content=container.file(self.REPORT_LOG_PATH),
             to_upload=True,
         )
+        status = self.get_step_status_from_exit_code(exit_code)
+
+        is_hard_failure = status is StepStatus.FAILURE and self.get_is_hard_failure()
+
         return StepResult(
             step=self,
             status=self.get_step_status_from_exit_code(exit_code),
@@ -333,6 +346,7 @@ class AcceptanceTests(Step):
             stdout=stdout,
             output=container,
             artifacts=[report_log_artifact],
+            consider_in_overall_status=is_hard_failure,
         )
 
 
