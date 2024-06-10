@@ -27,8 +27,10 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
 from airbyte_cdk.sources.source import TState
+from airbyte_protocol.models import ConfiguredAirbyteStream
 from avro import datafile
 from pydantic import AnyUrl
+from unit_tests.sources.file_based.test_scenarios import _configured_catalog_from_mapping
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -53,7 +55,7 @@ class InMemoryFilesSource(FileBasedSource):
         self.files = files
         self.file_type = file_type
         self.catalog = catalog
-        self.configured_catalog = ConfiguredAirbyteCatalog(streams=self.catalog["streams"]) if self.catalog else None
+        self.configured_catalog = _configured_catalog_from_mapping(self.catalog) if self.catalog else None
         self.config = config
         self.state = state
 

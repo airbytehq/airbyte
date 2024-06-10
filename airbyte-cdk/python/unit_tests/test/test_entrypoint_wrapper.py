@@ -8,6 +8,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
+from airbyte_cdk.sources.connector_state_manager import AirbyteStateBlob
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import (
@@ -16,15 +17,18 @@ from airbyte_protocol.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStream,
     AirbyteStreamState,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
     Level,
     StreamDescriptor,
+    SyncMode,
     TraceType,
     Type,
 )
@@ -72,21 +76,19 @@ _AN_ANALYTIC_MESSAGE = AirbyteMessage(
 
 _A_STREAM_NAME = "a stream name"
 _A_CONFIG = {"config_key": "config_value"}
-_A_CATALOG = ConfiguredAirbyteCatalog.parse_obj(
-    {
-        "streams": [
-            {
-                "stream": {
-                    "name": "a_stream_name",
-                    "json_schema": {},
-                    "supported_sync_modes": ["full_refresh"],
-                },
-                "sync_mode": "full_refresh",
-                "destination_sync_mode": "append",
-            }
-        ]
-    }
-)
+_A_CATALOG = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(
+                        name="a_stream_name",
+                        json_schema={},
+                        supported_sync_modes=[SyncMode("full_refresh")],
+                    ),
+                    sync_mode=SyncMode("full_refresh"),
+                    destination_sync_mode=DestinationSyncMode("append"),
+                )
+            ]
+        )
 _A_STATE = StateBuilder().with_stream_state(_A_STREAM_NAME, {"state_key": "state_value"}).build()
 _A_LOG_MESSAGE = "a log message"
 

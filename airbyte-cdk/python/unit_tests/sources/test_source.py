@@ -13,7 +13,6 @@ import pytest
 import requests
 from airbyte_cdk.models import (
     AirbyteGlobalState,
-    AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStreamState,
@@ -23,6 +22,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import AbstractSource, Source
+from airbyte_cdk.sources.connector_state_manager import AirbyteStateBlob
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream, HttpSubStream
@@ -151,7 +151,7 @@ def abstract_source(mocker):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                        stream_state=AirbyteStateBlob({"created_at": "2009-07-19"}),
                     ),
                 )
             ],
@@ -187,21 +187,21 @@ def abstract_source(mocker):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                        stream_state=AirbyteStateBlob({"created_at": "2009-07-19"}),
                     ),
                 ),
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="directors", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"id": "villeneuve_denis"}),
+                        stream_state=AirbyteStateBlob({"id": "villeneuve_denis"}),
                     ),
                 ),
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="actors", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "1995-12-27"}),
+                        stream_state=AirbyteStateBlob({"created_at": "1995-12-27"}),
                     ),
                 ),
             ],
@@ -221,15 +221,15 @@ def abstract_source(mocker):
                 }
             ],
             [
-                AirbyteStateMessage.parse_obj(
+                AirbyteStateMessage(
                     {
                         "type": AirbyteStateType.GLOBAL,
                         "global": AirbyteGlobalState(
-                            shared_state=AirbyteStateBlob.parse_obj({"shared_key": "shared_val"}),
+                            shared_state=AirbyteStateBlob({"shared_key": "shared_val"}),
                             stream_states=[
                                 AirbyteStreamState(
                                     stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                                    stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                                    stream_state=AirbyteStateBlob({"created_at": "2009-07-19"}),
                                 )
                             ],
                         ),

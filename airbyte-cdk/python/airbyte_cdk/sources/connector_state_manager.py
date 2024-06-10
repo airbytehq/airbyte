@@ -3,12 +3,10 @@
 #
 
 import copy
-from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import (
+from airbyte_cdk.models import (  # AirbyteStateBlob,
     AirbyteMessage,
-    # AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStream,
@@ -17,7 +15,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams import Stream
-from pydantic import Extra, BaseModel
+from pydantic import BaseModel, Extra
 
 
 class AirbyteStateBlob(dict):

@@ -21,7 +21,6 @@ from airbyte_cdk.models import (
     AirbyteControlMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStream,
@@ -39,7 +38,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
+from airbyte_cdk.sources.connector_state_manager import AirbyteStateBlob, HashableStreamDescriptor
 from airbyte_cdk.utils import AirbyteTracedException
 
 

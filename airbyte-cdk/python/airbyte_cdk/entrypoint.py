@@ -16,8 +16,6 @@ from typing import Any, DefaultDict, Iterable, List, Mapping, MutableMapping, Op
 from urllib.parse import urlparse
 
 import requests
-from orjson import orjson
-
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
@@ -30,6 +28,7 @@ from airbyte_cdk.utils import is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from orjson import orjson
 from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")

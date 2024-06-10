@@ -32,7 +32,7 @@ def _make_cursor(input_state: Optional[MutableMapping[str, Any]]) -> FileBasedCo
         MagicMock(),
         ConnectorStateManager(
             stream_instance_map={stream.name: stream},
-            state=[AirbyteStateMessage.parse_obj(input_state)] if input_state is not None else None,
+            state=[AirbyteStateMessage(input_state)] if input_state is not None else None,
         ),
         CursorField(FileBasedConcurrentCursor.CURSOR_FIELD),
     )
