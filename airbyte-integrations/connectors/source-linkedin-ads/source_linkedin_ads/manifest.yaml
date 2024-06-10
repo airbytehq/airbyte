@@ -666,7 +666,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_creative_analytics"
     ad_impression_device_analytics:
       type: DeclarativeStream
       name: ad_impression_device_analytics
@@ -772,7 +772,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_impression_device_analytics"
     ad_member_company_size_analytics:
       type: DeclarativeStream
       name: ad_member_company_size_analytics
@@ -878,7 +878,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_member_company_size_analytics"
     ad_member_country_analytics:
       type: DeclarativeStream
       name: ad_member_country_analytics
@@ -984,7 +984,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_member_country_analytics"
     ad_member_job_function_analytics:
       type: DeclarativeStream
       name: ad_member_job_function_analytics
@@ -1090,7 +1090,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_member_job_function_analytics"
     ad_member_job_title_analytics:
       type: DeclarativeStream
       name: ad_member_job_title_analytics
@@ -1196,7 +1196,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_member_job_title_analytics"
     ad_member_industry_analytics:
       type: DeclarativeStream
       name: ad_member_industry_analytics
@@ -1302,7 +1302,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_member_industry_analytics"
     ad_member_seniority_analytics:
       type: DeclarativeStream
       name: ad_member_seniority_analytics
@@ -1408,7 +1408,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_member_seniority_analytics"
     ad_member_region_analytics:
       type: DeclarativeStream
       name: ad_member_region_analytics
@@ -1514,7 +1514,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_member_region_analytics"
     ad_member_company_analytics:
       type: DeclarativeStream
       name: ad_member_company_analytics
@@ -1620,7 +1620,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+          $ref: "#/schemas/ad_member_company_analytics"
   base_requester:
     type: HttpRequester
     url_base: https://api.linkedin.com/rest/
@@ -1665,10 +1665,12 @@ streams:
 spec:
   type: Spec
   connection_specification:
-    type: object
     $schema: http://json-schema.org/draft-07/schema#
+    title: "Linkedin Ads Spec"
+    type: object
     required:
       - start_date
+    additionalProperties: true
     properties:
       credentials:
         title: Authentication
@@ -1782,7 +1784,6 @@ spec:
                   - MONTHLY
                   - YEARLY
           default: []
-    additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -1844,7 +1845,7 @@ schemas:
     type:
       - "null"
       - object
-    title: Accounts
+    title: "Accounts"
     additionalProperties: true
     properties:
       test:
@@ -1945,7 +1946,7 @@ schemas:
     type:
       - "null"
       - object
-    title: AccountUsers
+    title: "Account Users"
     additionalProperties: true
     properties:
       account:
@@ -1981,7 +1982,7 @@ schemas:
     type:
       - "null"
       - object
-    title: Campaigns
+    title: "Campaigns"
     additionalProperties: true
     properties:
       targetingCriteria:
@@ -2284,7 +2285,7 @@ schemas:
     type:
       - "null"
       - object
-    title: Campaign Groups
+    title: "Campaign Groups"
     additionalProperties: true
     properties:
       runSchedule:
@@ -2385,7 +2386,7 @@ schemas:
     type:
       - "null"
       - object
-    title: Creatives
+    title: "Creatives"
     additionalProperties: true
     properties:
       servingHoldReasons:
@@ -2491,7 +2492,7 @@ schemas:
     type:
       - "null"
       - object
-    title: Conversions
+    title: "Conversions"
     properties:
       attributionType:
         description: The type of attribution for the conversion.
