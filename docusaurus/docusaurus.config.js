@@ -128,16 +128,17 @@ const config = {
           alt: "Simple, secure and extensible data integration",
           src: "img/logo-dark.png",
           srcDark: "img/logo-light.png",
+          href: "https://airbyte.io/",
           height: 40,
         },
         items: [
           {
-            href: "https://airbyte.io/",
+            href: "/",
             position: "left",
-            label: "About Airbyte",
+            label: "Docs Home",
           },
           {
-            href: "https://airbyte.com/tutorials",
+            href: "/using-airbyte/getting-started/tutorials",
             label: "Tutorials",
             position: "left",
           },
