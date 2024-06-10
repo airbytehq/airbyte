@@ -10,7 +10,7 @@ data:
   remoteRegistries:
     pypi:
       enabled: true
-      packageName: airbyte-source-goldcast-api
+      packageName: airbyte-source-goldcast
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
@@ -20,9 +20,9 @@ data:
   connectorType: source
   definitionId: c2c25d04-9bb1-4171-8a7a-bb7cead8add0
   dockerImageTag: 0.1.0
-  dockerRepository: airbyte/source-goldcast-api
-  githubIssueLabel: source-goldcast-api
-  icon: goldcast-api.svg
+  dockerRepository: airbyte/source-goldcast
+  githubIssueLabel: source-goldcast
+  icon: goldcast.svg
   license: MIT
   name: Goldcast
   releaseDate: TODO

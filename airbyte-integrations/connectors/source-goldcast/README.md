@@ -1,7 +1,7 @@
-# Goldcast Api Source
+# Goldcast Source
 
-This is the repository for the Goldcast Api configuration based source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/goldcast-api).
+This is the repository for the Goldcast API configuration based source connector.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/goldcast).
 
 Currently we are not able to implement incremental streams with this source as the api does not allow a filter on updated at / last modified column. The link to the API documentation is available [here](https://customapi.goldcast.io/swagger-ui/#/).
 
@@ -24,7 +24,7 @@ poetry install --with dev
 
 ### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/goldcast-api) to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_goldcast_api/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/goldcast) to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_goldcast/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file. For simplicity, instructions are also included here: please refer to the offical Goldcast [documentation](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast) to generate a token.
 
@@ -32,10 +32,10 @@ See `sample_files/sample_config.json` for a sample config file. For simplicity, 
 ### Locally running the connector
 
 ```
-poetry run source-goldcast-api spec
-poetry run source-goldcast-api check --config secrets/config.json
-poetry run source-goldcast-api discover --config secrets/config.json
-poetry run source-goldcast-api read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-goldcast spec
+poetry run source-goldcast check --config secrets/config.json
+poetry run source-goldcast discover --config secrets/config.json
+poetry run source-goldcast read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running tests
@@ -51,27 +51,27 @@ poetry run pytest tests
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
 ```bash
-airbyte-ci connectors --name=source-goldcast-api build
+airbyte-ci connectors --name=source-goldcast build
 ```
 
-An image will be available on your host with the tag `airbyte/source-goldcast-api:dev`.
+An image will be available on your host with the tag `airbyte/source-goldcast:dev`.
 
 
 ### Running as a docker container
 
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-goldcast-api:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-goldcast-api:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-goldcast-api:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-goldcast-api:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-goldcast:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-goldcast:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-goldcast:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-goldcast:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Running our CI test suite
 
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 ```bash
-airbyte-ci connectors --name=source-goldcast-api test
+airbyte-ci connectors --name=source-goldcast test
 ```
 
 ### Customizing acceptance Tests
@@ -92,12 +92,12 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-goldcast-api test`
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-goldcast test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/goldcast-api.md`).
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/goldcast.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

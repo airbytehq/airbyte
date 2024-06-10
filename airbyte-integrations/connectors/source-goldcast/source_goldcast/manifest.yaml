@@ -102,41 +102,6 @@ definitions:
                 $ref: "#/definitions/events_stream"
       path: "/event/event-members?event={{ stream_partition.event }}"
 
-#  event_agenda_stream:
-#    $ref: "#/definitions/base_stream"
-#    name: event_agenda
-#    description: "Events agenda stream. Information on what was the agenda of a spcific event."
-#    primary_key: "id"
-#    $parameters:
-#      partition_router:
-#        - type: SubstreamPartitionRouter
-#          parent_stream_configs:
-#            - type: ParentStreamConfig
-#              parent_key: id
-#              partition_field: event
-#              stream:
-#                $ref: '#/definitions/events_stream'
-#      selector:
-#        extractor:
-#          field_path: ["broadcast"]
-#      path: "/event/{{ stream_partition.event }}/agenda/"
-
-#  session_attendance_stream:
-#    $ref: "#/definitions/base_stream"
-#    name: session_attendance
-#    description: "Session attendance stream. Information on who attendend what session of an event."
-#    primary_key: "id"
-#    $parameters:
-#      partition_router:
-#        - type: SubstreamPartitionRouter
-#          parent_stream_configs:
-#            - type: ParentStreamConfig
-#              parent_key: id
-#              partition_field: session
-#              stream:
-#                $ref: '#/definitions/event_agenda_stream'
-#      path: "/event/get_session_attendance/?session={{ stream_partition.session }}"
-
 streams:
   - "#/definitions/organizations_stream"
   - "#/definitions/events_stream"
@@ -145,8 +110,6 @@ streams:
   - "#/definitions/tracks_stream"
   - "#/definitions/webinars_stream"
   - "#/definitions/event_members_stream"
-#  - "#/definitions/event_agenda_stream"
-#  - "#/definitions/session_attendance_stream"
 
 check:
   type: CheckStream
@@ -158,8 +121,6 @@ check:
     - "tracks"
     - "webinars"
     - "event_members"
-#    - "event_agenda"
-#    - "session_attendance"
 
 spec:
   documentation_url: https://customapi.goldcast.io/swagger-ui/#/

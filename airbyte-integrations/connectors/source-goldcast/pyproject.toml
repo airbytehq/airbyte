@@ -4,22 +4,22 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.1.0"
-name = "source-goldcast-api"
-description = "Source implementation for goldcast-api."
+name = "source-goldcast"
+description = "Source implementation for goldcast."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/goldcast-api"
+documentation = "https://docs.airbyte.com/integrations/sources/goldcast"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_goldcast_api" }, {include = "main.py" } ]
+packages = [ { include = "source_goldcast" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
-source-goldcast-api = "source_goldcast_api.run:run"
+source-goldcast = "source_goldcast.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "*"
