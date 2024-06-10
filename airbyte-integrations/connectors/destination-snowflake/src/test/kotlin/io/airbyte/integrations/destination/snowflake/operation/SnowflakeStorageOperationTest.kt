@@ -7,10 +7,12 @@ package io.airbyte.integrations.destination.snowflake.operation
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator
 import io.airbyte.protocol.models.v0.DestinationSyncMode
+import java.util.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -78,7 +80,7 @@ class SnowflakeStorageOperationTest {
         val storageOperation =
             SnowflakeStorageOperation(sqlGenerator, destinationHandler, 1, stagingClient)
 
-        storageOperation.writeToStage(streamId, data)
+        storageOperation.writeToStage(streamConfig, data)
         val inOrder = inOrder(stagingClient)
         inOrder.verify(stagingClient).uploadRecordsToStage(any(), eq(stageName), any())
         inOrder
@@ -104,6 +106,17 @@ class SnowflakeStorageOperationTest {
                 "raw_name",
                 "original_namespace",
                 "original_name",
+            )
+        val streamConfig =
+            StreamConfig(
+                streamId,
+                DestinationSyncMode.OVERWRITE,
+                listOf(),
+                Optional.empty(),
+                linkedMapOf(),
+                0,
+                0,
+                0,
             )
     }
 }

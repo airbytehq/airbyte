@@ -116,7 +116,8 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
             CREATE ${'$'}{force_create_table} TABLE ${'$'}{final_table_id} (
               "_AIRBYTE_RAW_ID" TEXT NOT NULL,
               "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
-              "_AIRBYTE_META" VARIANT NOT NULL
+              "_AIRBYTE_META" VARIANT NOT NULL,
+              "_AIRBYTE_GENERATION_ID" INTEGER
               ${'$'}{column_declarations}
             ) data_retention_time_in_days = ${'$'}{retention_period_days};
             
@@ -282,7 +283,8 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
             ${'$'}{column_list}
               "_AIRBYTE_META",
               "_AIRBYTE_RAW_ID",
-              "_AIRBYTE_EXTRACTED_AT"
+              "_AIRBYTE_EXTRACTED_AT",
+              "_AIRBYTE_GENERATION_ID"
             )
             ${'$'}{extractNewRawRecords};
             """.trimIndent()
@@ -326,7 +328,7 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
                 CASE
                   WHEN (TYPEOF("_airbyte_data":"${'$'}{raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
                     AND (${'$'}{json_extract} IS NULL)
-                    THEN 'Problem with `${'$'}{printable_col_name}`'
+                    THEN OBJECT_CONSTRUCT('field', '${'$'}{printable_col_name}', 'change', 'NULLED', 'reason', 'DESTINATION_TYPECAST_ERROR')
                   ELSE NULL
                 END
                 """.trimIndent()
@@ -390,9 +392,17 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
               WITH intermediate_data AS (
                 SELECT
               ${'$'}{column_casts}
-              ARRAY_CONSTRUCT_COMPACT(${'$'}{column_errors}) as "_airbyte_cast_errors",
+              ARRAY_COMPACT(
+              ARRAY_CAT(
+                CASE WHEN "_airbyte_meta":"changes" IS NOT NULL
+                THEN "_airbyte_meta":"changes"
+                ELSE ARRAY_CONSTRUCT()
+                END,
+              ARRAY_CONSTRUCT(${'$'}{column_errors}))) as "_airbyte_cast_errors",
                 "_airbyte_raw_id",
-                ${'$'}{airbyte_extracted_at_utc} as "_airbyte_extracted_at"
+                ${'$'}{airbyte_extracted_at_utc} as "_airbyte_extracted_at",
+                "_airbyte_meta",
+                "_airbyte_generation_id"
                 FROM ${'$'}{raw_table_id}
                 WHERE (
                     "_airbyte_loaded_at" IS NULL
@@ -401,9 +411,13 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
               ), new_records AS (
                 SELECT
                 ${'$'}{column_list}
-                  OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_AIRBYTE_META",
+                  CASE WHEN "_airbyte_meta" IS NOT NULL 
+                  THEN OBJECT_INSERT("_airbyte_meta", 'changes', "_airbyte_cast_errors", true) 
+                  ELSE OBJECT_CONSTRUCT('changes', "_airbyte_cast_errors") 
+                  END AS "_AIRBYTE_META",
                   "_airbyte_raw_id" AS "_AIRBYTE_RAW_ID",
-                  "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT"
+                  "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT",
+                  "_airbyte_generation_id" AS "_AIRBYTE_GENERATION_ID"
                 FROM intermediate_data
               ), numbered_rows AS (
                 SELECT *, row_number() OVER (
@@ -411,7 +425,7 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
                 ) AS row_number
                 FROM new_records
               )
-              SELECT ${'$'}{column_list} "_AIRBYTE_META", "_AIRBYTE_RAW_ID", "_AIRBYTE_EXTRACTED_AT"
+              SELECT ${'$'}{column_list} "_AIRBYTE_META", "_AIRBYTE_RAW_ID", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_GENERATION_ID"
               FROM numbered_rows
               WHERE row_number = 1
               """.trimIndent()
@@ -438,9 +452,17 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
               WITH intermediate_data AS (
                 SELECT
               ${'$'}{column_casts}
-              ARRAY_CONSTRUCT_COMPACT(${'$'}{column_errors}) as "_airbyte_cast_errors",
+              ARRAY_COMPACT(
+              ARRAY_CAT(
+                CASE WHEN "_airbyte_meta":"changes" IS NOT NULL
+                THEN "_airbyte_meta":"changes"
+                ELSE ARRAY_CONSTRUCT()
+                END,
+              ARRAY_CONSTRUCT(${'$'}{column_errors}))) as "_airbyte_cast_errors",
                 "_airbyte_raw_id",
-                ${'$'}{airbyte_extracted_at_utc} as "_airbyte_extracted_at"
+                ${'$'}{airbyte_extracted_at_utc} as "_airbyte_extracted_at",
+                "_airbyte_meta",
+                "_airbyte_generation_id"
                 FROM ${'$'}{raw_table_id}
                 WHERE
                   "_airbyte_loaded_at" IS NULL
@@ -448,9 +470,13 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
               )
               SELECT
               ${'$'}{column_list}
-                OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_AIRBYTE_META",
+                CASE WHEN "_airbyte_meta" IS NOT NULL 
+                THEN OBJECT_INSERT("_airbyte_meta", 'changes', "_airbyte_cast_errors", true) 
+                ELSE OBJECT_CONSTRUCT('changes', "_airbyte_cast_errors") 
+                END AS "_AIRBYTE_META",
                 "_airbyte_raw_id" AS "_AIRBYTE_RAW_ID",
-                "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT"
+                "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT",
+                "_airbyte_generation_id" AS "_AIRBYTE_GENERATION_ID"
               FROM intermediate_data
               """.trimIndent()
                 )
@@ -589,6 +615,10 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
                         JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
                         "loaded_at",
                         JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+                        "meta",
+                        JavaBaseConstants.COLUMN_NAME_AB_META,
+                        "generation_id",
+                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
                         "data",
                         JavaBaseConstants.COLUMN_NAME_DATA,
                         "v1_raw_id",
@@ -605,7 +635,9 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
                   "${'$'}{raw_id}" VARCHAR PRIMARY KEY,
                   "${'$'}{extracted_at}" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
                   "${'$'}{loaded_at}" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-                  "${'$'}{data}" VARIANT
+                  "${'$'}{data}" VARIANT,
+                  "${'$'}{meta}" VARIANT,
+                  "${'$'}{generation_id}" INTEGER
                 )
                 data_retention_time_in_days = 0
                 AS (
@@ -613,7 +645,9 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
                     ${'$'}{v1_raw_id} AS "${'$'}{raw_id}",
                     ${'$'}{emitted_at} AS "${'$'}{extracted_at}",
                     CAST(NULL AS TIMESTAMP WITH TIME ZONE) AS "${'$'}{loaded_at}",
-                    PARSE_JSON(${'$'}{data}) AS "${'$'}{data}"
+                    PARSE_JSON(${'$'}{data}) AS "${'$'}{data}",
+                    CAST(NULL AS VARIANT) AS "${'$'}{meta}",
+                    CAST(NULL AS INTEGER) AS "${'$'}{generation_id}",
                   FROM ${'$'}{v1_raw_table}
                 )
                 ;
