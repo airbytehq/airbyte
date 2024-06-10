@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
@@ -232,11 +233,14 @@ class HttpClient:
             else:
                 error_message = f"'{request.method}' request to '{request.url}' failed with exception: '{exc}'"
 
-            raise AirbyteTracedException(
-                internal_message=error_message,
-                message=error_resolution.error_message or error_message,
-                failure_type=error_resolution.failure_type,
-            )
+            if exc is not None:
+                raise AirbyteTracedException(
+                    internal_message=error_message,
+                    message=error_resolution.error_message or error_message,
+                    failure_type=error_resolution.failure_type,
+                )
+            else:
+                raise ReadException(error_message)
 
         elif error_resolution.response_action == ResponseAction.IGNORE:
             if response:
