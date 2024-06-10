@@ -19,24 +19,24 @@ import org.jooq.SQLDialect
  * TyperDeduper classes. This implementation appeases that requirement but does not implement any
  * "final" table operations.
  */
-class RawOnlySqlGenerator(namingTransformer: NamingConventionTransformer) :
+open class RawOnlySqlGenerator(namingTransformer: NamingConventionTransformer) :
     JdbcSqlGenerator(namingTransformer) {
     override val structType: DataType<*>
         get() {
             throw NotImplementedError("This Destination does not support final tables")
         }
 
-    override val arrayType: DataType<*>?
+    override val arrayType: DataType<*>
         get() {
             throw NotImplementedError("This Destination does not support final tables")
         }
 
-    override val widestType: DataType<*>?
+    override val widestType: DataType<*>
         get() {
             throw NotImplementedError("This Destination does not support final tables")
         }
 
-    override val dialect: SQLDialect?
+    override val dialect: SQLDialect
         get() {
             throw NotImplementedError("This Destination does not support final tables")
         }
@@ -48,16 +48,16 @@ class RawOnlySqlGenerator(namingTransformer: NamingConventionTransformer) :
         throw NotImplementedError("This Destination does not support final tables")
     }
 
-    override fun buildAirbyteMetaColumn(columns: LinkedHashMap<ColumnId, AirbyteType>): Field<*>? {
+    override fun buildAirbyteMetaColumn(columns: LinkedHashMap<ColumnId, AirbyteType>): Field<*> {
         throw NotImplementedError("This Destination does not support final tables")
     }
 
-    override fun cdcDeletedAtNotNullCondition(): Condition? {
+    override fun cdcDeletedAtNotNullCondition(): Condition {
         throw NotImplementedError("This Destination does not support final tables")
     }
 
     override fun getRowNumber(
-        primaryKey: List<ColumnId?>?,
+        primaryKey: List<ColumnId>,
         cursorField: Optional<ColumnId>,
     ): Field<Int> {
         throw NotImplementedError("This Destination does not support final tables")

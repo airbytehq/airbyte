@@ -1,0 +1,1502 @@
+version: 0.78.5
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - assignments
+
+definitions:
+  streams:
+    Assignments:
+      type: DeclarativeStream
+      name: assignments
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: assignments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Assignments"
+    Employees:
+      type: DeclarativeStream
+      name: employees
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: employees
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employees"
+    Hashtags:
+      type: DeclarativeStream
+      name: hashtags
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: hash_tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Hashtags"
+    OrganizationClients:
+      type: DeclarativeStream
+      name: organization_clients
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/clients
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationClients"
+    OrganizationCompanyGroups:
+      type: DeclarativeStream
+      name: organization_company_groups
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/company_groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationCompanyGroups"
+    OrganizationDepartments:
+      type: DeclarativeStream
+      name: organization_departments
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/departments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationDepartments"
+    OrganizationIdentityProviders:
+      type: DeclarativeStream
+      name: organization_identity_providers
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/identity_providers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationIdentityProviders"
+    OrganizationPosition:
+      type: DeclarativeStream
+      name: organization_positions
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/positions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationPosition"
+    OrganizationRagScopes:
+      type: DeclarativeStream
+      name: organization_rag_scopes
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/rag_scopes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationRagScopes"
+    OrganizationRoles:
+      type: DeclarativeStream
+      name: organization_roles
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationRoles"
+    OrganizationSeniorities:
+      type: DeclarativeStream
+      name: organization_seniorities
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/seniorities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationSeniorities"
+    OrganizationTags:
+      type: DeclarativeStream
+      name: organization_tags
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationTags"
+    OrganizationTeams:
+      type: DeclarativeStream
+      name: organization_teams
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationTeams"
+    OrganizationTimeoffTypes:
+      type: DeclarativeStream
+      name: organization_timeoff_types
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/timeoff_types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/OrganizationTimeoffTypes"
+    People:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: people
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/People"
+    Projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Projects"
+    ProjectsVacancies:
+      type: DeclarativeStream
+      name: projects_vacancies
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects_vacancies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ProjectsVacancies"
+    RagRatings:
+      type: DeclarativeStream
+      name: rag_ratings
+      primary_key:
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: rag_ratings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/RagRatings"
+    Skills:
+      type: DeclarativeStream
+      name: skills
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: skills
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Skills"
+    Timeoffs:
+      type: DeclarativeStream
+      name: timeoffs
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: timeoffs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Timeoffs"
+    Worklogs:
+      type: DeclarativeStream
+      name: worklogs
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: worklogs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Worklogs"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.primetric.com/beta/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://api.primetric.com/auth/token/
+      grant_type: client_credentials
+
+streams:
+  - $ref: "#/definitions/streams/Assignments"
+  - $ref: "#/definitions/streams/Employees"
+  - $ref: "#/definitions/streams/Hashtags"
+  - $ref: "#/definitions/streams/OrganizationClients"
+  - $ref: "#/definitions/streams/OrganizationCompanyGroups"
+  - $ref: "#/definitions/streams/OrganizationDepartments"
+  - $ref: "#/definitions/streams/OrganizationIdentityProviders"
+  - $ref: "#/definitions/streams/OrganizationPosition"
+  - $ref: "#/definitions/streams/OrganizationRagScopes"
+  - $ref: "#/definitions/streams/OrganizationRoles"
+  - $ref: "#/definitions/streams/OrganizationSeniorities"
+  - $ref: "#/definitions/streams/OrganizationTags"
+  - $ref: "#/definitions/streams/OrganizationTeams"
+  - $ref: "#/definitions/streams/OrganizationTimeoffTypes"
+  - $ref: "#/definitions/streams/People"
+  - $ref: "#/definitions/streams/Projects"
+  - $ref: "#/definitions/streams/ProjectsVacancies"
+  - $ref: "#/definitions/streams/RagRatings"
+  - $ref: "#/definitions/streams/Skills"
+  - $ref: "#/definitions/streams/Timeoffs"
+  - $ref: "#/definitions/streams/Worklogs"
+
+spec:
+  documentation_url: https://docsurl.com
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Primetric Spec
+    type: object
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        description: The Client ID of your Primetric developer application. The Client ID is visible <a href=\"https://app.primetric.com/administrator/integrations">here</a>.
+        pattern: ^[a-zA-Z0-9]+$
+        airbyte_secret: true
+        examples: ["1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj"]
+        order: 0
+      client_secret:
+        type: string
+        title: Client Secret
+        description: The Client Secret of your Primetric developer application. You can manage your client's credentials <a href=\"https://app.primetric.com/administrator/integrations">here</a>.
+        pattern: ^[a-zA-Z0-9]+$
+        airbyte_secret: true
+        order: 1
+
+metadata:
+  autoImportSchema:
+    Assignments: true
+    Employees: true
+    Hashtags: true
+    OrganizationClients: true
+    OrganizationCompanyGroups: true
+    OrganizationDepartments: true
+    OrganizationIdentityProviders: true
+    OrganizationRagScopes: true
+    OrganizationRoles: true
+    OrganizationSeniorities: true
+    OrganizationTags: true
+    OrganizationTeams: true
+    OrganizationTimeoffTypes: true
+    People: true
+    Projects: true
+    ProjectsVacancies: true
+    RagRatings: true
+    Skills: true
+    Timeoffs: true
+    Worklogs: true
+
+schemas:
+  custom_attributes:
+    type: array
+    items:
+      type:
+        - "null"
+        - object
+      properties:
+        slug:
+          type: string
+        value:
+          type: array
+          items:
+            type: string
+
+  money_object:
+    type:
+      - "null"
+      - object
+    properties:
+      amount:
+        type:
+          - "null"
+          - number
+      currency:
+        type:
+          - "null"
+          - string
+      exchange_rate:
+        type:
+          - "null"
+          - number
+
+  Assignments:
+    type: object
+    properties:
+      uuid:
+        type: string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      starts_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      ends_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      end_local_date:
+        type:
+          - "null"
+          - string
+        format: date
+      start_local_date:
+        type:
+          - "null"
+          - string
+        format: date
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type: integer
+        enum:
+          - 0
+          - 1
+          - 2
+      employee_id:
+        type:
+          - "null"
+          - string
+      label:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      scheduling_mode:
+        type:
+          - "null"
+          - integer
+      affects_capacity:
+        type:
+          - "null"
+          - boolean
+      billable:
+        type:
+          - "null"
+          - boolean
+      project_role_id:
+        type:
+          - "null"
+          - string
+      hash_tag_ids:
+        type: array
+        items:
+          type:
+            - "null"
+            - string
+      color:
+        type:
+          - "null"
+          - string
+      project_id:
+        type:
+          - "null"
+          - string
+      project_phase_id:
+        type:
+          - "null"
+          - string
+      total_tracked:
+        type:
+          - "null"
+          - number
+      total_scheduled:
+        type:
+          - "null"
+          - number
+      is_settled:
+        type:
+          - "null"
+          - boolean
+      daily_data:
+        type:
+          - "null"
+          - object
+        properties:
+          start:
+            type:
+              - "null"
+              - string
+            format: date
+          end:
+            type:
+              - "null"
+              - string
+            format: date
+          tracked:
+            type: array
+            items:
+              type:
+                - "null"
+                - number
+          scheduled:
+            type: array
+            items:
+              type:
+                - "null"
+                - number
+      custom_attributes:
+        $ref: "#/schemas/custom_attributes"
+      background:
+        type:
+          - "null"
+          - boolean
+      volatile_work_settings:
+        type:
+          - "null"
+          - boolean
+      only_billable_work:
+        type:
+          - "null"
+          - boolean
+      scheduling_time_frame:
+        type:
+          - "null"
+          - integer
+      scheduled_work_per_time_frame:
+        type:
+          - "null"
+          - integer
+      adjust_scheduling_to_time_off:
+        type:
+          - "null"
+          - boolean
+      reduce_utilization_by_time_off:
+        type:
+          - "null"
+          - boolean
+      adjust_scheduling_to_public_holidays:
+        type:
+          - "null"
+          - boolean
+      reduce_utilization_by_public_holidays:
+        type:
+          - "null"
+          - boolean
+      capacity_based_load:
+        type:
+          - "null"
+          - integer
+      use_billable_capacity:
+        type:
+          - "null"
+          - boolean
+      work_by_capacity_per_monday:
+        type:
+          - "null"
+          - integer
+      work_by_capacity_per_tuesday:
+        type:
+          - "null"
+          - integer
+      work_by_capacity_per_wednesday:
+        type:
+          - "null"
+          - integer
+      work_by_capacity_per_thursday:
+        type:
+          - "null"
+          - integer
+      work_by_capacity_per_friday:
+        type:
+          - "null"
+          - integer
+      work_by_capacity_per_saturday:
+        type:
+          - "null"
+          - integer
+      work_by_capacity_per_sunday:
+        type:
+          - "null"
+          - integer
+      work_per_monday:
+        type:
+          - "null"
+          - integer
+      work_per_tuesday:
+        type:
+          - "null"
+          - integer
+      work_per_wednesday:
+        type:
+          - "null"
+          - integer
+      work_per_thursday:
+        type:
+          - "null"
+          - integer
+      work_per_friday:
+        type:
+          - "null"
+          - integer
+      work_per_saturday:
+        type:
+          - "null"
+          - integer
+      work_per_sunday:
+        type:
+          - "null"
+          - integer
+      work_on_monday:
+        type:
+          - "null"
+          - boolean
+      work_on_tuesday:
+        type:
+          - "null"
+          - boolean
+      work_on_wednesday:
+        type:
+          - "null"
+          - boolean
+      work_on_thursday:
+        type:
+          - "null"
+          - boolean
+      work_on_friday:
+        type:
+          - "null"
+          - boolean
+      work_on_saturday:
+        type:
+          - "null"
+          - boolean
+      work_on_sunday:
+        type:
+          - "null"
+          - boolean
+      financial_budget_mode:
+        type:
+          - "null"
+          - integer
+      financial_client_currency:
+        type:
+          - "null"
+          - string
+      financial_client_currency_exchange_rate:
+        type:
+          - "null"
+          - string
+      financial_total_scheduled_income:
+        $ref: "#/schemas/money_object"
+      financial_total_scheduled_cost:
+        $ref: "#/schemas/money_object"
+      financial_total_tracked_cost:
+        $ref: "#/schemas/money_object"
+      financial_total_tracked_income:
+        $ref: "#/schemas/money_object"
+      financial_settled_income:
+        type:
+          - "null"
+          - object
+      financial_settled_cost:
+        type:
+          - "null"
+          - object
+      financial_total_work_for_cost:
+        type:
+          - "null"
+          - integer
+      financial_contractor_hour_cost:
+        type:
+          - "null"
+          - object
+      financial_hour_rate:
+        $ref: "#/schemas/money_object"
+      financial_employee_default_hour_cost:
+        $ref: "#/schemas/money_object"
+      financial_use_default_hour_cost:
+        type:
+          - "null"
+          - boolean
+      financial_default_hour_rate_source:
+        type:
+          - "null"
+          - integer
+      financial_total_work_for_income:
+        type:
+          - "null"
+          - integer
+
+  Employees:
+    type: object
+    properties:
+      uuid:
+        type: string
+      nick:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      assigned_manager_id:
+        type:
+          - "null"
+          - string
+      assigned_finance_manager_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      summary:
+        type:
+          - "null"
+          - string
+      seniority_id:
+        type:
+          - "null"
+          - string
+      team_id:
+        type:
+          - "null"
+          - string
+      department_id:
+        type:
+          - "null"
+          - string
+      position_id:
+        type:
+          - "null"
+          - string
+      hash_tag_ids:
+        type: array
+        items:
+          type: string
+      nationality:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      custom_attributes:
+        $ref: "#/schemas/custom_attributes"
+
+  Hashtags:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+
+  OrganizationClients:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+
+  OrganizationCompanyGroups:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+
+  OrganizationDepartments:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+
+  OrganizationIdentityProviders:
+    type: object
+    properties:
+      uuid:
+        type: string
+      connector:
+        type: string
+      status:
+        type: string
+      name:
+        type: string
+
+  OrganizationRagScopes:
+    type: object
+    properties:
+      uuid:
+        type: string
+      order:
+        type: integer
+      text:
+        type: string
+      rag_type:
+        type: integer
+        enum:
+          - 1
+          - 2
+      default_choice:
+        type: integer
+        enum:
+          - 1
+          - 2
+      allow_undefined:
+        type: boolean
+      is_financial:
+        type: boolean
+
+  OrganizationRoles:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+      default_hour_rate:
+        type: string
+        airbyte_type: big_number
+
+  OrganizationPosition:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+
+  OrganizationSeniorities:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+      level:
+        type: integer
+
+  OrganizationTags:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+
+  OrganizationTeams:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+
+  OrganizationTimeoffTypes:
+    type: object
+    properties:
+      uuid:
+        type: string
+      text:
+        type: string
+
+  People:
+    type: object
+    properties:
+      uuid:
+        type: string
+      name:
+        type: string
+      mail:
+        type: string
+      archived:
+        type: boolean
+      roles:
+        type:
+          - "null"
+          - object
+        properties:
+          manager_id:
+            type:
+              - "null"
+              - string
+          employee_id:
+            type:
+              - "null"
+              - string
+          administrator_id:
+            type:
+              - "null"
+              - string
+
+  Projects:
+    type: object
+    properties:
+      uuid:
+        type: string
+      title:
+        type:
+          - "null"
+          - string
+      hash_tag_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      start_date:
+        type:
+          - "null"
+          - string
+        format: date
+      end_date:
+        type:
+          - "null"
+          - string
+        format: date
+      last_date:
+        type:
+          - "null"
+          - string
+        format: date
+      tentative:
+        type:
+          - "null"
+          - boolean
+      likelihood:
+        type:
+          - "null"
+          - integer
+      billing_model:
+        type:
+          - "null"
+          - integer
+      hour_rate_source:
+        type:
+          - "null"
+          - integer
+      customer_id:
+        type:
+          - "null"
+          - string
+      currency:
+        type:
+          - "null"
+          - string
+      currency_rate:
+        type:
+          - "null"
+          - string
+      project_group_id:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - integer
+      color:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      assigned_manager_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      assigned_manager_readonly_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      is_public:
+        type:
+          - "null"
+          - boolean
+      integrations:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      custom_attributes:
+        $ref: "#/schemas/custom_attributes"
+
+  ProjectsVacancies:
+    type: object
+    properties:
+      uuid:
+        type: string
+      project_id:
+        type: string
+      start_date:
+        type:
+          - "null"
+          - string
+        format: date
+      end_date:
+        type:
+          - "null"
+          - string
+        format: date
+      seniority_id:
+        type:
+          - "null"
+          - string
+      position_id:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      custom_attributes:
+        $ref: "#/schemas/custom_attributes"
+
+  RagRatings:
+    type: object
+    properties:
+      project_url:
+        type: string
+      project_id:
+        type: string
+      rag_ratings:
+        type: array
+        items:
+          type: object
+          properties:
+            rag_scope_uuid:
+              type:
+                - "null"
+                - string
+            text:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - integer
+
+  Skills:
+    type: object
+    properties:
+      name:
+        type: string
+      uuid:
+        type: string
+      level:
+        type: integer
+      desc:
+        type: string
+      abstract:
+        type: boolean
+      path:
+        type: string
+      ancestors:
+        type: array
+        items:
+          type:
+            - "null"
+            - string
+      has_children:
+        type:
+          - "null"
+          - boolean
+
+  Timeoffs:
+    type: object
+    properties:
+      uuid:
+        type: string
+      employee_id:
+        type: string
+      start_date:
+        type:
+          - "null"
+          - string
+        format: date
+      end_date:
+        type:
+          - "null"
+          - string
+        format: date
+      approved:
+        type: boolean
+      approved_by:
+        type:
+          - "null"
+          - object
+        properties:
+          uuid:
+            type: string
+          name:
+            type: string
+      approved_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      custom_attributes:
+        $ref: "#/schemas/custom_attributes"
+
+  Worklogs:
+    type: object
+    properties:
+      uuid:
+        type: string
+      assignment_id:
+        type:
+          - "null"
+          - string
+      project_id:
+        type:
+          - "null"
+          - string
+      starts_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      work:
+        type:
+          - "null"
+          - integer
+      desc:
+        type:
+          - "null"
+          - string
+      in_progress:
+        type:
+          - "null"
+          - boolean
+      billable:
+        type:
+          - "null"
+          - boolean
+      developer_id:
+        type:
+          - "null"
+          - string
+      custom_attributes:
+        $ref: "#/schemas/custom_attributes"

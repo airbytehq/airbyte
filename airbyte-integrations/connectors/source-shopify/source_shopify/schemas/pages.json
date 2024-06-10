@@ -3,52 +3,67 @@
   "additionalProperties": true,
   "properties": {
     "author": {
+      "description": "The author of the page.",
       "type": ["null", "string"]
     },
     "admin_graphql_api_id": {
+      "description": "The unique identifier for the page in the Admin GraphQL API.",
       "type": ["null", "string"]
     },
     "body_html": {
+      "description": "The HTML content of the page.",
       "body_html": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the page was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "handle": {
+      "description": "The unique URL path segment for the page.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the page.",
       "type": ["null", "integer"]
     },
     "published_at": {
+      "description": "The timestamp when the page was published.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "shop_id": {
+      "description": "The ID of the shop to which the page belongs.",
       "type": ["null", "integer"]
     },
     "template_suffix": {
+      "description": "The suffix of the liquid template used for the page.",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "The title of the page.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp when the page was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "shop_url": {
+      "description": "The URL of the shop associated with the page.",
       "type": ["null", "string"]
     },
     "deleted_at": {
+      "description": "The timestamp when the page was deleted.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deleted_message": {
+      "description": "Message indicating why the page was deleted.",
       "type": ["null", "string"]
     },
     "deleted_description": {
+      "description": "Description of the reason for deletion of the page.",
       "type": ["null", "string"]
     }
   }

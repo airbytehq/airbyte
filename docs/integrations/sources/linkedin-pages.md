@@ -54,6 +54,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics. 
 
 ## Getting started
+
 The API user account should be assigned the following permissions for the API endpoints:
 Endpoints such as: `Organization Lookup API`, `Follower Statistics`, `Share Statistics`, `Total Follower Count`, `Follower Statistics Time Bound`, `Share Statistics Time Bound` require these permissions:
 * `r_organization_social`: Retrieve your organization's posts, comments, reactions, and other engagement data.
@@ -62,6 +63,7 @@ Endpoints such as: `Organization Lookup API`, `Follower Statistics`, `Share Stat
 The API user account should be assigned the `ADMIN` role.
 
 ### Authentication
+
 There are 2 authentication methods: Access Token or OAuth2.0.
 OAuth2.0 is recommended since it will continue streaming data for 12 months instead of 2 months with an access token.
 
@@ -71,21 +73,24 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 1. **Log in to LinkedIn as the API user**
 
 2. **Create an App** [here](https://www.linkedin.com/developers/apps):
-   * `App Name`: airbyte-source
-   * `Company`: search and find your LinkedIn Company Page
-   * `Privacy policy URL`: link to company privacy policy
-   * `Business email`: developer/admin email address
-   * `App logo`: Airbyte's \(or Company's\) logo
-   * Review/agree to legal terms and create app
-   * Review the **Auth** tab:
-     * **Save your `client_id` and `client_secret`** \(for later steps\)
-     * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.com`
+
+   - `App Name`: airbyte-source
+   - `Company`: search and find your LinkedIn Company Page
+   - `Privacy policy URL`: link to company privacy policy
+   - `Business email`: developer/admin email address
+   - `App logo`: Airbyte's \(or Company's\) logo
+   - Review/agree to legal terms and create app
+   - Review the **Auth** tab:
+     - **Save your `client_id` and `client_secret`** \(for later steps\)
+     - Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.com`
 
 3. **Verify App**:
-   * In the **Settings** tab of your app dashboard, you'll see a **Verify** button. Click that button!
-   * Generate and provide the verify URL to your Company's LinkedIn Admin to verify the app.
+
+   - In the **Settings** tab of your app dashboard, you'll see a **Verify** button. Click that button!
+   - Generate and provide the verify URL to your Company's LinkedIn Admin to verify the app.
 
 4. **Request API Access**:
+
    * Navigate to the **Products** tab
    * Select the [Advertising API](https://learn.microsoft.com/en-us/linkedin/marketing/overview?view=li-lms-2024-03#advertising-api) and agree to the legal terms
    * After a few minutes, refresh the page to see a link to `View access form` in place of the **Select** button
@@ -103,10 +108,19 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                 |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| 2.0.0   | 2024-04-02 | [36744](https://github.com/airbytehq/airbyte/pull/36744) | Add time bound incremental streams for follower & share statistics. Migrate to Low Code |
-| 1.0.2   | 2023-05-30 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove duplicate streams                                                                |
-| 1.0.1   | 2023-03-22 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove `authSpecification` as it's not yet supported                                    |
-| 1.0.0   | 2023-03-16 | [18967](https://github.com/airbytehq/airbyte/pull/18967) | Fixed failing connection checks                                                         |
-| 0.1.0   | 2022-08-11 | [13098](https://github.com/airbytehq/airbyte/pull/13098) | Initial Release                                                                         |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                              |
+| :------ |:-----------| :------------------------------------------------------- | :--------------------------------------------------- |
+| 2.0.0   | 2024-06-11 | [36744](https://github.com/airbytehq/airbyte/pull/36744) | Add time bound incremental streams for follower & share statistics. Migrate to Low Code |
+| 1.0.6 | 2024-06-06 | [39171](https://github.com/airbytehq/airbyte/pull/39171) | [autopull] Upgrade base image to v1.2.2 |
+| 1.0.5 | 2024-06-03 | [38918](https://github.com/airbytehq/airbyte/pull/38918) | Replace AirbyteLogger with logging.Logger |
+| 1.0.4 | 2024-06-03 | [38918](https://github.com/airbytehq/airbyte/pull/38918) | Replace AirbyteLogger with logging.Logger |
+| 1.0.3 | 2024-05-21 | [38526](https://github.com/airbytehq/airbyte/pull/38526) | [autopull] base image + poetry + up_to_date |
+| 1.0.2 | 2023-05-30 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove duplicate streams |
+| 1.0.1 | 2023-03-22 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove `authSpecification` as it's not yet supported |
+| 1.0.0 | 2023-03-16 | [18967](https://github.com/airbytehq/airbyte/pull/18967) | Fixed failing connection checks |
+| 0.1.0 | 2022-08-11 | [13098](https://github.com/airbytehq/airbyte/pull/13098) | Initial Release |
+
+</details>

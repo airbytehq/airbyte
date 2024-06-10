@@ -9,7 +9,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 import pendulum
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 from .schemas import Profile
 from .streams import (
@@ -84,7 +84,10 @@ class SourceAmazonAds(AbstractSource):
         profiles_list = Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
         filtered_profiles = self._choose_profiles(config, profiles_list)
         if not filtered_profiles:
-            return False, "No profiles found after filtering by Profile ID and Marketplace ID"
+            return False, (
+                "No profiles with seller or vendor type found after filtering by Profile ID and Marketplace ID."
+                " If you have only agency profile, please use accounts associated with the profile of seller/vendor type."
+            )
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

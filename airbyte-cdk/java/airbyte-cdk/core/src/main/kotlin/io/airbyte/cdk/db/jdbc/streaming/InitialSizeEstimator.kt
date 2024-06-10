@@ -21,7 +21,7 @@ class InitialSizeEstimator(
     private var counter = 0
 
     override fun accept(row: Any) {
-        val byteSize: Long = BaseSizeEstimator.Companion.getEstimatedByteSize(row)
+        val byteSize: Long = getEstimatedByteSize(row)
         if (maxRowByteSize < byteSize) {
             maxRowByteSize = byteSize.toDouble()
         }

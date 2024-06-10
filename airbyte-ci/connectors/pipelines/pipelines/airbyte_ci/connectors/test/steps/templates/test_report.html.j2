@@ -176,6 +176,9 @@ function copyToClipBoard(htmlElement) {
       </ul>
       {% endif %}
       <div class="content-inner">
+        {% if step_result.report %}
+        <div>{{ step_result.report }}</div>
+        {% else %}
         {% if step_result.stdout %}
         <span class="std">Standard output(<button onclick="copyToClipBoard(this)">Copy to clipboard</button>):</span>
         <pre>{{ step_result.stdout|e }}</pre>
@@ -183,6 +186,7 @@ function copyToClipBoard(htmlElement) {
         {% if step_result.stderr %}
         <span class="std">Standard error(<button onclick="copyToClipBoard(this)">Copy to clipboard</button>):</span>
         <pre>{{ step_result.stderr|e }}</pre>
+        {% endif %}
         {% endif %}
       </div>
     </div>

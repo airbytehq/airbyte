@@ -13,12 +13,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class Main {
 
+  private static final Logger log = LoggerFactory.getLogger(Main.class);
   private static final String CREDENTIALS_PATH = "secrets/%s_%s_credentials.json";
 
   public static void main(final String[] args) {

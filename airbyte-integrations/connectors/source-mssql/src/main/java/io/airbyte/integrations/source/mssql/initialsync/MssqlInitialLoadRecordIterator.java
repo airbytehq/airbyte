@@ -16,7 +16,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mssql.MssqlQueryUtils;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -84,7 +84,8 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
         LOGGER.info("Subquery number : {}", numSubqueries);
         final Stream<AirbyteRecordData> stream = database.unsafeQuery(
             this::getOcPreparedStatement, sourceOperations::convertDatabaseRowToAirbyteRecordData);
-        currentIterator = AutoCloseableIterators.fromStream(stream, pair);
+        currentIterator = AutoCloseableIterators.fromStream(stream,
+            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace()));
         numSubqueries++;
         // If the current subquery has no records associated with it, the entire stream has been read.
         if (!currentIterator.hasNext()) {

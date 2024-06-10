@@ -7,13 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.SourceOperations
 import io.airbyte.protocol.models.JsonSchemaType
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.*
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.format.DateTimeParseException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Implementation of source operations with standard JDBC types. */
 open class JdbcSourceOperations :
     AbstractJdbcCompatibleSourceOperations<JDBCType>(), SourceOperations<ResultSet, JDBCType> {
@@ -33,30 +33,30 @@ open class JdbcSourceOperations :
 
         when (columnType) {
             JDBCType.BIT,
-            JDBCType.BOOLEAN -> putBoolean(json!!, columnName, resultSet, colIndex)
+            JDBCType.BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex)
             JDBCType.TINYINT,
-            JDBCType.SMALLINT -> putShortInt(json!!, columnName, resultSet, colIndex)
-            JDBCType.INTEGER -> putInteger(json!!, columnName, resultSet, colIndex)
-            JDBCType.BIGINT -> putBigInt(json!!, columnName, resultSet, colIndex)
+            JDBCType.SMALLINT -> putShortInt(json, columnName, resultSet, colIndex)
+            JDBCType.INTEGER -> putInteger(json, columnName, resultSet, colIndex)
+            JDBCType.BIGINT -> putBigInt(json, columnName, resultSet, colIndex)
             JDBCType.FLOAT,
-            JDBCType.DOUBLE -> putDouble(json!!, columnName, resultSet, colIndex)
-            JDBCType.REAL -> putFloat(json!!, columnName, resultSet, colIndex)
+            JDBCType.DOUBLE -> putDouble(json, columnName, resultSet, colIndex)
+            JDBCType.REAL -> putFloat(json, columnName, resultSet, colIndex)
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> putBigDecimal(json!!, columnName, resultSet, colIndex)
+            JDBCType.DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex)
             JDBCType.CHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR -> putString(json!!, columnName, resultSet, colIndex)
-            JDBCType.DATE -> putDate(json!!, columnName, resultSet, colIndex)
-            JDBCType.TIME -> putTime(json!!, columnName, resultSet, colIndex)
-            JDBCType.TIMESTAMP -> putTimestamp(json!!, columnName, resultSet, colIndex)
+            JDBCType.LONGVARCHAR -> putString(json, columnName, resultSet, colIndex)
+            JDBCType.DATE -> putDate(json, columnName, resultSet, colIndex)
+            JDBCType.TIME -> putTime(json, columnName, resultSet, colIndex)
+            JDBCType.TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex)
             JDBCType.TIMESTAMP_WITH_TIMEZONE ->
-                putTimestampWithTimezone(json!!, columnName, resultSet, colIndex)
+                putTimestampWithTimezone(json, columnName, resultSet, colIndex)
             JDBCType.BLOB,
             JDBCType.BINARY,
             JDBCType.VARBINARY,
-            JDBCType.LONGVARBINARY -> putBinary(json!!, columnName, resultSet, colIndex)
-            JDBCType.ARRAY -> putArray(json!!, columnName, resultSet, colIndex)
-            else -> putDefault(json!!, columnName, resultSet, colIndex)
+            JDBCType.LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex)
+            JDBCType.ARRAY -> putArray(json, columnName, resultSet, colIndex)
+            else -> putDefault(json, columnName, resultSet, colIndex)
         }
     }
 
@@ -130,15 +130,11 @@ open class JdbcSourceOperations :
         try {
             return JDBCType.valueOf(field[JdbcConstants.INTERNAL_COLUMN_TYPE].asInt())
         } catch (ex: IllegalArgumentException) {
-            LOGGER.warn(
-                String.format(
-                    "Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-                    field[JdbcConstants.INTERNAL_COLUMN_NAME],
-                    field[JdbcConstants.INTERNAL_SCHEMA_NAME],
-                    field[JdbcConstants.INTERNAL_TABLE_NAME],
-                    field[JdbcConstants.INTERNAL_COLUMN_TYPE]
-                )
-            )
+            LOGGER.warn {
+                "Could not convert column: ${field[JdbcConstants.INTERNAL_COLUMN_NAME]} from table: " +
+                    "${field[JdbcConstants.INTERNAL_SCHEMA_NAME]}.${field[JdbcConstants.INTERNAL_TABLE_NAME]} " +
+                    "with type: ${field[JdbcConstants.INTERNAL_COLUMN_TYPE]}. Casting to VARCHAR."
+            }
             return JDBCType.VARCHAR
         }
     }
@@ -147,8 +143,8 @@ open class JdbcSourceOperations :
         return JdbcUtils.ALLOWED_CURSOR_TYPES.contains(type)
     }
 
-    override fun getAirbyteType(jdbcType: JDBCType): JsonSchemaType {
-        return when (jdbcType) {
+    override fun getAirbyteType(sourceType: JDBCType): JsonSchemaType {
+        return when (sourceType) {
             JDBCType.BIT,
             JDBCType.BOOLEAN -> JsonSchemaType.BOOLEAN
             JDBCType.TINYINT,
@@ -177,7 +173,5 @@ open class JdbcSourceOperations :
         }
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcSourceOperations::class.java)
-    }
+    companion object {}
 }

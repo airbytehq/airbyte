@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -24,8 +25,8 @@ import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.QuoteMode
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class S3CsvWriter
 private constructor(
@@ -47,7 +48,7 @@ private constructor(
     override val fileLocation: String
 
     init {
-        var csvSettings = csvSettings
+        var localCsvSettings = csvSettings
         this.csvSheetGenerator = csvSheetGenerator
 
         val fileSuffix = "_" + UUID.randomUUID()
@@ -63,12 +64,9 @@ private constructor(
             )
         this.outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
-        LOGGER.info(
-            "Full S3 path for stream '{}': s3://{}/{}",
-            stream.name,
-            config.bucketName,
-            outputPath
-        )
+        LOGGER.info {
+            "Full S3 path for stream '${stream.name}': s3://${config.bucketName}/$outputPath"
+        }
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
         this.uploadManager =
@@ -80,11 +78,14 @@ private constructor(
         // performant.
         this.outputStream = uploadManager.multiPartOutputStreams[0]
         if (writeHeader) {
-            csvSettings =
-                csvSettings.withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String?>())
+            localCsvSettings =
+                @Suppress("deprecation")
+                localCsvSettings.withHeader(
+                    *csvSheetGenerator.getHeaderRow().toTypedArray<String>()
+                )
         }
         this.csvPrinter =
-            CSVPrinter(PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvSettings)
+            CSVPrinter(PrintWriter(outputStream, true, StandardCharsets.UTF_8), localCsvSettings)
     }
 
     class Builder(
@@ -96,7 +97,8 @@ private constructor(
         private var uploadThreads = StreamTransferManagerFactory.DEFAULT_UPLOAD_THREADS
         private var queueCapacity = StreamTransferManagerFactory.DEFAULT_QUEUE_CAPACITY
         private var withHeader = true
-        private var csvSettings: CSVFormat = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
+        private var csvSettings: CSVFormat =
+            @Suppress("deprecation") CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
         private lateinit var _csvSheetGenerator: CsvSheetGenerator
 
         fun uploadThreads(uploadThreads: Int): Builder {
@@ -150,7 +152,7 @@ private constructor(
 
     @Throws(IOException::class)
     override fun write(id: UUID, recordMessage: AirbyteRecordMessage) {
-        csvPrinter.printRecord(csvSheetGenerator!!.getDataRow(id, recordMessage))
+        csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage))
     }
 
     @Throws(IOException::class)
@@ -167,15 +169,13 @@ private constructor(
         uploadManager.abort()
     }
 
-    override val fileFormat: FileUploadFormat?
+    override val fileFormat: FileUploadFormat
         get() = FileUploadFormat.CSV
 
     @Throws(IOException::class)
     override fun write(formattedData: JsonNode) {
-        csvPrinter.printRecord(csvSheetGenerator!!.getDataRow(formattedData))
+        csvPrinter.printRecord(csvSheetGenerator.getDataRow(formattedData))
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(S3CsvWriter::class.java)
-    }
+    companion object {}
 }

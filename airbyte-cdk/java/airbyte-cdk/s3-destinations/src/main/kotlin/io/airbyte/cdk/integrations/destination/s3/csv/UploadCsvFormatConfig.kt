@@ -38,18 +38,18 @@ class UploadCsvFormatConfig(val flattening: Flattening, val compressionType: Com
             "flattening=" +
             flattening +
             ", compression=" +
-            compressionType!!.name +
+            compressionType.name +
             '}'
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as UploadCsvFormatConfig
+        val that = other as UploadCsvFormatConfig
         return flattening == that.flattening && compressionType == that.compressionType
     }
 

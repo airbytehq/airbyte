@@ -3,21 +3,21 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
       "description": "The ID of the screen tab field.",
+      "type": "string",
       "readOnly": true
     },
     "name": {
-      "type": "string",
-      "description": "The name of the screen tab field. Required on create and update. The maximum length is 255 characters."
+      "description": "The name of the screen tab field. Required on create and update. The maximum length is 255 characters.",
+      "type": "string"
     },
     "screenId": {
-      "type": ["null", "integer"],
-      "description": "Id of the related screen."
+      "description": "ID of the related screen.",
+      "type": ["null", "integer"]
     },
     "tabId": {
-      "type": ["null", "integer"],
-      "description": "Id of the related tab."
+      "description": "ID of the related tab.",
+      "type": ["null", "integer"]
     }
   },
   "additionalProperties": true,

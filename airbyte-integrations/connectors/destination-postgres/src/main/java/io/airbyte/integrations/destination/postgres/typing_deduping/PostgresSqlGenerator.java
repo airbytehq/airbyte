@@ -9,7 +9,6 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
-import static java.util.Collections.emptyList;
 import static org.jooq.impl.DSL.array;
 import static org.jooq.impl.DSL.case_;
 import static org.jooq.impl.DSL.cast;
@@ -150,21 +149,6 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
-    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && !stream.getPrimaryKey().isEmpty()) {
-      return List.of(
-          getDslContext().createIndex().on(
-              name(stream.getId().getFinalNamespace(), stream.getId().getFinalName() + suffix),
-              stream.getPrimaryKey().stream()
-                  .map(pk -> quotedName(pk.getName()))
-                  .toList())
-              .getSQL());
-    } else {
-      return emptyList();
-    }
-  }
-
-  @Override
   protected List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final boolean useExpensiveSaferCasting) {
     return columns
         .entrySet()
@@ -172,18 +156,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .map(column -> castedField(
             extractColumnAsJson(column.getKey()),
             column.getValue(),
-            column.getKey().getName(),
-            useExpensiveSaferCasting))
+            useExpensiveSaferCasting).as(column.getKey().getName()))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected Field<?> castedField(
-                                 final Field<?> field,
-                                 final AirbyteType type,
-                                 final String alias,
-                                 final boolean useExpensiveSaferCasting) {
-    return castedField(field, type, useExpensiveSaferCasting).as(quotedName(alias));
   }
 
   protected Field<?> castedField(

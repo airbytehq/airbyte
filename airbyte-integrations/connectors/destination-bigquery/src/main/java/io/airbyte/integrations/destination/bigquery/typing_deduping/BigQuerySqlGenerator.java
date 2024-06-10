@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.separately;
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
-import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
+import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.SOFT_RESET_SUFFIX;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -118,7 +118,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
       // JSON null).
       // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
-      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.getOriginalName()))).replace(
           """
           PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -131,7 +131,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
 
     if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
-      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.getOriginalName()))).replace(
           """
           PARSE_JSON(CASE
             WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -146,7 +146,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
       // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse the
       // airbyte_data to json
       // and json_query it directly (which preserves nulls correctly).
-      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.getOriginalName()))).replace(
           """
           JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')
           """);
@@ -156,7 +156,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
       // Special case String to only use json value for type string and parse the json for others
       // Naive json_value returns NULL for object/array values and json_query adds escaped quotes to the
       // string.
-      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.getOriginalName()))).replace(
           """
           (CASE
                 WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
@@ -169,7 +169,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
     }
 
     final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-    final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
+    final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.getOriginalName()) + "\"')";
     if (dialectType == StandardSQLTypeName.STRING) {
       // json_value implicitly returns a string, so we don't need to cast it.
       return baseTyping;
@@ -183,13 +183,12 @@ public class BigQuerySqlGenerator implements SqlGenerator {
   // the SQLGenerator?
   public static StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
-      case STRING -> StandardSQLTypeName.STRING;
+      case STRING, TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case NUMBER -> StandardSQLTypeName.NUMERIC;
       case INTEGER -> StandardSQLTypeName.INT64;
       case BOOLEAN -> StandardSQLTypeName.BOOL;
       case TIMESTAMP_WITH_TIMEZONE -> StandardSQLTypeName.TIMESTAMP;
       case TIMESTAMP_WITHOUT_TIMEZONE -> StandardSQLTypeName.DATETIME;
-      case TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case TIME_WITHOUT_TIMEZONE -> StandardSQLTypeName.TIME;
       case DATE -> StandardSQLTypeName.DATE;
       case UNKNOWN -> StandardSQLTypeName.JSON;
@@ -206,9 +205,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
 
     return Sql.of(new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "final_namespace", stream.id().finalNamespace(QUOTE),
+        "final_namespace", stream.getId().finalNamespace(QUOTE),
         "force_create_table", forceCreateTable,
-        "final_table_id", stream.id().finalTableId(QUOTE, suffix),
+        "final_table_id", stream.getId().finalTableId(QUOTE, suffix),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig)).replace(
             """
@@ -216,6 +215,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,
+              _airbyte_generation_id INTEGER,
             ${column_declarations}
             )
             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
@@ -225,12 +225,12 @@ public class BigQuerySqlGenerator implements SqlGenerator {
 
   static List<String> clusteringColumns(final StreamConfig stream) {
     final List<String> clusterColumns = new ArrayList<>();
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // We're doing de-duping, therefore we have a primary key.
       // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering columns,
       // and we're always clustering on _airbyte_extracted_at
-      stream.primaryKey().stream().limit(3).forEach(columnId -> {
-        clusterColumns.add(columnId.name());
+      stream.getPrimaryKey().stream().limit(3).forEach(columnId -> {
+        clusterColumns.add(columnId.getName());
       });
     }
     clusterColumns.add("_airbyte_extracted_at");
@@ -238,7 +238,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
   }
 
   private String columnsAndTypes(final StreamConfig stream) {
-    return stream.columns().entrySet().stream()
+    return stream.getColumns().entrySet().stream()
         .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()))
         .collect(joining(",\n"));
   }
@@ -255,13 +255,13 @@ public class BigQuerySqlGenerator implements SqlGenerator {
         // So we explicitly drop the soft reset temp table first.
         dropTableIfExists(stream, SOFT_RESET_SUFFIX),
         createTable(stream, SOFT_RESET_SUFFIX, true),
-        clearLoadedAt(stream.id()));
+        clearLoadedAt(stream.getId()));
   }
 
   public Sql dropTableIfExists(final StreamConfig stream, final String suffix) {
     return Sql.of(new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "table_id", stream.id().finalTableId(QUOTE, suffix)))
+        "table_id", stream.getId().finalTableId(QUOTE, suffix)))
             .replace("""
                      DROP TABLE IF EXISTS ${project_id}.${table_id};
                      """));
@@ -283,12 +283,12 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                          final Optional<Instant> minRawTimestamp,
                          final boolean useExpensiveSaferCasting) {
     final String handleNewRecords;
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       handleNewRecords = upsertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp);
     } else {
       handleNewRecords = insertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp);
     }
-    final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
+    final String commitRawTable = commitRawTable(stream.getId(), minRawTimestamp);
 
     return transactionally(handleNewRecords, commitRawTable);
   }
@@ -297,12 +297,12 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                                   final String finalSuffix,
                                   final boolean forceSafeCasting,
                                   final Optional<Instant> minRawTimestamp) {
-    final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String columnList = stream.getColumns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp);
 
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
+        "final_table_id", stream.getId().finalTableId(QUOTE, finalSuffix),
         "column_list", columnList,
         "extractNewRawRecords", extractNewRawRecords)).replace(
             """
@@ -311,7 +311,8 @@ public class BigQuerySqlGenerator implements SqlGenerator {
             ${column_list}
               _airbyte_meta,
               _airbyte_raw_id,
-              _airbyte_extracted_at
+              _airbyte_extracted_at,
+              _airbyte_generation_id
             )
             ${extractNewRawRecords};""");
   }
@@ -320,24 +321,24 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                                   final String finalSuffix,
                                   final boolean forceSafeCasting,
                                   final Optional<Instant> minRawTimestamp) {
-    final String pkEquivalent = stream.primaryKey().stream().map(pk -> {
+    final String pkEquivalent = stream.getPrimaryKey().stream().map(pk -> {
       final String quotedPk = pk.name(QUOTE);
       // either the PKs are equal, or they're both NULL
       return "(target_table." + quotedPk + " = new_record." + quotedPk
           + " OR (target_table." + quotedPk + " IS NULL AND new_record." + quotedPk + " IS NULL))";
     }).collect(joining(" AND "));
 
-    final String columnList = stream.columns().keySet().stream()
+    final String columnList = stream.getColumns().keySet().stream()
         .map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String newRecordColumnList = stream.columns().keySet().stream()
+    final String newRecordColumnList = stream.getColumns().keySet().stream()
         .map(quotedColumnId -> "new_record." + quotedColumnId.name(QUOTE) + ",")
         .collect(joining("\n"));
     final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp);
 
     final String cursorComparison;
-    if (stream.cursor().isPresent()) {
-      final String cursor = stream.cursor().get().name(QUOTE);
+    if (stream.getCursor().isPresent()) {
+      final String cursor = stream.getCursor().get().name(QUOTE);
       // Build a condition for "new_record is more recent than target_table":
       cursorComparison =
           // First, compare the cursors.
@@ -359,7 +360,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
 
     final String cdcDeleteClause;
     final String cdcSkipInsertClause;
-    if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+    if (stream.getColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
       // Execute CDC deletions if there's already a record
       cdcDeleteClause = "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND " + cursorComparison + " THEN DELETE";
       // And skip insertion entirely if there's no matching record.
@@ -370,7 +371,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
       cdcSkipInsertClause = "";
     }
 
-    final String columnAssignments = stream.columns().keySet().stream()
+    final String columnAssignments = stream.getColumns().keySet().stream()
         .map(airbyteType -> {
           final String column = airbyteType.name(QUOTE);
           return column + " = new_record." + column + ",";
@@ -378,7 +379,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
 
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
+        "final_table_id", stream.getId().finalTableId(QUOTE, finalSuffix),
         "extractNewRawRecords", extractNewRawRecords,
         "pkEquivalent", pkEquivalent,
         "cdcDeleteClause", cdcDeleteClause,
@@ -398,17 +399,20 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               ${columnAssignments}
               _airbyte_meta = new_record._airbyte_meta,
               _airbyte_raw_id = new_record._airbyte_raw_id,
-              _airbyte_extracted_at = new_record._airbyte_extracted_at
+              _airbyte_extracted_at = new_record._airbyte_extracted_at,
+              _airbyte_generation_id = new_record._airbyte_generation_id
             WHEN NOT MATCHED ${cdcSkipInsertClause} THEN INSERT (
               ${column_list}
               _airbyte_meta,
               _airbyte_raw_id,
-              _airbyte_extracted_at
+              _airbyte_extracted_at,
+              _airbyte_generation_id
             ) VALUES (
               ${newRecordColumnList}
               new_record._airbyte_meta,
               new_record._airbyte_raw_id,
-              new_record._airbyte_extracted_at
+              new_record._airbyte_extracted_at,
+              new_record._airbyte_generation_id
             );""");
   }
 
@@ -422,14 +426,14 @@ public class BigQuerySqlGenerator implements SqlGenerator {
   private String extractNewRawRecords(final StreamConfig stream,
                                       final boolean forceSafeCasting,
                                       final Optional<Instant> minRawTimestamp) {
-    final String columnCasts = stream.columns().entrySet().stream().map(
+    final String columnCasts = stream.getColumns().entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
     final String columnErrors;
     if (forceSafeCasting) {
-      columnErrors = "[" + stream.columns().entrySet().stream().map(
+      columnErrors = "[" + stream.getColumns().entrySet().stream().map(
           col -> new StringSubstitutor(Map.of(
-              "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
+              "raw_col_name", escapeColumnNameForJsonPath(col.getKey().getOriginalName()),
               "col_type", toDialectType(col.getValue()).name(),
               "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
                   // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
@@ -439,7 +443,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                     WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
                       AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
                       AND (${json_extract} IS NULL)
-                      THEN 'Problem with `${raw_col_name}`'
+                      THEN JSON '{"field":"${raw_col_name}","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
                     ELSE NULL
                   END"""))
           .collect(joining(",\n")) + "]";
@@ -448,10 +452,10 @@ public class BigQuerySqlGenerator implements SqlGenerator {
       columnErrors = "[]";
     }
 
-    final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String columnList = stream.getColumns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
 
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // When deduping, we need to dedup the raw records. Note the row_number() invocation in the SQL
       // statement. Do the same extract+cast CTE + airbyte_meta construction as in non-dedup mode, but
       // then add a row_number column so that we only take the most-recent raw record for each PK.
@@ -459,7 +463,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
       // We also explicitly include old CDC deletion records, which act as tombstones to correctly delete
       // out-of-order records.
       String cdcConditionalOrIncludeStatement = "";
-      if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+      if (stream.getColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
         cdcConditionalOrIncludeStatement = """
                                            OR (
                                              _airbyte_loaded_at IS NOT NULL
@@ -468,14 +472,14 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                                            """;
       }
 
-      final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-      final String cursorOrderClause = stream.cursor()
+      final String pkList = stream.getPrimaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+      final String cursorOrderClause = stream.getCursor()
           .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
           .orElse("");
 
       return new StringSubstitutor(Map.of(
           "project_id", '`' + projectId + '`',
-          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "raw_table_id", stream.getId().rawTableId(QUOTE),
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
@@ -489,7 +493,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               ${column_casts}
                 ${column_errors} AS column_errors,
                 _airbyte_raw_id,
-                _airbyte_extracted_at
+                _airbyte_extracted_at,
+                _airbyte_meta,
+                _airbyte_generation_id
                 FROM ${project_id}.${raw_table_id}
                 WHERE (
                     _airbyte_loaded_at IS NULL
@@ -498,9 +504,18 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               ), new_records AS (
                 SELECT
                 ${column_list}
-                  to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
+                  to_json(json_set(
+                    coalesce(parse_json(_airbyte_meta), JSON'{}'),
+                    '$.changes',
+                    json_array_append(
+                      coalesce(json_query(parse_json(_airbyte_meta), '$.changes'), JSON'[]'),
+                      '$',
+                      COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), [])
+                     )
+                  )) as _airbyte_meta,
                   _airbyte_raw_id,
-                  _airbyte_extracted_at
+                  _airbyte_extracted_at,
+                  _airbyte_generation_id
                 FROM intermediate_data
               ), numbered_rows AS (
                 SELECT *, row_number() OVER (
@@ -508,7 +523,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                 ) AS row_number
                 FROM new_records
               )
-              SELECT ${column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at
+              SELECT ${column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
               FROM numbered_rows
               WHERE row_number = 1""");
     } else {
@@ -517,7 +532,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
 
       return new StringSubstitutor(Map.of(
           "project_id", '`' + projectId + '`',
-          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "raw_table_id", stream.getId().rawTableId(QUOTE),
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "extractedAtCondition", extractedAtCondition,
@@ -528,7 +543,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               ${column_casts}
                 ${column_errors} AS column_errors,
                 _airbyte_raw_id,
-                _airbyte_extracted_at
+                _airbyte_extracted_at,
+                _airbyte_meta,
+                _airbyte_generation_id
                 FROM ${project_id}.${raw_table_id}
                 WHERE
                   _airbyte_loaded_at IS NULL
@@ -536,9 +553,18 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               )
               SELECT
               ${column_list}
-                to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
+                to_json(json_set(
+                    coalesce(parse_json(_airbyte_meta), JSON'{}'),
+                    '$.changes',
+                    json_array_append(
+                      coalesce(json_query(parse_json(_airbyte_meta), '$.changes'), JSON'[]'),
+                      '$',
+                      COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), [])
+                     )
+                  )) as _airbyte_meta,
                 _airbyte_raw_id,
-                _airbyte_extracted_at
+                _airbyte_extracted_at,
+                _airbyte_generation_id
               FROM intermediate_data""");
     }
   }
@@ -600,7 +626,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               _airbyte_raw_id STRING,
               _airbyte_data STRING,
               _airbyte_extracted_at TIMESTAMP,
-              _airbyte_loaded_at TIMESTAMP
+              _airbyte_loaded_at TIMESTAMP,
+              _airbyte_meta STRING,
+              _airbyte_generation_id INTEGER
             )
             PARTITION BY DATE(_airbyte_extracted_at)
             CLUSTER BY _airbyte_extracted_at
@@ -609,7 +637,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                     _airbyte_ab_id AS _airbyte_raw_id,
                     _airbyte_data AS _airbyte_data,
                     _airbyte_emitted_at AS _airbyte_extracted_at,
-                    CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
+                    CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at,
+                    '{"sync_id": 0, "changes": []}' AS _airbyte_meta,
+                    0 as _airbyte_generation_id
                 FROM ${project_id}.${v1_raw_table}
             );
             """));
@@ -627,8 +657,8 @@ public class BigQuerySqlGenerator implements SqlGenerator {
     return stringContents
         // Consider the JSON blob {"foo\\bar": 42}.
         // This is an object with key foo\bar.
-        // The JSONPath for this is (something like...?) $."foo\\bar" (i.e. 2 backslashes).
-        // TODO is that jsonpath correct?
+        // The JSONPath for this is $."foo\\bar" (i.e. 2 backslashes to represent the single
+        // backslash in the key).
         // When we represent that path as a SQL string, the backslashes are doubled (to 4): '$."foo\\\\bar"'
         // And we're writing that in a Java string, so we have to type out 8 backslashes:
         // "'$.\"foo\\\\\\\\bar\"'"
@@ -638,7 +668,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
         // which is \\" in a SQL string: '$."foo\\"bar"'
         // The backslashes become \\\\ in java, and the quote becomes \": "'$.\"foo\\\\\"bar\"'"
         .replace("\"", "\\\\\"")
-        // Here we're escaping a SQL string, so we only need a single backslash (which is 2, beacuse Java).
+        // Here we're escaping a SQL string, so we only need a single backslash (which is 2, because Java).
         .replace("'", "\\'");
   }
 

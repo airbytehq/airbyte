@@ -128,13 +128,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "orders": {
-          "updated_at": "2027-07-11T13:07:45-07:00",
-          "deleted": {
-            "deleted_at": "2027-07-11T13:07:45-07:00"
-          }
-        },
-        "id": 99999999999999
+        "updated_at": "2027-07-11T13:07:45-07:00"
       },
       "stream_descriptor": {
         "name": "order_risks"
@@ -291,7 +285,9 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {},
+      "stream_state": {
+        "id": 99999999999999
+      },
       "stream_descriptor": {
         "name": "balance_transactions"
       }
@@ -420,13 +416,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "id": 99999999999999,
-        "products": {
-          "updated_at": "2027-07-11T13:07:45-07:00",
-          "deleted": {
-            "deleted_at": "2027-07-11T13:07:45-07:00"
-          }
-        }
+        "updated_at": "2027-07-11T13:07:45-07:00"
       },
       "stream_descriptor": {
         "name": "product_images"
@@ -454,13 +444,6 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "id": 99999999999999,
-        "products": {
-          "updated_at": "2027-07-11T13:07:45-07:00",
-          "deleted": {
-            "deleted_at": "2027-07-11T13:07:45-07:00"
-          }
-        },
         "updated_at": "2027-07-11T13:07:45-07:00"
       },
       "stream_descriptor": {
@@ -581,7 +564,9 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {},
+      "stream_state": {
+        "id": 99999999999999
+      },
       "stream_descriptor": {
         "name": "disputes"
       }
@@ -590,7 +575,9 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {},
+      "stream_state": {
+        "updated_at": "2027-07-11T13:07:45-07:00"
+      },
       "stream_descriptor": {
         "name": "customer_saved_search"
       }
