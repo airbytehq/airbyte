@@ -30,7 +30,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": None,
                 },
             ),
-            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_context/my_branch/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_context/my_branch/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -43,7 +43,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -56,7 +56,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -69,7 +69,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -82,7 +82,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashes/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashes/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -95,7 +95,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -108,7 +108,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -121,7 +121,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_git_revision",
         ),
     ],
 )

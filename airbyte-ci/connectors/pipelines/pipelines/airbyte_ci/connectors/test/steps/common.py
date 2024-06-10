@@ -28,7 +28,7 @@ from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
-from slugify import slugify
+from pipelines.helpers.utils import slugify
 
 
 class VersionCheck(Step, ABC):
