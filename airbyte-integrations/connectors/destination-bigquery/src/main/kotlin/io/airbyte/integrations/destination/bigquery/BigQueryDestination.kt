@@ -394,9 +394,5 @@ class BigQueryDestination : BaseConnector(), Destination {
 }
 
 fun main(args: Array<String>) {
-    addThrowableForDeinterpolation(BigQueryException::class.java)
-    val destination: Destination = BigQueryDestination()
-    log.info { "Starting Destination : ${destination.javaClass}" }
-    IntegrationRunner(destination).run(args)
-    log.info { "Completed Destination : ${destination.javaClass}" }
+    throw RuntimeException("edgao_debug_mock_error")
 }
