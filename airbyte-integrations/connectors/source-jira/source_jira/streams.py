@@ -12,7 +12,7 @@ import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -149,14 +149,24 @@ class StartDateJiraStream(JiraStream, ABC):
         self._start_date = start_date
 
 
-class IncrementalJiraStream(StartDateJiraStream, ABC):
+class IncrementalJiraStream(StartDateJiraStream, CheckpointMixin, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._starting_point_cache = {}
+        self._state = None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(self.cursor_field)
+        current_stream_state = current_stream_state or {}
+        stream_state_value = current_stream_state.get(self.cursor_field, {})
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
         current_stream_state[self.cursor_field] = updated_state
@@ -187,6 +197,7 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
         start_point = self.get_starting_point(stream_state=stream_state)
         for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
             cursor_value = pendulum.parse(record[self.cursor_field])
+            self.state = self._get_updated_state(self.state, record)
             if not start_point or cursor_value >= start_point:
                 yield record
 
