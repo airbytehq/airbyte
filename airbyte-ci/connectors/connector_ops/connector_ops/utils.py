@@ -383,7 +383,11 @@ class Connector:
         return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
 
     @property
-    def connector_spec(self) -> Optional[dict]:
+    def connector_spec_file_content(self) -> Optional[dict]:
+        """
+        Returns spec file content from spec.yaml, spec.json, manifest.yaml.
+        This spec is not a "source of truth" for connector specification and can't be used as is.
+        """
         yaml_spec = Path(self.python_source_dir_path / "spec.yaml")
         json_spec = Path(self.python_source_dir_path / "spec.json")
 

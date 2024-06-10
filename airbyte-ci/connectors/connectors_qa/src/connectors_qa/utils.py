@@ -143,28 +143,24 @@ def remove_not_required_step_headers(headers: tuple[str]) -> tuple[str]:
 
 
 def reason_titles_not_match(heading_names_value: str, template_headings_value: str, template_headings: list[str]) -> str:
-    reason = (
-        f"Documentation structure doesn't follow standard template. Heading '{heading_names_value}' is not in the right place, "
-        f"the name of heading is incorrect or the heading name is not expected.\n"
-    )
+    reason = f"Heading '{heading_names_value}' is not in the right place, the name of heading is incorrect or not expected.\n"
     close_titles = get_close_matches(heading_names_value, template_headings)
     if close_titles and close_titles[0] != heading_names_value:
-        diff = f"Diff:\nActual Heading: '{heading_names_value}'. Possible correct heading: '{close_titles}'. Expected Heading: '{template_headings_value}'."
+        diff = f"Diff:\nActual Heading: '{heading_names_value}'. Possible correct heading: '{close_titles}'. Expected Heading: '{template_headings_value}'"
     else:
         diff = f"Diff:\nActual Heading: '{heading_names_value}'. Expected Heading: '{template_headings_value}'"
     return reason + diff
 
 
-def reason_missing_titles(template_headings_index: int, template_headings: list[str]) -> str:
-    return (
-        f"Documentation structure doesn't follow standard template. docs is not full."
-        f"\nMissing headers: {template_headings[template_headings_index:]}"
-    )
+def reason_missing_titles(template_headings_index: int, template_headings: list[str], not_required_headers: list[str]) -> str:
+    missing = template_headings[template_headings_index:]
+    required = [m for m in missing if m not in not_required_headers]
+    return f"Required missing headers: {required}. All missing headers: {missing}"
 
 
 def description_end_line_index(heading: str, actual_headings: list[str], header_line_map: dict[str, int]) -> int:
     if actual_headings.index(heading) + 1 == len(actual_headings):
-        return -1
+        return
     return header_line_map[actual_headings[actual_headings.index(heading) + 1]]
 
 
@@ -174,3 +170,13 @@ def prepare_headers(connector_documentation: dict) -> list[str]:
     headers = remove_not_required_step_headers(headers)  # remove Step 1.1 Step 3 ... headers
     headers = tuple([remove_step_from_heading(h) for h in headers])  # remove Step 1 and Step 2 from header name
     return headers
+
+
+def prepare_changelog_to_compare(docs: list[str], template: list[str]) -> list[str]:
+    open_tag = "  <summary>Expand to review</summary>\n"
+    close_tag = "</details>"
+
+    docs_index_open_tag = template.index(open_tag) + 1  # we need also new line after summary block
+    docs_index_close_tag = template.index(close_tag) - len(template)
+
+    return docs[: docs_index_open_tag + 1] + docs[docs_index_close_tag:]

@@ -13,12 +13,11 @@ from connectors_qa.utils import (
     description_end_line_index,
     documentation_node,
     header_name,
+    prepare_changelog_to_compare,
     prepare_headers,
     prepare_lines_to_compare,
     reason_missing_titles,
     reason_titles_not_match,
-    remove_not_required_step_headers,
-    remove_step_from_heading,
     required_titles_from_spec,
 )
 from pydash.objects import get  # type: ignore
@@ -116,13 +115,18 @@ class CheckDocumentationExists(DocumentationCheck):
         )
 
 
-class CheckDocumentationLinks(DocumentationCheck):
-    name = "Links used in connector documentation are valid"
-    description = f"The user facing connector documentation should update invalid links in connector documentation."
-
+class CheckDocumentationContent(DocumentationCheck):
+    """
+    For now, we check documentation structure for sources with sl >= 300.
+    """
     applies_to_connector_languages = [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]
     applies_to_connector_ab_internal_sl = 300
     applies_to_connector_types = ["source"]
+
+
+class CheckDocumentationLinks(CheckDocumentationContent):
+    name = "Links used in connector documentation are valid"
+    description = f"The user facing connector documentation should update invalid links in connector documentation."
 
     def validate_links(self, docs_content) -> List[str]:
         valid_status_codes = [200, 403, 401, 405, 429, 503]  # we skip 4xx due to needed access
@@ -136,6 +140,8 @@ class CheckDocumentationLinks(DocumentationCheck):
                 if response.status_code not in valid_status_codes:
                     invalid_links.append(f"{docs_link} with {response.status_code} status code")
             except requests.exceptions.SSLError:
+                pass
+            except requests.exceptions.ConnectionError:
                 pass
 
         for link in links:
@@ -180,21 +186,9 @@ class CheckDocumentationLinks(DocumentationCheck):
         )
 
 
-class CheckDocumentationStructure(DocumentationCheck):
-    name = "Connectors documentation follows our guidelines"
+class CheckDocumentationHeaders(CheckDocumentationContent):
+    name = "Connectors documentation headers structure follows our guidelines"
     description = f"The user facing connector documentation should follow the guidelines defined in the [documentation standards]({consts.DOCUMENTATION_STANDARDS_URL})."
-
-    applies_to_connector_languages = [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]
-    applies_to_connector_ab_internal_sl = 300
-    applies_to_connector_types = ["source"]
-
-    expected_sections = [
-        "## Prerequisites",
-        "## Setup guide",
-        "## Supported sync modes",
-        "## Supported streams",
-        "## Changelog",
-    ]
 
     PREREQUISITES = "Prerequisites"
     HEADING = "heading"
@@ -238,27 +232,6 @@ class CheckDocumentationStructure(DocumentationCheck):
             "Tutorials",
         )
         return all_headings, not_required_heading
-
-    def _headings_description(self, connector_name: str) -> dict[str:Path]:
-        """
-        Headings with path to file with template description
-        """
-        descriptions_paths = {
-            connector_name: Path(__file__).parent / "doc_templates/source.txt",
-            "For Airbyte Cloud:": Path(__file__).parent / "doc_templates/for_airbyte_cloud.txt",
-            "For Airbyte Open Source:": Path(__file__).parent / "doc_templates/for_airbyte_open_source.txt",
-            "Supported sync modes": Path(__file__).parent / "doc_templates/supported_sync_modes.txt",
-            "Tutorials": Path(__file__).parent / "doc_templates/tutorials.txt",
-        }
-        return descriptions_paths
-
-    def check_main_header(self, connector: Connector, doc_lines: List[str]) -> List[str]:
-        errors = []
-        if not doc_lines[0].lower().startswith(f"# {connector.metadata['name']}".lower()):
-            errors.append(
-                f"The connector name is not used as the main header in the documentation. Expected: '# {connector.metadata['name']}'"
-            )
-        return errors
 
     def check_docs_structure(self, docs_content: str, connector_name: str) -> List[str]:
         """
@@ -305,10 +278,60 @@ class CheckDocumentationStructure(DocumentationCheck):
             return errors
         # indexes didn't move to the last required one, so some headers are missed
         if template_headings_index != template_headings_len:
-            errors.append(reason_missing_titles(template_headings_index, template_headings))
+            errors.append(reason_missing_titles(template_headings_index, template_headings, non_required_heading))
             return errors
 
         return errors
+
+    def _run(self, connector: Connector) -> CheckResult:
+        if not connector.documentation_file_path or not connector.documentation_file_path.exists():
+            return self.fail(
+                connector=connector,
+                message="Could not check documentation structure as the documentation file is missing.",
+            )
+
+        doc_lines = [line.lower() for line in connector.documentation_file_path.read_text().splitlines()]
+        if not doc_lines:
+            return self.fail(
+                connector=connector,
+                message="Documentation file is empty",
+            )
+
+        docs_content = connector.documentation_file_path.read_text().rstrip()
+        errors = self.check_docs_structure(docs_content, connector.name_from_metadata)
+
+        if errors:
+            return self.fail(
+                connector=connector,
+                message=f"Documentation headers ordering/naming doesn't follow guidelines:\n {'. '.join(errors)}",
+            )
+        return self.pass_(
+            connector=connector,
+            message="Documentation guidelines are followed",
+        )
+
+
+class CheckDocumentationDescriptions(CheckDocumentationContent):
+    name = "Connectors documentation descriptions follows our guidelines"
+    description = f"The user facing connector documentation should follow the guidelines defined in the [documentation standards]({consts.DOCUMENTATION_STANDARDS_URL})."
+
+    PREREQUISITES = "Prerequisites"
+    HEADING = "heading"
+    CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access", "client"]
+
+    def _headings_description(self, connector_name: str) -> dict[str:Path]:
+        """
+        Headings with path to file with template description
+        """
+        descriptions_paths = {
+            connector_name: Path(__file__).parent / "doc_templates/source.txt",
+            "For Airbyte Cloud:": Path(__file__).parent / "doc_templates/for_airbyte_cloud.txt",
+            "For Airbyte Open Source:": Path(__file__).parent / "doc_templates/for_airbyte_open_source.txt",
+            "Supported sync modes": Path(__file__).parent / "doc_templates/supported_sync_modes.txt",
+            "Tutorials": Path(__file__).parent / "doc_templates/tutorials.txt",
+            "Changelog": Path(__file__).parent / "doc_templates/changelog.txt",
+        }
+        return descriptions_paths
 
     def check_prerequisites_section_has_descriptions_for_required_fields(
         self, actual_connector_spec: dict, connector_documentation: str, docs_path: str
@@ -338,18 +361,18 @@ class CheckDocumentationStructure(DocumentationCheck):
                 if title not in prereq_content:
                     errors.append(
                         f"Required '{title}' field is not in {self.PREREQUISITES} section "
-                        f"or title in spec doesn't match name in the docs."
+                        f"or title in spec doesn't match name in the docs"
                     )
 
             if has_credentials:
-                # credentials has specific check for keywords as we have a lot of way how to describe this step
+                # credentials has specific check for keywords as we have a lot of ways how to describe this step
                 credentials_validation = [k in prereq_content for k in self.CREDENTIALS_KEYWORDS]
                 if True not in credentials_validation:
-                    errors.append(f"Required description for 'credentials' field is not in {self.PREREQUISITES} section.")
+                    errors.append(f"Required description for 'credentials' field is not in {self.PREREQUISITES} section")
 
             return errors
 
-    def check_docs_descriptions(self, docs_path: str, connector_documentation: str, connector_name: str) -> List[str]:
+    def check_descriptions(self, docs_path: str, connector_documentation: str, connector_name: str) -> List[str]:
         errors = []
         template_descriptions = self._headings_description(connector_name)
 
@@ -368,10 +391,13 @@ class CheckDocumentationStructure(DocumentationCheck):
                     docs_description_content = docs_file.readlines()[description_start_line:description_end_line]
                     template_description_content = template_file.readlines()
 
+                    if heading == "Changelog":
+                        docs_description_content = prepare_changelog_to_compare(docs_description_content, template_description_content)
+
                     for d, t in zip(docs_description_content, template_description_content):
                         d, t = prepare_lines_to_compare(connector_name, d, t)
                         if d != t:
-                            errors.append(f"Description for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}")
+                            errors.append(f"\nDescription for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}")
 
         return errors
 
@@ -393,25 +419,25 @@ class CheckDocumentationStructure(DocumentationCheck):
         docs_content = connector.documentation_file_path.read_text().rstrip()
 
         errors = []
-        errors.extend(self.check_main_header(connector, doc_lines))
-        errors.extend(self.check_docs_structure(docs_content, connector.name_from_metadata))
+        # check_prerequisites_section_has_descriptions_for_required_fields uses spec content from file, not from spec command,
+        # which possible can lead to incorrect testing, for now it works for connectors with sl>=300.
+        # But if someone faced with unexpected behavior of this test it's better to disable it.
         errors.extend(
             self.check_prerequisites_section_has_descriptions_for_required_fields(
-                connector.connector_spec, docs_content, connector.documentation_file_path
+                connector.connector_spec_file_content, docs_content, connector.documentation_file_path
             )
         )
-        errors.extend(self.check_docs_descriptions(connector.documentation_file_path, docs_content, connector.name_from_metadata))
+        errors.extend(self.check_descriptions(connector.documentation_file_path, docs_content, connector.name_from_metadata))
 
         if errors:
             return self.fail(
                 connector=connector,
-                message=f"Connector documentation does not follow the guidelines: {'. '.join(errors)}",
+                message=f"Connector documentation descriptions do not follow the guidelines\n: {'. '.join(errors)}",
             )
         return self.pass_(
             connector=connector,
             message="Documentation guidelines are followed",
         )
-
 
 
 class CheckChangelogEntry(DocumentationCheck):
@@ -457,6 +483,8 @@ class CheckChangelogEntry(DocumentationCheck):
 ENABLED_CHECKS = [
     CheckMigrationGuide(),
     CheckDocumentationExists(),
-    CheckDocumentationStructure(),
+    CheckDocumentationHeaders(),
+    CheckDocumentationDescriptions(),
+    CheckDocumentationLinks(),
     CheckChangelogEntry(),
 ]
