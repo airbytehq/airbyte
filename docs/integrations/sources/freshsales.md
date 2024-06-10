@@ -68,13 +68,15 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
-| 1.0.2   | 2024-05-21 | [38548](https://github.com/airbytehq/airbyte/pull/38548) | Upgrade to CDK 1.0.0                                         |
-| 1.0.1   | 2024-05-28 | [38153](https://github.com/airbytehq/airbyte/pull/38153) | Make connector compatible with builder                       |
-| 1.0.0   | 2023-10-21 | [31685](https://github.com/airbytehq/airbyte/pull/31685) | Migrate to Low-Code CDK                                      |
-| 0.1.4   | 2023-03-23 | [24396](https://github.com/airbytehq/airbyte/pull/24396) | Certify to Beta                                              |
-| 0.1.3   | 2023-03-16 | [24155](https://github.com/airbytehq/airbyte/pull/24155) | Set `additionalProperties` to `True` in `spec` to support BC |
-| 0.1.2   | 2022-07-14 | [0](https://github.com/airbytehq/airbyte/pull/0)         | Tune the `get_view_id` function                              |
-| 0.1.1   | 2021-12-24 | [9101](https://github.com/airbytehq/airbyte/pull/9101)   | Update fields and descriptions                               |
-| 0.1.0   | 2021-11-03 | [6963](https://github.com/airbytehq/airbyte/pull/6963)   | 🎉 New Source: Freshsales                                    |
+| 1.0.3 | 2024-06-04 | [39065](https://github.com/airbytehq/airbyte/pull/39065) | [autopull] Upgrade base image to v1.2.1 |
+| 1.0.2 | 2024-05-21 | [38548](https://github.com/airbytehq/airbyte/pull/38548) | Upgrade to CDK 1.0.0 |
+| 1.0.1 | 2024-05-28 | [38153](https://github.com/airbytehq/airbyte/pull/38153) | Make connector compatible with builder |
+| 1.0.0 | 2023-10-21 | [31685](https://github.com/airbytehq/airbyte/pull/31685) | Migrate to Low-Code CDK |
+| 0.1.4 | 2023-03-23 | [24396](https://github.com/airbytehq/airbyte/pull/24396) | Certify to Beta |
+| 0.1.3 | 2023-03-16 | [24155](https://github.com/airbytehq/airbyte/pull/24155) | Set `additionalProperties` to `True` in `spec` to support BC |
+| 0.1.2 | 2022-07-14 | [0](https://github.com/airbytehq/airbyte/pull/0) | Tune the `get_view_id` function |
+| 0.1.1 | 2021-12-24 | [9101](https://github.com/airbytehq/airbyte/pull/9101) | Update fields and descriptions |
+| 0.1.0 | 2021-11-03 | [6963](https://github.com/airbytehq/airbyte/pull/6963) | 🎉 New Source: Freshsales |
+
 
 </details>

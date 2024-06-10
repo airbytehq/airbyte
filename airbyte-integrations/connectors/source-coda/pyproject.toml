@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.2.2"
+version = "1.2.3"
 name = "source-coda"
 description = "Source implementation for Coda."
 authors = [ "Airbyte <contact@airbyte.io>",]

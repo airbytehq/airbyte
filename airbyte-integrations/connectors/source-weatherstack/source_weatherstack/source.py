@@ -15,7 +15,7 @@ from .constants import url_base
 
 
 class CurrentWeather(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -63,7 +63,7 @@ class CurrentWeather(HttpStream):
 
 
 class Weatherstack(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -111,7 +111,7 @@ class Weatherstack(HttpStream):
 
 
 class IncrementalWeatherstack(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -159,7 +159,7 @@ class IncrementalWeatherstack(HttpStream):
 
 
 class Forecast(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -207,7 +207,7 @@ class Forecast(HttpStream):
 
 
 class Historical(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -255,7 +255,7 @@ class Historical(HttpStream):
 
 
 class LocationLookup(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
