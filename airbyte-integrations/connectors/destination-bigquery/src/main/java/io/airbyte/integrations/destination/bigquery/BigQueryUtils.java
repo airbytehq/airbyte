@@ -89,6 +89,7 @@ public class BigQueryUtils {
   public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
     Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
+      checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation);
       final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
       dataset = bigquery.create(datasetInfo);
     }
