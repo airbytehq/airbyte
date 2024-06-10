@@ -53,13 +53,12 @@ def load_json_file(file_name: str) -> Mapping[str, Any]:
 
 
 def test_analytics_stream_slices(requests_mock):
-    # disable_cache()
-    requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1, "lastModified": "2023-09-20T23:33:56+00:00"}]})
-    requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123, "lastModified": "2023-09-20T23:33:56+00:00"}]})
+    requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
+    requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123}]})
 
     assert list(
         AdMemberCountryAnalytics(config=TEST_CONFIG).stream_slices(
-            sync_mode=None
+            sync_mode=None,
         )
     ) == load_json_file("output_slices.json")
 
