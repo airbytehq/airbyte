@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "af_prt": {
+      "type": ["null", "string"]
+    },
+    "media_source": {
+      "type": ["null", "string"]
+    },
+    "campaign": {
+      "type": ["null", "string"]
+    },
+    "event_name": {
+      "type": ["null", "string"]
+    },
+    "event_unique_users": {
+      "type": ["null", "number"]
+    },
+    "event_counter": {
+      "type": ["null", "number"]
+    },
+    "event_sales": {
+      "type": ["null", "number"]
+    }
+  }
+}
