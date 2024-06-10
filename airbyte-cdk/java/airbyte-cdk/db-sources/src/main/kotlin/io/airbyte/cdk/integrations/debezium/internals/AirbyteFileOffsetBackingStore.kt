@@ -87,8 +87,8 @@ class AirbyteFileOffsetBackingStore(
     // {"["ci-test-database",{"rs":"atlas-pexnnq-shard-0","server_id":"ci-test-database"}]":"{"sec":1715722523,"ord":2,"transaction_id":null,"resume_token":"826643D91B000000022B0429296E1404"}"}
     // Now:
     // {["ci-test-database",{"server_id":"ci-test-database"}]={"sec":0,"ord":-1,"resume_token":"826643FA09000000022B0429296E1404"}}
-    private fun updateStateForDebezium2_6(mapAsString: Map<String, String?>): Map<String, String?> {
-        val updatedMap: MutableMap<String, String?> = LinkedHashMap()
+    private fun updateStateForDebezium2_6(mapAsString: Map<String, String>): Map<String, String> {
+        val updatedMap: MutableMap<String, String> = LinkedHashMap()
         if (mapAsString.size > 0) {
             val key = mapAsString.keys.stream().toList()[0]
 
@@ -97,9 +97,9 @@ class AirbyteFileOffsetBackingStore(
                 return mapAsString
             }
 
-            LOGGER.info("Mutating sate to make it Debezium 2.6 compatible")
+            LOGGER.info { "Mutating sate to make it Debezium 2.6 compatible" }
             val newKey = mongoShardMutation(key)
-            val value = mapAsString[key]
+            val value = mapAsString.getValue(key)
             updatedMap[newKey] = value
         }
         return updatedMap
