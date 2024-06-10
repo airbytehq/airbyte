@@ -833,7 +833,7 @@ class TestDiscovery(BaseTest):
                         )
 
     def test_primary_keys_data_type(self, inputs: DiscoveryTestConfig, discovered_catalog: Mapping[str, Any]):
-        if inputs.skip_primary_keys_data_type_validation:
+        if not inputs.validate_primary_keys_data_type:
             pytest.skip("Primary keys data type validation is disabled in config.")
 
         forbidden_primary_key_data_types: Set[str] = {"object", "array"}

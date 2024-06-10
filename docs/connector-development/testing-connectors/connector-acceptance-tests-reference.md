@@ -177,7 +177,7 @@ These backward compatibility tests can be bypassed by changing the value of the 
 | `timeout_seconds`                                                | int     | 30                                          | Test execution timeout in seconds                                                                                     |
 | `backward_compatibility_tests_config.previous_connector_version` | string  | `latest`                                    | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
 | `backward_compatibility_tests_config.disable_for_version`        | string  | None                                        | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
-| `skip_primary_keys_data_type_validation`                         | boolean | False                                       | Disable primary keys data type validation                                                                             |
+| `validate_primary_keys_data_type`                                | boolean | True                                        | Verify that primary keys data types are correct                                                                       |
 
 ## Test Basic Read
 
