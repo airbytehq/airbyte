@@ -313,48 +313,48 @@
         "type": "boolean"
       },
       "indexing": {
-        "title": "Indexing",
+        "title": "Snowflake Connection",
         "type": "object",
         "properties": {
           "host": {
             "title": "Host",
             "description": "Enter the account name you want to use to access the database. This is usually the identifier before .snowflakecomputing.com",
-            "airbyte_secret": true,
+            "order": 1,
             "examples": ["AIRBYTE_ACCOUNT"],
             "type": "string"
           },
           "role": {
             "title": "Role",
             "description": "Enter the role that you want to use to access Snowflake",
-            "airbyte_secret": true,
+            "order": 2,
             "examples": ["AIRBYTE_ROLE", "ACCOUNTADMIN"],
             "type": "string"
           },
           "warehouse": {
             "title": "Warehouse",
             "description": "Enter the name of the warehouse that you want to sync data into",
-            "airbyte_secret": true,
+            "order": 3,
             "examples": ["AIRBYTE_WAREHOUSE"],
             "type": "string"
           },
           "database": {
             "title": "Database",
             "description": "Enter the name of the database that you want to sync data into",
-            "airbyte_secret": true,
+            "order": 4,
             "examples": ["AIRBYTE_DATABASE"],
             "type": "string"
           },
           "default_schema": {
             "title": "Default Schema",
             "description": "Enter the name of the default schema",
-            "airbyte_secret": true,
+            "order": 5,
             "examples": ["AIRBYTE_SCHEMA"],
             "type": "string"
           },
           "username": {
             "title": "Username",
             "description": "Enter the name of the user you want to use to access the database",
-            "airbyte_secret": true,
+            "order": 6,
             "examples": ["AIRBYTE_USER"],
             "type": "string"
           },
@@ -367,6 +367,7 @@
                 "description": "Enter the password you want to use to access the database",
                 "airbyte_secret": true,
                 "examples": ["AIRBYTE_PASSWORD"],
+                "order": 7,
                 "type": "string"
               }
             },

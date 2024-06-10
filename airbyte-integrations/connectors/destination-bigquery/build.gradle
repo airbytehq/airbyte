@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.35.0'
+    cdkVersionRequired = '0.36.8'
     features = [
             'db-destinations',
             'datastore-bigquery',
@@ -22,7 +22,7 @@ java {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
+    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestinationKt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
                                  '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
                                  '-XX:GCLockerRetryAllocationCount=100',
@@ -37,6 +37,5 @@ application {
 }
 
 dependencies {
-    implementation 'com.codepoetics:protonpack:1.13'
     implementation 'org.apache.commons:commons-text:1.10.0'
 }

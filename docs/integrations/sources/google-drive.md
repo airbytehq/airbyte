@@ -251,8 +251,12 @@ This connector utilizes the open source [Unstructured](https://unstructured-io.g
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
-| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.0.11  | 2024-05-29 | [38698](https://github.com/airbytehq/airbyte/pull/38698) | Avoid error on empty stream when running discover                                            |
 | 0.0.10  | 2024-03-28 | [36581](https://github.com/airbytehq/airbyte/pull/36581) | Manage dependencies with Poetry                                                              |
 | 0.0.9   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |
 | 0.0.8   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                 |
@@ -263,3 +267,5 @@ This connector utilizes the open source [Unstructured](https://unstructured-io.g
 | 0.0.3   | 2023-11-16 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Improve folder id input and update document file type parser                                 |
 | 0.0.2   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Allow syncs on shared drives                                                                 |
 | 0.0.1   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Initial Google Drive source                                                                  |
+
+</details>
