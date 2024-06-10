@@ -4,6 +4,7 @@
 
 import json
 import uuid
+import re
 from datetime import datetime
 from typing import Dict, List, Tuple
 
@@ -84,6 +85,9 @@ class ConnectorDependenciesMetadata(BaseModel):
     connector_repository: str
     connector_version: str
     connector_definition_id: str
+    connector_has_dockerfile: bool
+    connector_is_using_poetry: bool
+    connector_base_image_version: str
     dependencies: List[Dict[str, str]]
     generation_time: datetime = datetime.utcnow()
 
@@ -105,11 +109,21 @@ class UploadDependenciesToMetadataService(Step):
         ]
         connector_technical_name = self.context.connector.technical_name
         connector_version = self.context.metadata["dockerImageTag"]
+        connector_has_dockerfile = self.context.connector.has_dockerfile
+        connector_is_using_poetry = self.context.connector.is_using_poetry
+
+        base_image_tag = self.context.metadata.get("connectorBuildOptions", {}).get("baseImage", "")
+        base_image_version_match = re.search(r':([0-9]+\.[0-9]+\.[0-9]+)@', base_image_tag)
+        connector_base_image_version = base_image_version_match.group(1) if base_image_version_match else ""
+
         dependencies_metadata = ConnectorDependenciesMetadata(
             connector_technical_name=connector_technical_name,
             connector_repository=self.context.metadata["dockerRepository"],
             connector_version=connector_version,
             connector_definition_id=self.context.metadata["definitionId"],
+            connector_has_dockerfile=connector_has_dockerfile,
+            connector_is_using_poetry=connector_is_using_poetry,
+            connector_base_image_version=connector_base_image_version,
             dependencies=dependencies,
         ).json()
         file = (
