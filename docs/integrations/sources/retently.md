@@ -44,6 +44,9 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.2.4   | 2024-04-19 | [37248](https://github.com/airbytehq/airbyte/pull/37248) | Updating to 0.80.0 CDK                                                          |
@@ -58,3 +61,5 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 | 0.1.2   | 2021-12-28 | [9045](https://github.com/airbytehq/airbyte/pull/9045)   | Update titles and descriptions                                                  |
 | 0.1.1   | 2021-12-06 | [8043](https://github.com/airbytehq/airbyte/pull/8043)   | 🎉 Source Retently: add OAuth 2.0                                               |
 | 0.1.0   | 2021-11-02 | [6966](https://github.com/airbytehq/airbyte/pull/6966)   | 🎉 New Source: Retently                                                         |
+
+</details>
