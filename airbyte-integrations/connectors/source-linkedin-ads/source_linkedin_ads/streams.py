@@ -237,9 +237,6 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 
     def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
-        print(f"Latest record: {latest_record}")
-        print(latest_record.get(self.cursor_field))
-        print(current_stream_state)
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field))}
 
 

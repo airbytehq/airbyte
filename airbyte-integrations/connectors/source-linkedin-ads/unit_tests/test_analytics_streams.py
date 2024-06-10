@@ -3,6 +3,7 @@
 #
 import json
 import os
+import shutil
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -51,7 +52,36 @@ def load_json_file(file_name: str) -> Mapping[str, Any]:
         return json.load(data)
 
 
+def disable_cache():
+    cache_path = os.environ.get("REQUEST_CACHE_PATH", "REQUEST_CACHE_PATH")
+    backup_path = cache_path + "_backup"
+    
+    if os.path.exists(cache_path):
+        if not os.path.exists(backup_path):
+            os.makedirs(backup_path)
+        # Move all files and directories from cache_path to backup_path
+        for item in os.listdir(cache_path):
+            s = os.path.join(cache_path, item)
+            d = os.path.join(backup_path, item)
+            shutil.move(s, d)
+        print(f"Disabled cache, moved contents to {backup_path}")
+
+def restore_cache():
+    cache_path = os.environ.get("REQUEST_CACHE_PATH", "REQUEST_CACHE_PATH")
+    backup_path = cache_path + "_backup"
+    
+    if os.path.exists(backup_path):
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_path)
+        # Move all files and directories back from backup_path to cache_path
+        for item in os.listdir(backup_path):
+            s = os.path.join(backup_path, item)
+            d = os.path.join(cache_path, item)
+            shutil.move(s, d)
+        print(f"Restored cache, moved contents back to {cache_path}")
+
 def test_analytics_stream_slices(requests_mock):
+    disable_cache()
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1, "lastModified": "2023-09-20T23:33:56+00:00"}]})
     requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123, "lastModified": "2023-09-20T23:33:56+00:00"}]})
 
@@ -60,6 +90,8 @@ def test_analytics_stream_slices(requests_mock):
             sync_mode=None
         )
     ) == load_json_file("output_slices.json")
+
+    restore_cache()
 
 
 # def test_read_records(requests_mock):
