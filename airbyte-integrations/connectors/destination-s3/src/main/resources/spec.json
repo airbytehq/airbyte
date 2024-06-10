@@ -35,7 +35,7 @@
       },
       "role_arn": {
         "type": "string",
-        "description": "The Role ARN",
+        "description": "The Role ARN (only available on Airbyte Cloud)",
         "title": "Role ARN",
         "examples": ["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],
         "order": 2
