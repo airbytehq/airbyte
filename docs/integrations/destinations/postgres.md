@@ -267,7 +267,7 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
-| 2.0.11  | 2024-05-07 | [\#39365](https://github.com/airbytehq/airbyte/pull/39365) | Fixed function airbyte_safe_cast already exists error                                                    |
+| 2.0.11  | 2024-06-10 | [\#39365](https://github.com/airbytehq/airbyte/pull/39365) | Fixed function airbyte_safe_cast already exists error.2                                                                                         |
 | 2.0.10  | 2024-05-07 | [\#37660](https://github.com/airbytehq/airbyte/pull/37660) | Adopt CDK 0.33.2                                                                                         |
 | 2.0.9   | 2024-04-11 | [\#36974](https://github.com/airbytehq/airbyte/pull/36974) | Add option to drop with `CASCADE`                                                                        |
 | 2.0.8   | 2024-04-10 | [\#36805](https://github.com/airbytehq/airbyte/pull/36805) | Adopt CDK 0.29.10 to improve long column name handling                                                   |
