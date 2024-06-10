@@ -78,6 +78,8 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
                 for chunk in df_reader:
                     with self.lock:
                         records: list[dict] = [data for data in chunk.to_dict("records")]
+                        for record in records:
+                            self.stream_instance.replace_keys(record)
                         self.records.extend(records)
                         self.records_count += len(records)
                         print("records_count", self.records_count, filename)
