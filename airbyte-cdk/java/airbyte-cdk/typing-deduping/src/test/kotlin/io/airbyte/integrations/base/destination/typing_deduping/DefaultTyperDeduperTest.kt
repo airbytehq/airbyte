@@ -9,11 +9,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.separately
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Instant
 import java.util.*
-import java.util.Map
 import java.util.function.Consumer
 import kotlin.collections.HashMap
 import kotlin.collections.List
@@ -481,18 +481,27 @@ class DefaultTyperDeduperTest {
         Mockito.clearInvocations(destinationHandler)
 
         typerDeduper.typeAndDedupe(
-            Map.of(
-                StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"),
-                StreamSyncSummary(Optional.of(0L)),
-                StreamDescriptor().withName("append_stream").withNamespace("append_ns"),
-                StreamSyncSummary(Optional.of(1L))
-            )
+            mapOf(
+                StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns") to
+                    StreamSyncSummary(
+                        0,
+                        AirbyteStreamStatus.COMPLETE,
+                    ),
+                StreamDescriptor().withName("append_stream").withNamespace("append_ns") to
+                    StreamSyncSummary(
+                        1,
+                        AirbyteStreamStatus.COMPLETE,
+                    ),
+                StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns") to
+                    StreamSyncSummary(
+                        1,
+                        AirbyteStreamStatus.COMPLETE,
+                    ),
+            ),
         )
 
         // append_stream and dedup_stream should be T+D-ed. overwrite_stream has explicitly 0
-        // records, but
-        // dedup_stream
-        // is missing from the map, so implicitly has nonzero records.
+        // records, so skip it in T+D.
         Mockito.verify(destinationHandler)
             .execute(of("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING"))
         Mockito.verify(destinationHandler)
@@ -526,12 +535,23 @@ class DefaultTyperDeduperTest {
         Mockito.clearInvocations(destinationHandler)
 
         typerDeduper.typeAndDedupe(
-            Map.of(
-                StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"),
-                StreamSyncSummary(Optional.of(0L)),
-                StreamDescriptor().withName("append_stream").withNamespace("append_ns"),
-                StreamSyncSummary(Optional.of(1L))
-            )
+            mapOf(
+                StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns") to
+                    StreamSyncSummary(
+                        0,
+                        AirbyteStreamStatus.COMPLETE,
+                    ),
+                StreamDescriptor().withName("append_stream").withNamespace("append_ns") to
+                    StreamSyncSummary(
+                        0,
+                        AirbyteStreamStatus.COMPLETE,
+                    ),
+                StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns") to
+                    StreamSyncSummary(
+                        0,
+                        AirbyteStreamStatus.COMPLETE,
+                    ),
+            ),
         )
 
         Mockito.verify(destinationHandler)
@@ -610,14 +630,11 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler).execute(of("MIGRATE airbyte_internal.dedup_stream"))
         Mockito.verify(destinationHandler)
             .commitDestinationStates(
-                Map.of(
-                    OVERWRITE_STREAM_CONFIG.id,
-                    MockState(true, true, true),
-                    APPEND_STREAM_CONFIG.id,
-                    MockState(true, true, true),
-                    DEDUPE_STREAM_CONFIG.id,
-                    MockState(true, true, true)
-                )
+                mapOf(
+                    OVERWRITE_STREAM_CONFIG.id to MockState(true, true, true),
+                    APPEND_STREAM_CONFIG.id to MockState(true, true, true),
+                    DEDUPE_STREAM_CONFIG.id to MockState(true, true, true),
+                ),
             )
         Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
@@ -662,14 +679,11 @@ class DefaultTyperDeduperTest {
         // And we should commit the states. Note that we now set needsSoftReset=false.
         Mockito.verify(destinationHandler)
             .commitDestinationStates(
-                Map.of(
-                    OVERWRITE_STREAM_CONFIG.id,
-                    MockState(false, true, true),
-                    APPEND_STREAM_CONFIG.id,
-                    MockState(false, true, true),
-                    DEDUPE_STREAM_CONFIG.id,
-                    MockState(false, true, true)
-                )
+                mapOf(
+                    OVERWRITE_STREAM_CONFIG.id to MockState(false, true, true),
+                    APPEND_STREAM_CONFIG.id to MockState(false, true, true),
+                    DEDUPE_STREAM_CONFIG.id to MockState(false, true, true),
+                ),
             )
 
         Mockito.verifyNoMoreInteractions(destinationHandler)
@@ -728,14 +742,11 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler).execute(of("MIGRATE airbyte_internal.dedup_stream"))
         Mockito.verify(destinationHandler)
             .commitDestinationStates(
-                Map.of(
-                    OVERWRITE_STREAM_CONFIG.id,
-                    MockState(true, true, true),
-                    APPEND_STREAM_CONFIG.id,
-                    MockState(true, true, true),
-                    DEDUPE_STREAM_CONFIG.id,
-                    MockState(true, true, true)
-                )
+                mapOf(
+                    OVERWRITE_STREAM_CONFIG.id to MockState(true, true, true),
+                    APPEND_STREAM_CONFIG.id to MockState(true, true, true),
+                    DEDUPE_STREAM_CONFIG.id to MockState(true, true, true),
+                ),
             )
         Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
@@ -780,14 +791,11 @@ class DefaultTyperDeduperTest {
         // And we should commit the states.
         Mockito.verify(destinationHandler)
             .commitDestinationStates(
-                Map.of(
-                    OVERWRITE_STREAM_CONFIG.id,
-                    MockState(false, true, true),
-                    APPEND_STREAM_CONFIG.id,
-                    MockState(false, true, true),
-                    DEDUPE_STREAM_CONFIG.id,
-                    MockState(false, true, true)
-                )
+                mapOf(
+                    OVERWRITE_STREAM_CONFIG.id to MockState(false, true, true),
+                    APPEND_STREAM_CONFIG.id to MockState(false, true, true),
+                    DEDUPE_STREAM_CONFIG.id to MockState(false, true, true),
+                ),
             )
 
         Mockito.verifyNoMoreInteractions(destinationHandler)
@@ -837,14 +845,11 @@ class DefaultTyperDeduperTest {
         // it.
         Mockito.verify(destinationHandler)
             .commitDestinationStates(
-                Map.of(
-                    OVERWRITE_STREAM_CONFIG.id,
-                    MockState(true, false, false),
-                    APPEND_STREAM_CONFIG.id,
-                    MockState(true, false, false),
-                    DEDUPE_STREAM_CONFIG.id,
-                    MockState(true, false, false)
-                )
+                mapOf(
+                    OVERWRITE_STREAM_CONFIG.id to MockState(true, false, false),
+                    APPEND_STREAM_CONFIG.id to MockState(true, false, false),
+                    DEDUPE_STREAM_CONFIG.id to MockState(true, false, false),
+                ),
             )
         Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
@@ -889,14 +894,11 @@ class DefaultTyperDeduperTest {
         // And we should commit the states. Note that we now set needsSoftReset=false.
         Mockito.verify(destinationHandler)
             .commitDestinationStates(
-                Map.of(
-                    OVERWRITE_STREAM_CONFIG.id,
-                    MockState(false, false, false),
-                    APPEND_STREAM_CONFIG.id,
-                    MockState(false, false, false),
-                    DEDUPE_STREAM_CONFIG.id,
-                    MockState(false, false, false)
-                )
+                mapOf(
+                    OVERWRITE_STREAM_CONFIG.id to MockState(false, false, false),
+                    APPEND_STREAM_CONFIG.id to MockState(false, false, false),
+                    DEDUPE_STREAM_CONFIG.id to MockState(false, false, false),
+                ),
             )
 
         Mockito.verifyNoMoreInteractions(destinationHandler)

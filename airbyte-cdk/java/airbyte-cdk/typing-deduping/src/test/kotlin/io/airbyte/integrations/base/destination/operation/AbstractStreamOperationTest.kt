@@ -14,6 +14,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableS
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.mockk.checkUnnecessaryStub
 import io.mockk.clearMocks
@@ -29,7 +30,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
 
 /**
  * Verify that [AbstractStreamOperation] behaves correctly, given various initial states. We
@@ -103,7 +103,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(42)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -147,7 +150,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(42)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -189,7 +195,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(42)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -229,7 +238,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(42)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -248,17 +260,45 @@ class AbstractStreamOperationTest {
             )
         }
 
-        @ParameterizedTest
-        @ValueSource(booleans = [true, false])
-        fun existingNonEmptyTableNoNewRecords(hasUnprocessedRecords: Boolean) {
+        @Test
+        fun existingNonEmptyTableStatusIncomplete() {
             val initialState =
                 mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
                     every { streamConfig } returns this@Overwrite.streamConfig
                     every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
-                    // This is an overwrite sync, so we can ignore the old raw records.
-                    // We should skip T+D if the current sync emitted 0 records.
-                    every { initialRawTableStatus.hasUnprocessedRecords } returns
-                        hasUnprocessedRecords
+                    every { isFinalTablePresent } returns true
+                    every { isFinalTableEmpty } returns false
+                    every {
+                        destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
+                    } returns destinationState
+                }
+
+            val streamOperations = TestStreamOperation(storageOperation, initialState)
+            // No point in verifying setup, completely identical to existingNonEmptyTable
+            clearMocks(storageOperation)
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.INCOMPLETE)
+            )
+
+            verifySequence {
+                storageOperation.cleanupStage(streamId)
+                // Don't run T+D, and don't overwrite the final table.
+            }
+            confirmVerified(storageOperation)
+            checkUnnecessaryStub(
+                initialState,
+                initialState.initialRawTableStatus,
+                initialState.destinationState
+            )
+        }
+
+        @Test
+        fun existingNonEmptyTableNoNewRecords() {
+            val initialState =
+                mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
+                    every { streamConfig } returns this@Overwrite.streamConfig
+                    every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
                     every { isFinalTablePresent } returns true
                     every { isFinalTableEmpty } returns false
                     every {
@@ -275,7 +315,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(0)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -316,7 +359,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(42)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -359,7 +405,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(42)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -400,7 +449,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(42)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -437,7 +489,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(42)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
@@ -488,7 +543,10 @@ class AbstractStreamOperationTest {
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
-            streamOperations.finalizeTable(streamConfig, StreamSyncSummary(Optional.of(0)))
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE)
+            )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
