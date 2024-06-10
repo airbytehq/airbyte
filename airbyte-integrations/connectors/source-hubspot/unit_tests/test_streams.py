@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
-import pytest
 import json
 from unittest.mock import patch
+
+import pendulum
+import pytest
 from airbyte_cdk.models import SyncMode
 from source_hubspot.streams import (
     Campaigns,
