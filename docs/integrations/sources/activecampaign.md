@@ -38,6 +38,7 @@ The connector has a rate limit of 5 requests per second per account.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.1.2 | 2024-06-04 | [38989](https://github.com/airbytehq/airbyte/pull/38989) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.1 | 2024-05-21 | [38511](https://github.com/airbytehq/airbyte/pull/38511) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-10-25 | [18335](https://github.com/airbytehq/airbyte/pull/18335) | Initial commit |
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1
+Use  for Jinja interpolations
+
+## 1.3.0
+Added new datetime format: %s_as_float
+
 ## 1.2.1
 Python 3.11 compatibility bugfixes
 
