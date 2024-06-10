@@ -123,6 +123,15 @@ class Check(ABC):
         return ALL_TYPES
 
     @property
+    def applies_to_connector_ab_internal_sl(self) -> int:
+        """The connector ab_internal_s that the QA check applies to
+
+        Returns:
+            int: integer value for connector ab_internal_sl level
+        """
+        return 0
+
+    @property
     @abstractmethod
     def category(self) -> CheckCategory:
         """The category of the QA check
@@ -171,6 +180,11 @@ class Check(ABC):
             return self.skip(
                 connector,
                 f"Check does not apply to {connector.support_level} connectors",
+            )
+        if connector.ab_internal_sl < self.applies_to_connector_ab_internal_sl:
+            return self.skip(
+                connector,
+                f"Check does not apply to connectors with sl < {self.applies_to_connector_ab_internal_sl}",
             )
         return self._run(connector)
 

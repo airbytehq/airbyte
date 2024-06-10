@@ -116,9 +116,77 @@ class CheckDocumentationExists(DocumentationCheck):
         )
 
 
+class CheckDocumentationLinks(DocumentationCheck):
+    name = "Links used in connector documentation are valid"
+    description = f"The user facing connector documentation should update invalid links in connector documentation."
+
+    applies_to_connector_languages = [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]
+    applies_to_connector_ab_internal_sl = 300
+    applies_to_connector_types = ["source"]
+
+    def validate_links(self, docs_content) -> List[str]:
+        valid_status_codes = [200, 403, 401, 405, 429, 503]  # we skip 4xx due to needed access
+        links = re.findall("(https?://[^\s\`)]+)", docs_content)
+        invalid_links = []
+        threads = []
+
+        def request_link(docs_link):
+            try:
+                response = requests.get(docs_link)
+                if response.status_code not in valid_status_codes:
+                    invalid_links.append(f"{docs_link} with {response.status_code} status code")
+            except requests.exceptions.SSLError:
+                pass
+
+        for link in links:
+            process = Thread(target=request_link, args=[link])
+            process.start()
+            threads.append(process)
+
+        for process in threads:
+            process.join(timeout=30)  # 30s timeout for process else link will be skipped
+            process.is_alive()
+
+        errors = []
+        for link in invalid_links:
+            errors.append(f"Link {link} is invalid in the connector documentation.")
+
+        return errors
+
+    def _run(self, connector: Connector) -> CheckResult:
+        if not connector.documentation_file_path or not connector.documentation_file_path.exists():
+            return self.fail(
+                connector=connector,
+                message="Could not check documentation links as the documentation file is missing.",
+            )
+
+        docs_content = connector.documentation_file_path.read_text().rstrip()
+
+        if not docs_content:
+            return self.fail(
+                connector=connector,
+                message="Documentation file is empty",
+            )
+
+        errors = self.validate_links(docs_content)
+        if errors:
+            return self.fail(
+                connector=connector,
+                message=f"Connector documentation uses invalid links: {'. '.join(errors)}",
+            )
+        return self.pass_(
+            connector=connector,
+            message="Documentation links are valid",
+        )
+
+
 class CheckDocumentationStructure(DocumentationCheck):
     name = "Connectors documentation follows our guidelines"
     description = f"The user facing connector documentation should follow the guidelines defined in the [documentation standards]({consts.DOCUMENTATION_STANDARDS_URL})."
+
+    applies_to_connector_languages = [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]
+    applies_to_connector_ab_internal_sl = 300
+    applies_to_connector_types = ["source"]
 
     expected_sections = [
         "## Prerequisites",
@@ -190,35 +258,6 @@ class CheckDocumentationStructure(DocumentationCheck):
             errors.append(
                 f"The connector name is not used as the main header in the documentation. Expected: '# {connector.metadata['name']}'"
             )
-        return errors
-
-    def validate_links(self, docs_content) -> List[str]:
-        valid_status_codes = [200, 403, 401, 405, 429, 503]  # we skip 4xx due to needed access
-        links = re.findall("(https?://[^\s\`)]+)", docs_content)
-        invalid_links = []
-        threads = []
-
-        def request_link(docs_link):
-            try:
-                response = requests.get(docs_link)
-                if response.status_code not in valid_status_codes:
-                    invalid_links.append(f"{docs_link} with {response.status_code} status code")
-            except requests.exceptions.SSLError:
-                pass
-
-        for link in links:
-            process = Thread(target=request_link, args=[link])
-            process.start()
-            threads.append(process)
-
-        for process in threads:
-            process.join(timeout=30)  # 30s timeout for process else link will be skipped
-            process.is_alive()
-
-        errors = []
-        for link in invalid_links:
-            errors.append(f"Link {link} is invalid in the connector documentation.")
-
         return errors
 
     def check_docs_structure(self, docs_content: str, connector_name: str) -> List[str]:
@@ -337,50 +376,42 @@ class CheckDocumentationStructure(DocumentationCheck):
         return errors
 
     def _run(self, connector: Connector) -> CheckResult:
-        connector_type, sl_level = connector.connector_type, connector.ab_internal_sl
-        if connector_type == "source" and sl_level >= 300 and connector.language != ConnectorLanguage.JAVA:
-
-            if not connector.documentation_file_path or not connector.documentation_file_path.exists():
-                return self.fail(
-                    connector=connector,
-                    message="Could not check documentation structure as the documentation file is missing.",
-                )
-
-            doc_lines = [line.lower() for line in connector.documentation_file_path.read_text().splitlines()]
-
-            if not doc_lines:
-                return self.fail(
-                    connector=connector,
-                    message="Documentation file is empty",
-                )
-
-            docs_content = connector.documentation_file_path.read_text().rstrip()
-
-            errors = []
-            errors.extend(self.check_main_header(connector, doc_lines))
-            errors.extend(self.validate_links(docs_content))
-            errors.extend(self.check_docs_structure(docs_content, connector.name_from_metadata))
-            errors.extend(
-                self.check_prerequisites_section_has_descriptions_for_required_fields(
-                    connector.connector_spec, docs_content, connector.documentation_file_path
-                )
-            )
-            errors.extend(self.check_docs_descriptions(connector.documentation_file_path, docs_content, connector.name_from_metadata))
-
-            if errors:
-                return self.fail(
-                    connector=connector,
-                    message=f"Connector documentation does not follow the guidelines: {'. '.join(errors)}",
-                )
-            return self.pass_(
+        if not connector.documentation_file_path or not connector.documentation_file_path.exists():
+            return self.fail(
                 connector=connector,
-                message="Documentation guidelines are followed",
+                message="Could not check documentation structure as the documentation file is missing.",
             )
 
-        return self.skip(
-            connector=connector,
-            reason="Check does not apply for sources with sl < 300 or/and java sources",
+        doc_lines = [line.lower() for line in connector.documentation_file_path.read_text().splitlines()]
+
+        if not doc_lines:
+            return self.fail(
+                connector=connector,
+                message="Documentation file is empty",
+            )
+
+        docs_content = connector.documentation_file_path.read_text().rstrip()
+
+        errors = []
+        errors.extend(self.check_main_header(connector, doc_lines))
+        errors.extend(self.check_docs_structure(docs_content, connector.name_from_metadata))
+        errors.extend(
+            self.check_prerequisites_section_has_descriptions_for_required_fields(
+                connector.connector_spec, docs_content, connector.documentation_file_path
+            )
         )
+        errors.extend(self.check_docs_descriptions(connector.documentation_file_path, docs_content, connector.name_from_metadata))
+
+        if errors:
+            return self.fail(
+                connector=connector,
+                message=f"Connector documentation does not follow the guidelines: {'. '.join(errors)}",
+            )
+        return self.pass_(
+            connector=connector,
+            message="Documentation guidelines are followed",
+        )
+
 
 
 class CheckChangelogEntry(DocumentationCheck):
