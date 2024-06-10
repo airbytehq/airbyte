@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceGoldcastApi
+from .source import SourceGoldcast
 
-__all__ = ["SourceGoldcastApi"]
+__all__ = ["SourceGoldcast"]

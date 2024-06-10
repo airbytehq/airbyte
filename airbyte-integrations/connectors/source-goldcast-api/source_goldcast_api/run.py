@@ -7,9 +7,9 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 
-from .source import SourceGoldcastApi
+from .source import SourceGoldcast
 
 
 def run():
-    source = SourceGoldcastApi()
+    source = SourceGoldcast()
     launch(source, sys.argv[1:])
