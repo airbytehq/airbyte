@@ -33,10 +33,14 @@ class BufferEnqueue(
         message: PartialAirbyteMessage,
         sizeInBytes: Int,
     ) {
-        if (message.type == AirbyteMessage.Type.RECORD) {
-            handleRecord(message, sizeInBytes)
-        } else if (message.type == AirbyteMessage.Type.STATE) {
-            stateManager.trackState(message, sizeInBytes.toLong())
+        when (message.type) {
+            AirbyteMessage.Type.RECORD -> {
+                handleRecord(message, sizeInBytes)
+            }
+            AirbyteMessage.Type.STATE -> {
+                stateManager.trackState(message, sizeInBytes.toLong())
+            }
+            else -> {}
         }
     }
 
@@ -44,7 +48,7 @@ class BufferEnqueue(
         message: PartialAirbyteMessage,
         sizeInBytes: Int,
     ) {
-        val streamDescriptor = extractStateFromRecord(message)
+        val streamDescriptor = extractStreamDescriptorFromRecord(message)
         val queue =
             buffers.computeIfAbsent(
                 streamDescriptor,
@@ -87,7 +91,9 @@ class BufferEnqueue(
     }
 
     companion object {
-        private fun extractStateFromRecord(message: PartialAirbyteMessage): StreamDescriptor {
+        private fun extractStreamDescriptorFromRecord(
+            message: PartialAirbyteMessage
+        ): StreamDescriptor {
             return StreamDescriptor()
                 .withNamespace(message.record?.namespace)
                 .withName(message.record?.stream)
