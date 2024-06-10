@@ -243,14 +243,14 @@ public class MySqlInitialReadUtil {
         firstRecordWaitTime,
         AirbyteDebeziumHandler.QUEUE_CAPACITY,
         false);
-    final var completedCdcStreamList = catalog.getStreams().stream()
+    final var partiallyOrFullyCompletedCdcStreamList = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-        .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
+        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
         .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
 
-    LOGGER.info("Completed streams passed into db props manager: {}", completedCdcStreamList.toString());
+    LOGGER.info("Partially or fully completed streams passed into db props manager: {}", partiallyOrFullyCompletedCdcStreamList.toString());
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
-        MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, completedCdcStreamList);
+        MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, partiallyOrFullyCompletedCdcStreamList);
     final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
@@ -268,8 +268,8 @@ public class MySqlInitialReadUtil {
     // from the current cdc syncs.
     // We finish the current CDC once the initial snapshot is complete and the next sync starts
     // processing the binlogs
-    if (completedCdcStreamList.isEmpty()) {
-      LOGGER.info("Skipping the CDC read altogether because no cdc streams have been completed");
+    if (partiallyOrFullyCompletedCdcStreamList.isEmpty()) {
+      LOGGER.info("Skipping the CDC read altogether because no cdc streams have been completed or started");
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream
@@ -493,6 +493,13 @@ public class MySqlInitialReadUtil {
 
     final String pkMaxValue = MySqlQueryUtils.getMaxPkValueForStream(database, stream, pkFieldName, quoteString);
     return Optional.of(new PrimaryKeyInfo(pkFieldName, pkFieldType, pkMaxValue));
+  }
+
+  private static boolean isStreamPartiallyOrFullyCompleted(ConfiguredAirbyteStream stream, InitialLoadStreams initialLoadStreams) {
+    boolean isStreamCompleted = !initialLoadStreams.streamsForInitialLoad.contains(stream);
+    // A stream has been partially completed if an initial load status exists.
+    boolean isStreamPartiallyCompleted = (initialLoadStreams.pairToInitialLoadStatus.get(new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()))) != null;
+    return isStreamCompleted || isStreamPartiallyCompleted;
   }
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
