@@ -671,7 +671,11 @@ class ModelToComponentFactory:
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
         stream_slicer = None
-        if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
+        if (
+            hasattr(model.retriever, "partition_router")
+            and isinstance(model.retriever, SimpleRetrieverModel)
+            and model.retriever.partition_router
+        ):
             stream_slicer_model = model.retriever.partition_router
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
