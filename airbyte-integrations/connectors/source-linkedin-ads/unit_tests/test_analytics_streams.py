@@ -3,7 +3,6 @@
 #
 import json
 import os
-import shutil
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
