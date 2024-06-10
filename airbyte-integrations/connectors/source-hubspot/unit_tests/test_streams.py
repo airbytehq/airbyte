@@ -4,6 +4,8 @@
 
 import pendulum
 import pytest
+import json
+from unittest.mock import patch
 from airbyte_cdk.models import SyncMode
 from source_hubspot.streams import (
     Campaigns,
@@ -193,6 +195,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
         {"json": {}, "status_code": 429},
         {"json": {}, "status_code": 502},
         {"json": {}, "status_code": 504},
+        {"text": "Not a JSON", "status_code": 200},
     ],
 )
 def test_common_error_retry(error_response, requests_mock, common_params, fake_properties_list):
@@ -229,6 +232,7 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
     records = read_full_refresh(stream)
 
     assert [response[stream.data_field][0]] == records
+    assert len(requests_mock.request_history) > 1
 
 
 def test_contact_lists_transform(requests_mock, common_params):
