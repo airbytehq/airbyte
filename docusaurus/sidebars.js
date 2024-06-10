@@ -549,6 +549,7 @@ module.exports = {
       items: [
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
+        "enterprise-setup/scaling-airbyte",
         "enterprise-setup/upgrading-from-community",
       ],
     },
