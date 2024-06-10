@@ -72,7 +72,7 @@ class AirbyteFileOffsetBackingStore(
                 return mapAsString
             }
 
-            LOGGER.info { "Mutating sate to make it Debezium 2.1 compatible" }
+            LOGGER.info { "Mutating state to make it Debezium 2.1 compatible" }
             val newKey =
                 if (dbName.isPresent)
                     SQL_SERVER_STATE_MUTATION.apply(key.substring(i, i1 + 1), dbName.get())
@@ -97,7 +97,7 @@ class AirbyteFileOffsetBackingStore(
                 return mapAsString
             }
 
-            LOGGER.info { "Mutating sate to make it Debezium 2.6 compatible" }
+            LOGGER.info { "Mutating state to make it Debezium 2.6 compatible" }
             val newKey = mongoShardMutation(key)
             val value = mapAsString.getValue(key)
             updatedMap[newKey] = value

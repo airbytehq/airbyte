@@ -38,7 +38,7 @@ java {
 }
 
 dependencies {
-    implementation 'io.debezium:debezium-embedded:2.6.0.Final'
+    implementation 'io.debezium:debezium-embedded:2.6.2.Final'
     implementation 'io.debezium:debezium-connector-mongodb:2.6.0.Final'
 
     testImplementation 'org.testcontainers:mongodb:1.19.0'
