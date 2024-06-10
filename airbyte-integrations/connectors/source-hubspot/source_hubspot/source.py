@@ -247,6 +247,7 @@ class SourceHubspot(AbstractSource):
                     schema=custom_object_stream_instance.schema,
                     fully_qualified_name=custom_object_stream_instance.fully_qualified_name,
                     custom_properties=custom_object_stream_instance.custom_properties,
+                    associations=custom_object_stream_instance.associations,
                     **common_params,
                 )
                 super(self.__class__, self).__init__(parent=parent, **kwargs)
