@@ -6,7 +6,7 @@ definitions:
     extractor:
       type: CustomRecordExtractor
       class_name: source_xero.components.CustomExtractor
-      field_path: [ "{{ parameters.extractor_path }}" ]
+      field_path: ["{{ parameters.extractor_path }}"]
 
   oauth_authenticator:
     type: OAuthAuthenticator
@@ -36,7 +36,7 @@ definitions:
 
   authenticator:
     type: SelectiveAuthenticator
-    authenticator_selection_path: [ "credentials", "auth_type" ]
+    authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
       oauth2_access_token: "#/definitions/bearer_authenticator"
       oauth2_confidential_application: "#/definitions/oauth_authenticator"
@@ -1061,7 +1061,7 @@ definitions:
       type:
         - "null"
         - object
-      properties: { }
+      properties: {}
       additionalProperties: true
     additionalProperties: true
 
@@ -2854,4 +2854,3 @@ spec:
           - "2022-03-01T00:00:00Z"
         format: "date-time"
         order: 2
-
