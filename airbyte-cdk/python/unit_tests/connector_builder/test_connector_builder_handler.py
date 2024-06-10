@@ -47,6 +47,7 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDe
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, update_secrets
 from unit_tests.connector_builder.utils import create_configured_catalog
+from unit_tests.sources.file_based.test_scenarios import _configured_catalog_from_mapping
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -469,9 +470,9 @@ def test_read():
     limits = TestReadLimits()
     with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read) as mock:
         output_record = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits
+            source, "test_read", config, _configured_catalog_from_mapping(CONFIGURED_CATALOG), _A_STATE, limits
         )
-        mock.assert_called_with(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits.max_records)
+        mock.assert_called_with(source, config, _configured_catalog_from_mapping(CONFIGURED_CATALOG), _A_STATE, limits.max_records)
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
 
@@ -505,7 +506,7 @@ def test_config_update():
         return_value=refresh_request_response,
     ):
         output = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, TestReadLimits()
+            source, "test_read", config, _configured_catalog_from_mapping(CONFIGURED_CATALOG), _A_STATE, TestReadLimits()
         )
         assert output.record.data["latest_config_update"]
 
@@ -542,7 +543,7 @@ def test_read_returns_error_response(mock_from_exception):
 
     source = MockManifestDeclarativeSource()
     limits = TestReadLimits()
-    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits)
+    response = read_stream(source, TEST_READ_CONFIG, _configured_catalog_from_mapping(CONFIGURED_CATALOG), _A_STATE, limits)
 
     expected_stream_read = StreamRead(
         logs=[LogMessage("error_message - a stack trace", "ERROR")],

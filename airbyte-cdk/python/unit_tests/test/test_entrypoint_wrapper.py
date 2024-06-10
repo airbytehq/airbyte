@@ -7,6 +7,8 @@ from typing import Any, Iterator, List, Mapping
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
+from orjson import orjson
+
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import AirbyteStateBlob
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -94,7 +96,7 @@ _A_LOG_MESSAGE = "a log message"
 
 
 def _to_entrypoint_output(messages: List[AirbyteMessage]) -> Iterator[str]:
-    return (message.json(exclude_unset=True) for message in messages)
+    return (orjson.dumps(message).decode("utf-8") for message in messages)
 
 
 def _a_mocked_source() -> AbstractSource:

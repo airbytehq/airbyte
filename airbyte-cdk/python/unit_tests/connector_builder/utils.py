@@ -5,6 +5,7 @@
 from typing import Any, Mapping
 
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog
+from unit_tests.sources.file_based.test_scenarios import _configured_catalog_from_mapping
 
 
 def create_configured_catalog_dict(stream_name: str) -> Mapping[str, Any]:
@@ -24,4 +25,4 @@ def create_configured_catalog_dict(stream_name: str) -> Mapping[str, Any]:
 
 
 def create_configured_catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
-    return ConfiguredAirbyteCatalog.parse_obj(create_configured_catalog_dict(stream_name))
+    return _configured_catalog_from_mapping(create_configured_catalog_dict(stream_name))

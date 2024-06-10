@@ -29,6 +29,8 @@ from airbyte_cdk.sources.streams.http.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pydantic import ValidationError
 
+from unit_tests.sources.file_based.test_scenarios import _configured_catalog_from_mapping
+
 
 class MockSource(Source):
     def read(
@@ -77,7 +79,7 @@ def catalog():
             },
         ]
     }
-    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    return _configured_catalog_from_mapping(configured_catalog)
 
 
 @pytest.fixture
@@ -355,7 +357,7 @@ def test_read_catalog(source):
             }
         ]
     }
-    expected = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    expected = _configured_catalog_from_mapping(configured_catalog)
     with tempfile.NamedTemporaryFile("w") as catalog_file:
         catalog_file.write(expected.json(exclude_unset=True))
         catalog_file.flush()
@@ -687,7 +689,7 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
             }
         ]
     }
-    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    catalog = _configured_catalog_from_mapping(configured_catalog)
     with caplog.at_level(logging.WARNING):
         records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
 

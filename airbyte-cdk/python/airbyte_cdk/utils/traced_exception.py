@@ -6,6 +6,8 @@ import traceback
 from datetime import datetime
 from typing import Optional
 
+from orjson import orjson
+
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteErrorTraceMessage,
@@ -85,7 +87,7 @@ class AirbyteTracedException(Exception):
         Prints the exception as an AirbyteTraceMessage.
         Note that this will be called automatically on uncaught exceptions when using the airbyte_cdk entrypoint.
         """
-        message = self.as_airbyte_message().json(exclude_unset=True)
+        message = orjson.dumps(self.as_airbyte_message()).decode("utf-8")
         filtered_message = filter_secrets(message)
         print(filtered_message)
 

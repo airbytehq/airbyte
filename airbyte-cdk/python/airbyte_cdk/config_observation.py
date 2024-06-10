@@ -9,6 +9,8 @@ from __future__ import (  # Used to evaluate type hints at runtime, a NameError:
 import time
 from typing import Any, List, MutableMapping
 
+from orjson import orjson
+
 from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type
 
 
@@ -73,7 +75,7 @@ def emit_configuration_as_airbyte_control_message(config: MutableMapping):
     See the airbyte_cdk.sources.message package
     """
     airbyte_message = create_connector_config_control_message(config)
-    print(airbyte_message.json(exclude_unset=True))
+    print(orjson.dumps(airbyte_message).decode("utf-8"))
 
 
 def create_connector_config_control_message(config):
