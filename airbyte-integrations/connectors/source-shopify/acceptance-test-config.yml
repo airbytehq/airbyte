@@ -59,10 +59,6 @@ acceptance_tests:
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
         timeout_seconds: 8400
-        # some of the streams are not passing the `test_read_sequential_slices`
-        # due to the inability to deal with `frozen` data in sandbox
-        # TODO: remove this, once the CAT's `test_read_sequential_slices` is fixed.
-        skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
