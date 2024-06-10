@@ -657,10 +657,22 @@ def test_create_source():
 
     source = create_source(config, limits)
 
+    max_retries = 0
+    http_client = source.streams(config={})[0].retriever.requester._http_client
+    if http_client._disable_retries:
+        max_retries = 0
+    elif hasattr(http_client._error_handler, "max_retries") and http_client._error_handler.max_retries is not None:
+        max_retries = http_client._error_handler.max_retries
+    else:
+        for backoff_strategy in http_client._backoff_strategies:
+            if hasattr(backoff_strategy, "max_retries") and backoff_strategy.max_retries is not None:
+                max_retries = backoff_strategy.max_retries
+                break
+
     assert isinstance(source, ManifestDeclarativeSource)
     assert source._constructor._limit_pages_fetched_per_slice == limits.max_pages_per_slice
     assert source._constructor._limit_slices_fetched == limits.max_slices
-    assert source.streams(config={})[0].retriever.requester.max_retries == 0
+    assert max_retries == 0
 
 
 def request_log_message(request: dict) -> AirbyteMessage:

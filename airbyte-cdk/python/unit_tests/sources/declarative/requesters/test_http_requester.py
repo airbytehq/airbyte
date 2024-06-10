@@ -654,7 +654,9 @@ def test_join_url(test_name, base_url, path, expected_full_url):
 
 def get_max_retries(http_requester):
     max_retries = http_requester._http_client._DEFAULT_MAX_RETRY
-    if hasattr(http_requester._http_client._error_handler, "max_retries") and http_requester._http_client._error_handler.max_retries is not None:
+    if http_requester.disable_retries:
+        max_retries = 0
+    elif hasattr(http_requester._http_client._error_handler, "max_retries") and http_requester._http_client._error_handler.max_retries is not None:
         max_retries = http_requester._http_client._error_handler.max_retries
     else:
         for backoff_strategy in http_requester._http_client._backoff_strategies:

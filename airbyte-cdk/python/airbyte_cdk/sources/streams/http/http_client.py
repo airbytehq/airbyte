@@ -50,6 +50,7 @@ class HttpClient:
         use_cache: bool = False,
         backoff_strategy: Optional[Union[BackoffStrategy, List[BackoffStrategy]]] = None,
         error_message_parser: Optional[ErrorMessageParser] = None,
+        disable_retries: bool = False,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -74,6 +75,7 @@ class HttpClient:
             self._backoff_strategies = [DefaultBackoffStrategy()]
         self._error_message_parser = error_message_parser or JsonErrorMessageParser()
         self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
+        self._disable_retries = disable_retries
 
     @property
     def cache_filename(self) -> str:
@@ -167,6 +169,8 @@ class HttpClient:
             requests.Response: The HTTP response received from the server after retries.
         """
         max_retries = self._DEFAULT_MAX_RETRY
+        if self._disable_retries:
+            max_retries = 0
         if hasattr(self._error_handler, "max_retries") and self._error_handler.max_retries is not None:
             max_retries = self._error_handler.max_retries
         else:
