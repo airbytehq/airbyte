@@ -643,7 +643,7 @@ def test_python_issues_stream_updated_state(config):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
     stream = Issues(**args)
 
-    updated_state = stream.get_updated_state(
+    updated_state = stream._get_updated_state(
         current_stream_state={"updated": "2021-01-01T00:00:00Z"},
         latest_record={"updated": "2021-01-02T00:00:00Z"}
     )
