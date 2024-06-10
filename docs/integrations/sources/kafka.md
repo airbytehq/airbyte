@@ -48,6 +48,9 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
 | 0.2.4   | 2024-02-13 | [35229](https://github.com/airbytehq/airbyte/pull/35229)                                           | Adopt CDK 0.20.4                                                     |
@@ -63,3 +66,5 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 | 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)                                           | Add `-XX:+ExitOnOutOfMemoryError` JVM option                         |
 | 0.1.2   | 2021-12-21 | [8865](https://github.com/airbytehq/airbyte/pull/8865)                                             | Fix SASL config read issue                                           |
 | 0.1.1   | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)                                             | Update connector fields title/description                            |
+
+</details>

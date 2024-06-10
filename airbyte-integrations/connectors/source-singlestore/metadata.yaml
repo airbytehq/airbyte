@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${host}
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 2e8ae725-0069-4452-afa0-d1848cf69676
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-singlestore
+  githubIssueLabel: source-singlestore
+  icon: singlestore.svg
+  license: MIT
+  name: SingleStore
+  releaseDate:
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/singlestore
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
