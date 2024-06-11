@@ -532,7 +532,8 @@ module.exports = {
         "cloud/managing-airbyte-cloud/review-connection-status",
         "cloud/managing-airbyte-cloud/review-sync-history",
         "operator-guides/browsing-output-logs",
-        "operator-guides/reset",
+        "operator-guides/clear",
+        "operator-guides/refreshes",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
@@ -548,6 +549,7 @@ module.exports = {
       items: [
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
+        "enterprise-setup/scaling-airbyte",
         "enterprise-setup/upgrading-from-community",
       ],
     },
