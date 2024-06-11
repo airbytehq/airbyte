@@ -35,11 +35,19 @@ This page contains the setup guide and reference information for the destination
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | Yes                  |       |
 
+
 ## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request | Subject                                                   |
 | :------ | :--------- | :----------- | :-------------------------------------------------------- |
+| 0.1.5 | 2024-06-06 | [39198](https://github.com/airbytehq/airbyte/pull/39198) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.4   | 2024-05-16 | #38181       | Add explicit projection when reading from Astra DB        |
 | 0.1.3   | 2024-04-19 | #37405       | Add "airbyte" user-agent in the HTTP requests to Astra DB |
 | 0.1.2   | 2024-04-15 |              | Moved to Poetry; Updated CDK & pytest versions            |
 | 0.1.1   | 2024-01-26 |              | DS Branding Update                                        |
 | 0.1.0   | 2024-01-08 |              | Initial Release                                           |
+
+</details>

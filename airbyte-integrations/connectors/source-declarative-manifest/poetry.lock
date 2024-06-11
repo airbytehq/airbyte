@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.89.0"
+version = "1.3.2"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.89.0-py3-none-any.whl", hash = "sha256:6a17ad7c0469d0800b900e8799a34b9de8268dcbc7779e514fa5df64c2820d1b"},
-    {file = "airbyte_cdk-0.89.0.tar.gz", hash = "sha256:7ac2c7ec4519255ce3fa5a62d72c1f223f71668e3cc2e1b30daa8875ff558c46"},
+    {file = "airbyte_cdk-1.3.2-py3-none-any.whl", hash = "sha256:c060c036ecb251cd73c37723ee3944a43017fc6c80f67e2ddab2b499928e4d8d"},
+    {file = "airbyte_cdk-1.3.2.tar.gz", hash = "sha256:9d07cf7249447355f77c0b312c0bc280604be3acfa78b779363c567df8b35476"},
 ]
 
 [package.dependencies]
@@ -17,7 +17,7 @@ backoff = "*"
 cachetools = "*"
 cryptography = ">=42.0.5,<43.0.0"
 Deprecated = ">=1.2,<1.3"
-dpath = ">=2.0.1,<2.1.0"
+dpath = ">=2.1.6,<3.0.0"
 genson = "1.2.2"
 isodate = ">=0.6.1,<0.7.0"
 Jinja2 = ">=3.1.2,<3.2.0"
@@ -399,13 +399,13 @@ dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
 name = "dpath"
-version = "2.0.8"
+version = "2.1.6"
 description = "Filesystem-like pathing and searching for dictionaries"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "dpath-2.0.8-py3-none-any.whl", hash = "sha256:f92f595214dd93a00558d75d4b858beee519f4cffca87f02616ad6cd013f3436"},
-    {file = "dpath-2.0.8.tar.gz", hash = "sha256:a3440157ebe80d0a3ad794f1b61c571bef125214800ffdb9afc9424e8250fe9b"},
+    {file = "dpath-2.1.6-py3-none-any.whl", hash = "sha256:31407395b177ab63ef72e2f6ae268c15e938f2990a8ecf6510f5686c02b6db73"},
+    {file = "dpath-2.1.6.tar.gz", hash = "sha256:f1e07c72e8605c6a9e80b64bc8f42714de08a789c7de417e49c3f87a19692e47"},
 ]
 
 [[package]]
@@ -1326,4 +1326,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "002d3b31661a7af430df1ea39d44ffb6adf030c13eaeb28620e78f81253da769"
+content-hash = "5e2dc353b37027477775e3fb07a0319acd911e821f9747ac619b4ed281cf60bf"

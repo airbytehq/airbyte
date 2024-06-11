@@ -1,0 +1,148 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "asset_type": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "closed_at": {
+      "type": ["null", "string"]
+    },
+    "closed_by": {
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "closed_note": {
+      "type": ["string", "null"]
+    },
+    "comments_count": {
+      "type": ["number", "null"]
+    },
+    "created_at": {
+      "type": ["string"]
+    },
+    "creation_type": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "documents_count": {
+      "type": "number"
+    },
+    "due_date": {
+      "type": ["null", "string"]
+    },
+    "due_meter_value": {
+      "type": ["null", "number"]
+    },
+    "due_secondary_meter_value": {
+      "type": ["null", "number", "string"]
+    },
+    "equipment": {
+      "type": ["null", "object"]
+    },
+    "attachment_permissions": {
+      "type": ["null", "object"]
+    },
+    "external_id": {
+      "type": ["null", "number"]
+    },
+    "fault_id": {
+      "type": ["null", "number"]
+    },
+    "fault": {
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "fault_rule": {
+      "type": ["null", "object"]
+    },
+    "id": {
+      "type": "number"
+    },
+    "images_count": {
+      "type": "number"
+    },
+    "number": {
+      "type": ["null", "string"]
+    },
+    "reported_at": {
+      "type": "string"
+    },
+    "reported_by": {
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "default_image_url": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "due_primary_meter_value": {
+      "type": ["string", "null"]
+    },
+    "overdue": {
+      "type": ["boolean", "null"]
+    },
+    "resolvable_id": {
+      "type": ["number", "null"]
+    },
+    "resolvable": {
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "resolvable_type": {
+      "type": ["null", "string"]
+    },
+    "resolved_at": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": "string"
+    },
+    "submitted_inspection_form_id": {
+      "type": ["null", "number"]
+    },
+    "submitted_inspection_form": {
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "summary": {
+      "type": ["string", "null"]
+    },
+    "vehicle": {
+      "type": ["null", "object"]
+    },
+    "updated_at": {
+      "type": ["string", "null"]
+    },
+    "watchers_count": {
+      "type": ["number", "null"]
+    }
+  }
+}

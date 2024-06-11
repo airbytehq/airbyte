@@ -12,19 +12,21 @@ from datetime import datetime
 from functools import lru_cache
 from glob import glob
 from types import TracebackType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 from asyncer import asyncify
-from dagger import Client, Directory, File, GitRepository, Secret, Service
+from dagger import Client, Directory, File, GitRepository
+from dagger import Secret as DaggerSecret
+from dagger import Service
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.execution.run_steps import RunStepOptions
-from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import AIRBYTE_REPO_URL, java_log_scrub_pattern
 from pipelines.models.reports import Report
+from pipelines.models.secrets import Secret, SecretStore
 
 if TYPE_CHECKING:
     from typing import List, Optional
@@ -79,11 +81,12 @@ class PipelineContext:
         reporting_slack_channel: Optional[str] = None,
         pull_request: Optional[PullRequest.PullRequest] = None,
         ci_report_bucket: Optional[str] = None,
-        ci_gcs_credentials: Optional[str] = None,
+        ci_gcp_credentials: Optional[Secret] = None,
         ci_git_user: Optional[str] = None,
-        ci_github_access_token: Optional[str] = None,
+        ci_github_access_token: Optional[Secret] = None,
         run_step_options: RunStepOptions = RunStepOptions(),
         enable_report_auto_open: bool = True,
+        secret_stores: Dict[str, SecretStore] | None = None,
     ) -> None:
         """Initialize a pipeline context.
 
@@ -125,7 +128,7 @@ class PipelineContext:
         self._dagger_client = None
         self._report = None
         self.dockerd_service = None
-        self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
+        self.ci_gcp_credentials = ci_gcp_credentials
         self.ci_report_bucket = ci_report_bucket
         self.ci_git_user = ci_git_user
         self.ci_github_access_token = ci_github_access_token
@@ -134,6 +137,7 @@ class PipelineContext:
         self.secrets_to_mask = []
         self.run_step_options = run_step_options
         self.enable_report_auto_open = enable_report_auto_open
+        self.secret_stores = secret_stores if secret_stores else {}
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -166,18 +170,7 @@ class PipelineContext:
         self._report = report
 
     @property
-    def ci_gcs_credentials_secret(self) -> Secret | None:
-        if self.ci_gcs_credentials is not None:
-            return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
-        return None
-
-    @property
-    def ci_github_access_token_secret(self) -> Secret:
-        assert self.ci_github_access_token is not None, "The ci_github_access_token was not set on this PipelineContext."
-        return self.dagger_client.set_secret("ci_github_access_token", self.ci_github_access_token)
-
-    @property
-    def java_log_scrub_pattern_secret(self) -> Optional[Secret]:
+    def java_log_scrub_pattern_secret(self) -> Optional[DaggerSecret]:
         if not self.secrets_to_mask:
             return None
         return self.dagger_client.set_secret("log_scrub_pattern", java_log_scrub_pattern(self.secrets_to_mask))
@@ -223,7 +216,7 @@ class PipelineContext:
 
     @property
     def remote_storage_enabled(self) -> bool:
-        return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcs_credentials)
+        return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
 
     def get_repo_file(self, file_path: str) -> File:
         """Get a file from the current repository.
@@ -302,7 +295,7 @@ class PipelineContext:
         """
         if exception_value is not None or report is None:
             return ContextState.ERROR
-        if report is not None and report.failed_steps:
+        if report is not None and report.considered_failed_steps:
             return ContextState.FAILURE
         if report is not None and report.success:
             return ContextState.SUCCESSFUL

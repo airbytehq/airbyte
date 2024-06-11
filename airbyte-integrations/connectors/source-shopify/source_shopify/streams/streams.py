@@ -24,6 +24,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProduct,
     MetafieldProductImage,
     MetafieldProductVariant,
+    OrderRisk,
     Product,
     ProductImage,
     ProductVariant,
@@ -113,6 +114,7 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
 
 class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
+    # pin the api version
 
 
 class ProductsGraphQl(IncrementalShopifyStream):
@@ -120,6 +122,8 @@ class ProductsGraphQl(IncrementalShopifyStream):
     cursor_field = "updatedAt"
     data_field = "graphql"
     http_method = "POST"
+    # pin the old api_version before this stream is deprecated
+    api_version = "2023-07"
 
     def request_params(
         self,
@@ -257,15 +261,9 @@ class OrderRefunds(IncrementalShopifyNestedStream):
     nested_entity = "refunds"
 
 
-class OrderRisks(IncrementalShopifySubstream):
-    parent_stream_class = Orders
-    slice_key = "order_id"
-    data_field = "risks"
-    cursor_field = "id"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        order_id = stream_slice["order_id"]
-        return f"orders/{order_id}/{self.data_field}.json"
+class OrderRisks(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: OrderRisk = OrderRisk
+    # the updated stream work only with >= `2024-04` shopify api version
 
 
 class Transactions(IncrementalShopifySubstream):

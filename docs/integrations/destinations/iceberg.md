@@ -59,6 +59,9 @@ specify the target size of compacted Iceberg data file.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                    |
 |:--------|:-----------| :-------------------------------------------------------- |:-----------------------------------------------------------|
 | 0.1.7   | 2024-05-17 | [38283](https://github.com/airbytehq/airbyte/pull/38283)  | Bump Iceberg library to 1.5.2 and Spark to 3.5.1           |
@@ -69,3 +72,5 @@ specify the target size of compacted Iceberg data file.
 | 0.1.2   | 2023-07-14 | [28345](https://github.com/airbytehq/airbyte/pull/28345)  | Trigger rebuild of image                                   |
 | 0.1.1   | 2023-02-27 | [23201](https://github.com/airbytehq/airbyte/pull/23301)  | Bump Iceberg library to 1.1.0                              |
 | 0.1.0   | 2022-11-01 | [18836](https://github.com/airbytehq/airbyte/pull/18836)  | Initial Commit                                             |
+
+</details>

@@ -3,9 +3,9 @@
 #
 
 
+import logging
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -143,7 +143,7 @@ class SourceShopify(AbstractSource):
     def format_stream_name(name) -> str:
         return "".join(x.capitalize() for x in name.split("_"))
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """
