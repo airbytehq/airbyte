@@ -248,7 +248,7 @@ class HttpClient:
             formatter = log_formatter
             self._message_repository.log_message(
                 Level.DEBUG,
-                lambda: formatter(response),
+                lambda: formatter(response),  # type: ignore # log_formatter is always cast to a callable
             )
 
         if error_resolution.response_action == ResponseAction.FAIL:
