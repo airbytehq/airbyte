@@ -179,7 +179,7 @@ class IncrementalMessageStream(ChanneledStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         current_stream_state[self.cursor_field] = max(
-            latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, self._start_ts)
+            latest_record[self.cursor_field], float(current_stream_state.get(self.cursor_field, self._start_ts))
         )
 
         return current_stream_state
@@ -256,7 +256,7 @@ class Threads(IncrementalMessageStream):
             # we get messages from the latest date
             # found in the state minus X days to pick up any new messages in threads.
             # If there is state always use lookback
-            messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
+            messages_start_date = pendulum.from_timestamp(float(stream_state[self.cursor_field])) - self.messages_lookback_window
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages
             # from the default start date
