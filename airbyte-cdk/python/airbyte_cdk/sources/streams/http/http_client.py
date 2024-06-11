@@ -11,14 +11,9 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 import requests
 import requests_cache
 from airbyte_cdk.models import Level
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
-from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from requests.auth import AuthBase
-
 from airbyte_cdk.sources.streams.http.error_handlers import (
     BackoffStrategy,
     DefaultBackoffStrategy,
@@ -31,6 +26,9 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
 )
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from requests.auth import AuthBase
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
+
 @dataclass
 class DecalarativeBackoffStrategy(BackoffStrategy, ABC):
     """

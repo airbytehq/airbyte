@@ -21,11 +21,6 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
-<<<<<<< HEAD
-=======
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from requests.auth import AuthBase
->>>>>>> pnilan/airbyte-cdk-low-code-http-error-handler
 
 
 @dataclass
