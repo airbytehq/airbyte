@@ -20,14 +20,13 @@ import tempfile
 import traceback
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.sources import Source
 from airbyte_protocol.models import (
-    AirbyteCatalog,
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteStateMessage,
