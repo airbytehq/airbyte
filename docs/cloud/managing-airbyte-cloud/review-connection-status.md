@@ -4,7 +4,7 @@ products: all
 
 # Review the connection status
 
-The Status page for a connection displays information about the connection and the status of each stream being synced. Reviewing this page allows you to assess the connection's current status, understand when the next sync will be run, and observe sync trends.
+The **Status** page for a connection displays information about the connection and the status of each stream being synced. Reviewing this page allows you to assess the connection's current status, understand when the next sync will be run, and observe sync trends.
 
 ![Connection Status](./assets/connection-status-page.png)
 
@@ -16,7 +16,7 @@ To view the connection status:
 
 1. In the Airbyte UI, click **Connections**.
 
-2. Click a connection in the list to view its status. You can also filter for a specific status to see specific connections.
+2. Each connection is listed alongside it's status. You can also filter for a specific status to see specific connections.
 
 | Status      | Description                                                                                         |
 | ----------- | --------------------------------------------------------------------------------------------------- |
