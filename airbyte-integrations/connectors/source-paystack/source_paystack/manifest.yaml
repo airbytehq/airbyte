@@ -150,7 +150,7 @@ definitions:
             page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: createdAt
+        cursor_field: created_at
         lookback_window: P31D
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
