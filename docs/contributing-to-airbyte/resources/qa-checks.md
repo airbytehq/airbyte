@@ -27,6 +27,33 @@ _Applies to connector with any Airbyte usage level_
 
 The user facing connector documentation should be stored under `./docs/integrations/<connector-type>s/<connector-name>.md`.
 
+### Connectors documentation headers structure follows our guidelines
+
+_Applies to the following connector types: source_
+_Applies to the following connector languages: python, low-code_
+_Applies to connector with any support level_
+_Applies to connector with any Airbyte usage level_
+
+The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+
+### Connectors documentation descriptions follows our guidelines
+
+_Applies to the following connector types: source_
+_Applies to the following connector languages: python, low-code_
+_Applies to connector with any support level_
+_Applies to connector with any Airbyte usage level_
+
+The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+
+### Links used in connector documentation are valid
+
+_Applies to the following connector types: source_
+_Applies to the following connector languages: python, low-code_
+_Applies to connector with any support level_
+_Applies to connector with any Airbyte usage level_
+
+The user facing connector documentation should update invalid links in connector documentation.
+
 ### Connectors must have a changelog entry for each version
 
 _Applies to the following connector types: source, destination_
