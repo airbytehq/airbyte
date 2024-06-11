@@ -177,7 +177,7 @@ If not specified, all remote registry configurations are disabled by default.
 
 The `connectorTestSuitesOptions` contains a list of test suite options for a connector.
 The list of declared test suites affects which suite will run in CI.
-We currently accept three value for the `suite` field:
+We currently accept three values for the `suite` field:
 * `unitTests`
 * `integrationTests`
 * `acceptanceTests`
@@ -193,6 +193,51 @@ The `testSecrets` object has three properties:
 **If you are a community contributor please note that addition of a new secret to our secret store requires manual intervention from an Airbyter. Please reach out to your PR reviewers if you want to add a test secret to our CI.**
 
 #### The `secretStore` object
-This object has three properties:
+This object has two properties:
 * `type`: Defines the secret store type, only `GSM` (Google Secret Manager) is currently supported
 * `alias`: The alias of this secret store in our system, which is resolved into an actual secret store address by our CI. We currently have a single alias to store our connector test secrets: `airbyte-connector-testing-secret-store` .
+
+#### How to enable a test suite
+We currently support three test suite types: 
+* `unitTests`, 
+* `integrationTests`
+* `acceptanceTests`
+
+
+To enable a test suite, add the suite name to the `connectorTestSuitesOptions` list: 
+
+```yaml
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    # This will enable acceptanceTests for this connector
+    # It declares that this test suite requires a secret named SECRET_SOURCE-FAKER_CREDS
+    # In our secret store, and that the secret should be stored in the connector secret folder in a file named config.json
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FAKER_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+```
+
+#####  Default paths and conventions
+ 
+The [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool will automatically locate specific test types based on established conventions and will automatically store secret files (when needed) in the established secrets directory - which should be already excluded from accidental git commits.
+
+**Python connectors**
+Tests are discovered by Pytest and are expected to be located in:
+* `unit_tests` directory for the `unitTests` suite
+* `integration_tests` directory for the `integrationTests` suite
+
+**Java connectors**
+No specific directory is determined. Which test will run is determined by the Gradle configuration of the connector.
+`airbyt-ci` runs the `test` Gradle task for the `unitTests` suite and the `integrationTest` Gradle task for the `integrationTests` suite.
+
+**Acceptance tests**
+
+They are language agnostic and are configured via the `acceptance-test-config.yml` file in the connector's root directory. More on that [here](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference).
+
+**Default secret paths**
+The listed secrets in `testSecrets` with a file name will be mounted to the connector's `secrets` directory. The `fileName` should be relative to this directory.
+E.G.: `fileName: config.json` will be mounted to `<connector-directory>/secrets/config.json`
