@@ -159,9 +159,14 @@ Usually, the very first sync operation for all of the objects inside Zuora accou
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                           | Subject                                                       |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------------------------ |
 | 0.1.3   | 2021-10-16 | [7053](https://github.com/airbytehq/airbyte/pull/7093) | Added support of `Unlimited` option for `Data Query`          |
 | 0.1.2   | 2021-10-11 | [6960](https://github.com/airbytehq/airbyte/pull/6960) | Change minimum value for `Window_in_days` to 1, instead of 30 |
 | 0.1.1   | 2021-10-01 | [6575](https://github.com/airbytehq/airbyte/pull/6575) | Added OAuth support for Airbyte Cloud                         |
 | 0.1.0   | 2021-08-01 | [4661](https://github.com/airbytehq/airbyte/pull/4661) | Initial release of Native Zuora connector for Airbyte         |
+
+</details>

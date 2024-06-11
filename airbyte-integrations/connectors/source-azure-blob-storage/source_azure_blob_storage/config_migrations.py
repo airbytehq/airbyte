@@ -7,9 +7,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, List, Mapping
 
-from airbyte_cdk.config_observation import create_connector_config_control_message
-from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.sources import Source
+from airbyte_cdk import AirbyteEntrypoint, Source, create_connector_config_control_message
 
 logger = logging.getLogger("airbyte_logger")
 

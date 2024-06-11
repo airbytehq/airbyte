@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from dataclasses import InitVar, dataclass, field
+from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -90,7 +90,7 @@ class DefaultPaginator(Paginator):
     config: Config
     url_base: Union[InterpolatedString, str]
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[Union[RequestPath, RequestOption]] = None
 
@@ -99,10 +99,12 @@ class DefaultPaginator(Paginator):
             raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
         if isinstance(self.url_base, str):
             self.url_base = InterpolatedString(string=self.url_base, parameters=parameters)
-        self._token = self.pagination_strategy.initial_token
+        self._token: Optional[Any] = self.pagination_strategy.initial_token
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Mapping[str, Any]]:
-        self._token = self.pagination_strategy.next_page_token(response, last_records)
+    def next_page_token(
+        self, response: requests.Response, last_page_size: int, last_record: Optional[Record]
+    ) -> Optional[Mapping[str, Any]]:
+        self._token = self.pagination_strategy.next_page_token(response, last_page_size, last_record)
         if self._token:
             return {"next_page_token": self._token}
         else:
@@ -151,8 +153,11 @@ class DefaultPaginator(Paginator):
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
-    def reset(self) -> None:
-        self.pagination_strategy.reset()
+    def reset(self, reset_value: Optional[Any] = None) -> None:
+        if reset_value:
+            self.pagination_strategy.reset(reset_value=reset_value)
+        else:
+            self.pagination_strategy.reset()
         self._token = self.pagination_strategy.initial_token
 
     def _get_request_options(self, option_type: RequestOptionType) -> MutableMapping[str, Any]:
@@ -185,12 +190,14 @@ class PaginatorTestReadDecorator(Paginator):
         self._decorated = decorated
         self._page_count = self._PAGE_COUNT_BEFORE_FIRST_NEXT_CALL
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response, last_page_size: int, last_record: Optional[Record]
+    ) -> Optional[Mapping[str, Any]]:
         if self._page_count >= self._maximum_number_of_pages:
             return None
 
         self._page_count += 1
-        return self._decorated.next_page_token(response, last_records)
+        return self._decorated.next_page_token(response, last_page_size, last_record)
 
     def path(self) -> Optional[str]:
         return self._decorated.path()
@@ -231,6 +238,6 @@ class PaginatorTestReadDecorator(Paginator):
     ) -> Mapping[str, Any]:
         return self._decorated.get_request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-    def reset(self) -> None:
+    def reset(self, reset_value: Optional[Any] = None) -> None:
         self._decorated.reset()
         self._page_count = self._PAGE_COUNT_BEFORE_FIRST_NEXT_CALL

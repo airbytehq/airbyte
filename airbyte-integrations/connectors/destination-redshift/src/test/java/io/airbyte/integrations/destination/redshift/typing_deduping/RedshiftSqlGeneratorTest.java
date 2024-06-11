@@ -34,7 +34,7 @@ public class RedshiftSqlGeneratorTest {
 
   private static final Random RANDOM = new Random();
 
-  private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+  private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false) {
 
     // Override only for tests to print formatted SQL. The actual implementation should use unformatted
     // to save bytes.
