@@ -4,11 +4,11 @@
 
 from unittest.mock import MagicMock
 
-from requests import Response
 import pytest
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from requests import Response
 
 SOME_BACKOFF_TIME = 60
 
