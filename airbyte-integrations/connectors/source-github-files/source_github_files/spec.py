@@ -2,7 +2,7 @@ from airbyte_cdk.sources.file_based.file_based_source import AbstractFileBasedSp
 from pydantic import BaseModel, Field
 
 
-class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
+class SourceGithubFilesSpec(AbstractFileBasedSpec, BaseModel):
     class Config:
         title = "Google Drive Source Spec"
 
