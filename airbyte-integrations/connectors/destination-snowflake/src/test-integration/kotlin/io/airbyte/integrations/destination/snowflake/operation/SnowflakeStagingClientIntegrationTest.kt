@@ -86,7 +86,8 @@ class SnowflakeStagingClientIntegrationTest {
                     id: UUID,
                     formattedString: String,
                     emittedAt: Long,
-                    formattedAirbyteMetaString: String
+                    formattedAirbyteMetaString: String,
+                    generationId: Long
                 ): List<Any> {
                     return listOf(id, Instant.ofEpochMilli(emittedAt), formattedString)
                 }
@@ -104,8 +105,8 @@ class SnowflakeStagingClientIntegrationTest {
         val streamId = StreamId("unused", "unused", namespace, tablename, "unused", "unused")
         val stagingPath = "${UUID.randomUUID()}/test/"
         writeBuffer.use {
-            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis())
-            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis())
+            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis(), 0)
+            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis(), 0)
             it.flush()
             val fileName = stagingClient.uploadRecordsToStage(writeBuffer, stageName, stagingPath)
             stagingClient.copyIntoTableFromStage(stageName, stagingPath, listOf(fileName), streamId)
@@ -136,7 +137,8 @@ class SnowflakeStagingClientIntegrationTest {
                     id: UUID,
                     formattedString: String,
                     emittedAt: Long,
-                    formattedAirbyteMetaString: String
+                    formattedAirbyteMetaString: String,
+                    generationId: Long
                 ): List<Any> {
                     return listOf(
                         id,
@@ -159,7 +161,7 @@ class SnowflakeStagingClientIntegrationTest {
         val streamId = StreamId("unused", "unused", namespace, tablename, "unused", "unused")
         val stagingPath = "${UUID.randomUUID()}/test/"
         writeBuffer.use {
-            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis())
+            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis(), 0)
             it.flush()
             val fileName = stagingClient.uploadRecordsToStage(writeBuffer, stageName, stagingPath)
             assertThrows(Exception::class.java) {
