@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.3"
+version = "1.0.4"
 name = "source-recurly"
 description = "Source implementation for Recurly."
 authors = [ "Airbyte <contact@airbyte.io>",]
