@@ -10,6 +10,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationIniti
 import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
@@ -68,6 +69,10 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
         // The table already exists. Decide whether we're writing to it directly, or
         // using a tmp table.
         when (stream.destinationSyncMode) {
+            // For overwrite, it's wasteful to do T+D, so we don't do soft-reset in prepare.
+            // Instead,
+            // we do type-dedupe on a suffixed table and do a swap in finalizeTable when we have to
+            // for schema mismatches.
             DestinationSyncMode.OVERWRITE -> return prepareFinalTableForOverwrite(initialStatus)
             DestinationSyncMode.APPEND,
             DestinationSyncMode.APPEND_DEDUP -> {
@@ -128,11 +133,23 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
 
         // Legacy logic that if recordsWritten or not tracked then it could be non-zero
         val isNotOverwriteSync = streamConfig.destinationSyncMode != DestinationSyncMode.OVERWRITE
-        // Legacy logic that if recordsWritten or not tracked then it could be non-zero.
-        // But for OVERWRITE syncs, we don't need to look at old records.
-        val shouldRunTypingDeduping =
-            syncSummary.recordsWritten.map { it > 0 }.orElse(true) ||
-                (initialRawTableStatus.hasUnprocessedRecords && isNotOverwriteSync)
+        // Non-overwrite syncs should T+D regardless of status,
+        // so the user sees progress after every attempt.
+        // But overwrite syncs should only run T+D if the stream was successful
+        // (since we're T+Ding into a temp final table anyway).
+        val streamStatusRequiresTd =
+            isNotOverwriteSync || syncSummary.terminalStatus == AirbyteStreamStatus.COMPLETE
+        val shouldRunTypingDeduping: Boolean =
+            if (streamStatusRequiresTd) {
+                // Legacy logic that if recordsWritten or not tracked then it could be non-zero.
+                // But for OVERWRITE syncs, we don't need to look at old records.
+                val hasRecordsNeedingTd =
+                    syncSummary.recordsWritten > 0 ||
+                        (isNotOverwriteSync && initialRawTableStatus.hasUnprocessedRecords)
+                hasRecordsNeedingTd
+            } else {
+                false
+            }
         if (!shouldRunTypingDeduping) {
             log.info {
                 "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} " +
@@ -150,13 +167,13 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
             storageOperation.typeAndDedupe(streamConfig, timestampFilter, finalTmpTableSuffix)
         }
 
-        // For overwrite, it's wasteful to do T+D, so we don't do soft-reset in prepare. Instead, we
-        // do
-        // type-dedupe
-        // on a suffixed table and do a swap here when we have to for schema mismatches
         if (
             streamConfig.destinationSyncMode == DestinationSyncMode.OVERWRITE &&
                 finalTmpTableSuffix.isNotBlank()
+                // We should only overwrite the final table if the stream was successful.
+                // This prevents data downtime if the stream didn't emit all the data.
+                &&
+                syncSummary.terminalStatus == AirbyteStreamStatus.COMPLETE
         ) {
             storageOperation.overwriteFinalTable(streamConfig, finalTmpTableSuffix)
         }
