@@ -147,7 +147,7 @@ class HttpClient:
 
         return prepared_request
 
-    def _max_retries(self) -> Optional[int]:
+    def _max_retries(self) -> int:
         max_retries = self._DEFAULT_MAX_RETRY
         if self._disable_retries:
             max_retries = 0
@@ -160,7 +160,7 @@ class HttpClient:
                     break
         return max_retries
 
-    def _max_time(self) -> Optional[int]:
+    def _max_time(self) -> int:
         max_time = self._DEFAULT_MAX_TIME
         if hasattr(self._error_handler, "max_time") and self._error_handler.max_time is not None:
             max_time = self._error_handler.max_time
@@ -171,7 +171,7 @@ class HttpClient:
                     break
         return max_time
 
-    def _factor(self) -> Optional[int]:
+    def _factor(self) -> int:
         factor = self._DEFAULT_RETRY_FACTOR
         for backoff_strategy in self._backoff_strategies:
             if hasattr(backoff_strategy, "factor") and backoff_strategy.factor is not None:
