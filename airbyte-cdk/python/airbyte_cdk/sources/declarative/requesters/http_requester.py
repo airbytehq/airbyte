@@ -15,7 +15,6 @@ import requests_cache
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
@@ -31,6 +30,7 @@ from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_b
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
 
@@ -506,7 +506,11 @@ class HttpRequester(Requester):
         if error_resolution.response_action == ResponseAction.FAIL:
             error_message = f"'{request.method}' request to '{request.url}' failed with status code '{response.status_code}' and error message '{self.parse_response_error_message(response)}'"
 
-            raise ReadException(error_message)
+            raise AirbyteTracedException(
+                internal_message=error_message,
+                message=error_message,
+                failure_type=error_resolution.failure_type,
+            )
 
         elif error_resolution.response_action == ResponseAction.IGNORE:
             log_message = f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
