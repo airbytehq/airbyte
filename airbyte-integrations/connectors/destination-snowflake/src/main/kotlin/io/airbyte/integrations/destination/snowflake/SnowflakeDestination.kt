@@ -34,6 +34,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
+import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeAbMetaAndGenIdMigration
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeDV2Migration
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import io.airbyte.integrations.destination.snowflake.operation.SnowflakeStagingClient
@@ -43,6 +44,7 @@ import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSq
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.*
@@ -53,7 +55,6 @@ import javax.sql.DataSource
 import net.snowflake.client.core.SFSession
 import net.snowflake.client.core.SFStatement
 import net.snowflake.client.jdbc.SnowflakeSQLException
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -63,7 +64,7 @@ constructor(
     private val airbyteEnvironment: String,
     private val nameTransformer: NamingConventionTransformer = SnowflakeSQLNameTransformer(),
 ) : BaseConnector(), Destination {
-    private val destinationColumns = JavaBaseConstants.DestinationColumns.V2_WITHOUT_META
+    private val destinationColumns = JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val dataSource = getDataSource(config)
@@ -123,7 +124,8 @@ constructor(
                         ),
                     isSchemaMismatch = true,
                     isFinalTableEmpty = true,
-                    destinationState = SnowflakeState(false)
+                    destinationState =
+                        SnowflakeState(needsSoftReset = false, isAirbyteMetaPresentInRaw = false)
                 )
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
             snowflakeDestinationHandler.createNamespaces(setOf(rawTableSchemaName, outputSchema))
@@ -151,7 +153,10 @@ constructor(
                             ),
                     )
             streamOperation.writeRecords(streamConfig, listOf(message).stream())
-            streamOperation.finalizeTable(streamConfig, StreamSyncSummary.DEFAULT)
+            streamOperation.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(1, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE),
+            )
             // clean up the raw table, this is intentionally not part of actual sync code
             // because we avoid dropping original tables directly.
             snowflakeDestinationHandler.execute(
@@ -190,12 +195,6 @@ constructor(
         AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config)
 
         val defaultNamespace = config["schema"].asText()
-        for (stream in catalog.streams) {
-            if (StringUtils.isEmpty(stream.stream.namespace)) {
-                stream.stream.namespace = defaultNamespace
-            }
-        }
-
         val retentionPeriodDays =
             getRetentionPeriodDays(
                 config[RETENTION_PERIOD_DAYS],
@@ -203,28 +202,27 @@ constructor(
         val sqlGenerator = SnowflakeSqlGenerator(retentionPeriodDays)
         val database = getDatabase(getDataSource(config))
         val databaseName = config[JdbcUtils.DATABASE_KEY].asText()
-        val rawTableSchemaName: String
-        val catalogParser: CatalogParser
-        if (getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent) {
-            rawTableSchemaName = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get()
-            catalogParser = CatalogParser(sqlGenerator, rawTableSchemaName)
-        } else {
-            rawTableSchemaName = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
-            catalogParser = CatalogParser(sqlGenerator)
-        }
+        val rawTableSchemaName: String =
+            if (getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent) {
+                getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get()
+            } else {
+                JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+            }
+        val catalogParser = CatalogParser(sqlGenerator, defaultNamespace, rawTableSchemaName)
         val snowflakeDestinationHandler =
             SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName)
         val parsedCatalog: ParsedCatalog = catalogParser.parseCatalog(catalog)
         val disableTypeDedupe =
             config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
-        val migrations =
-            listOf<Migration<SnowflakeState>>(
+        val migrations: List<Migration<SnowflakeState>> =
+            listOf(
                 SnowflakeDV2Migration(
                     nameTransformer,
                     database,
                     databaseName,
                     sqlGenerator,
                 ),
+                SnowflakeAbMetaAndGenIdMigration(database),
             )
 
         val snowflakeStagingClient = SnowflakeStagingClient(database)
@@ -264,8 +262,7 @@ constructor(
             },
             onFlush = DefaultFlush(optimalFlushBatchSize, syncOperation),
             catalog = catalog,
-            bufferManager = BufferManager(snowflakeBufferMemoryLimit),
-            defaultNamespace = Optional.of(defaultNamespace),
+            bufferManager = BufferManager(defaultNamespace, snowflakeBufferMemoryLimit)
         )
     }
 
