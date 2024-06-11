@@ -51,7 +51,7 @@ In addition to the stream status, Airbyte offers several stream-specific actions
 - **Show in replication table** navigates you to the **Schema** tab of the connection, where the stream you selected is highlighted
 - **Open details** opens the field selection pane for the stream.
 - [Refresh stream](/operator-guides/refreshes) repulls all historical data for the stream
-- [Clear data](/operator-guides/clear) removes previously synced data from your destination for the stream
+- [Clear data](/operator-guides/clear) removes previously synced data from your destination for the stream.
 
 
 ## Connection Troubleshooting
