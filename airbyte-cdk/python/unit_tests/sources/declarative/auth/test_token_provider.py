@@ -4,7 +4,8 @@
 
 from unittest.mock import MagicMock
 
-import pendulum
+
+from freezegun import freeze_time
 import pytest
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider, SessionTokenProvider
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -45,17 +46,16 @@ def test_session_token_provider_cache():
 
 
 def test_session_token_provider_cache_expiration():
-    with pendulum.test(pendulum.datetime(2001, 5, 21, 12)):
+    with freeze_time("2001-05-21 12:00:00"):
         provider = create_session_token_provider()
         provider.get_token()
 
     provider.login_requester.send_request.return_value.json.return_value = {"nested": {"token": "updated_token"}}
 
-    with pendulum.test(pendulum.datetime(2001, 5, 21, 14)):
+    with freeze_time("2001-05-21 14:00:00"):
         assert provider.get_token() == "updated_token"
 
     assert provider.login_requester.send_request.call_count == 2
-
 
 def test_session_token_provider_no_cache():
     provider = create_session_token_provider()
