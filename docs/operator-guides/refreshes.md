@@ -126,3 +126,23 @@ Time passes, and you opt to do a Refresh and Remove History Sync to see if any u
 | 3            | Benoit | 2024-02-02 12:00:00    | 1                       | `{ changes: [], sync_id: 2, }` | eee-eee          |
 
 Notice that user #2’s latest entry doesn’t belong to the current (e.g. `max(_airbyte_generation_id)`) generation. This informs you that the source no longer includes a record for this primary key, and it has been deleted. In your downstream tables or analysis, you can opt to exclude this record.
+
+## Frequently Asked Questions (FAQ)
+
+### How are full refresh append/overwrite different from merge/truncate refresh?
+
+They're completely identical! A full refresh append sync is just running a merge refresh on every sync; a full refresh overwrite sync is just running a truncate refresh on every sync. Notably, this means that `_airbyte_generation_id` will increment on every sync.
+
+### Does the generation ID reset to 0 after running a clear+resync? What about a truncate refresh?
+
+The generation ID will be incremented when you run a clear or refresh. Airbyte will never decrease the generation ID.
+
+Notably, for clear syncs: if you run a refresh immediately after running a clear (including syncing a full refresh stream normally, as noted in the [previous question](#how-are-full-refresh-appendoverwrite-different-from-mergetruncate-refresh)), that will _also_ increment the generation ID. This means the generation ID will increment twice, even though one of those "generations" never emitted any records.
+
+### For DV2 destinations, how do clears / truncate refreshes interact with the raw and final tables?
+
+All preeexisting data will be deleted from both the raw and final tables. If you want to retain that data, you should run a _merge_ refresh.
+
+### If I refresh/clear a single stream in a connection, does the generation ID increment for other streams in that connection?
+
+No. Streams within a connection have independent generation IDs. Clearing/refreshing a single stream will only increment that stream's generation; other streams are unaffected.
