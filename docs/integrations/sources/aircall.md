@@ -73,7 +73,8 @@ Aircall [API reference](https://api.aircall.io/v1) has v1 at present. The connec
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
-| 0.1.0   | 2023-04-19 | [Init](https://github.com/airbytehq/airbyte/pull/)                             | Initial commit              |
+| 0.2.1   | 2024-06-06 | [38454](https://github.com/airbytehq/airbyte/pull/38454)          | [autopull] base image + poetry + up_to_date |
 | 0.2.0   | 2023-06-20 | [Correcting availablity typo](https://github.com/airbytehq/airbyte/pull/27433) | Correcting availablity typo |
+| 0.1.0   | 2023-04-19 | [Init](https://github.com/airbytehq/airbyte/pull/)                             | Initial commit              |
 
 </details>
