@@ -2,7 +2,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "float_ts": 7270247822 },
+      "stream_state": { "float_ts": 7270247822.0 },
       "stream_descriptor": { "name": "threads" }
     }
   },
