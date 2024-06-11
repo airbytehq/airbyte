@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import kotlin.collections.EmptyList;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.slf4j.Logger;
@@ -249,7 +248,8 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     final AirbyteSchemaHistoryStorage schemaHistoryStorage =
         AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-    final var debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog, new ArrayList<String>());
+    final var debeziumPropertiesManager =
+        new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog, new ArrayList<String>());
 
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(debeziumPropertiesManager)) {
       publisher.start(queue, offsetManager, Optional.of(schemaHistoryStorage));
