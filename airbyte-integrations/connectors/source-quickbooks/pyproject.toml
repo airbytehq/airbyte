@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.0.4"
+version = "3.0.5"
 name = "source-quickbooks"
 description = "Source implementation for quickbooks."
 authors = [ "Airbyte <contact@airbyte.io>",]

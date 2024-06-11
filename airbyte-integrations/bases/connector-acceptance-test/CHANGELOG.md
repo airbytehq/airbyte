@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.8.0
+
+Add `TestDiscovery.test_primary_keys_data_type`, which validates that primary keys are not of type `array` or `object` in discovered catalog.
+Add `validate_primary_keys_data_type` to `TestBasicRead.test_read`, which validates that primary keys are not of type `array` or `object` in records
+and ensures that at least one primary key is non-null when there is a composite primary key.
+
 ## 3.7.0
 
 Add `validate_state_messages` to TestBasicRead.test_read:: Validate that all states contain neither legacy state emissions nor missing source stats in the state message.
@@ -34,7 +40,7 @@ Add `test_certified_connector_has_allowed_hosts` and `test_certified_connector_h
 
 ## 3.2.0
 
-Add TestBasicRead.test_all_supported_file_types_present, which validates that all supported file types are present in the sandbox account for certified file-based connectors.
+Add `TestBasicRead.test_all_supported_file_types_present`, which validates that all supported file types are present in the sandbox account for certified file-based connectors.
 
 ## 3.1.0
 
