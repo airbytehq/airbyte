@@ -451,6 +451,8 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     ) {
         val timestamptz = getObject(resultSet, index, OffsetDateTime::class.java)
         val localDate = timestamptz.toLocalDate()
+        println("*** timestamptz: " + timestamptz + " ; converted: " + resolveEra(localDate, timestamptz.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER)))
+
         node.put(
             columnName,
             resolveEra(localDate, timestamptz.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER)),
