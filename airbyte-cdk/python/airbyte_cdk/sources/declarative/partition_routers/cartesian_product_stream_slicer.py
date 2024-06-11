@@ -149,15 +149,15 @@ class CartesianProductStreamSlicer(PartitionRouter):
 
         Returns:
             Optional[Mapping[str, StreamState]]: The current state of the parent streams in a dictionary format.
-                                                 The returned format will be:
-                                                 {
-                                                     "parent_stream_name1": {
-                                                         "last_updated": "2023-05-27T00:00:00Z"
-                                                     },
-                                                     "parent_stream_name2": {
-                                                         "last_updated": "2023-05-27T00:00:00Z"
-                                                     }
-                                                 }
+                 The returned format will be:
+                 {
+                     "parent_stream_name1": {
+                         "last_updated": "2023-05-27T00:00:00Z"
+                     },
+                     "parent_stream_name2": {
+                         "last_updated": "2023-05-27T00:00:00Z"
+                     }
+                 }
         """
         combined_state: dict[str, StreamState] = {}
         for s in self.stream_slicers:
