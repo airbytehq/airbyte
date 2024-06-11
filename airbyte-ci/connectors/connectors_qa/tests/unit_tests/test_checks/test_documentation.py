@@ -196,7 +196,7 @@ class TestCheckDocumentationExists:
         assert f"User facing documentation file {documentation_file_path} exists" in result.message
 
 
-class TestCheckDocumentationStructure:
+class TestCheckDocumentationContent:
     def _mock_connector(self, tmp_path, mocker, data_file):
         documentation_file_path = tmp_path / "documentation.md"
         connector = mocker.Mock(
@@ -209,7 +209,7 @@ class TestCheckDocumentationStructure:
             connector_type="source",
             metadata={"name": "GitHub"},
             name_from_metadata="GitHub",
-            connector_spec={
+            connector_spec_file_content={
                 "connectionSpecification": {
                     "required": ["repos"], "properties": {"repos": {"title": "GitHub Repositories"}}
                 }
@@ -232,7 +232,7 @@ class TestCheckDocumentationStructure:
         )
 
         # Act
-        result = documentation.CheckDocumentationStructure()._run(connector)
+        result = documentation.CheckDocumentationHeaders()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.FAILED
@@ -249,7 +249,7 @@ class TestCheckDocumentationStructure:
         )
 
         # Act
-        result = documentation.CheckDocumentationStructure()._run(connector)
+        result = documentation.CheckDocumentationHeaders()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.FAILED
@@ -261,7 +261,7 @@ class TestCheckDocumentationStructure:
         connector.documentation_file_path.write_text("")
 
         # Act
-        result = documentation.CheckDocumentationStructure()._run(connector)
+        result = documentation.CheckDocumentationHeaders()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.FAILED
@@ -272,38 +272,71 @@ class TestCheckDocumentationStructure:
         connector = self._mock_connector(tmp_path, mocker, "invalid_links")
 
         # Act
-        result = documentation.CheckDocumentationStructure()._run(connector)
+        result = documentation.CheckDocumentationLinks()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.FAILED
-        assert "Connector documentation does not follow the guidelines:" in result.message
+        assert "Connector documentation uses invalid links:" in result.message
         assert ("Link https://github.com/settings/tokens-that_do_not_exist with"
                 " 404 status code is invalid in the connector documentation.") in result.message
 
-    def test_fail_when_documentation_file_has_missing_headers_and_descriptions(self, mocker, tmp_path):
+    def test_fail_when_documentation_file_has_missing_headers(self, mocker, tmp_path):
         # Arrange
         connector = self._mock_connector(tmp_path, mocker, "incorrect_not_all_structure")
 
         # Act
-        result = documentation.CheckDocumentationStructure()._run(connector)
+        result = documentation.CheckDocumentationHeaders()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.FAILED
-        assert "Connector documentation does not follow the guidelines:" in result.message
-        assert "Missing headers:" in result.message
-        assert "Required 'github repositories' field is not in Prerequisites" in result.message
-        assert "Description for 'GitHub' does not follow structure" in result.message
+        assert "Documentation headers ordering/naming doesn't follow guidelines:" in result.message
+        assert "Required missing headers:" in result.message
+    
+    def test_fail_when_documentation_file_has_invalid_descriptions(self, mocker, tmp_path):
+        # Arrange
+        connector = self._mock_connector(tmp_path, mocker, "incorrect_not_all_structure")
 
-    def test_pass_when_documentation_file_has_correct_structure(self, mocker, tmp_path):
+        # Act
+        result = documentation.CheckDocumentationDescriptions()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert "Connector documentation descriptions do not follow the guidelines" in result.message
+        assert "Required 'github repositories' field is not in Prerequisites section or title in spec doesn't match name in the docs." in result.message
+        assert "Description for 'GitHub' does not follow structure." in result.message
+
+    def test_pass_when_documentation_file_has_correct_headers(self, mocker, tmp_path):
         # Arrange
         connector = self._mock_connector(tmp_path, mocker, "correct")
         
         # Act
-        result = documentation.CheckDocumentationStructure()._run(connector)
+        result = documentation.CheckDocumentationHeaders()._run(connector)
         
         # Assert
         assert result.status == CheckStatus.PASSED
         assert result.message == "Documentation guidelines are followed"
+
+    def test_pass_when_documentation_file_has_correct_descriptions(self, mocker, tmp_path):
+        # Arrange
+        connector = self._mock_connector(tmp_path, mocker, "correct")
+
+        # Act
+        result = documentation.CheckDocumentationDescriptions()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
+        assert "Documentation guidelines are followed" in result.message
+
+    def test_pass_when_all_links_are_valid(self, mocker, tmp_path):
+        # Arrange
+        connector = self._mock_connector(tmp_path, mocker, "correct")
+
+        # Act
+        result = documentation.CheckDocumentationLinks()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
+        assert "Documentation links are valid" in result.message
 
 
 class TestCheckChangelogEntry:
