@@ -48,7 +48,7 @@ Once the sync is complete, each stream displays the time since the last record w
 In addition to the stream status, Airbyte offers several stream-specific actions that allow for precise management of your data. Clicking the three grey dots next to any stream opens the available options for the stream.
 - **Show in replication table** navigates you to the **Schema** tab of the connection, where the stream you selected is highlighted
 - **Open details** opens the field selection pane for the stream
-- [Refresh stream](/operator-guides/refresh) repulls all historical data for the stream
+- [Refresh stream](/operator-guides/refreshes) repulls all historical data for the stream
 - [Clear data](/operator-guides/clear) removes previously synced data from your destination for the stream
 
 You can also navigate directly to the stream's configuration by click the three grey dots next to any stream and selecting "Open details" to be redirected to the stream configuration.
