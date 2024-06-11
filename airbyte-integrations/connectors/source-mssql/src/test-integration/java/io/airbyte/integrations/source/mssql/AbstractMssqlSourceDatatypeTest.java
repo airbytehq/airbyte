@@ -183,9 +183,11 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
         TestDataHolder.builder()
             .sourceType("datetimeoffset")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-            .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
+            .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null", "'2024-05-10 19:00:01.604805 +03:00'",
+                "'2024-03-02 19:08:07.1234567 +09:00'", "'2024-03-02 19:08:07.12345678 +09:00'")
             .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
-                "9999-01-10 00:00:00.0000000 +01:00", null)
+                "9999-01-10 00:00:00.0000000 +01:00", null, "2024-05-10 19:00:01.6048050 +03:00", "2024-03-02 19:08:07.1234567 +09:00",
+                "2024-03-02 19:08:07.1234568 +09:00")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
