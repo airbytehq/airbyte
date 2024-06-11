@@ -6,8 +6,6 @@
 import sys
 from typing import Any, List, Mapping, Optional, Tuple
 
-from orjson import orjson
-
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.connector_builder.connector_builder_handler import TestReadLimits, create_source, get_limits, read_stream, resolve_manifest
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -15,6 +13,9 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAi
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from orjson import orjson
+
+from unit_tests.sources.file_based.test_scenarios import _configured_catalog_from_mapping
 
 
 def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str, Any], Optional[ConfiguredAirbyteCatalog], Any]:
@@ -34,7 +35,7 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
 
     command = config["__command"]
     if command == "test_read":
-        catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
+        catalog = _configured_catalog_from_mapping(BaseConnector.read_config(catalog_path))
         state = Source.read_state(state_path)
     else:
         catalog = None

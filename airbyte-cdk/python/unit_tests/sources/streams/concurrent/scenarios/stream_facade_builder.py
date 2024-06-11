@@ -52,7 +52,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
         self._threadpool = threadpool_manager
         self._cursor_field = cursor_field
         self._cursor_boundaries = cursor_boundaries
-        self._state = [AirbyteStateMessage.parse_obj(s) for s in input_state] if input_state else None
+        self._state = [AirbyteStateMessage(s) for s in input_state] if input_state else None
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         return True, None

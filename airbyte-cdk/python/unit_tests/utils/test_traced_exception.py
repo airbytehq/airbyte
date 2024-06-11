@@ -5,6 +5,8 @@
 import json
 
 import pytest
+from orjson import orjson
+
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteErrorTraceMessage,
     AirbyteMessage,
@@ -106,7 +108,7 @@ def test_emit_message(capsys):
     traced_exc.emit_message()
 
     stdout = capsys.readouterr().out
-    printed_message = AirbyteMessage.parse_obj(json.loads(stdout))
+    printed_message = AirbyteMessage(**orjson.loads(stdout))
     printed_message.trace.emitted_at = 0.0
 
     assert printed_message == expected_message

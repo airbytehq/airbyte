@@ -8,7 +8,6 @@ from airbyte_protocol.models import (
     AirbyteControlMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStateStats,
     AirbyteStateType,
@@ -17,6 +16,7 @@ from airbyte_protocol.models import (
     StreamDescriptor,
     Type,
 )
+from airbyte_cdk.sources.connector_state_manager import AirbyteStateBlob
 
 
 def test_get_record_message_stream_descriptor():

@@ -10,7 +10,6 @@ from typing import List
 from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
 from orjson import orjson
-
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 

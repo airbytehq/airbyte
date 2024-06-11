@@ -18,7 +18,14 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils import message_utils
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_protocol.models import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+)
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
 
@@ -229,7 +236,7 @@ def read(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
     return entrypoint_read(
         scenario.source,
         scenario.config,
-        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.full_refresh)),
+        _configured_catalog_from_mapping(scenario.configured_catalog(SyncMode.full_refresh)),
     )
 
 
@@ -237,9 +244,34 @@ def read_with_state(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
     return entrypoint_read(
         scenario.source,
         scenario.config,
-        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.incremental)),
+        _configured_catalog_from_mapping(scenario.configured_catalog(SyncMode.incremental)),
         scenario.input_state(),
     )
+
+def _configured_catalog_from_mapping(data: Mapping[str, Any]) -> ConfiguredAirbyteCatalog:
+    return ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name=stream['stream']['name'],
+                    json_schema=stream['stream']['json_schema'],
+                    supported_sync_modes=[SyncMode(mode) for mode in stream['stream']['supported_sync_modes']],
+                    source_defined_cursor=stream['stream'].get('source_defined_cursor'),
+                    default_cursor_field=stream['stream'].get('default_cursor_field'),
+                    source_defined_primary_key=stream['stream'].get('source_defined_primary_key'),
+                    namespace=stream['stream'].get('namespace'),
+                    is_resumable=stream['stream'].get('is_resumable')
+                ),
+                sync_mode=SyncMode(stream['sync_mode']),
+                cursor_field=stream.get('cursor_field'),
+                destination_sync_mode=DestinationSyncMode(stream['destination_sync_mode']),
+                primary_key=stream.get('primary_key'),
+                generation_id=stream.get('generation_id'),
+                minimum_generation_id=stream.get('minimum_generation_id'),
+                sync_id=stream.get('sync_id')
+            )
+            for stream in data['streams']
+        ])
 
 
 def make_file(path: Path, file_contents: Optional[Union[Mapping[str, Any], List[Mapping[str, Any]]]]) -> str:

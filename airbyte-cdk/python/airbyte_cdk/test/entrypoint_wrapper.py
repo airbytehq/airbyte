@@ -22,6 +22,8 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, List, Mapping, Optional, Union
 
+import orjson
+
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
@@ -103,10 +105,10 @@ class EntrypointOutput:
         return list(status_messages)
 
     def _get_message_by_types(self, message_types: List[Type]) -> List[AirbyteMessage]:
-        return [message for message in self._messages if message.type in message_types]
+        return [message for message in self._messages if Type(message.type) in message_types]
 
     def _get_trace_message_by_trace_type(self, trace_type: TraceType) -> List[AirbyteMessage]:
-        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]
+        return [message for message in self._get_message_by_types([Type.TRACE]) if Type(message.trace.type) == trace_type]
 
 
 def read(
@@ -136,13 +138,13 @@ def read(
             "--config",
             make_file(tmp_directory_path / "config.json", config),
             "--catalog",
-            make_file(tmp_directory_path / "catalog.json", catalog.json()),
+            make_file(tmp_directory_path / "catalog.json", orjson.dumps(catalog).decode("utf-8")),
         ]
         if state is not None:
             args.extend(
                 [
                     "--state",
-                    make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.json() for stream_state in state])}]"),
+                    make_file(tmp_directory_path / "state.json", f"[{','.join([orjson.dumps(stream_state).decode('utf-8') for stream_state in state])}]"),
                 ]
             )
         args.append("--debug")

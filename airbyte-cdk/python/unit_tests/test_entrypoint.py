@@ -12,6 +12,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
+from orjson import orjson
+
 from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk import entrypoint as entrypoint_module
 from airbyte_cdk.models import (
@@ -21,7 +23,6 @@ from airbyte_cdk.models import (
     AirbyteControlMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStream,
@@ -39,7 +40,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
+from airbyte_cdk.sources.connector_state_manager import AirbyteStateBlob, HashableStreamDescriptor
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -83,6 +84,8 @@ MESSAGE_FROM_REPOSITORY = AirbyteMessage(
         connectorConfig=AirbyteControlConnectorConfigMessage(config={"any config": "a config value"}),
     ),
 )
+
+MESSAGE_FROM_REPOSITORY_JSON = orjson.dumps(MESSAGE_FROM_REPOSITORY).decode("utf-8")
 
 
 @pytest.fixture
@@ -152,7 +155,7 @@ def _wrap_message(submessage: Union[AirbyteConnectionStatus, ConnectorSpecificat
     else:
         raise Exception(f"Unknown message type: {submessage}")
 
-    return message.json(exclude_unset=True)
+    return orjson.dumps(message).decode("utf-8")
 
 
 def test_run_spec(entrypoint: AirbyteEntrypoint, mocker):
@@ -162,7 +165,7 @@ def test_run_spec(entrypoint: AirbyteEntrypoint, mocker):
 
     messages = list(entrypoint.run(parsed_args))
 
-    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(expected)] == messages
+    assert [MESSAGE_FROM_REPOSITORY_JSON, _wrap_message(expected)] == messages
 
 
 @pytest.fixture
@@ -196,10 +199,10 @@ def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, sch
 
     messages = list(entrypoint.run(parsed_args))
     if config_valid:
-        assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(check_value)] == messages
+        assert [MESSAGE_FROM_REPOSITORY_JSON, _wrap_message(check_value)] == messages
     else:
         assert len(messages) == 2
-        assert messages[0] == MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)
+        assert messages[0] == MESSAGE_FROM_REPOSITORY_JSON
         connection_status_message = AirbyteMessage.parse_raw(messages[1])
         assert connection_status_message.type == Type.CONNECTION_STATUS
         assert connection_status_message.connectionStatus.status == Status.FAILED
@@ -213,7 +216,7 @@ def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock
 
     messages = list(entrypoint.run(parsed_args))
 
-    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(check_value)] == messages
+    assert [MESSAGE_FROM_REPOSITORY_JSON, _wrap_message(check_value)] == messages
     assert spec_mock.called
 
 
@@ -223,7 +226,7 @@ def test_run_check_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mo
 
     with pytest.raises(ValueError):
         messages = list(entrypoint.run(parsed_args))
-        assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
+        assert [MESSAGE_FROM_REPOSITORY_JSON] == messages
 
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
@@ -233,7 +236,7 @@ def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_m
 
     messages = list(entrypoint.run(parsed_args))
 
-    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(expected)] == messages
+    assert [MESSAGE_FROM_REPOSITORY_JSON, _wrap_message(expected)] == messages
     assert spec_mock.called
 
 
@@ -243,7 +246,7 @@ def test_run_discover_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec
 
     with pytest.raises(ValueError):
         messages = list(entrypoint.run(parsed_args))
-        assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
+        assert [MESSAGE_FROM_REPOSITORY_JSON] == messages
 
 
 def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
@@ -255,7 +258,7 @@ def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock)
 
     messages = list(entrypoint.run(parsed_args))
 
-    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(expected)] == messages
+    assert [MESSAGE_FROM_REPOSITORY_JSON, _wrap_message(expected)] == messages
     assert spec_mock.called
 
 
@@ -266,7 +269,7 @@ def test_given_message_emitted_during_config_when_read_then_emit_message_before_
     mocker.patch.object(MockSource, "read_catalog", side_effect=ValueError)
 
     messages = entrypoint.run(parsed_args)
-    assert next(messages) == MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)
+    assert next(messages) == MESSAGE_FROM_REPOSITORY_JSON
     with pytest.raises(ValueError):
         next(messages)
 
@@ -279,7 +282,7 @@ def test_run_read_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_moc
 
     with pytest.raises(ValueError):
         messages = list(entrypoint.run(parsed_args))
-        assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
+        assert [MESSAGE_FROM_REPOSITORY_JSON] == messages
 
 
 def test_invalid_command(entrypoint: AirbyteEntrypoint, config_mock):
