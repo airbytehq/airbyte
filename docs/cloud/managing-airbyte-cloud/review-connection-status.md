@@ -4,7 +4,7 @@ products: all
 
 # Review the connection status
 
-The **Status** page for a connection displays information about the connection and the status of each stream being synced. Reviewing this page allows you to assess the connection's current status, understand when the next sync will be run, and observe sync trends.
+Each connection you've set up in your Workspace has a **Status** page that displays the connection's current status, timing of the next scheduled sync, and a summary of historic sync trends. Reviewing this page allows you to monitor the health of your connection. 
 
 ![Connection Status](./assets/connection-status-page.png)
 
