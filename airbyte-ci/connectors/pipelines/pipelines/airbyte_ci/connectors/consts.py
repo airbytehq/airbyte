@@ -9,6 +9,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     """
 
     ACCEPTANCE = "acceptance"
+    INCREMENTAL_ACCEPTANCE = "incremental_acceptance"
     BUILD_NORMALIZATION = "build_normalization"
     BUILD_TAR = "build_tar"
     BUILD = "build"
