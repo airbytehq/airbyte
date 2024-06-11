@@ -9,7 +9,13 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest as pytest
 import requests
+<<<<<<< HEAD
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+=======
+import requests_cache
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
+>>>>>>> pnilan/airbyte-cdk-low-code-http-error-handler
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy, ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
@@ -19,6 +25,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.types import Config
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import PreparedRequest
 
 
@@ -656,11 +663,107 @@ def get_max_retries(http_requester):
     elif hasattr(http_requester._http_client._error_handler, "max_retries") and http_requester._http_client._error_handler.max_retries is not None:
         max_retries = http_requester._http_client._error_handler.max_retries
     else:
+<<<<<<< HEAD
         for backoff_strategy in http_requester._http_client._backoff_strategies:
             if hasattr(backoff_strategy, "max_retries") and backoff_strategy.max_retries is not None:
                 max_retries = backoff_strategy.max_retries
                 break
     return max_retries
+=======
+        prepared_request = requester._create_prepared_request(path=path, params=params)
+        assert prepared_request.url == expected_url
+
+
+@pytest.mark.parametrize(
+    "should_log, status_code, should_retry, should_throw",
+    [
+        (True, 200, False, False),
+        (True, 400, False, True),
+        (True, 500, True, False),
+        (False, 200, False, False),
+        (False, 400, False, True),
+        (False, 500, True, False),
+    ],
+)
+def test_log_requests(should_log, status_code, should_retry, should_throw):
+    repository = MagicMock()
+    mocked_backoff_strategy = MagicMock(spec=ConstantBackoffStrategy)
+    mocked_backoff_strategy.backoff_time.return_value = 0
+    requester = HttpRequester(
+        name="name",
+        url_base="https://test_base_url.com",
+        path="/",
+        http_method=HttpMethod.GET,
+        request_options_provider=None,
+        config={},
+        parameters={},
+        message_repository=repository,
+        disable_retries=True,
+        error_handler=DefaultErrorHandler(parameters={}, config={}, backoff_strategies=[mocked_backoff_strategy]),
+    )
+    requester._session.send = MagicMock()
+    response = requests.Response()
+    response.status_code = status_code
+    requester._session.send.return_value = response
+    formatter = MagicMock()
+    formatter.return_value = "formatted_response"
+    if should_retry:
+        with pytest.raises(DefaultBackoffException):
+            requester.send_request(log_formatter=formatter if should_log else None)
+    elif should_throw:
+        with pytest.raises(AirbyteTracedException):
+            requester.send_request(log_formatter=formatter if should_log else None)
+    else:
+        requester.send_request(log_formatter=formatter if should_log else None)
+    if should_log:
+        assert repository.log_message.call_args_list[0].args[1]() == "formatted_response"
+        formatter.assert_called_once_with(response)
+
+
+def test_connection_pool():
+    requester = HttpRequester(
+        name="name",
+        url_base="https://test_base_url.com",
+        path="/",
+        http_method=HttpMethod.GET,
+        request_options_provider=None,
+        config={},
+        parameters={},
+        message_repository=MagicMock(),
+        disable_retries=True,
+    )
+    assert requester._session.adapters["https://"]._pool_connections == 20
+
+
+def test_caching_filename(http_requester_factory):
+    http_requester = http_requester_factory()
+    assert http_requester.cache_filename == f"{http_requester.name}.sqlite"
+
+
+def test_caching_session_with_enable_use_cache(http_requester_factory):
+    http_requester = http_requester_factory(use_cache=True)
+    assert isinstance(http_requester._session, requests_cache.CachedSession)
+
+
+def test_response_caching_with_enable_use_cache(http_requester_factory, requests_mock):
+    http_requester = http_requester_factory(use_cache=True)
+
+    requests_mock.register_uri("GET", http_requester.url_base, json=[{"id": 12, "title": "test_record"}])
+    http_requester.clear_cache()
+
+    response = http_requester.send_request()
+
+    assert requests_mock.called
+    assert isinstance(response, requests.Response)
+
+    requests_mock.reset_mock()
+    new_response = http_requester.send_request()
+
+    assert not requests_mock.called
+    assert isinstance(new_response, CachedResponse)
+
+    assert len(response.json()) == len(new_response.json())
+>>>>>>> pnilan/airbyte-cdk-low-code-http-error-handler
 
 
 def test_request_attempt_count_is_tracked_across_retries(http_requester_factory):

@@ -5,11 +5,11 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler as HttpErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 
 
 @dataclass
-class ErrorHandler(HttpErrorHandler, ABC):
+class DeclarativeErrorHandler(ErrorHandler, ABC):
     """
     This interface exists to retain backwards compatability with connectors that reference the declarative ErrorHandler. As part of the effort to promote common interfaces to the Python CDK, this now extends the Python CDK ErrorHandler interface.
 

@@ -94,13 +94,12 @@ class HttpResponseFilter:
         :param response: The HTTP response to evaluate
         :return: The action to execute. None if the response does not match the filter
         """
-        if isinstance(response_or_exception, requests.Response):
-            if (
-                response_or_exception.status_code in self.http_codes  # type: ignore # http_codes set is always initialized to a value in __post_init__
-                or self._response_matches_predicate(response_or_exception)
-                or self._response_contains_error_message(response_or_exception)
-            ):
-                return self.action  # type: ignore # action is always cast to a ResponseAction not a str
+        if isinstance(response_or_exception, requests.Response) and (
+            response_or_exception.status_code in self.http_codes  # type: ignore # http_codes set is always initialized to a value in __post_init__
+            or self._response_matches_predicate(response_or_exception)
+            or self._response_contains_error_message(response_or_exception)
+        ):
+            return self.action  # type: ignore # action is always cast to a ResponseAction not a str
         return None
 
     @staticmethod

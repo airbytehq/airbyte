@@ -5,11 +5,10 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy as HttpBackoffStrategy
-
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
 @dataclass
-class BackoffStrategy(HttpBackoffStrategy, ABC):
+class DecalarativeBackoffStrategy(BackoffStrategy, ABC):
     """
     This interface exists to retain backwards compatability with connectors that reference the declarative BackoffStrategy. As part of the effort to promote common interfaces to the Python CDK, this now extends the Python CDK backoff strategy interface.
 
