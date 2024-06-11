@@ -47,8 +47,15 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------ |
-| 0.2.0   | 2023-08-24 | [29384](https://github.com/airbytehq/airbyte/pull/29384) | Migrate to low code                   |
-| 0.1.1   | 2023-08-23 | [5957](https://github.com/airbytehq/airbyte/pull/5957)   | Fix schemas                           |
-| 0.1.0   | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957)   | Initial Release. Source Commercetools |
+| 0.2.2 | 2024-06-04 | [38995](https://github.com/airbytehq/airbyte/pull/38995) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.1 | 2024-05-21 | [38522](https://github.com/airbytehq/airbyte/pull/38522) | [autopull] base image + poetry + up_to_date |
+| 0.2.0 | 2023-08-24 | [29384](https://github.com/airbytehq/airbyte/pull/29384) | Migrate to low code |
+| 0.1.1 | 2023-08-23 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Fix schemas |
+| 0.1.0 | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Initial Release. Source Commercetools |
+
+</details>

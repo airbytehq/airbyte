@@ -55,6 +55,9 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
 | 0.5.2   | 2024-05-02 | [37770](https://github.com/airbytehq/airbyte/pull/37770) | Add Selective Authenticator. Migrate to poetry                          |
@@ -65,3 +68,5 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 | 0.3.0   | 2023-06-20 | [29001](https://github.com/airbytehq/airbyte/pull/29001) | Add Organizations, OrganizationMembers, OrganizationMemberRoles streams |
 | 0.2.0   | 2023-05-23 | [26445](https://github.com/airbytehq/airbyte/pull/26445) | Add Clients stream                                                      |
 | 0.1.0   | 2022-10-21 | [18338](https://github.com/airbytehq/airbyte/pull/18338) | Add Auth0 and Users stream                                              |
+
+</details>
