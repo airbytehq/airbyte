@@ -10,7 +10,11 @@ from typing import Any, Mapping
 import pytest
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
-from source_facebook_marketing.config_migrations import MigrateAccountIdToArray, MigrateIncludeDeletedToStatusFilters
+from source_facebook_marketing.config_migrations import (
+    MigrateAccountIdToArray,
+    MigrateIncludeDeletedToStatusFilters,
+    MigrateSecretsPathInConnector,
+)
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 # BASE ARGS
@@ -19,6 +23,7 @@ SOURCE: Source = SourceFacebookMarketing()
 _EXCLUDE_DELETE_CONFIGS_PATH = "test_migrations/include_deleted_to_status_filters/include_deleted_false"
 _INCLUDE_DELETE_CONFIGS_PATH = "test_migrations/include_deleted_to_status_filters/include_deleted_true"
 _ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH = "test_migrations/account_id_to_array"
+_SECRETS_TO_CREDENTIALS_CONFIGS_PATH = "test_migrations/secrets_to_credentials"
 
 
 def load_config(config_path: str) -> Mapping[str, Any]:
@@ -162,3 +167,69 @@ class TestMigrateIncludeDeletedToStatusFilters:
         new_config = load_config(self.UPGRADED_TEST_CONFIG_PATH)
         migration_instance = MigrateIncludeDeletedToStatusFilters()
         assert not migration_instance.should_migrate(new_config)
+
+class TestMigrateSecretsPathInConnector:
+    OLD_TEST_CONFIG_PATH_ACCESS_TOKEN = _config_path(f"{_SECRETS_TO_CREDENTIALS_CONFIGS_PATH}/test_old_access_token_config.json")
+    NEW_TEST_CONFIG_PATH_ACCESS_TOKEN = _config_path(f"{_SECRETS_TO_CREDENTIALS_CONFIGS_PATH}/test_new_access_token_config.json")
+    OLD_TEST_CONFIG_PATH_CLIENT = _config_path(f"{_SECRETS_TO_CREDENTIALS_CONFIGS_PATH}/test_old_client_config.json")
+    NEW_TEST_CONFIG_PATH_CLIENT = _config_path(f"{_SECRETS_TO_CREDENTIALS_CONFIGS_PATH}/test_new_client_config.json")
+
+    @staticmethod
+    def revert_migration(config_path: str) -> None:
+        with open(config_path, "r") as test_config:
+            config = json.load(test_config)
+            credentials = config.pop("credentials",{})
+            credentials.pop("auth_type", None)
+            with open(config_path, "w") as updated_config:
+                config = json.dumps({**config, **credentials})
+                updated_config.write(config)
+
+    def test_migrate_access_token_config(self):
+        migration_instance = MigrateSecretsPathInConnector()
+        original_config = load_config(self.OLD_TEST_CONFIG_PATH_ACCESS_TOKEN)
+        # migrate the test_config
+        migration_instance.migrate([CMD, "--config", self.OLD_TEST_CONFIG_PATH_ACCESS_TOKEN], SOURCE)
+        # load the updated config
+        test_migrated_config = load_config(self.OLD_TEST_CONFIG_PATH_ACCESS_TOKEN)
+        # check migrated property
+        assert "credentials" in test_migrated_config
+        assert isinstance(test_migrated_config["credentials"], dict)
+        credentials = test_migrated_config["credentials"]
+        assert "access_token" in credentials
+        # check the migration should be skipped, once already done
+        assert not migration_instance._should_migrate(test_migrated_config)
+        # load the old custom reports VS migrated
+        assert original_config["access_token"] == credentials["access_token"]
+        # revert the test_config to the starting point
+        self.revert_migration(self.OLD_TEST_CONFIG_PATH_ACCESS_TOKEN)
+    
+    def test_migrate_client_config(self):
+        migration_instance = MigrateSecretsPathInConnector()
+        original_config = load_config(self.OLD_TEST_CONFIG_PATH_CLIENT)
+        # migrate the test_config
+        migration_instance.migrate([CMD, "--config", self.OLD_TEST_CONFIG_PATH_CLIENT], SOURCE)
+        # load the updated config
+        test_migrated_config = load_config(self.OLD_TEST_CONFIG_PATH_CLIENT)
+        # check migrated property
+        assert "credentials" in test_migrated_config
+        assert isinstance(test_migrated_config["credentials"], dict)
+        credentials = test_migrated_config["credentials"]
+        assert "client_id" in credentials
+        assert "client_secret" in credentials
+        # check the migration should be skipped, once already done
+        assert not migration_instance._should_migrate(test_migrated_config)
+        # load the old custom reports VS migrated
+        assert original_config["client_id"] == credentials["client_id"]
+        assert original_config["client_secret"] == credentials["client_secret"]
+        # revert the test_config to the starting point
+        self.revert_migration(self.OLD_TEST_CONFIG_PATH_CLIENT)
+
+    def test_should_not_migrate_new_client_config(self):
+        new_config = load_config(self.NEW_TEST_CONFIG_PATH_CLIENT)
+        migration_instance = MigrateSecretsPathInConnector()
+        assert not migration_instance._should_migrate(new_config)
+    
+    def test_should_not_migrate_new_access_token_config(self):
+        new_config = load_config(self.NEW_TEST_CONFIG_PATH_ACCESS_TOKEN)
+        migration_instance = MigrateSecretsPathInConnector()
+        assert not migration_instance._should_migrate(new_config)
