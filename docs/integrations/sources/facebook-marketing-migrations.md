@@ -1,5 +1,27 @@
 # Facebook Marketing Migration Guide
 
+## Upgrading to 3.1.0
+
+The `AdsInsights` Reports now don't have the possibility to fetch the next root level properties (fields):
+- cost_per_conversion_lead
+- conversion_lead_rate
+
+### Refresh affected AdsInsights Report:
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Schema** tab. 
+    1. Select **Refresh source schema**. 
+    2. Select **OK** 
+    3. Select **Save changes** at the bottom of the page.
+   :::note
+   Any detected schema changes will be listed for your review.
+   :::
+
+### Custom streams
+
+Custom streams will not be able to rely on `cost_per_conversion_lead` and `conversion_lead_rate` as `fields` anymore. Those streams will need to updated considering the fact that the information is not available in Facebook Marketing.
+
 ## Upgrading to 3.0.0
 
 Custom Insights Reports now have updated schema for following breakdowns:

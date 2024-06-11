@@ -8,6 +8,7 @@ import pytest
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from requests import Response
 
 SOME_BACKOFF_TIME = 60
 
@@ -26,7 +27,7 @@ SOME_BACKOFF_TIME = 60
     ],
 )
 def test_wait_time_from_header(test_name, header, header_value, regex, expected_backoff_time):
-    response_mock = MagicMock()
+    response_mock = MagicMock(spec=Response)
     response_mock.headers = {"wait_time": header_value}
     backoff_stratery = WaitTimeFromHeaderBackoffStrategy(
         header=header, regex=regex, parameters={"wait_time": "wait_time"}, config={"wait_time": "wait_time"}
