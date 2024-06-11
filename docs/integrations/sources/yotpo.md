@@ -71,6 +71,7 @@ Yotpo [API reference](https://api.yotpo.com/v1/) has v1 at present. The connecto
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.1.1 | 2024-05-20 | [38390](https://github.com/airbytehq/airbyte/pull/38390) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2023-04-14 | [Init](https://github.com/airbytehq/airbyte/pull/25532) | Initial commit |
 
 </details>
