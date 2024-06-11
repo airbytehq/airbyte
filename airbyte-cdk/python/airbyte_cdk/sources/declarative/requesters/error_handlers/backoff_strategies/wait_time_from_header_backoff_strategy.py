@@ -32,12 +32,14 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
         self.regex = InterpolatedString.create(self.regex, parameters=parameters) if self.regex else None
         self.header = InterpolatedString.create(self.header, parameters=parameters)
 
-    def backoff_time(self, response: requests.Response, attempt_count: int) -> Optional[float]:  # type: ignore # attempt_count maintained for compatibility with low code CDK
+    def backoff_time(self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int) -> Optional[float]:  # type: ignore # attempt_count maintained for compatibility with low code CDK
         header = self.header.eval(config=self.config)  # type: ignore  # header is always cast to an interpolated stream
         if self.regex:
             evaled_regex = self.regex.eval(self.config)  # type: ignore # header is always cast to an interpolated string
             regex = re.compile(evaled_regex)
         else:
             regex = None
-        header_value = get_numeric_value_from_header(response, header, regex)
+        header_value = None
+        if isinstance(response_or_exception, requests.Response):
+            header_value = get_numeric_value_from_header(response_or_exception, header, regex)
         return header_value

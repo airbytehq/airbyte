@@ -244,11 +244,11 @@ class HttpClient:
             )
 
         # Request/repsonse logging for declarative cdk.
-        if log_formatter and response and self._message_repository:
+        if log_formatter is not None and response is not None and self._message_repository is not None:
             formatter = log_formatter
             self._message_repository.log_message(
                 Level.DEBUG,
-                lambda: formatter(response),
+                lambda: formatter(response),  # type: ignore # log_formatter is always cast to a callable
             )
 
         if error_resolution.response_action == ResponseAction.FAIL:
