@@ -25,6 +25,7 @@ from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
+from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
 from slugify import slugify
@@ -176,6 +177,7 @@ class AcceptanceTests(Step):
     title = "Acceptance tests"
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
+    REPORT_LOG_PATH = "/tmp/report_log.jsonl"
     skipped_exit_code = 5
     accept_extra_params = True
 
@@ -198,6 +200,8 @@ class AcceptanceTests(Step):
             "python",
             "-m",
             "pytest",
+            # Write the test report in jsonl format
+            f"--report-log={self.REPORT_LOG_PATH}",
             "-p",  # Load the connector_acceptance_test plugin
             "connector_acceptance_test.plugin",
             "--acceptance-test-config",
@@ -303,6 +307,33 @@ class AcceptanceTests(Step):
             )
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
+
+    async def get_step_result(self, container: Container) -> StepResult:
+        """Retrieve stdout, stderr and exit code from the executed CAT container.
+        Pull the report logs from the container and create an Artifact object from it.
+        Build and return a step result object from these objects.
+
+        Args:
+            container (Container): The CAT container to get the results from.
+
+        Returns:
+            StepResult: The step result object.
+        """
+        exit_code, stdout, stderr = await get_exec_result(container)
+        report_log_artifact = Artifact(
+            name="cat_report_log.jsonl",
+            content_type="text/jsonl",
+            content=container.file(self.REPORT_LOG_PATH),
+            to_upload=True,
+        )
+        return StepResult(
+            step=self,
+            status=self.get_step_status_from_exit_code(exit_code),
+            stderr=stderr,
+            stdout=stdout,
+            output=container,
+            artifacts=[report_log_artifact],
+        )
 
 
 class RegressionTests(Step):
