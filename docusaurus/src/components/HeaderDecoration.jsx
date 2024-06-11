@@ -18,7 +18,7 @@ const boolStringToBool = (boolString) => {
   if (typeof boolString === "boolean") return boolString;
 
   if (boolString?.toUpperCase() === "TRUE") return true;
-  if (boolString?.toUpperCase === "FALSE") return false;
+  if (boolString?.toUpperCase() === "FALSE") return false;
 
   return null;
 };
