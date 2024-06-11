@@ -72,15 +72,16 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.5   | 2024-05-14 | [38140](https://github.com/airbytehq/airbyte/pull/38140) | Make compatible with builder                                                    |
-| 0.2.4   | 2024-04-19 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Updating to 0.80.0 CDK                                                          |
-| 0.2.3   | 2024-04-18 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Manage dependencies with Poetry.                                                |
-| 0.2.2   | 2024-04-15 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.1   | 2024-04-12 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | schema descriptions                                                             |
-| 0.2.0   | 2023-10-23 | [31162](https://github.com/airbytehq/airbyte/pull/31162) | Migrate to low-code framework                                                   |
-| 0.1.3   | 2023-05-15 | [26079](https://github.com/airbytehq/airbyte/pull/26079) | Make incremental syncs timestamp inclusive                                      |
-| 0.1.2   | 2023-03-23 | [24422](https://github.com/airbytehq/airbyte/pull/24422) | Fix incremental timedelta causing missing records                               |
-| 0.1.1   | 2022-11-11 | [19356](https://github.com/airbytehq/airbyte/pull/19356) | Fix state date parse bug                                                        |
-| 0.1.0   | 2022-10-19 | [18164](https://github.com/airbytehq/airbyte/pull/18164) | Release Insightly CDK Connector                                                 |
+| 0.2.6 | 2024-06-06 | [39307](https://github.com/airbytehq/airbyte/pull/39307) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.5 | 2024-05-14 | [38140](https://github.com/airbytehq/airbyte/pull/38140) | Make compatible with builder |
+| 0.2.4 | 2024-04-19 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Updating to 0.80.0 CDK |
+| 0.2.3 | 2024-04-18 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | schema descriptions |
+| 0.2.0 | 2023-10-23 | [31162](https://github.com/airbytehq/airbyte/pull/31162) | Migrate to low-code framework |
+| 0.1.3 | 2023-05-15 | [26079](https://github.com/airbytehq/airbyte/pull/26079) | Make incremental syncs timestamp inclusive |
+| 0.1.2 | 2023-03-23 | [24422](https://github.com/airbytehq/airbyte/pull/24422) | Fix incremental timedelta causing missing records |
+| 0.1.1 | 2022-11-11 | [19356](https://github.com/airbytehq/airbyte/pull/19356) | Fix state date parse bug |
+| 0.1.0 | 2022-10-19 | [18164](https://github.com/airbytehq/airbyte/pull/18164) | Release Insightly CDK Connector |
 
 </details>
