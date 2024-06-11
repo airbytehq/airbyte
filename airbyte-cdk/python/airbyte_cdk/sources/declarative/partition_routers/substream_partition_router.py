@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 
-import dpath.util
+import dpath
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -145,7 +145,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                         elif isinstance(parent_record, Record):
                             parent_record = parent_record.data
                         try:
-                            partition_value = dpath.util.get(parent_record, parent_field)
+                            partition_value = dpath.get(parent_record, parent_field)
                         except KeyError:
                             pass
                         else:
