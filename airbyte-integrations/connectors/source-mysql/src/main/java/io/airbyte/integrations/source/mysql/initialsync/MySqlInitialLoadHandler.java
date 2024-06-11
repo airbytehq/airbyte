@@ -102,8 +102,6 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         }
       }
     }
-    // TODO(Akash) : Perhaps it is easier to throw a transient error here after all the streams have
-    // been completed??
     return iteratorList;
   }
 
@@ -124,7 +122,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         .collect(Collectors.toList());
     final AutoCloseableIterator<AirbyteRecordData> queryStream =
         new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-            calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream), emittedAt);
+            calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);

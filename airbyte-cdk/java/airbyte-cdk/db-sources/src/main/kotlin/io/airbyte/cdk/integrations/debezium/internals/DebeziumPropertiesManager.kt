@@ -86,7 +86,7 @@ abstract class DebeziumPropertiesManager(
     protected abstract fun getIncludeConfiguration(
         catalog: ConfiguredAirbyteCatalog,
         config: JsonNode?,
-        completedStreamNames: List<String>
+        streamNames: List<String>
     ): Properties
 
     companion object {

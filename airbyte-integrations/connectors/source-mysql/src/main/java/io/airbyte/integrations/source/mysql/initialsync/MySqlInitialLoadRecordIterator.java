@@ -10,7 +10,6 @@ import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
-import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
@@ -19,8 +18,6 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
@@ -56,8 +53,6 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   private final long chunkSize;
   private final PrimaryKeyInfo pkInfo;
   private final boolean isCompositeKeyLoad;
-
-  private final Instant startInstant;
   private int numSubqueries = 0;
   private AutoCloseableIterator<AirbyteRecordData> currentIterator;
 
@@ -69,8 +64,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
                                  final List<String> columnNames,
                                  final AirbyteStreamNameNamespacePair pair,
                                  final long chunkSize,
-                                 final boolean isCompositeKeyLoad,
-                                 final Instant startInstant) {
+                                 final boolean isCompositeKeyLoad) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -80,16 +74,11 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     this.chunkSize = chunkSize;
     this.pkInfo = initialLoadStateManager.getPrimaryKeyInfo(pair);
     this.isCompositeKeyLoad = isCompositeKeyLoad;
-    this.startInstant = startInstant;
   }
 
   @CheckForNull
   @Override
   protected AirbyteRecordData computeNext() {
-    if (Duration.between(startInstant, Instant.now()).compareTo(Duration.ofHours(8)) > 0) {
-      LOGGER.info("Sync ran for too long - sending a transient error");
-      throw new TransientErrorException("Cancelling sync because initial load taking too long");
-    }
     if (shouldBuildNextSubquery()) {
       try {
         // We will only issue one query for a composite key load. If we have already processed all the data
