@@ -72,6 +72,9 @@ You should now have all the requirements needed to configure Chroma as a destina
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
 | 0.0.11 | 2024-06-03 | [38903](https://github.com/airbytehq/airbyte/pull/38903) | Replace AirbyteLogger with logging.Logger |
@@ -85,3 +88,5 @@ You should now have all the requirements needed to configure Chroma as a destina
 | 0.0.3   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size                               |
 | 0.0.2   | 2023-09-29 | [#30820](https://github.com/airbytehq/airbyte/pull/30820) | Update CDK                                                   |
 | 0.0.1   | 2023-09-08 | [#30023](https://github.com/airbytehq/airbyte/pull/30023) | 🎉 New Destination: Chroma (Vector Database)                 |
+
+</details>

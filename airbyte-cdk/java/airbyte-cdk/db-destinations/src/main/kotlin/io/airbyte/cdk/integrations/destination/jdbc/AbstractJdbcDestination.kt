@@ -28,7 +28,6 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordM
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator
-import io.airbyte.cdk.integrations.util.addDefaultNamespaceToStreams
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.map.MoreMaps
@@ -246,22 +245,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         val database = getDatabase(getDataSource(config))
-        // Short circuit for non-v2 destinations.
-        if (!isDestinationV2) {
-            return JdbcBufferedConsumerFactory.createAsync(
-                outputRecordCollector,
-                database,
-                sqlOperations,
-                namingResolver,
-                config,
-                catalog,
-                null,
-                NoopTyperDeduper(),
-            )
-        }
-
         val defaultNamespace = config[configSchemaKey].asText()
-        addDefaultNamespaceToStreams(catalog, defaultNamespace)
         return getV2MessageConsumer(
             config,
             catalog,
@@ -290,8 +274,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
         val parsedCatalog =
             rawNamespaceOverride
-                .map { override: String -> CatalogParser(sqlGenerator, override) }
-                .orElse(CatalogParser(sqlGenerator))
+                .map { override: String -> CatalogParser(sqlGenerator, defaultNamespace, override) }
+                .orElse(CatalogParser(sqlGenerator, defaultNamespace))
                 .parseCatalog(catalog!!)
         val typerDeduper: TyperDeduper =
             buildTyperDeduper(
