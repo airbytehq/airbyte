@@ -95,10 +95,15 @@ Extra care should be taken to understand this risk before enabling this option.
 > - If `Delete Messages After Read` is `true` then both `sqs:ReceiveMessage` and `sqs:DeleteMessage`
 >   are needed in the AWS IAM Policy
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
 | 0.1.2 | 2024-05-20 | [38414](https://github.com/airbytehq/airbyte/pull/38414) | [autopull] base image + poetry + up_to_date |
 | 0.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
 | 0.1.0   | 2021-10-10 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000)  | Initial version                   |
+
+</details>

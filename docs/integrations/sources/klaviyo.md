@@ -39,6 +39,7 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 - [Campaigns Detailed](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
 - [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
 - [Events](https://developers.klaviyo.com/en/reference/get_events)
+- [Events Detailed](https://developers.klaviyo.com/en/reference/get_event)
 - [Flows](https://developers.klaviyo.com/en/reference/get_flows)
 - [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
 - [Lists](https://developers.klaviyo.com/en/reference/get_lists)
@@ -56,19 +57,27 @@ Stream `Campaigns Detailed` contains fields `estimated_recipient_count` and `cam
 
 Stream `Lists Detailed` contains field `profile_count` in addition to info from the `Lists` stream. Additional time is needed to fetch extra data due to Klaviyo API [limitation](https://developers.klaviyo.com/en/reference/get_list).
 
+Stream `Events Detailed` contains field `name` for `metric` relationship - addition to [info](https://developers.klaviyo.com/en/reference/get_event).
+
 ## Data type map
 
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
+| Integration Type | Airbyte Type |
+|:-----------------|:-------------|
+| `string`         | `string`     |
+| `number`         | `number`     |
+| `array`          | `array`      |
+| `object`         | `object`     |
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `2.7.0`  | 2024-06-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000)   | Add `events_detailed` stream                                                                                                  |
+| `2.6.4`  | 2024-06-06 | [38879](https://github.com/airbytehq/airbyte/pull/38879)   | Implement `CheckpointMixin` for handling state in Python streams                                                              |
+| `2.6.3`  | 2024-06-04 | [38935](https://github.com/airbytehq/airbyte/pull/38935)   | [autopull] Upgrade base image to v1.2.1                                                                                       |
 | `2.6.2`  | 2024-05-08 | [37789](https://github.com/airbytehq/airbyte/pull/37789)   | Move stream schemas and spec to manifest                                                                                      |
 | `2.6.1`  | 2024-05-07 | [38010](https://github.com/airbytehq/airbyte/pull/38010)   | Add error handler for `5XX` status codes                                                                                      |
 | `2.6.0`  | 2024-04-19 | [37370](https://github.com/airbytehq/airbyte/pull/37370)   | Add streams `campaigns_detailed` and `lists_detailed`                                                                         |
@@ -102,3 +111,5 @@ Stream `Lists Detailed` contains field `profile_count` in addition to info from 
 | `0.1.4`  | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream.                                                          |
 | `0.1.3`  | 2021-12-09 | [8592](https://github.com/airbytehq/airbyte/pull/8592)     | Improve performance, make Global Exclusions stream incremental and enable Metrics stream.                                     |
 | `0.1.2`  | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952)     | Update schema validation in SAT                                                                                               |
+
+</details>

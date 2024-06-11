@@ -1,13 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional, Set
+from typing import List, Literal, Optional, Set, Union
 
 from airbyte_cdk.sources.config import BaseConfig
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
@@ -17,7 +17,12 @@ from pydantic import BaseModel, Field, PositiveInt, constr
 logger = logging.getLogger("airbyte")
 
 
-ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
+# Those fields were removed as there were causing `Tried accessing nonexisting field on node type` error from Meta
+# For more information, see https://github.com/airbytehq/airbyte/pull/38860
+_REMOVED_FIELDS = ["conversion_lead_rate", "cost_per_conversion_lead"]
+adjusted_ads_insights_fields = {key: value for key, value in AdsInsights.Field.__dict__.items() if key not in _REMOVED_FIELDS}
+ValidFields = Enum("ValidEnums", adjusted_ads_insights_fields)
+
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
@@ -25,6 +30,48 @@ ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
 ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
+
+
+class OAuthCredentials(BaseModel):
+    class Config(OneOfOptionConfig):
+        title = "Authenticate via Facebook Marketing (Oauth)"
+        discriminator = "auth_type"
+
+    auth_type: Literal["Client"] = Field("Client", const=True)
+    client_id: str = Field(
+        title="Client ID",
+        description="Client ID for the Facebook Marketing API",
+        airbyte_secret=True,
+    )
+    client_secret: str = Field(
+        title="Client Secret",
+        description="Client Secret for the Facebook Marketing API",
+        airbyte_secret=True,
+    )
+    access_token: Optional[str] = Field(
+        title="Access Token",
+        description="The value of the generated access token. "
+        'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+        'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+        'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.',
+        airbyte_secret=True,
+    )
+
+
+class ServiceAccountCredentials(BaseModel):
+    class Config(OneOfOptionConfig):
+        title = "Service Account Key Authentication"
+        discriminator = "auth_type"
+
+    auth_type: Literal["Service"] = Field("Service", const=True)
+    access_token: str = Field(
+        title="Access Token",
+        description="The value of the generated access token. "
+        'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+        'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+        'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.',
+        airbyte_secret=True,
+    )
 
 
 class InsightConfig(BaseModel):
@@ -138,7 +185,7 @@ class ConnectorConfig(BaseConfig):
         min_items=1,
     )
 
-    access_token: str = Field(
+    access_token: Optional[str] = Field(
         title="Access Token",
         order=1,
         description=(
@@ -148,6 +195,13 @@ class ConnectorConfig(BaseConfig):
             'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
         ),
         airbyte_secret=True,
+    )
+
+    credentials: Optional[Union[OAuthCredentials, ServiceAccountCredentials]] = Field(
+        title="Authentication",
+        description="Credentials for connecting to the Facebook Marketing API",
+        discriminator="auth_type",
+        type="object",
     )
 
     start_date: Optional[datetime] = Field(

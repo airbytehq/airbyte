@@ -71,8 +71,8 @@ class SnowflakeSqlGeneratorTest {
 
     @Test
     fun columnCollision() {
-        val parser = CatalogParser(generator)
-        var expectedColumns = LinkedHashMap<ColumnId, AirbyteType>()
+        val parser = CatalogParser(generator, "unused")
+        val expectedColumns = LinkedHashMap<ColumnId, AirbyteType>()
         expectedColumns[ColumnId("_CURRENT_DATE", "CURRENT_DATE", "_CURRENT_DATE")] =
             AirbyteProtocolType.STRING
         expectedColumns[ColumnId("_CURRENT_DATE_1", "current_date", "_CURRENT_DATE_1")] =
