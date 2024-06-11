@@ -242,10 +242,12 @@ class SourceStripe(ConcurrentSourceAdapter):
                 "invoice.payment_failed",
                 "invoice.payment_succeeded",
                 "invoice.sent",
-                "invoice.upcoming",
                 "invoice.updated",
                 "invoice.voided",
                 "invoice.will_be_due",
+                # the event type = "invoice.upcoming" doesn't contain the `primary_key = `id` field,
+                # thus isn't used, see the doc: https://docs.stripe.com/api/invoices/object#invoice_object-id
+                # reference issue: https://github.com/airbytehq/oncall/issues/5560
             ],
             **args,
         )
