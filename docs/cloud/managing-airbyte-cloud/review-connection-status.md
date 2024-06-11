@@ -18,12 +18,12 @@ To view the connection status:
 
 2. Each connection is listed alongside its status.  From here, you can filter for a specific status to see which connections need attention. You can also select a single connection to view more details about the connection and for a breakdown of the status of each Stream in that connection.  
 
-| Status      | Description                                                                                         |
-| ----------- | --------------------------------------------------------------------------------------------------- |
-| **Healthy** | The most recent sync for this connection succeeded                                                  |
-| **Failed**  | The most recent sync for this connection failed                                                         |
-| **Running** | The connection is currently actively syncing                                                        |
-| **Paused**  | The connection is disabled and is not scheduled to run automatically                                |
+|   | Status      |  Description                                                                                        |
+| - | ----------- | --------------------------------------------------------------------------------------------------- |
+|![Healthy](./assets/connection_synced.png)| **Healthy** | The most recent sync for this connection succeeded                                                  |
+|![Failed](./assets/connection_action_required.png) | **Failed**  | The most recent sync for this connection failed                                                         |
+|![Running](./assets/connection_syncing.png) | **Running** | The connection is currently actively syncing                                                        |
+|![Paused](./assets/connection_disabled.png) | **Paused**  | The connection is disabled and is not scheduled to run automatically                                |
 
 3. On the **Status** tab for a connection, there is a list of associated Streams. To the left of the name for each Stream, there is an icon that displays its status. 
 
@@ -31,17 +31,17 @@ To view the connection status:
 
 The stream status allows you to monitor an individual stream's latest status. Connections often sync more than one stream. This view allows you to more easily determine if there is a problem with a given stream that could be causing problems with the connection. 
 
-| Status                   | Description                                                                                         |
-| ------------------------ | --------------------------------------------------------------------------------------------------- |
-| **On time**              | The stream is operating within the expected timeframe expectations set by the replication frequency |
-| **Syncing**              | The stream is currently actively syncing. The stream will also be highlighted in grey to indicate the sync is actively extracting or loading data.    |
-| **Queued**               | The stream has not synced yet, and is scheduled to be synced in the current ongoing sync            |
-| **Queued for next sync** | The stream has not synced yet, and is scheduled to be synced in the next scheduled sync             |
-| **On track**             | The connection is slightly delayed but is expected to catch up before the next sync. This can occur when a transient sync error occurs.    |
-| **Late**               | The connection has not loaded data within the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 1 hour                                     |
-| **Error**              | The connection has not loaded data in more than two times the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 2 hours                    |
-| **Action Required**    | A breaking change related to the source or destination requires attention to resolve                |
-| **Pending**            | The stream has not been synced yet, so not status exists                                            |
+|   | Status                   | Description                                                                                     |
+| - | ------------------------ | ----------------------------------------------------------------------------------------------- |
+|![On time](./assets/connection_synced.png) | **On time**              | The stream is operating within the expected timeframe expectations set by the replication frequency |
+|![Syncing](./assets/connection_syncing.png) | **Syncing**              | The stream is currently actively syncing. The stream will also be highlighted in grey to indicate the sync is actively extracting or loading data.    |
+|![Queued](./assets/connection_not_yet_synced.png) | **Queued**               | The stream has not synced yet, and is scheduled to be synced in the current ongoing sync            |
+|![Queued for next sync](./assets/connection_not_yet_synced.png) | **Queued for next sync** | The stream has not synced yet, and is scheduled to be synced in the next scheduled sync             |
+|![On track](./assets/connection_synced.png) | **On track**             | The connection is slightly delayed but is expected to catch up before the next sync. This can occur when a transient sync error occurs.    |
+|![Late](./assets/connection_incomplete.png) | **Late**               | The connection has not loaded data within the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 1 hour                                     |
+|![Failed](./assets/connection_incomplete.png) | **Error**              | The connection has not loaded data in more than two times the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 2 hours                    |
+|![Failed](./assets/connection_action_required.png) | **Action Required**    | A breaking change related to the source or destination requires attention to resolve                |
+|![Paused](./assets/connection_disabled.png) | **Pending**            | The stream has not been synced yet, so not status exists                   
 
 Once the sync is complete, each stream displays the time since the last record was loaded to the destination. You can click **Last record loaded** in the header to optionally display the exact datetime the last record was loaded.
 
