@@ -66,7 +66,7 @@ Configuration errors are highlighted in red. If the failure is due to a configur
 
 ![Configuration Error](./assets/configuration-error.png)
 
-All other errors are highlighted in yellow. These can range from transient errors or warnings from the source (e.g. rate limits). We expect these to resolve themselves without any action required. 
+All other errors are highlighted in yellow. These can range from transient errors to warnings from the source (e.g. rate limits). These types of errors usually resolve themselves without any action required. 
 
 ![Warning Error](./assets/warning-error.png)
 
