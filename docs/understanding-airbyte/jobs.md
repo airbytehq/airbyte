@@ -1,15 +1,13 @@
 # Workers & Jobs
 
-In Airbyte, all interactions with connectors are run as jobs performed by a Worker. Each job has a corresponding worker:
+In Airbyte, all interactions with connectors are run as jobs performed by a Worker. Each job has a corresponding worker. There are generally 4 types of workers:
 
 - Spec worker: retrieves the specification of a connector \(the inputs needed to run this connector\)
 - Check connection worker: verifies that the inputs to a connector are valid and can be used to run a sync
 - Discovery worker: retrieves the schema of the source underlying a connector
 - Sync worker, used to sync data between a source and destination
 
-Thus, there are generally 4 types of workers.
-
-**Note: Workers here refers to Airbyte workers. Temporal, which Airbyte uses under the hood for scheduling, has its own worker concept. This distinction is important.**
+**Note: Workers here refers to Airbyte workers. Temporal, which Airbyte uses under the hood for scheduling, has its own worker concept. This distinction is important. Temporal workers are the low-level executors of individual tasks within a workflow, while Airbyte workers are higher-level orchestrators that manage the overall data synchronization process.**
 
 ## Sync Jobs
 
@@ -74,11 +72,11 @@ Based on the outcome of previous attempts, the number of permitted attempts per 
 - 10 total attempts where no data was synchronized
 - 20 total attempts where some data was synchronized
 
-For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+For OSS users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
 
 ### Retry Backoff
 
-After an attempt where no data was synchronized, we implement a short backoff period before starting a new attempt. This will increase with each successive complete failure—a partially successful attempt will reset this value.
+After an attempt where no data was synchronized, Airbyte implements a short backoff period before starting a new attempt. The length of the backoff period will increase with each successive complete failure, but a partially successful attempt will reset this value.
 
 By default, Airbyte is configured to backoff with the following values:
 
@@ -87,13 +85,13 @@ By default, Airbyte is configured to backoff with the following values:
 - 90 seconds after the third
 - 4 minutes and 30 seconds after the fourth
 
-For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+For OSS users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
 
 The duration of expected backoff between attempts can be viewed in the logs accessible from the job history UI.
 
 ### Retry examples
 
-To help illustrate what is possible, below are a couple examples of how the retry rules may play out under more elaborate circumstances.
+To help illustrate what is possible, review the examples below to see how the retry rules may play out under more elaborate circumstances.
 
 <table>
     <thead>
@@ -255,7 +253,7 @@ For more information on the schema of the messages that are passed, refer to [Ai
 
 This section will depict the worker-job architecture as discussed above. Only the 2-connector version is shown. The single connector version is the same with one side removed.
 
-The source process should automatically exit after passing all of its messages. Similarly, the destination process shutdowns after receiving all records. Each process is given a shutdown grace period. The worker forces shutdown if this is exceeded.
+The source process should automatically exit after passing all of its messages. Similarly, the destination process shuts down after receiving all records. Each process is given a shutdown grace period. The worker forces shutdown if the grace period is exceeded.
 
 ```mermaid
 sequenceDiagram
@@ -272,26 +270,26 @@ See the [architecture overview](high-level-view.md) for more information about w
 
 ## Deployment Types
 
-Up to now, the term 'processes' has been used loosely. This section will describe this in more detail.
+Until now, the term 'processes' has been used loosely. This section will describe distinctions in the way processes are implemented.
 
 Airbyte offers two deployment types. The underlying process implementations differ accordingly.
 
-1. The Docker deployment - Each process is a local process backed by a Docker container. As all processes are local, process communication is per standard unix pipes.
-2. The Kubernetes deployment - Each process is a backed by a Kubernetes pod. As Kubernetes does not make process-locality guarantees, Airbyte has implemented mechanisms to hide the remote process execution.
-   See [this blogpost](https://airbyte.com/blog/scaling-data-pipelines-kubernetes) for more details.
+1. The Docker deployment - Each process is a local process backed by a Docker container. As all processes are local and process communication is per standard unix pipes.
+2. The Kubernetes deployment - Each process is backed by a Kubernetes pod. As Kubernetes does not make process-locality guarantees, Airbyte has implemented mechanisms to hide the remote process execution.
+   See our [blog post on scaling data pipelines](https://airbyte.com/blog/scaling-data-pipelines-kubernetes) for more details.
 
 ### Decoupling Worker and Job Processes
 
-Workers being responsible for all non-connector-related job operations means multiple jobs are operationally dependent on a single worker process.
+The fact that workers are responsible for all non-connector-related job operations means multiple jobs are operationally dependent on a single worker process.
 
 There are two downsides to this:
 
-1. Any issues to the parent worker process affects all job processes launched by the worker.
-2. Unnecessary complexity of vertically scaling the worker process to deal with IO and processing requirements from multiple jobs.
+1. Any issues impacting the parent worker process affect all job processes launched by the worker.
+2. Added complexity as a result of vertically scaling the worker process to deal with IO and processing requirements from multiple jobs.
 
-This gives us a potentially brittle system component that can be operationally tricky to manage. For example, since redeploying Airbyte terminates all worker processes, all running jobs are also terminated.
+This gives us a potentially brittle system component that can be operationally challenging to manage. For example, since redeploying Airbyte terminates all worker processes, all running jobs are also terminated.
 
-The Container Orchestrator was introduced to solve this.
+We introduced the Container Orchestrator to solve this problem. This solution is available for Airbyte Kubernetes. However, users running Airbyte Docker should be aware of the above pitfalls.
 
 #### Container Orchestrator
 
@@ -301,7 +299,7 @@ The worker process delegates the [above listed responsibilities](#worker-respons
 
 This decoupling introduces a new need for workers to track the orchestrator's, and the job's, state. This is done via a shared Cloud Storage store.
 
-Brief description of how this works,
+Here's a brief description of how this works: 
 
 1. Workers constantly poll the Cloud Storage location for job state.
 2. As an Orchestrator process executes, it writes status marker files to the Cloud Storage location i.e. `NOT_STARTED`, `INITIALIZING`, `RUNNING`, `SUCCESS`, `FAILURE`.
@@ -310,7 +308,7 @@ Brief description of how this works,
 
 The Cloud Storage store is treated as the source-of-truth of execution state.
 
-The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm Charts deploys.
+The Container Orchestrator is only available for Airbyte Kubernetes. It is automatically enabled when running the Airbyte Helm Charts deploys. 
 
 ```mermaid
 ---
@@ -337,8 +335,6 @@ sequenceDiagram
     PersistA->>Temporal: Return output
 ```
 
-Users running Airbyte Docker should be aware of the above pitfalls.
-
 ## Configuring Jobs & Workers
 
 Details on configuring jobs & workers can be found [here](../operator-guides/configuring-airbyte.md).
@@ -353,4 +349,4 @@ Tweaking these values might help you run more jobs in parallel and increase the 
 - `MAX_DISCOVERY_WORKERS`: Maximum number of _Discovery_ workers allowed to run in parallel.
 - `MAX_SYNC_WORKERS`: Maximum number of _Sync_ workers allowed to run in parallel.
 
-The current default value for these environment variables is currently set to **5**.
+The default value for these environment variables is currently set to **5**.
