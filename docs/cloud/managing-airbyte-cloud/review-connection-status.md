@@ -39,9 +39,9 @@ The stream status allows you to monitor an individual stream's latest status. Co
 |![Queued for next sync](./assets/connection_not_yet_synced.png) | **Queued for next sync** | The stream has not synced yet, and is scheduled to be synced in the next scheduled sync             |
 |![On track](./assets/connection_synced.png) | **On track**             | The connection is slightly delayed but is expected to catch up before the next sync. This can occur when a transient sync error occurs.    |
 |![Late](./assets/connection_incomplete.png) | **Late**               | The connection has not loaded data within the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 1 hour                                     |
-|![Failed](./assets/connection_incomplete.png) | **Error**              | The connection has not loaded data in more than two times the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 2 hours                    |
-|![Failed](./assets/connection_action_required.png) | **Action Required**    | A breaking change related to the source or destination requires attention to resolve                |
-|![Paused](./assets/connection_disabled.png) | **Pending**            | The stream has not been synced yet, so not status exists                   
+|![Error](./assets/connection_incomplete.png) | **Error**              | The connection has not loaded data in more than two times the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 2 hours                    |
+|![Action Required](./assets/connection_action_required.png) | **Action Required**    | A breaking change related to the source or destination requires attention to resolve                |
+|![Pending](./assets/connection_disabled.png) | **Pending**            | The stream has not been synced yet, so not status exists                   
 
 Once the sync is complete, each stream displays the time since the last record was loaded to the destination. You can click **Last record loaded** in the header to optionally display the exact datetime the last record was loaded.
 
