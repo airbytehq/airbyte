@@ -9,6 +9,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     """
 
     ACCEPTANCE = "acceptance"
+    INCREMENTAL_ACCEPTANCE = "incremental_acceptance"
     BUILD_NORMALIZATION = "build_normalization"
     BUILD_TAR = "build_tar"
     BUILD = "build"
@@ -33,6 +34,8 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     UPDATE_PULL_REQUEST = "up_to_date.pull"
     INLINE_CANDIDATE = "migration_to_inline_schemas.candidate"
     INLINE_MIGRATION = "migration_to_inline_schemas.migration"
+    AIRBYTE_LOGGER_CANDIDATE = "migration_to_logging_logger.candidate"
+    AIRBYTE_LOGGER_MIGRATION = "migration_to_logging_logger.migration"
     PULL_REQUEST_CREATE = "pull_request.create"
     PULL_REQUEST_UPDATE = "pull_request.update"
 

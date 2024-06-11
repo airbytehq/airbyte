@@ -1,3 +1,10 @@
 {
-  "credentials": { "personal_access_token": "<wrong_access_token>" }
+  "credentials": {
+    "option_title": "OAuth Credentials",
+    "client_id": "Wrong",
+    "client_secret": "Wrong",
+    "refresh_token": "Wrong"
+  },
+  "test_mode": false,
+  "organization_export_ids": []
 }
