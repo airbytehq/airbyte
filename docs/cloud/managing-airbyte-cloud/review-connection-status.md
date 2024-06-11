@@ -25,7 +25,7 @@ To view the connection status:
 | **Running** | The connection is currently actively syncing                                                        |
 | **Paused**  | The connection is disabled and is not scheduled to run automatically                                |
 
-3. On the Status tab for a connection, the status is displayed as an icon to the left of the connection name. 
+3. On the **Status** tab for a connection, there is a list of associated Streams. To the left of the name for each Stream, there is an icon that displays its status. 
 
 ## Review the stream status
 
