@@ -151,17 +151,18 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.4.1   | 2024-05-29 | [38696](https://github.com/airbytehq/airbyte/pull/38696) | Avoid error on empty stream when running discover                       |
-| 0.4.0   | 2024-03-21 | [36373](https://github.com/airbytehq/airbyte/pull/36373) | Add Gzip and Bzip compression support. Manage dependencies with Poetry. |
-| 0.3.7   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                       |
-| 0.3.6   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK            |
-| 0.3.5   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK |
-| 0.3.4   | 2024-01-11 | [34158](https://github.com/airbytehq/airbyte/pull/34158) | Fix issue in stream reader for document file type parser                |
-| 0.3.3   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                     |
-| 0.3.2   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                       |
-| 0.3.1   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                     |
-| 0.3.0   | 2023-10-11 | [31212](https://github.com/airbytehq/airbyte/pull/31212) | Migrated to file based CDK                                              |
-| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2                                                    |
-| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS                                                         |
+| 0.4.2 | 2024-06-06 | [39255](https://github.com/airbytehq/airbyte/pull/39255) | [autopull] Upgrade base image to v1.2.2 |
+| 0.4.1 | 2024-05-29 | [38696](https://github.com/airbytehq/airbyte/pull/38696) | Avoid error on empty stream when running discover |
+| 0.4.0 | 2024-03-21 | [36373](https://github.com/airbytehq/airbyte/pull/36373) | Add Gzip and Bzip compression support. Manage dependencies with Poetry. |
+| 0.3.7 | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors |
+| 0.3.6 | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK |
+| 0.3.5 | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK |
+| 0.3.4 | 2024-01-11 | [34158](https://github.com/airbytehq/airbyte/pull/34158) | Fix issue in stream reader for document file type parser |
+| 0.3.3 | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key |
+| 0.3.2 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser |
+| 0.3.1 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
+| 0.3.0 | 2023-10-11 | [31212](https://github.com/airbytehq/airbyte/pull/31212) | Migrated to file based CDK |
+| 0.2.0 | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2 |
+| 0.1.0 | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS |
 
 </details>

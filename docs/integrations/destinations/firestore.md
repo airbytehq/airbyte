@@ -39,6 +39,7 @@ Each stream will be output into a BigQuery table.
 
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
+| 0.1.4 | 2024-06-06 | [39149](https://github.com/airbytehq/airbyte/pull/39149) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.3 | 2024-06-03 | [38902](https://github.com/airbytehq/airbyte/pull/38902) | Replace AirbyteLogger with logging.Logger |
 | 0.1.2 | 2024-05-20 | [38422](https://github.com/airbytehq/airbyte/pull/38422) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2021-11-21 | [8158](https://github.com/airbytehq/airbyte/pull/8158) | Publish Destination Firestore |
