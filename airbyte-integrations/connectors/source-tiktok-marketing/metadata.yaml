@@ -33,7 +33,7 @@ data:
           format for incremental substreams, this migration constitutes a breaking
           change for the following streams - ad_groups, ads, campaigns, creative_assets_images, creative_assets_videos,
           *_reports_daily, *_reports_hourly, *_reports_by_country_daily, *_reports_by_platform_daily.
-          Also schema for advertiser_ids stream was changed to use string type of advertiser_id
+          Also the schema for advertiser_ids stream was changed to use string type of advertiser_id
           field as API docs declares it.
           Users will need to reset source configuration, refresh the source schema and reset the impacted streams after upgrading.
           For more information, see our migration documentation for source TikTok Marketing.
