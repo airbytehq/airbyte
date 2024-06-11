@@ -45,7 +45,7 @@ definitions:
             field_name: perPage
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -96,7 +96,7 @@ definitions:
             field_name: perPage
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -147,7 +147,7 @@ definitions:
             field_name: perPage
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -198,7 +198,7 @@ definitions:
             field_name: perPage
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -249,7 +249,7 @@ definitions:
             field_name: perPage
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -300,7 +300,7 @@ definitions:
             field_name: perPage
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -351,7 +351,7 @@ definitions:
             field_name: perPage
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -402,7 +402,7 @@ definitions:
             field_name: perPage
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 200
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
