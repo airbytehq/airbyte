@@ -192,9 +192,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           id:
             type:
@@ -352,9 +350,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           id:
             type:
@@ -469,9 +465,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           id:
             type:
@@ -545,9 +539,7 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         title: Inventory Schema
         additionalProperties: true
-        type:
-        - object
-        - 'null'
+        type: object
         properties:
           catalog_object_id:
             type:
@@ -593,9 +585,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           id:
             type:
@@ -632,9 +622,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           id:
             type:
@@ -780,9 +768,7 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         title: Cash Drawer Shifts Schema
         additionalProperties: true
-        type:
-        - object
-        - 'null'
+        type: object
         properties:
           id:
             type:
@@ -858,9 +844,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           type:
             type:
@@ -905,9 +889,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           type:
             type:
@@ -1155,9 +1137,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           type:
             type:
@@ -1243,9 +1223,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           type:
             type:
@@ -1326,9 +1304,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           type:
             type:
@@ -1446,9 +1422,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           id:
             type:
@@ -1540,9 +1514,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           id:
             type:
@@ -1812,9 +1784,7 @@ definitions:
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         title: Loyalty schema
-        type:
-        - object
-        - 'null'
+        type: object
         additionalProperties: true
         properties:
           id:
@@ -1905,9 +1875,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-        - 'null'
-        - object
+        type: object
         properties:
           id:
             type:
