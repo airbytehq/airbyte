@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.11.4"
+version = "0.11.5"
 name = "source-twilio"
 description = "Source implementation for Twilio."
 authors = [ "Airbyte <contact@airbyte.io>",]
