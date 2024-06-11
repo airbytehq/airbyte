@@ -4,16 +4,6 @@ Connector Builder is a no-code tool that’s part of the Airbyte UI. It provides
 
 We recommend that you determine whether the connector you want can be built with the Connector Builder before looking at the Low-Code CDK or Python CDK. Our [compatibility guide](./connector-builder-compatibility.md) can help you decide if Connector Builder is the right tool to use. 
 
-## Connector vs. configured source vs. connection
-
-When building new connectors for Airbyte, it’s important to understand the difference between three related concepts: the connector, the configured source based on a connector, and the connection.
-
-**Connector**: A connector can be either a source or a destination. Usually, if you’re building a connection, you’re working with a source. The connector defines what’s required to access an API or a database such as protocol, URL paths to access, the way requests need to be structured, and how to extract records from responses.
-
-**Configured Source**: The configured source is what you set up when you provide the variables needed for the connector to access records. The exact fields of the configuration depend on the connector, but in most cases, it provides authentication information (username and password, API key) and information about which data to extract, for example, the start date to sync records from, a search query records have to match.
-
-**Connection**: A connection is an automated data pipeline that replicates data from a source to a destination. It links a configured source (based on a source connector) to a configured destination (based on a destination connector) to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate.
-
 ## When should I use Connector Builder?
 
 First, check if the API you want to use has an available connector in the [catalog](../../integrations). If you find it there, you can use it as is. If you need to update an existing connector, see the guide for updates. 
