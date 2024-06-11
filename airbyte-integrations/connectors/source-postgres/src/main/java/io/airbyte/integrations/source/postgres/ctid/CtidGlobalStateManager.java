@@ -67,18 +67,15 @@ public class CtidGlobalStateManager extends CtidStateManager {
         streamsThatHaveCompletedSnapshot.add(pair);
       }
 
-      if (fileNodeHandler.hasFileNode(
-          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()))
-          && configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-        this.resumableFullRefreshStreams.add(pair);
-      } else if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-        this.nonResumableFullRefreshStreams.add(pair);
+      if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
+        if (fileNodeHandler.hasFileNode(
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()))) {
+          this.resumableFullRefreshStreams.add(pair);
+        } else {
+          this.nonResumableFullRefreshStreams.add(pair);
+        }
       }
     });
-
-    LOGGER.info("*** resumable full refresh: " + resumableFullRefreshStreams);
-    LOGGER.info("*** non resumable full refresh: " + nonResumableFullRefreshStreams);
-
   }
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> filterOutExpiredFileNodes(

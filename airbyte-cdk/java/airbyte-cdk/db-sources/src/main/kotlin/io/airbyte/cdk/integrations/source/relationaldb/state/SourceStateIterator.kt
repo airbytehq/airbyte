@@ -73,7 +73,6 @@ open class SourceStateIterator<T>(
                 )
             }
             recordCount = 0L
-            LOGGER.info { "sending real state message: $finalStateMessageForStream" }
             return AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(finalStateMessageForStream)
