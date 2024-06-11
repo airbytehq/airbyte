@@ -21,7 +21,7 @@ To view the connection status:
 | Status      | Description                                                                                         |
 | ----------- | --------------------------------------------------------------------------------------------------- |
 | **Healthy** | The most recent sync for this connection succeeded                                                  |
-| **Failed**  | The most recent sync for this stream failed                                                         |
+| **Failed**  | The most recent sync for this connection failed                                                         |
 | **Running** | The connection is currently actively syncing                                                        |
 | **Paused**  | The connection is disabled and is not scheduled to run automatically                                |
 
