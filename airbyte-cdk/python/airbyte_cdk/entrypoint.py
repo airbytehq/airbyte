@@ -16,6 +16,8 @@ from typing import Any, DefaultDict, Iterable, List, Mapping, MutableMapping, Op
 from urllib.parse import urlparse
 
 import requests
+from orjson import orjson
+
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
@@ -200,7 +202,7 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
-        return airbyte_message.json(exclude_unset=True)
+        return orjson.dumps(airbyte_message).decode("utf-8")
 
     @classmethod
     def extract_state(cls, args: List[str]) -> Optional[Any]:

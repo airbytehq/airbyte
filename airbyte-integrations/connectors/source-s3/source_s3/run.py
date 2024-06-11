@@ -9,6 +9,8 @@ from typing import List
 
 from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
+from orjson import orjson
+
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 
@@ -27,17 +29,19 @@ def get_source(args: List[str]):
         )
     except Exception:
         print(
-            AirbyteMessage(
-                type=Type.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.ERROR,
-                    emitted_at=int(datetime.now().timestamp() * 1000),
-                    error=AirbyteErrorTraceMessage(
-                        message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
-                        stack_trace=traceback.format_exc(),
+            orjson.dumps(
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(
+                        type=TraceType.ERROR,
+                        emitted_at=int(datetime.now().timestamp() * 1000),
+                        error=AirbyteErrorTraceMessage(
+                            message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                            stack_trace=traceback.format_exc(),
+                        ),
                     ),
-                ),
-            ).json()
+                )
+            ).decode("utf-8")
         )
         return None
 

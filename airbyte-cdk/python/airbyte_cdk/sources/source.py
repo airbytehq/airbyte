@@ -8,8 +8,11 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any, Dict, Generic, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union
 
+from orjson import orjson
+
+
 from airbyte_cdk.connector import BaseConnector, DefaultConnectorMixin, TConfig
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream, SyncMode, DestinationSyncMode
 
 TState = TypeVar("TState")
 TCatalog = TypeVar("TCatalog")
@@ -88,4 +91,29 @@ class Source(
     # can be overridden to change an input catalog
     @classmethod
     def read_catalog(cls, catalog_path: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj(cls._read_json_file(catalog_path))
+        with open(catalog_path, 'rb') as f:
+            data = orjson.loads(f.read())
+        return ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(
+                        name=stream['stream']['name'],
+                        json_schema=stream['stream']['json_schema'],
+                        supported_sync_modes=[SyncMode(mode) for mode in stream['stream']['supported_sync_modes']],
+                        source_defined_cursor=stream['stream'].get('source_defined_cursor'),
+                        default_cursor_field=stream['stream'].get('default_cursor_field'),
+                        source_defined_primary_key=stream['stream'].get('source_defined_primary_key'),
+                        namespace=stream['stream'].get('namespace'),
+                        is_resumable=stream['stream'].get('is_resumable')
+                    ),
+                    sync_mode=SyncMode(stream['sync_mode']),
+                    cursor_field=stream.get('cursor_field'),
+                    destination_sync_mode=DestinationSyncMode(stream['destination_sync_mode']),
+                    primary_key=stream.get('primary_key'),
+                    generation_id=stream.get('generation_id'),
+                    minimum_generation_id=stream.get('minimum_generation_id'),
+                    sync_id=stream.get('sync_id')
+                )
+                for stream in data['streams']
+            ]
+        )

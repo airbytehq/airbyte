@@ -6,6 +6,8 @@
 import sys
 from typing import Any, List, Mapping, Optional, Tuple
 
+from orjson import orjson
+
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.connector_builder.connector_builder_handler import TestReadLimits, create_source, get_limits, read_stream, resolve_manifest
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -76,4 +78,4 @@ if __name__ == "__main__":
     except Exception as exc:
         error = AirbyteTracedException.from_exception(exc, message=f"Error handling request: {str(exc)}")
         m = error.as_airbyte_message()
-        print(error.as_airbyte_message().json(exclude_unset=True))
+        print(orjson.dumps(error.as_airbyte_message()).decode("utf-8"))
