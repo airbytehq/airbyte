@@ -16,7 +16,7 @@ To view the connection status:
 
 1. In the Airbyte UI, click **Connections**.
 
-2. Each connection is listed alongside it's status. You can also filter for a specific status to see specific connections.
+2. Each connection is listed alongside its status.  From here, you can filter for a specific status to see which connections need attention. You can also select a single connection to view more details about the connection and for a breakdown of the status of each Stream in that connection.  
 
 | Status      | Description                                                                                         |
 | ----------- | --------------------------------------------------------------------------------------------------- |
