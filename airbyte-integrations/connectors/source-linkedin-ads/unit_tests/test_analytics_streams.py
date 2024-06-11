@@ -44,7 +44,7 @@ def test_analytics_stream_slices(requests_mock):
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123}]})
 
-    assert list(stream.retriever.stream_slicer.stream_slices()) == load_json_file("output_slices.json")
+    assert [dict(i) for i in list(stream.retriever.stream_slicer.stream_slices())] == load_json_file("output_slices.json")
 
 
 def test_read_records(requests_mock):
