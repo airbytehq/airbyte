@@ -6,7 +6,7 @@ from typing import Mapping, Type, Union
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-from requests.exceptions import RequestException, InvalidURL, InvalidSchema
+from requests.exceptions import InvalidSchema, InvalidURL, RequestException
 
 DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Type[Exception]], ErrorResolution] = {
     InvalidSchema: ErrorResolution(

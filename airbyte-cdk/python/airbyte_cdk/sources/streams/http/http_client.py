@@ -6,13 +6,14 @@ import logging
 import os
 import urllib
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union, Callable
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -30,7 +31,6 @@ from .error_handlers import (
 )
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
-from airbyte_cdk.sources.message import MessageRepository
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
@@ -149,7 +149,12 @@ class HttpClient:
 
         return prepared_request
 
-    def _send_with_retry(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any], log_formatter: Optional[Callable[[requests.Response], Any]] = None) -> requests.Response:
+    def _send_with_retry(
+        self,
+        request: requests.PreparedRequest,
+        request_kwargs: Mapping[str, Any],
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> requests.Response:
         """
         Sends a request with retry logic.
 
@@ -203,11 +208,16 @@ class HttpClient:
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
         # backoff handlers wrap _send, so it will always return a response
-        response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)
+        response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
 
         return response
 
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any], log_formatter: Optional[Callable[[requests.Response], Any]] = None) -> requests.Response:
+    def _send(
+        self,
+        request: requests.PreparedRequest,
+        request_kwargs: Mapping[str, Any],
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> requests.Response:
 
         if request not in self._request_attempt_count:
             self._request_attempt_count[request] = 1
@@ -236,13 +246,12 @@ class HttpClient:
             )
 
         # Request/repsonse logging for declarative cdk.
-        if log_formatter is not None and response is not None:
-            if log_formatter:
-                formatter = log_formatter
-                self._message_repository.log_message(
-                    Level.DEBUG,
-                    lambda: formatter(response),
-                )
+        if log_formatter and response and self._message_repository:
+            formatter = log_formatter
+            self._message_repository.log_message(
+                Level.DEBUG,
+                lambda: formatter(response),
+            )
 
         if error_resolution.response_action == ResponseAction.FAIL:
             if response:

@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 from typing import Any, Mapping, Optional
 from unittest import mock
 from unittest.mock import MagicMock
@@ -10,9 +9,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest as pytest
 import requests
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
-from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy, ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
@@ -20,10 +17,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.types import Config
 from requests import PreparedRequest
-from requests_cache import CachedResponse
 
 
 @pytest.fixture
@@ -652,6 +648,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
     sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
     assert sent_request.url == expected_full_url
 
+
 def get_max_retries(http_requester):
     max_retries = http_requester._http_client._DEFAULT_MAX_RETRY
     if http_requester.disable_retries:
@@ -664,6 +661,7 @@ def get_max_retries(http_requester):
                 max_retries = backoff_strategy.max_retries
                 break
     return max_retries
+
 
 def test_request_attempt_count_is_tracked_across_retries(http_requester_factory):
     request_mock = MagicMock(spec=requests.PreparedRequest)
@@ -701,14 +699,5 @@ def test_request_attempt_count_with_exponential_backoff_strategy(http_requester_
 
     with pytest.raises(UserDefinedBackoffException):
         http_requester._http_client._send_with_retry(request=request_mock, request_kwargs={})
-
-    max_retries = http_requester._http_client._DEFAULT_MAX_RETRY
-    if hasattr(http_requester._http_client._error_handler, "max_retries") and http_requester._http_client._error_handler.max_retries is not None:
-        max_retries = http_requester._http_client._error_handler.max_retries
-    else:
-        for backoff_strategy in http_requester._http_client._backoff_strategies:
-            if hasattr(backoff_strategy, "max_retries") and backoff_strategy.max_retries is not None:
-                max_retries = backoff_strategy.max_retries
-                break
 
     assert http_requester._http_client._request_attempt_count.get(request_mock) == get_max_retries(http_requester) + 1
