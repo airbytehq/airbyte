@@ -1,10 +1,5 @@
 # Deploy Airbyte on DigitalOcean
 
-:::warning
-This is a community deployment guide and can be outdated. Feel free to try running the steps and improve the documentation as needed.
-Unfortunetaly Airbyte team can provide orientation or trobleshooting for this deployment method. If you need support we strongly recommend the official methods.
-:::
-
 This page guides you through deploying Airbyte Open Source on a [DigitalOcean droplet](https://docs.digitalocean.com/products/droplets/how-to/create/) by setting up the deployment environment, and installing and starting Airbyte.
 
 Alternatively, you can deploy Airbyte on DigitalOcean in one click using their [marketplace](https://cloud.digitalocean.com/droplets/new?onboarding_origin=marketplace&appId=95451155&image=airbyte&utm_source=deploying-airbyte_on-digitalocean-droplet).
