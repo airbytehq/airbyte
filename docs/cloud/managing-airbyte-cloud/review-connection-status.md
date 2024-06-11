@@ -60,7 +60,7 @@ The Status page offers users visibility into the recent history of your syncs. F
 
 ### Resolving Connection Errors
 
-If the most recent sync failed, you'll see the error message that will help to diagnose if the failure is due to a configuration or system error. 
+If the most recent sync failed, you'll see the error message that will help to diagnose whether the failure is due to a configuration or system error. 
 
 Configuration errors are highlighted in red. If the failure is due to a configuration error, Airbyte recommends navigating to the related source or destination to re-test and save before attempting another sync.
 
