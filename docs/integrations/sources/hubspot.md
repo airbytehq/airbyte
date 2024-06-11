@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.4 | 2024-06-06 | [38800](https://github.com/airbytehq/airbyte/pull/38800) | Retry hubspot _parse_and_handle_errors on JSON decode errors |
 | 4.2.3 | 2024-06-06 | [39314](https://github.com/airbytehq/airbyte/pull/39314) | Added missing schema types for the `Workflows` stream schema |
 | 4.2.2 | 2024-06-04 | [38981](https://github.com/airbytehq/airbyte/pull/38981) | [autopull] Upgrade base image to v1.2.1 |
 | 4.2.1 | 2024-05-30 | [38024](https://github.com/airbytehq/airbyte/pull/38024) | etry when attempting to get scopes |
