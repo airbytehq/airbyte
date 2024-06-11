@@ -49,6 +49,7 @@ Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 0.1.5 | 2024-06-06 | [39150](https://github.com/airbytehq/airbyte/pull/39150) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-06-03 | [38919](https://github.com/airbytehq/airbyte/pull/38919) | Replace AirbyteLogger with logging.Logger |
 | 0.1.3 | 2024-06-03 | [38919](https://github.com/airbytehq/airbyte/pull/38919) | Replace AirbyteLogger with logging.Logger |
 | 0.1.2 | 2024-05-20 | [38403](https://github.com/airbytehq/airbyte/pull/38403) | [autopull] base image + poetry + up_to_date |
