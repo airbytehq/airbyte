@@ -43,7 +43,6 @@ The stream status allows you to monitor an individual stream's latest status. Mo
 | **Action Required**    | A breaking change related to the source or destination requires attention to resolve                |
 | **Pending**            | The stream has not been synced yet, so not status exists                                            |
 
-
 Once the sync is complete, each stream displays the time since the last record was loaded to the destination. You can click **Last record loaded** in the header to optionally display the exact datetime the last record was loaded.
 
 In addition to the stream status, Airbyte offers several stream-specific actions that allow for precise management of your data. Clicking the three grey dots next to any stream opens the available options for the stream.
@@ -61,9 +60,19 @@ The Status page offers users visibility into the recent history of your syncs. F
 
 ### Resolving Connection Errors
 
-If the most recent sync failed, you'll see the error message that will help to diagnose if the failure is due to a configuration or system error. If the failure is due to a configuration error, Airbyte recommends navigating to the related source or destination to re-test and save before attempting another sync.  If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
+If the most recent sync failed, you'll see the error message that will help to diagnose if the failure is due to a configuration or system error. 
 
-### Resolving Major Version Upgrades
+Configuration errors are highlighted in red. If the failure is due to a configuration error, Airbyte recommends navigating to the related source or destination to re-test and save before attempting another sync.
+
+![Configuration Error](./assets/configuration-error.png)
+
+All other errors are highlighted in yellow. These can range from transient errors or warnings from the source (e.g. rate limits). We expect these to resolve themselves without any action required. 
+
+![Warning Error](./assets/warning-error.png)
+
+If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
+
+### Major Version Upgrades (Cloud only)
 If a new major version of the connector has been released in Cloud, you will also see a banner on this page indicating the cutoff date for the version upgrade. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you do not upgrade before the cutoff date, Airbyte will automatically disable your connection.
 
 Learn more about version upgrades in our [resolving breaking change documentation](/using-airbyte/schema-change-management.md#resolving-breaking-changes).
