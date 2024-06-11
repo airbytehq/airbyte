@@ -1005,7 +1005,7 @@ class ModelToComponentFactory:
             record_filter = ClientSideIncrementalRecordFilterDecorator(
                 config=config,
                 parameters=model.parameters,
-                condition=model.record_filter.condition if model.record_filter else None,
+                condition=model.record_filter.condition if (model.record_filter and hasattr(model.record_filter, "condition")) else None,
                 **client_side_incremental_sync,
             )
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
