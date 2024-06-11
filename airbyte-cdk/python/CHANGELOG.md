@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.3
+Mock server tests: adding 'discover' as part of the entrypoint_wrapper
+
+## 1.3.2
+low-code: Added retriever type filter to stream slicer merge
+
 ## 1.3.1
 Use  for Jinja interpolations
 
