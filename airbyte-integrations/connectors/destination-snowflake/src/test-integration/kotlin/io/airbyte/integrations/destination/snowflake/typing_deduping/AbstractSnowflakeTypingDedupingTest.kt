@@ -25,6 +25,7 @@ import javax.sql.DataSource
 import kotlin.concurrent.Volatile
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
@@ -334,6 +335,82 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                 "Expected two different values for loaded_at. If there is only 1 value, then we incorrectly triggered a soft reset. If there are more than 2, then something weird happened?",
             )
         }
+    }
+
+    @Test
+    fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
+                            ),
+                    ),
+                )
+
+        // First sync
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1")
+
+        // Second sync
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog, messages2)
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+    }
+
+    @Test
+    fun testAirbyteMetaAndGenerationIdMigrationForOverwrite310Broken() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
+                            ),
+                    ),
+                )
+
+        // First sync
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1")
+
+        // Second sync
+        // This throws exception due to a broken migration in connector
+        assertThrows(TestHarnessException::class.java) {
+            runSync(catalog, messages1, "airbyte/destination-snowflake:3.10.0")
+        }
+
+        // Third sync
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog, messages2)
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
     private val defaultSchema: String
