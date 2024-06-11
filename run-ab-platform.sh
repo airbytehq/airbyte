@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=0.62.4
+VERSION=0.63.0
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
