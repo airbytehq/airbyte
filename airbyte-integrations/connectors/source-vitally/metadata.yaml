@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - rest.vitally.io
-  connectorBuildOptions:
-    # Please update to the latest version of the connector base image.
-    # https://hub.docker.com/r/airbyte/python-connector-base
-    # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 6c6d8b0c-db35-4cd1-a7de-0ca8b080f5ac
@@ -35,4 +30,6 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
 metadataSpecVersion: "1.0"
