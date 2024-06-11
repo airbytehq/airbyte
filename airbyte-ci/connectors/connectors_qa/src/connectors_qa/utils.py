@@ -172,11 +172,21 @@ def prepare_headers(connector_documentation: dict) -> list[str]:
     return headers
 
 
-def prepare_changelog_to_compare(docs: list[str], template: list[str]) -> list[str]:
-    open_tag = "  <summary>Expand to review</summary>\n"
-    close_tag = "</details>"
+def prepare_changelog_to_compare(docs: list[str]) -> list[str]:
+    docs_to_compare = []
+    _siblings_content = []
+    n = "\n"
+    docs = "".join(docs)
+    node = documentation_node(docs)
 
-    docs_index_open_tag = template.index(open_tag) + 1  # we need also new line after summary block
-    docs_index_close_tag = template.index(close_tag) - len(template)
+    for sibling in node[0].siblings:
+        _siblings_content.append(sibling.content.rstrip())
 
-    return docs[: docs_index_open_tag + 1] + docs[docs_index_close_tag:]
+    for c in _siblings_content:
+        if n in c:
+            docs_to_compare += [_c + n for _c in c.split(n)]
+        else:
+            docs_to_compare.append(c)
+
+    docs_to_compare = list(filter(("").__ne__, docs_to_compare))
+    return docs_to_compare

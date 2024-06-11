@@ -119,6 +119,7 @@ class CheckDocumentationContent(DocumentationCheck):
     """
     For now, we check documentation structure for sources with sl >= 300.
     """
+
     applies_to_connector_languages = [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]
     applies_to_connector_ab_internal_sl = 300
     applies_to_connector_types = ["source"]
@@ -392,12 +393,20 @@ class CheckDocumentationDescriptions(CheckDocumentationContent):
                     template_description_content = template_file.readlines()
 
                     if heading == "Changelog":
-                        docs_description_content = prepare_changelog_to_compare(docs_description_content, template_description_content)
+                        docs_description_content = prepare_changelog_to_compare(docs_description_content)
 
                     for d, t in zip(docs_description_content, template_description_content):
                         d, t = prepare_lines_to_compare(connector_name, d, t)
                         if d != t:
-                            errors.append(f"\nDescription for '{heading}' does not follow structure.\nExpected: {t} Actual: {d}")
+                            if heading == "Changelog":
+                                errors.append(
+                                    f"\nDescription for '{heading}' does not follow structure."
+                                    f"\nExpected{repr(t)} block to wrap {heading} table"
+                                )
+                            else:
+                                errors.append(
+                                    f"\nDescription for '{heading}' does not follow structure.\nExpected: {repr(t)} Actual: {repr(d)}"
+                                )
 
         return errors
 
