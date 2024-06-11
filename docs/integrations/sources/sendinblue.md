@@ -29,8 +29,13 @@ Sendinblue APIs are under rate limits for the number of API calls allowed per AP
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------ |
 | 0.1.2 | 2024-05-20 | [38375](https://github.com/airbytehq/airbyte/pull/38375) | [autopull] base image + poetry + up_to_date |
 | 0.1.1   | 2022-08-31 | [#30022](https://github.com/airbytehq/airbyte/pull/30022) | ✨ Source SendInBlue: Add incremental sync to contacts stream |
 | 0.1.0   | 2022-11-01 | [#18771](https://github.com/airbytehq/airbyte/pull/18771) | 🎉 New Source: Sendinblue API [low-code CDK]                  |
+
+</details>

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.3"
+version = "0.3.5"
 name = "source-surveymonkey"
 description = "Source implementation for Surveymonkey."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_surveymonkey"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "0.90.0"
 vcrpy = "==4.1.1"
 urllib3 = "==1.26.18"
 
