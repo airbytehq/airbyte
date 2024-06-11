@@ -37,7 +37,7 @@ data:
           field as API docs declares it.
           Users will need to reset source configuration, refresh the source schema and reset the impacted streams after upgrading.
           For more information, see our migration documentation for source TikTok Marketing.
-        upgradeDeadline: "2024-06-15" # TODO: update this date before merge
+        upgradeDeadline: "2024-08-07" # TODO: update this date before merge
         scopedImpact:
           - scopeType: stream
             impactedScopes:
