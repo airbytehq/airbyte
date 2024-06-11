@@ -33,9 +33,9 @@ object BigQueryConsumerFactory {
             catalog = catalog,
             bufferManager =
                 BufferManager(
+                    defaultNamespace,
                     (Runtime.getRuntime().maxMemory() * 0.4).toLong(),
                 ),
-            defaultNamespace = Optional.of(defaultNamespace),
         )
     }
 
@@ -59,9 +59,9 @@ object BigQueryConsumerFactory {
             catalog = catalog,
             bufferManager =
                 BufferManager(
+                    defaultNamespace,
                     (Runtime.getRuntime().maxMemory() * 0.5).toLong(),
                 ),
-            defaultNamespace = Optional.of(defaultNamespace),
         )
     }
 }
