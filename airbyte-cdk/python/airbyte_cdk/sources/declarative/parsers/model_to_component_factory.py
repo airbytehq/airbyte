@@ -471,7 +471,7 @@ class ModelToComponentFactory:
                 model_args[model_field] = vals
 
         kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
-        return custom_component_class(**kwargs)
+        return custom_component_class(parameters=model.field_parameters, **kwargs)
 
     @staticmethod
     def _get_class_from_fully_qualified_class_name(full_qualified_class_name: str) -> Any:
