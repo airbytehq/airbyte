@@ -89,94 +89,12 @@ public class BigQueryUtils {
   public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
     Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
-      checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation);
       final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
       dataset = bigquery.create(datasetInfo);
     }
     return dataset;
   }
 
-  public static void checkHasCreateAndDeleteDatasetRole(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
-    final String tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX + System.currentTimeMillis();
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(tmpTestDatasetId).setLocation(datasetLocation).build();
-
-    bigquery.create(datasetInfo);
-
-    try {
-      attemptCreateTableAndTestInsert(bigquery, tmpTestDatasetId);
-    } finally {
-      bigquery.delete(tmpTestDatasetId);
-    }
-  }
-
-  /**
-   * Method is used to create tmp table and make dummy record insert. It's used in Check() connection
-   * method to make sure that user has all required roles for upcoming data sync/migration. It also
-   * verifies if BigQuery project is billable, if not - later sync will fail as non-billable project
-   * has limitations with stream uploading and DML queries. More details may be found there:
-   * https://cloud.google.com/bigquery/docs/streaming-data-into-bigquery
-   * https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language
-   *
-   * @param bigquery - initialized bigquery client
-   * @param tmpTestDatasetId - dataset name where tmp table will be created
-   */
-  private static void attemptCreateTableAndTestInsert(final BigQuery bigquery, final String tmpTestDatasetId) {
-    // Create dummy schema that will be used for tmp table creation
-    final Schema testTableSchema = Schema.of(
-        Field.of("id", StandardSQLTypeName.INT64),
-        Field.of("name", StandardSQLTypeName.STRING));
-
-    // Create tmp table to verify if user has a create table permission. Also below we will do test
-    // records insert in it
-    final Table test_connection_table_name = createTable(bigquery, tmpTestDatasetId,
-        CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
-
-    // Try to make test (dummy records) insert to make sure that user has required permissions
-    // Use ids for BigQuery client to attempt idempotent retries.
-    // See https://github.com/airbytehq/airbyte/issues/33982
-    try {
-      final InsertAllResponse response =
-          bigquery.insertAll(InsertAllRequest
-              .newBuilder(test_connection_table_name)
-              .addRow(RowToInsert.of("1", ImmutableMap.of("id", 1, "name", "James")))
-              .addRow(RowToInsert.of("2", ImmutableMap.of("id", 2, "name", "Eugene")))
-              .addRow(RowToInsert.of("3", ImmutableMap.of("id", 3, "name", "Angelina")))
-              .build());
-
-      if (response.hasErrors()) {
-        // If any of the insertions failed, this lets you inspect the errors
-        for (final Map.Entry<Long, List<BigQueryError>> entry : response.getInsertErrors().entrySet()) {
-          throw new ConfigErrorException("Failed to check connection: \n" + entry.getValue());
-        }
-      }
-    } catch (final BigQueryException e) {
-      LOGGER.error("Dummy inserts in check failed", e);
-      throw new ConfigErrorException("Failed to check connection: \n" + e.getMessage());
-    } finally {
-      test_connection_table_name.delete();
-    }
-  }
-
-  public static Table createTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
-    final TableId tableId = TableId.of(datasetName, tableName);
-    final TableDefinition tableDefinition = StandardTableDefinition.of(schema);
-    final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
-    return bigquery.create(tableInfo);
-  }
-
-  /**
-   * Creates a partitioned table with clustering based on time
-   *
-   * <p>
-   * https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
-   * </p>
-   *
-   * @param bigquery BigQuery interface
-   * @param tableId equivalent to table name
-   * @param schema representation for table schema
-   * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
-   *         was not successfully created
-   */
   public static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
       // Partition by generation ID. This will be useful for when we want to build
