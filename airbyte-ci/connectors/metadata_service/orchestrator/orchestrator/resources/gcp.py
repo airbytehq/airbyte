@@ -5,7 +5,7 @@
 import json
 import re
 import uuid
-from typing import Optional
+from typing import List, Optional, Union
 
 import dagster._check as check
 from dagster import BoolSource, Field, InitResourceContext, Noneable, StringSource, resource
@@ -161,7 +161,7 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
         "reverse_sort": Field(config=bool, default_value=False),
     },
 )
-def gcs_directory_blobs(resource_context: InitResourceContext) -> list[storage.Blob] | storage.Blob:
+def gcs_directory_blobs(resource_context: InitResourceContext) -> Union[List[storage.Blob], storage.Blob]:
     """
     List all blobs in a bucket that match the prefix.
     """
