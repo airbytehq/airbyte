@@ -235,12 +235,13 @@ class HttpClient:
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
 
-        if log_formatter is not None:
+        # Request/repsonse logging for declarative cdk.
+        if log_formatter is not None and response is not None:
             if log_formatter:
                 formatter = log_formatter
                 self._message_repository.log_message(
                     Level.DEBUG,
-                    lambda: formatter(response if response is not None else exc),
+                    lambda: formatter(response),
                 )
 
         if error_resolution.response_action == ResponseAction.FAIL:
