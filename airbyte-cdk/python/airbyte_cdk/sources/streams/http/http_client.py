@@ -19,7 +19,7 @@ from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
-from .error_handlers import (
+from airbyte_cdk.sources.streams.http.error_handlers import (
     BackoffStrategy,
     DefaultBackoffStrategy,
     ErrorHandler,
@@ -29,8 +29,8 @@ from .error_handlers import (
     JsonErrorMessageParser,
     ResponseAction,
 )
-from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from .rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
@@ -259,14 +259,11 @@ class HttpClient:
             else:
                 error_message = f"'{request.method}' request to '{request.url}' failed with exception: '{exc}'"
 
-            if exc is not None:
-                raise AirbyteTracedException(
-                    internal_message=error_message,
-                    message=error_resolution.error_message or error_message,
-                    failure_type=error_resolution.failure_type,
-                )
-            else:
-                raise ReadException(error_message)
+            raise AirbyteTracedException(
+                internal_message=error_message,
+                message=error_resolution.error_message or error_message,
+                failure_type=error_resolution.failure_type,
+            )
 
         elif error_resolution.response_action == ResponseAction.IGNORE:
             if response:
