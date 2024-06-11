@@ -156,9 +156,10 @@ object ConnectorExceptionUtil {
         e: Throwable?,
         errorMessages: Array<String>
     ): Boolean {
-        val msg = e?.message!!.lowercase()
+        val msg: String = e?.message ?: return false
+        val msgLowerCase = msg.lowercase()
         for (errorMessage in errorMessages) {
-            if (msg.contains(errorMessage)) return true
+            if (msgLowerCase.contains(errorMessage)) return true
         }
         return false
     }
