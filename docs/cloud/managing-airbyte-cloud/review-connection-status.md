@@ -29,7 +29,7 @@ To view the connection status:
 
 ## Review the stream status
 
-The stream status allows you to monitor an individual stream's latest status. Most connections will be syncing more than one stream, and this allows you to .
+The stream status allows you to monitor an individual stream's latest status. Connections often sync more than one stream. This view allows you to more easily determine if there is a problem with a given stream that could be causing problems with the connection. 
 
 | Status                   | Description                                                                                         |
 | ------------------------ | --------------------------------------------------------------------------------------------------- |
