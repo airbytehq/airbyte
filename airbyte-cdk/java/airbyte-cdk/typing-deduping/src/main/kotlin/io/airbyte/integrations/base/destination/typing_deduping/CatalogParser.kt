@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addStringForDeinterpolation
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,9 +20,20 @@ class CatalogParser
 @JvmOverloads
 constructor(
     private val sqlGenerator: SqlGenerator,
-    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+    private val defaultNamespace: String,
+    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
 ) {
-    fun parseCatalog(catalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+    fun parseCatalog(orginalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+        // Don't mutate the original catalog, just operate on a copy of it
+        // This is... probably the easiest way we have to deep clone a protocol model object?
+        val catalog = Jsons.clone(orginalCatalog)
+        catalog.streams.onEach {
+            // Overwrite null namespaces
+            if (it.stream.namespace.isNullOrEmpty()) {
+                it.stream.namespace = defaultNamespace
+            }
+        }
+
         // this code is bad and I feel bad
         // it's mostly a port of the old normalization logic to prevent tablename collisions.
         // tbh I have no idea if it works correctly.
