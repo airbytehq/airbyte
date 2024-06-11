@@ -18,7 +18,7 @@ data:
     baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
-  definitionId: c4a803b9-9e5c-4fc3-98da-b1705b893e76
+  definitionId: 1c7e12c1-f9df-47bb-bd06-48a6068d68c5
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-github-files
   githubIssueLabel: source-github-files
