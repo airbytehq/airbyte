@@ -82,6 +82,7 @@ class HttpRequester(Requester):
             use_cache=self.use_cache,
             backoff_strategy=backoff_strategies,
             disable_retries=self.disable_retries,
+            message_respository=self.message_repository,
         )
 
     def get_authenticator(self) -> DeclarativeAuthenticator:
@@ -302,6 +303,7 @@ class HttpRequester(Requester):
             json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),
             data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
             dedupe_query_params=True,
+            log_formatter=log_formatter,
         )
 
         return response

@@ -6,10 +6,11 @@ import logging
 import os
 import urllib
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union, Callable
 
 import requests
 import requests_cache
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
@@ -29,6 +30,7 @@ from .error_handlers import (
 )
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.message import MessageRepository
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
@@ -51,6 +53,7 @@ class HttpClient:
         backoff_strategy: Optional[Union[BackoffStrategy, List[BackoffStrategy]]] = None,
         error_message_parser: Optional[ErrorMessageParser] = None,
         disable_retries: bool = False,
+        message_respository: Optional[MessageRepository] = None,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -76,6 +79,7 @@ class HttpClient:
         self._error_message_parser = error_message_parser or JsonErrorMessageParser()
         self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
         self._disable_retries = disable_retries
+        self._message_repository = message_respository
 
     @property
     def cache_filename(self) -> str:
@@ -145,7 +149,7 @@ class HttpClient:
 
         return prepared_request
 
-    def _send_with_retry(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send_with_retry(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any], log_formatter: Optional[Callable[[requests.Response], Any]] = None) -> requests.Response:
         """
         Sends a request with retry logic.
 
@@ -199,18 +203,18 @@ class HttpClient:
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
         # backoff handlers wrap _send, so it will always return a response
-        response = backoff_handler(user_backoff_handler)(request, request_kwargs)
+        response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)
 
         return response
 
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any], log_formatter: Optional[Callable[[requests.Response], Any]] = None) -> requests.Response:
 
         if request not in self._request_attempt_count:
             self._request_attempt_count[request] = 1
         else:
             self._request_attempt_count[request] += 1
 
-        self._logger.debug(
+        self._logger.info(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
 
@@ -227,9 +231,17 @@ class HttpClient:
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
         if self._logger.isEnabledFor(logging.DEBUG) and response is not None:
-            self._logger.debug(
+            self._logger.info(
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
+
+        if log_formatter is not None:
+            if log_formatter:
+                formatter = log_formatter
+                self._message_repository.log_message(
+                    Level.DEBUG,
+                    lambda: formatter(response if response is not None else exc),
+                )
 
         if error_resolution.response_action == ResponseAction.FAIL:
             if response:
@@ -301,6 +313,7 @@ class HttpClient:
         json: Optional[Mapping[str, Any]] = None,
         data: Optional[Union[str, Mapping[str, Any]]] = None,
         dedupe_query_params: bool = False,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         """
         Prepares and sends request and return request and response objects.
@@ -310,6 +323,6 @@ class HttpClient:
             http_method=http_method, url=url, dedupe_query_params=dedupe_query_params, headers=headers, params=params, json=json, data=data
         )
 
-        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs)
+        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs, log_formatter=log_formatter)
 
         return request, response
