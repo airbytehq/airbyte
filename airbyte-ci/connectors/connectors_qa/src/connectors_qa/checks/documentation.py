@@ -5,7 +5,7 @@ from pathlib import Path
 from threading import Thread
 from typing import List
 
-import requests
+import requests  # type: ignore
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
@@ -129,13 +129,13 @@ class CheckDocumentationLinks(CheckDocumentationContent):
     name = "Links used in connector documentation are valid"
     description = f"The user facing connector documentation should update invalid links in connector documentation."
 
-    def validate_links(self, docs_content) -> List[str]:
+    def validate_links(self, docs_content: str) -> List[str]:
         valid_status_codes = [200, 403, 401, 405, 429, 503]  # we skip 4xx due to needed access
         links = re.findall("(https?://[^\s\`)]+)", docs_content)
         invalid_links = []
         threads = []
 
-        def request_link(docs_link):
+        def request_link(docs_link: str) -> None:
             try:
                 response = requests.get(docs_link)
                 if response.status_code not in valid_status_codes:
@@ -196,7 +196,7 @@ class CheckDocumentationHeaders(CheckDocumentationContent):
     CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access", "client"]
     CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
 
-    def _get_template_headings(self, connector_name: str) -> tuple[tuple[str], tuple[str]]:
+    def _get_template_headings(self, connector_name: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
         """
         Headings in order to docs structure.
         """
@@ -320,7 +320,7 @@ class CheckDocumentationDescriptions(CheckDocumentationContent):
     HEADING = "heading"
     CREDENTIALS_KEYWORDS = ["account", "auth", "credentials", "access", "client"]
 
-    def _headings_description(self, connector_name: str) -> dict[str:Path]:
+    def _headings_description(self, connector_name: str) -> dict[str, Path]:
         """
         Headings with path to file with template description
         """
@@ -337,12 +337,12 @@ class CheckDocumentationDescriptions(CheckDocumentationContent):
     def check_prerequisites_section_has_descriptions_for_required_fields(
         self, actual_connector_spec: dict, connector_documentation: str, docs_path: str
     ) -> List[str]:
-        errors = []
+        errors: List[str] = []
         if not actual_connector_spec:
             return errors
 
         node = documentation_node(connector_documentation)
-        header_line_map = {header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        header_line_map = {header_name(n): n.map[1] for n in node if n.type == self.HEADING}  # type: ignore
         headings = tuple(header_line_map.keys())
 
         if not header_line_map.get(self.PREREQUISITES):
@@ -356,7 +356,7 @@ class CheckDocumentationDescriptions(CheckDocumentationContent):
             # adding real character to avoid accidentally joining lines into a wanted title.
             prereq_content = "|".join(prereq_content_lines).lower()
             spec = actual_connector_spec.get("connectionSpecification") or actual_connector_spec.get("connection_specification")
-            required_titles, has_credentials = required_titles_from_spec(spec)
+            required_titles, has_credentials = required_titles_from_spec(spec)  # type: ignore
 
             for title in required_titles:
                 if title not in prereq_content:
@@ -378,7 +378,7 @@ class CheckDocumentationDescriptions(CheckDocumentationContent):
         template_descriptions = self._headings_description(connector_name)
 
         node = documentation_node(connector_documentation)
-        header_line_map = {header_name(n): n.map[1] for n in node if n.type == self.HEADING}
+        header_line_map = {header_name(n): n.map[1] for n in node if n.type == self.HEADING}  # type: ignore
         actual_headings = tuple(header_line_map.keys())
 
         for heading, description in template_descriptions.items():

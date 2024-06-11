@@ -83,10 +83,10 @@ def documentation_node(connector_documentation: str) -> SyntaxTreeNode:
 
 
 def header_name(n: SyntaxTreeNode) -> str:
-    return n.to_tokens()[1].children[0].content
+    return n.to_tokens()[1].children[0].content  # type: ignore
 
 
-def prepare_lines_to_compare(connector_name: str, docs_line: str, template_line: str) -> tuple[str]:
+def prepare_lines_to_compare(connector_name: str, docs_line: str, template_line: str) -> tuple[str, str]:
     def _replace_link(docs_string: str, link_to_replace: str) -> str:
         links = re.findall("(https?://[^\s)]+)", docs_string)
         for link in links:
@@ -104,7 +104,7 @@ def prepare_lines_to_compare(connector_name: str, docs_line: str, template_line:
     return docs_line, template_line
 
 
-def remove_not_required_step_headers(headers: tuple[str]) -> tuple[str]:
+def remove_not_required_step_headers(headers: list[str]) -> list[str]:
     """
     Removes headers like Step 1.1 Step 3 Step 2.3 from actual headers, if they placed after Step 1: header.
     from: "Connector name", "Prerequisites", "Setup guide", "Step 1: do something 1", "Step 1.11: do something 11",
@@ -142,7 +142,7 @@ def remove_not_required_step_headers(headers: tuple[str]) -> tuple[str]:
     return headers
 
 
-def reason_titles_not_match(heading_names_value: str, template_headings_value: str, template_headings: list[str]) -> str:
+def reason_titles_not_match(heading_names_value: str, template_headings_value: str, template_headings: tuple[str, ...]) -> str:
     reason = f"Heading '{heading_names_value}' is not in the right place, the name of heading is incorrect or not expected.\n"
     close_titles = get_close_matches(heading_names_value, template_headings)
     if close_titles and close_titles[0] != heading_names_value:
@@ -152,23 +152,23 @@ def reason_titles_not_match(heading_names_value: str, template_headings_value: s
     return reason + diff
 
 
-def reason_missing_titles(template_headings_index: int, template_headings: list[str], not_required_headers: list[str]) -> str:
+def reason_missing_titles(template_headings_index: int, template_headings: tuple[str, ...], not_required_headers: tuple[str, ...]) -> str:
     missing = template_headings[template_headings_index:]
     required = [m for m in missing if m not in not_required_headers]
     return f"Required missing headers: {required}. All missing headers: {missing}"
 
 
-def description_end_line_index(heading: str, actual_headings: list[str], header_line_map: dict[str, int]) -> int:
+def description_end_line_index(heading: str, actual_headings: tuple[str, ...], header_line_map: dict[str, int]) -> int:
     if actual_headings.index(heading) + 1 == len(actual_headings):
-        return
+        return  # type: ignore
     return header_line_map[actual_headings[actual_headings.index(heading) + 1]]
 
 
-def prepare_headers(connector_documentation: dict) -> list[str]:
+def prepare_headers(connector_documentation: str) -> list[str]:
     node = documentation_node(connector_documentation)
-    headers = [header_name(n) for n in node if n.type == "heading"]  # find all headers
+    headers = [header_name(n) for n in node if n.type == "heading"]  # type: ignore # find all headers
     headers = remove_not_required_step_headers(headers)  # remove Step 1.1 Step 3 ... headers
-    headers = tuple([remove_step_from_heading(h) for h in headers])  # remove Step 1 and Step 2 from header name
+    headers = [remove_step_from_heading(h) for h in headers]  # remove Step 1 and Step 2 from header name
     return headers
 
 
@@ -176,8 +176,7 @@ def prepare_changelog_to_compare(docs: list[str]) -> list[str]:
     docs_to_compare = []
     _siblings_content = []
     n = "\n"
-    docs = "".join(docs)
-    node = documentation_node(docs)
+    node = documentation_node("".join(docs))
 
     for sibling in node[0].siblings:
         _siblings_content.append(sibling.content.rstrip())
