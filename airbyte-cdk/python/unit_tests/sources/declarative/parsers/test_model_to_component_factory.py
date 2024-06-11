@@ -2044,25 +2044,6 @@ def test_simple_retriever_emit_log_messages():
     assert connector_builder_factory._message_repository._log_level == Level.DEBUG
 
 
-def test_ignore_retry():
-    requester_model = {
-        "type": "HttpRequester",
-        "name": "list",
-        "url_base": "orange.com",
-        "path": "/v1/api",
-    }
-
-    connector_builder_factory = ModelToComponentFactory(disable_retries=True)
-    requester = connector_builder_factory.create_component(
-        model_type=HttpRequesterModel,
-        component_definition=requester_model,
-        config={},
-        name="Test",
-    )
-
-    assert requester.max_retries == 0
-
-
 def test_create_page_increment():
     model = PageIncrementModel(
         type="PageIncrement",

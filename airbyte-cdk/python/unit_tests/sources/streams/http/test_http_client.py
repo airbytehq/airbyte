@@ -1,14 +1,24 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import logging
+from datetime import timedelta
 from unittest.mock import MagicMock
 
 import pytest
 import requests
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
+    ExponentialBackoffStrategy,
+)
 from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.http import HttpClient
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorResolution, HttpStatusErrorHandler, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import (
+    BackoffStrategy,
+    DefaultBackoffStrategy,
+    ErrorResolution,
+    HttpStatusErrorHandler,
+    ResponseAction,
+)
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -391,3 +401,63 @@ def test_send_request_given_request_exception_and_retry_response_action_retries_
 
     assert http_client._session.send.call_count == call_count
     assert returned_response == valid_response
+
+
+def test_disable_retries():
+    http_client = HttpClient(name="test", logger=MagicMock(), disable_retries=True)
+    assert http_client._disable_retries is True
+    assert http_client._max_retries() == 0
+
+
+def test_default_max_retries():
+    http_client = HttpClient(name="test", logger=MagicMock())
+    assert http_client._max_retries() == 5
+
+
+def test_backoff_strategy_max_retries():
+    error_handler = HttpStatusErrorHandler(logger=MagicMock(), error_mapping={requests.RequestException: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")})
+    backoff_strategy = DefaultBackoffStrategy(max_retries=10)
+    http_client = HttpClient(name="test", logger=MagicMock(), error_handler=error_handler, backoff_strategy=backoff_strategy)
+    assert http_client._max_retries() == 10
+
+
+class CustomErrorHandler(HttpStatusErrorHandler):
+
+    max_retries = 7
+    max_time = 916
+
+
+def test_custom_error_handler_max_retries():
+    error_handler = CustomErrorHandler(logger=MagicMock(), error_mapping={requests.RequestException: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")})
+    http_client = HttpClient(name="test", logger=MagicMock(), error_handler=error_handler)
+    assert http_client._max_retries() == 7
+
+
+def test_default_max_time():
+    http_client = HttpClient(name="test", logger=MagicMock())
+    assert http_client._max_time() == 600
+
+
+def test_backoff_strategy_max_time():
+    error_handler = HttpStatusErrorHandler(logger=MagicMock(), error_mapping={requests.RequestException: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")})
+    backoff_strategy = DefaultBackoffStrategy(max_time=timedelta(seconds=123))
+    http_client = HttpClient(name="test", logger=MagicMock(), error_handler=error_handler, backoff_strategy=backoff_strategy)
+    assert http_client._max_time() == 123
+
+
+def test_custom_error_handler_max_time():
+    error_handler = CustomErrorHandler(logger=MagicMock(), error_mapping={requests.RequestException: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")})
+    http_client = HttpClient(name="test", logger=MagicMock(), error_handler=error_handler)
+    assert http_client._max_time() == 916
+
+
+def test_default_factor():
+    http_client = HttpClient(name="test", logger=MagicMock())
+    assert http_client._factor() == 5
+
+
+def test_backoff_strategy_factor():
+    error_handler = HttpStatusErrorHandler(logger=MagicMock(), error_mapping={requests.RequestException: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")})
+    backoff_strategy = ExponentialBackoffStrategy(factor=1.5, parameters={}, config={})
+    http_client = HttpClient(name="test", logger=MagicMock(), error_handler=error_handler, backoff_strategy=backoff_strategy)
+    assert http_client._factor() == 1.5

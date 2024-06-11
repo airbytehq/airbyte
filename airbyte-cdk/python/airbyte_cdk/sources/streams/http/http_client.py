@@ -147,6 +147,38 @@ class HttpClient:
 
         return prepared_request
 
+    def _max_retries(self) -> int:
+        max_retries = self._DEFAULT_MAX_RETRY
+        if self._disable_retries:
+            max_retries = 0
+        elif hasattr(self._error_handler, "max_retries") and self._error_handler.max_retries is not None:
+            max_retries = self._error_handler.max_retries
+        else:
+            for backoff_strategy in self._backoff_strategies:
+                if hasattr(backoff_strategy, "max_retries") and backoff_strategy.max_retries is not None:
+                    max_retries = backoff_strategy.max_retries
+                    break
+        return max_retries
+
+    def _max_time(self) -> int:
+        max_time = self._DEFAULT_MAX_TIME
+        if hasattr(self._error_handler, "max_time") and self._error_handler.max_time is not None:
+            max_time = self._error_handler.max_time
+        else:
+            for backoff_strategy in self._backoff_strategies:
+                if hasattr(backoff_strategy, "max_time") and backoff_strategy.max_time is not None:
+                    max_time = backoff_strategy.max_time
+                    break
+        return max_time
+
+    def _factor(self) -> float:
+        factor = self._DEFAULT_RETRY_FACTOR
+        for backoff_strategy in self._backoff_strategies:
+            if hasattr(backoff_strategy, "retry_factor") and backoff_strategy.retry_factor is not None:
+                factor = backoff_strategy.retry_factor
+                break
+        return factor
+
     def _send_with_retry(
         self,
         request: requests.PreparedRequest,
@@ -175,33 +207,11 @@ class HttpClient:
         Returns:
             requests.Response: The HTTP response received from the server after retries.
         """
-        max_retries = self._DEFAULT_MAX_RETRY
-        if self._disable_retries:
-            max_retries = 0
-        if hasattr(self._error_handler, "max_retries") and self._error_handler.max_retries is not None:
-            max_retries = self._error_handler.max_retries
-        else:
-            for backoff_strategy in self._backoff_strategies:
-                if hasattr(backoff_strategy, "max_retries") and backoff_strategy.max_retries is not None:
-                    max_retries = backoff_strategy.max_retries
-                    break
 
+        max_retries = self._max_retries()
         max_tries = max(0, max_retries) + 1
-
-        max_time = self._DEFAULT_MAX_TIME
-        if hasattr(self._error_handler, "max_time") and self._error_handler.max_time is not None:
-            max_time = self._error_handler.max_time
-        else:
-            for backoff_strategy in self._backoff_strategies:
-                if hasattr(backoff_strategy, "max_time") and backoff_strategy.max_time is not None:
-                    max_time = backoff_strategy.max_time
-                    break
-
-        factor = self._DEFAULT_RETRY_FACTOR
-        for backoff_strategy in self._backoff_strategies:
-            if hasattr(backoff_strategy, "factor") and backoff_strategy.factor is not None:
-                factor = backoff_strategy.factor
-                break
+        max_time = self._max_time()
+        factor = self._factor()
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
