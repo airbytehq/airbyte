@@ -13,6 +13,8 @@ from typing import Any, Mapping
 
 import pytest
 import yaml
+from pydantic_core._pydantic_core import Url
+
 from airbyte_cdk import Connector
 from airbyte_cdk.models import AirbyteConnectionStatus
 
@@ -112,7 +114,7 @@ class TestConnectorSpec:
 
     def test_spec_from_json_file(self, integration, use_json_spec):
         connector_spec = integration.spec(logger)
-        assert connector_spec.documentationUrl == "https://airbyte.com/#json"
+        assert connector_spec.documentationUrl == Url("https://airbyte.com/#json")
         assert connector_spec.connectionSpecification == self.CONNECTION_SPECIFICATION
 
     def test_spec_from_improperly_formatted_json_file(self, integration, use_invalid_json_spec):
@@ -121,7 +123,7 @@ class TestConnectorSpec:
 
     def test_spec_from_yaml_file(self, integration, use_yaml_spec):
         connector_spec = integration.spec(logger)
-        assert connector_spec.documentationUrl == "https://airbyte.com/#yaml"
+        assert connector_spec.documentationUrl == Url("https://airbyte.com/#yaml")
         assert connector_spec.connectionSpecification == self.CONNECTION_SPECIFICATION
 
     def test_multiple_spec_files_raises_exception(self, integration, use_yaml_spec, use_json_spec):
