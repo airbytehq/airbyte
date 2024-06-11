@@ -89,15 +89,16 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
-| 0.3.0   | 2024-05-25 | [37452](https://github.com/airbytehq/airbyte/pull/37452) | Migrate to Low Code                                                             |
-| 0.2.6   | 2024-04-19 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Updating to 0.80.0 CDK                                                          |
-| 0.2.5   | 2024-04-18 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Manage dependencies with Poetry.                                                |
-| 0.2.4   | 2024-04-15 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.3   | 2024-04-12 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | schema descriptions                                                             |
-| 0.2.2   | 2022-09-16 | [17684](https://github.com/airbytehq/airbyte/pull/17684) | Fix custom field validation retrieve                                            |
-| 0.2.1   | 2022-09-16 | [16826](https://github.com/airbytehq/airbyte/pull/16826) | Add custom fields validation during check                                       |
-| 0.2.0   | 2022-03-24 | [11326](https://github.com/airbytehq/airbyte/pull/11326) | Add support for Custom Reports endpoint                                         |
-| 0.1.0   | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054)   | Initial release with Employees API                                              |
+| 0.3.1 | 2024-06-06 | [39201](https://github.com/airbytehq/airbyte/pull/39201) | [autopull] Upgrade base image to v1.2.2 |
+| 0.3.0 | 2024-05-25 | [37452](https://github.com/airbytehq/airbyte/pull/37452) | Migrate to Low Code |
+| 0.2.6 | 2024-04-19 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Updating to 0.80.0 CDK |
+| 0.2.5 | 2024-04-18 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Manage dependencies with Poetry. |
+| 0.2.4 | 2024-04-15 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.3 | 2024-04-12 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | schema descriptions |
+| 0.2.2 | 2022-09-16 | [17684](https://github.com/airbytehq/airbyte/pull/17684) | Fix custom field validation retrieve |
+| 0.2.1 | 2022-09-16 | [16826](https://github.com/airbytehq/airbyte/pull/16826) | Add custom fields validation during check |
+| 0.2.0 | 2022-03-24 | [11326](https://github.com/airbytehq/airbyte/pull/11326) | Add support for Custom Reports endpoint |
+| 0.1.0 | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054) | Initial release with Employees API |
 
 </details>
 
