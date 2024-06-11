@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/destination-rabbitmq
   githubIssueLabel: destination-rabbitmq
   icon: pulsar.svg
@@ -24,13 +24,16 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-RABBITMQ__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+    # Disable integration tests
+    # They are not passing
+    # No Airbyte Cloud Usage
+    # - suite: integrationTests
+    #   testSecrets:
+    #     - name: SECRET_DESTINATION-RABBITMQ__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
 metadataSpecVersion: "1.0"
