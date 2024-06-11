@@ -55,10 +55,15 @@ In addition to the stream status, Airbyte offers several stream-specific actions
 You can also navigate directly to the stream's configuration by click the three grey dots next to any stream and selecting "Open details" to be redirected to the stream configuration.
 
 
-## Resolving Connection Errors
+## Connection Troubleshooting
+
+The Status page offers users visibility into the recent history of your syncs. For Cloud and Enterprise users, the **Streams status** and **Records loaded** are shown for the last 8 syncs. To navigate quickly to the related sync history, hover over the graph and select the sync you're interested in viewing.
+
+### Resolving Connection Errors
 
 If the most recent sync failed, you'll see the error message that will help to diagnose if the failure is due to a configuration or system error. If the failure is due to a configuration error, Airbyte recommends navigating to the related source or destination to re-test and save before attempting another sync.  If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
 
-If a new major version of the connector has been released in Cloud, you will also see a banner on this page indicating the cutoff date for the version. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you do not upgrade before the cutoff date, Airbyte will automatically disable your connection.
+### Resolving Major Version Upgrades
+If a new major version of the connector has been released in Cloud, you will also see a banner on this page indicating the cutoff date for the version upgrade. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you do not upgrade before the cutoff date, Airbyte will automatically disable your connection.
 
 Learn more about version upgrades in our [resolving breaking change documentation](/using-airbyte/schema-change-management.md#resolving-breaking-changes).
