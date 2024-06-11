@@ -1,4 +1,3 @@
-
 version: "0.29.0"
 
 definitions:
@@ -136,26 +135,26 @@ definitions:
       $ref: "#/definitions/incremental_sync_base"
 
 streams:
-  - $ref: "#/definitions/transactions_stream"
-  - $ref: "#/definitions/customers_stream"
-  - $ref: "#/definitions/invoices_stream"
-  - $ref: "#/definitions/disputes_stream"
-  - $ref: "#/definitions/refunds_stream"
-  - $ref: "#/definitions/settlements_stream"
-  - $ref: "#/definitions/subscriptions_stream"
-  - $ref: "#/definitions/transfers_stream"
+- "#/definitions/transactions_stream"
+- "#/definitions/customers_stream"
+- "#/definitions/invoices_stream"
+- "#/definitions/disputes_stream"
+- "#/definitions/refunds_stream"
+- "#/definitions/settlements_stream"
+- "#/definitions/subscriptions_stream"
+- "#/definitions/transfers_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "transactions"
-    - "customers"
-    - "invoices"
-    - "disputes"
-    - "refunds"
-    - "settlements"
-    - "subscriptions"
-    - "transfers"
+  - "transactions"
+  - "customers"
+  - "invoices"
+  - "disputes"
+  - "refunds"
+  - "settlements"
+  - "subscriptions"
+  - "transfers"
 
 spec:
   type: Spec
@@ -190,6 +189,6 @@ spec:
         title: Lookback Window (in days)
         default: 0
         minimum: 0
-        description: When set, the connector will always reload data from the past N
-          days, where N is the value set here. This is useful if your data is updated
+        description: When set, the connector will always reload data from the past
+          N days, where N is the value set here. This is useful if your data is updated
           after creation.
