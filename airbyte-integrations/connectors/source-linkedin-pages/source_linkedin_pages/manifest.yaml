@@ -11,7 +11,6 @@ definitions:
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
-    refresh_request_body: {}
     token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
 
   selective_authenticator:
@@ -34,6 +33,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/schema#
+        additionalProperties: true
         properties:
           alternativeNames:
             type:
@@ -197,6 +197,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/schema#
+        additionalProperties: true
         properties:
           followerCountsByAssociationType:
             type:
@@ -281,6 +282,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/schema#
+        additionalProperties: true
         properties:
           organizationalEntity:
             type:
@@ -378,6 +380,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/schema#
+        additionalProperties: true
         properties:
           firstDegreeSize:
             type:
@@ -432,6 +435,7 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/schema#
+        additionalProperties: true
         properties:
           followerCountsByAssociationType:
             type:
@@ -501,7 +505,7 @@ streams:
         request_parameters:
           q: organizationalEntity
           organizationalEntity: urn:li:organization:{{ config['org_id'] }}
-          timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] }}"
+          timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] or 'DAY' }}"
         request_headers:
           Linkedin-Version: "202403"
         authenticator:
@@ -593,6 +597,7 @@ streams:
     primary_key: []
     schema_loader:
       type: InlineSchemaLoader
+      additionalProperties: true
       schema:
         $schema: http://json-schema.org/schema#
         properties:
@@ -656,7 +661,7 @@ streams:
         request_parameters:
           q: organizationalEntity
           organizationalEntity: urn:li:organization:{{ config['org_id'] }}
-          timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] }}"
+          timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] or 'DAY' }}"
         request_headers:
           Linkedin-Version: "202403"
         authenticator:
