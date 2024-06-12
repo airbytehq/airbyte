@@ -192,6 +192,7 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain_name'] + ('' if config.confluence_server else '/wiki') }}/rest/api
+    authenticator:
       type: CustomAuthenticator
       class_name: source_confluence.components.CustomAuthenticator
       email: "{{ config['email'] }}"
