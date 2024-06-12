@@ -32,7 +32,8 @@ class FileBasedStreamConfig(BaseModel):
         order=1,
     )
     legacy_prefix: Optional[str] = Field(
-        None, title="Legacy Prefix",
+        default=None,
+        title="Legacy Prefix",
         description="The path prefix configured in v3 versions of the S3 connector. This option is deprecated in favor of a single glob.",
         airbyte_hidden=True,
     )
@@ -42,11 +43,13 @@ class FileBasedStreamConfig(BaseModel):
         default=ValidationPolicy.emit_record,
     )
     input_schema: Optional[str] = Field(
-        None, title="Input Schema",
+        default=None,
+        title="Input Schema",
         description="The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
     )
     primary_key: Optional[str] = Field(
-        None, title="Primary Key",
+        default=None,
+        title="Primary Key",
         description="The column or columns (for a composite key) that serves as the unique identifier of a record. If empty, the primary key will default to the parser's default primary key.",
         airbyte_hidden=True,  # Users can create/modify primary keys in the connection configuration so we shouldn't duplicate it here.
     )

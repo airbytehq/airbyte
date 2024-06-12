@@ -311,7 +311,8 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
     if raises_for_status:
         mock_response.raise_for_status.side_effect = Exception("API error")
     requests_mock.post.return_value = mock_response
-    result, error = UnstructuredParser().check_config(FileBasedStreamConfig(name="test", format=format_config))
+    config = FileBasedStreamConfig(name="test", format=format_config)
+    result, error = UnstructuredParser().check_config(config)
     assert result == is_ok
     if expected_error:
         assert expected_error in error
