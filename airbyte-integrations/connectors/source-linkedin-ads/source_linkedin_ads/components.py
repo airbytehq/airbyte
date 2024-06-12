@@ -9,6 +9,7 @@ from urllib.parse import urlencode, urljoin
 import pendulum
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
@@ -160,6 +161,55 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
 
 
 @dataclass
+class LinkedInSemiIncrementalFilter(RecordFilter):
+    """
+    Custom filter to implement semi-incremental syncing for the Comments endpoints, which does not support sorting or filtering.
+    This filter emulates incremental behavior by filtering out records based on the comparison of the cursor value with current value in state,
+    ensuring only records updated after the cutoff timestamp are synced.
+    """
+
+    cursor_field: str = "lastModified"
+    format: str = ""
+
+    def filter_records(
+        self, records: List[Mapping[str, Any]], stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, **kwargs
+    ) -> List[Mapping[str, Any]]:
+        """
+        Filters a list of records, returning only those with a cursor_value greater than the current value in state.
+        """
+        current_state = [
+            state_value
+            for state_value in stream_state.get("states", [])
+            if state_value.get("partition", {}).get("id") == stream_slice.get("id")
+        ]
+
+        start_date = (
+            datetime.datetime.strptime(self.config.get("start_date"), "%Y-%m-%d").timestamp() * 1000
+            if self.cursor_field == "lastModifiedAt" or self.format == "timestamp"
+            else self.config.get("start_date")
+        )
+
+        cursor_value = self._get_filter_date(start_date, current_state)
+
+        if cursor_value:
+            return [record for record in records if record[self.cursor_field] >= cursor_value]
+        return records
+
+    def _get_filter_date(self, start_date: str, state_value: list) -> str:
+        """
+        Calculates the filter date to pass in the request parameters by comparing the start_date with the value of state obtained from the stream_slice.
+        If only the start_date exists, use it by default.
+        """
+
+        start_date_timestamp = start_date or None
+        state_value_timestamp = state_value[0]["cursor"][self.cursor_field] if state_value else None
+
+        if state_value_timestamp:
+            return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)
+        return start_date_timestamp
+
+
+@dataclass
 class LinkedInAdsCustomRetriever(SimpleRetriever):
 
     partition_router: Optional[Union[List[StreamSlicer], StreamSlicer]] = SinglePartitionRouter(parameters={})
@@ -180,6 +230,8 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
             ),
             partition_router=partition_router,
         )
+
+        self._cursor = stream_slicer
 
         return stream_slicer.stream_slices()
 
@@ -210,8 +262,10 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
         if transformations:
             self.record_selector.transformations = transformations
 
+        partition_field = self.partition_router[0].parent_stream_configs[0].partition_field.string
+
         for field_slice in stream_slice.cursor_slice.get("field_date_chunks", []):
-            field_slice = StreamSlice(partition=stream_slice.partition, cursor_slice=field_slice)
+            field_slice = StreamSlice(partition={}, cursor_slice={partition_field: stream_slice.partition[partition_field], **field_slice})
             for record in super().read_records(records_schema, stream_slice=field_slice):
                 merged_records[f"{record['end_date']}-{record['pivotValues']}"].update(record)
         yield from merged_records.values()

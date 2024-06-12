@@ -108,10 +108,8 @@ definitions:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
           record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['lastModified'] >= stream_state['lastModified'] if
-              stream_state.get('lastModified') else record['lastModified'] >= timestamp(config['start_date']) * 1000 }}
+            type: CustomRecordFilter
+            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -189,10 +187,8 @@ definitions:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
           record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['lastModified'] >= stream_state['lastModified'] if
-              stream_state.get('lastModified') else record['lastModified'] >= timestamp(config['start_date']) * 1000 }}
+            type: CustomRecordFilter
+            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
         paginator:
           type: DefaultPaginator
           pagination_strategy:
@@ -268,10 +264,8 @@ definitions:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
           record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['lastModified'] >= stream_state['lastModified'] if
-              stream_state.get('lastModified') else record['lastModified'] >= timestamp(config['start_date']) * 1000 }}
+            type: CustomRecordFilter
+            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
         paginator:
           type: DefaultPaginator
           pagination_strategy:
@@ -342,10 +336,9 @@ definitions:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
           record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['lastModifiedAt'] >= stream_state['lastModifiedAt'] if
-              stream_state.get('lastModifiedAt') else record['lastModifiedAt'] >= timestamp(config['start_date']) * 1000 }}
+            type: CustomRecordFilter
+            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
+            cursor_field: lastModifiedAt
         paginator:
           type: DefaultPaginator
           pagination_strategy:
@@ -419,10 +412,9 @@ definitions:
             field_path:
               - elements
           record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['lastModified'] >= stream_state['lastModified'] if
-              stream_state.get('lastModified') else record['lastModified'] >= timestamp(config['start_date']) * 1000 }}
+            type: CustomRecordFilter
+            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
+            format: timestamp
           schema_normalization: Default
         paginator:
           type: DefaultPaginator
@@ -463,6 +455,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -569,6 +575,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -675,6 +695,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -781,6 +815,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -887,6 +935,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -993,6 +1055,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1099,6 +1175,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1205,6 +1295,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1311,6 +1415,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1417,6 +1535,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1523,6 +1655,20 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          cursor:
+            type: CustomIncrementalSync
+            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+            cursor_field: end_date
+            cursor_datetime_formats:
+              - "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d"
+            cursor_granularity: P1D
+            step: P200D
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
