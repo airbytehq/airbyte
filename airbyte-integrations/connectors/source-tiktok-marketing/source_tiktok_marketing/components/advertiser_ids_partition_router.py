@@ -13,15 +13,16 @@ class MultipleAdvertiserIdsPartitionRouter(SubstreamPartitionRouter):
     Custom AdvertiserIdsPartitionRouter and AdvertiserIdPartitionRouter partition routers are used to get advertiser_ids
     as slices for streams where it uses as request param.
 
-    When user uses sandbox account it's impossible to get advertiser_ids via API.
+    When using a sandbox account, it's impossible to get advertiser_ids via API.
     In this case user need to provide advertiser_id in a config and connector need to use provided ids
     and do not make requests to get this id.
 
     When advertiser_id not provided components get slices as usual.
     Main difference between AdvertiserIdsPartitionRouter and AdvertiserIdPartitionRouter is
-    that AdvertiserIdPartitionRouter returns multiple advertiser_ids in a one slice when id is not provided,
+    that MultipleAdvertiserIdsPartitionRouter returns multiple advertiser_ids in a one slice when id is not provided,
     e.g. {"advertiser_ids": '["11111111", "22222222"]', "parent_slice": {}}.
-    And AdvertiserIdPartitionRouter returns single slice for every advertiser_id as usual.
+    And SingleAdvertiserIdPartitionRouter returns single slice for every advertiser_id as usual.
+    MultipleAdvertiserIdsPartitionRouter is used by advertisers, which is full refresh only, to make less amount of requests.
 
     path_in_config: List[List[str]]: path to value in the config in priority order.
     partition_field: str: field to insert partition value.
@@ -52,6 +53,14 @@ class MultipleAdvertiserIdsPartitionRouter(SubstreamPartitionRouter):
 
 
 class SingleAdvertiserIdPartitionRouter(MultipleAdvertiserIdsPartitionRouter):
+    """
+    SingleAdvertiserIdPartitionRouter returns single slice for every advertiser_id in the parent stream
+    or takes value for advertiser_id from a config and skips reading slices.
+
+    path_in_config: List[List[str]]: path to value in the config in priority order.
+    partition_field: str: field to insert partition value.
+    """
+
     def stream_slices(self) -> Iterable[StreamSlice]:
         partition_value_in_config = self.get_partition_value_from_config()
 

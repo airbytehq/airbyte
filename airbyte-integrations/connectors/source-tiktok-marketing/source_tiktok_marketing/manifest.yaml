@@ -20,13 +20,14 @@ definitions:
     path: "{{ parameters['path'] }}"
     http_method: GET
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: "DefaultErrorHandler"
-          response_filters:
-            - predicate: "{{ response.get('code') != 0 }}"
-              action: FAIL
-              error_message: "{{ response['message'] }}"
+      type: DefaultErrorHandler
+      response_filters:
+        - predicate: "{{ response.get('code') != 0 }}"
+          action: FAIL
+          error_message: "{{ response['message'] }}"
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_body_json: {}
 
   record_selector:
     type: RecordSelector
@@ -126,9 +127,6 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
       record_selector:
         $ref: "#/definitions/record_selector_with_filter_by_modify_time"
       paginator:
@@ -161,9 +159,6 @@ definitions:
           secret: "{{ config.get('credentials', config.get('environment', {})).get('secret') }}"
           app_id: "{{ config.get('credentials', config.get('environment', {})).get('app_id', 0) }}"
         request_headers: {}
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
@@ -185,9 +180,6 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
@@ -210,9 +202,6 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
@@ -235,9 +224,6 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         schema_normalization: Default
@@ -264,9 +250,6 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         schema_normalization: Default
@@ -293,9 +276,6 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
         request_parameters:
           filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
@@ -322,9 +302,6 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
         request_parameters:
           filtering: '{{ {"secondary_status": "ADGROUP_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
@@ -351,9 +328,6 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
         request_parameters:
           filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
@@ -526,9 +500,6 @@ definitions:
             {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
             {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
             ] | string if config.get("include_deleted", False)}}'
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
       paginator:
         $ref: "#/definitions/paginator_page_increment"
         pagination_strategy:
@@ -1517,9 +1488,6 @@ definitions:
             {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
             {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
             ] | string if config.get("include_deleted", False)}}'
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:

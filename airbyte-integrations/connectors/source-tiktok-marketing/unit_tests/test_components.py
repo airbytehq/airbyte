@@ -166,26 +166,24 @@ def test_hourly_datetime_based_cursor():
     cursor = HourlyDatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="{{ config.get('start_date', '2016-09-01') }}", datetime_format="%Y-%m-%d", parameters={}),
         end_datetime=MinMaxDatetime(datetime="{{ config.get('end_date', today_utc()) }}", datetime_format="%Y-%m-%d", parameters={}),
+        step="P1D",
+        cursor_granularity="PT1H",
         config=config,
         cursor_field="stat_time_hour",
         datetime_format="%Y-%m-%d",
         cursor_datetime_formats=["%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"],
         parameters={}
     )
-    partition_daterange = cursor._partition_daterange(
-        start=pendulum.parse(config["start_date"]), end=pendulum.parse(config["end_date"]), step=pendulum.duration(days=1)
-    )
+    cursor._cursor = "2022-01-01 00:00:00"
+    partition_daterange = list(cursor.stream_slices())
     assert partition_daterange == [
-        {"start_time": "2022-01-01", "end_time": "2022-01-02"}, 
+        {"start_time": "2022-01-01", "end_time": "2022-01-01"},
         {"start_time": "2022-01-02", "end_time": "2022-01-02"}
     ]
 
-    partition_daterange = cursor._partition_daterange(
-        start=pendulum.parse("2022-01-01 10:00:00"),
-        end=pendulum.parse(config["end_date"]),
-        step=pendulum.duration(days=1)
-    )
+    cursor._cursor = "2022-01-01 10:00:00"
+    partition_daterange = list(cursor.stream_slices())
     assert partition_daterange == [
-        {"start_time": "2022-01-01", "end_time": "2022-01-02"},
+        {"start_time": "2022-01-01", "end_time": "2022-01-01"},
         {"start_time": "2022-01-02", "end_time": "2022-01-02"}
     ]
