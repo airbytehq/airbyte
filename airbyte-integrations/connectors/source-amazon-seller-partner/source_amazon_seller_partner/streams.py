@@ -167,9 +167,9 @@ class IncrementalAmazonSPStream(AmazonSPStream, CheckpointMixin, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] | None = None,
-        stream_slice: Mapping[str, Any] | None = None,
-        stream_state: Mapping[str, Any] | None = None,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             self.state = self._get_updated_state(self.state, record)
