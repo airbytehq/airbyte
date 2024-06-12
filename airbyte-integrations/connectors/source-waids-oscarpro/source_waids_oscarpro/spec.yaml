@@ -1,12 +1,27 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://github.com/ORx-Surgical/airbyte/tree/master/airbyte-integrations/connectors/source-waids-oscarpro
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Waids Oscarpro Spec
   type: object
   required:
-    - TODO
+    - url_base
+    - username
+    - password
+    - web_username
+    - web_password
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    url_base:
       type: string
-      description: describe me
+      description: The full URL for the Oscar Pro instance to connect to
+    username:
+      type: string
+      description: The username for the Oscar Pro OAuth user
+    password:
+      type: string
+      description: The password for the Oscar Pro OAuth user
+    web_username:
+      type: string
+      description: The username for the Oscar Pro OAuth user used for Browser authentication
+    web_password:
+      type: string
+      description: The password for the Oscar Pro OAuth user used for Browser authentication

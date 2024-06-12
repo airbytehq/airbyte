@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any,  Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -54,9 +54,15 @@ class WaidsOscarproStream(HttpStream, ABC):
 
     See the reference docs for the full list of configurable options.
     """
+    
+    url_base = None
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        """
+        Configure some base variables from the Config
+        TODO: REMOVE -- but for reference https://github.com/airbytehq/airbyte/issues/10903
+        """
+        WaidsOscarproStream.url_base = config['url_base']
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -202,5 +208,9 @@ class SourceWaidsOscarpro(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
+
+        # TODO --> The values needed for Authentication are on the config var
+
+
         auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
