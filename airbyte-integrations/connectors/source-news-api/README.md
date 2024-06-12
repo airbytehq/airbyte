@@ -1,4 +1,4 @@
-# News Api Source
+# News-Api source connector
 
 This is the repository for the News Api configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/news-api).

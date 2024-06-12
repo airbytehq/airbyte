@@ -19,7 +19,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from pendulum import Date
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
@@ -119,8 +119,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
         super().__init__(config, profiles)
         self._state = {}
-        self._authenticator = authenticator
         self._session = requests.Session()
+        self._session.auth = authenticator
         self._model = self._generate_model()
         self._start_date: Optional[Date] = config.get("start_date")
         self._look_back_window: int = config["look_back_window"]
@@ -243,7 +243,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             {
                 "Amazon-Advertising-API-ClientId": self._client_id,
                 "Amazon-Advertising-API-Scope": str(profile_id),
-                **self._authenticator.get_auth_header(),
+                **self._session.auth.get_auth_header(),
             }
             if profile_id
             else {}

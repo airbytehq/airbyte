@@ -57,19 +57,19 @@ class AirtableBases(HttpStream):
             self.logger.error(f"Stream {self.name}: rate limit exceeded")
             return 30.0
 
-    def next_page_token(self, response: requests.Response, **kwargs) -> str:
+    def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         """
         The bases list could be more than 100 records, therefore the pagination is required to fetch all of them.
         """
         next_page = response.json().get("offset")
         if next_page:
-            return next_page
+            return {"offset": next_page}
         return None
 
-    def request_params(self, next_page_token: str = None, **kwargs) -> Mapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> Mapping[str, Any]:
         params = {}
         if next_page_token:
-            params["offset"] = next_page_token
+            params.update(next_page_token)
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Mapping[str, Any]:
@@ -150,7 +150,7 @@ class AirtableStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("offset")
         if next_page:
-            return next_page
+            return {"offset": next_page}
         return None
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -159,7 +159,7 @@ class AirtableStream(HttpStream, ABC):
         """
         params = {}
         if next_page_token:
-            params["offset"] = next_page_token
+            params.update(next_page_token)
         return params
 
     def process_records(self, records) -> Iterable[Mapping[str, Any]]:
