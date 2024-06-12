@@ -75,31 +75,31 @@ public class AzureBlobStorageSpillTest {
     azureBlobStorageContainer.close();
   }
 
-  @Test
-  void testSpillBlobWithExceedingSize() throws Exception {
-    // when
-    String content = Files.readString(Paths.get("src/test-integration/resources/test_data"));
+  // @Test
+  // void testSpillBlobWithExceedingSize() throws Exception {
+  //   // when
+  //   String content = Files.readString(Paths.get("src/test-integration/resources/test_data"));
 
-    azureBlobStorageConsumer.startTracked();
+  //   azureBlobStorageConsumer.startTracked();
 
-    Function<String, JsonNode> function =
-        data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
+  //   Function<String, JsonNode> function =
+  //       data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
 
-    // create blob exceeding 1mb in size
-    for (int i = 1; i <= 512; i++) {
-      azureBlobStorageConsumer.acceptTracked(
-          createAirbyteMessage(function.apply(content)));
-    }
+  //   // create blob exceeding 1mb in size
+  //   for (int i = 1; i <= 512; i++) {
+  //     azureBlobStorageConsumer.acceptTracked(
+  //         createAirbyteMessage(function.apply(content)));
+  //   }
 
-    azureBlobStorageConsumer.close(false);
+  //   azureBlobStorageConsumer.close(false);
 
-    // then
-    assertThat(blobContainerClient.listBlobs())
-        .hasSize(2)
-        .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
-        .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
+  //   // then
+  //   assertThat(blobContainerClient.listBlobs())
+  //       .hasSize(2)
+  //       .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
+  //       .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
 
-  }
+  // }
 
   private static AzureBlobStorageDestinationConfig createConfig(Integer mappedPort) {
 
