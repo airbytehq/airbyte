@@ -246,17 +246,17 @@ class TestSpec(AbstractFileBasedSpec):
         pytest.param(["a/*.csv", "a/b/*.csv"], DEFAULT_CONFIG, {"a/b.csv", "a/c.csv", "a/b/c.csv"}, {"a/", "a/b/"}, id="a/*.csv,a/b/*.csv"),
         pytest.param(
             ["**/*.csv"],
-            {"start_date": "2023-06-01T03:54:07.000Z", "streams": []},
+            {"start_date": "2023-06-01T03:54:07.000000Z", "streams": []},
             {"a.csv", "a/b.csv", "a/c.csv", "a/b/c.csv", "a/c/c.csv", "a/b/c/d.csv"},
             set(),
             id="all_csvs_modified_after_start_date",
         ),
         pytest.param(
-            ["**/*.csv"], {"start_date": "2023-06-10T03:54:07.000Z", "streams": []}, set(), set(), id="all_csvs_modified_before_start_date"
+            ["**/*.csv"], {"start_date": "2023-06-10T03:54:07.000000Z", "streams": []}, set(), set(), id="all_csvs_modified_before_start_date"
         ),
         pytest.param(
             ["**/*.csv"],
-            {"start_date": "2023-06-05T03:54:07.000Z", "streams": []},
+            {"start_date": "2023-06-05T03:54:07.000000Z", "streams": []},
             {"a.csv", "a/b.csv", "a/c.csv", "a/b/c.csv", "a/c/c.csv", "a/b/c/d.csv"},
             set(),
             id="all_csvs_modified_exactly_on_start_date",
