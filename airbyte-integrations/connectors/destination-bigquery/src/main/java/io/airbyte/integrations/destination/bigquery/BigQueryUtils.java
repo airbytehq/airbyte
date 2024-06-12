@@ -96,13 +96,13 @@ public class BigQueryUtils {
   }
 
   /**
-  * Creates a partitioned table with clustering based on time
+   * Creates a partitioned table with clustering based on time
    *
-           * <p>
+   * <p>
    * https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
-          * </p>
-          *
-          * @param bigquery BigQuery interface
+   * </p>
+   *
+   * @param bigquery BigQuery interface
    * @param tableId equivalent to table name
    * @param schema representation for table schema
    * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
