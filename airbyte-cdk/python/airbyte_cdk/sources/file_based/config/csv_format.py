@@ -130,8 +130,8 @@ class CsvFormat(BaseModel):
         description="Whether to ignore errors that occur when the number of fields in the CSV does not match the number of columns in the schema.",
     )
 
-    @field_validator("delimiter")
     @classmethod
+    @field_validator("delimiter")
     def validate_delimiter(cls, v: str) -> str:
         if v == r"\t":
             v = "\t"
@@ -141,22 +141,22 @@ class CsvFormat(BaseModel):
             raise ValueError(f"delimiter cannot be {v}")
         return v
 
-    @field_validator("quote_char")
     @classmethod
+    @field_validator("quote_char")
     def validate_quote_char(cls, v: str) -> str:
         if len(v) != 1:
             raise ValueError("quote_char should only be one character")
         return v
 
-    @field_validator("escape_char")
     @classmethod
+    @field_validator("escape_char")
     def validate_escape_char(cls, v: str) -> str:
         if v is not None and len(v) != 1:
             raise ValueError("escape_char should only be one character")
         return v
 
-    @field_validator("encoding")
     @classmethod
+    @field_validator("encoding")
     def validate_encoding(cls, v: str) -> str:
         try:
             codecs.lookup(v)
@@ -164,7 +164,6 @@ class CsvFormat(BaseModel):
             raise ValueError(f"invalid encoding format: {v}")
         return v
 
-    # @validator("header_definition", pre=True)
     @model_validator(mode="before")
     def validate_header_definition(cls, values):
         definition_type = values.get("header_definition_type")
