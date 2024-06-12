@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, AdvancedAuth  # type: ignore [attr-defined]
+from airbyte_cdk.models.airbyte_protocol import AdvancedAuth, ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow
 
 

@@ -19,7 +19,8 @@ class AbstractFileBasedSpec(BaseModel):
     """
 
     start_date: Optional[str] = Field(
-        None, title="Start Date",
+        None,
+        title="Start Date",
         description="UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified before this date will not be replicated.",
         examples=["2021-01-01T00:00:00.000000Z"],
         format="date-time",

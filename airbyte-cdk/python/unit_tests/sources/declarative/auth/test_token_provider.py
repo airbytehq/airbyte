@@ -4,11 +4,10 @@
 
 from unittest.mock import MagicMock
 
-
-from freezegun import freeze_time
 import pytest
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider, SessionTokenProvider
 from airbyte_cdk.sources.declarative.exceptions import ReadException
+from freezegun import freeze_time
 from isodate import parse_duration
 
 

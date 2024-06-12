@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
-from pydantic import field_validator, BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
 

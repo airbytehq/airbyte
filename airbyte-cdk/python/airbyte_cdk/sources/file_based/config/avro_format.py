@@ -3,9 +3,10 @@
 #
 
 
+from typing import Literal
+
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
-from typing import Literal
 
 
 class AvroFormat(BaseModel):

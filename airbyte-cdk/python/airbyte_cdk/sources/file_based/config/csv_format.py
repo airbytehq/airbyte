@@ -4,10 +4,10 @@
 
 import codecs
 from enum import Enum
-from typing import Literal, List, Optional, Set, Union
+from typing import List, Literal, Optional, Set, Union
 
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from pydantic import field_validator, BaseModel, Field, ValidationError, model_validator, root_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator, root_validator
 
 
 class InferenceType(Enum):
@@ -76,10 +76,7 @@ DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
 
 class CsvFormat(BaseModel):
-    model_config = {
-        "title": "CSV Format",
-        "discriminator": "filetype"
-    }
+    model_config = {"title": "CSV Format", "discriminator": "filetype"}
     filetype: Literal["csv"] = "csv"
     delimiter: str = Field(
         title="Delimiter",

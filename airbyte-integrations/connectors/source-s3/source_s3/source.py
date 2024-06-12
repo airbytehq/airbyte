@@ -10,7 +10,6 @@ from .source_files_abstract.spec import SourceFilesAbstractSpec
 
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
-
     class Config:
         title = "S3 Source Spec"
 

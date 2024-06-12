@@ -916,16 +916,20 @@ class ModelToComponentFactory:
                     model.access_token_name or "access_token", parameters=model.field_parameters or {}
                 ).eval(config),
                 refresh_token_name=model.refresh_token_updater.refresh_token_name,
-                expires_in_name=InterpolatedString.create(model.expires_in_name or "expires_in", parameters=model.field_parameters or {}).eval(
-                    config
-                ),
+                expires_in_name=InterpolatedString.create(
+                    model.expires_in_name or "expires_in", parameters=model.field_parameters or {}
+                ).eval(config),
                 client_id=InterpolatedString.create(model.client_id, parameters=model.field_parameters or {}).eval(config),
                 client_secret=InterpolatedString.create(model.client_secret, parameters=model.field_parameters or {}).eval(config),
                 access_token_config_path=model.refresh_token_updater.access_token_config_path,
                 refresh_token_config_path=model.refresh_token_updater.refresh_token_config_path,
                 token_expiry_date_config_path=model.refresh_token_updater.token_expiry_date_config_path,
-                grant_type=InterpolatedString.create(model.grant_type or "refresh_token", parameters=model.field_parameters or {}).eval(config),
-                refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.field_parameters or {}).eval(config),
+                grant_type=InterpolatedString.create(model.grant_type or "refresh_token", parameters=model.field_parameters or {}).eval(
+                    config
+                ),
+                refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.field_parameters or {}).eval(
+                    config
+                ),
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
@@ -1160,7 +1164,9 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs: Any) -> WaitTimeFromHeaderBackoffStrategy:
-        return WaitTimeFromHeaderBackoffStrategy(header=model.header, parameters=model.field_parameters or {}, config=config, regex=model.regex)
+        return WaitTimeFromHeaderBackoffStrategy(
+            header=model.header, parameters=model.field_parameters or {}, config=config, regex=model.regex
+        )
 
     @staticmethod
     def create_wait_until_time_from_header(

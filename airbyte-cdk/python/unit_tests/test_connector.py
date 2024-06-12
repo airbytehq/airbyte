@@ -13,10 +13,9 @@ from typing import Any, Mapping
 
 import pytest
 import yaml
-from pydantic_core._pydantic_core import Url
-
 from airbyte_cdk import Connector
 from airbyte_cdk.models import AirbyteConnectionStatus
+from pydantic_core._pydantic_core import Url
 
 logger = logging.getLogger("airbyte")
 

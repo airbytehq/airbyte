@@ -9,8 +9,8 @@ from unittest.mock import Mock, PropertyMock
 from airbyte_cdk.sources.file_based.availability_strategy.default_file_based_availability_strategy import (
     DefaultFileBasedAvailabilityStrategy,
 )
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
