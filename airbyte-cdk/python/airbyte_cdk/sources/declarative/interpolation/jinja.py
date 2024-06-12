@@ -8,10 +8,10 @@ from typing import Any, Mapping, Optional, Tuple, Type
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 from jinja2 import meta
 from jinja2.exceptions import UndefinedError
-from jinja2.sandbox import Environment
+from jinja2.sandbox import SandboxedEnvironment
 
 
 class JinjaInterpolation(Interpolation):
@@ -49,7 +49,7 @@ class JinjaInterpolation(Interpolation):
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
     def __init__(self) -> None:
-        self._environment = Environment()
+        self._environment = SandboxedEnvironment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 

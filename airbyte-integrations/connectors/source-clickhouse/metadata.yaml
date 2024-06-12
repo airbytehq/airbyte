@@ -27,4 +27,6 @@ data:
   supportLevel: community
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

@@ -16,7 +16,6 @@ import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Predicate
-import java.util.stream.Collectors
 
 private val log = KotlinLogging.logger {}
 
@@ -68,7 +67,7 @@ object JsonSchemas {
                     resources
                         .map { p: Path -> p.fileName.toString() }
                         .filter { p: String -> p.endsWith(".yaml") }
-                        .collect(Collectors.toList())
+                        .toList()
             }
             val configRoot = Files.createTempDirectory("schemas")
             for (filename in filenames) {
@@ -118,13 +117,13 @@ object JsonSchemas {
     fun <T> traverseJsonSchemaWithCollector(
         jsonSchema: JsonNode,
         mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, T>
-    ): List<T?> {
+    ): List<T> {
         // for the sake of code reuse, use the filtered collector method but makes sure the filter
         // always
         // returns true.
         return traverseJsonSchemaWithFilteredCollector(jsonSchema) {
             node: JsonNode?,
-            path: List<FieldNameOrList>? ->
+            path: List<FieldNameOrList> ->
             Optional.ofNullable(mapper.apply(node, path))
         }
     }
@@ -145,13 +144,13 @@ object JsonSchemas {
      */
     fun <T> traverseJsonSchemaWithFilteredCollector(
         jsonSchema: JsonNode,
-        mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, Optional<T>>
+        mapper: BiFunction<JsonNode?, List<FieldNameOrList>, Optional<T>>
     ): List<T> {
         val collector: MutableList<T> = ArrayList()
-        traverseJsonSchema(jsonSchema) { node: JsonNode?, path: List<FieldNameOrList>? ->
+        traverseJsonSchema(jsonSchema) { node: JsonNode?, path: List<FieldNameOrList> ->
             mapper.apply(node, path).ifPresent { e: T -> collector.add(e) }
         }
-        return collector.stream().toList() // make list unmodifiable
+        return collector // make list unmodifiable
     }
 
     /**
@@ -172,10 +171,10 @@ object JsonSchemas {
     ): List<List<FieldNameOrList>> {
         return traverseJsonSchemaWithFilteredCollector(obj) {
             node: JsonNode?,
-            path: List<FieldNameOrList>? ->
+            path: List<FieldNameOrList> ->
             if (predicate.test(node)) {
-                return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>?>(
-                    path!!
+                return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>>(
+                    path
                 )
             } else {
                 return@traverseJsonSchemaWithFilteredCollector Optional.empty<
@@ -301,10 +300,10 @@ object JsonSchemas {
     fun getType(jsonSchema: JsonNode): List<String> {
         if (jsonSchema.has(JSON_SCHEMA_TYPE_KEY)) {
             return if (jsonSchema[JSON_SCHEMA_TYPE_KEY].isArray) {
-                MoreIterators.toList(jsonSchema[JSON_SCHEMA_TYPE_KEY].iterator())
-                    .stream()
-                    .map { obj: JsonNode -> obj.asText() }
-                    .collect(Collectors.toList())
+                MoreIterators.toList(jsonSchema[JSON_SCHEMA_TYPE_KEY].iterator()).map {
+                    obj: JsonNode ->
+                    obj.asText()
+                }
             } else {
                 java.util.List.of(jsonSchema[JSON_SCHEMA_TYPE_KEY].asText())
             }

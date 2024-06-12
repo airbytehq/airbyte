@@ -3,10 +3,10 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.1"
+version = "0.1.3"
 name = "source-partnerstack"
 description = "Source implementation for Partnerstack."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = [ "Elliot Trabac <elliot.trabac1@gmail.com>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/partnerstack"
@@ -17,13 +17,12 @@ include = "source_partnerstack"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "1.0.0"
 
 [tool.poetry.scripts]
 source-partnerstack = "source_partnerstack.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
-pytest-mock = "^3.6"
 pytest = "^6.1"
-
+pytest-mock = "^3.6.1"

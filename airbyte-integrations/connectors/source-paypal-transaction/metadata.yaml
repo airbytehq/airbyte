@@ -7,11 +7,11 @@ data:
       - api-m.paypal.com
       - api-m.sandbox.paypal.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
-  dockerImageTag: 2.5.3
+  dockerImageTag: 2.5.5
   dockerRepository: airbyte/source-paypal-transaction
   documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   githubIssueLabel: source-paypal-transaction
@@ -33,12 +33,7 @@ data:
   releases:
     breakingChanges:
       2.1.0:
-        message:
-          'Version 2.1.0 changes the format of the state. The format of the
-          cursor changed from "2021-06-18T16:24:13+03:00" to "2021-06-18T16:24:13Z".
-          The state key for the transactions stream changed to "transaction_updated_date"
-          and the key for the balances stream change to "as_of_time". The upgrade
-          is safe, but rolling back is not.'
+        message: 'Version 2.1.0 changes the format of the state. The format of the cursor changed from "2021-06-18T16:24:13+03:00" to "2021-06-18T16:24:13Z". The state key for the transactions stream changed to "transaction_updated_date" and the key for the balances stream change to "as_of_time". The upgrade is safe, but rolling back is not.'
         upgradeDeadline: "2023-09-18"
   suggestedStreams:
     streams:
@@ -49,4 +44,23 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PAYPAL-TRANSACTION_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PAYPAL-TRANSACTION_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PAYPAL-TRANSACTION_OAUTH_SANDBOX_CREDS
+          fileName: config_oauth_sandbox.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

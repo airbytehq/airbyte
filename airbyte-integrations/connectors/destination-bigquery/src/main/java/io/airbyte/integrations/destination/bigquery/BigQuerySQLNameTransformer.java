@@ -24,9 +24,9 @@ public class BigQuerySQLNameTransformer extends StandardNameTransformer {
   }
 
   /**
-   * BigQuery allows a number to be the first character of a namespace. Datasets that begin with an
-   * underscore are hidden databases, and we cannot query <hidden-dataset>.INFORMATION_SCHEMA. So we
-   * append a letter instead of underscore for normalization. Reference:
+   * BigQuery allows a number to be the first character of a originalNamespace. Datasets that begin
+   * with an underscore are hidden databases, and we cannot query <hidden-dataset>.INFORMATION_SCHEMA.
+   * So we append a letter instead of underscore for normalization. Reference:
    * https://cloud.google.com/bigquery/docs/datasets#dataset-naming
    */
   @Override
