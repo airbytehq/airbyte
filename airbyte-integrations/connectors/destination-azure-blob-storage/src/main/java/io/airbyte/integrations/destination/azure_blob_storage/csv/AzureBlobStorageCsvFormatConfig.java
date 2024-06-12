@@ -44,7 +44,7 @@ public class AzureBlobStorageCsvFormatConfig implements AzureBlobStorageFormatCo
 
   public AzureBlobStorageCsvFormatConfig(final JsonNode formatConfig) {
     this.flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
-    this.fileExtensionRequired = formatConfig.get("file_extension").asBoolean();
+    this.fileExtensionRequired = formatConfig.has("file_extension") ? formatConfig.get("file_extension").asBoolean() : false;
   }
 
   public boolean isFileExtensionRequired() {
