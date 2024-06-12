@@ -165,7 +165,7 @@ def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: Connector
 
 class InternalConfig(BaseModel):
     KEYWORDS: ClassVar[set[str]] = {"_limit", "_page_size"}
-    limit: int = Field(None, alias="_limit")
+    limit: Optional[int] = Field(None, alias="_limit")
     page_size: int = Field(None, alias="_page_size")
 
     def dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
