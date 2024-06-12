@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.1"
+version = "0.5.3"
 name = "source-sentry"
 description = "Source implementation for Sentry."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_sentry"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.58.2"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-sentry = "source_sentry.run:run"

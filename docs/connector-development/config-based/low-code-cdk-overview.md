@@ -67,7 +67,6 @@ If the answer to all questions is yes, you can use the low-code framework to bui
 - An API key for the source you want to build a connector for
 - Python >= 3.9
 - Docker
-- NodeJS
 
 ## Overview of the process
 
@@ -157,4 +156,5 @@ For examples of production-ready config-based connectors, refer to:
 - [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/manifest.yaml)
 
 ## Reference
+
 The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).

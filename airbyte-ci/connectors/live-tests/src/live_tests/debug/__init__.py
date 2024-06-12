@@ -1,8 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
-import dagger
 import os
 import sys
+
+import dagger
 
 DAGGER_EXEC_TIMEOUT = dagger.Timeout(
     int(os.environ.get("DAGGER_EXEC_TIMEOUT", "3600"))

@@ -9,7 +9,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 
 CURSOR_FIELD = "cursor_field"
 SYNC_MODE = SyncMode.incremental
@@ -200,14 +200,14 @@ def test_given_record_for_partition_when_read_then_update_state():
         "states": [
             {
                 "partition": {"partition_field": "1"},
-                "cursor": {CURSOR_FIELD: "2022-01-31"},
+                "cursor": {CURSOR_FIELD: "2022-01-15"},
             }
         ]
     }
 
 
 def test_substream_without_input_state():
-    source = ManifestDeclarativeSource(
+    test_source = ManifestDeclarativeSource(
         source_config=ManifestBuilder()
         .with_substream_partition_router("AnotherStream")
         .with_incremental_sync(
@@ -231,20 +231,24 @@ def test_substream_without_input_state():
         .build()
     )
 
-    stream_instance = source.streams({})[1]
+    stream_instance = test_source.streams({})[1]
 
     stream_slice = StreamSlice(partition={"parent_id": "1"},
                                cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
 
     with patch.object(
             SimpleRetriever, "_read_pages", side_effect=[[Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
-                                                         Record({"id": "2", CURSOR_FIELD: "2022-01-15"}, stream_slice)]
+                                                         [Record({"id": "2", CURSOR_FIELD: "2022-01-15"}, stream_slice)]]
     ):
         slices = list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
         assert list(slices) == [
             StreamSlice(partition={"parent_id": "1", "parent_slice": {}, },
                         cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
             StreamSlice(partition={"parent_id": "1", "parent_slice": {}, },
+                        cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
+            StreamSlice(partition={"parent_id": "2", "parent_slice": {}, },
+                        cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
+            StreamSlice(partition={"parent_id": "2", "parent_slice": {}, },
                         cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
         ]
 
@@ -307,7 +311,7 @@ def test_substream_with_legacy_input_state():
     with patch.object(
             SimpleRetriever, "_read_pages", side_effect=[
                 [Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
-                [Record({"parent_id": "1"}, stream_slice)],
+                [Record({"parent_id": "1", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
                 [Record({"id": "2", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
                 [Record({"parent_id": "2", CURSOR_FIELD: "2022-01-15"}, stream_slice)]
             ]
@@ -319,7 +323,7 @@ def test_substream_with_legacy_input_state():
         expected_state = {"states": [
             {
                 "cursor": {
-                    "cursor_field": "2022-01-31"
+                    CURSOR_FIELD: "2022-01-15"
                 },
                 "partition": {"parent_id": "1", "parent_slice": {}}
             }

@@ -1,4 +1,4 @@
-import AirbyteLibConnectors from '@site/src/components/AirbyteLibConnectors';
+import PyAirbyteConnectors from '@site/src/components/PyAirbyteConnectors';
 
 # Getting Started with PyAirbyte (Beta)
 
@@ -48,6 +48,7 @@ for name, records in result.streams.items():
 * [Shopify](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Shopify_Demo.ipynb) 
 * [GitHub](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Github_Incremental_Demo.ipynb) 
 * [Postgres (cache)](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Postgres_Custom_Cache_Demo.ipynb)  
+* [RAG With Langchain](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Document_Creation_RAG_with_Langchain_Demo.ipynb)
 
 
 ## API Reference
@@ -58,7 +59,7 @@ For details on specific classes and methods, please refer to our [PyAirbyte API 
 
 [comment]: <> (Edit under https://docs.google.com/drawings/d/1M7ti2D4ha6cEtPnk04RLp1SSh3au4dRJsLupnGPigHQ/edit?usp=sharing)
 
-![Architecture](../../assets/docs/airbyte-lib-high-level-architecture.svg)
+![Architecture](../../assets/docs/pyairbyte-high-level-architecture.svg)
 
 PyAirbyte is a python library that can be run in any context that supports Python >=3.9. It contains the following main components:
 * **Source**: A source object is using a Python connector and includes a configuration object. The configuration object is a dictionary that contains the configuration of the connector, like authentication or connection modalities. The source object is used to read data from the connector.
@@ -69,4 +70,4 @@ PyAirbyte is a python library that can be run in any context that supports Pytho
 
 The following connectors are available:
 
-<AirbyteLibConnectors />
+<PyAirbyteConnectors />

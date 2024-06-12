@@ -24,19 +24,20 @@ async def bump_version(
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",
+            pipeline_name=f"Bump version of connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
+            diffed_branch=ctx.obj["diffed_branch"],
+            git_repo_url=ctx.obj["git_repo_url"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
-            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             dagger_logs_url=ctx.obj.get("dagger_logs_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
-            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             enable_report_auto_open=False,

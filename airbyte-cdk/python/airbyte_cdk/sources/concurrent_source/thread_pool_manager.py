@@ -71,18 +71,13 @@ class ThreadPoolManager:
                         )
                     futures.pop(index)
 
-    def shutdown(self) -> None:
+    def _shutdown(self) -> None:
+        # Without a way to stop the threads that have already started, this will not stop the Python application. We are fine today with
+        # this imperfect approach because we only do this in case of `self._most_recently_seen_exception` which we don't expect to happen
         self._threadpool.shutdown(wait=False, cancel_futures=True)
 
     def is_done(self) -> bool:
         return all([f.done() for f in self._futures])
-
-    def shutdown_if_exception(self) -> None:
-        """
-        This method will raise if there is an exception so that the caller can use it.
-        """
-        if self._most_recently_seen_exception:
-            self._stop_and_raise_exception(self._most_recently_seen_exception)
 
     def check_for_errors_and_shutdown(self) -> None:
         """
@@ -90,7 +85,12 @@ class ThreadPoolManager:
         If the futures are not done, raise an exception.
         :return:
         """
-        self.shutdown_if_exception()
+        if self._most_recently_seen_exception:
+            self._logger.exception(
+                "An unknown exception has occurred while reading concurrently",
+                exc_info=self._most_recently_seen_exception,
+            )
+            self._stop_and_raise_exception(self._most_recently_seen_exception)
 
         exceptions_from_futures = [f for f in [future.exception() for future in self._futures] if f is not None]
         if exceptions_from_futures:
@@ -102,8 +102,8 @@ class ThreadPoolManager:
                 exception = RuntimeError(f"Failed reading with futures not done: {futures_not_done}")
                 self._stop_and_raise_exception(exception)
             else:
-                self.shutdown()
+                self._shutdown()
 
     def _stop_and_raise_exception(self, exception: BaseException) -> None:
-        self.shutdown()
+        self._shutdown()
         raise exception

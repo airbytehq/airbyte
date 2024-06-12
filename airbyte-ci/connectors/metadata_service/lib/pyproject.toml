@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "metadata-service"
-version = "0.3.4"
+version = "0.8.0"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"
@@ -16,11 +16,12 @@ gcloud = "^0.18.3"
 google-cloud-storage = "^2.8.0"
 pydash = "^6.0.2"
 semver = "^3.0.1"
+gitpython = "^3.1.40"
 
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.2"
+pytest = "^8"
 datamodel-code-generator = "^0.17.1"
 pytest-mock = "^3.10.0"
 poethepoet = "^0.20.0"
@@ -36,7 +37,7 @@ promote-connector-to-latest = "gsutil  -m rsync -r -d gs://$TARGET_BUCKET/metada
 test = "pytest tests"
 
 [tool.airbyte_ci]
-extra_poetry_groups = ["dev"]
+optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]
 
 [build-system]

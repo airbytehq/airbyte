@@ -67,7 +67,9 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ```
 
 ### Running our CI test suite
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-{{dashCase name}} test
 ```
@@ -81,6 +83,7 @@ If your connector requires to create or destroy resources for use during accepta
 
 All of your dependencies should be managed via Poetry. 
 To add a new dependency, run:
+
 ```bash
 poetry add <package-name>
 ```

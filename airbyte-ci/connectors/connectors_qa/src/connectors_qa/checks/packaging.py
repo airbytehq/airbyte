@@ -17,6 +17,7 @@ class CheckConnectorUsesPoetry(PackagingCheck):
     name = "Connectors must use Poetry for dependency management"
     description = "Connectors must use [Poetry](https://python-poetry.org/) for dependency management. This is to ensure that all connectors use a dependency management tool which locks dependencies and ensures reproducible installs."
     requires_metadata = False
+    runs_on_released_connectors = False
     applies_to_connector_languages = [
         ConnectorLanguage.PYTHON,
         ConnectorLanguage.LOW_CODE,
@@ -44,7 +45,7 @@ class CheckConnectorUsesPoetry(PackagingCheck):
 
 class CheckPublishToPyPiIsEnabled(PackagingCheck):
     name = "Python connectors must have PyPi publishing enabled"
-    description = f"Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `{consts.METADATA_FILE_NAME}` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in {consts.METADATA_FILE_NAME}. This is to ensure that all connectors can be published to PyPi and can be used in `airbyte-lib`."
+    description = f"Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `{consts.METADATA_FILE_NAME}` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in {consts.METADATA_FILE_NAME}. This is to ensure that all connectors can be published to PyPi and can be used in `PyAirbyte`."
     applies_to_connector_languages = [
         ConnectorLanguage.PYTHON,
         ConnectorLanguage.LOW_CODE,

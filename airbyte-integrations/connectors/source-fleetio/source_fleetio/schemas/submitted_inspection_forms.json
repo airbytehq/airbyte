@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "failed_items": {
+      "type": "number"
+    },
+    "id": {
+      "type": "number"
+    },
+    "inspection_form": {
+      "properties": {
+        "description": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "starting_latitude": {
+      "type": ["null", "number"]
+    },
+    "starting_longitude": {
+      "type": ["null", "number"]
+    },
+    "submitted_at": {
+      "type": "string"
+    },
+    "submitted_latitude": {
+      "type": ["null", "number"]
+    },
+    "submitted_longitude": {
+      "type": ["null", "number"]
+    },
+    "user": {
+      "type": ["string", "object"]
+    },
+    "vehicle": {
+      "type": ["object", "null"]
+    }
+  }
+}

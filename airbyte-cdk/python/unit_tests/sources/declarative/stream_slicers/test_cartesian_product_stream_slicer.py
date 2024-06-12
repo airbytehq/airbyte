@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.types import StreamSlice
 
 
 @pytest.mark.parametrize(
@@ -191,10 +191,10 @@ def test_request_option(
     )
     stream_slice = {"owner_resource": "customer", "repository": "airbyte"}
 
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+    assert slicer.get_request_params(stream_slice=stream_slice) == expected_req_params
+    assert slicer.get_request_headers(stream_slice=stream_slice) == expected_headers
+    assert slicer.get_request_body_json(stream_slice=stream_slice) == expected_body_json
+    assert slicer.get_request_body_data(stream_slice=stream_slice) == expected_body_data
 
 
 def test_request_option_before_updating_cursor():

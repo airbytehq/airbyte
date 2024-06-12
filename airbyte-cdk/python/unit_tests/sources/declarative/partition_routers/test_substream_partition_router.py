@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 
 parent_records = [{"id": 1, "data": "data1"}, {"id": 2, "data": "data2"}]
 more_records = [{"id": 10, "data": "data10", "slice": "second_parent"}, {"id": 20, "data": "data20", "slice": "second_parent"}]
@@ -295,10 +295,10 @@ def test_request_option(
     )
     stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
 
-    assert expected_req_params == partition_router.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == partition_router.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)
+    assert partition_router.get_request_params(stream_slice=stream_slice) == expected_req_params
+    assert partition_router.get_request_headers(stream_slice=stream_slice) == expected_headers
+    assert partition_router.get_request_body_json(stream_slice=stream_slice) == expected_body_json
+    assert partition_router.get_request_body_data(stream_slice=stream_slice) == expected_body_data
 
 
 @pytest.mark.parametrize(
@@ -353,7 +353,7 @@ def test_request_params_interpolation_for_parent_stream(
     )
     stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
 
-    assert expected_request_params == partition_router.get_request_params(stream_slice=stream_slice)
+    assert partition_router.get_request_params(stream_slice=stream_slice) == expected_request_params
 
 
 def test_given_record_is_airbyte_message_when_stream_slices_then_use_record_data():

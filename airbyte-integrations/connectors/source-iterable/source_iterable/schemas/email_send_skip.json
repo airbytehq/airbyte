@@ -1,131 +1,169 @@
 {
   "properties": {
     "reason": {
+      "description": "Reason for skipping the email send.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Date and time when the email send skip data was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "campaignId": {
+      "description": "Unique identifier for the campaign associated with the email send skip data.",
       "type": ["null", "integer"]
     },
     "itblInternal": {
+      "description": "Internal iterable properties associated with the email send skip data.",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {
+          "description": "Date and time when the document was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentUpdatedAt": {
+          "description": "Date and time when the document was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "messageTypeId": {
+      "description": "Identifier for the type of message sent.",
       "type": ["null", "integer"]
     },
     "transactionalData": {
+      "description": "Transactional data associated with the email send skip.",
       "type": ["null", "object"],
       "properties": {
         "inventory": {
+          "description": "Inventory details of the transactional data.",
           "type": ["null", "integer"]
         },
         "eventName": {
+          "description": "Name of the event associated with the transactional data.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the product associated with the transactional data.",
           "type": ["null", "string"]
         },
         "sku": {
+          "description": "Stock Keeping Unit (SKU) associated with the transactional data.",
           "type": ["null", "string"]
         },
         "email": {
+          "description": "Email address associated with the transactional data.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "URL associated with the transactional data.",
           "type": ["null", "string"]
         },
         "description": {
+          "description": "Description of the transactional data.",
           "type": ["null", "string"]
         },
         "price": {
+          "description": "Price of the product in the transactional data.",
           "type": ["null", "integer"]
         },
         "product_type": {
+          "description": "Type of the product in the transactional data.",
           "type": ["null", "string"]
         },
         "compare_at_price": {
+          "description": "Comparison price for the transactional data.",
           "type": ["null", "number"]
         },
         "id": {
+          "description": "Unique identifier for the transactional data.",
           "type": ["null", "string"]
         },
         "templateId": {
+          "description": "Identifier for the template used for the transactional data.",
           "type": ["null", "integer"]
         },
         "product_id": {
+          "description": "Identifier for the product associated with the transactional data.",
           "type": ["null", "string"]
         },
         "categories": {
+          "description": "Categories associated with the transactional data.",
           "type": ["null", "array"],
           "items": {}
         },
         "createdAt": {
+          "description": "Date and time when the transactional data was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "campaignId": {
+          "description": "Unique identifier for the campaign associated with the transactional data.",
           "type": ["null", "integer"]
         },
         "vendor": {
+          "description": "Vendor of the product in the transactional data.",
           "type": ["null", "string"]
         },
         "eventUpdatedAt": {
+          "description": "Date and time when the event was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "discount": {
+          "description": "Discount applied in the transactional data.",
           "type": ["null", "integer"]
         },
         "imageUrl": {
+          "description": "URL for the image associated with the transactional data.",
           "type": ["null", "string"]
         },
         "itblInternal": {
+          "description": "Internal iterable properties associated with the transactional data.",
           "type": ["null", "object"],
           "properties": {
             "documentCreatedAt": {
+              "description": "Date and time when the document was created.",
               "type": ["null", "string"],
               "format": "date-time"
             },
             "documentUpdatedAt": {
+              "description": "Date and time when the document was last updated.",
               "type": ["null", "string"],
               "format": "date-time"
             }
           }
         },
         "handle": {
+          "description": "Handle of the transactional data.",
           "type": ["null", "string"]
         }
       }
     },
     "contentId": {
+      "description": "Identifier for the content associated with the email send skip data.",
       "type": ["null", "integer"]
     },
     "messageId": {
+      "description": "Unique identifier for the message related to the email send skip data.",
       "type": ["null", "string"]
     },
     "templateId": {
+      "description": "Identifier for the template used in the email send skip data.",
       "type": ["null", "integer"]
     },
     "email": {
+      "description": "Email address to which the email send skip data corresponds.",
       "type": ["null", "string"]
     },
     "userId": {
+      "description": "Identifier for the user associated with the email send skip data.",
       "type": ["null", "string"]
     },
     "channelId": {
+      "description": "Identifier for the channel through which the email was sent.",
       "type": ["null", "integer"]
     }
   },

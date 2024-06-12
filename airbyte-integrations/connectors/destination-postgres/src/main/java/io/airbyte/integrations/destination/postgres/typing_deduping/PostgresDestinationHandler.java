@@ -38,7 +38,8 @@ public class PostgresDestinationHandler extends JdbcDestinationHandler<PostgresS
   @Override
   protected PostgresState toDestinationState(JsonNode json) {
     return new PostgresState(
-        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean());
+        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean(),
+        json.hasNonNull("isAirbyteMetaPresentInRaw") && json.get("isAirbyteMetaPresentInRaw").asBoolean());
   }
 
   private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {

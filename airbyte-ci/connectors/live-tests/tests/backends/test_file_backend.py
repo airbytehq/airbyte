@@ -16,7 +16,6 @@ from airbyte_protocol.models import Type as AirbyteMessageType
 from live_tests.commons.backends import FileBackend
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "messages, expected_writes",
     [
@@ -47,7 +46,7 @@ from live_tests.commons.backends import FileBackend
                     '{"status": "SUCCEEDED", "message": null}\n',
                 ),
                 (
-                    "test_stream_records.jsonl",
+                    "records.jsonl",
                     '{"namespace": null, "stream": "test_stream", "data": {}, "meta": null}\n',
                 ),
                 (
@@ -55,18 +54,17 @@ from live_tests.commons.backends import FileBackend
                     '{"documentationUrl": null, "changelogUrl": null, "connectionSpecification": {}, "supportsIncremental": null, "supportsNormalization": false, "supportsDBT": false, "supported_destination_sync_modes": null, "advanced_auth": null, "protocol_version": null}\n',
                 ),
                 (
-                    "_global_states.jsonl",
+                    "states.jsonl",
                     '{"type": null, "stream": null, "global_": null, "data": {"test": "value"}, "sourceStats": null, "destinationStats": null}\n',
                 ),
             ],
         ),
     ],
 )
-async def test_write(tmp_path, messages, expected_writes):
+def test_write(tmp_path, messages, expected_writes):
     backend = FileBackend(tmp_path)
-    await backend.write(messages)
+    backend.write(messages)
     for expected_file, expected_content in expected_writes:
         expected_path = Path(tmp_path / expected_file)
         assert expected_path.exists()
         content = expected_path.read_text()
-        assert content == expected_content

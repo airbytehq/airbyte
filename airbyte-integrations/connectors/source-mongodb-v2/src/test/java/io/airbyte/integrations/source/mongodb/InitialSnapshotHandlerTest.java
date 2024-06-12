@@ -26,6 +26,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
 import io.airbyte.integrations.source.mongodb.state.IdType;
+import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import io.airbyte.protocol.models.Field;
@@ -35,11 +36,12 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import org.bson.BsonBinarySubType;
 import org.bson.Document;
+import org.bson.UuidRepresentation;
+import org.bson.internal.UuidHelper;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -60,23 +62,33 @@ class InitialSnapshotHandlerTest {
   private static final String COLLECTION1 = "collection1";
   private static final String COLLECTION2 = "collection2";
   private static final String COLLECTION3 = "collection3";
+  private static final String COLLECTION4 = "collection4";
 
   private static final String OBJECT_ID1_STRING = "64c0029d95ad260d69ef28a1";
   private static final String OBJECT_ID2_STRING = "64c0029d95ad260d69ef28a2";
   private static final String OBJECT_ID3_STRING = "64c0029d95ad260d69ef28a3";
+  private static final String OBJECT_ID4_STRING = "64c0029d95ad260d69ef28a4";
+  private static final String OBJECT_ID5_STRING = "64c0029d95ad260d69ef28a5";
+  private static final String OBJECT_ID6_STRING = "64c0029d95ad260d69ef28a6";
+  private static final String OBJECT_ID7_STRING = "enp6enp6enp6eg==";
+  private static final String OBJECT_ID8_STRING = "8cee6d1e-ce07-4dc9-8bcb-c99c5a163a75";
   private static final ObjectId OBJECT_ID1 = new ObjectId(OBJECT_ID1_STRING);
   private static final ObjectId OBJECT_ID2 = new ObjectId(OBJECT_ID2_STRING);
   private static final ObjectId OBJECT_ID3 = new ObjectId(OBJECT_ID3_STRING);
-  private static final ObjectId OBJECT_ID4 = new ObjectId("64c0029d95ad260d69ef28a4");
-  private static final ObjectId OBJECT_ID5 = new ObjectId("64c0029d95ad260d69ef28a5");
-  private static final ObjectId OBJECT_ID6 = new ObjectId("64c0029d95ad260d69ef28a6");
-
+  private static final ObjectId OBJECT_ID4 = new ObjectId(OBJECT_ID4_STRING);
+  private static final ObjectId OBJECT_ID5 = new ObjectId(OBJECT_ID5_STRING);
+  private static final ObjectId OBJECT_ID6 = new ObjectId(OBJECT_ID6_STRING);
+  private static final Binary OBJECT_ID7 = new Binary(Base64.getDecoder().decode(OBJECT_ID7_STRING));
+  private static final Binary OBJECT_ID8 =
+      new Binary(BsonBinarySubType.UUID_STANDARD, UuidHelper.encodeUuidToBinary(UUID.fromString(OBJECT_ID8_STRING), UuidRepresentation.STANDARD));
   private static final String NAME1 = "name1";
   private static final String NAME2 = "name2";
   private static final String NAME3 = "name3";
   private static final String NAME4 = "name4";
   private static final String NAME5 = "name5";
   private static final String NAME6 = "name6";
+  private static final String NAME7 = "name7";
+  private static final String NAME8 = "name8";
 
   private static final String DATABASE = "test-database";
 
@@ -103,7 +115,13 @@ class InitialSnapshotHandlerTest {
           NAMESPACE,
           Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
           Field.of(NAME_FIELD, JsonSchemaType.STRING))
-          .withSyncMode(SyncMode.FULL_REFRESH));
+          .withSyncMode(SyncMode.FULL_REFRESH),
+      CatalogHelpers.createConfiguredAirbyteStream(
+          COLLECTION4,
+          NAMESPACE,
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          .withSyncMode(SyncMode.INCREMENTAL));
 
   private static MongoDBContainer MONGO_DB;
   private MongoClient mongoClient;
@@ -156,17 +174,26 @@ class InitialSnapshotHandlerTest {
             CURSOR_FIELD, OBJECT_ID6,
             NAME_FIELD, NAME6))));
 
+    insertDocuments(COLLECTION4, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID7,
+            NAME_FIELD, NAME7)),
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID8,
+            NAME_FIELD, NAME8))));
+
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final MongoDbStateManager stateManager = spy(ogStateManager);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            MongoConstants.CHECKPOINT_INTERVAL, true);
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false);
 
-    assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
+    assertEquals(iterators.size(), 4);
 
     final AutoCloseableIterator<AirbyteMessage> collection1 = iterators.get(0);
     final AutoCloseableIterator<AirbyteMessage> collection2 = iterators.get(1);
+    final AutoCloseableIterator<AirbyteMessage> collection3 = iterators.get(2);
+    final AutoCloseableIterator<AirbyteMessage> collection4 = iterators.get(3);
 
     // collection1
     final AirbyteMessage collection1StreamMessage1 = collection1.next();
@@ -217,6 +244,43 @@ class InitialSnapshotHandlerTest {
     assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
     assertFalse(collection2.hasNext());
+
+    final AirbyteMessage collection3StreamMessage1 = collection3.next();
+    assertEquals(Type.RECORD, collection3StreamMessage1.getType());
+    assertEquals(COLLECTION3, collection3StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID6.toString(), collection3StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+    // Full refresh record have no cdc fields
+    assertTrue(collection3StreamMessage1.getRecord().getData().has(CURSOR_FIELD));
+    assertFalse(collection3StreamMessage1.getRecord().getData().has(CDC_UPDATED_AT));
+    assertFalse(collection3StreamMessage1.getRecord().getData().has(CDC_DELETED_AT));
+    assertFalse(collection3StreamMessage1.getRecord().getData().has(CDC_DEFAULT_CURSOR));
+
+    final AirbyteMessage collection3SateMessage = collection3.next();
+    assertEquals(Type.STATE, collection3SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+
+    // collection4
+    final AirbyteMessage collection4StreamMessage1 = collection4.next();
+    assertEquals(Type.RECORD, collection1StreamMessage1.getType());
+    assertEquals(COLLECTION4, collection4StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID7_STRING, collection4StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+    assertEquals(NAME7, collection4StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection4StreamMessage1.getRecord().getData());
+
+    final AirbyteMessage collection4StreamMessage2 = collection4.next();
+    assertEquals(Type.RECORD, collection4StreamMessage2.getType());
+    assertEquals(COLLECTION4, collection4StreamMessage2.getRecord().getStream());
+    assertEquals(Base64.getEncoder().encodeToString(OBJECT_ID8.getData()),
+        collection4StreamMessage2.getRecord().getData().get(CURSOR_FIELD).asText());
+    assertEquals(NAME8, collection4StreamMessage2.getRecord().getData().get(NAME_FIELD).asText());
+    assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
+        collection4StreamMessage2.getRecord().getData());
+
+    final AirbyteMessage collection4StateMessage = collection4.next();
+    assertEquals(Type.STATE, collection4StateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertEquals(OBJECT_ID8_STRING, collection4StateMessage.getState().getGlobal().getStreamStates().get(3).getStreamState().get("id").asText());
+    assertFalse(collection4.hasNext());
+
   }
 
   @Test
@@ -234,19 +298,35 @@ class InitialSnapshotHandlerTest {
             CURSOR_FIELD, OBJECT_ID3,
             NAME_FIELD, NAME3))));
 
+    insertDocuments(COLLECTION3, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID4,
+            NAME_FIELD, NAME4)),
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID5,
+            NAME_FIELD, NAME5))));
+
+    insertDocuments(COLLECTION4, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID7,
+            NAME_FIELD, NAME7))));
+
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final MongoDbStateManager stateManager = spy(ogStateManager);
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.OBJECT_ID)));
+    when(stateManager.getStreamState(COLLECTION3, NAMESPACE))
+        .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID4_STRING, InitialSnapshotStatus.FULL_REFRESH, IdType.OBJECT_ID)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            MongoConstants.CHECKPOINT_INTERVAL, true);
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false);
 
-    assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
+    assertEquals(iterators.size(), 4);
 
     final AutoCloseableIterator<AirbyteMessage> collection1 = iterators.get(0);
     final AutoCloseableIterator<AirbyteMessage> collection2 = iterators.get(1);
+    final AutoCloseableIterator<AirbyteMessage> collection3 = iterators.get(2);
+    final AutoCloseableIterator<AirbyteMessage> collection4 = iterators.get(3);
 
     // collection1, first document should be skipped
     final AirbyteMessage collection1StreamMessage1 = collection1.next();
@@ -274,6 +354,28 @@ class InitialSnapshotHandlerTest {
     assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
     assertFalse(collection2.hasNext());
+
+    // collection3 will skip the first document
+    final AirbyteMessage collection3StreamMessage1 = collection3.next();
+    assertEquals(Type.RECORD, collection3StreamMessage1.getType());
+    assertEquals(COLLECTION3, collection3StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID5.toString(), collection3StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+    assertEquals(NAME5, collection3StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
+
+    final AirbyteMessage collection3StateMessage = collection3.next();
+    assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertFalse(collection3.hasNext());
+
+    // collection4, no documents should be skipped
+    final AirbyteMessage collection4StreamMessage1 = collection4.next();
+    assertEquals(Type.RECORD, collection4StreamMessage1.getType());
+    assertEquals(COLLECTION4, collection4StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID7_STRING, collection4StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+    assertEquals(NAME7, collection4StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
+
+    final AirbyteMessage collection4StateMessage = collection4.next();
+    assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertFalse(collection4.hasNext());
   }
 
   @Test
@@ -291,7 +393,7 @@ class InitialSnapshotHandlerTest {
 
     final var thrown = assertThrows(ConfigErrorException.class,
         () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            MongoConstants.CHECKPOINT_INTERVAL, true));
+            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG, false, false));
     assertTrue(thrown.getMessage().contains("must be consistently typed"));
   }
 
@@ -307,7 +409,7 @@ class InitialSnapshotHandlerTest {
 
     final var thrown = assertThrows(ConfigErrorException.class,
         () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            MongoConstants.CHECKPOINT_INTERVAL, true));
+            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG, false, false));
     assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
@@ -333,13 +435,14 @@ class InitialSnapshotHandlerTest {
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final MongoDbStateManager stateManager = spy(ogStateManager);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            MongoConstants.CHECKPOINT_INTERVAL, true);
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false);
 
-    assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
+    assertEquals(iterators.size(), 4);
 
     final AutoCloseableIterator<AirbyteMessage> collection1 = iterators.get(0);
     final AutoCloseableIterator<AirbyteMessage> collection2 = iterators.get(1);
+    final AutoCloseableIterator<AirbyteMessage> collection3 = iterators.get(2);
+    final AutoCloseableIterator<AirbyteMessage> collection4 = iterators.get(3);
 
     // collection1
     final AirbyteMessage collection1StreamMessage1 = collection1.next();
@@ -360,6 +463,18 @@ class InitialSnapshotHandlerTest {
     final AirbyteMessage collection2StateMessage = collection2.next();
     assertEquals(Type.STATE, collection2StateMessage.getType(), "State message is expected after all records in a stream are emitted");
     assertFalse(collection2.hasNext());
+
+    // collection3 will generate a final state.
+
+    final AirbyteMessage collection3StateMessage = collection3.next();
+    assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertFalse(collection3.hasNext());
+
+    // collection4 will generate a final state.
+
+    final AirbyteMessage collection4StateMessage = collection4.next();
+    assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertFalse(collection4.hasNext());
   }
 
   @Test
@@ -377,25 +492,37 @@ class InitialSnapshotHandlerTest {
             CURSOR_FIELD, OBJECT_ID3_STRING,
             NAME_FIELD, NAME3))));
 
+    insertDocuments(COLLECTION3, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID4_STRING,
+            NAME_FIELD, NAME4))));
+
+    insertDocuments(COLLECTION4, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID7,
+            NAME_FIELD, NAME7))));
+
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final MongoDbStateManager stateManager = spy(ogStateManager);
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.STRING)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            MongoConstants.CHECKPOINT_INTERVAL, true);
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false);
 
-    assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
+    assertEquals(iterators.size(), 4);
 
     final AutoCloseableIterator<AirbyteMessage> collection1 = iterators.get(0);
     final AutoCloseableIterator<AirbyteMessage> collection2 = iterators.get(1);
+    final AutoCloseableIterator<AirbyteMessage> collection3 = iterators.get(2);
+    final AutoCloseableIterator<AirbyteMessage> collection4 = iterators.get(3);
 
     // collection1, first document should be skipped
     final AirbyteMessage collection1StreamMessage1 = collection1.next();
     System.out.println("message 1: " + collection1StreamMessage1);
     final AirbyteMessage collection2StreamMessage1 = collection2.next();
     System.out.println("message 2: " + collection2StreamMessage1);
+    final AirbyteMessage collection3StreamMessage1 = collection3.next();
 
     assertEquals(Type.RECORD, collection1StreamMessage1.getType());
     assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
@@ -420,6 +547,27 @@ class InitialSnapshotHandlerTest {
     assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
     assertFalse(collection2.hasNext());
+
+    // collection3, no documents should be skipped
+    assertEquals(Type.RECORD, collection3StreamMessage1.getType());
+    assertEquals(COLLECTION3, collection3StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID4.toString(), collection3StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+
+    final AirbyteMessage collection3SateMessage = collection3.next();
+    assertEquals(Type.STATE, collection3SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+
+    assertFalse(collection3.hasNext());
+
+    // collection4, no documents should be skipped
+    final AirbyteMessage collection4StreamMessage1 = collection4.next();
+    assertEquals(Type.RECORD, collection4StreamMessage1.getType());
+    assertEquals(COLLECTION4, collection4StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID7_STRING, collection4StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+
+    final AirbyteMessage collection4SateMessage = collection4.next();
+    assertEquals(Type.STATE, collection3SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertEquals(OBJECT_ID7_STRING, collection4SateMessage.getState().getGlobal().getStreamStates().get(3).getStreamState().get("id").asText());
+    assertFalse(collection4.hasNext());
   }
 
 }

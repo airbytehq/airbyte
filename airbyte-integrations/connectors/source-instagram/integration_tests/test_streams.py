@@ -7,7 +7,7 @@ from typing import Any, Callable, List, MutableMapping, Tuple
 
 import pendulum
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, ConfiguredAirbyteCatalog, Type
 from source_instagram.source import SourceInstagram
 
 
@@ -34,10 +34,14 @@ class TestInstagramSource:
         assert len(records) <= 60 - 10 - 5, "UserInsights should have less records returned when non empty STATE provided"
 
         assert states, "insights should produce states"
-        for state in states:
-            assert "user_insights" in state.state.data
-            assert isinstance(state.state.data["user_insights"], dict)
-            assert len(state.state.data["user_insights"].keys()) == 2
+        for state_msg in states:
+            stream_name, stream_state, state_keys_count = (state_msg.state.stream.stream_descriptor.name, 
+                                                    state_msg.state.stream.stream_state, 
+                                                    len(state_msg.state.stream.stream_state.dict()))
+
+            assert stream_name == "user_insights", f"each state message should reference 'user_insights' stream, got {stream_name} instead"
+            assert isinstance(stream_state, AirbyteStateBlob), f"Stream state should be type AirbyteStateBlob, got {type(stream_state)} instead"
+            assert state_keys_count == 2, f"Stream state should contain 2 partition keys, got {state_keys_count} instead"
 
     @staticmethod
     def slice_catalog(catalog: ConfiguredAirbyteCatalog, predicate: Callable[[str], bool]) -> ConfiguredAirbyteCatalog:

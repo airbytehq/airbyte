@@ -3,12 +3,12 @@
 #
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import isodate
 import pendulum
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -18,8 +18,8 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
@@ -29,6 +29,7 @@ from requests import codes, exceptions  # type: ignore[import]
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import (
+    LOOKBACK_SECONDS,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
     BulkSalesforceSubStream,
@@ -89,23 +90,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 internal_message = "Incorrect stream slice step"
                 raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=internal_message, message=e.args[0])
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         self._validate_stream_slice_step(config.get("stream_slice_step"))
-        try:
-            salesforce = self._get_sf_object(config)
-            salesforce.describe()
-        except exceptions.HTTPError as error:
-            error_msg = f"An error occurred: {error.response.text}"
-            try:
-                error_data = error.response.json()[0]
-            except (KeyError, requests.exceptions.JSONDecodeError):
-                pass
-            else:
-                error_code = error_data.get("errorCode")
-                if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
-                    error_msg = "API Call limit is exceeded"
-            return False, error_msg
+        salesforce = self._get_sf_object(config)
+        salesforce.describe()
         return True, None
 
     @classmethod
@@ -172,9 +160,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
 
         return stream_class, stream_kwargs
 
-    @classmethod
     def generate_streams(
-        cls,
+        self,
         config: Mapping[str, Any],
         stream_objects: Mapping[str, Any],
         sf_object: Salesforce,
@@ -184,29 +171,52 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []
+        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
         for stream_name, sobject_options in stream_objects.items():
             json_schema = schemas.get(stream_name, {})
 
-            stream_class, kwargs = cls.prepare_stream(stream_name, json_schema, sobject_options, *default_args)
+            stream_class, kwargs = self.prepare_stream(stream_name, json_schema, sobject_options, *default_args)
 
             parent_name = PARENT_SALESFORCE_OBJECTS.get(stream_name, {}).get("parent_name")
             if parent_name:
                 # get minimal schema required for getting proper class name full_refresh/incremental, rest/bulk
                 parent_schema = PARENT_SALESFORCE_OBJECTS.get(stream_name, {}).get("schema_minimal")
-                parent_class, parent_kwargs = cls.prepare_stream(parent_name, parent_schema, sobject_options, *default_args)
+                parent_class, parent_kwargs = self.prepare_stream(parent_name, parent_schema, sobject_options, *default_args)
                 kwargs["parent"] = parent_class(**parent_kwargs)
 
             stream = stream_class(**kwargs)
 
-            api_type = cls._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))
+            api_type = self._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))
             if api_type == "rest" and not stream.primary_key and stream.too_many_properties:
                 logger.warning(
                     f"Can not instantiate stream {stream_name}. It is not supported by the BULK API and can not be "
                     "implemented via REST because the number of its properties exceeds the limit and it lacks a primary key."
                 )
                 continue
-            streams.append(stream)
+
+            streams.append(self._wrap_for_concurrency(config, stream, state_manager))
+        streams.append(self._wrap_for_concurrency(config, Describe(sf_api=sf_object, catalog=self.catalog), state_manager))
         return streams
+
+    def _wrap_for_concurrency(self, config, stream, state_manager):
+        stream_slicer_cursor = None
+        if stream.cursor_field:
+            stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
+            if hasattr(stream, "set_cursor"):
+                stream.set_cursor(stream_slicer_cursor)
+        if hasattr(stream, "parent") and hasattr(stream.parent, "set_cursor"):
+            stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
+            stream.parent.set_cursor(stream_slicer_cursor)
+
+        if not stream_slicer_cursor or self._get_sync_mode_from_catalog(stream) == SyncMode.full_refresh:
+            cursor = FinalStateCursor(
+                stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository
+            )
+            state = None
+        else:
+            cursor = stream_slicer_cursor
+            state = cursor.state
+        return StreamFacade.create_from_stream(stream, self, logger, state, cursor)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
@@ -214,37 +224,33 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         sf = self._get_sf_object(config)
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
-        streams.append(Describe(sf_api=sf, catalog=self.catalog))
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
+        return streams
 
-        configured_streams = []
-
-        for stream in streams:
-            sync_mode = self._get_sync_mode_from_catalog(stream)
-            if sync_mode == SyncMode.full_refresh:
-                cursor = NoopCursor()
-                state = None
-            else:
-                cursor_field_key = stream.cursor_field or ""
-                if not isinstance(cursor_field_key, str):
-                    raise AssertionError(f"A string cursor field key is required, but got {cursor_field_key}.")
-                cursor_field = CursorField(cursor_field_key)
-                legacy_state = state_manager.get_stream_state(stream.name, stream.namespace)
-                cursor = ConcurrentCursor(
-                    stream.name,
-                    stream.namespace,
-                    legacy_state,
-                    self.message_repository,
-                    state_manager,
-                    stream.state_converter,
-                    cursor_field,
-                    self._get_slice_boundary_fields(stream, state_manager),
-                    config["start_date"],
-                )
-                state = cursor.state
-
-            configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, state, cursor))
-        return configured_streams
+    def _create_stream_slicer_cursor(
+        self, config: Mapping[str, Any], state_manager: ConnectorStateManager, stream: Stream
+    ) -> ConcurrentCursor:
+        """
+        We have moved the generation of stream slices to the concurrent CDK cursor
+        """
+        cursor_field_key = stream.cursor_field or ""
+        if not isinstance(cursor_field_key, str):
+            raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field_key}.")
+        cursor_field = CursorField(cursor_field_key)
+        stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
+        return ConcurrentCursor(
+            stream.name,
+            stream.namespace,
+            stream_state,
+            self.message_repository,
+            state_manager,
+            stream.state_converter,
+            cursor_field,
+            self._get_slice_boundary_fields(stream, state_manager),
+            datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc),
+            stream.state_converter.get_end_provider(),
+            timedelta(seconds=LOOKBACK_SECONDS),
+            isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30),
+        )
 
     def _get_slice_boundary_fields(self, stream: Stream, state_manager: ConnectorStateManager) -> Optional[Tuple[str, str]]:
         return ("start_date", "end_date")

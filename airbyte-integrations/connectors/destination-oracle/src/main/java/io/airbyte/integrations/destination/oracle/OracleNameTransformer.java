@@ -17,6 +17,7 @@ public class OracleNameTransformer extends StandardNameTransformer {
   }
 
   @Override
+  @Deprecated
   public String getRawTableName(final String streamName) {
     return convertStreamName("airbyte_raw_" + streamName);
   }

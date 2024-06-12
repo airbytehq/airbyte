@@ -3,74 +3,71 @@
   "type": "object",
   "properties": {
     "webinar_uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "custom_keys": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "key": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           }
-        },
-        "required": []
+        }
       }
     },
     "dept": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "duration": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "end_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "participants_count": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "start_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "topic": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_minutes": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "tracking_fields": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "field": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           }
-        },
-        "required": []
+        }
       }
     },
     "type": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "user_email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "user_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "uuid": {
-      "type": "string"
+      "type": ["null", "string"]
     }
-  },
-  "required": []
+  }
 }

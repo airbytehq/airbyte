@@ -97,7 +97,9 @@ class TestBaseInsightsStream:
             if read slice 2, 3, 1 state changed to 3
         """
         job = mocker.Mock(spec=InsightAsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {}
+        job.get_result.return_value = [rec, rec, rec]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -124,8 +126,11 @@ class TestBaseInsightsStream:
         2. if read slice 2, 3 state not changed
             if read slice 2, 3, 1 state changed to 3
         """
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {}
+
         job = mocker.Mock(spec=AsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        job.get_result.return_value = [rec, rec, rec]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -146,6 +151,38 @@ class TestBaseInsightsStream:
         )
 
         assert len(records) == 3
+
+    def test_read_records_add_account_id(self, mocker, api, some_config):
+        rec_without_account = mocker.Mock()
+        rec_without_account.export_all_data.return_value = {}
+
+        rec_with_account = mocker.Mock()
+        rec_with_account.export_all_data.return_value = {"account_id": "some_account_id"}
+
+        job = mocker.Mock(spec=AsyncJob)
+        job.get_result.return_value = [rec_without_account, rec_with_account]
+        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={
+                    "insight_job": job,
+                    "account_id": some_config["account_ids"][0],
+                },
+            )
+        )
+
+        assert len(records) == 2
+        for record in records:
+            assert record.get("account_id")
 
     @pytest.mark.parametrize(
         "state,result_state",
@@ -334,9 +371,9 @@ class TestBaseInsightsStream:
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
         # assert that we sync all periods including insight_lookback_period
-        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
-        assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
-        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
+        assert len(generated_jobs) == (end_date.date() - start_date).days + 1
+        assert generated_jobs[0].interval.start == start_date.date()
+        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
     def test_stream_slices_with_state_close_to_now(self, api, async_manager_mock, recent_start_date, some_config):
         """Stream will use start_date when close to now and start_date close to now"""
@@ -363,15 +400,15 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
-        assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
-        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
+        assert len(generated_jobs) == (end_date.date() - start_date).days + 1
+        assert generated_jobs[0].interval.start == start_date.date()
+        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
     @pytest.mark.parametrize("state_format", ["old_format", "new_format"])
     def test_stream_slices_with_state_and_slices(self, api, async_manager_mock, start_date, some_config, state_format):
         """Stream will use cursor_value from state, but will skip saved slices"""
-        end_date = start_date + duration(days=10)
-        cursor_value = start_date + duration(days=5)
+        end_date = start_date + duration(days=40)
+        cursor_value = start_date + duration(days=32)
 
         if state_format == "old_format":
             state = {
@@ -410,7 +447,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, "should be 34 slices because we ignore slices which are within insights_lookback_period"
+        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, "should be 37 slices because we ignore slices which are within insights_lookback_period"
         assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
         assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
 
@@ -544,3 +581,173 @@ class TestBaseInsightsStream:
         )
         stream.state = state
         assert stream._get_start_date().get("unknown_account").to_date_string() == expected_start_date
+
+    @pytest.mark.parametrize(
+        "breakdowns, record, expected_record",
+        (
+                (
+                        ["body_asset", ],
+                        {"body_asset": {"id": "871246182", "text": "Some text"}},
+                        {"body_asset": {"id": "871246182", "text": "Some text"}, "body_asset_id": "871246182"}
+                ),
+                (
+                        ["call_to_action_asset",],
+                        {"call_to_action_asset": {"id": "871246182", "name": "Some name"}},
+                        {"call_to_action_asset": {"id": "871246182", "name": "Some name"}, "call_to_action_asset_id": "871246182"}
+                ),
+                (
+                        ["description_asset", ],
+                        {"description_asset": {"id": "871246182", "text": "Some text"}},
+                        {"description_asset": {"id": "871246182", "text": "Some text"}, "description_asset_id": "871246182"}
+                ),
+                (
+                        ["image_asset", ],
+                        {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}},
+                        {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}, "image_asset_id": "871246182"}
+                ),
+                (
+                        ["link_url_asset", ],
+                        {"link_url_asset": {"id": "871246182", "website_url": "website_url"}},
+                        {"link_url_asset": {"id": "871246182", "website_url": "website_url"}, "link_url_asset_id": "871246182"}
+                ),
+                (
+                        ["title_asset", ],
+                        {"title_asset": {"id": "871246182", "text": "Some text"}},
+                        {"title_asset": {"id": "871246182", "text": "Some text"}, "title_asset_id": "871246182"}
+                ),
+                (
+                        ["video_asset", ],
+                        {
+                            "video_asset": {
+                                "id": "871246182", "video_id": "video_id", "url": "url",
+                                "thumbnail_url": "thumbnail_url", "video_name": "video_name"
+                            }
+                        },
+                        {
+                            "video_asset": {
+                                "id": "871246182", "video_id": "video_id", "url": "url",
+                                "thumbnail_url": "thumbnail_url", "video_name": "video_name"
+                            },
+                            "video_asset_id": "871246182"
+                        }
+                ),
+                (
+                        ["body_asset", "country"],
+                        {"body_asset": {"id": "871246182", "text": "Some text"}, "country": "country", "dma": "dma"},
+                        {
+                            "body_asset": {"id": "871246182", "text": "Some text"},
+                            "country": "country", "dma": "dma", "body_asset_id": "871246182"
+                        }
+                ),
+        )
+    )
+    def test_transform_breakdowns(self, api, some_config, breakdowns, record, expected_record):
+        start_date = pendulum.parse("2024-01-01")
+        end_date = start_date + duration(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            breakdowns=breakdowns,
+        )
+        assert stream._transform_breakdown(record) == expected_record
+
+    @pytest.mark.parametrize(
+        "breakdowns, expect_pks",
+        (
+                (
+                    ["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]
+                ),
+                (
+                    ["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]
+                ),
+                (
+                    ["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]
+                ),
+                (
+                    ["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]
+                ),
+                (
+                    ["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]
+                ),
+                (
+                    ["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]
+                ),
+                (
+                    ["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]
+                ),
+                (
+                        ["video_asset", "skan_conversion_id", "place_page_id"],
+                        ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"]
+                ),
+                (
+                        None,
+                        ["date_start", "account_id", "ad_id"]
+                ),
+        )
+    )
+    def test_primary_keys(self, api, some_config, breakdowns, expect_pks):
+        start_date = pendulum.parse("2024-01-01")
+        end_date = start_date + duration(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            breakdowns=breakdowns
+        )
+        assert stream.primary_key == expect_pks
+
+    @pytest.mark.parametrize(
+        "breakdowns, expect_pks",
+        (
+                (
+                        ["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]
+                ),
+                (
+                        ["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]
+                ),
+                (
+                        ["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]
+                ),
+                (
+                        ["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]
+                ),
+                (
+                        ["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]
+                ),
+                (
+                        ["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]
+                ),
+                (
+                        ["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]
+                ),
+                (
+                        ["video_asset", "skan_conversion_id", "place_page_id"],
+                        ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"]
+                ),
+                (
+                        ["video_asset", "link_url_asset",  "skan_conversion_id", "place_page_id", "gender"],
+                        ["date_start", "account_id", "ad_id", "video_asset_id", "link_url_asset_id", "skan_conversion_id", "place_page_id", "gender"]
+                ),
+        )
+    )
+    def test_object_pk_added_to_schema(self, api, some_config, breakdowns, expect_pks):
+        start_date = pendulum.parse("2024-01-01")
+        end_date = start_date + duration(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            breakdowns=breakdowns
+        )
+        schema = stream.get_json_schema()
+        assert schema
+        assert stream.primary_key == expect_pks
+        for pk in expect_pks:
+            assert pk in schema["properties"]

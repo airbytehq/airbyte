@@ -78,11 +78,19 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                                                                   |
-| 0.2.2   | 2024-02-12 | [35150](https://github.com/airbytehq/airbyte/pull/35150) | Manage dependencies with Poetry.                                                                                                                                           |
-| 0.2.1   | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234)   | prepare for airbyte-lib                                                                                                                                                    |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.3 | 2024-06-05 | [39142](https://github.com/airbytehq/airbyte/pull/39142) | Updated the `CDK` version to `0.89.0` to fix OOM |
+| 0.5.2 | 2024-06-04 | [39077](https://github.com/airbytehq/airbyte/pull/39077) | [autopull] Upgrade base image to v1.2.1 |
+| 0.5.1 | 2024-04-24 | [36645](https://github.com/airbytehq/airbyte/pull/36645) | Schema descriptions and CDK 0.80.0 |
+| 0.5.0 | 2024-03-18 | [36231](https://github.com/airbytehq/airbyte/pull/36231) | Migrate connector to low-code |
+| 0.4.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 0.3.0 | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures |
+| 0.2.2 | 2024-02-12 | [35150](https://github.com/airbytehq/airbyte/pull/35150) | Manage dependencies with Poetry. |
+| 0.2.1 | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
 | 0.2.0   | 2023-09-29 | [28457](https://github.com/airbytehq/airbyte/pull/30931) | Added `userId` to `email_bounce`, `email_click`, `email_complaint`, `email_open`, `email_send` `email_send_skip`, `email_subscribe`, `email_unsubscribe`, `events` streams |
 | 0.1.31  | 2023-12-06 | [33106](https://github.com/airbytehq/airbyte/pull/33106) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                            |
 | 0.1.30  | 2023-07-19 | [28457](https://github.com/airbytehq/airbyte/pull/28457) | Fixed TypeError for StreamSlice in debug mode                                                                                                                              |
@@ -109,3 +117,5 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 | 0.1.9   | 2021-10-06 | [5915](https://github.com/airbytehq/airbyte/pull/5915)   | Enable campaign_metrics stream                                                                                                                                             |
 | 0.1.8   | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915)   | Add new streams: campaign_metrics, events                                                                                                                                  |
 | 0.1.7   | 2021-09-20 | [6242](https://github.com/airbytehq/airbyte/pull/6242)   | Updated schema for: campaigns, lists, templates, metadata                                                                                                                  |
+
+</details>

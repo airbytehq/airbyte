@@ -1,16 +1,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
-import time
+import logging
+import textwrap
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import asyncclick as click
 import dagger
-from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
+from live_tests.commons.connection_objects_retrieval import COMMAND_TO_REQUIRED_OBJECT_TYPES, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner
-from live_tests.commons.models import Command, ExecutionInputs, ExecutionReport
-from live_tests.commons.utils import get_connector_config, get_connector_under_test, get_state
+from live_tests.commons.models import ActorType, Command, ConnectionObjects, ConnectorUnderTest, ExecutionInputs, TargetOrControl
+from live_tests.commons.utils import clean_up_artifacts
 from live_tests.debug import DAGGER_CONFIG
+from rich.prompt import Prompt
+
+from .consts import MAIN_OUTPUT_DIRECTORY
+
+LOGGER = logging.getLogger("debug_command")
 
 
 @click.command(
@@ -22,6 +29,25 @@ from live_tests.debug import DAGGER_CONFIG
     type=click.Choice([c.value for c in Command]),
     callback=lambda _, __, value: Command(value),
 )
+@click.option("--connection-id", type=str, required=False, default=None)
+@click.option(
+    "--config-path",
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
+    required=False,
+    default=None,
+)
+@click.option(
+    "--catalog-path",
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
+    required=False,
+    default=None,
+)
+@click.option(
+    "--state-path",
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
+    required=False,
+    default=None,
+)
 @click.option(
     "-c",
     "--connector-image",
@@ -31,65 +57,81 @@ from live_tests.debug import DAGGER_CONFIG
     type=str,
     required=True,
 )
-@click.option(
-    "-o",
-    "--output-directory",
-    help="Directory in which connector output and test results should be stored. Defaults to the current directory.",
-    default=Path("live_tests_debug_reports"),
-    type=click.Path(file_okay=False, dir_okay=True, resolve_path=True, path_type=Path),
-)
-@click.option(
-    "--config-path",
-    help="Path to the connector config.",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path),
-)
-@click.option(
-    "--catalog-path",
-    help="Path to the connector catalog.",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path),
-)
-@click.option(
-    "--state-path",
-    help="Path to the connector state.",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path),
-)
-@click.option(
-    "-hc",
-    "--http-cache",
-    "enable_http_cache",
-    help="Use the HTTP cache for the connector.",
-    default=True,
-    is_flag=True,
-    type=bool,
-)
 # TODO add an env var options to pass to the connector
 @click.pass_context
 async def debug_cmd(
     ctx: click.Context,
     command: Command,
-    connector_images: List[str],
-    output_directory: Path,
-    config_path: Optional[str],
-    catalog_path: Optional[str],
-    state_path: Optional[str],
-    enable_http_cache: bool,
+    connection_id: Optional[str],
+    config_path: Optional[Path],
+    catalog_path: Optional[Path],
+    state_path: Optional[Path],
+    connector_images: list[str],
 ) -> None:
-    output_directory.mkdir(parents=True, exist_ok=True)
-    debug_session_start_time = int(time.time())
+    if connection_id:
+        retrieval_reason = click.prompt("👮‍♂️ Please provide a reason for accessing the connection objects. This will be logged")
+    else:
+        retrieval_reason = None
+
+    try:
+        connection_objects = get_connection_objects(
+            COMMAND_TO_REQUIRED_OBJECT_TYPES[command],
+            connection_id,
+            config_path,
+            catalog_path,
+            state_path,
+            retrieval_reason,
+        )
+    except ValueError as e:
+        raise click.UsageError(str(e))
     async with dagger.Connection(config=DAGGER_CONFIG) as dagger_client:
-        for connector_image in connector_images:
-            try:
-                execution_inputs = ExecutionInputs(
-                    connector_under_test=await get_connector_under_test(dagger_client, connector_image),
-                    command=command,
-                    config=get_connector_config(config_path),
-                    catalog=ConfiguredAirbyteCatalog.parse_file(catalog_path) if catalog_path else None,
-                    state=get_state(state_path) if state_path else None,
-                    environment_variables=None,
-                    enable_http_cache=enable_http_cache,
+        MAIN_OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
+        try:
+            for connector_image in connector_images:
+                await _execute_command_and_save_artifacts(
+                    dagger_client,
+                    connector_image,
+                    command,
+                    connection_objects,
                 )
-            except ValueError as e:
-                raise click.UsageError(str(e))
-            execution_result = await ConnectorRunner(dagger_client, **execution_inputs.to_dict()).run()
-            execution_report = ExecutionReport(execution_inputs, execution_result, created_at=debug_session_start_time)
-            await execution_report.save_to_disk(output_directory)
+
+            Prompt.ask(
+                textwrap.dedent(
+                    """
+                Debug artifacts will be destroyed after this prompt. 
+                Press enter when you're done reading them.
+                🚨 Do not copy them elsewhere on your disk!!! 🚨
+                """
+                )
+            )
+        finally:
+            clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
+
+
+async def _execute_command_and_save_artifacts(
+    dagger_client: dagger.Client,
+    connector_image: str,
+    command: Command,
+    connection_objects: ConnectionObjects,
+) -> None:
+    try:
+        connector_under_test = await ConnectorUnderTest.from_image_name(dagger_client, connector_image, TargetOrControl.CONTROL)
+        if connector_under_test.actor_type is ActorType.SOURCE:
+            actor_id = connection_objects.source_id
+        else:
+            actor_id = connection_objects.destination_id
+        assert actor_id is not None
+        execution_inputs = ExecutionInputs(
+            global_output_dir=MAIN_OUTPUT_DIRECTORY,
+            connector_under_test=connector_under_test,
+            command=command,
+            config=connection_objects.source_config,
+            configured_catalog=connection_objects.configured_catalog,
+            state=connection_objects.state,
+            environment_variables=None,
+            actor_id=actor_id,
+        )
+    except ValueError as e:
+        raise click.UsageError(str(e))
+    execution_result = await ConnectorRunner(dagger_client, execution_inputs).run()
+    await execution_result.save_artifacts(MAIN_OUTPUT_DIRECTORY)

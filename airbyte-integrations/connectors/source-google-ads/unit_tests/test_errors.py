@@ -3,11 +3,11 @@
 #
 
 
+import logging
 from contextlib import nullcontext as does_not_raise
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
@@ -35,6 +35,7 @@ params = [
         "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account.",
     ),
     (["QUERY_ERROR"], "Incorrect custom query. Error in query: unexpected end of query."),
+    (["UNRECOGNIZED_FIELD"], "The Custom Query: `None` has unrecognized field in the query. Please make sure the field exists or name entered is valid."),
     (
         ["RESOURCE_EXHAUSTED"],
         (
@@ -58,7 +59,7 @@ def test_expected_errors(mocker, config, exception, error_message):
     )
     source = SourceGoogleAds()
     with pytest.raises(AirbyteTracedException) as exception:
-        status_ok, error = source.check_connection(AirbyteLogger(), config)
+        status_ok, error = source.check_connection(logging.getLogger("airbyte"), config)
     assert exception.value.message == error_message
 
 

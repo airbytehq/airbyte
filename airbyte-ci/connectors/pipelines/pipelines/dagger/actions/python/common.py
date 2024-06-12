@@ -9,7 +9,7 @@ from typing import List, Optional, Sequence
 from dagger import Container, Directory
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.dagger.containers.python import with_pip_cache, with_python_base, with_testing_dependencies
+from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base, with_testing_dependencies
 from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
 
 
@@ -211,9 +211,7 @@ async def with_installed_python_package(
     has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
     if has_pyproject_toml:
-        # This is a temporary change in order to scope an issue. There should be following action items once we have more information.
-        # maxi297 has an action item on his calendar for 2024-03-21 to review this
-        # container = with_poetry_cache(container, context.dagger_client)
+        container = with_poetry_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_poetry(container, additional_dependency_groups, install_root_package)
     elif has_setup_py:
         container = with_pip_cache(container, context.dagger_client)

@@ -9,8 +9,8 @@ class TestAudiencePerformanceReportDailyStream(TestSuiteReportStream):
     records_number = 8
     state_file = "audience_performance_report_daily_state"
     incremental_report_file = "audience_performance_report_daily_incremental"
-    first_read_state = {"audience_performance_report_daily": {"180535609": {"TimePeriod": "2023-12-17"}}}
-    second_read_state = {"audience_performance_report_daily": {"180535609": {"TimePeriod": "2023-12-24"}}}
+    first_read_state = {"180535609": {"TimePeriod": "2023-12-17"}}
+    second_read_state = {"180535609": {"TimePeriod": "2023-12-24"}}
 
 
 class TestAudiencePerformanceReportHourlyStream(TestSuiteReportStream):
@@ -19,8 +19,8 @@ class TestAudiencePerformanceReportHourlyStream(TestSuiteReportStream):
     records_number = 24
     state_file = "audience_performance_report_hourly_state"
     incremental_report_file = "audience_performance_report_hourly_incremental"
-    first_read_state = {"audience_performance_report_hourly": {"180535609": {"TimePeriod": "2023-11-12T00:00:00+00:00"}}}
-    second_read_state = {"audience_performance_report_hourly": {"180535609": {"TimePeriod": "2023-11-13T00:00:00+00:00"}}}
+    first_read_state = {"180535609": {"TimePeriod": "2023-11-12T00:00:00+00:00"}}
+    second_read_state = {"180535609": {"TimePeriod": "2023-11-13T00:00:00+00:00"}}
 
 
 class TestAudiencePerformanceReportWeeklyStream(TestSuiteReportStream):
@@ -30,8 +30,8 @@ class TestAudiencePerformanceReportWeeklyStream(TestSuiteReportStream):
     second_read_records_number = 5
     state_file = "audience_performance_report_weekly_state"
     incremental_report_file = "audience_performance_report_weekly_incremental"
-    first_read_state = {"audience_performance_report_weekly": {"180535609": {"TimePeriod": "2023-12-25"}}}
-    second_read_state = {"audience_performance_report_weekly": {"180535609": {"TimePeriod": "2024-01-29"}}}
+    first_read_state = {"180535609": {"TimePeriod": "2023-12-25"}}
+    second_read_state = {"180535609": {"TimePeriod": "2024-01-29"}}
 
 
 class TestAudiencePerformanceReportMonthlyStream(TestSuiteReportStream):
@@ -40,5 +40,5 @@ class TestAudiencePerformanceReportMonthlyStream(TestSuiteReportStream):
     records_number = 6
     state_file = "audience_performance_report_monthly_state"
     incremental_report_file = "audience_performance_report_monthly_incremental"
-    first_read_state = {"audience_performance_report_monthly": {"180535609": {"TimePeriod": "2023-09-01"}}}
-    second_read_state = {"audience_performance_report_monthly": {"180535609": {"TimePeriod": "2024-03-01"}}}
+    first_read_state = {"180535609": {"TimePeriod": "2023-09-01"}}
+    second_read_state = {"180535609": {"TimePeriod": "2024-03-01"}}

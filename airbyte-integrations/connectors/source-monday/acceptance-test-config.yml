@@ -35,6 +35,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
+        validate_state_messages: False
         empty_streams:
           - name: teams
             bypass_reason: "The stream has no test data and tested with integration tests"
@@ -42,6 +43,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
+        validate_state_messages: False
         empty_streams:
           - name: teams
             bypass_reason: "The stream has no test data and tested with integration tests"

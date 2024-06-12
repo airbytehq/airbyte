@@ -51,6 +51,6 @@ FORMATTERS_CONFIGURATIONS: List[FormatConfiguration] = [
         Formatter.PYTHON,
         ["**/*.py"],
         format_python_container,
-        ["poetry run isort --settings-file pyproject.toml .", "poetry run black --config pyproject.toml ."],
+        ["poetry run poe format"],
     ),
 ]

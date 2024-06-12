@@ -52,6 +52,16 @@ SEARCH_ACCOUNTS_RESPONSE = b"""<s:Envelope xmlns:s="http://schemas.xmlsoap.org/s
                     </a:BusinessAddress>
                     <a:AutoTagType>Inactive</a:AutoTagType>
                     <a:SoldToPaymentInstrumentId i:nil="true"/>
+                    <a:TaxCertificate i:nil="false">
+                        <a:TaxCertificateBlobContainerName i:nil="false">Test Container Name</a:TaxCertificateBlobContainerName>
+                        <a:TaxCertificates xmlns:a="http://schemas.datacontract.org/2004/07/System.Collections.Generic" i:nil="false">
+                          <a:KeyValuePairOfstringbase64Binary>
+                            <a:key i:nil="false">test_key</a:key>
+                            <a:value i:nil="false">test_value</a:value>
+                          </a:KeyValuePairOfstringbase64Binary>
+                        </a:TaxCertificates>
+                        <a:Status i:nil="false">Active</a:Status>
+                    </a:TaxCertificate>
                     <a:AccountMode>Expert</a:AccountMode>
                 </a:AdvertiserAccount>
             </Accounts>
@@ -137,10 +147,10 @@ GET_USER_RESPONSE = b"""<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/env
 
 
 def mock_http_authenticated_send(transport: HttpAuthenticated, request: Request) -> Reply:
-    if request.headers.get('SOAPAction').decode() == '"GetUser"':
+    if request.headers.get("SOAPAction").decode() == '"GetUser"':
         return Reply(code=200, headers={}, message=GET_USER_RESPONSE)
 
-    if request.headers.get('SOAPAction').decode() == '"SearchAccounts"':
+    if request.headers.get("SOAPAction").decode() == '"SearchAccounts"':
         return Reply(code=200, headers={}, message=SEARCH_ACCOUNTS_RESPONSE)
 
     raise Exception(f"Unexpected SOAPAction provided for mock SOAP client: {request.headers.get('SOAPAction').decode()}")

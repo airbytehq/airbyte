@@ -7,6 +7,7 @@ from typing import Callable, Iterable, List
 from unittest.mock import Mock, patch
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
@@ -14,6 +15,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 
 _SOME_PARTITIONS: List[Partition] = [Mock(spec=Partition), Mock(spec=Partition)]
+_A_STREAM_NAME = "a_stream_name"
 
 
 class PartitionEnqueuerTest(unittest.TestCase):
@@ -57,14 +59,16 @@ class PartitionEnqueuerTest(unittest.TestCase):
 
         assert mocked_sleep.call_count == 2
 
-    def test_given_exception_when_generate_partitions_then_raise(self):
+    def test_given_exception_when_generate_partitions_then_return_exception_and_sentinel(self):
         stream = Mock(spec=AbstractStream)
+        stream.name = _A_STREAM_NAME
         exception = ValueError()
         stream.generate_partitions.side_effect = self._partitions_before_raising(_SOME_PARTITIONS, exception)
 
         self._partition_generator.generate_partitions(stream)
 
-        assert self._consume_queue() == _SOME_PARTITIONS + [exception]
+        queue_content = self._consume_queue()
+        assert queue_content == _SOME_PARTITIONS + [StreamThreadException(exception, _A_STREAM_NAME), PartitionGenerationCompletedSentinel(stream)]
 
     def _partitions_before_raising(self, partitions: List[Partition], exception: Exception) -> Callable[[], Iterable[Partition]]:
         def inner_function() -> Iterable[Partition]:
@@ -83,7 +87,7 @@ class PartitionEnqueuerTest(unittest.TestCase):
     def _consume_queue(self) -> List[QueueItem]:
         queue_content: List[QueueItem] = []
         while queue_item := self._queue.get():
-            if isinstance(queue_item, (PartitionGenerationCompletedSentinel, Exception)):
+            if isinstance(queue_item, PartitionGenerationCompletedSentinel):
                 queue_content.append(queue_item)
                 break
             queue_content.append(queue_item)

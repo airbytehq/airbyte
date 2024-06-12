@@ -74,32 +74,39 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------|
-| 1.1.5 | 2024-02-12 | [35182](https://github.com/airbytehq/airbyte/pull/35182) | Manage dependencies with Poetry. |
-| 1.1.4   | 2024-02-02 | [34772](https://github.com/airbytehq/airbyte/pull/34772) | Fix airbyte-lib distribution  |
-| 1.1.3   | 2024-01-31 | [34707](https://github.com/airbytehq/airbyte/pull/34707) | Added the UI toggle `Use 'Orders' Deprecated API` to switch between `deprecated` and `modern` api versions for `Orders` stream  |
-| 1.1.2   | 2023-11-03 | [32132](https://github.com/airbytehq/airbyte/pull/32132) | Reduced `period in days` value for `Subscriptions` stream, to avoid `504 - Gateway TimeOut` error  |
-| 1.1.1   | 2023-09-26 | [30782](https://github.com/airbytehq/airbyte/pull/30782) | For the new style pagination, pass only limit along with cursor                           |
-| 1.1.0   | 2023-09-26 | [30756](https://github.com/airbytehq/airbyte/pull/30756) | Fix pagination and slicing                                                                |
-| 1.0.1   | 2023-08-30 | [29992](https://github.com/airbytehq/airbyte/pull/29992) | Revert for orders stream to use old API version 2021-01                                   |
-| 1.0.0   | 2023-06-22 | [27612](https://github.com/airbytehq/airbyte/pull/27612) | Change data type of the `shopify_variant_id_not_found` field of the `Charges` stream      |
-| 0.2.10  | 2023-06-20 | [27503](https://github.com/airbytehq/airbyte/pull/27503) | Update API version to 2021-11                                                             |      
-| 0.2.9   | 2023-04-10 | [25009](https://github.com/airbytehq/airbyte/pull/25009) | Fix owner slicing for `Metafields` stream                                                 |      
-| 0.2.8   | 2023-04-07 | [24990](https://github.com/airbytehq/airbyte/pull/24990) | Add slicing to connector                                                                  |      
-| 0.2.7   | 2023-02-13 | [22901](https://github.com/airbytehq/airbyte/pull/22901) | Specified date formatting in specification                                                |      
-| 0.2.6   | 2023-02-21 | [22473](https://github.com/airbytehq/airbyte/pull/22473) | Use default availability strategy                                                         |              
-| 0.2.5   | 2023-01-27 | [22021](https://github.com/airbytehq/airbyte/pull/22021) | Set `AvailabilityStrategy` for streams explicitly to `None`                               |
-| 0.2.4   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                       |
-| 0.2.3   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                       |
-| 0.2.2   | 2022-10-05 | [17608](https://github.com/airbytehq/airbyte/pull/17608) | Skip stream if we receive 403 error                                                       |
-| 0.2.2   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                              |
-| 0.2.1   | 2022-09-23 | [17080](https://github.com/airbytehq/airbyte/pull/17080) | Fix `total_weight` value to be `int` instead of `float`                                   |
-| 0.2.0   | 2022-09-21 | [16959](https://github.com/airbytehq/airbyte/pull/16959) | Use TypeTransformer to reliably convert to schema declared data types                     |
-| 0.1.8   | 2022-08-27 | [16045](https://github.com/airbytehq/airbyte/pull/16045) | Force total_weight to be an integer                                                       |
-| 0.1.7   | 2022-07-24 | [14978](https://github.com/airbytehq/airbyte/pull/14978) | Set `additionalProperties` to True, to guarantee backward cababilities                    |
-| 0.1.6   | 2022-07-21 | [14902](https://github.com/airbytehq/airbyte/pull/14902) | Increased test coverage, fixed broken `charges`, `orders` schemas, added state checkpoint |
-| 0.1.5   | 2022-01-26 | [9808](https://github.com/airbytehq/airbyte/pull/9808)   | Update connector fields title/description                                                 |
-| 0.1.4   | 2021-11-05 | [7626](https://github.com/airbytehq/airbyte/pull/7626)   | Improve 'backoff' for HTTP requests                                                       |
-| 0.1.3   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Update `discount` and `order` schema                                                      |
-| 0.1.2   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Change `cursor_field` for Incremental streams                                             |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| 1.2.0   | 2024-03-13 | [35450](https://github.com/airbytehq/airbyte/pull/35450) | Migrated to low-code                                                                                                           |
+| 1.1.6   | 2024-03-12 | [35982](https://github.com/airbytehq/airbyte/pull/35982) | Added additional `query param` to guarantee the records are in `asc` order                                                     |
+| 1.1.5   | 2024-02-12 | [35182](https://github.com/airbytehq/airbyte/pull/35182) | Manage dependencies with Poetry.                                                                                               |
+| 1.1.4   | 2024-02-02 | [34772](https://github.com/airbytehq/airbyte/pull/34772) | Fix airbyte-lib distribution                                                                                                   |
+| 1.1.3   | 2024-01-31 | [34707](https://github.com/airbytehq/airbyte/pull/34707) | Added the UI toggle `Use 'Orders' Deprecated API` to switch between `deprecated` and `modern` api versions for `Orders` stream |
+| 1.1.2   | 2023-11-03 | [32132](https://github.com/airbytehq/airbyte/pull/32132) | Reduced `period in days` value for `Subscriptions` stream, to avoid `504 - Gateway TimeOut` error                              |
+| 1.1.1   | 2023-09-26 | [30782](https://github.com/airbytehq/airbyte/pull/30782) | For the new style pagination, pass only limit along with cursor                                                                |
+| 1.1.0   | 2023-09-26 | [30756](https://github.com/airbytehq/airbyte/pull/30756) | Fix pagination and slicing                                                                                                     |
+| 1.0.1   | 2023-08-30 | [29992](https://github.com/airbytehq/airbyte/pull/29992) | Revert for orders stream to use old API version 2021-01                                                                        |
+| 1.0.0   | 2023-06-22 | [27612](https://github.com/airbytehq/airbyte/pull/27612) | Change data type of the `shopify_variant_id_not_found` field of the `Charges` stream                                           |
+| 0.2.10  | 2023-06-20 | [27503](https://github.com/airbytehq/airbyte/pull/27503) | Update API version to 2021-11                                                                                                  |
+| 0.2.9   | 2023-04-10 | [25009](https://github.com/airbytehq/airbyte/pull/25009) | Fix owner slicing for `Metafields` stream                                                                                      |
+| 0.2.8   | 2023-04-07 | [24990](https://github.com/airbytehq/airbyte/pull/24990) | Add slicing to connector                                                                                                       |
+| 0.2.7   | 2023-02-13 | [22901](https://github.com/airbytehq/airbyte/pull/22901) | Specified date formatting in specification                                                                                     |
+| 0.2.6   | 2023-02-21 | [22473](https://github.com/airbytehq/airbyte/pull/22473) | Use default availability strategy                                                                                              |
+| 0.2.5   | 2023-01-27 | [22021](https://github.com/airbytehq/airbyte/pull/22021) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                    |
+| 0.2.4   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                                                            |
+| 0.2.3   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                                                            |
+| 0.2.2   | 2022-10-05 | [17608](https://github.com/airbytehq/airbyte/pull/17608) | Skip stream if we receive 403 error                                                                                            |
+| 0.2.2   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                                                   |
+| 0.2.1   | 2022-09-23 | [17080](https://github.com/airbytehq/airbyte/pull/17080) | Fix `total_weight` value to be `int` instead of `float`                                                                        |
+| 0.2.0   | 2022-09-21 | [16959](https://github.com/airbytehq/airbyte/pull/16959) | Use TypeTransformer to reliably convert to schema declared data types                                                          |
+| 0.1.8   | 2022-08-27 | [16045](https://github.com/airbytehq/airbyte/pull/16045) | Force total_weight to be an integer                                                                                            |
+| 0.1.7   | 2022-07-24 | [14978](https://github.com/airbytehq/airbyte/pull/14978) | Set `additionalProperties` to True, to guarantee backward cababilities                                                         |
+| 0.1.6   | 2022-07-21 | [14902](https://github.com/airbytehq/airbyte/pull/14902) | Increased test coverage, fixed broken `charges`, `orders` schemas, added state checkpoint                                      |
+| 0.1.5   | 2022-01-26 | [9808](https://github.com/airbytehq/airbyte/pull/9808)   | Update connector fields title/description                                                                                      |
+| 0.1.4   | 2021-11-05 | [7626](https://github.com/airbytehq/airbyte/pull/7626)   | Improve 'backoff' for HTTP requests                                                                                            |
+| 0.1.3   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Update `discount` and `order` schema                                                                                           |
+| 0.1.2   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Change `cursor_field` for Incremental streams                                                                                  |
+
+</details>

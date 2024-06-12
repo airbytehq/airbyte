@@ -82,7 +82,6 @@ class ConnectorStateManager:
         Generates an AirbyteMessage using the current per-stream state of a specified stream in either the per-stream or legacy format
         :param stream_name: The name of the stream for the message that is being created
         :param namespace: The namespace of the stream for the message that is being created
-        :param send_per_stream_state: Decides which state format the message should be generated as
         :return: The Airbyte state message to be emitted by the connector during a sync
         """
         hashable_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)

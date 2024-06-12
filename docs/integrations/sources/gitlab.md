@@ -107,11 +107,17 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.0.2   | 2024-04-24 | [36637](https://github.com/airbytehq/airbyte/pull/36637) | Schema descriptions and CDK 0.80.0                                                                                                                                                 |
+| 4.0.1   | 2024-04-23 | [37505](https://github.com/airbytehq/airbyte/pull/37505) | Set error code `500` as retryable                                                                                                                                                  |
+| 4.0.0   | 2024-03-25 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code                                                                                                                                                                |
 | 3.0.0   | 2024-01-25 | [34548](https://github.com/airbytehq/airbyte/pull/34548) | Fix merge_request_commits stream to return commits for each merge request                                                                                                          |
-| 2.1.2   | 2024-02-12 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry. |
-| 2.1.1   | 2024-01-12 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib                                                        |
+| 2.1.2   | 2024-02-12 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry.                                                                                                                                                   |
+| 2.1.1   | 2024-01-12 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib                                                                                                                                                            |
 | 2.1.0   | 2023-12-20 | [33676](https://github.com/airbytehq/airbyte/pull/33676) | Add fields to Commits (extended_trailers), Groups (emails_enabled, service_access_tokens_expiration_enforced) and Projects (code_suggestions, model_registry_access_level) streams |
 | 2.0.0   | 2023-10-23 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams                                                                                                  |
 | 1.8.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                                    |
@@ -151,3 +157,5 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 | 0.1.2   | 2021-10-18 | [7108](https://github.com/airbytehq/airbyte/pull/7108)   | Allow all domains to be used as `api_url`                                                                                                                                          |
 | 0.1.1   | 2021-10-12 | [6932](https://github.com/airbytehq/airbyte/pull/6932)   | Fix pattern field in spec file, remove unused fields from config files, use cache from CDK                                                                                         |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)   | Initial Release                                                                                                                                                                    |
+
+</details>

@@ -14,19 +14,22 @@ from dagger import Container, File
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
+from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
+from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, IncrementalAcceptanceTests, RegressionTests
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
+# Pin the PyAirbyte version to avoid updates from breaking CI
+PYAIRBYTE_VERSION = "0.10.2"
+
 
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
-    context: ConnectorContext
+    context: ConnectorTestContext
 
     PYTEST_INI_FILE_NAME = "pytest.ini"
     PYPROJECT_FILE_NAME = "pyproject.toml"
@@ -146,7 +149,7 @@ class PytestStep(Step, ABC):
         Returns:
             Container: The container with the test environment installed.
         """
-        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets")
+        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets", self.secrets)
 
         container_with_test_deps = (
             # Install the connector python package in /test_environment with the extra dependencies
@@ -176,6 +179,7 @@ class UnitTests(PytestStep):
 
     title = "Unit tests"
     test_directory_name = "unit_tests"
+
     common_test_dependencies = ["pytest-cov==4.1.0"]
     MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS = 90
 
@@ -192,12 +196,12 @@ class UnitTests(PytestStep):
         return super().default_params | coverage_options
 
 
-class AirbyteLibValidation(Step):
-    """A step to validate the connector will work with airbyte-lib, using the airbyte-lib validation helper."""
+class PyAirbyteValidation(Step):
+    """A step to validate the connector will work with PyAirbyte, using the PyAirbyte validation helper."""
 
-    title = "AirbyteLib validation tests"
+    title = "PyAirbyte validation tests"
 
-    context: ConnectorContext
+    context: ConnectorTestContext
 
     async def _run(self, connector_under_test: Container) -> StepResult:
         """Run all pytest tests declared in the test directory of the connector code.
@@ -207,7 +211,7 @@ class AirbyteLibValidation(Step):
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
         if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
-            return self.skip("Connector is not published on pypi, skipping airbyte-lib validation.")
+            return self.skip("Connector is not published on pypi, skipping PyAirbyte validation.")
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
         test_execution = test_environment.with_(
@@ -220,8 +224,8 @@ class AirbyteLibValidation(Step):
         self,
         built_connector_container: Container,
     ) -> Container:
-        """Add airbyte-lib and secrets to the test environment."""
-        context: ConnectorContext = self.context
+        """Add PyAirbyte and secrets to the test environment."""
+        context: ConnectorTestContext = self.context
 
         container_with_test_deps = await pipelines.dagger.actions.python.common.with_python_package(
             self.context, built_connector_container.with_entrypoint([]), str(context.connector.code_directory)
@@ -230,7 +234,7 @@ class AirbyteLibValidation(Step):
             [
                 "pip",
                 "install",
-                "airbyte-lib",
+                f"airbyte=={PYAIRBYTE_VERSION}",
             ]
         )
 
@@ -240,19 +244,21 @@ class IntegrationTests(PytestStep):
 
     title = "Integration tests"
     test_directory_name = "integration_tests"
+
     bind_to_docker_host = True
 
 
-def get_test_steps(context: ConnectorContext) -> STEP_TREE:
+def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
     """
     Get all the tests steps for a Python connector.
     """
+
     return [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))],
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.UNIT,
-                step=UnitTests(context),
+                step=UnitTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.UNIT)),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             )
@@ -260,21 +266,39 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
-                step=IntegrationTests(context),
+                step=IntegrationTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.INTEGRATION)),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
-                step=AirbyteLibValidation(context),
+                step=PyAirbyteValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
-                step=AcceptanceTests(context, context.concurrent_cat),
+                step=AcceptanceTests(
+                    context,
+                    concurrent_test_run=context.concurrent_cat,
+                    secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.ACCEPTANCE),
+                ),
                 args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS,
+                step=RegressionTests(context),
+                args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+        ],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.INCREMENTAL_ACCEPTANCE,
+                step=IncrementalAcceptanceTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.ACCEPTANCE)),
+                args=lambda results: {"current_acceptance_tests_result": results[CONNECTOR_TEST_STEP_ID.ACCEPTANCE]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.ACCEPTANCE],
+            )
         ],
     ]

@@ -224,7 +224,7 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id]))
-        cursor_value_from_state_message = output.most_recent_state.get(_STREAM_NAME, {}).get(account_id, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_message = output.most_recent_state.stream_state.dict().get(account_id, {}).get(_CURSOR_FIELD)
         assert cursor_value_from_state_message == max_cursor_value
 
     @HttpMocker()
@@ -256,8 +256,8 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id_1, account_id_2]))
-        cursor_value_from_state_account_1 = output.most_recent_state.get(_STREAM_NAME, {}).get(account_id_1, {}).get(_CURSOR_FIELD)
-        cursor_value_from_state_account_2 = output.most_recent_state.get(_STREAM_NAME, {}).get(account_id_2, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_account_1 = output.most_recent_state.stream_state.dict().get(account_id_1, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_account_2 = output.most_recent_state.stream_state.dict().get(account_id_2, {}).get(_CURSOR_FIELD)
         assert cursor_value_from_state_account_1 == max_cursor_value_account_id_1
         assert cursor_value_from_state_account_2 == max_cursor_value_account_id_2
 

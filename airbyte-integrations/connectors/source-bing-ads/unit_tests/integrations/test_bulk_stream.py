@@ -8,7 +8,6 @@ from bingads.v13.bulk.bulk_service_manager import BulkServiceManager
 
 
 class TestBulkStream(BaseTest):
-
     @property
     def service_manager(self) -> BulkServiceManager:
         return BulkServiceManager

@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,6 +17,9 @@ import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
@@ -30,19 +32,20 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.mongodb.ResumeTokens;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
+import org.bson.conversions.Bson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MongoDbDebeziumStateUtilTest {
 
   private static final String DATABASE = "test-database";
-  private static final String REPLICA_SET = "test-replica-set";
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
@@ -76,12 +79,11 @@ class MongoDbDebeziumStateUtilTest {
         MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
         MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database));
 
-    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
     when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
-    final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument, mongoClient, database);
+    final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument, database);
 
     assertNotNull(initialState);
     assertEquals(1, initialState.size());
@@ -90,40 +92,23 @@ class MongoDbDebeziumStateUtilTest {
     assertEquals(resumeToken, Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText());
     assertEquals(timestamp.getTime(), Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS).asInt());
     assertEquals(timestamp.getInc(), Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT).asInt());
-    assertEquals("null", Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID).asText());
 
     final Optional<BsonDocument> parsedOffset =
         mongoDbDebeziumStateUtil.savedOffset(
             baseProperties,
             CONFIGURED_CATALOG,
             initialState,
-            config,
-            mongoClient);
+            config);
     assertTrue(parsedOffset.isPresent());
     assertEquals(resumeToken, parsedOffset.get().get("_data").asString().getValue());
   }
 
   @Test
-  void testConstructInitialDebeziumStateMissingReplicaSet() {
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ServerDescription serverDescription = mock(ServerDescription.class);
-    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
-
-    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
-    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
-    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
-
-    assertThrows(IllegalStateException.class,
-        () -> mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument, mongoClient, DATABASE));
-  }
-
-  @Test
   void testOffsetDataFormat() {
-    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN);
+    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState(DATABASE, RESUME_TOKEN);
 
     assertNotNull(offsetState);
-    assertEquals("[\"" + DATABASE + "\",{\"" + MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET + "\":\"" + REPLICA_SET + "\",\""
+    assertEquals("[\"" + DATABASE + "\",{\""
         + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + DATABASE + "\"}]", offsetState.fieldNames().next());
   }
 
@@ -135,13 +120,17 @@ class MongoDbDebeziumStateUtilTest {
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.in("ns.coll", List.of("test-collection"))));
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient));
+    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, DATABASE, CONFIGURED_CATALOG));
   }
 
   @Test
@@ -151,14 +140,19 @@ class MongoDbDebeziumStateUtilTest {
     final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
+
     final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
     when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()));
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.in("ns.coll", List.of("test-collection"))));
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient));
+    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, DATABASE, CONFIGURED_CATALOG));
   }
 
 }

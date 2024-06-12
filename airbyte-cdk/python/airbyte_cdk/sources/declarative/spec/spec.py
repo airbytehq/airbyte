@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
+from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow
 
 
@@ -29,13 +29,14 @@ class Spec:
         Returns the connector specification according the spec block defined in the low code connector manifest.
         """
 
-        obj = {"connectionSpecification": self.connection_specification}
+        obj: dict[str, Mapping[str, Any] | str | AuthFlow] = {"connectionSpecification": self.connection_specification}
 
         if self.documentation_url:
             obj["documentationUrl"] = self.documentation_url
         if self.advanced_auth:
             obj["advanced_auth"] = self.advanced_auth
-            obj["advanced_auth"].auth_flow_type = obj["advanced_auth"].auth_flow_type.value  # Get enum value
+            # Get enum value
+            obj["advanced_auth"].auth_flow_type = obj["advanced_auth"].auth_flow_type.value  # type: ignore # We know this is always assigned to an AuthFlow which has the auth_flow_type field
 
         # We remap these keys to camel case because that's the existing format expected by the rest of the platform
         return ConnectorSpecification.parse_obj(obj)

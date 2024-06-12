@@ -1,16 +1,37 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
-import time
+import json
+import logging
+import tempfile
+from collections import defaultdict
+from collections.abc import Iterable, Iterator, MutableMapping
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, MutableMapping, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import _collections_abc
 import dagger
+import requests
+from airbyte_protocol.models import AirbyteCatalog  # type: ignore
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
+from airbyte_protocol.models import AirbyteStateMessage  # type: ignore
+from airbyte_protocol.models import AirbyteStreamStatusTraceMessage  # type: ignore
 from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
-from live_tests.commons.backends import FileBackend
+from airbyte_protocol.models import TraceType  # type: ignore
+from airbyte_protocol.models import Type as AirbyteMessageType
+from genson import SchemaBuilder  # type: ignore
+from live_tests.commons.backends import DuckDbBackend, FileBackend
+from live_tests.commons.secret_access import get_airbyte_api_key
+from live_tests.commons.utils import (
+    get_connector_container,
+    get_http_flows_from_mitm_dump,
+    mitm_http_stream_to_har,
+    sanitize_stream_name,
+    sort_dict_keys,
+)
+from mitmproxy import http
 from pydantic import ValidationError
 
 
@@ -50,35 +71,35 @@ class UserDict(_collections_abc.MutableMapping):  # type: ignore
     def __repr__(self) -> str:
         return repr(self.data)
 
-    def __or__(self, other: "UserDict" | dict) -> "UserDict":
+    def __or__(self, other: UserDict | dict) -> UserDict:
         if isinstance(other, UserDict):
             return self.__class__(self.data | other.data)  # type: ignore
         if isinstance(other, dict):
             return self.__class__(self.data | other)  # type: ignore
         return NotImplemented
 
-    def __ror__(self, other: "UserDict" | dict) -> "UserDict":
+    def __ror__(self, other: UserDict | dict) -> UserDict:
         if isinstance(other, UserDict):
             return self.__class__(other.data | self.data)  # type: ignore
         if isinstance(other, dict):
             return self.__class__(other | self.data)  # type: ignore
         return NotImplemented
 
-    def __ior__(self, other: "UserDict" | dict) -> "UserDict":
+    def __ior__(self, other: UserDict | dict) -> UserDict:
         if isinstance(other, UserDict):
             self.data |= other.data  # type: ignore
         else:
             self.data |= other  # type: ignore
         return self
 
-    def __copy__(self) -> "UserDict":
+    def __copy__(self) -> UserDict:
         inst = self.__class__.__new__(self.__class__)
         inst.__dict__.update(self.__dict__)
         # Create a copy and avoid triggering descriptors
         inst.__dict__["data"] = self.__dict__["data"].copy()
         return inst
 
-    def copy(self) -> "UserDict":
+    def copy(self) -> UserDict:
         if self.__class__ is UserDict:
             return UserDict(self.data.copy())  # type: ignore
         import copy
@@ -93,7 +114,7 @@ class UserDict(_collections_abc.MutableMapping):  # type: ignore
         return c
 
     @classmethod
-    def fromkeys(cls, iterable: Iterable, value: Optional[Any] = None) -> "UserDict":
+    def fromkeys(cls, iterable: Iterable, value: Optional[Any] = None) -> UserDict:
         d = cls()
         for key in iterable:
             d[key] = value
@@ -116,40 +137,67 @@ class Command(Enum):
     SPEC = "spec"
 
 
+class TargetOrControl(Enum):
+    TARGET = "target"
+    CONTROL = "control"
+
+
+class ActorType(Enum):
+    SOURCE = "source"
+    DESTINATION = "destination"
+
+
 @dataclass
 class ConnectorUnderTest:
     image_name: str
     container: dagger.Container
+    target_or_control: TargetOrControl
 
     @property
     def name(self) -> str:
         return self.image_name.replace("airbyte/", "").split(":")[0]
 
     @property
+    def name_without_type_prefix(self) -> str:
+        return self.name.replace(f"{self.actor_type.value}-", "")
+
+    @property
     def version(self) -> str:
         return self.image_name.replace("airbyte/", "").split(":")[1]
+
+    @property
+    def actor_type(self) -> ActorType:
+        if "airbyte/destination-" in self.image_name:
+            return ActorType.DESTINATION
+        elif "airbyte/source-" in self.image_name:
+            return ActorType.SOURCE
+        else:
+            raise ValueError(
+                f"Can't infer the actor type. Connector image name {self.image_name} does not contain 'airbyte/source' or 'airbyte/destination'"
+            )
+
+    @classmethod
+    async def from_image_name(
+        cls: type[ConnectorUnderTest],
+        dagger_client: dagger.Client,
+        image_name: str,
+        target_or_control: TargetOrControl,
+    ) -> ConnectorUnderTest:
+        container = await get_connector_container(dagger_client, image_name)
+        return cls(image_name, container, target_or_control)
 
 
 @dataclass
 class ExecutionInputs:
     connector_under_test: ConnectorUnderTest
+    actor_id: str
+    global_output_dir: Path
     command: Command
     config: Optional[SecretDict] = None
-    catalog: Optional[ConfiguredAirbyteCatalog] = None
-    state: Optional[Dict] = None
-    environment_variables: Optional[Dict] = None
-    enable_http_cache: bool = True
-
-    def to_dict(self) -> dict:
-        return {
-            "connector_under_test": self.connector_under_test,
-            "command": self.command,
-            "config": self.config,
-            "catalog": self.catalog,
-            "state": self.state,
-            "environment_variables": self.environment_variables,
-            "enable_http_cache": self.enable_http_cache,
-        }
+    configured_catalog: Optional[ConfiguredAirbyteCatalog] = None
+    state: Optional[dict] = None
+    environment_variables: Optional[dict] = None
+    duckdb_path: Optional[Path] = None
 
     def raise_if_missing_attr_for_command(self, attribute: str) -> None:
         if getattr(self, attribute) is None:
@@ -162,76 +210,246 @@ class ExecutionInputs:
             self.raise_if_missing_attr_for_command("config")
         if self.command is Command.READ:
             self.raise_if_missing_attr_for_command("config")
-            self.raise_if_missing_attr_for_command("catalog")
+            self.raise_if_missing_attr_for_command("configured_catalog")
         if self.command is Command.READ_WITH_STATE:
             self.raise_if_missing_attr_for_command("config")
-            self.raise_if_missing_attr_for_command("catalog")
+            self.raise_if_missing_attr_for_command("configured_catalog")
             self.raise_if_missing_attr_for_command("state")
+
+    @property
+    def output_dir(self) -> Path:
+        output_dir = (
+            self.global_output_dir
+            / f"command_execution_artifacts/{self.connector_under_test.name}/{self.command.value}/{self.connector_under_test.version}/"
+        )
+        output_dir.mkdir(parents=True, exist_ok=True)
+        return output_dir
 
 
 @dataclass
 class ExecutionResult:
-    stdout: str
-    stderr: str
-    executed_container: dagger.Container
-    http_dump: Optional[dagger.File]
-    airbyte_messages: List[AirbyteMessage] = field(default_factory=list)
-    airbyte_messages_parsing_errors: List[Tuple[Exception, str]] = field(default_factory=list)
+    actor_id: str
+    connector_under_test: ConnectorUnderTest
+    command: Command
+    stdout_file_path: Path
+    stderr_file_path: Path
+    success: bool
+    executed_container: Optional[dagger.Container]
+    http_dump: Optional[dagger.File] = None
+    http_flows: list[http.HTTPFlow] = field(default_factory=list)
+    stream_schemas: Optional[dict[str, Any]] = None
+    backend: Optional[FileBackend] = None
 
-    def __post_init__(self) -> None:
-        self.airbyte_messages, self.airbyte_messages_parsing_errors = self.parse_airbyte_messages_from_command_output(self.stdout)
+    HTTP_DUMP_FILE_NAME = "http_dump.mitm"
+    HAR_FILE_NAME = "http_dump.har"
 
-    @staticmethod
+    @property
+    def logger(self) -> logging.Logger:
+        return logging.getLogger(f"{self.connector_under_test.target_or_control.value}-{self.command.value}")
+
+    @property
+    def airbyte_messages(self) -> Iterable[AirbyteMessage]:
+        return self.parse_airbyte_messages_from_command_output(self.stdout_file_path)
+
+    @property
+    def duckdb_schema(self) -> Iterable[str]:
+        return (self.connector_under_test.target_or_control.value, self.command.value)
+
+    @classmethod
+    async def load(
+        cls: type[ExecutionResult],
+        connector_under_test: ConnectorUnderTest,
+        actor_id: str,
+        command: Command,
+        stdout_file_path: Path,
+        stderr_file_path: Path,
+        success: bool,
+        executed_container: Optional[dagger.Container],
+        http_dump: Optional[dagger.File] = None,
+    ) -> ExecutionResult:
+        execution_result = cls(
+            actor_id,
+            connector_under_test,
+            command,
+            stdout_file_path,
+            stderr_file_path,
+            success,
+            executed_container,
+            http_dump,
+        )
+        await execution_result.load_http_flows()
+        return execution_result
+
+    async def load_http_flows(self) -> None:
+        if not self.http_dump:
+            return
+        with tempfile.NamedTemporaryFile() as temp_file:
+            await self.http_dump.export(temp_file.name)
+            self.http_flows = get_http_flows_from_mitm_dump(Path(temp_file.name))
+
     def parse_airbyte_messages_from_command_output(
-        command_output: str,
-    ) -> Tuple[List[AirbyteMessage], List[Tuple[Exception, str]]]:
-        airbyte_messages: List[AirbyteMessage] = []
-        parsing_errors: List[Tuple[Exception, str]] = []
-        for line in command_output.splitlines():
-            try:
-                airbyte_messages.append(AirbyteMessage.parse_raw(line))
-            except ValidationError as e:
-                parsing_errors.append((e, line))
-        return airbyte_messages, parsing_errors
+        self, command_output_path: Path, log_validation_errors: bool = False
+    ) -> Iterable[AirbyteMessage]:
+        with open(command_output_path) as command_output:
+            for line in command_output:
+                try:
+                    yield AirbyteMessage.parse_raw(line)
+                except ValidationError as e:
+                    if log_validation_errors:
+                        self.logger.warn(f"Error parsing AirbyteMessage: {e}")
 
+    def get_records(self) -> Iterable[AirbyteMessage]:
+        self.logger.info(
+            f"Reading records all records for command {self.command.value} on {self.connector_under_test.target_or_control.value} version."
+        )
+        for message in self.airbyte_messages:
+            if message.type is AirbyteMessageType.RECORD:
+                yield message
 
-@dataclass
-class ExecutionReport:
-    execution_inputs: ExecutionInputs
-    execution_result: ExecutionResult
-    created_at: int = field(default_factory=lambda: int(time.time()))
-    saved_path: Optional[Path] = None
+    def generate_stream_schemas(self) -> dict[str, Any]:
+        self.logger.info("Generating stream schemas")
+        stream_builders: dict[str, SchemaBuilder] = {}
+        for record in self.get_records():
+            stream = record.record.stream
+            if stream not in stream_builders:
+                stream_schema_builder = SchemaBuilder()
+                stream_schema_builder.add_schema({"type": "object", "properties": {}})
+                stream_builders[stream] = stream_schema_builder
+            stream_builders[stream].add_object(record.record.data)
+        self.logger.info("Stream schemas generated")
+        return {stream: sort_dict_keys(stream_builders[stream].to_schema()) for stream in stream_builders}
 
-    @property
-    def report_dir(self) -> str:
-        return f"{self.execution_inputs.connector_under_test.name}/{self.execution_inputs.command.value}/{self.execution_inputs.connector_under_test.version}/"
+    def get_records_per_stream(self, stream: str) -> Iterator[AirbyteMessage]:
+        assert self.backend is not None, "Backend must be set to get records per stream"
+        self.logger.info(f"Reading records for stream {stream}")
+        if stream not in self.backend.record_per_stream_paths:
+            self.logger.warning(f"No records found for stream {stream}")
+            yield from []
+        else:
+            for message in self.parse_airbyte_messages_from_command_output(
+                self.backend.record_per_stream_paths[stream], log_validation_errors=True
+            ):
+                if message.type is AirbyteMessageType.RECORD:
+                    yield message
 
-    @property
-    def stdout_filename(self) -> str:
-        return "stdout.log"
+    def get_states_per_stream(self, stream: str) -> Dict[str, List[AirbyteStateMessage]]:
+        self.logger.info(f"Reading state messages for stream {stream}")
+        states = defaultdict(list)
+        for message in self.airbyte_messages:
+            if message.type is AirbyteMessageType.STATE:
+                states[message.state.stream.stream_descriptor.name].append(message.state)
+        return states
 
-    @property
-    def stderr_filename(self) -> str:
-        return "stderr.log"
+    def get_status_messages_per_stream(self, stream: str) -> Dict[str, List[AirbyteStreamStatusTraceMessage]]:
+        self.logger.info(f"Reading state messages for stream {stream}")
+        statuses = defaultdict(list)
+        for message in self.airbyte_messages:
+            if message.type is AirbyteMessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS:
+                statuses[message.trace.stream_status.stream_descriptor.name].append(message.trace.stream_status)
+        return statuses
 
-    @property
-    def http_dump_filename(self) -> str:
-        return "http_dump.mitm"
+    def get_message_count_per_type(self) -> dict[AirbyteMessageType, int]:
+        message_count: dict[AirbyteMessageType, int] = defaultdict(int)
+        for message in self.airbyte_messages:
+            message_count[message.type] += 1
+        return message_count
 
-    async def save_to_disk(self, output_dir: Path) -> None:
-        final_dir = output_dir / self.report_dir
-        final_dir.mkdir(parents=True, exist_ok=True)
-        stdout_file_path = final_dir / self.stdout_filename
-        stdout_file_path.write_text(self.execution_result.stdout)
+    async def save_http_dump(self, output_dir: Path) -> None:
+        if self.http_dump:
+            self.logger.info("An http dump was captured during the execution of the command, saving it.")
+            http_dump_file_path = (output_dir / self.HTTP_DUMP_FILE_NAME).resolve()
+            await self.http_dump.export(str(http_dump_file_path))
+            self.logger.info(f"Http dump saved to {http_dump_file_path}")
 
-        stderr_file_path = final_dir / self.stderr_filename
-        stderr_file_path.write_text(self.execution_result.stderr)
-        if self.execution_result.http_dump:
-            http_dump_file_path = final_dir / self.http_dump_filename
-            await self.execution_result.http_dump.export(str(http_dump_file_path.resolve()))
-        # TODO merge ExecutionReport.save_to_disk and Backend.write?
-        # Make backends use customizable
-        airbyte_messages_dir = final_dir / "airbyte_messages"
+            # Define where the har file will be saved
+            har_file_path = (output_dir / self.HAR_FILE_NAME).resolve()
+            # Convert the mitmproxy dump file to a har file
+            mitm_http_stream_to_har(http_dump_file_path, har_file_path)
+            self.logger.info(f"Har file saved to {har_file_path}")
+        else:
+            self.logger.warning("No http dump to save")
+
+    def save_airbyte_messages(self, output_dir: Path, duckdb_path: Optional[Path] = None) -> None:
+        self.logger.info("Saving Airbyte messages to disk")
+        airbyte_messages_dir = output_dir / "airbyte_messages"
         airbyte_messages_dir.mkdir(parents=True, exist_ok=True)
-        await FileBackend(airbyte_messages_dir).write(self.execution_result.airbyte_messages)
-        self.saved_path = final_dir
+        if duckdb_path:
+            self.backend = DuckDbBackend(airbyte_messages_dir, duckdb_path, self.duckdb_schema)
+        else:
+            self.backend = FileBackend(airbyte_messages_dir)
+        self.backend.write(self.airbyte_messages)
+        self.logger.info("Airbyte messages saved")
+
+    def save_stream_schemas(self, output_dir: Path) -> None:
+        self.stream_schemas = self.generate_stream_schemas()
+        stream_schemas_dir = output_dir / "stream_schemas"
+        stream_schemas_dir.mkdir(parents=True, exist_ok=True)
+        for stream_name, stream_schema in self.stream_schemas.items():
+            (stream_schemas_dir / f"{sanitize_stream_name(stream_name)}.json").write_text(json.dumps(stream_schema, sort_keys=True))
+        self.logger.info("Stream schemas saved to disk")
+
+    async def save_artifacts(self, output_dir: Path, duckdb_path: Optional[Path] = None) -> None:
+        self.logger.info("Saving artifacts to disk")
+        self.save_airbyte_messages(output_dir, duckdb_path)
+        self.update_configuration()
+        await self.save_http_dump(output_dir)
+        self.save_stream_schemas(output_dir)
+        self.logger.info("All artifacts saved to disk")
+
+    def get_updated_configuration(self, control_message_path: Path) -> Optional[dict[str, Any]]:
+        """Iterate through the control messages to find CONNECTOR_CONFIG message and return the last updated configuration."""
+        if not control_message_path.exists():
+            return None
+        updated_config = None
+        for line in control_message_path.read_text().splitlines():
+            if line.strip():
+                connector_config = json.loads(line.strip()).get("connectorConfig", {})
+                if connector_config:
+                    updated_config = connector_config
+        return updated_config
+
+    def update_configuration(self) -> None:
+        """This function checks if a configuration has to be updated by reading the control messages file.
+        If a configuration has to be updated, it updates the configuration on the actor using the Airbyte API.
+        """
+        assert self.backend is not None, "Backend must be set to update configuration in order to find the control messages path"
+        updated_configuration = self.get_updated_configuration(self.backend.jsonl_controls_path)
+        if updated_configuration is None:
+            return
+
+        self.logger.warning(f"Updating configuration for {self.connector_under_test.name}, actor {self.actor_id}")
+        url = f"https://api.airbyte.com/v1/{self.connector_under_test.actor_type.value}s/{self.actor_id}"
+
+        payload = {
+            "configuration": {
+                **updated_configuration,
+                f"{self.connector_under_test.actor_type.value}Type": self.connector_under_test.name_without_type_prefix,
+            }
+        }
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": f"Bearer {get_airbyte_api_key()}",
+        }
+
+        response = requests.patch(url, json=payload, headers=headers)
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            self.logger.error(f"Failed to update {self.connector_under_test.name} configuration on actor {self.actor_id}: {e}")
+            self.logger.error(f"Response: {response.text}")
+        self.logger.info(f"Updated configuration for {self.connector_under_test.name}, actor {self.actor_id}")
+
+
+@dataclass(kw_only=True)
+class ConnectionObjects:
+    source_config: Optional[SecretDict]
+    destination_config: Optional[SecretDict]
+    configured_catalog: Optional[ConfiguredAirbyteCatalog]
+    catalog: Optional[AirbyteCatalog]
+    state: Optional[dict]
+    workspace_id: Optional[str]
+    source_id: Optional[str]
+    destination_id: Optional[str]
+    source_docker_image: Optional[str]
+    connection_id: Optional[str]
