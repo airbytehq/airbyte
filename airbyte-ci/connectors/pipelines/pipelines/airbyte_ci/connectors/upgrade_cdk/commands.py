@@ -3,28 +3,16 @@
 #
 
 import asyncclick as click
-import requests  # type: ignore
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.upgrade_cdk.pipeline import run_connector_cdk_upgrade_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
-def latest_cdk_version() -> str:
-    """
-    Get the latest version of airbyte-cdk from pypi
-    """
-    cdk_pypi_url = "https://pypi.org/pypi/airbyte-cdk/json"
-    response = requests.get(cdk_pypi_url)
-    response.raise_for_status()
-    package_info = response.json()
-    return package_info["info"]["version"]
-
-
 @click.command(cls=DaggerPipelineCommand, short_help="Upgrade CDK version")
-@click.argument("target-cdk-version", type=str, default=latest_cdk_version)
+@click.argument("target-cdk-version", type=str, default="latest")
 @click.pass_context
-async def bump_version(
+async def upgrade_cdk(
     ctx: click.Context,
     target_cdk_version: str,
 ) -> bool:
@@ -37,14 +25,15 @@ async def bump_version(
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
+            diffed_branch=ctx.obj["diffed_branch"],
+            git_repo_url=ctx.obj["git_repo_url"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
-            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             dagger_logs_url=ctx.obj.get("dagger_logs_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
-            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             enable_report_auto_open=False,

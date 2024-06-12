@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import unicodedata
+import xml.sax.saxutils
 from io import TextIOWrapper
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -18,7 +19,7 @@ from typing import TYPE_CHECKING
 import anyio
 import asyncclick as click
 import asyncer
-from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, Secret
+from dagger import Client, Config, Container, Directory, ExecError, File, ImageLayerCompression, Platform, Secret
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -29,6 +30,7 @@ if TYPE_CHECKING:
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
+MANIFEST_FILE_NAME = "manifest.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
@@ -326,3 +328,50 @@ def fail_if_missing_docker_hub_creds(ctx: click.Context) -> None:
         raise click.UsageError(
             "You need to be logged to DockerHub registry to run this command. Please set DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables."
         )
+
+
+def java_log_scrub_pattern(secrets_to_mask: List[str]) -> str:
+    """Transforms a list of secrets into a LOG_SCRUB_PATTERN env var value for our log4j test configuration."""
+    # Build a regex pattern that matches any of the secrets to mask.
+    regex_pattern = "|".join(map(re.escape, secrets_to_mask))
+    # Now, make this string safe to consume by the log4j configuration.
+    # Its parser is XML-based so the pattern needs to be escaped again, and carefully.
+    return xml.sax.saxutils.escape(
+        regex_pattern,
+        # Annoyingly, the log4j properties file parser is quite brittle when it comes to
+        # handling log message patterns. In our case the env var is injected like this:
+        #
+        #     ${env:LOG_SCRUB_PATTERN:-defaultvalue}
+        #
+        # We must avoid confusing the parser with curly braces or colons otherwise the
+        # printed log messages will just consist of `%replace`.
+        {
+            "\t": "&#9;",
+            "'": "&apos;",
+            '"': "&quot;",
+            "{": "&#123;",
+            "}": "&#125;",
+            ":": "&#58;",
+        },
+    )
+
+
+def dagger_directory_as_zip_file(dagger_client: Client, directory: Directory, directory_name: str) -> File:
+    """Compress a directory and return a File object representing the zip file.
+
+    Args:
+        dagger_client (Client): The dagger client.
+        directory (Path): The directory to compress.
+        directory_name (str): The name of the directory.
+
+    Returns:
+        File: The File object representing the zip file.
+    """
+    return (
+        dagger_client.container()
+        .from_("alpine:3.19.1")
+        .with_exec(sh_dash_c(["apk update", "apk add zip"]))
+        .with_mounted_directory(f"/{directory_name}", directory)
+        .with_exec(["zip", "-r", "/zipped.zip", f"/{directory_name}"])
+        .file("/zipped.zip")
+    )

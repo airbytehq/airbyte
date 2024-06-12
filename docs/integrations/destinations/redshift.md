@@ -9,7 +9,7 @@ The Airbyte Redshift destination allows you to sync data to Redshift.
 This Redshift destination connector has two replication strategies:
 
 1. INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code
-   base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft
+   base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Maven Central
    [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in
    Redshift documentation
    [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). **Not recommended
@@ -28,8 +28,9 @@ For INSERT strategy:
 
 2. COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is
    the recommended loading approach described by Redshift
-   [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html).
-   Requires an S3 bucket and credentials.
+   [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html).
+   Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest
+   file.
 
 Airbyte automatically picks an approach depending on the given configuration - if S3 configuration
 is present, Airbyte will use the COPY strategy and vice versa.
@@ -50,18 +51,6 @@ For COPY strategy:
     to objects in the staging bucket.
 - **Secret Access Key**
   - Corresponding key to the above key id.
-- **Part Size**
-  - Affects the size limit of an individual Redshift table. Optional. Increase this if syncing
-    tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each
-    part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This
-    is 10MB by default, resulting in a default table limit of 100GB. Note, a larger part size will
-    result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get
-    the memory requirement. Modify this with care.
-- **S3 Filename pattern**
-  - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders
-    combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
-    `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
-    Please, don't use empty space and not supportable placeholders, as they won't recognized.
 
 Optional parameters:
 
@@ -69,6 +58,10 @@ Optional parameters:
   - The directory within the S3 bucket to place the staging data. For example, if you set this to
     `yourFavoriteSubdirectory`, we will place the staging data inside
     `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
+- **S3 Filename pattern**
+   - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
+    `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
+    The pattern you supply will apply to anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Please, don't use empty space and not supportable placeholders, as they won't recognized.
 - **Purge Staging Data**
   - Whether to delete the staging files from S3 after completing the sync. Specifically, the
     connector will create CSV files named
@@ -76,8 +69,9 @@ Optional parameters:
     (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command
     completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
-NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel supports the SQL
-connection only. S3 is secured through public HTTPS access only.
+NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel
+supports the SQL connection only. S3 is secured through public HTTPS access only. Subsequent typing
+and deduping queries on final table are executed over using provided SSH Tunnel configuration.
 
 ## Step 1: Set up Redshift
 
@@ -94,12 +88,28 @@ connection only. S3 is secured through public HTTPS access only.
 5. (Optional)
    [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
    staging S3 bucket \(for the COPY strategy\).
-6. Create a user with at least create table permissions for the schema. If the schema does not exist
-   you need to add permissions for that, too. Something like this:
 
-```
-GRANT CREATE ON DATABASE database_name TO airflow_user; -- add create schema permission
-GRANT usage, create on schema my_schema TO airflow_user; -- add create table permission
+### Permissions in Redshift
+
+Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g.
+`my_schema` and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this
+raw data schema is `airbyte_internal` but this can be overridden in the Redshift Destination's
+advanced settings. Airbyte also needs to query Redshift's
+[SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for
+metadata about the tables airbyte manages.
+
+To ensure the `airbyte_user` has the correction permissions to:
+
+- create schemas in your database
+- grant usage to any existing schemas you want Airbyte to use
+- grant select to the `svv_table_info` table
+
+You can execute the following SQL statements
+
+```sql
+GRANT CREATE ON DATABASE database_name TO airbyte_user; -- add create schema permission
+GRANT usage, create on schema my_schema TO airbyte_user; -- add create table permission
+GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user; -- add select permission for svv_table_info
 ```
 
 ### Optional Use of SSH Bastion Host
@@ -177,9 +187,18 @@ characters.
 ### Data Size Limitations
 
 Redshift specifies a maximum limit of 16MB (and 65535 bytes for any VARCHAR fields within the JSON
-record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift
-destination fails to load such data and currently ignores that record. See docs for
-[SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and
+record) to store the raw JSON record data. Thus, when a row is too big to fit, the destination
+connector will do one of the following.
+
+1. Null the value if the varchar size > 65535, The corresponding key information is added to
+   `_airbyte_meta`.
+2. Null the whole record while trying to preserve the Primary Keys and cursor field declared as part
+   of your stream configuration, if the total record size is > 16MB.
+   - For DEDUPE sync mode, if we do not find Primary key(s), we fail the sync.
+   - For OVERWRITE and APPEND mode, syncs will succeed with empty records emitted, if we fail to
+     find Primary key(s).
+
+See AWS docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and
 [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
 
 ### Encryption
@@ -190,31 +209,69 @@ All Redshift connections are encrypted using SSL.
 
 Each stream will be output into its own raw table in Redshift. Each table will contain 3 columns:
 
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
+- `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
   Redshift is `VARCHAR`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
+- `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
+- `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table. The
+  column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is
   `SUPER`.
 
-## Data type mapping
+## Data type map
 
-| Redshift Type         | Airbyte Type              | Notes |
-| :-------------------- | :------------------------ | :---- |
-| `boolean`             | `boolean`                 |       |
-| `int`                 | `integer`                 |       |
-| `float`               | `number`                  |       |
-| `varchar`             | `string`                  |       |
-| `date/varchar`        | `date`                    |       |
-| `time/varchar`        | `time`                    |       |
-| `timestamptz/varchar` | `timestamp_with_timezone` |       |
-| `varchar`             | `array`                   |       |
-| `varchar`             | `object`                  |       |
+| Airbyte type                        | Redshift type                          |
+| :---------------------------------- | :------------------------------------- |
+| STRING                              | VARCHAR                                |
+| STRING (BASE64)                     | VARCHAR                                |
+| STRING (BIG_NUMBER)                 | VARCHAR                                |
+| STRING (BIG_INTEGER)                | VARCHAR                                |
+| NUMBER                              | DECIMAL / NUMERIC                      |
+| INTEGER                             | BIGINT / INT8                          |
+| BOOLEAN                             | BOOLEAN / BOOL                         |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ / TIMESTAMP WITH TIME ZONE |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP                              |
+| STRING (TIME_WITH_TIMEZONE)         | TIMETZ / TIME WITH TIME ZONE           |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME                                   |
+| DATE                                | DATE                                   |
+| OBJECT                              | SUPER                                  |
+| ARRAY                               | SUPER                                  |
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.4   | 2024-05-31 | [38825](https://github.com/airbytehq/airbyte/pull/38825)   | Adopt CDK 0.35.15                                                                                                                                                                                                |
+| 2.6.3   | 2024-05-31 | [38803](https://github.com/airbytehq/airbyte/pull/38803)   | Source auto-conversion to Kotlin                                                                                                                                                                                 |
+| 2.6.2   | 2024-05-14 | [38189](https://github.com/airbytehq/airbyte/pull/38189)   | adding an option to DROP CASCADE on resets                                                                                                                                                                       |
+| 2.6.1   | 2024-05-13 | [\#38126](https://github.com/airbytehq/airbyte/pull/38126) | Adapt to signature changes in `StreamConfig`                                                                                                                                                                     |
+| 2.6.0   | 2024-05-08 | [\#37713](https://github.com/airbytehq/airbyte/pull/37713) | Remove option for incremental typing and deduping                                                                                                                                                                |
+| 2.5.0   | 2024-05-06 | [\#34613](https://github.com/airbytehq/airbyte/pull/34613) | Upgrade Redshift driver to work with Cluster patch 181; Adapt to CDK 0.33.0; Minor signature changes                                                                                                             |
+| 2.4.3   | 2024-04-10 | [\#36973](https://github.com/airbytehq/airbyte/pull/36973) | Limit the Standard inserts SQL statement to less than 16MB                                                                                                                                                       |
+| 2.4.2   | 2024-04-05 | [\#36365](https://github.com/airbytehq/airbyte/pull/36365) | Remove unused config option                                                                                                                                                                                      |
+| 2.4.1   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846)  | Remove duplicate S3 Region                                                                                                                                                                                       |
+| 2.4.0   | 2024-03-21 | [\#36589](https://github.com/airbytehq/airbyte/pull/36589) | Adapt to Kotlin cdk 0.28.19                                                                                                                                                                                      |
+| 2.3.2   | 2024-03-21 | [\#36374](https://github.com/airbytehq/airbyte/pull/36374) | Supress Jooq DataAccessException error message in logs                                                                                                                                                           |
+| 2.3.1   | 2024-03-18 | [\#36255](https://github.com/airbytehq/airbyte/pull/36255) | Mark as Certified-GA                                                                                                                                                                                             |
+| 2.3.0   | 2024-03-18 | [\#36203](https://github.com/airbytehq/airbyte/pull/36203) | CDK 0.25.0; Record nulling for VARCHAR > 64K & record > 16MB (super limit)                                                                                                                                       |
+| 2.2.0   | 2024-03-14 | [\#35981](https://github.com/airbytehq/airbyte/pull/35981) | CDK 0.24.0; `_airbyte_meta` in Raw table for tracking upstream data modifications.                                                                                                                               |
+| 2.1.10  | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.23.18; Null safety check in state parsing                                                                                                                                                            |
+| 2.1.9   | 2024-03-04 | [\#35316](https://github.com/airbytehq/airbyte/pull/35316) | Update to CDK 0.23.11; Adopt migration framework                                                                                                                                                                 |
+| 2.1.8   | 2024-02-09 | [\#35354](https://github.com/airbytehq/airbyte/pull/35354) | Update to CDK 0.23.0; Gather required initial state upfront, remove dependency on svv_table_info for table empty check                                                                                           |
+| 2.1.7   | 2024-02-09 | [\#34562](https://github.com/airbytehq/airbyte/pull/34562) | Switch back to jooq-based sql execution for standard insert                                                                                                                                                      |
+| 2.1.6   | 2024-02-08 | [\#34502](https://github.com/airbytehq/airbyte/pull/34502) | Update to CDK version 0.17.0                                                                                                                                                                                     |
+| 2.1.5   | 2024-01-30 | [\#34680](https://github.com/airbytehq/airbyte/pull/34680) | Update to CDK version 0.16.3                                                                                                                                                                                     |
+| 2.1.4   | 2024-01-29 | [\#34634](https://github.com/airbytehq/airbyte/pull/34634) | Use lowercase raw schema and table in T+D [CDK changes](https://github.com/airbytehq/airbyte/pull/34533)                                                                                                         |
+| 2.1.3   | 2024-01-26 | [\#34544](https://github.com/airbytehq/airbyte/pull/34544) | Proper string-escaping in raw tables                                                                                                                                                                             |
+| 2.1.2   | 2024-01-24 | [\#34451](https://github.com/airbytehq/airbyte/pull/34451) | Improve logging for unparseable input                                                                                                                                                                            |
+| 2.1.1   | 2024-01-24 | [\#34458](https://github.com/airbytehq/airbyte/pull/34458) | Improve error reporting                                                                                                                                                                                          |
+| 2.1.0   | 2024-01-24 | [\#34467](https://github.com/airbytehq/airbyte/pull/34467) | Upgrade CDK to 0.14.0                                                                                                                                                                                            |
+| 2.0.0   | 2024-01-23 | [\#34077](https://github.com/airbytehq/airbyte/pull/34077) | Destinations V2                                                                                                                                                                                                  |
+| 0.8.0   | 2024-01-18 | [\#34236](https://github.com/airbytehq/airbyte/pull/34236) | Upgrade CDK to 0.13.0                                                                                                                                                                                            |
+| 0.7.15  | 2024-01-11 | [\#34186](https://github.com/airbytehq/airbyte/pull/34186) | Update check method with svv_table_info permission check, fix bug where s3 staging files were not being deleted.                                                                                                 |
 | 0.7.14  | 2024-01-08 | [\#34014](https://github.com/airbytehq/airbyte/pull/34014) | Update order of options in spec                                                                                                                                                                                  |
 | 0.7.13  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Fix NPE when prepare tables fail; Add case sensitive session for super; Bastion heartbeats added                                                                                                                 |
 | 0.7.12  | 2024-01-03 | [\#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                                                                                                                                                                |
@@ -293,3 +350,5 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.13  | 2021-09-02 | [\#5745](https://github.com/airbytehq/airbyte/pull/5745)   | Disable STATUPDATE flag when using S3 staging to speed up performance                                                                                                                                            |
 | 0.3.12  | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Enable partial checkpointing for halfway syncs                                                                                                                                                                   |
 | 0.3.11  | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874)   | allow `additionalProperties` in connector spec                                                                                                                                                                   |
+
+</details>

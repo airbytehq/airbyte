@@ -4,27 +4,94 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "sku": { "type": ["null", "string"] },
-    "fnsku": { "type": ["null", "string"] },
-    "asin": { "type": ["null", "string"] },
-    "product-name": { "type": ["null", "string"] },
-    "condition": { "type": ["null", "string"] },
-    "your-price": { "type": ["null", "string"] },
-    "mfn-listing-exists": { "type": ["null", "string"] },
-    "mfn-fulfillable-quantity": { "type": ["null", "string"] },
-    "afn-listing-exists": { "type": ["null", "string"] },
-    "afn-warehouse-quantity": { "type": ["null", "string"] },
-    "afn-fulfillable-quantity": { "type": ["null", "string"] },
-    "afn-unsellable-quantity": { "type": ["null", "string"] },
-    "afn-reserved-quantity": { "type": ["null", "string"] },
-    "afn-total-quantity": { "type": ["null", "string"] },
-    "per-unit-volume": { "type": ["null", "string"] },
-    "afn-inbound-working-quantity": { "type": ["null", "string"] },
-    "afn-inbound-shipped-quantity": { "type": ["null", "string"] },
-    "afn-inbound-receiving-quantity": { "type": ["null", "string"] },
-    "afn-researching-quantity": { "type": ["null", "string"] },
-    "afn-reserved-future-supply": { "type": ["null", "string"] },
-    "afn-future-supply-buyable": { "type": ["null", "string"] },
-    "dataEndTime": { "type": ["null", "string"], "format": "date" }
+    "sku": {
+      "description": "Stock Keeping Unit, a unique identifier for the product",
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "description": "Fulfillment Network SKU, a unique identifier for a product in Amazon's fulfillment network",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "Unique Amazon Standard Identification Number for the product",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "The name or title of the product",
+      "type": ["null", "string"]
+    },
+    "condition": {
+      "description": "The condition of the product (e.g., New, Used, Refurbished)",
+      "type": ["null", "string"]
+    },
+    "your-price": {
+      "description": "The price at which you are selling the product",
+      "type": ["null", "string"]
+    },
+    "mfn-listing-exists": {
+      "description": "Indicator if the Merchant Fulfilled Network listing exists",
+      "type": ["null", "string"]
+    },
+    "mfn-fulfillable-quantity": {
+      "description": "The quantity of Merchant Fulfilled Network inventory available for sale",
+      "type": ["null", "string"]
+    },
+    "afn-listing-exists": {
+      "description": "Indicator if the FBA listing exists on Amazon's marketplace",
+      "type": ["null", "string"]
+    },
+    "afn-warehouse-quantity": {
+      "description": "The quantity of FBA inventory stored in Amazon's warehouses",
+      "type": ["null", "string"]
+    },
+    "afn-fulfillable-quantity": {
+      "description": "The quantity of Fulfillable FBA inventory available for sale at Amazon's fulfillment centers",
+      "type": ["null", "string"]
+    },
+    "afn-unsellable-quantity": {
+      "description": "The quantity of FBA inventory that is unsellable or unavailable for purchase",
+      "type": ["null", "string"]
+    },
+    "afn-reserved-quantity": {
+      "description": "The quantity of FBA inventory reserved for pending orders",
+      "type": ["null", "string"]
+    },
+    "afn-total-quantity": {
+      "description": "The total quantity of FBA inventory available, including fulfillable, reserved, and unsellable quantities",
+      "type": ["null", "string"]
+    },
+    "per-unit-volume": {
+      "description": "The volume of the product per unit",
+      "type": ["null", "string"]
+    },
+    "afn-inbound-working-quantity": {
+      "description": "The quantity of FBA inventory being processed and prepared for sale",
+      "type": ["null", "string"]
+    },
+    "afn-inbound-shipped-quantity": {
+      "description": "The quantity of FBA inventory shipped to Amazon but not yet received",
+      "type": ["null", "string"]
+    },
+    "afn-inbound-receiving-quantity": {
+      "description": "The quantity of FBA inventory currently being received by Amazon's fulfillment centers",
+      "type": ["null", "string"]
+    },
+    "afn-researching-quantity": {
+      "description": "The quantity of FBA inventory being actively researched or investigated",
+      "type": ["null", "string"]
+    },
+    "afn-reserved-future-supply": {
+      "description": "The quantity of FBA inventory reserved for future supply transactions",
+      "type": ["null", "string"]
+    },
+    "afn-future-supply-buyable": {
+      "description": "The quantity of FBA inventory that is on order but not yet received by Amazon",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The date and time when the inventory data was last updated",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

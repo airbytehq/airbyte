@@ -25,7 +25,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
-    enable_deleted = False
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",
@@ -43,9 +42,18 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
+    object_breakdowns = {
+        "body_asset": "body_asset_id",
+        "call_to_action_asset": "call_to_action_asset_id",
+        "description_asset": "description_asset_id",
+        "image_asset": "image_asset_id",
+        "link_url_asset": "link_url_asset_id",
+        "title_asset": "title_asset_id",
+        "video_asset": "video_asset_id",
+    }
+
     # Facebook store metrics maximum of 37 months old. Any time range that
-    # older that 37 months from current date would result in 400 Bad request
-    # HTTP response.
+    # older than 37 months from current date would result in 400 Bad request HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
@@ -99,15 +107,24 @@ class AdsInsights(FBMarketingIncrementalStream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """Build complex PK based on slices and breakdowns"""
-        return ["date_start", "account_id", "ad_id"] + self.breakdowns
+
+        breakdowns_pks = []
+
+        for breakdown in self.breakdowns:
+            if breakdown in self.object_breakdowns.keys():
+                breakdowns_pks.append(self.object_breakdowns[breakdown])
+            else:
+                breakdowns_pks.append(breakdown)
+
+        return ["date_start", "account_id", "ad_id"] + breakdowns_pks
 
     @property
     def insights_lookback_period(self):
         """
         Facebook freezes insight data 28 days after it was generated, which means that all data
         from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-        But in some cases users my have define their own lookback window, thats
-        why the value for `insights_lookback_window` is set throught config.
+        But in some cases users my have define their own lookback window, that's
+        why the value for `insights_lookback_window` is set through the config.
         """
         return pendulum.duration(days=self._insights_lookback_window)
 
@@ -115,8 +132,18 @@ class AdsInsights(FBMarketingIncrementalStream):
     def insights_job_timeout(self):
         return pendulum.duration(minutes=self._insights_job_timeout)
 
+    def _transform_breakdown(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        for breakdown in self.breakdowns:
+            if breakdown in self.object_breakdowns.keys():
+                record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
+        return record
+
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
+
+    def _add_account_id(self, record: dict[str, Any], account_id: str):
+        if "account_id" not in record:
+            record["account_id"] = account_id
 
     def read_records(
         self,
@@ -133,7 +160,8 @@ class AdsInsights(FBMarketingIncrementalStream):
             for obj in job.get_result():
                 data = obj.export_all_data()
                 if self._response_data_is_valid(data):
-                    yield data
+                    self._add_account_id(data, account_id)
+                    yield self._transform_breakdown(data)
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
@@ -174,9 +202,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     def state(self, value: Mapping[str, Any]):
         """State setter, will ignore saved state if time_increment is different from previous."""
         # if the time increment configured for this stream is different from the one in the previous state
-        # then the previous state object is invalid and we should start replicating data from scratch
+        # then the previous state object is invalid, and we should start replicating data from scratch
         # to achieve this, we skip setting the state
-        transformed_state = self._transform_state_from_old_format(value, ["time_increment"])
+        transformed_state = self._transform_state_from_one_account_format(value, ["time_increment"])
         if transformed_state.get("time_increment", 1) != self.time_increment:
             logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment` option.")
             return
@@ -193,14 +221,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         }
 
         self._next_cursor_values = self._get_start_date()
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """Update stream state from latest record
-
-        :param current_stream_state: latest state returned
-        :param latest_record: latest record that we read
-        """
-        return self.state
 
     def _date_intervals(self, account_id: str) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
@@ -230,7 +250,10 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         self._next_cursor_values = self._get_start_date()
         for ts_start in self._date_intervals(account_id):
-            if ts_start in self._completed_slices.get(account_id, []):
+            if (
+                ts_start in self._completed_slices.get(account_id, [])
+                and ts_start < self._next_cursor_values.get(account_id, self._start_date) - self.insights_lookback_period
+            ):
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
@@ -261,7 +284,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         return all([breakdown in data for breakdown in self.breakdowns])
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:
@@ -302,32 +328,31 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         :return: the first date to sync
         """
-        today = pendulum.today().date()
+        today = pendulum.today(tz=pendulum.tz.UTC).date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
-        refresh_date = today - self.insights_lookback_period
 
         start_dates_for_account = {}
         for account_id in self._account_ids:
             cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
             if cursor_value:
-                start_date = cursor_value + pendulum.duration(days=self.time_increment)
+                start_date = cursor_value
+                refresh_date: pendulum.Date = cursor_value - self.insights_lookback_period
                 if start_date > refresh_date:
                     logger.info(
                         f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
                     )
                 start_date = min(start_date, refresh_date)
-
-                if start_date < self._start_date:
-                    logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
-                start_date = max(start_date, self._start_date)
             else:
                 start_date = self._start_date
+
+            if start_date < self._start_date:
+                logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
+            start_date = max(start_date, self._start_date)
             if start_date < oldest_date:
                 logger.warning(
                     f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}."
                 )
             start_dates_for_account[account_id] = max(oldest_date, start_date)
-
         return start_dates_for_account
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
@@ -359,6 +384,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
             schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
+            # adding object breakdown id to schema
+            for prop in self.breakdowns:
+                object_breakdown_id = self.object_breakdowns.get(prop)
+                if object_breakdown_id:
+                    schema["properties"].update({object_breakdown_id: breakdowns_properties[object_breakdown_id]})
         return schema
 
     def fields(self, **kwargs) -> List[str]:
@@ -371,4 +401,11 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         self._fields = list(schema.get("properties", {}).keys())
+
+        # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
+        try:
+            self._fields.remove("wish_bid")
+        except ValueError:
+            pass
+
         return self._fields

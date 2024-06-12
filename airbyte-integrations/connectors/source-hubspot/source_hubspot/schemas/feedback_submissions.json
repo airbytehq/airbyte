@@ -3,117 +3,153 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the feedback submission.",
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Additional properties related to the feedback submission.",
       "type": ["null", "object"],
       "properties": {
         "hs_all_accessible_team_ids": {
+          "description": "IDs of teams that have access to the submission.",
           "type": ["null", "string"]
         },
         "hs_all_assigned_business_unit_ids": {
+          "description": "IDs of business units assigned to the submission.",
           "type": ["null", "string"]
         },
         "hs_contact_email_rollup": {
+          "description": "Rollup of contact email addresses associated.",
           "type": ["null", "string"]
         },
         "hs_contact_id": {
+          "description": "ID of the contact related to the submission.",
           "type": ["null", "string"]
         },
         "hs_content": {
+          "description": "Content of the feedback submission.",
           "type": ["null", "string"]
         },
         "hs_created_by_user_id": {
+          "description": "ID of the user who created the submission.",
           "type": ["null", "string"]
         },
         "hs_createdate": {
+          "description": "The date when the submission was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_engagement_id": {
+          "description": "ID of the engagement associated with the submission.",
           "type": ["null", "string"]
         },
         "hs_form_guid": {
+          "description": "GUID of the form used for the submission.",
           "type": ["null", "string"]
         },
         "hs_ingestion_id": {
+          "description": "ID of the ingestion associated with the submission.",
           "type": ["null", "string"]
         },
         "hs_knowledge_article_id": {
+          "description": "ID of the knowledge article linked.",
           "type": ["null", "string"]
         },
         "hs_lastmodifieddate": {
+          "description": "The date when the submission was last modified.",
           "type": ["null", "string"]
         },
         "hs_merged_object_ids": {
+          "description": "IDs of merged objects related to the submission.",
           "type": ["null", "string"]
         },
         "hs_object_id": {
+          "description": "ID of the object associated with the submission.",
           "type": ["null", "string"]
         },
         "hs_response_group": {
+          "description": "The group associated with the response.",
           "type": ["null", "string"]
         },
         "hs_submission_name": {
+          "description": "Name of the feedback submission.",
           "type": ["null", "string"]
         },
         "hs_submission_timestamp": {
+          "description": "Timestamp of the submission.",
           "type": ["null", "string"]
         },
         "hs_submission_url": {
+          "description": "URL of the feedback submission.",
           "type": ["null", "string"]
         },
         "hs_survey_channel": {
+          "description": "Channel through which the survey was conducted.",
           "type": ["null", "string"]
         },
         "hs_survey_id": {
+          "description": "ID of the survey associated with the submission.",
           "type": ["null", "string"]
         },
         "hs_survey_name": {
+          "description": "Name of the survey linked to the submission.",
           "type": ["null", "string"]
         },
         "hs_survey_type": {
+          "description": "Type of the survey conducted.",
           "type": ["null", "string"]
         },
         "hs_unique_creation_key": {
+          "description": "Unique key identifying the creation.",
           "type": ["null", "string"]
         },
         "hs_updated_by_user_id": {
+          "description": "ID of the user who last updated the submission.",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_notification_followers": {
+          "description": "User IDs of all followers receiving notifications.",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_notification_unfollowers": {
+          "description": "User IDs of all followers who stopped notifications.",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_owners": {
+          "description": "User IDs of all owners of the submission.",
           "type": ["null", "string"]
         },
         "hs_value": {
+          "description": "Value provided in the feedback submission.",
           "type": ["null", "string"]
         },
         "hs_visitor_id": {
+          "description": "ID of the visitor associated with the submission.",
           "type": ["null", "string"]
         }
       }
     },
     "createdAt": {
+      "description": "The timestamp when the feedback submission was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The timestamp of the last update made to the feedback submission.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates if the feedback submission is archived or not.",
       "type": ["null", "boolean"]
     },
     "archivedAt": {
+      "description": "The timestamp when the feedback submission was archived.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "contacts": {
+      "description": "List of contacts associated with the feedback submission.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

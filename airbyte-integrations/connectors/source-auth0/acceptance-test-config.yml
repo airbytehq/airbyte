@@ -19,9 +19,7 @@ acceptance_tests:
         empty_streams: []
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
   incremental:
     # bypass_reason: "Connection check getting lost"
     tests:

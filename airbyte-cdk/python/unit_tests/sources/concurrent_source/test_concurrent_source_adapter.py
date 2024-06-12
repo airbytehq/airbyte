@@ -20,7 +20,7 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 
 
 class _MockSource(ConcurrentSourceAdapter):
@@ -36,7 +36,7 @@ class _MockSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
-            StreamFacade.create_from_stream(s, self, self._logger, None, NoopCursor()) if is_concurrent else s
+            StreamFacade.create_from_stream(s, self, self._logger, None, FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository())) if is_concurrent else s
             for s, is_concurrent in self._streams_to_is_concurrent.items()
         ]
 
@@ -81,13 +81,14 @@ def test_concurrent_source_adapter():
 def _mock_stream(name: str, data=[], available: bool = True):
     s = Mock()
     s.name = name
+    s.namespace = None
     s.as_airbyte_stream.return_value = AirbyteStream(
         name=name,
         json_schema={},
         supported_sync_modes=[SyncMode.full_refresh],
     )
     s.check_availability.return_value = (True, None) if available else (False, "not available")
-    s.read_full_refresh.return_value = iter(data)
+    s.read.return_value = iter(data)
     s.primary_key = None
     return s
 

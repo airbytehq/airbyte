@@ -11,11 +11,11 @@ definitions:
       field_path:
         - "data"
         - "{{ parameters['name'] }}"
+
   requester:
     type: CustomRequester
     class_name: "source_monday.MondayGraphqlRequester"
     url_base: "https://api.monday.com/v2"
-    http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config.get('credentials', {}).get('api_token') if config.get('credentials', {}).get('auth_type') == 'api_token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else config.get('api_token', '') }}"
@@ -27,6 +27,8 @@ definitions:
         - type: "DefaultErrorHandler"
           response_filters:
             - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
+              action: RETRY
+            - predicate: "{{ 'error_code' in response and response['error_code'] == 'complexityBudgetExhausted' }}"
               action: RETRY
           backoff_strategies:
             - type: ConstantBackoffStrategy
@@ -49,6 +51,7 @@ definitions:
               action: RETRY
           backoff_strategies:
             - type: ExponentialBackoffStrategy
+
   default_paginator:
     type: "DefaultPaginator"
     pagination_strategy:
@@ -62,17 +65,20 @@ definitions:
       $ref: "#/definitions/requester"
     paginator:
       $ref: "#/definitions/default_paginator"
+
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     primary_key: "id"
+
   base_nopagination_stream:
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
         type: NoPagination
+
   tags_stream:
     $ref: "#/definitions/base_nopagination_stream"
     $parameters:
@@ -103,6 +109,12 @@ definitions:
     $ref: "#/definitions/default_paginator"
     pagination_strategy:
       class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
+      type: "CustomPaginationStrategy"
+
+  cursor_paginator:
+    $ref: "#/definitions/default_paginator"
+    pagination_strategy:
+      class_name: "source_monday.item_pagination_strategy.ItemCursorPaginationStrategy"
       type: "CustomPaginationStrategy"
 
   activity_logs_stream:
@@ -173,12 +185,13 @@ definitions:
       page_size: 20
       nested_items_per_page: 20
       parent_key: "pulse_id"
-      field_path: ["data", "items", "*"]
-      additional_field_path: ["data", "boards", "*", "items", "*"]
+      field_path: ["data", "boards", "*", "items_page", "items", "*"] # for first and further incremental pagination responses
+      field_path_pagination: ["data", "next_items_page", "items", "*"] # for cursor pagination responses
+      field_path_incremental: ["data", "items", "*"] # for incremental sync responses
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
-        $ref: "#/definitions/double_paginator"
+        $ref: "#/definitions/cursor_paginator"
       record_selector:
         $ref: "#/definitions/selector"
         extractor:

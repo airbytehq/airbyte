@@ -70,6 +70,7 @@ class VectaraIntegrationTest(unittest.TestCase):
                 "customer_id": "123456",
                 "text_fields": [],
                 "metadata_fields": [],
+                "title_field": "",
             },
         )
         assert outcome.status == Status.FAILED
@@ -120,6 +121,7 @@ class VectaraIntegrationTest(unittest.TestCase):
                 "metadata": [
                     {"name": "int_col", "value": "2"},
                     {"name": "_ab_stream", "value": "None_mystream"},
+                    {"name": "title", "value": "Cats are nice"},
                 ],
             }
         ]

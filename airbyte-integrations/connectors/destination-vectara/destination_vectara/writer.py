@@ -23,11 +23,13 @@ class VectaraWriter:
         self,
         client: VectaraClient,
         text_fields: Optional[List[str]],
+        title_field: Optional[str],
         metadata_fields: Optional[List[str]],
         catalog: ConfiguredAirbyteCatalog,
     ):
         self.client = client
         self.text_fields = text_fields
+        self.title_field = title_field
         self.metadata_fields = metadata_fields
         self.streams = {f"{stream.stream.namespace}_{stream.stream.name}": stream for stream in catalog.streams}
         self.ids_to_delete: List[str] = []
@@ -51,6 +53,7 @@ class VectaraWriter:
         stream_identifier = self._get_stream_id(record=record)
         document_section = self._get_document_section(record=record)
         document_metadata = self._get_document_metadata(record=record)
+        document_title = self._get_document_title(record=record)
         primary_key = self._get_record_primary_key(record=record)
 
         if primary_key:
@@ -60,7 +63,7 @@ class VectaraWriter:
         else:
             document_id = str(uuid.uuid4().int)
 
-        self.write_buffer.append((document_section, document_metadata, document_id))
+        self.write_buffer.append((document_section, document_metadata, document_title, document_id))
         if len(self.write_buffer) == self.flush_interval:
             self.flush()
 
@@ -98,6 +101,14 @@ class VectaraWriter:
         document_metadata = self._extract_relevant_fields(record, self.metadata_fields)
         document_metadata[METADATA_STREAM_FIELD] = self._get_stream_id(record)
         return document_metadata
+
+    def _get_document_title(self, record: AirbyteRecordMessage) -> str:
+        title = "Untitled"
+        if self.title_field:
+            found_title = dpath.util.values(record.data, self.title_field, separator=".")
+            if found_title:
+                title = found_title[0]
+        return title
 
     def _get_stream_id(self, record: AirbyteRecordMessage) -> str:
         return f"{record.namespace}_{record.stream}"

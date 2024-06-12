@@ -3,55 +3,71 @@
   "additionalProperties": true,
   "properties": {
     "published_at": {
+      "description": "The date and time when the product was published.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "The date and time when the product was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "published_scope": {
+      "description": "The scope of where the product is available for purchase.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the product.",
       "type": ["null", "string"]
     },
     "vendor": {
+      "description": "The vendor or manufacturer of the product.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the product was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "body_html": {
+      "description": "The HTML description of the product.",
       "type": ["null", "string"]
     },
     "product_type": {
+      "description": "The type or category of the product.",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "Tags associated with the product.",
       "type": ["null", "string"]
     },
     "options": {
+      "description": "Represents different customizable options available for the product.",
       "type": ["null", "array"],
       "items": {
         "properties": {
           "name": {
+            "description": "The name of the product option.",
             "type": ["null", "string"]
           },
           "product_id": {
+            "description": "The unique identifier of the product.",
             "type": ["null", "integer"]
           },
           "values": {
+            "description": "Possible values that can be selected for each option.",
             "type": ["null", "array"],
             "items": {
+              "description": "List of values associated with the product option.",
               "type": ["null", "string"]
             }
           },
           "id": {
+            "description": "The unique identifier of the product option.",
             "type": ["null", "integer"]
           },
           "position": {
+            "description": "The position of the product option.",
             "type": ["null", "integer"]
           }
         },
@@ -59,85 +75,118 @@
       }
     },
     "image": {
+      "description": "Represents the main product image linked to one or more variants.",
       "properties": {
         "updated_at": {
+          "description": "The date and time when the image was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "created_at": {
+          "description": "The date and time when the image was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "variant_ids": {
+          "description": "Array of variant IDs associated with this image.",
           "type": ["null", "array"],
           "items": {
+            "description": "List of variant IDs associated with the image.",
             "type": ["null", "integer"]
           }
         },
         "height": {
+          "description": "The height of the image.",
           "type": ["null", "integer"]
         },
         "alt": {
+          "description": "The alternative text for the image.",
           "type": ["null", "string"]
         },
         "src": {
+          "description": "The URL of the image source.",
           "type": ["null", "string"]
         },
         "position": {
+          "description": "The position of the image.",
           "type": ["null", "integer"]
         },
         "id": {
+          "description": "The unique identifier of the image.",
           "type": ["null", "integer"]
         },
         "admin_graphql_api_id": {
+          "description": "The unique identifier of the image in the Admin GraphQL API.",
           "type": ["null", "string"]
         },
         "width": {
+          "description": "The width of the image.",
+          "type": ["null", "integer"]
+        },
+        "product_id": {
+          "description": "The unique identifier of the product associated with the image.",
           "type": ["null", "integer"]
         }
       },
       "type": ["null", "object"]
     },
     "handle": {
+      "description": "The human-readable URL for the product.",
       "type": ["null", "string"]
     },
     "images": {
+      "description": "Represents a collection of additional images related to the product.",
       "type": ["null", "array"],
       "items": {
         "properties": {
           "updated_at": {
+            "description": "The date and time when the image was last updated.",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "created_at": {
+            "description": "The date and time when the image was created.",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "variant_ids": {
+            "description": "Array of variant IDs associated with each image.",
             "type": ["null", "array"],
             "items": {
+              "description": "List of variant IDs associated with the image.",
               "type": ["null", "integer"]
             }
           },
           "height": {
+            "description": "The height of the image.",
             "type": ["null", "integer"]
           },
           "alt": {
+            "description": "The alternative text for the image.",
             "type": ["null", "string"]
           },
           "src": {
+            "description": "The URL of the image source.",
             "type": ["null", "string"]
           },
           "position": {
+            "description": "The position of the image.",
             "type": ["null", "integer"]
           },
           "id": {
+            "description": "The unique identifier of the image.",
             "type": ["null", "integer"]
           },
           "admin_graphql_api_id": {
+            "description": "The unique identifier of the image in the Admin GraphQL API.",
             "type": ["null", "string"]
           },
           "width": {
+            "description": "The width of the image.",
+            "type": ["null", "integer"]
+          },
+          "product_id": {
+            "description": "The unique identifier of the product associated with the image.",
             "type": ["null", "integer"]
           }
         },
@@ -145,139 +194,223 @@
       }
     },
     "template_suffix": {
+      "description": "The template suffix used for the product.",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "The title of the product.",
       "type": ["null", "string"]
     },
     "variants": {
+      "description": "Represents different versions or variations of the product.",
       "type": ["null", "array"],
       "items": {
         "properties": {
           "barcode": {
+            "description": "The barcode of the variant.",
             "type": ["null", "string"]
           },
           "tax_code": {
+            "description": "The tax code for the variant.",
             "type": ["null", "string"]
           },
           "created_at": {
+            "description": "The date and time when the variant was created.",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "weight_unit": {
+            "description": "The unit of weight for the variant.",
             "type": ["null", "string"]
           },
           "id": {
+            "description": "The unique identifier of the variant.",
             "type": ["null", "integer"]
           },
           "position": {
+            "description": "The position of the variant.",
             "type": ["null", "integer"]
           },
           "price": {
+            "description": "The price of the variant.",
             "type": ["null", "number"]
           },
           "image_id": {
+            "description": "The unique identifier of the image associated with the variant.",
             "type": ["null", "integer"]
           },
           "inventory_policy": {
+            "description": "The inventory policy for the variant.",
             "type": ["null", "string"]
           },
           "sku": {
+            "description": "The stock keeping unit (SKU) of the variant.",
             "type": ["null", "string"]
           },
           "inventory_item_id": {
+            "description": "The unique identifier of the inventory item associated with the variant.",
             "type": ["null", "integer"]
           },
           "fulfillment_service": {
+            "description": "The fulfillment service for the variant.",
             "type": ["null", "string"]
           },
           "title": {
+            "description": "The title of the variant.",
             "type": ["null", "string"]
           },
           "weight": {
+            "description": "The weight of the variant.",
             "type": ["null", "number"]
           },
           "inventory_management": {
+            "description": "The management method for the variant inventory.",
             "type": ["null", "string"]
           },
           "taxable": {
+            "description": "Indicates if the variant is taxable.",
             "type": ["null", "boolean"]
           },
           "admin_graphql_api_id": {
+            "description": "The unique identifier of the variant in the Admin GraphQL API.",
             "type": ["null", "string"]
           },
           "option1": {
+            "description": "The value of option 1 for the variant.",
             "type": ["null", "string"]
           },
           "compare_at_price": {
+            "description": "The original price of the product before any discounts.",
             "type": ["null", "number"]
           },
           "updated_at": {
+            "description": "The date and time when the variant was last updated.",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "option2": {
+            "description": "The value of option 2 for the variant.",
             "type": ["null", "string"]
           },
           "old_inventory_quantity": {
+            "description": "The previous quantity of the variant before change.",
             "type": ["null", "integer"]
           },
           "presentment_prices": {
+            "description": "Prices displayed to customers in different currencies or formats.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
               "properties": {
                 "price": {
+                  "description": "The price of the product variant.",
                   "type": ["null", "object"],
                   "properties": {
                     "amount": {
+                      "description": "The price amount.",
                       "type": ["null", "number"]
                     },
                     "currency_code": {
+                      "description": "The currency code of the price.",
                       "type": ["null", "string"]
                     }
                   }
                 },
                 "compare_at_price": {
+                  "description": "The compare at price in different currencies.",
                   "type": ["null", "number"]
                 }
               }
             }
           },
           "requires_shipping": {
+            "description": "Indicates if the variant requires shipping.",
             "type": ["null", "boolean"]
           },
           "inventory_quantity": {
+            "description": "The available quantity of the variant.",
             "type": ["null", "integer"]
           },
           "grams": {
+            "description": "The weight of the variant in grams.",
             "type": ["null", "integer"]
           },
           "option3": {
+            "description": "The value of option 3 for the variant.",
             "type": ["null", "string"]
+          },
+          "product_id": {
+            "description": "The unique identifier of the product associated with the variant.",
+            "type": ["null", "integer"]
           }
         },
         "type": ["null", "object"]
       }
     },
     "admin_graphql_api_id": {
+      "description": "The unique identifier of the product in the Admin GraphQL API.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the product.",
       "type": ["null", "integer"]
     },
     "shop_url": {
+      "description": "The URL of the shop where the product is listed.",
       "type": ["null", "string"]
     },
     "deleted_at": {
+      "description": "The date and time when the product was deleted.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deleted_message": {
+      "description": "Message related to the deletion of the product.",
       "type": ["null", "string"]
     },
     "deleted_description": {
+      "description": "Description of the reason for deletion.",
       "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The product's description.",
+      "type": ["null", "string"]
+    },
+    "description_html": {
+      "description": "The product's description in HTML format.",
+      "type": ["null", "string"]
+    },
+    "is_gift_card": {
+      "description": "Indicates whether the product is a gift card.",
+      "type": ["null", "boolean"]
+    },
+    "legacy_resource_id": {
+      "description": "The legacy resource ID of the product.",
+      "type": ["null", "string"]
+    },
+    "media_count": {
+      "description": "The total count of media (images/videos) associated with the product.",
+      "type": ["null", "integer"]
+    },
+    "online_store_preview_url": {
+      "description": "The URL for previewing the product on the online store.",
+      "type": ["null", "string"]
+    },
+    "online_store_url": {
+      "description": "The URL of the product on the online store.",
+      "type": ["null", "string"]
+    },
+    "total_inventory": {
+      "description": "The total inventory count of the product.",
+      "type": ["null", "integer"]
+    },
+    "total_variants": {
+      "description": "The total number of variants available for the product.",
+      "type": ["null", "integer"]
+    },
+    "tracks_inventory": {
+      "description": "Indicates whether inventory tracking is enabled for the product.",
+      "type": ["null", "boolean"]
     }
   }
 }

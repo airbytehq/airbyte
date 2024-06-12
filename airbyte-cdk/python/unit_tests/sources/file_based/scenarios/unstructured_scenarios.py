@@ -15,12 +15,18 @@ nltk.download("averaged_perceptron_tagger")
 json_schema = {
     "type": "object",
     "properties": {
-        "content": {"type": ["null", "string"], "description": "Content of the file as markdown. Might be null if the file could not be parsed"},
+        "content": {
+            "type": ["null", "string"],
+            "description": "Content of the file as markdown. Might be null if the file could not be parsed",
+        },
         "document_key": {"type": ["null", "string"], "description": "Unique identifier of the document, e.g. the file path"},
-        "_ab_source_file_parse_error": {"type": ["null", "string"], "description": "Error message if the file could not be parsed even though the file is supported"},
+        "_ab_source_file_parse_error": {
+            "type": ["null", "string"],
+            "description": "Error message if the file could not be parsed even though the file is supported",
+        },
         "_ab_source_file_last_modified": {"type": "string"},
         "_ab_source_file_url": {"type": "string"},
-    }
+    },
 }
 
 simple_markdown_scenario = (
@@ -69,8 +75,9 @@ simple_markdown_scenario = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [["document_key"]],
+                    "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -104,7 +111,6 @@ simple_markdown_scenario = (
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "c",
                     "_ab_source_file_parse_error": None,
-
                 },
                 "stream": "stream1",
             },
@@ -132,9 +138,7 @@ simple_txt_scenario = (
         .set_files(
             {
                 "a.txt": {
-                    "contents": bytes(
-                        "Just some raw text", "UTF-8"
-                    ),
+                    "contents": bytes("Just some raw text", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
                 "b": {
@@ -154,8 +158,9 @@ simple_txt_scenario = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [["document_key"]],
+                    "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -179,7 +184,6 @@ simple_txt_scenario = (
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b",
                     "_ab_source_file_parse_error": None,
-
                 },
                 "stream": "stream1",
             },
@@ -223,14 +227,19 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [["document_key"]],
+                    "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
     )
     .set_expected_records([])
     .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
+    )
 ).build()
 
 # If skip unprocessable file types is set to true, then discover will succeed even if there are non-matching file types
@@ -269,8 +278,9 @@ unstructured_invalid_file_type_discover_scenario_skip = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [["document_key"]],
+                    "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -333,8 +343,9 @@ unstructured_invalid_file_type_read_scenario = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [["document_key"]],
+                    "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -413,8 +424,9 @@ simple_unstructured_scenario = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [["document_key"]],
+                    "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -491,8 +503,9 @@ corrupted_file_scenario = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [["document_key"]],
+                    "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -559,8 +572,9 @@ no_file_extension_unstructured_scenario = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [["document_key"]],
+                    "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }

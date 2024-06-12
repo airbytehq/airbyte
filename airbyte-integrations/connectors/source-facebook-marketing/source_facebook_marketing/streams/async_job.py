@@ -192,7 +192,13 @@ class InsightAsyncJob(AsyncJob):
 
     page_size = 100
 
-    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], job_timeout: Duration, **kwargs):
+    def __init__(
+        self,
+        edge_object: Union[AdAccount, Campaign, AdSet, Ad],
+        params: Mapping[str, Any],
+        job_timeout: Duration,
+        **kwargs,
+    ):
         """Initialize
 
         :param api: FB API
@@ -254,7 +260,11 @@ class InsightAsyncJob(AsyncJob):
 
         jobs = [
             InsightAsyncJob(
-                api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval, job_timeout=self._job_timeout
+                api=self._api,
+                edge_object=edge_class(pk),
+                params=self._params,
+                interval=self._interval,
+                job_timeout=self._job_timeout,
             )
             for pk in ids
         ]
@@ -327,7 +337,11 @@ class InsightAsyncJob(AsyncJob):
             return
 
         if batch is not None:
-            self._job.api_get(batch=batch, success=self._batch_success_handler, failure=self._batch_failure_handler)
+            self._job.api_get(
+                batch=batch,
+                success=self._batch_success_handler,
+                failure=self._batch_failure_handler,
+            )
         else:
             self._job = self._job.api_get()
             self._check_status()

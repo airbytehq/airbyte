@@ -14,7 +14,6 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     FailureType,
     OAuthConfigSpecification,
-    SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -96,7 +95,10 @@ class SourceFacebookMarketing(AbstractSource):
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
-            api = API(access_token=config.access_token, page_size=config.page_size)
+            if config.credentials is not None:
+                api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+            else:
+                api = API(access_token=config.access_token, page_size=config.page_size)
 
             for account_id in config.account_ids:
                 # Get Ad Account to check creds
@@ -130,7 +132,10 @@ class SourceFacebookMarketing(AbstractSource):
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(access_token=config.access_token, page_size=config.page_size)
+        if config.credentials is not None:
+            api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+        else:
+            api = API(access_token=config.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
@@ -150,7 +155,7 @@ class SourceFacebookMarketing(AbstractSource):
                 account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.adset_statuses,
                 page_size=config.page_size,
             ),
             Ads(
@@ -158,7 +163,7 @@ class SourceFacebookMarketing(AbstractSource):
                 account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.ad_statuses,
                 page_size=config.page_size,
             ),
             AdCreatives(
@@ -192,19 +197,17 @@ class SourceFacebookMarketing(AbstractSource):
                 account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.campaign_statuses,
                 page_size=config.page_size,
             ),
             CustomConversions(
                 api=api,
                 account_ids=config.account_ids,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             CustomAudiences(
                 api=api,
                 account_ids=config.account_ids,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Images(
@@ -212,7 +215,6 @@ class SourceFacebookMarketing(AbstractSource):
                 account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Videos(
@@ -220,7 +222,6 @@ class SourceFacebookMarketing(AbstractSource):
                 account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Activities(
@@ -228,7 +229,6 @@ class SourceFacebookMarketing(AbstractSource):
                 account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
         ]
@@ -248,26 +248,37 @@ class SourceFacebookMarketing(AbstractSource):
             connectionSpecification=ConnectorConfig.schema(),
             advanced_auth=AdvancedAuth(
                 auth_flow_type=AuthFlowType.oauth2_0,
+                predicate_key=["credentials", "auth_type"],
+                predicate_value="Client",
                 oauth_config_specification=OAuthConfigSpecification(
                     complete_oauth_output_specification={
                         "type": "object",
                         "properties": {
                             "access_token": {
                                 "type": "string",
-                                "path_in_connector_config": ["access_token"],
-                            }
+                                "path_in_connector_config": ["credentials", "access_token"],
+                            },
                         },
                     },
                     complete_oauth_server_input_specification={
                         "type": "object",
-                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                        "properties": {
+                            "client_id": {"type": "string"},
+                            "client_secret": {"type": "string"},
+                        },
                     },
                     complete_oauth_server_output_specification={
                         "type": "object",
                         "additionalProperties": True,
                         "properties": {
-                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
-                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                            "client_id": {
+                                "type": "string",
+                                "path_in_connector_config": ["credentials", "client_id"],
+                            },
+                            "client_secret": {
+                                "type": "string",
+                                "path_in_connector_config": ["credentials", "client_secret"],
+                            },
                         },
                     },
                 ),

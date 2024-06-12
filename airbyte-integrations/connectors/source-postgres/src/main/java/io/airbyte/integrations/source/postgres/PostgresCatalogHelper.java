@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_LSN;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -82,9 +82,9 @@ public final class PostgresCatalogHelper {
 
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    properties.set(DebeziumEventUtils.CDC_LSN, numberType);
-    properties.set(DebeziumEventUtils.CDC_UPDATED_AT, stringType);
-    properties.set(DebeziumEventUtils.CDC_DELETED_AT, stringType);
+    properties.set(DebeziumEventConverter.CDC_LSN, numberType);
+    properties.set(DebeziumEventConverter.CDC_UPDATED_AT, stringType);
+    properties.set(DebeziumEventConverter.CDC_DELETED_AT, stringType);
 
     return stream;
   }
@@ -92,14 +92,15 @@ public final class PostgresCatalogHelper {
   /**
    * Modifies streams that are NOT present in the publication to be full-refresh only streams. Users
    * should be able to replicate these streams, just not in incremental mode as they have no
-   * associated publication.
+   * associated publication. Previously, we also setSourceDefinedCursor(false) and
+   * setSourceDefinedPrimaryKey(List.of()) for streams that are in the catalog but not in the CDC
+   * publication, but now that full refresh streams can be resumable, we should include this
+   * information.
    */
   public static AirbyteStream setFullRefreshForNonPublicationStreams(final AirbyteStream stream,
                                                                      final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc) {
     if (!publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace()))) {
       stream.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
-      stream.setSourceDefinedCursor(false);
-      stream.setSourceDefinedPrimaryKey(List.of());
     }
     return stream;
   }

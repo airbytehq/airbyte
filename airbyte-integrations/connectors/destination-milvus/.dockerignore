@@ -2,4 +2,5 @@
 !Dockerfile
 !main.py
 !destination_milvus
-!setup.py
+!pyproject.toml
+!poetry.lock

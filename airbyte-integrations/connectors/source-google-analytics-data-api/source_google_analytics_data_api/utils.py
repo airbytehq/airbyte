@@ -71,6 +71,7 @@ WRONG_DIMENSIONS = "The custom report {report_name} entered contains invalid dim
 WRONG_METRICS = "The custom report {report_name} entered contains invalid metrics: {fields}. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
 WRONG_PIVOTS = "The custom report {report_name} entered contains invalid pivots: {fields}. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot)."
 API_LIMIT_PER_HOUR = "Your API key has reached its limit for the hour. Wait until the quota refreshes in an hour to retry."
+WRONG_CUSTOM_REPORT_CONFIG = "Please check configuration for custom report {report}. {error_response}"
 
 
 def datetime_to_secs(dt: datetime.datetime) -> int:

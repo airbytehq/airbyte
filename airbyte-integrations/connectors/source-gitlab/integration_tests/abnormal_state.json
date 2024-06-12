@@ -2,52 +2,162 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "25157276": {
-          "created_at": "2121-03-18T12:51:05+00:00"
-        }
-      },
       "stream_descriptor": {
-        "name": "commits"
+        "name": "commits",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": 25156633,
+              "parent_slice": {
+                "id": "airbyte.io%2Fci-test-project"
+              }
+            },
+            "cursor": {
+              "created_at": "2124-03-15T09:54:11Z"
+            }
+          },
+          {
+            "partition": {
+              "id": 41551658,
+              "parent_slice": {
+                "id": "new-group-airbute%2Ftest-public-sg%2Ftest-sg-public-2%2Ftest-private-subsubg-1%2Ftest_project_in_nested_subgroup"
+              }
+            },
+            "cursor": {
+              "created_at": "2124-03-15T09:54:17Z"
+            }
+          },
+          {
+            "partition": {
+              "id": 25157276,
+              "parent_slice": {
+                "id": "new-group-airbute%2Fnew-ci-test-project"
+              }
+            },
+            "cursor": {
+              "created_at": "2124-03-15T09:54:20Z"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "25157276": {
-          "updated_at": "2121-03-15T16:08:06.041000+00:00"
-        }
-      },
       "stream_descriptor": {
-        "name": "issues"
+        "name": "issues",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": 25156633,
+              "parent_slice": {
+                "id": "airbyte.io%2Fci-test-project"
+              }
+            },
+            "cursor": {
+              "updated_at": "2124-03-15T09:54:11Z"
+            }
+          },
+          {
+            "partition": {
+              "id": 41551658,
+              "parent_slice": {
+                "id": "new-group-airbute%2Ftest-public-sg%2Ftest-sg-public-2%2Ftest-private-subsubg-1%2Ftest_project_in_nested_subgroup"
+              }
+            },
+            "cursor": {
+              "updated_at": "2124-03-15T09:54:17Z"
+            }
+          },
+          {
+            "partition": {
+              "id": 25157276,
+              "parent_slice": {
+                "id": "new-group-airbute%2Fnew-ci-test-project"
+              }
+            },
+            "cursor": {
+              "updated_at": "2124-03-15T09:54:20Z"
+            }
+          },
+          {
+            "partition": {
+              "id": 25032440,
+              "parent_slice": {
+                "id": "airbyte.io%2Flearn-gitlab"
+              }
+            },
+            "cursor": {
+              "updated_at": "2124-03-15T10:04:22Z"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "25157276": {
-          "updated_at": "2121-03-18T12:51:06.319000+00:00"
-        }
-      },
       "stream_descriptor": {
-        "name": "merge_requests"
+        "name": "merge_requests",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": 25157276,
+              "parent_slice": {
+                "id": "new-group-airbute%2Fnew-ci-test-project"
+              }
+            },
+            "cursor": {
+              "updated_at": "2121-03-18T12:51:06.319000+00:00"
+            }
+          },
+          {
+            "partition": {
+              "id": 25156633,
+              "parent_slice": {
+                "id": "airbyte.io%2Fci-test-project"
+              }
+            },
+            "cursor": {
+              "updated_at": "2121-03-18T12:51:06.319000+00:00"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "25157276": {
-          "updated_at": "2121-03-18T12:51:52.007000+00:00"
-        }
-      },
       "stream_descriptor": {
-        "name": "pipelines"
+        "name": "pipelines",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": 25157276,
+              "parent_slice": {
+                "id": "new-group-airbute%2Fnew-ci-test-project"
+              }
+            },
+            "cursor": {
+              "updated_at": "2121-03-18T12:51:52.007000+00:00"
+            }
+          }
+        ]
       }
     }
   }

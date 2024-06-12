@@ -20,6 +20,58 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "list_products",
+        "json_schema": {},
+        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "show_product_details",
+        "json_schema": {},
+        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "list_disputes",
+        "json_schema": {},
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_time_cut"],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "search_invoices",
+        "json_schema": {},
+        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "list_payments",
+        "json_schema": {},
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_time"],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     }
   ]
 }

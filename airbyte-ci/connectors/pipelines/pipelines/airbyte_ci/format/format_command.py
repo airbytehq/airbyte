@@ -124,7 +124,7 @@ class FormatCommand(click.Command):
         container = self.get_format_container_fn(dagger_client, dir_to_format)
         command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
 
-        if (formatted_code_dir := command_result.output_artifact) and self.export_formatted_code:
+        if (formatted_code_dir := command_result.output) and self.export_formatted_code:
             await formatted_code_dir.export(self.LOCAL_REPO_PATH)
 
         if self._enable_logging:
@@ -203,7 +203,7 @@ class FormatCommand(click.Command):
             if await dir_with_modified_files.entries():
                 modified_files = await list_files_in_directory(dagger_client, dir_with_modified_files)
                 self.logger.debug(f"Modified files: {modified_files}")
-                return CommandResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr, output_artifact=dir_with_modified_files)
-            return CommandResult(self, status=StepStatus.SUCCESS, stdout=stdout, stderr=stderr)
+                return CommandResult(command=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr, output=dir_with_modified_files)
+            return CommandResult(command=self, status=StepStatus.SUCCESS, stdout=stdout, stderr=stderr)
         except dagger.ExecError as e:
-            return CommandResult(self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout, exc_info=e)
+            return CommandResult(command=self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout, exc_info=e)

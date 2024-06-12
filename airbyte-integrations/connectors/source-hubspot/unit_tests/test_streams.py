@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+from unittest.mock import patch
+
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
@@ -129,6 +132,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             }
         }
     ]
+
     properties_response = [
         {
             "json": [
@@ -138,7 +142,8 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
-    contact_reponse = [
+
+    contact_response = [
         {
             "json": {
                 stream.data_field: [
@@ -147,6 +152,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             }
         }
     ]
+
     read_batch_contact_v1_response = [
         {
             "json": {
@@ -155,13 +161,26 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
+
+    contact_lists_v1_response = [
+        {
+            "json": {
+                "contacts": [
+                    {"vid": "test_id", "merge-audits": [{"canonical-vid": 2, "vid-to-merge": 5608, "timestamp": 1653322839932}]}
+                ]
+            },
+            "status_code": 200,
+        }
+    ]
+
     is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
     stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
-    requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_reponse)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_response)
+    requests_mock.register_uri("GET", "/contacts/v1/lists/all/contacts/all", contact_lists_v1_response)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
@@ -177,6 +196,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
         {"json": {}, "status_code": 429},
         {"json": {}, "status_code": 502},
         {"json": {}, "status_code": 504},
+        {"text": "Not a JSON", "status_code": 200},
     ],
 )
 def test_common_error_retry(error_response, requests_mock, common_params, fake_properties_list):
@@ -213,6 +233,7 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
     records = read_full_refresh(stream)
 
     assert [response[stream.data_field][0]] == records
+    assert len(requests_mock.request_history) > 1
 
 
 def test_contact_lists_transform(requests_mock, common_params):
@@ -521,10 +542,7 @@ def test_web_analytics_stream_slices(common_params, mocker):
     assert len(slices) == 2
     assert all(map(lambda slice: slice["objectId"] == 1, slices))
 
-    assert [
-        ("2021-01-10T00:00:00Z", "2021-02-09T00:00:00Z"),
-        ("2021-02-09T00:00:00Z", "2021-03-01T00:00:00Z")
-    ] == [
+    assert [("2021-01-10T00:00:00Z", "2021-02-09T00:00:00Z"), ("2021-02-09T00:00:00Z", "2021-03-01T00:00:00Z")] == [
         (s["occurredAfter"], s["occurredBefore"]) for s in slices
     ]
 
@@ -542,7 +560,9 @@ def test_web_analytics_latest_state(common_params, mocker):
     stream = ContactsWebAnalytics(**common_params)
     stream.state = {"1": {"occurredAt": "2021-01-01T00:00:00Z"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field="occurredAt"))
-    records = [list(stream.read_records(SyncMode.incremental, cursor_field="occurredAt", stream_slice=stream_slice)) for stream_slice in slices]
+    records = [
+        list(stream.read_records(SyncMode.incremental, cursor_field="occurredAt", stream_slice=stream_slice)) for stream_slice in slices
+    ]
 
     assert len(slices) == 1
     assert len(records) == 1
@@ -553,63 +573,33 @@ def test_web_analytics_latest_state(common_params, mocker):
 
 def test_property_history_transform(common_params):
     stream = ContactsPropertyHistory(**common_params)
-    versions = [
-        {
-            "value": "Georgia",
-            "timestamp": 1645135236625
-        }
-    ]
+    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
     records = [
         {
             "vid": 1,
             "canonical-vid": 1,
             "portal-id": 1,
             "is-contact": True,
-            "properties": {
-                "hs_country": {"versions": versions},
-                "lastmodifieddate": {"value": 1645135236625}
-            }
+            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
         }
     ]
     assert [
-        {
-            "vid": 1,
-            "canonical-vid": 1,
-            "portal-id": 1,
-            "is-contact": True,
-            "property": "hs_country",
-            **version
-        } for version in versions
+        {"vid": 1, "canonical-vid": 1, "portal-id": 1, "is-contact": True, "property": "hs_country", **version} for version in versions
     ] == list(stream._transform(records=records))
 
 
 def test_contacts_membership_transform(common_params):
     stream = ContactsListMemberships(**common_params)
-    versions = [
-        {
-            "value": "Georgia",
-            "timestamp": 1645135236625
-        }
-    ]
-    memberships = [
-        {"membership": 1}
-    ]
+    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
+    memberships = [{"membership": 1}]
     records = [
         {
             "vid": 1,
             "canonical-vid": 1,
             "portal-id": 1,
             "is-contact": True,
-            "properties": {
-                "hs_country": {"versions": versions},
-                "lastmodifieddate": {"value": 1645135236625}
-            },
-            "list-memberships": memberships
+            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
+            "list-memberships": memberships,
         }
     ]
-    assert [
-        {
-            "membership": 1,
-            "canonical-vid": 1
-        } for _ in versions
-    ] == list(stream._transform(records=records))
+    assert [{"membership": 1, "canonical-vid": 1} for _ in versions] == list(stream._transform(records=records))

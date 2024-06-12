@@ -17,7 +17,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
@@ -35,7 +34,7 @@ public class RedshiftSqlGeneratorTest {
 
   private static final Random RANDOM = new Random();
 
-  private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+  private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false) {
 
     // Override only for tests to print formatted SQL. The actual implementation should use unformatted
     // to save bytes.
@@ -79,18 +78,19 @@ public class RedshiftSqlGeneratorTest {
     columns.put(redshiftSqlGenerator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
     incrementalDedupStream = new StreamConfig(
         streamId,
-        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         primaryKey,
         Optional.of(cursor),
-        columns);
+        columns,
+        0,
+        0,
+        0);
     incrementalAppendStream = new StreamConfig(
         streamId,
-        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
         primaryKey,
         Optional.of(cursor),
-        columns);
+        columns, 0, 0, 0);
   }
 
   @Test
@@ -104,8 +104,10 @@ public class RedshiftSqlGeneratorTest {
         .map(String::trim)
         .filter(line -> !line.isEmpty())
         .toList();
-    System.out.println(generatedSql);
-    assertEquals(expectedSqlLines, generatedSqlLines);
+    assertEquals(expectedSqlLines.size(), generatedSqlLines.size());
+    for (int i = 0; i < expectedSqlLines.size(); i++) {
+      assertEquals(expectedSqlLines.get(i), generatedSqlLines.get(i));
+    }
   }
 
   @Test
@@ -130,11 +132,10 @@ public class RedshiftSqlGeneratorTest {
     }
     final Sql generatedSql = redshiftSqlGenerator.updateTable(new StreamConfig(
         streamId,
-        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         primaryKey,
         Optional.of(cursor),
-        columns), "unittest", Optional.of(Instant.parse("2023-02-15T18:35:24.00Z")), false);
+        columns, 0, 0, 0), "unittest", Optional.of(Instant.parse("2023-02-15T18:35:24.00Z")), false);
     // This should not throw an exception.
     assertFalse(generatedSql.transactions().isEmpty());
   }

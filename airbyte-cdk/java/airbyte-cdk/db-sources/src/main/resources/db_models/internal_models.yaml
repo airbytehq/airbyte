@@ -1,0 +1,49 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+title: DbSource Models
+type: object
+description: DbSource Models
+properties:
+  state_type:
+    "$ref": "#/definitions/StateType"
+  ordered_column_state:
+    "$ref": "#/definitions/OrderedColumnLoadStatus"
+  cursor_based_state:
+    "$ref": "#/definitions/CursorBasedStatus"
+definitions:
+  StateType:
+    description: Enum to define the sync mode of stream state.
+    type: string
+    enum:
+      - cursor_based
+      - ordered_column
+      - cdc
+  CursorBasedStatus:
+    type: object
+    extends:
+      type: object
+      existingJavaType: "io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState"
+    properties:
+      state_type:
+        "$ref": "#/definitions/StateType"
+      version:
+        description: Version of state.
+        type: integer
+  OrderedColumnLoadStatus:
+    type: object
+    properties:
+      version:
+        description: Version of state.
+        type: integer
+      state_type:
+        "$ref": "#/definitions/StateType"
+      ordered_col:
+        description: ordered column name
+        type: string
+      ordered_col_val:
+        description: ordered column high watermark
+        type: string
+      incremental_state:
+        description: State to switch to after completion of the ordered column initial sync
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode

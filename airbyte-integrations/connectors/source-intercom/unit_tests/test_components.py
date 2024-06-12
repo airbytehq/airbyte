@@ -53,7 +53,8 @@ def get_requester():
 def test_slicer():
     date_time_dict = {"updated_at": 1662459010}
     slicer = IncrementalSingleSliceCursor(config={}, parameters={}, cursor_field="updated_at")
-    slicer.close_slice(date_time_dict, date_time_dict)
+    slicer.observe(date_time_dict, date_time_dict)
+    slicer.close_slice(date_time_dict)
     assert slicer.get_stream_state() == date_time_dict
     assert slicer.get_request_headers() == {}
     assert slicer.get_request_body_data() == {}
@@ -95,7 +96,8 @@ def test_sub_slicer(last_record, expected, records):
     )
     slicer.set_initial_state(expected)
     stream_slice = next(slicer.stream_slices()) if records else {}
-    slicer.close_slice(stream_slice, last_record)
+    slicer.observe(stream_slice, last_record)
+    slicer.close_slice(stream_slice)
     assert slicer.get_stream_state() == expected
 
 

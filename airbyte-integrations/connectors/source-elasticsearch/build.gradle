@@ -1,22 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
 }
-
-//remove once upgrading the CDK version to 0.4.x or later
-java {
-    compileJava {
-        options.compilerArgs.remove("-Werror")
-    }
-}
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.elasticsearch.ElasticsearchSource'
@@ -26,6 +16,7 @@ application {
 dependencies {
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
+    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.15.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
 
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
@@ -39,6 +30,5 @@ dependencies {
 
     //  MIT
     //  https://www.testcontainers.org/
-    testImplementation libs.testcontainers.elasticsearch
-    integrationTestJavaImplementation libs.testcontainers.elasticsearch
+    testImplementation 'org.testcontainers:elasticsearch:1.19.4'
 }

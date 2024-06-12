@@ -4,208 +4,223 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Unique identifier for the item.",
+      "type": ["string", "null"]
     },
     "name": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Name of the item.",
+      "type": ["string", "null"]
     },
     "item_family_id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Identifier for the item family to which the item belongs.",
+      "type": ["string", "null"]
     },
     "item_id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Unique identifier for the item.",
+      "type": ["string", "null"]
     },
     "description": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "description": "Description of the item.",
+      "type": ["string", "null"]
     },
     "status": {
+      "description": "Current status of the item (e.g., active, inactive).",
       "type": ["string", "null"]
     },
     "external_name": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "External name of the item.",
+      "type": ["string", "null"]
     },
     "pricing_model": {
+      "description": "The pricing model used for the item (e.g., flat fee, usage-based).",
       "type": ["string", "null"]
     },
     "price": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Price of the item.",
+      "type": ["integer", "null"]
     },
     "price_in_decimal": {
-      "type": ["string", "null"],
-      "maxLength": 33
+      "description": "Price of the item represented in decimal format.",
+      "type": ["string", "null"]
     },
     "period": {
-      "type": ["integer", "null"],
-      "minimum": 1
+      "description": "Duration of the item's billing period.",
+      "type": ["integer", "null"]
     },
     "currency_code": {
-      "type": ["string", "null"],
-      "maxLength": 3
+      "description": "The currency code used for pricing the item.",
+      "type": ["string", "null"]
     },
     "period_unit": {
+      "description": "Unit of measurement for the billing period duration.",
       "type": ["string", "null"]
     },
     "trial_period": {
-      "type": ["integer", "null"],
-      "minimum": 1
+      "description": "Duration of the trial period.",
+      "type": ["integer", "null"]
     },
     "trial_period_unit": {
+      "description": "Unit of measurement for the trial period duration.",
       "type": ["string", "null"]
     },
     "trial_end_action": {
+      "description": "Action to be taken at the end of the trial period.",
       "type": ["string", "null"]
     },
     "shipping_period": {
-      "type": ["integer", "null"],
-      "minimum": 1
+      "description": "Duration of the item's shipping period.",
+      "type": ["integer", "null"]
     },
     "shipping_period_unit": {
+      "description": "Unit of measurement for the shipping period duration.",
       "type": ["string", "null"]
     },
     "billing_cycles": {
-      "type": ["integer", "null"],
-      "minimum": 1
+      "description": "Number of billing cycles for the item.",
+      "type": ["integer", "null"]
     },
     "free_quantity": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Free quantity allowed for the item.",
+      "type": ["integer", "null"]
     },
     "free_quantity_in_decimal": {
-      "type": ["string", "null"],
-      "maxLength": 33
+      "description": "Free quantity allowed represented in decimal format.",
+      "type": ["string", "null"]
     },
     "resource_version": {
+      "description": "Version of the item resource.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "Date and time when the item was last updated.",
       "type": ["integer", "null"]
     },
     "created_at": {
+      "description": "Date and time when the item was created.",
       "type": ["integer", "null"]
     },
     "archived_at": {
+      "description": "Date and time when the item was archived.",
       "type": ["integer", "null"]
     },
     "invoice_notes": {
-      "type": ["string", "null"],
-      "maxLength": 2000
+      "description": "Notes to be included in the invoice for the item.",
+      "type": ["string", "null"]
     },
     "is_taxable": {
+      "description": "Flag indicating whether the item is taxable.",
       "type": ["boolean", "null"]
     },
     "metadata": {
+      "description": "Additional metadata associated with the item.",
       "type": ["object", "null"],
       "properties": {}
     },
     "item_type": {
+      "description": "Type of the item (e.g., product, service).",
       "type": ["string", "null"]
     },
     "show_description_in_invoices": {
+      "description": "Flag indicating whether to show the description in invoices.",
       "type": ["boolean", "null"]
     },
     "show_description_in_quotes": {
+      "description": "Flag indicating whether to show the description in quotes.",
       "type": ["boolean", "null"]
     },
     "tiers": {
+      "description": "Different pricing tiers for the item.",
       "type": ["array", "null"],
       "items": {
+        "description": "Specific details for each tier such as price, quantity, discount, etc.",
         "type": ["object", "null"],
         "properties": {
           "starting_unit": {
-            "type": ["integer", "null"],
-            "minimum": 1
+            "description": "Starting unit for the tier.",
+            "type": ["integer", "null"]
           },
           "ending_unit": {
+            "description": "Ending unit for the tier.",
             "type": ["integer", "null"]
           },
           "price": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Price for the tier.",
+            "type": ["integer", "null"]
           }
         }
       }
     },
     "tax_detail": {
+      "description": "Information about taxes associated with the item price.",
       "type": ["object", "null"],
       "properties": {
         "tax_profile_id": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "Tax profile identifier.",
+          "type": ["string", "null"]
         },
         "avalara_sale_type": {
+          "description": "Avalara sale type for tax calculation.",
           "type": ["string", "null"]
         },
         "avalara_transaction_type": {
+          "description": "Avalara transaction type for tax calculation.",
           "type": ["integer", "null"]
         },
         "avalara_service_type": {
+          "description": "Avalara service type for tax calculation.",
           "type": ["integer", "null"]
         },
         "avalara_tax_code": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "Avalara tax code.",
+          "type": ["string", "null"]
         },
         "taxjar_product_code": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "TaxJar product code for tax calculation.",
+          "type": ["string", "null"]
         }
       }
     },
     "accounting_detail": {
+      "description": "Details related to accounting such as cost, revenue, expenses, etc.",
       "type": ["object", "null"],
       "properties": {
         "sku": {
-          "type": ["string", "null"],
-          "maxLength": 100
+          "description": "Stock Keeping Unit (SKU) code of the item.",
+          "type": ["string", "null"]
         },
         "accounting_code": {
-          "type": ["string", "null"],
-          "maxLength": 100
+          "description": "The accounting code associated with the item.",
+          "type": ["string", "null"]
         },
         "accounting_category1": {
-          "type": ["string", "null"],
-          "maxLength": 100
+          "description": "The first accounting category.",
+          "type": ["string", "null"]
         },
         "accounting_category2": {
-          "type": ["string", "null"],
-          "maxLength": 100
+          "description": "The second accounting category.",
+          "type": ["string", "null"]
         },
         "accounting_category3": {
-          "type": ["string", "null"],
-          "maxLength": 100
+          "description": "The third accounting category.",
+          "type": ["string", "null"]
         },
         "accounting_category4": {
-          "type": ["string", "null"],
-          "maxLength": 100
+          "description": "The fourth accounting category.",
+          "type": ["string", "null"]
         }
       }
     },
     "channel": {
+      "description": "The channel through which the item is sold.",
       "type": ["string", "null"]
     },
     "object": {
+      "description": "Object type representing the item.",
       "type": ["string", "null"]
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Custom fields associated with the item.",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

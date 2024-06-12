@@ -6,13 +6,12 @@
 from __future__ import annotations
 
 import anyio
-from connector_ops.utils import ConnectorLanguage # type: ignore
+from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.build_image.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.build_image.steps.common import LoadContainerToLocalDockerHost, StepStatus
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.models.steps import StepResult
-
 
 
 class NoBuildStepForLanguageError(Exception):
@@ -47,7 +46,7 @@ async def run_connector_build_pipeline(context: ConnectorContext, semaphore: any
     async with semaphore:
         async with context:
             build_result = await run_connector_build(context)
-            per_platform_built_containers = build_result.output_artifact
+            per_platform_built_containers = build_result.output
             step_results.append(build_result)
             if context.is_local and build_result.status is StepStatus.SUCCESS:
                 load_image_result = await LoadContainerToLocalDockerHost(context, per_platform_built_containers, image_tag).run()

@@ -13,6 +13,7 @@ from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
+from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
@@ -36,19 +37,18 @@ def fetch_thumbnail_data_url(url: str) -> Optional[str]:
 
 
 class AdCreatives(FBMarketingStream):
-    """AdCreative is append only stream
+    """AdCreative is append-only stream
     doc: https://developers.facebook.com/docs/marketing-api/reference/ad-creative
     """
 
     entity_prefix = "adcreative"
-    enable_deleted = False
 
     def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
 
     def fields(self, **kwargs) -> List[str]:
-        """Remove "thumbnail_data_url" field because it is computed field and it's not a field that we can request from Facebook"""
+        """Remove "thumbnail_data_url" field because it is a computed field, and it's not a field that we can request from Facebook"""
         if self._fields:
             return self._fields
 
@@ -78,7 +78,6 @@ class CustomConversions(FBMarketingStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
 
     entity_prefix = "customconversion"
-    enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_custom_conversions(params=params, fields=self.fields())
@@ -88,7 +87,6 @@ class CustomAudiences(FBMarketingStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-audience"""
 
     entity_prefix = "customaudience"
-    enable_deleted = False
     # The `rule` field is excluded from the list because it caused the error message "Please reduce the amount of data" for certain connections.
     # https://github.com/airbytehq/oncall/issues/2765
     fields_exceptions = ["rule"]
@@ -101,6 +99,8 @@ class Ads(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup"""
 
     entity_prefix = "ad"
+    status_field = "effective_status"
+    valid_statuses = [status.value for status in ValidAdStatuses]
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
@@ -110,6 +110,8 @@ class AdSets(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign"""
 
     entity_prefix = "adset"
+    status_field = "effective_status"
+    valid_statuses = [status.value for status in ValidAdSetStatuses]
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ad_sets(params=params, fields=self.fields())
@@ -119,6 +121,8 @@ class Campaigns(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group"""
 
     entity_prefix = "campaign"
+    status_field = "effective_status"
+    valid_statuses = [status.value for status in ValidCampaignStatuses]
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_campaigns(params=params, fields=self.fields())
@@ -153,9 +157,11 @@ class Activities(FBMarketingIncrementalStream):
             # if start_date is not specified then do not use date filters
             return {}
 
-        potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
+        potentially_new_records_in_the_past = self._filter_statuses and (
+            set(self._filter_statuses) - set(stream_state.get("filter_statuses", []))
+        )
         if potentially_new_records_in_the_past:
-            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `filter_statuses` option")
             if self._start_date:
                 since = self._start_date
             else:
@@ -187,7 +193,6 @@ class AdAccount(FBMarketingStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
 
     use_batch = False
-    enable_deleted = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -227,11 +232,10 @@ class AdAccount(FBMarketingStream):
         """noop in case of AdAccount"""
         fields = self.fields(account_id=account_id)
         try:
-            print(f"{self._api.get_account(account_id=account_id).get_id()=} {account_id=}")
             return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
         except FacebookRequestError as e:
             # This is a workaround for cases when account seem to have all the required permissions
-            # but despite of that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
+            # but despite that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":
                 fields.remove("owner")
                 return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]

@@ -2,6 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "id": { "type": ["null", "string"] },
+    "name": { "type": ["null", "string"] },
     "board_kind": { "type": ["null", "string"] },
     "type": { "type": ["null", "string"] },
     "columns": {
@@ -37,26 +39,23 @@
         }
       }
     },
-    "id": { "type": ["null", "string"] },
-    "name": { "type": ["null", "string"] },
     "owners": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     },
     "creator": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "integer"] }
+        "id": { "type": ["null", "string"] }
       }
     },
     "permissions": { "type": ["null", "string"] },
-    "pos": { "type": ["null", "string"] },
     "state": { "type": ["null", "string"] },
     "subscribers": {
       "type": ["null", "array"],
@@ -64,7 +63,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     },
@@ -113,7 +112,7 @@
     "workspace": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "integer"] },
+        "id": { "type": ["null", "string"] },
         "name": { "type": ["null", "string"] },
         "kind": { "type": ["null", "string"] },
         "description": { "type": ["null", "string"] }

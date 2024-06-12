@@ -4,108 +4,64 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the virtual bank account",
       "type": ["string", "null"]
     },
     "customer_id": {
+      "description": "The unique identifier of the customer associated with the virtual bank account",
       "type": ["string", "null"]
     },
     "email": {
+      "description": "The email address associated with the customer's virtual bank account",
       "type": ["string", "null"]
     },
     "scheme": {
-      "type": ["string", "null"],
-      "enum": ["ach_credit", "sepa_credit"]
+      "description": "The scheme or type of the virtual bank account",
+      "type": ["string", "null"]
     },
     "bank_name": {
+      "description": "The name of the bank of the virtual bank account",
       "type": ["string", "null"]
     },
     "account_number": {
+      "description": "The virtual bank account number associated with the customer",
       "type": ["string", "null"]
     },
     "routing_number": {
+      "description": "The routing number associated with the virtual bank account",
       "type": ["string", "null"]
     },
     "swift_code": {
+      "description": "The SWIFT code associated with the virtual bank account",
       "type": ["string", "null"]
     },
     "gateway": {
-      "type": ["string", "null"],
-      "enum": [
-        "chargebee",
-        "chargebee_payments",
-        "stripe",
-        "wepay",
-        "braintree",
-        "authorize_net",
-        "paypal_pro",
-        "pin",
-        "eway",
-        "eway_rapid",
-        "worldpay",
-        "balanced_payments",
-        "beanstream",
-        "bluepay",
-        "elavon",
-        "first_data_global",
-        "hdfc",
-        "migs",
-        "nmi",
-        "ogone",
-        "paymill",
-        "paypal_payflow_pro",
-        "sage_pay",
-        "tco",
-        "wirecard",
-        "amazon_payments",
-        "paypal_express_checkout",
-        "gocardless",
-        "adyen",
-        "orbital",
-        "moneris_us",
-        "moneris",
-        "bluesnap",
-        "cybersource",
-        "vantiv",
-        "checkout_com",
-        "paypal",
-        "ingenico_direct",
-        "exact",
-        "mollie",
-        "quickbooks",
-        "razorpay",
-        "global_payments",
-        "bank_of_america",
-        "not_applicable"
-      ]
+      "description": "The payment gateway used for processing transactions with this virtual bank account",
+      "type": ["string", "null"]
     },
     "resource_version": {
+      "description": "The version of the virtual bank account resource",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "The date and time when the virtual bank account was last updated",
       "type": ["integer", "null"]
     },
     "created_at": {
+      "description": "The date and time when the virtual bank account was created",
       "type": ["integer", "null"]
     },
     "reference_id": {
+      "description": "A reference identifier linked to the virtual bank account",
       "type": ["string", "null"]
     },
     "deleted": {
+      "description": "Flag indicating if the virtual bank account has been deleted",
       "type": ["boolean", "null"]
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Any custom fields or additional information related to the virtual bank account",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

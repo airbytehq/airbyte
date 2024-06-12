@@ -10,33 +10,29 @@ import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
-public class MsSQLContainerFactory implements ContainerFactory<MSSQLServerContainer<?>> {
+public class MsSQLContainerFactory extends ContainerFactory<MSSQLServerContainer<?>> {
 
   @Override
-  public MSSQLServerContainer<?> createNewContainer(DockerImageName imageName) {
-    MSSQLServerContainer container =
-        new MSSQLServerContainer<>(imageName.asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server")).acceptLicense();
+  protected MSSQLServerContainer<?> createNewContainer(DockerImageName imageName) {
+    imageName = imageName.asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server");
+    var container = new MSSQLServerContainer<>(imageName).acceptLicense();
     container.addEnv("MSSQL_MEMORY_LIMIT_MB", "384");
+    withNetwork(container);
     return container;
-  }
-
-  @Override
-  public Class<?> getContainerClass() {
-    return MSSQLServerContainer.class;
   }
 
   /**
    * Create a new network and bind it to the container.
    */
-  public void withNetwork(MSSQLServerContainer<?> container) {
+  public static void withNetwork(MSSQLServerContainer<?> container) {
     container.withNetwork(Network.newNetwork());
   }
 
-  public void withAgent(MSSQLServerContainer<?> container) {
+  public static void withAgent(MSSQLServerContainer<?> container) {
     container.addEnv("MSSQL_AGENT_ENABLED", "True");
   }
 
-  public void withSslCertificates(MSSQLServerContainer<?> container) {
+  public static void withSslCertificates(MSSQLServerContainer<?> container) {
     // yes, this is uglier than sin. The reason why I'm doing this is because there's no command to
     // reload a SqlServer config. So I need to create all the necessary files before I start the
     // SQL server. Hence this horror

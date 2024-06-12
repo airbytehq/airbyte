@@ -28,7 +28,7 @@
           "type": ["null", "boolean"]
         },
         "id": {
-          "type": "integer"
+          "type": ["integer", "null"]
         },
         "last_name": {
           "type": ["null", "string"]
@@ -57,7 +57,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "entity_id": {
       "type": ["null", "string"]

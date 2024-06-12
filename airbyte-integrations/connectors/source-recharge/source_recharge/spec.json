@@ -20,6 +20,12 @@
         "title": "Access Token",
         "description": "The value of the Access Token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/recharge\">docs</a> for more information.",
         "airbyte_secret": true
+      },
+      "use_orders_deprecated_api": {
+        "type": "boolean",
+        "title": "Use `Orders` Deprecated API",
+        "description": "Define whether or not the `Orders` stream should use the deprecated `2021-01` API version, or use `2021-11`, otherwise.",
+        "default": true
       }
     }
   }

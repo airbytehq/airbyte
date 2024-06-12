@@ -60,9 +60,21 @@ connectionSpecification:
       description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
       order: 6
+    stream_slice_step:
+      title: Stream Slice Step for Incremental sync
+      type: string
+      description: The size of the time window (ISO8601 duration) to slice requests.
+      default: P30D
+      order: 7
+      examples:
+        - PT12H
+        - P7D
+        - P30D
+        - P1M
+        - P1Y
     streams_criteria:
       type: array
-      order: 7
+      order: 8
       items:
         type: object
         required:
