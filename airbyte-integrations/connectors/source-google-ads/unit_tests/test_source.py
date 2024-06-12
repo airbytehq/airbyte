@@ -2,17 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
+import logging
 import re
 from collections import namedtuple
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-from pendulum import today
+from pendulum import duration, today
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
+from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdLegacy, chunk_date_range
 from source_google_ads.utils import GAQL
@@ -21,10 +23,10 @@ from .common import MockGoogleAdsClient
 
 
 @pytest.fixture
-def mock_account_info(mocker):
+def mock_get_customers(mocker):
     mocker.patch(
-        "source_google_ads.source.SourceGoogleAds.get_account_info",
-        Mock(return_value=[[{"customer.manager": False, "customer.time_zone": "Europe/Berlin", "customer.id": "8765"}]]),
+        "source_google_ads.source.SourceGoogleAds.get_customers",
+        Mock(return_value=[CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="8765")]),
     )
 
 
@@ -112,14 +114,15 @@ def test_chunk_date_range():
     ] == slices
 
 
-def test_streams_count(config, mock_account_info):
+def test_streams_count(config, mock_get_customers):
     source = SourceGoogleAds()
     streams = source.streams(config)
     expected_streams_number = 30
+    print(f"{config=} \n{streams=}")
     assert len(streams) == expected_streams_number
 
 
-def test_read_missing_stream(config, mock_account_info):
+def test_read_missing_stream(config, mock_get_customers):
     source = SourceGoogleAds()
 
     catalog = ConfiguredAirbyteCatalog(
@@ -137,7 +140,7 @@ def test_read_missing_stream(config, mock_account_info):
     )
 
     try:
-        list(source.read(AirbyteLogger(), config=config, catalog=catalog))
+        list(source.read(logging.getLogger("airbyte"), config=config, catalog=catalog))
     except KeyError as error:
         pytest.fail(str(error))
 
@@ -191,95 +194,95 @@ def stream_instance(query, api_mock, **kwargs):
     [
         (
             """
-    SELECT
-      campaign.id,
-      campaign.name,
-      campaign.status,
-      metrics.impressions
-    FROM campaign
-    WHERE campaign.status = 'PAUSED'
-    AND metrics.impressions > 100
-    ORDER BY campaign.status
-    """,
+        SELECT
+          campaign.id,
+          campaign.name,
+          campaign.status,
+          metrics.impressions
+        FROM campaign
+        WHERE campaign.status = 'PAUSED'
+        AND metrics.impressions > 100
+        ORDER BY campaign.status
+        """,
             """
-    SELECT
-      campaign.id,
-      campaign.name,
-      campaign.status,
-      metrics.impressions,
-      segments.date
-    FROM campaign
-    WHERE campaign.status = 'PAUSED'
-    AND metrics.impressions > 100
-     AND segments.date BETWEEN '1980-01-01' AND '2000-01-01'
-    ORDER BY campaign.status
-    """,
+        SELECT
+          campaign.id,
+          campaign.name,
+          campaign.status,
+          metrics.impressions,
+          segments.date
+        FROM campaign
+        WHERE campaign.status = 'PAUSED'
+        AND metrics.impressions > 100
+         AND segments.date BETWEEN '1980-01-01' AND '2000-01-01'
+        ORDER BY campaign.status
+        """,
         ),
         (
             """
-    SELECT
-      campaign.id,
-      campaign.name,
-      campaign.status,
-      metrics.impressions
-    FROM campaign
-    ORDER BY campaign.status
-    """,
+        SELECT
+          campaign.id,
+          campaign.name,
+          campaign.status,
+          metrics.impressions
+        FROM campaign
+        ORDER BY campaign.status
+        """,
             """
-    SELECT
-      campaign.id,
-      campaign.name,
-      campaign.status,
-      metrics.impressions,
-      segments.date
-    FROM campaign
-    WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
-    ORDER BY campaign.status
-    """,
+        SELECT
+          campaign.id,
+          campaign.name,
+          campaign.status,
+          metrics.impressions,
+          segments.date
+        FROM campaign
+        WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
+        ORDER BY campaign.status
+        """,
         ),
         (
             """
-    SELECT
-      campaign.id,
-      campaign.name,
-      campaign.status,
-      metrics.impressions
-    FROM campaign
-    WHERE campaign.status = 'PAUSED'
-    AND metrics.impressions > 100
-    """,
+        SELECT
+          campaign.id,
+          campaign.name,
+          campaign.status,
+          metrics.impressions
+        FROM campaign
+        WHERE campaign.status = 'PAUSED'
+        AND metrics.impressions > 100
+        """,
             """
-    SELECT
-      campaign.id,
-      campaign.name,
-      campaign.status,
-      metrics.impressions,
-      segments.date
-    FROM campaign
-    WHERE campaign.status = 'PAUSED'
-    AND metrics.impressions > 100
-     AND segments.date BETWEEN '1980-01-01' AND '2000-01-01'
-    """,
+        SELECT
+          campaign.id,
+          campaign.name,
+          campaign.status,
+          metrics.impressions,
+          segments.date
+        FROM campaign
+        WHERE campaign.status = 'PAUSED'
+        AND metrics.impressions > 100
+         AND segments.date BETWEEN '1980-01-01' AND '2000-01-01'
+        """,
         ),
         (
             """
-    SELECT
-        campaign.accessible_bidding_strategy,
-        segments.ad_destination_type,
-        campaign.start_date,
-        campaign.end_date
-    FROM campaign
-    """,
+        SELECT
+            campaign.accessible_bidding_strategy,
+            segments.ad_destination_type,
+            campaign.start_date,
+            campaign.end_date
+        FROM campaign
+        """,
             """
-    SELECT
-        campaign.accessible_bidding_strategy,
-        segments.ad_destination_type,
-        campaign.start_date,
-        campaign.end_date,
-        segments.date
-    FROM campaign
-    WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
-    """,
+        SELECT
+            campaign.accessible_bidding_strategy,
+            segments.ad_destination_type,
+            campaign.start_date,
+            campaign.end_date,
+            segments.date
+        FROM campaign
+        WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
+        """,
         ),
     ],
 )
@@ -379,7 +382,7 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     mocker.patch("source_google_ads.source.GoogleAds", MockGoogleAdsClient)
     source = SourceGoogleAds()
     check_successful, message = source.check_connection(
-        AirbyteLogger(),
+        logging.getLogger("airbyte"),
         {
             "credentials": {
                 "developer_token": "fake_developer_token",
@@ -390,7 +393,7 @@ def test_check_connection_should_pass_when_config_valid(mocker):
             "customer_id": "fake_customer_id",
             "start_date": "2022-01-01",
             "conversion_window_days": 14,
-            "custom_queries": [
+            "custom_queries_array": [
                 {
                     "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
                     "primary_key": None,
@@ -435,8 +438,99 @@ def test_stream_slices(config, customers):
     )
     slices = list(stream.stream_slices())
     assert slices == [
-        {"start_date": "2020-12-18", "end_date": "2021-01-01", "customer_id": "123"},
-        {"start_date": "2021-01-02", "end_date": "2021-01-16", "customer_id": "123"},
-        {"start_date": "2021-01-17", "end_date": "2021-01-31", "customer_id": "123"},
-        {"start_date": "2021-02-01", "end_date": "2021-02-10", "customer_id": "123"},
+        {"start_date": "2020-12-18", "end_date": "2021-01-01", "customer_id": "123", "login_customer_id": None},
+        {"start_date": "2021-01-02", "end_date": "2021-01-16", "customer_id": "123", "login_customer_id": None},
+        {"start_date": "2021-01-17", "end_date": "2021-01-31", "customer_id": "123", "login_customer_id": None},
+        {"start_date": "2021-02-01", "end_date": "2021-02-10", "customer_id": "123", "login_customer_id": None},
     ]
+
+
+def mock_send_request(query: str, customer_id: str, login_customer_id: str = "default"):
+    print(query, customer_id, login_customer_id)
+    if customer_id == "123":
+        if "WHERE customer_client.status in ('active')" in query:
+            return [
+                [
+                    {"customer_client.id": "123", "customer_client.status": "active"},
+                ]
+            ]
+        else:
+            return [
+                [
+                    {"customer_client.id": "123", "customer_client.status": "active"},
+                    {"customer_client.id": "456", "customer_client.status": "disabled"},
+                ]
+            ]
+    else:
+        return [
+            [
+                {"customer_client.id": "789", "customer_client.status": "active"},
+            ]
+        ]
+
+
+@pytest.mark.parametrize(
+    "customer_status_filter, expected_ids, send_request_calls",
+    [
+        (
+            [],
+            ["123", "456", "789"],
+            [
+                call(
+                    "SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client",
+                    customer_id="123",
+                ),
+                call(
+                    "SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client",
+                    customer_id="789",
+                ),
+            ],
+        ),  # Empty filter, expect all customers
+        (
+            ["active"],
+            ["123", "789"],
+            [
+                call(
+                    "SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client WHERE customer_client.status in ('active')",
+                    customer_id="123",
+                ),
+                call(
+                    "SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client WHERE customer_client.status in ('active')",
+                    customer_id="789",
+                ),
+            ],
+        ),  # Non-empty filter, expect filtered customers
+    ],
+)
+def test_get_customers(mocker, customer_status_filter, expected_ids, send_request_calls):
+    mock_google_api = Mock()
+
+    mock_google_api.get_accessible_accounts.return_value = ["123", "789"]
+    mock_google_api.send_request.side_effect = mock_send_request
+    mock_google_api.parse_single_result.side_effect = lambda schema, result: result
+
+    mock_config = {"customer_status_filter": customer_status_filter, "customer_ids": ["123", "456", "789"]}
+
+    source = SourceGoogleAds()
+
+    customers = source.get_customers(mock_google_api, mock_config)
+
+    mock_google_api.send_request.assert_has_calls(send_request_calls)
+
+    assert len(customers) == len(expected_ids)
+    assert {customer.id for customer in customers} == set(expected_ids)
+
+
+def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
+    query = GAQL.parse("SELECT click_view.gclid, click_view.area_of_interest_city FROM click_view")
+    stream = IncrementalCustomQuery(
+        api=mock_fields_meta_data,
+        conversion_window_days=14,
+        start_date="1980-01-01",
+        config={"query": query, "table_name": "whatever_table"},
+        customers=[],
+    )
+    updated_stream = SourceGoogleAds.set_retention_period_and_slice_duration(stream, query)
+
+    assert updated_stream.days_of_data_storage == 90
+    assert updated_stream.slice_duration == duration(days=0)

@@ -4,43 +4,24 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static io.airbyte.cdk.db.PostgresUtils.getCertificate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.PostgresUtils;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod;
 import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.BaseImage;
 import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
-// todo (cgardens) - DRY this up with PostgresDestinationAcceptanceTest
-public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
+@Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
+public class PostgresDestinationStrictEncryptAcceptanceTest extends AbstractPostgresDestinationAcceptanceTest {
 
-  private PostgreSQLContainer<?> db;
-  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private PostgresTestDatabase testDb;
 
   protected static final String PASSWORD = "Passw0rd";
-  protected static PostgresUtils.Certificate certs;
-  private static final String NORMALIZATION_VERSION = "dev"; // this is hacky. This test should extend or encapsulate
-                                                             // PostgresDestinationAcceptanceTest
 
   @Override
   protected String getImageName() {
@@ -49,128 +30,45 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-            .put("mode", "verify-full")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", PASSWORD)
+    return testDb.configBuilder()
+        .with("schema", "public")
+        .withDatabase()
+        .withResolvedHostAndPort()
+        .withCredentials()
+        .withSsl(ImmutableMap.builder()
+            .put("mode", "verify-ca") // verify-full will not work since the spawned container is only allowed for 127.0.0.1/32 CIDRs
+            .put("ca_certificate", testDb.getCertificates().caCertificate())
             .build())
-        .build());
+        .build();
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
-  }
-
-  @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
-      throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
-        .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
-      throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the StandardNameTransformer, see (issue #1785) so we don't
-    // use quoted names
-    // if (!tableName.startsWith("\"")) {
-    // // Currently, Normalization always quote tables identifiers
-    // //tableName = "\"" + tableName + "\"";
-    // }
-    return retrieveRecordsFromTable(tableName, namespace);
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
-
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        db.getUsername(),
-        db.getPassword(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        db.getJdbcUrl(),
-        SQLDialect.POSTGRES)) {
-      return new Database(dslContext)
-          .query(
-              ctx -> ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList()));
-    }
+  protected PostgresTestDatabase getTestDb() {
+    return testDb;
   }
 
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
-    db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-        .asCompatibleSubstituteFor("postgres"));
-    db.start();
-    certs = getCertificate(db);
+    testDb = PostgresTestDatabase.in(BaseImage.POSTGRES_12, PostgresTestDatabase.ContainerModifier.CERT);
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    db.stop();
-    db.close();
+    testDb.close();
   }
 
   @Test
   void testStrictSSLUnsecuredNoTunnel() throws Exception {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
+    final JsonNode config = testDb.configBuilder()
+        .with("schema", "public")
+        .withDatabase()
+        .withResolvedHostAndPort()
+        .withCredentials()
+        .with("tunnel_method", ImmutableMap.builder().put("tunnel_method", TunnelMethod.NO_TUNNEL.toString()).build())
+        .with("ssl_mode", ImmutableMap.builder()
             .put("mode", "prefer")
             .build())
-        .put("tunnel_method", ImmutableMap.builder()
-            .put("tunnel_method", "NO_TUNNEL")
-            .build())
-        .build());
-
+        .build();
     final var actual = runCheck(config);
     assertEquals(Status.FAILED, actual.getStatus());
     assertTrue(actual.getMessage().contains("Unsecured connection not allowed"));
@@ -178,21 +76,16 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
 
   @Test
   void testStrictSSLSecuredNoTunnel() throws Exception {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
+    final JsonNode config = testDb.configBuilder()
+        .with("schema", "public")
+        .withDatabase()
+        .withResolvedHostAndPort()
+        .withCredentials()
+        .with("tunnel_method", ImmutableMap.builder().put("tunnel_method", TunnelMethod.NO_TUNNEL.toString()).build())
+        .with("ssl_mode", ImmutableMap.builder()
             .put("mode", "require")
             .build())
-        .put("tunnel_method", ImmutableMap.builder()
-            .put("tunnel_method", "NO_TUNNEL")
-            .build())
-        .build());
-
+        .build();
     final var actual = runCheck(config);
     assertEquals(Status.SUCCEEDED, actual.getStatus());
   }
@@ -210,6 +103,16 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   @Override
   protected String getDestinationDefinitionKey() {
     return "airbyte/destination-postgres";
+  }
+
+  @Override
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
+
+  @Disabled("Custom DBT does not have root certificate created in the Postgres container.")
+  public void testCustomDbtTransformations() throws Exception {
+    super.testCustomDbtTransformations();
   }
 
 }

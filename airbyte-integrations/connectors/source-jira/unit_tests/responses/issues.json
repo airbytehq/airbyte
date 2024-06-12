@@ -6,6 +6,8 @@
       "self": "https://airbyteio.atlassian.net/rest/api/3/issue/10627",
       "key": "TESTKEY13-1",
       "fields": {
+        "empty_field": null,
+        "non_empty_field": "",
         "statuscategorychangedate": "2022-06-09T16:29:32.382-0700",
         "issuetype": {
           "self": "https://airbyteio.atlassian.net/rest/api/3/issuetype/10000",
@@ -239,7 +241,8 @@
           "maxResults": 20,
           "total": 0,
           "worklogs": []
-        }
+        },
+        "PrIssueId": "PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1}"
       },
       "projectId": "10016",
       "projectKey": "TESTKEY13",

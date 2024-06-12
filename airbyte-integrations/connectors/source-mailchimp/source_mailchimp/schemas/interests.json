@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "category_id": {
+      "description": "Unique identifier for the category to which this interest belongs.",
+      "type": ["null", "string"]
+    },
+    "list_id": {
+      "description": "Unique identifier for the list associated with this interest.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier for this specific interest.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "Name or label of the interest.",
+      "type": ["null", "string"]
+    },
+    "subscriber_count": {
+      "description": "Number of subscribers who have selected this interest.",
+      "type": ["null", "string"]
+    },
+    "display_order": {
+      "description": "Numeric value representing the display order of this interest within its category.",
+      "type": ["null", "integer"]
+    }
+  }
+}

@@ -9,7 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -24,6 +24,10 @@ class NonJSONResponse(Exception):
     pass
 
 
+class RateLimitExceeded(Exception):
+    pass
+
+
 class PinterestStream(HttpStream, ABC):
     url_base = "https://api.pinterest.com/v5/"
     primary_key = "id"
@@ -32,21 +36,17 @@ class PinterestStream(HttpStream, ABC):
     max_rate_limit_exceeded = False
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, config: Mapping[str, Any]):
+    def __init__(self, config: Mapping[str, Any]) -> None:
         super().__init__(authenticator=config["authenticator"])
         self.config = config
 
     @property
-    def start_date(self):
+    def start_date(self) -> str:
         return self.config["start_date"]
 
     @property
-    def window_in_days(self):
+    def window_in_days(self) -> int:
         return 30  # Set window_in_days to 30 days date range
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("bookmark", {}) if self.data_fields else {}
@@ -89,7 +89,12 @@ class PinterestStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
             self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            return float(response.headers.get("X-RateLimit-Reset", 0))
+            sleep_time = float(response.headers.get("X-RateLimit-Reset", 0))
+            if sleep_time > 600:
+                raise RateLimitExceeded(
+                    f"Rate limit exceeded for stream {self.name}. Waiting time is longer than 10 minutes: {sleep_time}s."
+                )
+            return sleep_time
 
 
 class PinterestSubStream(HttpSubStream):
@@ -106,35 +111,6 @@ class PinterestSubStream(HttpSubStream):
             # iterate over all parent records with current stream_slice
             for record in parent_records:
                 yield {"parent": record, "sub_parent": stream_slice}
-
-
-class Boards(PinterestStream):
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "boards"
-
-
-class AdAccounts(PinterestStream):
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "ad_accounts"
-
-
-class BoardSections(PinterestSubStream, PinterestStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice['parent']['id']}/sections"
-
-
-class BoardPins(PinterestSubStream, PinterestStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice['parent']['id']}/pins"
-
-
-class BoardSectionPins(PinterestSubStream, PinterestStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice['sub_parent']['parent']['id']}/sections/{stream_slice['parent']['id']}/pins"
 
 
 class IncrementalPinterestStream(PinterestStream, ABC):
@@ -198,7 +174,7 @@ class IncrementalPinterestStream(PinterestStream, ABC):
 class IncrementalPinterestSubStream(IncrementalPinterestStream):
     cursor_field = "updated_time"
 
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, **kwargs):
+    def __init__(self, parent: Stream, with_data_slices: bool = True, **kwargs) -> None:
         super().__init__(**kwargs)
         self.parent = parent
         self.with_data_slices = with_data_slices
@@ -223,7 +199,8 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     granularity = "DAY"
     analytics_target_ids = None
 
-    def lookback_date_limt_reached(self, response: requests.Response) -> bool:
+    @staticmethod
+    def lookback_date_limit_reached(response: requests.Response) -> bool:
         """
         After few consecutive requests analytics API return bad request error
         with 'You can only get data from the last 90 days' error message.
@@ -236,10 +213,10 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-        return super().should_retry(response) or self.lookback_date_limt_reached(response)
+        return super().should_retry(response) or self.lookback_date_limit_reached(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        if self.lookback_date_limt_reached(response):
+        if self.lookback_date_limit_reached(response):
             return 1
         return super().backoff_time(response)
 
@@ -260,83 +237,3 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
             params.update({self.analytics_target_ids: stream_slice["parent"]["id"]})
 
         return params
-
-
-class ServerSideFilterStream(IncrementalPinterestSubStream):
-    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
-        """
-        Endpoint does not provide query filtering params, but they provide us
-        cursor field in most cases, so we used that as incremental filtering
-        during the parsing.
-        """
-
-        if not stream_state or record[self.cursor_field] >= stream_state.get(self.cursor_field):
-            yield record
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, stream_state, **kwargs):
-            yield from self.filter_by_state(stream_state=stream_state, record=record)
-
-
-class UserAccountAnalytics(PinterestAnalyticsStream):
-    data_fields = ["all", "daily_metrics"]
-    cursor_field = "date"
-
-    def path(self, **kwargs) -> str:
-        return "user_account/analytics"
-
-
-class AdAccountAnalytics(PinterestAnalyticsStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['id']}/analytics"
-
-
-class Campaigns(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
-        super().__init__(parent, with_data_slices, **kwargs)
-        self.status_filter = status_filter
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
-        return f"ad_accounts/{stream_slice['parent']['id']}/campaigns{params}"
-
-
-class CampaignAnalytics(PinterestAnalyticsStream):
-    analytics_target_ids = "campaign_ids"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/campaigns/analytics"
-
-
-class AdGroups(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
-        super().__init__(parent, with_data_slices, **kwargs)
-        self.status_filter = status_filter
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
-        return f"ad_accounts/{stream_slice['parent']['id']}/ad_groups{params}"
-
-
-class AdGroupAnalytics(PinterestAnalyticsStream):
-    analytics_target_ids = "ad_group_ids"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/ad_groups/analytics"
-
-
-class Ads(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
-        super().__init__(parent, with_data_slices, **kwargs)
-        self.status_filter = status_filter
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
-        return f"ad_accounts/{stream_slice['parent']['id']}/ads{params}"
-
-
-class AdAnalytics(PinterestAnalyticsStream):
-    analytics_target_ids = "ad_ids"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/ads/analytics"

@@ -76,7 +76,7 @@
         "display_type": "radio",
         "oneOf": [
           {
-            "title": "S3 Staging",
+            "title": "AWS S3 Staging",
             "description": "<i>(recommended)</i> Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html\">AWS docs</a> for more details.",
             "required": [
               "method",
@@ -94,13 +94,15 @@
                 "title": "S3 Bucket Name",
                 "type": "string",
                 "description": "The name of the staging S3 bucket.",
-                "examples": ["airbyte.staging"]
+                "examples": ["airbyte.staging"],
+                "order": 0
               },
               "s3_bucket_path": {
                 "title": "S3 Bucket Path",
                 "type": "string",
                 "description": "The directory under the S3 bucket where data will be written. If not provided, then defaults to the root directory. See <a href=\"https://docs.aws.amazon.com/prescriptive-guidance/latest/defining-bucket-names-data-lakes/faq.html#:~:text=be%20globally%20unique.-,For%20S3%20bucket%20paths,-%2C%20you%20can%20use\">path's name recommendations</a> for more details.",
-                "examples": ["data_sync/test"]
+                "examples": ["data_sync/test"],
+                "order": 1
               },
               "s3_bucket_region": {
                 "title": "S3 Bucket Region",
@@ -109,30 +111,55 @@
                 "description": "The region of the S3 staging bucket.",
                 "enum": [
                   "",
-                  "us-east-1",
-                  "us-east-2",
-                  "us-west-1",
-                  "us-west-2",
                   "af-south-1",
                   "ap-east-1",
-                  "ap-south-1",
                   "ap-northeast-1",
                   "ap-northeast-2",
                   "ap-northeast-3",
+                  "ap-south-1",
+                  "ap-south-2",
                   "ap-southeast-1",
                   "ap-southeast-2",
+                  "ap-southeast-3",
+                  "ap-southeast-4",
                   "ca-central-1",
+                  "ca-west-1",
                   "cn-north-1",
                   "cn-northwest-1",
                   "eu-central-1",
+                  "eu-central-2",
                   "eu-north-1",
                   "eu-south-1",
+                  "eu-south-2",
                   "eu-west-1",
                   "eu-west-2",
                   "eu-west-3",
+                  "il-central-1",
+                  "me-central-1",
+                  "me-south-1",
                   "sa-east-1",
-                  "me-south-1"
-                ]
+                  "us-east-1",
+                  "us-east-2",
+                  "us-gov-east-1",
+                  "us-gov-west-1",
+                  "us-west-1",
+                  "us-west-2"
+                ],
+                "order": 2
+              },
+              "access_key_id": {
+                "type": "string",
+                "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
+                "title": "S3 Access Key Id",
+                "airbyte_secret": true,
+                "order": 3
+              },
+              "secret_access_key": {
+                "type": "string",
+                "description": "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
+                "title": "S3 Secret Access Key",
+                "airbyte_secret": true,
+                "order": 4
               },
               "file_name_pattern": {
                 "type": "string",
@@ -145,25 +172,14 @@
                   "{part_number}",
                   "{sync_id}"
                 ],
-                "order": 8
-              },
-              "access_key_id": {
-                "type": "string",
-                "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
-                "title": "S3 Key Id",
-                "airbyte_secret": true
-              },
-              "secret_access_key": {
-                "type": "string",
-                "description": "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
-                "title": "S3 Access Key",
-                "airbyte_secret": true
+                "order": 5
               },
               "purge_staging_data": {
                 "title": "Purge Staging Files and Tables",
                 "type": "boolean",
                 "description": "Whether to delete the staging files from S3 after completing the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"> docs</a> for details.",
-                "default": true
+                "default": true,
+                "order": 6
               },
               "encryption": {
                 "title": "Encryption",
@@ -205,16 +221,8 @@
                       }
                     }
                   }
-                ]
-              },
-              "file_buffer_count": {
-                "title": "File Buffer Count",
-                "type": "integer",
-                "minimum": 10,
-                "maximum": 50,
-                "default": 10,
-                "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
-                "examples": ["10"]
+                ],
+                "order": 7
               }
             }
           },
@@ -230,6 +238,28 @@
             }
           }
         ]
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal).",
+        "title": "Destinations V2 Raw Table Schema",
+        "order": 9,
+        "group": "connection"
+      },
+      "disable_type_dedupe": {
+        "type": "boolean",
+        "default": false,
+        "description": "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
+        "title": "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "order": 11,
+        "group": "connection"
+      },
+      "drop_cascade": {
+        "type": "boolean",
+        "default": false,
+        "description": "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.",
+        "title": "Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)",
+        "order": 12
       }
     },
     "groups": [

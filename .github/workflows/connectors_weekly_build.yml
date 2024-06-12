@@ -6,21 +6,17 @@ on:
     - cron: "0 12 * * 0"
   workflow_dispatch:
     inputs:
-      runs-on:
-        type: string
-        default: conn-nightly-xlarge-runner
-        required: true
       test-connectors-options:
         default: --concurrency=3 --support-level=community
         required: true
 
-run-name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }} - on ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}"
+run-name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }}"
 
 jobs:
   test_connectors:
-    name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }} - on ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}"
+    name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }}"
     timeout-minutes: 8640 # 6 days
-    runs-on: ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}
+    runs-on: connector-weekly-xlarge
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -32,10 +28,11 @@ jobs:
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: Test connectors
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "nightly_builds"
+          context: "master"
           ci_job_key: "weekly_alpha_test"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

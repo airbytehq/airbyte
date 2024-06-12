@@ -1,0 +1,53 @@
+{
+  "campaigns": [
+    {
+      "budgetType": "DAILY",
+      "ruleBasedBudget": {
+        "isProcessing": true,
+        "applicableRuleName": "string",
+        "value": 0.1,
+        "applicableRuleId": "string"
+      },
+      "brandEntityId": "string",
+      "isMultiAdGroupsEnabled": true,
+      "goal": "string",
+      "bidding": {
+        "bidOptimization": true,
+        "bidAdjustmentsByShopperSegment": [
+          {
+            "percentage": 900,
+            "shopperSegment": "NEW_TO_BRAND_PURCHASE"
+          }
+        ],
+        "bidAdjustmentsByPlacement": [
+          {
+            "percentage": -99,
+            "placement": "HOME"
+          }
+        ],
+        "bidOptimizationStrategy": "MAXIMIZE_IMMEDIATE_SALES"
+      },
+      "endDate": "string",
+      "campaignId": "string",
+      "productLocation": "SOLD_ON_AMAZON",
+      "tags": {
+        "property1": "string",
+        "property2": "string"
+      },
+      "portfolioId": "string",
+      "costType": "string",
+      "smartDefault": ["string"],
+      "name": "string",
+      "state": "ENABLED",
+      "startDate": "string",
+      "budget": 0.1,
+      "extendedData": {
+        "servingStatus": "ADVERTISER_STATUS_ENABLED",
+        "lastUpdateDate": 0,
+        "servingStatusDetails": ["string"],
+        "creationDate": 0
+      }
+    }
+  ],
+  "totalCount": 100
+}

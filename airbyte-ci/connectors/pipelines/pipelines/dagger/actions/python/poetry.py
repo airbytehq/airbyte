@@ -37,11 +37,9 @@ async def find_local_dependencies_in_pyproject_toml(
 
     pyproject_content = toml.loads(pyproject_content_raw)
     local_dependency_paths = []
-    for dep, value in pyproject_content["tool"]["poetry"]["dependencies"].items():
+    for value in pyproject_content["tool"]["poetry"]["dependencies"].values():
         if isinstance(value, dict) and "path" in value:
-            local_dependency_path = Path(value["path"])
-            pyproject_file_path = Path(pyproject_file_path)
-            local_dependency_path = str((pyproject_file_path / local_dependency_path).resolve().relative_to(Path.cwd()))
+            local_dependency_path = str((Path(pyproject_file_path) / Path(value["path"])).resolve().relative_to(Path.cwd()))
             local_dependency_paths.append(local_dependency_path)
 
             # Ensure we parse the child dependencies

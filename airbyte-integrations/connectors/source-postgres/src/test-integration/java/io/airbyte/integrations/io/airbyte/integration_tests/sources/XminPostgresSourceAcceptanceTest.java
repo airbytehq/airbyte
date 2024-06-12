@@ -5,14 +5,11 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -31,40 +28,24 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
   private static final String SCHEMA_NAME = "public";
 
   private PostgresTestDatabase testdb;
-  private JsonNode config;
-  private ConfiguredAirbyteCatalog configCatalog;
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return config;
-  }
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
+    return testdb.integrationTestConfigBuilder()
+        .withSchemas("public")
+        .withoutSsl()
+        .withXminReplication()
+        .build();
   }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make("postgres:12-bullseye");
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Xmin")
-        .build());
-    config = Jsons.jsonNode(testdb.makeConfigBuilder()
-        .put(JdbcUtils.SCHEMAS_KEY, Jsons.jsonNode(List.of("public")))
-        .put(JdbcUtils.SSL_KEY, false)
-        .put("replication_method", replicationMethod)
-        .build());
-
-    testdb.database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      ctx.fetch("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
-      return null;
-    });
-    configCatalog = getXminCatalog();
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_12)
+        .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+        .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
+        .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
+        .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');")
+        .with("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
   }
 
   @Override
@@ -74,20 +55,6 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return configCatalog;
-  }
-
-  @Override
-  protected JsonNode getState() throws Exception {
-    return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
-  }
-
-  private ConfiguredAirbyteCatalog getXminCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -119,6 +86,11 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
+  }
+
+  @Override
+  protected JsonNode getState() throws Exception {
+    return Jsons.jsonNode(new HashMap<>());
   }
 
 }

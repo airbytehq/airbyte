@@ -4,3 +4,4 @@ omit =
     source_s3/stream.py
     source_s3/utils.py
     source_s3/source_files_abstract/source.py
+    source_s3/run.py

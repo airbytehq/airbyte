@@ -4,28 +4,41 @@
 
 import json
 import uuid
-from typing import Callable, Optional
+from typing import Callable, Dict, List, Optional, Union
 
-from dagger import Client, Container, File, Secret
+from dagger import Client, Container, File
+from dagger import Secret as DaggerSecret
+from dagger import Service
 from pipelines import consts
-from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_TMP_VOLUME_NAME, DOCKER_VAR_LIB_VOLUME_NAME
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.consts import (
+    DOCKER_HOST_NAME,
+    DOCKER_HOST_PORT,
+    DOCKER_REGISTRY_ADDRESS,
+    DOCKER_REGISTRY_MIRROR_URL,
+    DOCKER_TMP_VOLUME_NAME,
+    DOCKER_VAR_LIB_VOLUME_NAME,
+    STORAGE_DRIVER,
+)
 from pipelines.helpers.utils import sh_dash_c
+from pipelines.models.secrets import Secret
 
 
-def with_global_dockerd_service(
-    dagger_client: Client, docker_hub_username_secret: Optional[Secret] = None, docker_hub_password_secret: Optional[Secret] = None
-) -> Container:
-    """Create a container with a docker daemon running.
-    We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
+def get_base_dockerd_container(dagger_client: Client) -> Container:
+    """Provision a container to run a docker daemon.
+    It will be used as a docker host for docker-in-docker use cases.
+
     Args:
         dagger_client (Client): The dagger client used to create the container.
-        docker_hub_username_secret (Optional[Secret]): The DockerHub username secret.
-        docker_hub_password_secret (Optional[Secret]): The DockerHub password secret.
     Returns:
-        Container: The container running dockerd as a service
+        Container: The container to run dockerd as a service
     """
-    dockerd_container = (
+    apk_packages_to_install = [
+        STORAGE_DRIVER,
+        # Curl is only used for debugging purposes.
+        "curl",
+    ]
+    base_container = (
         dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
         # We set this env var because we need to use a non-default zombie reaper setting.
@@ -33,38 +46,111 @@ def with_global_dockerd_service(
         # This won't be possible because of container-ception: dind is running inside the dagger engine.
         # See https://github.com/krallin/tini#subreaping for details.
         .with_env_variable("TINI_SUBREAPER", "")
-        # Similarly, because of container-ception, we have to use the fuse-overlayfs storage engine.
         .with_exec(
             sh_dash_c(
                 [
-                    # Update package metadata.
                     "apk update",
-                    # Install the storage driver package.
-                    "apk add fuse-overlayfs",
-                    # Update daemon config with storage driver.
+                    f"apk add {' '.join(apk_packages_to_install)}",
                     "mkdir /etc/docker",
-                    '(echo {\\"storage-driver\\": \\"fuse-overlayfs\\"} > /etc/docker/daemon.json)',
                 ]
             )
         )
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
-        # Mount the docker cache volumes.
-        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+        # We cache /tmp for file sharing between client and daemon.
         .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
-    if docker_hub_username_secret and docker_hub_password_secret:
-        dockerd_container = (
+
+    # We cache /var/lib/docker to avoid downloading images and layers multiple times.
+    base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+    return base_container
+
+
+def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
+    """Get the json representation of the docker daemon config.
+
+    Args:
+        registry_mirror_url (Optional[str]): The registry mirror url to use.
+
+    Returns:
+        str: The json representation of the docker daemon config.
+    """
+    daemon_config: Dict[str, Union[List[str], str]] = {
+        "storage-driver": STORAGE_DRIVER,
+    }
+    if registry_mirror_url:
+        daemon_config["registry-mirrors"] = ["http://" + registry_mirror_url]
+        daemon_config["insecure-registries"] = [registry_mirror_url]
+    return json.dumps(daemon_config)
+
+
+def docker_login(
+    dockerd_container: Container,
+    docker_registry_username: DaggerSecret,
+    docker_registry_password: DaggerSecret,
+) -> Container:
+    """Login to a docker registry if the username and password secrets are provided.
+
+    Args:
+        dockerd_container (Container): The dockerd_container container to login to the registry.
+        docker_registry_username_secret (Secret): The docker registry username secret.
+        docker_registry_password_secret (Secret): The docker registry password secret.
+        docker_registry_address (Optional[str]): The docker registry address to login to. Defaults to "docker.io" (DockerHub).
+    Returns:
+        Container: The container with the docker login command executed if the username and password secrets are provided. Noop otherwise.
+    """
+    if docker_registry_username and docker_registry_username:
+        return (
             dockerd_container
             # We use a cache buster here to guarantee the docker login is always executed.
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
-            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
-            .with_exec(sh_dash_c(["docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True)
+            .with_secret_variable("DOCKER_REGISTRY_USERNAME", docker_registry_username)
+            .with_secret_variable("DOCKER_REGISTRY_PASSWORD", docker_registry_password)
+            .with_exec(
+                sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {DOCKER_REGISTRY_ADDRESS}"]),
+                skip_entrypoint=True,
+            )
+        )
+    else:
+        return dockerd_container
+
+
+def with_global_dockerd_service(
+    dagger_client: Client,
+    docker_hub_username: Optional[Secret] = None,
+    docker_hub_password: Optional[Secret] = None,
+) -> Service:
+    """Create a container with a docker daemon running.
+    We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
+    It is optionally connected to a DockerHub mirror if the DOCKER_REGISTRY_MIRROR_URL env var is set.
+    Args:
+        dagger_client (Client): The dagger client used to create the container.
+        docker_hub_username (Optional[Secret]): The DockerHub username secret.
+        docker_hub_password (Optional[Secret]): The DockerHub password secret.
+    Returns:
+        Container: The container running dockerd as a service
+    """
+
+    dockerd_container = get_base_dockerd_container(dagger_client)
+    if DOCKER_REGISTRY_MIRROR_URL is not None:
+        # Ping the registry mirror host to make sure it's reachable through VPN
+        # We set a cache buster here to guarantee the curl command is always executed.
+        dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
+            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True
+        )
+        daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
+    else:
+        daemon_config_json = get_daemon_config_json()
+
+    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", contents=daemon_config_json)
+    if docker_hub_username and docker_hub_password:
+        # Docker login happens late because there's a cache buster in the docker login command.
+        dockerd_container = docker_login(
+            dockerd_container, docker_hub_username.as_dagger_secret(dagger_client), docker_hub_password.as_dagger_secret(dagger_client)
         )
     return dockerd_container.with_exec(
         ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
-    )
+    ).as_service()
 
 
 def with_bound_docker_host(
@@ -79,6 +165,7 @@ def with_bound_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
+    assert context.dockerd_service is not None
     return (
         container.with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
         .with_service_binding(DOCKER_HOST_NAME, context.dockerd_service)
@@ -106,7 +193,7 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     return with_bound_docker_host(context, docker_cli)
 
 
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
+async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str) -> str:
     """Load a docker image tar archive to the docker host.
 
     Args:
@@ -128,7 +215,7 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
 
 
 def with_crane(
-    context: PipelineContext,
+    context: ConnectorContext,
 ) -> Container:
     """Crane is a tool to analyze and manipulate container images.
     We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
@@ -139,11 +226,11 @@ def with_crane(
     # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
     base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
 
-    if context.docker_hub_username_secret and context.docker_hub_password_secret:
+    if context.docker_hub_username and context.docker_hub_password:
         base_container = (
-            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username_secret).with_secret_variable(
-                "DOCKER_HUB_PASSWORD", context.docker_hub_password_secret
-            )
+            base_container.with_secret_variable(
+                "DOCKER_HUB_USERNAME", context.docker_hub_username.as_dagger_secret(context.dagger_client)
+            ).with_secret_variable("DOCKER_HUB_PASSWORD", context.docker_hub_password.as_dagger_secret(context.dagger_client))
             # We need to use skip_entrypoint=True to avoid the entrypoint to be overridden by the crane command
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables

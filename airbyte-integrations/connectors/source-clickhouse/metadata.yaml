@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-clickhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   githubIssueLabel: source-clickhouse
@@ -18,7 +18,7 @@ data:
   name: ClickHouse
   registries:
     cloud:
-      dockerImageTag: 0.1.8
+      dockerImageTag: 0.2.2
       dockerRepository: airbyte/source-clickhouse-strict-encrypt
       enabled: true
     oss:
@@ -27,5 +27,6 @@ data:
   supportLevel: community
   tags:
     - language:java
-    - language:python
+  connectorTestSuitesOptions:
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

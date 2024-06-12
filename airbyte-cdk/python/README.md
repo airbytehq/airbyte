@@ -1,134 +1,174 @@
-# Connector Development Kit \(Python\)
+# Airbyte Python CDK and Low-Code CDK
 
-The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
+Airbyte Python CDK is a framework for building Airbyte API Source Connectors. It provides a set of
+classes and helpers that make it easy to build a connector against an HTTP API (REST, GraphQL, etc),
+or a generic Python source connector.
 
-* HTTP APIs \(REST APIs, GraphQL, etc..\)
-* Singer Taps
-* Generic Python sources \(anything not covered by the above\)
+## Usage
 
-The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
+If you're looking to build a connector, we highly recommend that you
+[start with the Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview).
+It should be enough for 90% connectors out there. For more flexible and complex connectors, use the
+[low-code CDK and `SourceDeclarativeManifest`](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview).
 
-This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/) before proceeding.
+If that doesn't work, then consider building on top of the
+[lower-level Python CDK itself](https://docs.airbyte.com/connector-development/cdk-python/).
 
-## Getting Started
+### Quick Start
 
-Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
+To get started on a Python CDK based connector or a low-code connector, you can generate a connector
+project from a template:
 
-```text
+```bash
+# from the repo root
 cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
-
-then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
-
-Additionally, you can follow [this tutorial](https://docs.airbyte.io/connector-development/tutorials/cdk-tutorial-python-http) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
-
-### Concepts & Documentation
-
-See the [concepts docs](docs/concepts/) for a tour through what the API offers.
 
 ### Example Connectors
 
 **HTTP Connectors**:
 
-* [Exchangerates API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py)
-* [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
-* [Slack](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py)
+- [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/)
+- [Salesforce](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-salesforce/)
 
-**Singer connectors**:
+**Python connectors using the bare-bones `Source` abstraction**:
 
-* [Salesforce](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-salesforce-singer/source_salesforce_singer/source.py)
-* [Github](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-github-singer/source_github_singer/source.py)
+- [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
 
-**Simple Python connectors using the barebones `Source` abstraction**:
+This will generate a project with a type and a name of your choice and put it in
+`airbyte-integrations/connectors`. Open the directory with your connector in an editor and follow
+the `TODO` items.
 
-* [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
-* [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
+## Python CDK Overview
+
+Airbyte CDK code is within `airbyte_cdk` directory. Here's a high level overview of what's inside:
+
+- `connector_builder`. Internal wrapper that helps the Connector Builder platform run a declarative
+  manifest (low-code connector). You should not use this code directly. If you need to run a
+  `SourceDeclarativeManifest`, take a look at
+  [`source-declarative-manifest`](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-declarative-manifest)
+  connector implementation instead.
+- `destinations`. Basic Destination connector support! If you're building a Destination connector in
+  Python, try that. Some of our vector DB destinations like `destination-pinecone` are using that
+  code.
+- `models` expose `airbyte_protocol.models` as a part of `airbyte_cdk` package.
+- `sources/concurrent_source` is the Concurrent CDK implementation. It supports reading data from
+  streams concurrently per slice / partition, useful for connectors with high throughput and high
+  number of records.
+- `sources/declarative` is the low-code CDK. It works on top of Airbyte Python CDK, but provides a
+  declarative manifest language to define streams, operations, etc. This makes it easier to build
+  connectors without writing Python code.
+- `sources/file_based` is the CDK for file-based sources. Examples include S3, Azure, GCS, etc.
 
 ## Contributing
 
+Thank you for being interested in contributing to Airbyte Python CDK! Here are some guidelines to
+get you started:
+
+- We adhere to the [code of conduct](/CODE_OF_CONDUCT.md).
+- You can contribute by reporting bugs, posting github discussions, opening issues, improving
+  [documentation](/docs/), and submitting pull requests with bugfixes and new features alike.
+- If you're changing the code, please add unit tests for your change.
+- When submitting issues or PRs, please add a small reproduction project. Using the changes in your
+  connector and providing that connector code as an example (or a satellite PR) helps!
+
 ### First time setup
 
-We assume `python` points to python &gt;=3.8.
+Install the project dependencies and development tools:
 
-Setup a virtual env:
-
-```text
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]" # [dev] installs development-only dependencies
+```bash
+poetry install --all-extras
 ```
 
-#### Iteration
+Installing all extras is required to run the full suite of unit tests.
 
-* Iterate on the code locally
-* Run tests via `python -m pytest -s unit_tests`
-* Perform static type checks using `mypy airbyte_cdk`. `MyPy` configuration is in `mypy.ini`.
- * Run `mypy <files to check>` to only check specific files. This is useful as the CDK still contains code that is not compliant.
-* The `type_check_and_test.sh` script bundles both type checking and testing in one convenient command. Feel free to use it!
+#### Running tests locally
+
+- Iterate on the CDK code locally
+- Run tests via `poetry run poe unit-test-with-cov`, or `python -m pytest -s unit_tests` if you want
+  to pass pytest options.
+- Run `poetry run poe check-local` to lint all code, type-check modified code, and run unit tests
+  with coverage in one command.
+
+To see all available scripts, run `poetry run poe`.
 
 ##### Autogenerated files
-If the iteration you are working on includes changes to the models, you might want to regenerate them. In order to do that, you can run:
-```commandline
-./gradlew :airbyte-cdk:python:format
+
+Low-code CDK models are generated from `sources/declarative/declarative_component_schema.yaml`. If
+the iteration you are working on includes changes to the models or the connector generator, you
+might want to regenerate them. In order to do that, you can run:
+
+```bash
+poetry run poe build
 ```
-This will generate the files based on the schemas, add the license information and format the code. If you want to only do the former and rely on
-pre-commit to the others, you can run the appropriate generation command i.e. `./gradlew generateComponentManifestClassFiles`.
+
+This will generate the code generator docker image and the component manifest files based on the
+schemas and templates.
 
 #### Testing
 
-All tests are located in the `unit_tests` directory. Run `python -m pytest --cov=airbyte_cdk unit_tests/` to run them. This also presents a test coverage report.
+All tests are located in the `unit_tests` directory. Run `poetry run poe unit-test-with-cov` to run
+them. This also presents a test coverage report. For faster iteration with no coverage report and
+more options, `python -m pytest -s unit_tests` is a good place to start.
 
 #### Building and testing a connector with your local CDK
 
-When developing a new feature in the CDK, you may find it helpful to run a connector that uses that new feature. You can test this in one of two ways:
-* Running a connector locally
-* Building and running a source via Docker
+When developing a new feature in the CDK, you may find it helpful to run a connector that uses that
+new feature. You can test this in one of two ways:
+
+- Running a connector locally
+- Building and running a source via Docker
 
 ##### Installing your local CDK into a local Python connector
 
-In order to get a local Python connector running your local CDK, do the following.
+Open the connector's `pyproject.toml` file and replace the line with `airbyte_cdk` with the
+following:
 
-First, make sure you have your connector's virtual environment active:
-```bash
-# from the `airbyte/airbyte-integrations/connectors/<connector-directory>` directory
-source .venv/bin/activate
-
-# if you haven't installed dependencies for your connector already
-pip install -e .
+```toml
+airbyte_cdk = { path = "../../../airbyte-cdk/python/airbyte_cdk", develop = true }
 ```
 
-Then, navigate to the CDK and install it in editable mode:
-```bash
-cd ../../../airbyte-cdk/python
-pip install -e .
-```
-
-You should see that `pip` has uninstalled the version of `airbyte-cdk` defined by your connector's `setup.py` and installed your local CDK. Any changes you make will be immediately reflected in your editor, so long as your editor's interpreter is set to your connector's virtual environment.
+Then, running `poetry update` should reinstall `airbyte_cdk` from your local working directory.
 
 ##### Building a Python connector in Docker with your local CDK installed
-_Pre-requisite: Install the [`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)_
+
+_Pre-requisite: Install the
+[`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)_
 
 You can build your connector image with the local CDK using
+
 ```bash
 # from the airbytehq/airbyte base directory
 airbyte-ci connectors --use-local-cdk --name=<CONNECTOR> build
 ```
-Note that the local CDK is injected at build time, so if you make changes, you will have to run the build command again to see them reflected.
+
+Note that the local CDK is injected at build time, so if you make changes, you will have to run the
+build command again to see them reflected.
 
 ##### Running Connector Acceptance Tests for a single connector in Docker with your local CDK installed
-_Pre-requisite: Install the [`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)_
 
-To run acceptance tests for a single connectors using the local CDK, from the connector directory, run
+_Pre-requisite: Install the
+[`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)_
+
+To run acceptance tests for a single connectors using the local CDK, from the connector directory,
+run
+
 ```bash
 airbyte-ci connectors --use-local-cdk --name=<CONNECTOR> test
 ```
 
 #### When you don't have access to the API
-There can be some time where you do not have access to the API (either because you don't have the credentials, network access, etc...) You will probably still want to do end-to-end testing at least once. In order to do so, you can emulate the server you would be reaching using a server stubbing tool.
 
-For example, using [mockserver](https://www.mock-server.com/), you can set up an expectation file like this:
-```
+There may be a time when you do not have access to the API (either because you don't have the
+credentials, network access, etc...) You will probably still want to do end-to-end testing at least
+once. In order to do so, you can emulate the server you would be reaching using a server stubbing
+tool.
+
+For example, using [mockserver](https://www.mock-server.com/), you can set up an expectation file
+like this:
+
+```json
 {
   "httpRequest": {
     "method": "GET",
@@ -140,20 +180,43 @@ For example, using [mockserver](https://www.mock-server.com/), you can set up an
 }
 ```
 
-Assuming this file has been created at `secrets/mock_server_config/expectations.json`, running the following command will allow to match any requests on path `/data` to return the response defined in the expectation file:
-`docker run -d --rm -v $(pwd)/secrets/mock_server_config:/config -p 8113:8113 --env MOCKSERVER_LOG_LEVEL=TRACE --env MOCKSERVER_SERVER_PORT=8113 --env MOCKSERVER_WATCH_INITIALIZATION_JSON=true --env MOCKSERVER_PERSISTED_EXPECTATIONS_PATH=/config/expectations.json --env MOCKSERVER_INITIALIZATION_JSON_PATH=/config/expectations.json mockserver/mockserver:5.15.0`
+Assuming this file has been created at `secrets/mock_server_config/expectations.json`, running the
+following command will allow to match any requests on path `/data` to return the response defined in
+the expectation file:
 
-HTTP requests to `localhost:8113/data` should now return the body defined in the expectations file. To test this, the implementer either has to change the code which defines the base URL for Python source or update the `url_base` from low-code. With the Connector Builder running in docker, you will have to use domain `host.docker.internal` instead of `localhost` as the requests are executed within docker.
+```bash
+docker run -d --rm -v $(pwd)/secrets/mock_server_config:/config -p 8113:8113 --env MOCKSERVER_LOG_LEVEL=TRACE --env MOCKSERVER_SERVER_PORT=8113 --env MOCKSERVER_WATCH_INITIALIZATION_JSON=true --env MOCKSERVER_PERSISTED_EXPECTATIONS_PATH=/config/expectations.json --env MOCKSERVER_INITIALIZATION_JSON_PATH=/config/expectations.json mockserver/mockserver:5.15.0
+```
+
+HTTP requests to `localhost:8113/data` should now return the body defined in the expectations file.
+To test this, the implementer either has to change the code which defines the base URL for Python
+source or update the `url_base` from low-code. With the Connector Builder running in docker, you
+will have to use domain `host.docker.internal` instead of `localhost` as the requests are executed
+within docker.
 
 #### Publishing a new version to PyPi
 
-1. Open a PR
-2. Once it is approved and **merged**, an Airbyte member must run the `Publish CDK Manually` workflow from master using `release-type=major|manor|patch` and setting the changelog message.
+Python CDK has a
+[GitHub workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
+that manages the CDK changelog, making a new release for `airbyte_cdk`, publishing it to PyPI, and
+then making a commit to update (and subsequently auto-release)
+[`source-declarative-manifest`](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-declarative-manifest)
+and Connector Builder (in the platform repository).
 
-## Coming Soon
+> [!Note]: The workflow will handle the `CHANGELOG.md` entry for you. You should not add changelog
+> lines in your PRs to the CDK itself.
 
-* Full OAuth 2.0 support \(including refresh token issuing flow via UI or CLI\)
-* Airbyte Java HTTP CDK
-* CDK for Async HTTP endpoints \(request-poll-wait style endpoints\)
-* CDK for other protocols
-* Don't see a feature you need? [Create an issue and let us know how we can help!](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement&template=feature-request.md&title=)
+> [!Warning]: The workflow bumps version on it's own, please don't change the CDK version in
+> `pyproject.toml` manually.
+
+1. You only trigger the release workflow once all the PRs that you want to be included are already
+   merged into the `master` branch.
+2. The
+   [`Publish CDK Manually`](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
+   workflow from master using `release-type=major|manor|patch` and setting the changelog message.
+3. When the workflow runs, it will commit a new version directly to master branch.
+4. The workflow will bump the version of `source-declarative-manifest` according to the
+   `release-type` of the CDK, then commit these changes back to master. The commit to master will
+   kick off a publish of the new version of `source-declarative-manifest`.
+5. The workflow will also add a pull request to `airbyte-platform-internal` repo to bump the
+   dependency in Connector Builder.

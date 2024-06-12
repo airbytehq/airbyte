@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from copy import deepcopy
 from typing import Any, List, Mapping
 from unittest.mock import call, patch
 
@@ -836,7 +837,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0}, {"AED": 1}],
-            [call({}, {}, None)],
+            [call({}, {})],
         ),
         (
             "test_read_manifest_with_added_fields",
@@ -905,7 +906,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
-            [call({}, {}, None)],
+            [call({}, {})],
         ),
         (
             "test_read_with_pagination_no_partitions",
@@ -979,7 +980,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0}, {"AED": 1}, {"USD": 2}],
-            [call({}, {}, None), call({}, {}, {"next_page_token": "next"})],
+            [call({}, {}), call({"next_page_token": "next"}, {"next_page_token": "next"})],
         ),
         (
             "test_no_pagination_with_partition_router",
@@ -1122,8 +1123,127 @@ def test_read_manifest_declarative_source(test_name, manifest, pages, expected_r
     _stream_name = "Rates"
     with patch.object(SimpleRetriever, "_fetch_next_page", side_effect=pages) as mock_retriever:
         output_data = [message.record.data for message in _run_read(manifest, _stream_name) if message.record]
-        assert expected_records == output_data
+        assert output_data == expected_records
         mock_retriever.assert_has_calls(expected_calls)
+
+
+def test_only_parent_streams_use_cache():
+    applications_stream = {
+        "type": "DeclarativeStream",
+        "$parameters": {"name": "applications", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+        "schema_loader": {
+            "name": "{{ parameters.stream_name }}",
+            "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+        },
+        "retriever": {
+            "paginator": {
+                "type": "DefaultPaginator",
+                "page_size": 10,
+                "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                "page_token_option": {"type": "RequestPath"},
+                "pagination_strategy": {
+                    "type": "CursorPagination",
+                    "cursor_value": "{{ headers['link']['next']['url'] }}",
+                    "stop_condition": "{{ 'next' not in headers['link'] }}",
+                    "page_size": 100,
+                },
+            },
+            "requester": {
+                "path": "applications",
+                "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+            },
+            "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+        },
+    }
+
+    manifest = {
+        "version": "0.29.3",
+        "definitions": {},
+        "streams": [
+            deepcopy(applications_stream),
+            {
+                "type": "DeclarativeStream",
+                "$parameters": {"name": "applications_interviews", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                        "page_token_option": {"type": "RequestPath"},
+                        "pagination_strategy": {
+                            "type": "CursorPagination",
+                            "cursor_value": "{{ headers['link']['next']['url'] }}",
+                            "stop_condition": "{{ 'next' not in headers['link'] }}",
+                            "page_size": 100,
+                        },
+                    },
+                    "requester": {
+                        "path": "applications_interviews",
+                        "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+                    },
+                    "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+                    "partition_router": {
+                        "parent_stream_configs": [
+                            {"parent_key": "id", "partition_field": "parent_id", "stream": deepcopy(applications_stream)}
+                        ],
+                        "type": "SubstreamPartitionRouter",
+                    },
+                },
+            },
+            {
+                "type": "DeclarativeStream",
+                "$parameters": {"name": "jobs", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                        "page_token_option": {"type": "RequestPath"},
+                        "pagination_strategy": {
+                            "type": "CursorPagination",
+                            "cursor_value": "{{ headers['link']['next']['url'] }}",
+                            "stop_condition": "{{ 'next' not in headers['link'] }}",
+                            "page_size": 100,
+                        },
+                    },
+                    "requester": {
+                        "path": "jobs",
+                        "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+                    },
+                    "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+                },
+            },
+        ],
+        "check": {"type": "CheckStream", "stream_names": ["applications"]},
+    }
+    source = ManifestDeclarativeSource(source_config=manifest)
+
+    streams = source.streams({})
+    assert len(streams) == 3
+
+    # Main stream with caching (parent for substream `applications_interviews`)
+    assert streams[0].name == "applications"
+    assert streams[0].retriever.requester.use_cache
+
+    # Substream
+    assert streams[1].name == "applications_interviews"
+    assert not streams[1].retriever.requester.use_cache
+
+    # Parent stream created for substream
+    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.name == "applications"
+    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.retriever.requester.use_cache
+
+    # Main stream without caching
+    assert streams[2].name == "jobs"
+    assert not streams[2].retriever.requester.use_cache
 
 
 def _run_read(manifest: Mapping[str, Any], stream_name: str) -> List[AirbyteMessage]:

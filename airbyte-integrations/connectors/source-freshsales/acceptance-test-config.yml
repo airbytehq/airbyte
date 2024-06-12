@@ -20,17 +20,13 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        ignored_fields:
-          open_deals:
-            - name: age
-              bypass_reason: "Frequently changed data"
-            - name: rotten_days
-              bypass_reason: "Frequently changed data"
-          won_deals:
-            - name: age
-              bypass_reason: "Frequently changed data"
-            - name: rotten_days
-              bypass_reason: "Frequently changed data"
+        empty_streams:
+          - name: "sales_accounts_filter"
+            bypass_reason: "users are not expected to use this stream, it is used as a parent stream of other streams in this connector"
+          - name: "deals_filter"
+            bypass_reason: "users are not expected to use this stream, it is used as a parent stream of other streams in this connector"
+          - name: "contacts_filters"
+            bypass_reason: "users are not expected to use this stream, it is used as a parent stream of other streams in this connector"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -2,27 +2,49 @@ name: Connector Ops CI - Metadata Service Deploy Orchestrator
 
 on:
   workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: "The deployment target for the metadata orchestrator (prod or dev)"
+        default: "dev"
   push:
     branches:
       - master
     paths:
-      - "airbyte-ci/connectors/metadata_service/orchestrator/**"
+      - "airbyte-ci/connectors/metadata_service/**"
 jobs:
   connector_metadata_service_deploy_orchestrator:
     name: Connector metadata service deploy orchestrator
-    runs-on: medium-runner
+    runs-on: tooling-publish-medium
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-      - name: Deploy the metadata orchestrator
-        id: metadata-orchestrator-deploy-orchestrator-pipeline
-        uses: ./.github/actions/run-dagger-pipeline
+      - name: Deploy the metadata orchestrator [On merge to master]
+        id: metadata-orchestrator-deploy-orchestrator-pipeline-prod
+        if: github.event_name == 'push'
+        uses: ./.github/actions/run-airbyte-ci
         with:
           subcommand: "metadata deploy orchestrator"
           context: "master"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
         env:
           DAGSTER_CLOUD_METADATA_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_METADATA_API_TOKEN }}
+          DAGSTER_CLOUD_DEPLOYMENT: "prod"
+      - name: Deploy the metadata orchestrator [On workflow]
+        id: metadata-orchestrator-deploy-orchestrator-pipeline-branch
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          subcommand: "metadata deploy orchestrator"
+          context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+        env:
+          DAGSTER_CLOUD_METADATA_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_METADATA_API_TOKEN }}
+          DAGSTER_CLOUD_DEPLOYMENT: ${{ inputs.deployment_target }}

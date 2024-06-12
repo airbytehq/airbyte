@@ -6,58 +6,82 @@
   "additionalProperties": true,
   "properties": {
     "approval-date": {
-      "type": ["null", "string"]
+      "description": "The date and time when the reimbursement was approved.",
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "reimbursement-id": {
+      "description": "The unique identifier for the reimbursement record.",
       "type": ["null", "string"]
     },
     "case-id": {
+      "description": "The case ID associated with the reimbursement.",
       "type": ["null", "string"]
     },
     "amazon-order-id": {
+      "description": "The unique identifier for the Amazon order related to the reimbursement.",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason provided for the reimbursement.",
       "type": ["null", "string"]
     },
     "sku": {
+      "description": "The Stock Keeping Unit (SKU) of the product.",
       "type": ["null", "string"]
     },
     "fnsku": {
+      "description": "The Fulfillment Network SKU of the product.",
       "type": ["null", "string"]
     },
     "asin": {
+      "description": "The Amazon Standard Identification Number (ASIN) of the product.",
       "type": ["null", "string"]
     },
     "product-name": {
+      "description": "The name of the product for which the reimbursement was issued.",
       "type": ["null", "string"]
     },
     "condition": {
+      "description": "The condition of the product for which the reimbursement was issued.",
       "type": ["null", "string"]
     },
     "currency-unit": {
+      "description": "The currency unit used for the reimbursement amount.",
       "type": ["null", "string"]
     },
     "amount-per-unit": {
+      "description": "The amount reimbursed per unit of the product.",
       "type": ["null", "string"]
     },
     "quantity-reimbursed-cash": {
+      "description": "The quantity of the product reimbursed in cash.",
       "type": ["null", "string"]
     },
     "amount-total": {
+      "description": "The total amount reimbursed for the product.",
       "type": ["null", "string"]
     },
     "quantity-reimbursed-inventory": {
+      "description": "The quantity of the product added back to inventory as reimbursement.",
       "type": ["null", "string"]
     },
     "quantity-reimbursed-total": {
+      "description": "The total quantity of the product reimbursed.",
       "type": ["null", "string"]
     },
     "original-reimbursement-id": {
+      "description": "The original reimbursement ID associated with the record.",
       "type": ["null", "string"]
     },
     "original-reimbursement-type": {
+      "description": "The type of original reimbursement.",
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data represented in the record.",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

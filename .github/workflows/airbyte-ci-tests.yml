@@ -1,4 +1,4 @@
-name: Connector Ops CI - Pipeline Unit Test
+name: Internal Poetry packages CI
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -6,113 +6,103 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      airbyte_ci_subcommand:
+        description: "Subcommand to pass to the 'airbyte-ci test' command"
+        default: "--poetry-package-path=airbyte-ci/connectors/pipelines"
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
 jobs:
-  run-airbyte-ci-tests:
-    name: Run Airbyte CI tests
-    runs-on: "conn-prod-xlarge-runner"
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      internal_poetry_packages: ${{ steps.changes.outputs.internal_poetry_packages }}
+
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      - id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            # This list is duplicated in `pipelines/airbyte_ci/test/__init__.py`
+            internal_poetry_packages:
+            - airbyte-ci/connectors/pipelines/**
+            - airbyte-ci/connectors/base_images/**
+            - airbyte-ci/connectors/common_utils/**
+            - airbyte-ci/connectors/connector_ops/**
+            - airbyte-ci/connectors/connectors_qa/**
+            - airbyte-ci/connectors/ci_credentials/**
+            - airbyte-ci/connectors/metadata_service/lib/**
+            - airbyte-ci/connectors/metadata_service/orchestrator/**
+            - airbyte-cdk/python/**
+            - airbyte-integrations/bases/connector-acceptance-test/**
+
+  run-tests:
+    needs: changes
+    # We only run the Internal Poetry packages CI job if there are changes to the packages on a non-forked PR
+    if: needs.changes.outputs.internal_poetry_packages == 'true' && github.event.pull_request.head.repo.fork != true
+    name: Internal Poetry packages CI
+    runs-on: tooling-test-large
+    permissions:
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
 
-      # IMPORTANT! This is nessesary to make sure that a status is reported on the PR
-      # even if the workflow is skipped. If we used github actions filters, the workflow
-      # would not be reported as skipped, but instead would be forever pending.
-      #
-      # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
-      #
-      # Also it gets worse
-      #
-      # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
-      # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
-      - name: Get changed files
-        uses: tj-actions/changed-files@v39
-        id: changes
-        with:
-          files_yaml: |
-            ops:
-              - 'airbyte-ci/connectors/connector_ops/**'
-              - '!**/*.md'
-            base_images:
-              - 'airbyte-ci/connectors/connector_ops/**'
-              - 'airbyte-ci/connectors/base_images/**'
-              - '!**/*.md'
-            pipelines:
-              - 'airbyte-ci/connectors/connector_ops/**'
-              - 'airbyte-ci/connectors/base_images/**'
-              - 'airbyte-ci/connectors/pipelines/**'
-              - '!**/*.md'
-            metadata_lib:
-              - 'airbyte-ci/connectors/metadata/lib/**'
-              - '!**/*.md'
-            metadata_orchestrator:
-              - 'airbyte-ci/connectors/metadata/lib/**'
-              - 'airbyte-ci/connectors/metadata/orchestrator/**'
-              - '!**/*.md'
+      - name: Extract branch name [WORKFLOW DISPATCH]
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Fetch last commit id from remote branch [PULL REQUESTS]
+        if: github.event_name == 'pull_request'
+        id: fetch_last_commit_id_pr
+        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        id: fetch_last_commit_id_wd
+        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
 
-      - name: Run airbyte-ci/connectors/connector_ops tests
-        if: steps.changes.outputs.ops_any_changed == 'true'
-        id: run-airbyte-ci-connectors-connector-ops-tests
-        uses: ./.github/actions/run-dagger-pipeline
+      - name: Run poe tasks for modified internal packages [PULL REQUEST]
+        if: github.event_name == 'pull_request'
+        id: run-airbyte-ci-test-pr
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/connector_ops"
+          subcommand: "test --modified"
 
-      - name: Run airbyte-ci/connectors/pipelines tests
-        id: run-airbyte-ci-connectors-pipelines-tests
-        if: steps.changes.outputs.pipelines_any_changed == 'true'
-        uses: ./.github/actions/run-dagger-pipeline
+      - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
+        id: run-airbyte-ci-test-workflow-dispatch
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "pull_request"
+          context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          git_branch: ${{ steps.extract_branch.outputs.branch }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/pipelines"
-
-      - name: Run airbyte-ci/connectors/base_images tests
-        id: run-airbyte-ci-connectors-base-images-tests
-        if: steps.changes.outputs.base_images_any_changed == 'true'
-        uses: ./.github/actions/run-dagger-pipeline
-        with:
-          context: "pull_request"
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "test airbyte-ci/connectors/base_images"
-
-      - name: Run test pipeline for the metadata lib
-        id: metadata_lib-test-pipeline
-        if: steps.changes.outputs.metadata_lib_any_changed == 'true'
-        uses: ./.github/actions/run-dagger-pipeline
-        with:
-          subcommand: "test airbyte-ci/connectors/metadata_service/lib/"
-          context: "pull_request"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      - name: Run test for the metadata orchestrator
-        id: metadata_orchestrator-test-pipeline
-        if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
-        uses: ./.github/actions/run-dagger-pipeline
-        with:
-          subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/"
-          context: "pull_request"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          subcommand: "test ${{ inputs.airbyte_ci_subcommand}}"

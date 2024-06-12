@@ -28,19 +28,17 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
 
-  protected static JsonNode config;
+  private JsonNode config;
 
   public abstract Path getConfigFilePath();
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) {
     config = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @Override
   protected String getImageName() {
@@ -65,7 +63,7 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME),
+                String.format("%s", STREAM_NAME),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -74,7 +72,8 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME2),
+                String.format("%s", STREAM_NAME2),
+                config.get(JdbcUtils.DATABASE_KEY).asText(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
@@ -83,11 +82,6 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

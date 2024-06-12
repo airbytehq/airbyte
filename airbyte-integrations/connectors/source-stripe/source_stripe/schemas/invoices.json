@@ -2,28 +2,36 @@
   "type": ["null", "object"],
   "properties": {
     "created": {
+      "description": "The timestamp when the invoice was created",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp for when the invoice was last updated",
       "type": ["null", "integer"]
     },
     "next_payment_attempt": {
+      "description": "Timestamp for the next payment attempt",
       "type": ["null", "number"]
     },
     "tax": {
+      "description": "The total tax amount on the invoice",
       "type": ["null", "integer"]
     },
     "metadata": {
+      "description": "Additional metadata associated with the invoice",
       "type": ["null", "object"],
       "properties": {}
     },
     "charge": {
+      "description": "The charge associated with the invoice",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the invoice",
       "type": ["null", "string"]
     },
     "customer_tax_ids": {
+      "description": "The tax IDs associated with the customer",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -39,57 +47,74 @@
       }
     },
     "receipt_number": {
+      "description": "The receipt number associated with the invoice",
       "type": ["null", "string"]
     },
     "attempt_count": {
+      "description": "The number of attempts made to pay the invoice",
       "type": ["null", "integer"]
     },
     "payment": {
+      "description": "The payment details associated with the invoice",
       "type": ["null", "string"]
     },
     "amount_paid": {
+      "description": "The total amount paid on the invoice",
       "type": ["null", "integer"]
     },
     "due_date": {
+      "description": "The due date for the invoice payment",
       "type": ["null", "number"]
     },
     "id": {
+      "description": "The unique identifier of the invoice",
       "type": ["null", "string"]
     },
     "webhooks_delivered_at": {
+      "description": "Timestamp for when webhooks were delivered related to the invoice",
       "type": ["null", "number"]
     },
     "statement_descriptor": {
+      "description": "The descriptor that appears on the customer's statement",
       "type": ["null", "string"]
     },
     "hosted_invoice_url": {
+      "description": "The URL for the hosted invoice page",
       "type": ["null", "string"]
     },
     "period_end": {
+      "description": "The end date of the billing period",
       "type": ["null", "number"]
     },
     "amount_remaining": {
+      "description": "The remaining amount to be paid on the invoice",
       "type": ["null", "integer"]
     },
     "tax_percent": {
+      "description": "The tax percentage applied to the invoice",
       "type": ["null", "number"]
     },
     "billing": {
+      "description": "The billing details associated with the invoice",
       "type": ["null", "string"]
     },
     "auto_advance": {
+      "description": "Flag indicating if the invoice will be automatically advanced to the next status",
       "type": ["null", "boolean"]
     },
     "paid": {
+      "description": "Whether the invoice has been paid",
       "type": ["null", "boolean"]
     },
     "discounts": {
+      "description": "Any discounts applied to the invoice",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "discount": {
+      "description": "Details about any discounts applied to the invoice",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -176,66 +201,87 @@
       }
     },
     "number": {
+      "description": "The invoice number",
       "type": ["null", "string"]
     },
     "billing_reason": {
+      "description": "The reason for the billing of the invoice",
       "type": ["null", "string"]
     },
     "ending_balance": {
+      "description": "The balance remaining at the end of the billing period",
       "type": ["null", "integer"]
     },
     "livemode": {
+      "description": "Whether the data is in live mode",
       "type": ["null", "boolean"]
     },
     "period_start": {
+      "description": "The start date of the billing period",
       "type": ["null", "number"]
     },
     "attempted": {
+      "description": "Whether the invoice has been attempted to be paid",
       "type": ["null", "boolean"]
     },
     "closed": {
+      "description": "Whether the invoice has been closed",
       "type": ["null", "boolean"]
     },
     "invoice_pdf": {
+      "description": "The URL for the PDF version of the invoice",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "The customer associated with the invoice",
       "type": ["null", "string"]
     },
     "subtotal": {
+      "description": "The subtotal amount on the invoice",
       "type": ["null", "integer"]
     },
     "application_fee": {
+      "description": "The application fee amount",
       "type": ["null", "integer"]
     },
     "lines": {
+      "description": "Details of individual line items included in the invoice",
       "type": ["null", "object"]
     },
     "forgiven": {
+      "description": "Whether the invoice has been forgiven",
       "type": ["null", "boolean"]
     },
     "object": {
+      "description": "Object type, should be 'invoice'",
       "type": ["null", "string"]
     },
     "starting_balance": {
+      "description": "The starting balance at the beginning of the billing period",
       "type": ["null", "integer"]
     },
     "amount_due": {
+      "description": "The total amount due on the invoice",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency used for the invoice",
       "type": ["null", "string"]
     },
     "total": {
+      "description": "The total amount on the invoice, including tax",
       "type": ["null", "integer"]
     },
     "statement_description": {
+      "description": "The description that appears on the customer's statement",
       "type": ["null", "string"]
     },
     "subscription": {
+      "description": "Details of any subscription associated with the invoice",
       "type": ["null", "string"]
     },
     "subscription_details": {
+      "description": "Details about the subscription associated with the invoice",
       "type": ["null", "object"],
       "properties": {
         "metadata": {
@@ -244,9 +290,11 @@
       }
     },
     "status": {
+      "description": "The current status of the invoice",
       "type": ["null", "string"]
     },
     "status_transitions": {
+      "description": "Timestamps for status transitions of the invoice",
       "type": "object",
       "properties": {
         "finalized_at": {
@@ -264,12 +312,15 @@
       }
     },
     "post_payment_credit_notes_amount": {
+      "description": "The amount credited post payment",
       "type": ["null", "integer"]
     },
     "paid_out_of_band": {
+      "description": "Whether the payment was made outside the platform",
       "type": ["null", "boolean"]
     },
     "total_discount_amounts": {
+      "description": "Total amounts of discounts applied to the invoice",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -284,9 +335,11 @@
       }
     },
     "customer_name": {
+      "description": "The name of the customer",
       "type": ["null", "string"]
     },
     "shipping_cost": {
+      "description": "The cost details associated with shipping",
       "type": ["null", "object"],
       "properties": {
         "amount_subtotal": {
@@ -310,6 +363,7 @@
       }
     },
     "custom_fields": {
+      "description": "Custom fields associated with the invoice",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -324,6 +378,7 @@
       }
     },
     "transfer_data": {
+      "description": "Details about transfer of funds related to the invoice",
       "type": ["null", "object"],
       "properties": {
         "amount": {
@@ -335,9 +390,11 @@
       }
     },
     "application_fee_amount": {
+      "description": "The fee amount to be paid to the application",
       "type": ["null", "integer"]
     },
     "customer_shipping": {
+      "description": "The shipping details of the customer",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -373,12 +430,15 @@
       }
     },
     "application": {
+      "description": "The application associated with the invoice",
       "type": ["null", "string"]
     },
     "amount_shipping": {
+      "description": "The amount charged for shipping",
       "type": ["null", "integer"]
     },
     "from_invoice": {
+      "description": "Details about the previous invoice",
       "type": ["null", "object"],
       "properties": {
         "actions": {
@@ -390,9 +450,11 @@
       }
     },
     "customer_tax_exempt": {
+      "description": "Whether the customer is tax exempt",
       "type": ["null", "string"]
     },
     "total_tax_amounts": {
+      "description": "Details about total tax amounts applied to the invoice",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -416,12 +478,15 @@
       }
     },
     "footer": {
+      "description": "The footer content of the invoice",
       "type": ["null", "string"]
     },
     "test_clock": {
+      "description": "Timestamp for testing purposes",
       "type": ["null", "string"]
     },
     "automatic_tax": {
+      "description": "Details about automatic tax calculation",
       "type": ["null", "object"],
       "properties": {
         "enabled": {
@@ -433,6 +498,7 @@
       }
     },
     "payment_settings": {
+      "description": "Settings related to payment on the invoice",
       "type": ["null", "object"],
       "properties": {
         "default_mandate": {
@@ -450,15 +516,19 @@
       }
     },
     "default_source": {
+      "description": "The default payment source for the invoice",
       "type": ["null", "string"]
     },
     "payment_intent": {
+      "description": "The payment intent associated with the invoice",
       "type": ["null", "string"]
     },
     "default_payment_method": {
+      "description": "The default payment method for the invoice",
       "type": ["null", "string"]
     },
     "shipping_details": {
+      "description": "The details of shipping associated with the invoice",
       "type": ["null", "object"],
       "properties": {
         "address": {
@@ -493,24 +563,27 @@
       }
     },
     "collection_method": {
+      "description": "The method used for collecting payment on the invoice",
       "type": ["null", "string"]
     },
     "effective_at": {
+      "description": "Timestamp for when the invoice becomes effective",
       "type": ["null", "integer"]
     },
     "default_tax_rates": {
-      "type": ["null", "array"],
-      "items": {
-        "$ref": "tax_rates.json"
-      }
+      "description": "The default tax rates applied to the invoice",
+      "$ref": "tax_rates.json"
     },
     "total_excluding_tax": {
+      "description": "The total amount excluding tax",
       "type": ["null", "integer"]
     },
     "subtotal_excluding_tax": {
+      "description": "The subtotal amount excluding tax",
       "type": ["null", "integer"]
     },
     "last_finalization_error": {
+      "description": "Details about the last finalization error associated with the invoice",
       "type": ["null", "object"],
       "properties": {
         "type": {
@@ -533,10 +606,21 @@
         }
       }
     },
+    "issuer": {
+      "description": "Details about the issuer of the invoice",
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "latest_revision": {
+      "description": "The latest revision number of the invoice",
       "type": ["null", "string"]
     },
     "rendering_options": {
+      "description": "Rendering options for the invoice",
       "type": ["null", "object"],
       "properties": {
         "amount_tax_display": {
@@ -545,27 +629,34 @@
       }
     },
     "quote": {
+      "description": "The associated quote for the invoice",
       "type": ["null", "string"]
     },
     "pre_payment_credit_notes_amount": {
+      "description": "The amount credited pre payment",
       "type": ["null", "integer"]
     },
     "customer_phone": {
+      "description": "The phone number of the customer",
       "type": ["null", "string"]
     },
     "on_behalf_of": {
+      "description": "The account on behalf of which the invoice is raised",
       "type": ["null", "string"]
     },
     "account_tax_ids": {
+      "description": "The tax IDs associated with the account",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "customer_email": {
+      "description": "The email address of the customer",
       "type": ["null", "string"]
     },
     "customer_address": {
+      "description": "The address details of the customer",
       "type": ["null", "object"],
       "properties": {
         "city": {
@@ -589,15 +680,19 @@
       }
     },
     "account_name": {
+      "description": "The name of the account",
       "type": ["null", "string"]
     },
     "account_country": {
+      "description": "The country associated with the account",
       "type": ["null", "string"]
     },
     "is_deleted": {
+      "description": "Whether the invoice has been deleted",
       "type": ["null", "boolean"]
     },
     "rendering": {
+      "description": "Rendering details for the invoice",
       "type": ["object", "null"],
       "properties": {
         "amount_tax_display": {

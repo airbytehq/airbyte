@@ -4,173 +4,221 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique ID of the subscription schedule.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "The object type, which is 'subscription_schedule'.",
       "type": ["null", "string"]
     },
     "application": {
+      "description": "The ID of the application associated with the subscription schedule.",
       "type": ["null", "string"]
     },
     "canceled_at": {
+      "description": "The date and time when the subscription schedule was canceled.",
       "type": ["null", "string"]
     },
     "completed_at": {
+      "description": "The date and time when the subscription schedule was completed.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The date and time when the subscription schedule was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The date and time when the subscription schedule was last updated.",
       "type": ["null", "integer"]
     },
     "current_phase": {
+      "description": "Information about the current phase of the subscription schedule.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "end_date": {
+          "description": "The end date of the current phase.",
           "type": ["null", "integer"]
         },
         "start_date": {
+          "description": "The start date of the current phase.",
           "type": ["null", "integer"]
         }
       }
     },
     "customer": {
+      "description": "The ID of the customer associated with the subscription schedule.",
       "type": ["null", "string"]
     },
     "default_settings": {
+      "description": "Default settings for the subscription schedule.",
       "type": ["null", "object"],
       "properties": {
         "application_fee_percent": {
+          "description": "The application fee percent.",
           "type": ["null", "string"]
         },
         "automatic_tax": {
+          "description": "Automatic tax settings.",
           "type": ["null", "object"],
           "properties": {
             "enabled": {
+              "description": "Indicates if automatic tax calculation is enabled.",
               "type": ["null", "boolean"]
             }
           }
         },
         "billing_cycle_anchor": {
+          "description": "The billing cycle anchor date.",
           "type": ["null", "string"]
         },
         "billing_thresholds": {
+          "description": "Billing thresholds for the subscription schedule.",
           "type": ["null", "string"]
         },
         "collection_method": {
+          "description": "The collection method used for payments.",
           "type": ["null", "string"]
         },
         "default_payment_method": {
+          "description": "The ID of the default payment method.",
           "type": ["null", "string"]
         },
         "description": {
+          "description": "A description for the subscription schedule.",
           "type": ["null", "string"]
         },
         "invoice_settings": {
+          "description": "Settings for invoices.",
           "type": ["null", "string"]
         },
         "on_behalf_of": {
+          "description": "The ID of the account on whose behalf the subscription schedule operates.",
           "type": ["null", "string"]
         },
         "transfer_data": {
+          "description": "Information about transfers linked to the subscription schedule.",
           "type": ["null", "string"]
         }
       }
     },
     "end_behavior": {
+      "description": "The behavior after the subscription schedule ends.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates if the subscription schedule is in live mode.",
       "type": ["null", "boolean"]
     },
     "metadata": {
+      "description": "Additional metadata related to the subscription schedule.",
       "type": ["null", "object"]
     },
     "phases": {
+      "description": "Information about the phases within the subscription schedule.",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of each phase.",
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
           "add_invoice_items": {
+            "description": "Additional invoice items to add in this phase.",
             "type": ["null", "array"],
             "items": {
+              "description": "Details of each item to be added to the invoice.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "price": {
+                  "description": "The ID of the price that should be added to the invoice.",
                   "type": ["null", "string"]
                 },
                 "quantity": {
+                  "description": "The quantity of the item to be added.",
                   "type": ["null", "string"]
                 },
                 "tax_rates": {
+                  "description": "Tax rates applied to the item.",
                   "$ref": "tax_rates.json"
                 }
               }
             }
           },
           "application_fee_percent": {
+            "description": "The application fee percent for this phase.",
             "type": ["null", "string"]
           },
           "billing_cycle_anchor": {
+            "description": "The billing cycle anchor date for this phase.",
             "type": ["null", "string"]
           },
           "billing_thresholds": {
+            "description": "Billing thresholds for this phase.",
             "type": ["null", "string"]
           },
           "collection_method": {
+            "description": "The collection method used for payments in this phase.",
             "type": ["null", "string"]
           },
           "coupon": {
+            "description": "The coupon code applied in this phase.",
             "type": ["null", "string"]
           },
           "currency": {
+            "description": "The currency used for payments in this phase.",
             "type": ["null", "string"]
           },
           "default_payment_method": {
+            "description": "The default payment method for this phase.",
             "type": ["null", "string"]
           },
           "default_tax_rates": {
-            "type": ["null", "array"],
-            "items": {
-              "type": ["null", "object"],
-              "additionalProperties": true
-            }
+            "description": "Default tax rates applied in this phase.",
+            "$ref": "tax_rates.json"
           },
           "description": {
+            "description": "A description for this phase.",
             "type": ["null", "string"]
           },
           "end_date": {
+            "description": "The end date of this phase.",
             "type": ["null", "integer"]
           },
           "invoice_settings": {
+            "description": "Invoice settings specific to this phase.",
             "type": ["null", "string"]
           },
           "items": {
+            "description": "Invoice items included in this phase.",
             "type": ["null", "array"],
             "items": {
+              "description": "Details of each item included in the invoice.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "billing_thresholds": {
+                  "description": "Billing thresholds specific to this item.",
                   "type": ["null", "string"]
                 },
                 "metadata": {
+                  "description": "Additional metadata related to this item.",
                   "type": ["null", "object"],
                   "additionalProperties": true
                 },
                 "price": {
+                  "description": "The ID of the price for this item.",
                   "type": ["null", "string"]
                 },
                 "quantity": {
+                  "description": "The quantity of this item.",
                   "type": ["null", "integer"]
                 },
                 "tax_rates": {
+                  "description": "Tax rates applied to this item.",
                   "type": ["null", "array"],
                   "items": {
+                    "description": "Details of each tax rate applied.",
                     "type": ["null", "object"],
                     "additionalProperties": true
                   }
@@ -179,43 +227,55 @@
             }
           },
           "metadata": {
+            "description": "Additional metadata related to this phase.",
             "type": ["null", "object"],
             "additionalProperties": true
           },
           "on_behalf_of": {
+            "description": "The ID of the account on whose behalf this phase operates.",
             "type": ["null", "string"]
           },
           "proration_behavior": {
+            "description": "The proration behavior for this phase.",
             "type": ["null", "string"]
           },
           "start_date": {
+            "description": "The start date of this phase.",
             "type": ["null", "integer"]
           },
           "transfer_data": {
+            "description": "Information about transfers linked to this phase.",
             "type": ["null", "string"]
           },
           "trial_end": {
+            "description": "The trial end date for this phase.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "released_at": {
+      "description": "The date and time when the subscription schedule was released.",
       "type": ["null", "string"]
     },
     "released_subscription": {
+      "description": "The released subscription that resulted from the schedule.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the subscription schedule.",
       "type": ["null", "string"]
     },
     "subscription": {
+      "description": "The subscription ID associated with the schedule.",
       "type": ["null", "string"]
     },
     "test_clock": {
+      "description": "Indicates if the test clock is active.",
       "type": ["null", "string"]
     },
     "renewal_interval": {
+      "description": "The renewal interval for the subscription schedule.",
       "type": ["null", "string"]
     }
   }

@@ -30,12 +30,12 @@ import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -135,12 +135,6 @@ class BigQueryDestinationTest {
 
   private AmazonS3 s3Client;
 
-  /*
-   * TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
-   * #partitionIfUnpartitioned then recombine Base Provider. The reason for breaking this method into
-   * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS
-   * Staging
-   */
   private Stream<Arguments> successTestConfigProviderBase() {
     return Stream.of(
         Arguments.of("config"),
@@ -186,7 +180,7 @@ class BigQueryDestinationTest {
     // all successful configs use the same project ID
     projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
-    // configWithProjectId - config that uses project:dataset notation for datasetId
+    // configWithProjectId - config that uses project:dataset notation for rawNamespace
     final String dataSetWithProjectId = String.format("%s:%s", projectId, datasetId);
     configWithProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, dataSetWithProjectId, stagingPath);
 
@@ -425,9 +419,9 @@ class BigQueryDestinationTest {
     initBigQuery(config);
     final StreamId streamId =
         new BigQuerySqlGenerator(projectId, null).buildStreamId(datasetId, USERS_STREAM_NAME, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
-    final Dataset dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, streamId.rawNamespace());
-    createUnpartitionedTable(bigquery, dataset, streamId.rawName());
-    assertFalse(isTablePartitioned(bigquery, dataset, streamId.rawName()));
+    final Dataset dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, streamId.getRawNamespace());
+    createUnpartitionedTable(bigquery, dataset, streamId.getRawName());
+    assertFalse(isTablePartitioned(bigquery, dataset, streamId.getRawName()));
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
@@ -454,7 +448,7 @@ class BigQueryDestinationTest {
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         .collect(Collectors.toList()));
-    assertTrue(isTablePartitioned(bigquery, dataset, streamId.rawName()));
+    assertTrue(isTablePartitioned(bigquery, dataset, streamId.getRawName()));
   }
 
   private void createUnpartitionedTable(final BigQuery bigquery, final Dataset dataset, final String tableName) {

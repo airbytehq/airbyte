@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.MssqlSource.IS_COMPRESSED;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
 
@@ -32,14 +33,19 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
+  public boolean isCdcCheckpointEnabled() {
+    return true;
+  }
+
+  @Override
   public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MSSQL_CDC_OFFSET, offset);
-    state.put(MSSQL_DB_HISTORY, dbHistory.schema());
+    state.put(MSSQL_DB_HISTORY, dbHistory.getSchema());
+    state.put(IS_COMPRESSED, dbHistory.isCompressed());
 
     final JsonNode asJson = Jsons.jsonNode(state);
-
-    LOGGER.info("debezium state: {}", asJson);
+    LOGGER.info("debezium state offset: {}", Jsons.jsonNode(offset));
 
     final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
@@ -53,7 +59,18 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
 
   @Override
   public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
-    throw new RuntimeException("Snapshot of individual tables is not implemented in MSSQL");
+    LOGGER.info("Snapshot of new tables is complete, saving state");
+    /*
+     * Namespace pair is ignored by global state manager, but is needed for satisfy the API contract.
+     * Therefore, provide an empty optional.
+     */
+    final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
+    return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
+  }
+
+  @Override
+  public boolean compressSchemaHistoryForState() {
+    return true;
   }
 
 }

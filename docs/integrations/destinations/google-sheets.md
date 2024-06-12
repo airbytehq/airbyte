@@ -1,10 +1,10 @@
 # Google Sheets
 
-The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance. 
+The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance.
 
 :::warning
 
-Google Sheets imposes rate limits and hard limits on the amount of data it can receive, which results in sync failure. Only use Google Sheets as a destination for small, non-production use cases,  as it is not designed for handling large-scale data operations.
+Google Sheets imposes rate limits and hard limits on the amount of data it can receive, which results in sync failure. Only use Google Sheets as a destination for small, non-production use cases, as it is not designed for handling large-scale data operations.
 
 Read more about the [limitations](#limitations) of using Google Sheets below.
 
@@ -29,6 +29,7 @@ To create a Google account, visit [Google](https://support.google.com/accounts/a
 ## Step 2: Set up the Google Sheets destination connector in Airbyte
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. Select **Google Sheets** from the Source type dropdown and enter a name for this connector.
@@ -38,18 +39,25 @@ To create a Google account, visit [Google](https://support.google.com/accounts/a
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
- Authentication to Google Sheets is only available using OAuth for authentication. 
- 
- 1. Select **Google Sheets** from the Source type dropdown and enter a name for this connector.
-2. Follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. You will need to grant the scopes described in the [Google Sheets API](https://developers.google.com/identity/protocols/oauth2/scopes#sheets). 
-3. Copy your Client ID, Client secret, and Refresh Token from the previous step. 
-4. Copy the Google Sheet link to **Spreadsheet Link**
+
+Authentication to Google Sheets is only available using OAuth for authentication.
+
+1. Create a new [Google Cloud project](https://console.cloud.google.com/projectcreate).
+2. Enable the [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com).
+3. Create a new [OAuth client ID](https://console.cloud.google.com/apis/credentials/oauthclient). Select `Web application` as the Application type, give it a `name` and add `https://developers.google.com/oauthplayground` as an Authorized redirect URI.
+4. Add a `Client Secret` (Add secret), and take note of both the `Client Secret` and `Client ID`.
+5. Go to [Google OAuth Playground](https://developers.google.com/oauthplayground/)
+6. Click the cog in the top-right corner, select `Use your own OAuth credentials` and enter the `OAuth Client ID` and `OAuth Client secret` from the previous step.
+7. In the left sidebar, find and select `Google Sheets API v4`, then choose the `https://www.googleapis.com/auth/spreadsheets` scope. Click `Authorize APIs`.
+8. In **step 2**, click `Exchange authorization code for tokens`. Take note of the `Refresh token`.
+9. Set up a new destination in Airbyte, select `Google Sheets` and enter the `Client ID`, `Client Secret`, `Refresh Token` and `Spreadsheet Link` from the previous steps.
 <!-- /env:oss -->
 
 ### Output schema
 
-Each worksheet in the selected spreadsheet will be the output as a separate source-connector stream. 
+Each worksheet in the selected spreadsheet will be the output as a separate source-connector stream.
 
 The output columns are re-ordered in alphabetical order. The output columns should **not** be reordered manually after the sync, as this could cause future syncs to fail.
 
@@ -142,12 +150,20 @@ EXAMPLE:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                        |
-|---------|------------|----------------------------------------------------------|------------------------------------------------|
-| 0.2.3   | 2023-09-25 | [30748](https://github.com/airbytehq/airbyte/pull/30748) | Performance testing - include socat binary in docker image |
-| 0.2.2   | 2023-07-06 | [28035](https://github.com/airbytehq/airbyte/pull/28035) | Migrate from authSpecification to advancedAuth |
-| 0.2.1   | 2023-06-26 | [27782](https://github.com/airbytehq/airbyte/pull/27782) | Only allow HTTPS urls                          |
-| 0.2.0   | 2023-06-26 | [27780](https://github.com/airbytehq/airbyte/pull/27780) | License Update: Elv2                           |
-| 0.1.2   | 2022-10-31 | [18729](https://github.com/airbytehq/airbyte/pull/18729) | Fix empty headers list                         |
-| 0.1.1   | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved            |
-| 0.1.0   | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release                                |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                    |
+| ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.2.6 | 2024-06-04 | [39011](https://github.com/airbytehq/airbyte/pull/39011) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.5 | 2024-05-22 | [38516](https://github.com/airbytehq/airbyte/pull/38516) | [autopull] base image + poetry + up_to_date |
+| 0.2.4 | 2024-05-21 | [38516](https://github.com/airbytehq/airbyte/pull/38516) | [autopull] base image + poetry + up_to_date |
+| 0.2.3 | 2023-09-25 | [30748](https://github.com/airbytehq/airbyte/pull/30748) | Performance testing - include socat binary in docker image |
+| 0.2.2 | 2023-07-06 | [28035](https://github.com/airbytehq/airbyte/pull/28035) | Migrate from authSpecification to advancedAuth |
+| 0.2.1 | 2023-06-26 | [27782](https://github.com/airbytehq/airbyte/pull/27782) | Only allow HTTPS urls |
+| 0.2.0 | 2023-06-26 | [27780](https://github.com/airbytehq/airbyte/pull/27780) | License Update: Elv2 |
+| 0.1.2 | 2022-10-31 | [18729](https://github.com/airbytehq/airbyte/pull/18729) | Fix empty headers list |
+| 0.1.1 | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved |
+| 0.1.0 | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release |
+
+</details>

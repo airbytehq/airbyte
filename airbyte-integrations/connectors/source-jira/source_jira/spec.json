@@ -82,12 +82,22 @@
         "description": "Select fields to Expand the `Issues` stream when replicating with: ",
         "default": []
       },
+      "lookback_window_minutes": {
+        "title": "Lookback window",
+        "description": "When set to N, the connector will always refresh resources created within the past N minutes. By default, updated objects that are not newly created are not incrementally synced.",
+        "examples": [60],
+        "default": 0,
+        "minimum": 0,
+        "maximum": 576000,
+        "type": "integer",
+        "order": 5
+      },
       "enable_experimental_streams": {
         "type": "boolean",
         "title": "Enable Experimental Streams",
         "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables for more info.",
         "default": false,
-        "order": 5
+        "order": 6
       }
     }
   }

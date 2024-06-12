@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: ca8f6566-e555-4b40-943a-545bf123117a
-  dockerImageTag: 0.4.4
+  dockerImageTag: 0.4.6
   dockerRepository: airbyte/destination-gcs
   githubIssueLabel: destination-gcs
   icon: googlecloudstorage.svg
@@ -27,4 +27,17 @@ data:
     sl: 100
     ql: 300
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-GCS_NO_MULTIPART_ROLE_CREDS
+          fileName: insufficient_roles_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-GCS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

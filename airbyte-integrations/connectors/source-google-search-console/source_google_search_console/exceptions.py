@@ -14,13 +14,15 @@ class InvalidSiteURLValidationError(Exception):
 
 class UnauthorizedOauthError(Exception):
     def __init__(self):
-        message = "Unable to connect with privided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials."
+        message = "Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials."
         super().__init__(message)
 
 
 class UnauthorizedServiceAccountError(Exception):
     def __init__(self):
-        message = "Unable to connect with privided Service Account credentials. Make sure the `sevice account crdentials` povided is valid."
+        message = (
+            "Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid."
+        )
         super().__init__(message)
 
 

@@ -33,7 +33,7 @@
       "type": ["null", "string"]
     },
     "aifeatures": {
-      "type": ["null", "string"]
+      "type": ["null", "object"]
     },
     "allEmailCampaignIds": {
       "type": ["null", "array"],
@@ -117,42 +117,55 @@
       "type": ["null", "string"]
     },
     "emailbodyPlaintext": {
+      "description": "Plain text version of the email body",
       "type": ["null", "string"]
     },
     "feedbackEmailCategory": {
+      "description": "Category for feedback related to the email",
       "type": ["null", "string"]
     },
     "feedbackSurveyId": {
+      "description": "ID of the feedback survey linked to the email",
       "type": ["null", "integer"]
     },
     "folderId": {
+      "description": "ID of the folder where the email is stored",
       "type": ["null", "integer"]
     },
     "freezeDate": {
+      "description": "Date when the email content was finalized",
       "type": ["null", "integer"]
     },
     "fromName": {
+      "description": "Name of the sender displayed in the email",
       "type": ["null", "string"]
     },
     "htmlTitle": {
+      "description": "HTML title of the email",
       "type": ["null", "string"]
     },
     "isGraymailSuppressionEnabled": {
+      "description": "Flag indicating if graymail suppression is enabled for the email",
       "type": ["null", "boolean"]
     },
     "isLocalTimezoneSend": {
+      "description": "Flag indicating if the email is sent based on the local timezone",
       "type": ["null", "boolean"]
     },
     "isPublished": {
+      "description": "Flag indicating if the email is published",
       "type": ["null", "boolean"]
     },
     "isRecipientFatigueSuppressionEnabled": {
+      "description": "Flag indicating if recipient fatigue suppression is enabled",
       "type": ["null", "boolean"]
     },
     "leadFlowId": {
+      "description": "ID of the lead flow associated with the email",
       "type": ["null", "integer"]
     },
     "liveDomain": {
+      "description": "Domain where the live version of the email is hosted",
       "type": ["null", "string"]
     },
     "mailingListsExcluded": {
@@ -168,63 +181,87 @@
       }
     },
     "maxRssEntries": {
+      "description": "Maximum number of RSS entries to include in the email",
       "type": ["null", "integer"]
     },
     "metaDescription": {
+      "description": "Meta description of the email content",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the email",
       "type": ["null", "string"]
     },
     "pageExpiryEnabled": {
+      "description": "Flag indicating if page expiry is enabled for the email",
       "type": ["null", "boolean"]
     },
     "pageRedirected": {
+      "description": "Information about page redirection",
       "type": ["null", "boolean"]
     },
     "portalId": {
+      "description": "ID of the HubSpot portal associated with the email",
       "type": ["null", "integer"]
     },
     "previewKey": {
+      "description": "Key used for email preview",
       "type": ["null", "string"]
     },
     "primaryEmailCampaignId": {
+      "description": "ID of the primary email campaign associated with the email",
       "type": ["null", "integer"]
     },
     "processingStatus": {
+      "description": "Status of the email processing",
       "type": ["null", "string"]
     },
     "publishDate": {
+      "description": "Date when the email is scheduled to be published",
       "type": ["null", "integer"]
     },
     "publishedById": {
+      "description": "ID of the user who published the email",
       "type": ["null", "integer"]
     },
     "publishedByName": {
+      "description": "Name of the user who published the email",
       "type": ["null", "string"]
     },
     "publishImmediately": {
+      "description": "Flag indicating if the email should be published immediately",
       "type": ["null", "boolean"]
     },
     "publishedUrl": {
+      "description": "URL where the published email can be accessed",
       "type": ["null", "string"]
     },
     "replyTo": {
+      "description": "Email address for replies to the email",
       "type": ["null", "string"]
     },
     "resolvedDomain": {
+      "description": "Domain resolved for the email",
+      "type": ["null", "string"]
+    },
+    "rootMicId": {
+      "description": "Root MIC ID associated with the email",
       "type": ["null", "string"]
     },
     "selected": {
+      "description": "Flag indicating if the email is selected",
       "type": ["null", "integer"]
     },
     "slug": {
+      "description": "Slug associated with the email",
       "type": ["null", "string"]
     },
     "smartEmailFields": {
+      "description": "Fields related to smart email features",
       "type": ["null", "object"]
     },
     "state": {
+      "description": "Current state of the email",
       "type": ["null", "string"]
     },
     "stats": {
@@ -233,6 +270,9 @@
         "counters": {
           "type": ["null", "object"],
           "properties": {
+            "sent": {
+              "type": ["null", "integer"]
+            },
             "open": {
               "type": ["null", "integer"]
             },
@@ -246,6 +286,9 @@
               "type": ["null", "integer"]
             },
             "click": {
+              "type": ["null", "integer"]
+            },
+            "reply": {
               "type": ["null", "integer"]
             },
             "dropped": {
@@ -313,6 +356,9 @@
         "failedToLoad": {
           "type": ["null", "boolean"]
         },
+        "qualifierStats": {
+          "type": ["null", "object"]
+        },
         "ratios": {
           "type": ["null", "object"],
           "properties": {
@@ -326,6 +372,9 @@
               "type": ["null", "number"]
             },
             "openratio": {
+              "type": ["null", "number"]
+            },
+            "replyratio": {
               "type": ["null", "number"]
             },
             "unsubscribedratio": {
@@ -357,36 +406,47 @@
       }
     },
     "subcategory": {
+      "description": "Subcategory to which the email belongs",
       "type": ["null", "string"]
     },
     "subject": {
+      "description": "Subject line of the email",
       "type": ["null", "string"]
     },
     "subscription": {
+      "description": "Information about email subscription",
       "type": ["null", "integer"]
     },
     "subscriptionName": {
+      "description": "Name of the email subscription",
       "type": ["null", "string"]
     },
     "templatePath": {
+      "description": "Path of the email template",
       "type": ["null", "string"]
     },
     "transactional": {
+      "description": "Flag indicating if the email is transactional",
       "type": ["null", "boolean"]
     },
     "unpublishedAt": {
+      "description": "Timestamp when the email was unpublished",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp of the last update to the email",
       "type": ["null", "integer"]
     },
     "updatedById": {
+      "description": "ID of the user who last updated the email",
       "type": ["null", "integer"]
     },
     "url": {
+      "description": "URL associated with the email",
       "type": ["null", "string"]
     },
     "useRssHeadlineAsSubject": {
+      "description": "Flag indicating if the RSS headline should be used as the subject",
       "type": ["null", "boolean"]
     },
     "vidsExcluded": {
@@ -402,18 +462,23 @@
       }
     },
     "publishedByEmail": {
+      "description": "Email address of the user who published the email",
       "type": ["null", "string"]
     },
     "sections": {
+      "description": "Sections within the email",
       "type": ["null", "object"]
     },
     "author": {
+      "description": "Author of the email",
       "type": ["null", "string"]
     },
     "isCreatedFomSandboxSync": {
+      "description": "Flag indicating if the email was created from a sandbox sync",
       "type": ["null", "boolean"]
     },
     "rssEmailUrl": {
+      "description": "URL for RSS emails",
       "type": ["null", "string"]
     },
     "teamPerms": {
@@ -423,15 +488,19 @@
       }
     },
     "securityState": {
+      "description": "Security state of the email",
       "type": ["null", "string"]
     },
     "isInstanceLayoutPage": {
+      "description": "Flag indicating if the email is a layout page in an instance",
       "type": ["null", "boolean"]
     },
     "audienceAccess": {
+      "description": "Information about who has access to view the email",
       "type": ["null", "string"]
     },
     "campaignUtm": {
+      "description": "UTM parameters for campaign tracking",
       "type": ["null", "string"]
     },
     "contentAccessRuleTypes": {
@@ -447,172 +516,71 @@
       }
     },
     "rssEmailClickThroughText": {
+      "description": "Text for click-through actions in RSS emails",
       "type": ["null", "string"]
     },
     "rssEmailImageMaxWidth": {
+      "description": "Maximum width of images in RSS emails",
       "type": ["null", "integer"]
     },
     "flexAreas": {
       "type": ["null", "object"],
       "properties": {
-        "properties": {
-          "main": {
-            "type": ["null", "object"],
-            "properties": {
-              "boxed": {
-                "type": ["null", "boolean"]
-              },
-              "isSingleColumnFullWidth": {
-                "type": ["null", "boolean"]
-              },
-              "sections": {
-                "type": ["null", "array"],
-                "items": [
-                  {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "columns": {
-                        "type": ["null", "array"],
-                        "items": [
-                          {
-                            "type": ["null", "object"],
-                            "properties": {
-                              "id": {
-                                "type": ["null", "string"]
-                              },
-                              "widgets": {
-                                "type": ["null", "array"],
-                                "items": [
-                                  {
-                                    "type": ["null", "string"]
-                                  }
-                                ]
-                              },
-                              "width": {
-                                "type": ["null", "integer"]
-                              }
-                            }
-                          }
-                        ]
-                      },
-                      "id": {
-                        "type": ["null", "string"]
-                      },
-                      "style": {
-                        "type": ["null", "object"],
-                        "properties": {
-                          "backgroundColor": {
-                            "type": ["null", "string"]
-                          },
-                          "backgroundType": {
-                            "type": ["null", "string"]
-                          },
-                          "paddingBottom": {
-                            "type": ["null", "string"]
-                          },
-                          "paddingTop": {
+        "main": {
+          "type": ["null", "object"],
+          "properties": {
+            "boxed": {
+              "type": ["null", "boolean"]
+            },
+            "isSingleColumnFullWidth": {
+              "type": ["null", "boolean"]
+            },
+            "sections": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "columns": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "id": {
+                          "type": ["null", "string"]
+                        },
+                        "widgets": {
+                          "type": ["null", "array"],
+                          "items": {
                             "type": ["null", "string"]
                           }
+                        },
+                        "width": {
+                          "type": ["null", "integer"]
                         }
                       }
                     }
                   },
-                  {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "columns": {
-                        "type": ["null", "array"],
-                        "items": [
-                          {
-                            "type": ["null", "object"],
-                            "properties": {
-                              "id": {
-                                "type": ["null", "string"]
-                              },
-                              "widgets": {
-                                "type": ["null", "array"],
-                                "items": [
-                                  {
-                                    "type": ["null", "string"]
-                                  }
-                                ]
-                              },
-                              "width": {
-                                "type": ["null", "integer"]
-                              }
-                            }
-                          }
-                        ]
-                      },
-                      "id": {
-                        "type": ["null", "string"]
-                      },
-                      "style": {
-                        "type": ["null", "object"],
-                        "properties": {
-                          "backgroundType": {
-                            "type": ["null", "string"]
-                          },
-                          "paddingBottom": {
-                            "type": ["null", "string"]
-                          },
-                          "paddingTop": {
-                            "type": ["null", "string"]
-                          }
-                        }
-                      }
-                    }
+                  "id": {
+                    "type": ["null", "string"]
                   },
-                  {
+                  "style": {
                     "type": ["null", "object"],
                     "properties": {
-                      "columns": {
-                        "type": ["null", "array"],
-                        "items": [
-                          {
-                            "type": ["null", "object"],
-                            "properties": {
-                              "id": {
-                                "type": ["null", "string"]
-                              },
-                              "widgets": {
-                                "type": ["null", "array"],
-                                "items": [
-                                  {
-                                    "type": ["null", "string"]
-                                  }
-                                ]
-                              },
-                              "width": {
-                                "type": ["null", "integer"]
-                              }
-                            }
-                          }
-                        ]
-                      },
-                      "id": {
+                      "backgroundColor": {
                         "type": ["null", "string"]
                       },
-                      "style": {
-                        "type": ["null", "object"],
-                        "properties": {
-                          "backgroundColor": {
-                            "type": ["null", "string"]
-                          },
-                          "backgroundType": {
-                            "type": ["null", "string"]
-                          },
-                          "paddingBottom": {
-                            "type": ["null", "string"]
-                          },
-                          "paddingTop": {
-                            "type": ["null", "string"]
-                          }
-                        }
+                      "backgroundType": {
+                        "type": ["null", "string"]
+                      },
+                      "paddingBottom": {
+                        "type": ["null", "string"]
+                      },
+                      "paddingTop": {
+                        "type": ["null", "string"]
                       }
                     }
                   }
-                ]
+                }
               }
             }
           }
@@ -620,76 +588,262 @@
       }
     },
     "emailCampaignGroupId": {
+      "description": "Group ID associated with the email campaign",
       "type": ["null", "integer"]
     },
     "layoutSections": {
+      "description": "Sections within the email layout",
       "type": ["null", "object"]
     },
     "blogRssSettings": {
+      "description": "Settings related to blog RSS integration",
       "type": ["null", "string"]
     },
     "archivedInDashboard": {
+      "description": "Flag indicating if the email was archived in the dashboard",
       "type": ["null", "boolean"]
     },
     "publishedAt": {
+      "description": "Timestamp when the email was published",
       "type": ["null", "integer"]
     },
     "lastEditUpdateId": {
+      "description": "Update ID of the last edit made to the email",
       "type": ["null", "integer"]
     },
     "lastEditSessionId": {
+      "description": "Session ID of the last edit made to the email",
       "type": ["null", "integer"]
     },
     "styleSettings": {
       "type": ["null", "object"],
       "properties": {
-        "background_color": { "type": ["null", "string"] },
-        "background_image": { "type": ["null", "string"] },
-        "background_image_type": { "type": ["null", "string"] },
-        "body_border_color": { "type": ["null", "string"] },
-        "body_border_color_choice": { "type": ["null", "string"] },
-        "body_border_width": { "type": ["null", "string"] },
-        "body_color": { "type": ["null", "string"] },
-        "color_picker_favorite1": { "type": ["null", "string"] },
-        "color_picker_favorite2": { "type": ["null", "string"] },
-        "color_picker_favorite3": { "type": ["null", "string"] },
-        "color_picker_favorite4": { "type": ["null", "string"] },
-        "color_picker_favorite5": { "type": ["null", "string"] },
-        "color_picker_favorite6": { "type": ["null", "string"] },
-        "email_body_padding": { "type": ["null", "string"] },
-        "email_body_width": { "type": ["null", "string"] },
+        "background_color": {
+          "type": ["null", "string"]
+        },
+        "background_image": {
+          "type": ["null", "string"]
+        },
+        "background_image_type": {
+          "type": ["null", "string"]
+        },
+        "body_border_color": {
+          "type": ["null", "string"]
+        },
+        "body_border_color_choice": {
+          "type": ["null", "string"]
+        },
+        "body_border_width": {
+          "type": ["null", "string"]
+        },
+        "body_color": {
+          "type": ["null", "string"]
+        },
+        "color_picker_favorite1": {
+          "type": ["null", "string"]
+        },
+        "color_picker_favorite2": {
+          "type": ["null", "string"]
+        },
+        "color_picker_favorite3": {
+          "type": ["null", "string"]
+        },
+        "color_picker_favorite4": {
+          "type": ["null", "string"]
+        },
+        "color_picker_favorite5": {
+          "type": ["null", "string"]
+        },
+        "color_picker_favorite6": {
+          "type": ["null", "string"]
+        },
+        "email_body_padding": {
+          "type": ["null", "string"]
+        },
+        "email_body_width": {
+          "type": ["null", "string"]
+        },
         "heading_one_font": {
+          "type": ["null", "object"],
           "properties": {
-            "bold": { "type": ["null", "string"] },
-            "color": { "type": ["null", "string"] },
-            "font": { "type": ["null", "string"] },
-            "font_style": { "type": ["null", "object"] },
-            "italic": { "type": ["null", "string"] },
-            "size": { "type": ["null", "string"] },
-            "underline": { "type": ["null", "string"] }
+            "bold": {
+              "type": ["null", "boolean"]
+            },
+            "color": {
+              "type": ["null", "string"]
+            },
+            "font": {
+              "type": ["null", "string"]
+            },
+            "font_style": {
+              "type": ["null", "object"]
+            },
+            "italic": {
+              "type": ["null", "boolean"]
+            },
+            "size": {
+              "type": ["null", "string"]
+            },
+            "underline": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "heading_two_font": {
+          "type": ["null", "object"],
+          "properties": {
+            "bold": {
+              "type": ["null", "boolean"]
+            },
+            "color": {
+              "type": ["null", "string"]
+            },
+            "font": {
+              "type": ["null", "string"]
+            },
+            "font_style": {
+              "type": ["null", "object"]
+            },
+            "italic": {
+              "type": ["null", "boolean"]
+            },
+            "size": {
+              "type": ["null", "string"]
+            },
+            "underline": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "links_font": {
+          "type": ["null", "object"],
+          "properties": {
+            "bold": {
+              "type": ["null", "boolean"]
+            },
+            "color": {
+              "type": ["null", "string"]
+            },
+            "font": {
+              "type": ["null", "string"]
+            },
+            "font_style": {
+              "type": ["null", "object"]
+            },
+            "italic": {
+              "type": ["null", "boolean"]
+            },
+            "size": {
+              "type": ["null", "string"]
+            },
+            "underline": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "primary_accent_color": {
+          "type": ["null", "string"]
+        },
+        "primary_font": {
+          "type": ["null", "string"]
+        },
+        "primary_font_color": {
+          "type": ["null", "string"]
+        },
+        "primary_font_line_height": {
+          "type": ["null", "string"]
+        },
+        "primary_font_size": {
+          "type": ["null", "string"]
+        },
+        "secondary_accent_color": {
+          "type": ["null", "string"]
+        },
+        "secondary_font": {
+          "type": ["null", "string"]
+        },
+        "secondary_font_color": {
+          "type": ["null", "string"]
+        },
+        "secondary_font_line_height": {
+          "type": ["null", "string"]
+        },
+        "secondary_font_size": {
+          "type": ["null", "string"]
+        },
+        "use_email_client_default_settings": {
+          "type": ["null", "boolean"]
+        },
+        "user_module_defaults": {
+          "type": ["null", "object"],
+          "properties": {
+            "button_email": {
+              "type": ["null", "object"],
+              "properties": {
+                "background_color": {
+                  "type": ["null", "string"]
+                },
+                "corner_radius": {
+                  "type": ["null", "integer"]
+                },
+                "font": {
+                  "type": ["null", "string"]
+                },
+                "font_color": {
+                  "type": ["null", "string"]
+                },
+                "font_size": {
+                  "type": ["null", "integer"]
+                },
+                "font_style": {
+                  "type": ["null", "object"]
+                }
+              }
+            },
+            "email_divider": {
+              "type": ["null", "object"],
+              "properties": {
+                "color": {
+                  "type": ["null", "object"]
+                },
+                "height": {
+                  "type": ["null", "integer"]
+                },
+                "line_type": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
           }
         }
       }
     },
     "visibleToAll": {
+      "description": "Flag indicating if the email is visible to all users",
       "type": ["null", "boolean"]
     },
     "language": {
+      "description": "Language in which the email is written",
       "type": ["null", "string"]
     },
     "rssEmailByText": {
+      "description": "Text content related to RSS emails",
       "type": ["null", "string"]
     },
     "rssEmailCommentText": {
+      "description": "Text for comments in RSS emails",
       "type": ["null", "string"]
     },
     "hasContentAccessRules": {
+      "description": "Indicates if the email has content access rules applied",
       "type": ["null", "boolean"]
     },
     "archivedAt": {
+      "description": "Timestamp when the email was archived",
       "type": ["null", "integer"]
     },
     "translations": {
+      "description": "Translations available for the email",
       "type": ["null", "object"]
     },
     "userPerms": {
@@ -705,7 +859,20 @@
       }
     },
     "rssEmailEntryTemplateEnabled": {
+      "description": "Flag indicating if the RSS email entry template is enabled",
       "type": ["null", "boolean"]
+    },
+    "mailingIlsListsExcluded": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "mailingIlsListsIncluded": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
     }
   }
 }

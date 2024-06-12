@@ -36,6 +36,10 @@ properties:
         format: uuid
       connectorBuildOptions:
         "$ref": ConnectorBuildOptions.yaml
+      connectorTestSuitesOptions:
+        type: array
+        items:
+          "$ref": ConnectorTestSuiteOptions.yaml
       connectorType:
         type: string
         enum:
@@ -111,3 +115,10 @@ properties:
         "$ref": ActorDefinitionResourceRequirements.yaml
       ab_internal:
         "$ref": AirbyteInternal.yaml
+      remoteRegistries:
+        "$ref": RemoteRegistries.yaml
+      supportsRefreshes:
+        type: boolean
+        default: false
+      generated:
+        "$ref": GeneratedFields.yaml

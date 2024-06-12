@@ -11,7 +11,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.5.2
   dockerRepository: airbyte/source-oracle-strict-encrypt
   githubIssueLabel: source-oracle
   icon: oracle.svg
@@ -21,4 +21,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

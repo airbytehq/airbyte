@@ -2,8 +2,8 @@ name: Connector Performance Harness Cron
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    -  # 5:30 and 17:30
-    - cron: "30 5,17 * * *"
+    -  # Twice a week, Monday and Thursday.
+    - cron: "0 0 * * 1,4"
   workflow_dispatch: # for manual triggers
 
 jobs:

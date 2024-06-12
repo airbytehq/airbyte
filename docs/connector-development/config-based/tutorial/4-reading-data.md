@@ -10,9 +10,7 @@ Let's first add the stream to the configured catalog in `source-exchange-rates-t
       "stream": {
         "name": "rates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -26,7 +24,7 @@ See the [catalog guide](https://docs.airbyte.com/understanding-airbyte/beginners
 
 Let's define the stream schema in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/schemas/rates.json`
 
-You can download the JSON file describing the output schema with all currencies [here](../../tutorials/cdk-tutorial-python-http/exchange_rates_schema.json) for convenience and place it in `schemas/`.
+You can download the JSON file describing the output schema with all currencies [here](./exchange_rates_schema.json) for convenience and place it in `schemas/`.
 
 ```bash
 curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docs/connector-development/tutorials/cdk-tutorial-python-http/exchange_rates_schema.json > source_exchange_rates_tutorial/schemas/rates.json
@@ -44,7 +42,7 @@ As an alternative to storing the stream's data schema to the `schemas/` director
 Reading from the source can be done by running the `read` operation
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-exchange-rates-tutorial read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 The logs should show that 1 record was read from the stream.
@@ -57,7 +55,7 @@ The logs should show that 1 record was read from the stream.
 The `--debug` flag can be set to print out debug information, including the outgoing request and its associated response
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug
+poetry run source-exchange-rates-tutorial read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug
 ```
 
 ## Next steps

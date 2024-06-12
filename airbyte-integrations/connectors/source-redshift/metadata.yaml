@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.5.2
   dockerRepository: airbyte/source-redshift
   documentationUrl: https://docs.airbyte.com/integrations/sources/redshift
   githubIssueLabel: source-redshift
@@ -21,5 +21,13 @@ data:
   supportLevel: community
   tags:
     - language:java
-    - language:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-REDSHIFT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

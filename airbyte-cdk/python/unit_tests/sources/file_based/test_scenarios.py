@@ -11,11 +11,14 @@ import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
+from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
+from airbyte_cdk.utils import message_utils
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pytest import LogCaptureFixture
+from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
 
@@ -37,58 +40,82 @@ def verify_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: 
             _verify_expected_logs(logs, discover_logs)
 
 
-def verify_read(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
-) -> None:
-    caplog.handler.setFormatter(AirbyteLogFormatter())
+def verify_read(scenario: TestScenario[AbstractSource]) -> None:
     if scenario.incremental_scenario_config:
-        run_test_read_incremental(capsys, caplog, tmp_path, scenario)
+        run_test_read_incremental(scenario)
     else:
-        run_test_read_full_refresh(capsys, caplog, tmp_path, scenario)
+        run_test_read_full_refresh(scenario)
 
 
-def run_test_read_full_refresh(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
-) -> None:
+def run_test_read_full_refresh(scenario: TestScenario[AbstractSource]) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
+    output = read(scenario)
     if expected_exc:
-        with pytest.raises(expected_exc) as exc:  # noqa
-            read(capsys, caplog, tmp_path, scenario)
+        assert_exception(expected_exc, output)
         if expected_msg:
-            assert expected_msg in get_error_message_from_exc(exc)
+            assert expected_msg in output.errors[-1].trace.error.internal_message
     else:
-        output = read(capsys, caplog, tmp_path, scenario)
         _verify_read_output(output, scenario)
 
 
-def run_test_read_incremental(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
-) -> None:
+def run_test_read_incremental(scenario: TestScenario[AbstractSource]) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
+    output = read_with_state(scenario)
     if expected_exc:
-        with pytest.raises(expected_exc):
-            read_with_state(capsys, caplog, tmp_path, scenario)
+        assert_exception(expected_exc, output)
     else:
-        output = read_with_state(capsys, caplog, tmp_path, scenario)
         _verify_read_output(output, scenario)
 
 
-def _verify_read_output(output: Dict[str, Any], scenario: TestScenario[AbstractSource]) -> None:
-    records, logs = output["records"], output["logs"]
-    logs = [log for log in logs if log.get("level") in scenario.log_levels]
-    expected_records = scenario.expected_records
-    assert len(records) == len(expected_records)
-    for actual, expected in zip(records, expected_records):
-        if "record" in actual:
-            assert len(actual["record"]["data"]) == len(expected["data"])
-            for key, value in actual["record"]["data"].items():
+def assert_exception(expected_exception: type[BaseException], output: EntrypointOutput) -> None:
+    assert expected_exception.__name__ in output.errors[-1].trace.error.stack_trace
+
+
+def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[AbstractSource]) -> None:
+    records_and_state_messages, log_messages = output.records_and_state_messages, output.logs
+    logs = [message.log for message in log_messages if message.log.level.value in scenario.log_levels]
+    if scenario.expected_records is None:
+        return
+
+    expected_records = [r for r in scenario.expected_records] if scenario.expected_records else []
+
+    sorted_expected_records = sorted(
+        filter(lambda e: "data" in e, expected_records),
+        key=lambda record: ",".join(
+            f"{k}={v}" for k, v in sorted(record["data"].items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"
+        ),
+    )
+    sorted_records = sorted(
+        filter(lambda r: r.record, records_and_state_messages),
+        key=lambda record: ",".join(
+            f"{k}={v}" for k, v in sorted(record.record.data.items(), key=lambda items: (items[0], items[1])) if k != "emitted_at"
+        ),
+    )
+
+    assert len(sorted_records) == len(sorted_expected_records)
+
+    for actual, expected in zip(sorted_records, sorted_expected_records):
+        if actual.record:
+            assert len(actual.record.data) == len(expected["data"])
+            for key, value in actual.record.data.items():
                 if isinstance(value, float):
                     assert math.isclose(value, expected["data"][key], abs_tol=1e-04)
                 else:
                     assert value == expected["data"][key]
-            assert actual["record"]["stream"] == expected["stream"]
-        elif "state" in actual:
-            assert actual["state"]["data"] == expected
+            assert actual.record.stream == expected["stream"]
+
+    expected_states = list(filter(lambda e: "data" not in e, expected_records))
+    states = list(filter(lambda r: r.state, records_and_state_messages))
+    assert len(states) > 0, "No state messages emitted. Successful syncs should emit at least one stream state."
+    _verify_state_record_counts(sorted_records, states)
+
+    if hasattr(scenario.source, "cursor_cls") and issubclass(scenario.source.cursor_cls, AbstractConcurrentFileBasedCursor):
+        # Only check the last state emitted because we don't know the order the others will be in.
+        # This may be needed for non-file-based concurrent scenarios too.
+        assert states[-1].state.stream.stream_state.dict() == expected_states[-1]
+    else:
+        for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
+            assert actual.state.stream.stream_state.dict() == expected
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")
@@ -96,25 +123,51 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario[AbstractS
         _verify_expected_logs(logs, read_logs)
 
     if scenario.expected_analytics:
-        analytics = output["analytics"]
+        analytics = output.analytics_messages
 
         _verify_analytics(analytics, scenario.expected_analytics)
 
 
-def _verify_analytics(analytics: List[Dict[str, Any]], expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> None:
+def _verify_state_record_counts(records: List[AirbyteMessage], states: List[AirbyteMessage]) -> None:
+    actual_record_counts = {}
+    for record in records:
+        stream_descriptor = message_utils.get_stream_descriptor(record)
+        actual_record_counts[stream_descriptor] = actual_record_counts.get(stream_descriptor, 0) + 1
+
+    state_record_count_sums = {}
+    for state_message in states:
+        stream_descriptor = message_utils.get_stream_descriptor(state_message)
+        state_record_count_sums[stream_descriptor] = (
+            state_record_count_sums.get(stream_descriptor, 0)
+            + state_message.state.sourceStats.recordCount
+        )
+
+    for stream, actual_count in actual_record_counts.items():
+        assert actual_count == state_record_count_sums.get(stream)
+
+    # We can have extra keys in state_record_count_sums if we processed a stream and reported 0 records
+    extra_keys = state_record_count_sums.keys() - actual_record_counts.keys()
+    for stream in extra_keys:
+        assert state_record_count_sums[stream] == 0
+
+
+def _verify_analytics(analytics: List[AirbyteMessage], expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> None:
     if expected_analytics:
+        assert len(analytics) == len(
+            expected_analytics), \
+            f"Number of actual analytics messages ({len(analytics)}) did not match expected ({len(expected_analytics)})"
         for actual, expected in zip(analytics, expected_analytics):
-            actual_type, actual_value = actual["type"], actual["value"]
+            actual_type, actual_value = actual.trace.analytics.type, actual.trace.analytics.value
             expected_type = expected.type
             expected_value = expected.value
             assert actual_type == expected_type
             assert actual_value == expected_value
 
 
-def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: Optional[List[Mapping[str, Any]]]) -> None:
+def _verify_expected_logs(logs: List[AirbyteLogMessage], expected_logs: Optional[List[Mapping[str, Any]]]) -> None:
     if expected_logs:
         for actual, expected in zip(logs, expected_logs):
-            actual_level, actual_message = actual["level"], actual["message"]
+            actual_level, actual_message = actual.level.value, actual.message
             expected_level = expected["level"]
             expected_message = expected["message"]
             assert actual_level == expected_level
@@ -133,7 +186,7 @@ def verify_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Tes
             output = check(capsys, tmp_path, scenario)
             if expected_msg:
                 # expected_msg is a string. what's the expected value field?
-                assert expected_msg.value in output["message"]  # type: ignore
+                assert expected_msg in output["message"]  # type: ignore
                 assert output["status"] == scenario.expected_check_status
 
     else:
@@ -172,55 +225,21 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
     }
 
 
-def read(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
-) -> Dict[str, Any]:
-    with caplog.handler.stream as logger_stream:
-        launch(
-            scenario.source,
-            [
-                "read",
-                "--config",
-                make_file(tmp_path / "config.json", scenario.config),
-                "--catalog",
-                make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.full_refresh)),
-            ],
-        )
-        captured = capsys.readouterr().out.splitlines() + logger_stream.getvalue().split("\n")[:-1]
-
-        return {
-            "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
-            "logs": [msg["log"] for msg in (json.loads(line) for line in captured) if msg["type"] == "LOG"],
-            "analytics": [
-                msg["trace"]["analytics"]
-                for msg in (json.loads(line) for line in captured)
-                if msg["type"] == "TRACE" and msg["trace"]["type"] == "ANALYTICS"
-            ],
-        }
-
-
-def read_with_state(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
-) -> Dict[str, List[Any]]:
-    launch(
+def read(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
+    return entrypoint_read(
         scenario.source,
-        [
-            "read",
-            "--config",
-            make_file(tmp_path / "config.json", scenario.config),
-            "--catalog",
-            make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.incremental)),
-            "--state",
-            make_file(tmp_path / "state.json", scenario.input_state()),
-        ],
+        scenario.config,
+        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.full_refresh)),
     )
-    captured = capsys.readouterr()
-    logs = caplog.records
-    return {
-        "records": [msg for msg in (json.loads(line) for line in captured.out.splitlines()) if msg["type"] in ("RECORD", "STATE")],
-        "logs": [msg["log"] for msg in (json.loads(line) for line in captured.out.splitlines()) if msg["type"] == "LOG"]
-        + [{"level": log.levelname, "message": log.message} for log in logs],
-    }
+
+
+def read_with_state(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
+    return entrypoint_read(
+        scenario.source,
+        scenario.config,
+        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.incremental)),
+        scenario.input_state(),
+    )
 
 
 def make_file(path: Path, file_contents: Optional[Union[Mapping[str, Any], List[Mapping[str, Any]]]]) -> str:

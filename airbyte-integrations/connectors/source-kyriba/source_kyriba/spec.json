@@ -5,32 +5,36 @@
     "title": "Kyriba Spec",
     "type": "object",
     "required": ["domain", "username", "password", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "domain": {
         "type": "string",
         "description": "Kyriba domain",
         "title": "Domain",
         "examples": ["demo.kyriba.com"],
-        "pattern": "^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*"
+        "pattern": "^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*",
+        "order": 2
       },
       "username": {
         "type": "string",
         "description": "Username to be used in basic auth",
-        "title": "Username"
+        "title": "Username",
+        "order": 0
       },
       "password": {
         "type": "string",
         "description": "Password to be used in basic auth",
         "title": "Password",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 1
       },
       "start_date": {
         "type": "string",
         "description": "The date the sync should start from.",
         "title": "Start Date",
         "examples": ["2021-01-10"],
-        "pattern": "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$"
+        "pattern": "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$",
+        "order": 3
       },
       "end_date": {
         "type": "string",

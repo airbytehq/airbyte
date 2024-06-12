@@ -3,43 +3,60 @@
 #
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
+from __future__ import annotations
 
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
 import anyio
-import asyncer
-from dagger import Directory, File, QueryError
+from dagger import File, QueryError
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,
     dist_tar_directory_path,
 )
 from pipelines.airbyte_ci.connectors.build_image.steps.normalization import BuildOrPullNormalization
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
+from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
+from pipelines.helpers.execution.run_steps import StepToRun
 from pipelines.helpers.utils import export_container_to_tarball
-from pipelines.models.steps import StepResult, StepStatus
+from pipelines.models.steps import STEP_PARAMS, StepResult, StepStatus
+
+if TYPE_CHECKING:
+    from typing import Callable, Dict, List, Optional
+
+    from pipelines.helpers.execution.run_steps import RESULTS_DICT, STEP_TREE
 
 
 class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     title = "Java Connector Integration Tests"
-    gradle_task_name = "integrationTestJava -x buildConnectorImage -x assemble"
+    gradle_task_name = "integrationTestJava"
     mount_connector_secrets = True
     bind_to_docker_host = True
+    with_test_artifacts = True
 
-    async def _load_normalization_image(self, normalization_tar_file: File):
+    @property
+    def default_params(self) -> STEP_PARAMS:
+        return super().default_params | {
+            # Exclude the assemble task to avoid a circular dependency on airbyte-ci.
+            # The integrationTestJava gradle task depends on assemble, which in turns
+            # depends on buildConnectorImage to build the connector's docker image.
+            # At this point, the docker image has already been built.
+            "-x": ["assemble"],
+        }
+
+    async def _load_normalization_image(self, normalization_tar_file: File) -> None:
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
         await docker.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag)
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
-    async def _load_connector_image(self, connector_tar_file: File):
+    async def _load_connector_image(self, connector_tar_file: File) -> None:
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
         await docker.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
@@ -52,7 +69,7 @@ class IntegrationTests(GradleTask):
                     tg.start_soon(self._load_normalization_image, normalization_tar_file)
                 tg.start_soon(self._load_connector_image, connector_tar_file)
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
         # Run the gradle integration test task now that the required docker images have been loaded.
         return await super()._run()
 
@@ -63,65 +80,104 @@ class UnitTests(GradleTask):
     title = "Java Connector Unit Tests"
     gradle_task_name = "test"
     bind_to_docker_host = True
+    with_test_artifacts = True
 
 
-async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
-    """Run all tests for a Java connectors.
-
-    - Build the normalization image if the connector supports it.
-    - Run unit tests with Gradle.
-    - Build connector image with Gradle.
-    - Run integration and acceptance test in parallel using the built connector and normalization images.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: The results of all the tests steps.
+def _create_integration_step_args_factory(context: ConnectorTestContext) -> Callable:
     """
-    context.connector_secrets = await secrets.get_connector_secrets(context)
-    step_results = []
+    Create a function that can process the args for the integration step.
+    """
 
-    build_distribution_tar_result = await BuildConnectorDistributionTar(context).run()
-    step_results.append(build_distribution_tar_result)
-    if build_distribution_tar_result.status is StepStatus.FAILURE:
-        return step_results
+    async def _create_integration_step_args(results: RESULTS_DICT) -> Dict[str, Optional[File]]:
 
-    dist_tar_dir = build_distribution_tar_result.output_artifact.directory(dist_tar_directory_path(context))
-
-    async def run_docker_build_dependent_steps(dist_tar_dir: Directory) -> List[StepResult]:
-        step_results = []
-        build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run(dist_tar_dir)
-        step_results.append(build_connector_image_results)
-        if build_connector_image_results.status is StepStatus.FAILURE:
-            return step_results
+        connector_container = results["build"].output[LOCAL_BUILD_PLATFORM]
+        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container, LOCAL_BUILD_PLATFORM)
 
         if context.connector.supports_normalization:
-            normalization_image = f"{context.connector.normalization_repository}:dev"
-            context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
-            build_normalization_results = await BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM).run()
-            normalization_container = build_normalization_results.output_artifact
+            tar_file_name = f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+            build_normalization_results = results["build_normalization"]
+
+            normalization_container = build_normalization_results.output
             normalization_tar_file, _ = await export_container_to_tarball(
-                context, normalization_container, tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+                context, normalization_container, LOCAL_BUILD_PLATFORM, tar_file_name=tar_file_name
             )
-            step_results.append(build_normalization_results)
         else:
             normalization_tar_file = None
 
-        connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
-        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
+        return {"connector_tar_file": connector_image_tar_file, "normalization_tar_file": normalization_tar_file}
 
-        async with asyncer.create_task_group() as docker_build_dependent_group:
-            soon_integration_tests_results = docker_build_dependent_group.soonify(IntegrationTests(context).run)(
-                connector_tar_file=connector_image_tar_file, normalization_tar_file=normalization_tar_file
+    return _create_integration_step_args
+
+
+def _get_normalization_steps(context: ConnectorTestContext) -> List[StepToRun]:
+    normalization_image = f"{context.connector.normalization_repository}:dev"
+    context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
+    normalization_steps = [
+        StepToRun(
+            id=CONNECTOR_TEST_STEP_ID.BUILD_NORMALIZATION,
+            step=BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM),
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+        )
+    ]
+
+    return normalization_steps
+
+
+def _get_acceptance_test_steps(context: ConnectorTestContext) -> List[StepToRun]:
+    """
+    Generate the steps to run the acceptance tests for a Java connector.
+    """
+
+    # Run tests in parallel
+    return [
+        StepToRun(
+            id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
+            step=IntegrationTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.INTEGRATION)),
+            args=_create_integration_step_args_factory(context),
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+        ),
+        StepToRun(
+            id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+            step=AcceptanceTests(
+                context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.ACCEPTANCE), concurrent_test_run=True
+            ),
+            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+        ),
+    ]
+
+
+def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
+    """
+    Get all the tests steps for a Java connector.
+    """
+
+    steps: STEP_TREE = [
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.UNIT,
+                step=UnitTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.UNIT)),
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
             )
-            soon_cat_results = docker_build_dependent_group.soonify(AcceptanceTests(context, True).run)(connector_container)
+        ],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.BUILD,
+                step=BuildConnectorImages(context),
+                args=lambda results: {
+                    "dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output.directory(dist_tar_directory_path(context))
+                },
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
+            ),
+        ],
+    ]
 
-        step_results += [soon_cat_results.value, soon_integration_tests_results.value]
-        return step_results
+    if context.connector.supports_normalization:
+        normalization_steps = _get_normalization_steps(context)
+        steps.append(normalization_steps)
 
-    async with asyncer.create_task_group() as test_task_group:
-        soon_unit_tests_result = test_task_group.soonify(UnitTests(context).run)()
-        soon_docker_build_dependent_steps_results = test_task_group.soonify(run_docker_build_dependent_steps)(dist_tar_dir)
+    acceptance_test_steps = _get_acceptance_test_steps(context)
+    steps.append(acceptance_test_steps)
 
-    return step_results + [soon_unit_tests_result.value] + soon_docker_build_dependent_steps_results.value
+    return steps

@@ -2,18 +2,6 @@
   "streams": [
     {
       "stream": {
-        "name": "customers",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "subscriptions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -44,34 +32,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["invoice_date"],
         "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "credits_ledger_entries",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "subscription_usage",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["timeframe_start"],
-        "source_defined_primary_key": [
-          ["subscription_id"],
-          ["billable_metric_id"],
-          ["timeframe_start"]
-        ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"

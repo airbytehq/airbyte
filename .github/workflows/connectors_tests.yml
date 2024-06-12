@@ -1,4 +1,4 @@
-name: Connector Ops CI - Connectors Acceptance Tests
+name: Connectors Tests
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -17,22 +17,59 @@ on:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
         default: "--modified"
-      runner:
-        description: "The runner to use for this job"
-        default: "conn-prod-xlarge-runner"
   pull_request:
     types:
       - opened
       - synchronize
-      - ready_for_review
 jobs:
-  connectors_ci:
-    name: Connectors CI
-    timeout-minutes: 1440 # 24 hours
-    runs-on: ${{ inputs.runner || 'conn-prod-xlarge-runner'}}
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      connectors: ${{ steps.changes.outputs.connectors }}
+    permissions:
+      statuses: write
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      - id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            connectors:
+              - '*'
+              - 'airbyte-ci/**/*'
+              - 'airbyte-integrations/connectors/**/*'
+              - 'airbyte-cdk/java/**/*'
+              - 'buildSrc/**/*'
+      # The Connector CI Tests is a status check emitted by airbyte-ci
+      # We make it pass once we have determined that there are no changes to the connectors
+      - name: "Skip Connectors CI tests"
+        if: steps.changes.outputs.connectors != 'true' && github.event_name == 'pull_request'
+        run: |
+          curl --request POST \
+          --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "state": "success",
+            "context": "Connectors CI tests",
+            "target_url": "${{ github.event.workflow_run.html_url }}"
+            }' \
+
+  connectors_ci:
+    needs: changes
+    # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
+    # Forked PRs are handled by the community_ci.yml workflow
+    # If the condition is not met the job will be skipped (it will not fail)
+    if: (github.event_name == 'pull_request' && needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
+    name: Connectors CI
+    runs-on: connector-test-large
+    timeout-minutes: 360 # 6 hours
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -53,9 +90,10 @@ jobs:
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
       - name: Test connectors [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -68,9 +106,10 @@ jobs:
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -80,4 +119,5 @@ jobs:
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --modified test"
+          # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
+          subcommand: "connectors --execute-timeout=18000 --modified  test"

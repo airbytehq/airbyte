@@ -4,88 +4,53 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.v0.*;
 import java.util.HashMap;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.MySQLContainer;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.jupiter.api.Test;
 
-@ExtendWith(SystemStubsExtension.class)
 public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  @SystemStub
-  public EnvironmentVariables environmentVariables;
+  protected MySQLTestDatabase testdb;
+
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
-  protected MySQLContainer<?> container;
-  protected JsonNode config;
-
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new MySQLContainer<>("mysql:8.0");
-    container.start();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "STANDARD")
-        .build());
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", replicationMethod)
-        .build());
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, getContainerModifiers())
+        .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+        .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
+        .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
+        .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+  }
 
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-            container.getHost(),
-            container.getFirstMappedPort(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
-        SQLDialect.MYSQL)) {
-      final Database database = new Database(dslContext);
-
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-        ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-        return null;
-      });
-    }
+  protected ContainerModifier[] getContainerModifiers() {
+    return ArrayUtils.toArray();
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    container.close();
+    testdb.close();
   }
 
   @Override
@@ -100,7 +65,10 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    return testdb.integrationTestConfigBuilder()
+        .withStandardReplication()
+        .withoutSsl()
+        .build();
   }
 
   @Override
@@ -111,7 +79,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME),
+                STREAM_NAME, testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -120,7 +88,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME2),
+                STREAM_NAME2, testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
@@ -131,9 +99,63 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
+  @Test
+  protected void testNullValueConversion() throws Exception {
+    final String STREAM_NAME3 = "stream3";
+    testdb.getDatabase().query(c -> {
+      return c.query("""
+                     CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL);
+                     """.formatted(testdb.getDatabaseName(), STREAM_NAME3));
+    }).execute();
+
+    testdb.getDatabase().query(c -> {
+      return c.query("""
+                     INSERT INTO %s.%s (id, name) VALUES (4,'voyager');
+                     """.formatted(testdb.getDatabaseName(), STREAM_NAME3));
+    }).execute();
+
+    final List<ConfiguredAirbyteStream> configuredAirbyteStreams =
+        Lists.newArrayList(CatalogHelpers.createConfiguredAirbyteStream(STREAM_NAME3,
+            testdb.getDatabaseName(),
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("userid", JsonSchemaType.NUMBER))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withSyncMode(INCREMENTAL)
+            .withCursorField(List.of("id")));
+    final ConfiguredAirbyteCatalog configuredCatalogWithOneStream =
+        new ConfiguredAirbyteCatalog().withStreams(List.of(configuredAirbyteStreams.get(0)));
+
+    final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalogWithOneStream, getState());
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
+    final List<AirbyteStateMessage> stateMessages = airbyteMessages
+        .stream()
+        .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
+        .map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+    assertEquals(recordMessages.size(), 1);
+    assertFalse(stateMessages.isEmpty(), "Reason");
+    ObjectMapper mapper = new ObjectMapper();
+
+    assertEquals(recordMessages.get(0).getData(),
+        mapper.readTree("{\"id\":4, \"name\":\"voyager\", \"userid\":null}"));
+
+    // when we run incremental sync again there should be no new records. Run a sync with the latest
+    // state message and assert no records were emitted.
+    JsonNode latestState = extractLatestState(stateMessages);
+
+    testdb.getDatabase().query(c -> {
+      return c.query("INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');".formatted(testdb.getDatabaseName(), STREAM_NAME3));
+    }).execute();
+
+    assert Objects.nonNull(latestState);
+    final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalogWithOneStream, latestState));
+    assertFalse(
+        secondSyncRecords.isEmpty(),
+        "Expected the second incremental sync to produce records.");
+    assertEquals(secondSyncRecords.get(0).getData(),
+        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}"));
+
   }
 
 }

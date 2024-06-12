@@ -23,6 +23,19 @@ definitions:
     page_size_option:
       inject_into: "request_parameter"
       field_name: "limit"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: modifiedAt
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "2000-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      inject_into: request_parameter
+      field_name: modifiedSince
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -53,6 +66,8 @@ definitions:
       path: "/smtp/templates"
   contacts_stream:
     $ref: "#/definitions/base_stream"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     $parameters:
       name: contacts
       primary_key: id

@@ -12,7 +12,8 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 @pytest.mark.parametrize(
@@ -68,6 +69,7 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
     stream_state = {"created_at": "06-06-21"}
     stream_slice = {"last_seen": "06-10-21"}
     next_page_token = {"last_seen_id": 14}
+    schema = create_schema()
     first_transformation = Mock(spec=RecordTransformation)
     second_transformation = Mock(spec=RecordTransformation)
     transformations = [first_transformation, second_transformation]
@@ -80,13 +82,19 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
     else:
         record_filter = RecordFilter(config=config, condition=filter_template, parameters=parameters)
     record_selector = RecordSelector(
-        extractor=extractor, record_filter=record_filter, transformations=transformations, config=config, parameters=parameters
+        extractor=extractor,
+        record_filter=record_filter,
+        transformations=transformations,
+        config=config,
+        parameters=parameters,
+        schema_normalization=TypeTransformer(TransformConfig.NoTransform),
     )
 
-    actual_records = record_selector.select_records(
-        response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-    )
+    actual_records = list(record_selector.select_records(
+        response=response, records_schema=schema, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+    ))
     assert actual_records == [Record(data, stream_slice) for data in expected_data]
+
     calls = []
     for record in expected_data:
         calls.append(call(record, config=config, stream_state=stream_state, stream_slice=stream_slice))
@@ -95,7 +103,77 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
         transformation.transform.assert_has_calls(calls)
 
 
+@pytest.mark.parametrize(
+    "test_name, schema, schema_transformation, body, expected_data",
+    [
+        (
+            "test_with_empty_schema",
+            {},
+            TransformConfig.NoTransform,
+            {"data": [{"id": 1, "created_at": "06-06-21", "field_int": "100", "field_float": "123.3"}]},
+            [{"id": 1, "created_at": "06-06-21", "field_int": "100", "field_float": "123.3"}],
+        ),
+        (
+            "test_with_schema_none_normalizer",
+            {},
+            TransformConfig.NoTransform,
+            {"data": [{"id": 1, "created_at": "06-06-21", "field_int": "100", "field_float": "123.3"}]},
+            [{"id": 1, "created_at": "06-06-21", "field_int": "100", "field_float": "123.3"}],
+        ),
+        (
+            "test_with_schema_and_default_normalizer",
+            {},
+            TransformConfig.DefaultSchemaNormalization,
+            {"data": [{"id": 1, "created_at": "06-06-21", "field_int": "100", "field_float": "123.3"}]},
+            [{"id": "1", "created_at": "06-06-21", "field_int": 100, "field_float": 123.3}],
+        ),
+    ],
+)
+def test_schema_normalization(test_name, schema, schema_transformation, body, expected_data):
+    config = {"response_override": "stop_if_you_see_me"}
+    parameters = {"parameters_field": "data", "created_at": "06-07-21"}
+    stream_state = {"created_at": "06-06-21"}
+    stream_slice = {"last_seen": "06-10-21"}
+    next_page_token = {"last_seen_id": 14}
+
+    response = create_response(body)
+    schema = create_schema()
+    decoder = JsonDecoder(parameters={})
+    extractor = DpathExtractor(field_path=["data"], decoder=decoder, config=config, parameters=parameters)
+    record_selector = RecordSelector(
+        extractor=extractor,
+        record_filter=None,
+        transformations=[],
+        config=config,
+        parameters=parameters,
+        schema_normalization=TypeTransformer(schema_transformation),
+    )
+
+    actual_records = list(record_selector.select_records(
+        response=response,
+        stream_state=stream_state,
+        stream_slice=stream_slice,
+        next_page_token=next_page_token,
+        records_schema=schema,
+    ))
+
+    assert actual_records == [Record(data, stream_slice) for data in expected_data]
+
+
 def create_response(body):
     response = requests.Response()
     response._content = json.dumps(body).encode("utf-8")
     return response
+
+
+def create_schema():
+    return {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+            "id": {"type": "string"},
+            "created_at": {"type": "string"},
+            "field_int": {"type": "integer"},
+            "field_float": {"type": "number"},
+        },
+    }

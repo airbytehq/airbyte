@@ -5,7 +5,8 @@
 package io.airbyte.integrations.source.mongodb;
 
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration;
 import java.time.Duration;
 
 public class MongoConstants {
@@ -31,6 +32,19 @@ public class MongoConstants {
   public static final String QUEUE_SIZE_CONFIGURATION_KEY = "queue_size";
   public static final String STORAGE_STATS_KEY = "storageStats";
   public static final String USERNAME_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
+  public static final String SCHEMA_ENFORCED_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY;
+  public static final String SCHEMALESS_MODE_DATA_FIELD = Configuration.SCHEMALESS_MODE_DATA_FIELD;
+  public static final String INITIAL_RECORD_WAITING_TIME_SEC = "initial_waiting_seconds";
+  public static final Integer DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC = 300;
+
+  public static final String INVALID_CDC_CURSOR_POSITION_PROPERTY = "invalid_cdc_cursor_position_behavior";
+  public static final String FAIL_SYNC_OPTION = "Fail sync";
+  public static final String RESYNC_DATA_OPTION = "Re-sync data";
+
+  public static final String UPDATE_CAPTURE_MODE = "update_capture_mode";
+
+  public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
+  public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
 
   private MongoConstants() {}
 

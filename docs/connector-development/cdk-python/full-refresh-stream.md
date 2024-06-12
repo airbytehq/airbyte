@@ -41,3 +41,8 @@ If custom functionality is required for reading a stream, you may need to overri
 
 We highly recommend implementing Incremental when feasible. See the [incremental streams page](incremental-stream.md) for more information.
 
+## Resumable Full Refresh Streams
+
+Another alternative to Incremental and Full Refresh streams is [resumable full refresh](resumable-full-refresh-stream.md). This is a stream that uses API
+endpoints that cannot reliably retrieve data in an incremental fashion. However, it can offer improved resilience
+against errors by checkpointing the stream's page number or cursor.

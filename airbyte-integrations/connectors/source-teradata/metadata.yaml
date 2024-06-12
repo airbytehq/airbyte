@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-teradata
   githubIssueLabel: source-teradata
   icon: teradata.svg
@@ -20,9 +20,17 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/teradata
   tags:
     - language:java
-    - language:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-TERADATA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

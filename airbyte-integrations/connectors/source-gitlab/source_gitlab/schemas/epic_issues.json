@@ -3,115 +3,149 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "ID of the epic issue.",
       "type": ["null", "integer"]
     },
     "iid": {
+      "description": "Internal ID of the epic issue.",
       "type": ["null", "integer"]
     },
     "project_id": {
+      "description": "ID of the project the epic issue belongs to.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title of the epic issue.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the epic issue.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "State of the epic issue.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp when the epic issue was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp when the epic issue was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "closed_at": {
+      "description": "Timestamp when the epic issue was closed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "labels": {
+      "description": "List of labels associated with the epic issue.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "milestone": {
+      "description": "Information about the milestone associated with the epic issue.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "milestone_id": {
+      "description": "ID of the milestone associated with the epic issue.",
       "type": ["null", "integer"]
     },
     "assignees": {
+      "description": "List of users assigned to the epic issue.",
       "type": ["null", "array"],
       "items": {
+        "description": "Information about an assignee.",
         "type": ["null", "integer"]
       }
     },
     "assignee": {
+      "description": "Information about the user assigned to the epic issue.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "assignee_id": {
+      "description": "ID of the user assigned to the epic issue.",
       "type": ["null", "integer"]
     },
     "author": {
+      "description": "Information about the user who authored the epic issue.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "author_id": {
+      "description": "ID of the user who authored the epic issue.",
       "type": ["null", "integer"]
     },
     "user_notes_count": {
+      "description": "Number of user notes added to the epic issue.",
       "type": ["null", "integer"]
     },
     "upvotes": {
+      "description": "Number of upvotes received for the epic issue.",
       "type": ["null", "integer"]
     },
     "downvotes": {
+      "description": "Number of downvotes received for the epic issue.",
       "type": ["null", "integer"]
     },
     "due_date": {
+      "description": "Due date set for the epic issue.",
       "type": ["null", "string"],
       "format": "date"
     },
     "confidential": {
+      "description": "Indicates if the epic issue is confidential.",
       "type": ["null", "boolean"]
     },
     "weight": {
+      "description": "Weight assigned to the epic issue.",
       "type": ["null", "integer"]
     },
     "discussion_locked": {
+      "description": "Indicates if the discussion on the epic issue is locked.",
       "type": ["null", "boolean"]
     },
     "web_url": {
+      "description": "URL link to access the epic issue.",
       "type": ["null", "string"]
     },
     "time_stats": {
+      "description": "Time-related statistics for the epic issue.",
       "type": ["null", "object"]
     },
     "_links": {
+      "description": "Links related to the epic issue.",
       "type": ["null", "object"]
     },
     "epic_issue_id": {
+      "description": "ID of the epic issue.",
       "type": ["null", "integer"]
     },
     "merge_requests_count": {
+      "description": "Number of merge requests related to the epic issue.",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "Type of the epic issue.",
       "type": ["null", "string"]
     },
     "task_status": {
+      "description": "Status of tasks associated with the epic issue.",
       "type": ["null", "string"]
     },
     "moved_to_id": {
+      "description": "ID of the epic issue it was moved to.",
       "type": ["null", "integer"]
     },
     "iteration": {
+      "description": "Information about the iteration associated with the epic issue.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -136,18 +170,22 @@
           "type": ["null", "integer"]
         },
         "created_at": {
+          "description": "Timestamp when the iteration was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "updated_at": {
+          "description": "Timestamp when the iteration was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "start_date": {
+          "description": "Start date of the iteration.",
           "type": ["null", "string"],
           "format": "date"
         },
         "due_date": {
+          "description": "Due date set for the iteration.",
           "type": ["null", "string"],
           "format": "date"
         },
@@ -157,12 +195,15 @@
       }
     },
     "has_tasks": {
+      "description": "Indicates if the epic issue has associated tasks.",
       "type": ["null", "boolean"]
     },
     "blocking_issues_count": {
+      "description": "Number of blocking issues related to the epic issue.",
       "type": ["null", "integer"]
     },
     "closed_by": {
+      "description": "Information about the user who closed the epic issue.",
       "type": ["null", "object"],
       "properties": {
         "state": {
@@ -186,6 +227,7 @@
       }
     },
     "references": {
+      "description": "References related to the epic issue.",
       "type": ["null", "object"],
       "properties": {
         "full": {
@@ -200,6 +242,7 @@
       }
     },
     "epic": {
+      "description": "Information about the epic that the issue belongs to.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -216,33 +259,47 @@
         },
         "group_id": {
           "type": ["null", "integer"]
+        },
+        "human_readable_end_date": {
+          "type": ["null", "string"]
+        },
+        "human_readable_timestamp": {
+          "type": ["null", "string"]
         }
       }
     },
     "issue_type": {
+      "description": "Type of the epic issue.",
       "type": ["null", "string"]
     },
     "severity": {
+      "description": "Severity level of the epic issue.",
       "type": ["null", "string"]
     },
     "service_desk_reply_to": {
+      "description": "ID of the service desk reply related to the epic issue.",
       "type": ["null", "string"]
     },
     "task_completion_status": {
+      "description": "Status of task completion for the epic issue.",
       "type": ["null", "object"],
       "properties": {
         "count": {
+          "description": "Total count of tasks.",
           "type": ["null", "integer"]
         },
         "completed_count": {
+          "description": "Number of completed tasks.",
           "type": ["null", "integer"]
         }
       }
     },
     "relative_position": {
+      "description": "Relative position of the epic issue.",
       "type": ["null", "integer"]
     },
     "epic_iid": {
+      "description": "Internal ID of the epic the issue belongs to.",
       "type": ["null", "integer"]
     }
   }

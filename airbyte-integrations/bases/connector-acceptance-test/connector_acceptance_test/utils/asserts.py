@@ -8,7 +8,6 @@ import re
 from collections import defaultdict
 from typing import Any, Dict, List, Mapping
 
-import dpath.util
 import pendulum
 from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError, validators
@@ -24,6 +23,40 @@ timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d"  # date
 # For stricter type validation we don't want to keep this behavior. We want to consider integers in the Pythonic way.
 strict_integer_type_checker = Draft7Validator.TYPE_CHECKER.redefine("integer", lambda _, value: isinstance(value, int))
 Draft7ValidatorWithStrictInteger = validators.extend(Draft7Validator, type_checker=strict_integer_type_checker)
+
+
+class NoAdditionalPropertiesValidator(Draft7Validator):
+    def __init__(self, schema, **kwargs):
+        schema = self._enforce_false_additional_properties(schema)
+        super().__init__(schema, **kwargs)
+
+    @staticmethod
+    def _enforce_false_additional_properties(json_schema: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a copy of the schema in which `additionalProperties` is set to False for all non-null object properties.
+
+        This method will override the value of `additionalProperties` if it is set,
+        or will create the property and set it to False if it does not exist.
+        """
+        new_schema = copy.deepcopy(json_schema)
+        new_schema["additionalProperties"] = False
+
+        def add_properties(properties):
+            for prop_name, prop_value in properties.items():
+                if "type" in prop_value and "object" in prop_value["type"] and len(prop_value.get("properties", [])):
+                    prop_value["additionalProperties"] = False
+                    add_properties(prop_value.get("properties", {}))
+                elif "type" in prop_value and "array" in prop_value["type"]:
+                    if (
+                        prop_value.get("items")
+                        and "object" in prop_value.get("items", {}).get("type", [])
+                        and len(prop_value.get("items", {}).get("properties", []))
+                    ):
+                        prop_value["items"]["additionalProperties"] = False
+                    if prop_value.get("items", {}).get("properties"):
+                        add_properties(prop_value["items"]["properties"])
+
+        add_properties(new_schema.get("properties", {}))
+        return new_schema
 
 
 class CustomFormatChecker(FormatChecker):
@@ -46,19 +79,8 @@ class CustomFormatChecker(FormatChecker):
             return super().check(instance, format)
 
 
-def _enforce_no_additional_top_level_properties(json_schema: Dict[str, Any]):
-    """Create a copy of the schema in which `additionalProperties` is set to False for the dict of top-level properties.
-
-    This method will override the value of `additionalProperties` if it is set,
-    or will create the property and set it to False if it does not exist.
-    """
-    enforced_schema = copy.deepcopy(json_schema)
-    dpath.util.new(enforced_schema, "additionalProperties", False)
-    return enforced_schema
-
-
 def verify_records_schema(
-    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool
+    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog
 ) -> Mapping[str, Mapping[str, ValidationError]]:
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
@@ -66,11 +88,11 @@ def verify_records_schema(
     stream_validators = {}
     for stream in catalog.streams:
         schema_to_validate_against = stream.stream.json_schema
-        if fail_on_extra_columns:
-            schema_to_validate_against = _enforce_no_additional_top_level_properties(schema_to_validate_against)
-        stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
-            schema_to_validate_against, format_checker=CustomFormatChecker()
-        )
+        # We will be disabling strict `NoAdditionalPropertiesValidator` until we have a better plan for schema validation. The consequence
+        # is that we will lack visibility on new fields that are not added on the root level (root level is validated by Datadog)
+        #   validator = NoAdditionalPropertiesValidator if fail_on_extra_columns else Draft7ValidatorWithStrictInteger
+        validator = Draft7ValidatorWithStrictInteger
+        stream_validators[stream.stream.name] = validator(schema_to_validate_against, format_checker=CustomFormatChecker())
     stream_errors = defaultdict(dict)
     for record in records:
         validator = stream_validators.get(record.stream)

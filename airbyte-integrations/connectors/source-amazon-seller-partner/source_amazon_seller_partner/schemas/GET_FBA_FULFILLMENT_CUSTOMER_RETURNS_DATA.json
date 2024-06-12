@@ -4,18 +4,63 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "return-date": { "type": ["null", "string"] },
-    "order-id": { "type": ["null", "string"] },
-    "sku": { "type": ["null", "string"] },
-    "asin": { "type": ["null", "string"] },
-    "fnsku": { "type": ["null", "string"] },
-    "product-name": { "type": ["null", "string"] },
-    "quantity": { "type": ["null", "string"] },
-    "fulfillment-center-id": { "type": ["null", "string"] },
-    "detailed-disposition": { "type": ["null", "string"] },
-    "reason": { "type": ["null", "string"] },
-    "status": { "type": ["null", "string"] },
-    "license-plate-number": { "type": ["null", "string"] },
-    "customer-comments": { "type": ["null", "string"] }
+    "return-date": {
+      "description": "The date and time when the return was initiated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "order-id": {
+      "description": "The unique identifier of the order associated with the return",
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "description": "Stock Keeping Unit of the product",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "The Amazon Standard Identification Number of the product",
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "description": "Fulfillment Network Stock Keeping Unit of the product",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "The name of the product returned by the customer",
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "description": "The quantity of the item returned",
+      "type": ["null", "string"]
+    },
+    "fulfillment-center-id": {
+      "description": "Identification of the fulfillment center where the return was processed",
+      "type": ["null", "string"]
+    },
+    "detailed-disposition": {
+      "description": "Detailed description of the disposition of the returned item",
+      "type": ["null", "string"]
+    },
+    "reason": {
+      "description": "The reason provided for the return by the customer",
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "The status of the return process",
+      "type": ["null", "string"]
+    },
+    "license-plate-number": {
+      "description": "The unique identifier of the license plate associated with the return",
+      "type": ["null", "string"]
+    },
+    "customer-comments": {
+      "description": "Comments provided by the customer regarding the return",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end date and time of the data record",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: cf98d52c-ba5a-4dfd-8ada-c1baebfa6e73
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/destination-langchain
   githubIssueLabel: destination-langchain
   icon: langchain.svg
@@ -18,6 +18,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/langchain
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
@@ -28,4 +29,13 @@ data:
         message: >
           This version changes the way record ids are tracked internally. If you are using a stream in **append-dedup** mode, you need to reset the connection after doing the upgrade to avoid duplicates.
         upgradeDeadline: "2023-09-18"
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-LANGCHAIN_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

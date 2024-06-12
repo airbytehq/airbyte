@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, Mapping
 import pandas as pd
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, AirbyteStateType, ConfiguredAirbyteCatalog, Status, Type
 from botocore.exceptions import ClientError, InvalidRegionError
 
 from .aws import AwsHandler
@@ -29,7 +29,7 @@ class DestinationAwsDatalake(Destination):
             streams[stream].flush()
 
     @staticmethod
-    def _get_random_string(length):
+    def _get_random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_letters) for i in range(length))
 
     def write(
@@ -65,29 +65,25 @@ class DestinationAwsDatalake(Destination):
         }
 
         for message in input_messages:
-            if message.type == Type.STATE:
-                if not message.state.data:
+            if message.type == Type.STATE and message.state.type == AirbyteStateType.STREAM:
+                state_stream = message.state.stream
 
-                    if message.state.stream:
-                        stream = message.state.stream.stream_descriptor.name
-                        logger.info(f"Received empty state for stream {stream}, resetting stream")
-                        if stream in streams:
-                            streams[stream].reset()
-                        else:
-                            logger.warning(f"Trying to reset stream {stream} that is not in the configured catalog")
-
-                    if not message.state.stream:
-                        logger.info("Received empty state for, resetting all streams including non-incremental streams")
-                        for stream in streams:
-                            streams[stream].reset()
+                if not state_stream.stream_state:
+                    stream = state_stream.stream_descriptor.name
+                    logger.info(f"Received empty state for stream {stream}, resetting stream")
+                    if stream in streams:
+                        streams[stream].reset()
+                    else:
+                        logger.warning(f"Trying to reset stream {stream} that is not in the configured catalog")
 
                 # Flush records when state is received
-                if message.state.stream:
-                    if message.state.stream.stream_state and hasattr(message.state.stream.stream_state, "stream_name"):
-                        stream_name = message.state.stream.stream_state.stream_name
-                        if stream_name in streams:
-                            logger.info(f"Got state message from source: flushing records for {stream_name}")
-                            streams[stream_name].flush(partial=True)
+                else:
+                    stream = state_stream.stream_descriptor.name
+                    if stream in streams:
+                        logger.info(f"Got state message from source: flushing records for {stream}")
+                        streams[stream].flush(partial=True)
+                    else:
+                        logger.warning(f"Trying to flush stream {stream} that is not in the configured catalog")
 
                 yield message
 

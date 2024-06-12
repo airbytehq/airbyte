@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.3.2
   dockerRepository: airbyte/source-tidb
   githubIssueLabel: source-tidb
   icon: tidb.svg
@@ -21,9 +21,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
   tags:
     - language:java
-    - language:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

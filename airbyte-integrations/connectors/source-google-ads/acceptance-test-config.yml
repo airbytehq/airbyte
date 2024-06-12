@@ -22,9 +22,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: yes
-          extra_records: yes # the file with all the records is 15 MB, so comparing only 3 records
         timeout_seconds: 3600
         empty_streams:
           - name: "customer_label"
@@ -35,12 +33,6 @@ acceptance_tests:
             bypass_reason: "No data for this date range, tested in next config"
           - name: "click_view"
             bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
-        ignored_fields:
-          customer:
-            - name: customer.optimization_score_weight
-              bypass_reason: "Value can be updated by Google Ads"
-            - name: customer.optimization_score
-              bypass_reason: "Value can be updated by Google Ads"
       - config_path: "secrets/config_click_view.json"
         expect_records:
           path: "integration_tests/expected_records_click.jsonl"
@@ -54,22 +46,11 @@ acceptance_tests:
             bypass_reason: "No data for this date range, tested in previous config"
           - name: "keyword_view"
             bypass_reason: "No data for this date range, tested in previous config"
-        ignored_fields:
-          customer:
-            - name: customer.optimization_score_weight
-              bypass_reason: "Value can be updated by Google Ads"
-            - name: customer.optimization_score
-              bypass_reason: "Value can be updated by Google Ads"
-          campaign_budget:
-            - name: campaign_budget.recommended_budget_estimated_change_weekly_interactions
-              bypass_reason: "Value can be updated by Google Ads"
-          campaign:
-            - name: campaign.optimization_score
-              bypass_reason: "Value can be updated by Google Ads"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config_manager_account.json"
   incremental:
     tests:
       - config_path: "secrets/incremental_config.json"

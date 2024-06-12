@@ -6,7 +6,9 @@ acceptance_tests:
       - spec_path: "source_slack/spec.json"
         backward_compatibility_tests_config:
           # edited `min`/`max` > `minimum`/`maximum` for `lookback_window` field
-          disable_for_version: "0.1.26"
+          #disable_for_version: "0.1.26"
+          # slight changes: removed doc url, added new null oauth param
+          disable_for_version: "0.3.10"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -30,6 +32,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/full_refresh_catalog.json"
+        timeout_seconds: 4800
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -37,3 +40,6 @@ acceptance_tests:
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
         timeout_seconds: 4800
+        # When running multiple syncs in a row, we may get the same record set because of a lookback window.
+        # This may fail the test but this is expected behavior of the connector.
+        skip_comprehensive_incremental_tests: true

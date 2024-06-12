@@ -1,0 +1,370 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "create_time": "2220-11-23T05:42:11+00:00"
+      },
+      "stream_descriptor": {
+        "name": "campaigns"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_created": "2220-09-25T04:47:31+00:00"
+      },
+      "stream_descriptor": {
+        "name": "lists"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "create_time": "2220-11-23T05:42:11+00:00"
+      },
+      "stream_descriptor": {
+        "name": "automations"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": "324b8a398e",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2230-11-23T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "3cbed9a0fc",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2230-11-23T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "2aa901afd0",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2230-11-23T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "e974db8443",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2230-11-23T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "a79651273b",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2230-11-23T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "d983b83b95",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2230-11-23T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "7847cdaeff",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2230-11-23T05:42:10+0000"
+            }
+          }
+        ]
+      },
+      "stream_descriptor": {
+        "name": "email_activity"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": "16d6ec4ffc",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "last_changed": "2230-02-26T05:42:10.000000Z"
+            }
+          }
+        ]
+      },
+      "stream_descriptor": {
+        "name": "list_members"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "send_time": "2230-02-26T05:42:10+00:00"
+      },
+      "stream_descriptor": {
+        "name": "reports"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": 13506120,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 13506124,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 13506128,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 13506132,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 13506136,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 14351124,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 14351128,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 14351488,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 14351504,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": 14351532,
+              "parent_slice": {
+                "id": "16d6ec4ffc",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "last_changed": "2222-12-27T08:34:39+0000"
+            }
+          }
+        ]
+      },
+      "stream_descriptor": {
+        "name": "segment_members"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": "16d6ec4ffc",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "updated_at": "2230-02-26T05:42:10Z"
+            }
+          }
+        ]
+      },
+      "stream_descriptor": {
+        "name": "segments"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": "324b8a398e",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2231-09-26T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "3cbed9a0fc",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2231-09-26T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "2aa901afd0",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2231-09-26T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "e974db8443",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2231-09-26T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "a79651273b",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2231-09-26T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "d983b83b95",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2231-09-26T05:42:10+0000"
+            }
+          },
+          {
+            "partition": {
+              "id": "7847cdaeff",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "timestamp": "2231-09-26T05:42:10+0000"
+            }
+          }
+        ]
+      },
+      "stream_descriptor": {
+        "name": "unsubscribes"
+      }
+    }
+  }
+]

@@ -3,13 +3,15 @@
 #
 
 
-from logging import Logger
-from typing import Any, Iterable, Mapping
+from logging import Logger, getLogger
+from typing import Any, Dict, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_meilisearch.writer import MeiliWriter
 from meilisearch import Client
+
+logger = getLogger("airbyte")
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
@@ -21,36 +23,51 @@ def get_client(config: Mapping[str, Any]) -> Client:
 class DestinationMeilisearch(Destination):
     primary_key = "_ab_pk"
 
+    def _flush_streams(self, streams: Dict[str, MeiliWriter]) -> Iterable[AirbyteMessage]:
+        for stream in streams:
+            streams[stream].flush()
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         client = get_client(config=config)
+        # Creating Meilisearch writers
+        writers = {s.stream.name: MeiliWriter(client, s.stream.name, self.primary_key) for s in configured_catalog.streams}
 
         for configured_stream in configured_catalog.streams:
-            steam_name = configured_stream.stream.name
+            stream_name = configured_stream.stream.name
+            # Deleting index in Meilisearch if sync mode is overwite
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                client.delete_index(steam_name)
-            client.create_index(steam_name, {"primaryKey": self.primary_key})
+                logger.debug(f"Deleting index: {stream_name}.")
+                client.delete_index(stream_name)
+            # Creating index in Meilisearch
+            client.create_index(stream_name, {"primaryKey": self.primary_key})
+            logger.debug(f"Creating index: {stream_name}.")
 
-            writer = MeiliWriter(client, steam_name, self.primary_key)
-            for message in input_messages:
-                if message.type == Type.STATE:
-                    writer.flush()
-                    yield message
-                elif message.type == Type.RECORD:
-                    writer.queue_write_operation(message.record.data)
-                else:
+        for message in input_messages:
+            if message.type == Type.STATE:
+                yield message
+            elif message.type == Type.RECORD:
+                data = message.record.data
+                stream = message.record.stream
+                # Skip unselected streams
+                if stream not in writers:
+                    logger.debug(f"Stream {stream} was not present in configured streams, skipping")
                     continue
-            writer.flush()
+                writers[stream].queue_write_operation(data)
+            else:
+                logger.info(f"Unhandled message type {message.type}: {message}")
+
+        # Flush any leftover messages
+        self._flush_streams(writers)
 
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             client = get_client(config=config)
 
-            create_index_job = client.create_index("_airbyte", {"primaryKey": "id"})
-            client.wait_for_task(create_index_job["taskUid"])
+            client.create_index("_airbyte", {"primaryKey": "id"})
 
-            add_documents_job = client.index("_airbyte").add_documents(
+            client.index("_airbyte").add_documents(
                 [
                     {
                         "id": 287947,
@@ -59,9 +76,7 @@ class DestinationMeilisearch(Destination):
                     }
                 ]
             )
-            client.wait_for_task(add_documents_job.task_uid)
 
-            client.index("_airbyte").search("Shazam")
             client.delete_index("_airbyte")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:

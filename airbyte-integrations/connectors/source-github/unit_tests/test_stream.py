@@ -10,11 +10,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
 from requests import HTTPError
 from responses import matchers
-from source_github import constants
+from source_github import SourceGithub, constants
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -234,6 +234,7 @@ def test_stream_organizations_read():
 def test_stream_teams_read():
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Teams(**organization_args)
+    stream._session.cache.clear()
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
     records = list(read_full_refresh(stream))
@@ -404,13 +405,12 @@ def test_stream_commits_incremental_read():
         "start_date": "2022-02-02T10:10:03Z",
     }
 
-    default_branches = {"organization/repository": "master"}
-    branches_to_pull = {"organization/repository": ["branch"]}
+    branches_to_pull = ["organization/repository/branch"]
 
-    stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches)
+    stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull)
     stream.page_size = 2
 
-    data = [
+    commits_data = [
         {"sha": 1, "commit": {"author": {"date": "2022-02-02T10:10:02Z"}}},
         {"sha": 2, "commit": {"author": {"date": "2022-02-02T10:10:04Z"}}},
         {"sha": 3, "commit": {"author": {"date": "2022-02-02T10:10:06Z"}}},
@@ -420,27 +420,57 @@ def test_stream_commits_incremental_read():
         {"sha": 7, "commit": {"author": {"date": "2022-02-02T10:10:14Z"}}},
     ]
 
-    api_url = "https://api.github.com/repos/organization/repository/commits"
+    repo_api_url = "https://api.github.com/repos/organization/repository"
+    branches_api_url = "https://api.github.com/repos/organization/repository/branches"
+    commits_api_url = "https://api.github.com/repos/organization/repository/commits"
 
     responses.add(
         "GET",
-        api_url,
-        json=data[0:3],
+        repo_api_url,
+        json={"id": 1, "updated_at": "2022-02-02T10:10:02Z", "default_branch": "main", "full_name": "organization/repository"},
+    )
+    responses.add(
+        responses.GET,
+        branches_api_url,
+        json=[
+            {
+                "name": "branch",
+                "commit": {
+                    "sha": "74445338726f0f8e1c27c10dce90ca00c5ae2858",
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/74445338726f0f8e1c27c10dce90ca00c5ae2858"
+                },
+                "protected": False
+            },
+            {
+                "name": "main",
+                "commit": {
+                    "sha": "c27c10dce90ca00c5ae285874445338726f0f8e1",
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/c27c10dce90ca00c5ae285874445338726f0f8e1"
+                },
+                "protected": False
+            }
+        ],
+        status=200,
+    )
+    responses.add(
+        "GET",
+        commits_api_url,
+        json=commits_data[0:3],
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:03Z", "sha": "branch", "per_page": "2"}, strict_match=False)],
     )
 
     responses.add(
         "GET",
-        api_url,
-        json=data[3:5],
+        commits_api_url,
+        json=commits_data[3:5],
         headers={"Link": '<https://api.github.com/repos/organization/repository/commits?page=2>; rel="next"'},
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2"}, strict_match=False)],
     )
 
     responses.add(
         "GET",
-        api_url,
-        json=data[5:7],
+        commits_api_url,
+        json=commits_data[5:7],
         match=[
             matchers.query_param_matcher(
                 {"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2", "page": "2"}, strict_match=False
@@ -533,7 +563,8 @@ def test_stream_project_columns():
 
     projects_stream = Projects(**repository_args_with_start_date)
     stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
-
+    projects_stream._session.cache.clear()
+    stream._session.cache.clear()
     stream_state = {}
 
     records = read_incremental(stream, stream_state=stream_state)
@@ -918,7 +949,7 @@ def test_stream_reviews_incremental_read():
 
 
 @responses.activate
-def test_stream_team_members_full_refresh(caplog):
+def test_stream_team_members_full_refresh(caplog, rate_limit_mock_response):
     organization_args = {"organizations": ["org1"]}
     repository_args = {"repositories": [], "page_size_for_large_streams": 100}
 
@@ -959,6 +990,7 @@ def test_stream_commit_comment_reactions_incremental_read():
 
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
     stream = CommitCommentReactions(**repository_args)
+    stream._parent_stream._session.cache.clear()
 
     responses.add(
         "GET",
@@ -1305,7 +1337,7 @@ def test_stream_pull_request_comment_reactions_read():
 
 
 @responses.activate
-def test_stream_projects_v2_graphql_retry():
+def test_stream_projects_v2_graphql_retry(rate_limit_mock_response):
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 20,
@@ -1368,22 +1400,56 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
 
 
 @responses.activate
-def test_stream_contributor_activity_accepted_response(caplog):
-    repository_args = {
-        "page_size_for_large_streams": 20,
-        "repositories": ["airbytehq/airbyte"],
-    }
-    stream = ContributorActivity(**repository_args)
+def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response):
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte"},
+        status=200,
+    )
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
+        status=200,
+    )
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        json={},
+        status=200,
+    )
     resp = responses.add(
         responses.GET,
-        "https://api.github.com/repos/airbytehq/airbyte/stats/contributors",
+        "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
         body="",
         status=202,
     )
+
+    source = SourceGithub()
+    configured_catalog = {
+        "streams": [
+            {
+                "stream": {
+                    "name": "contributor_activity",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_primary_key": [["id"]],
+                },
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
+    }
+    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    logger_mock = MagicMock()
+
     with patch("time.sleep", return_value=0):
-        list(read_full_refresh(stream))
+        records = list(source.read(config=config, logger=logger_mock, catalog=catalog, state={}))
+
+    assert records[2].log.message == "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/test_airbyte`."
     assert resp.call_count == 6
-    assert "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/airbyte`." in caplog.messages
 
 
 @responses.activate

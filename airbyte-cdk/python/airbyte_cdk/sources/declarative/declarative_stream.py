@@ -7,11 +7,14 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Config, StreamSlice
 
 
 @dataclass
@@ -34,6 +37,7 @@ class DeclarativeStream(Stream):
     parameters: InitVar[Mapping[str, Any]]
     name: str
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    state_migrations: List[StateMigration] = field(repr=True, default_factory=list)
     schema_loader: Optional[SchemaLoader] = None
     _name: str = field(init=False, repr=False, default="")
     _primary_key: str = field(init=False, repr=False, default="")
@@ -75,7 +79,12 @@ class DeclarativeStream(Stream):
     @state.setter
     def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
-        self.retriever.state = value
+        state: Mapping[str, Any] = value
+        if self.state_migrations:
+            for migration in self.state_migrations:
+                if migration.should_migrate(state):
+                    state = migration.migrate(state)
+        self.retriever.state = state
 
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
@@ -88,8 +97,14 @@ class DeclarativeStream(Stream):
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
-        cursor = self._stream_cursor_field.eval(self.config)
+        cursor = self._stream_cursor_field.eval(self.config)  # type: ignore # _stream_cursor_field is always cast to interpolated string
         return cursor if cursor else []
+
+    @property
+    def is_resumable(self) -> bool:
+        # Declarative sources always implement state getter/setter, but whether it supports checkpointing is based on
+        # if the retriever has a cursor defined.
+        return self.retriever.cursor is not None if hasattr(self.retriever, "cursor") else False
 
     def read_records(
         self,
@@ -101,7 +116,16 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
-        yield from self.retriever.read_records(stream_slice)
+        if stream_slice is None or stream_slice == {}:
+            # As the parameter is Optional, many would just call `read_records(sync_mode)` during testing without specifying the field
+            # As part of the declarative model without custom components, this should never happen as the CDK would wire up a
+            # SinglePartitionRouter that would create this StreamSlice properly
+            # As part of the declarative model with custom components, a user that would return a `None` slice would now have the default
+            # empty slice which seems to make sense.
+            stream_slice = StreamSlice(partition={}, cursor_slice={})
+        if not isinstance(stream_slice, StreamSlice):
+            raise ValueError(f"DeclarativeStream does not support stream_slices that are not StreamSlice. Got {stream_slice}")
+        yield from self.retriever.read_records(self.get_json_schema(), stream_slice)
 
     def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore
         """
@@ -114,7 +138,7 @@ class DeclarativeStream(Stream):
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    ) -> Iterable[Optional[StreamSlice]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 
@@ -134,4 +158,9 @@ class DeclarativeStream(Stream):
         * Updating the state once every record would generate issues for data feed stop conditions or semi-incremental syncs where the
             important state is the one at the beginning of the slice
         """
+        return None
+
+    def get_cursor(self) -> Optional[Cursor]:
+        if self.retriever and isinstance(self.retriever, SimpleRetriever):
+            return self.retriever.cursor
         return None

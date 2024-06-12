@@ -4,26 +4,95 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "Date": { "type": ["null", "string"] },
-    "FNSKU": { "type": ["null", "string"] },
-    "ASIN": { "type": ["null", "string"] },
-    "MSKU": { "type": ["null", "string"] },
-    "Title": { "type": ["null", "string"] },
-    "Disposition": { "type": ["null", "string"] },
-    "Starting Warehouse Balance": { "type": ["null", "string"] },
-    "In Transit Between Warehouses": { "type": ["null", "string"] },
-    "Receipts": { "type": ["null", "string"] },
-    "Customer Shipments": { "type": ["null", "string"] },
-    "Customer Returns": { "type": ["null", "string"] },
-    "Vendor Returns": { "type": ["null", "string"] },
-    "Warehouse Transfer In/Out": { "type": ["null", "string"] },
-    "Found": { "type": ["null", "string"] },
-    "Lost": { "type": ["null", "string"] },
-    "Damaged": { "type": ["null", "string"] },
-    "Disposed": { "type": ["null", "string"] },
-    "Other Events": { "type": ["null", "string"] },
-    "Ending Warehouse Balance": { "type": ["null", "string"] },
-    "Unknown Events": { "type": ["null", "string"] },
-    "Location": { "type": ["null", "string"] }
+    "Date": {
+      "description": "Date of the event",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "FNSKU": {
+      "description": "Fulfillment Network Stock Keeping Unit",
+      "type": ["null", "string"]
+    },
+    "ASIN": {
+      "description": "Amazon Standard Identification Number for the product",
+      "type": ["null", "string"]
+    },
+    "MSKU": {
+      "description": "Merchant Stock Keeping Unit",
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "description": "Title of the product",
+      "type": ["null", "string"]
+    },
+    "Disposition": {
+      "description": "Action taken with the products",
+      "type": ["null", "string"]
+    },
+    "Starting Warehouse Balance": {
+      "description": "The balance of products at the start of the period",
+      "type": ["null", "string"]
+    },
+    "In Transit Between Warehouses": {
+      "description": "Products moving between warehouses",
+      "type": ["null", "string"]
+    },
+    "Receipts": {
+      "description": "Products received",
+      "type": ["null", "string"]
+    },
+    "Customer Shipments": {
+      "description": "Products shipped to customers",
+      "type": ["null", "string"]
+    },
+    "Customer Returns": {
+      "description": "Products returned by customers",
+      "type": ["null", "string"]
+    },
+    "Vendor Returns": {
+      "description": "Products returned by vendors",
+      "type": ["null", "string"]
+    },
+    "Warehouse Transfer In/Out": {
+      "description": "Products transferred in or out of the warehouse",
+      "type": ["null", "string"]
+    },
+    "Found": {
+      "description": "Products that were found",
+      "type": ["null", "string"]
+    },
+    "Lost": {
+      "description": "Products that are lost",
+      "type": ["null", "string"]
+    },
+    "Damaged": {
+      "description": "Products that are damaged",
+      "type": ["null", "string"]
+    },
+    "Disposed": {
+      "description": "Products that have been disposed of",
+      "type": ["null", "string"]
+    },
+    "Other Events": {
+      "description": "Any other events related to the product",
+      "type": ["null", "string"]
+    },
+    "Ending Warehouse Balance": {
+      "description": "The balance of products at the end of the period",
+      "type": ["null", "string"]
+    },
+    "Unknown Events": {
+      "description": "Any events with unknown causes",
+      "type": ["null", "string"]
+    },
+    "Location": {
+      "description": "Location of the warehouse",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

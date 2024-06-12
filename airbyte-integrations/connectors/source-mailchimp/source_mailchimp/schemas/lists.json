@@ -4,296 +4,303 @@
   "description": "Information about a specific list.",
   "properties": {
     "id": {
+      "description": "A string that uniquely identifies this list.",
       "type": "string",
       "title": "List ID",
-      "description": "A string that uniquely identifies this list.",
       "readOnly": true
     },
     "web_id": {
+      "description": "The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https://{dc}.admin.mailchimp.com/lists/members/?id={web_id}`.",
       "type": "integer",
       "title": "List Web ID",
-      "description": "The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https://{dc}.admin.mailchimp.com/lists/members/?id={web_id}`.",
       "readOnly": true
     },
     "name": {
-      "type": "string",
-      "title": "List Name",
-      "description": "The name of the list."
+      "description": "The name of the list.",
+      "type": ["null", "string"],
+      "title": "List Name"
     },
     "contact": {
+      "description": "Contact information displayed in campaign footers to comply with international spam laws.",
       "type": "object",
       "title": "List Contact",
-      "description": "[Contact information displayed in campaign footers](https://mailchimp.com/help/about-campaign-footers/) to comply with international spam laws.",
       "properties": {
         "company": {
-          "type": "string",
-          "title": "Company Name",
-          "description": "The company name for the list."
+          "description": "The company name for the list.",
+          "type": ["null", "string"],
+          "title": "Company Name"
         },
         "address1": {
-          "type": "string",
-          "title": "Address",
-          "description": "The street address for the list contact."
+          "description": "The street address for the list contact.",
+          "type": ["null", "string"],
+          "title": "Address"
         },
         "address2": {
-          "type": "string",
-          "title": "Address",
-          "description": "The street address for the list contact."
+          "description": "The street address line 2 for the list contact.",
+          "type": ["null", "string"],
+          "title": "Address"
         },
         "city": {
-          "type": "string",
-          "title": "City",
-          "description": "The city for the list contact."
+          "description": "The city for the list contact.",
+          "type": ["null", "string"],
+          "title": "City"
         },
         "state": {
-          "type": "string",
-          "title": "State",
-          "description": "The state for the list contact."
+          "description": "The state for the list contact.",
+          "type": ["null", "string"],
+          "title": "State"
         },
         "zip": {
-          "type": "string",
-          "title": "Postal Code",
-          "description": "The postal or zip code for the list contact."
+          "description": "The postal or zip code for the list contact.",
+          "type": ["null", "string"],
+          "title": "Postal Code"
         },
         "country": {
-          "type": "string",
-          "title": "Country Code",
-          "description": "A two-character ISO3166 country code. Defaults to US if invalid."
+          "description": "A two-character ISO3166 country code. Defaults to US if invalid.",
+          "type": ["null", "string"],
+          "title": "Country Code"
         },
         "phone": {
-          "type": "string",
-          "title": "Phone Number",
-          "description": "The phone number for the list contact."
+          "description": "The phone number for the list contact.",
+          "type": ["null", "string"],
+          "title": "Phone Number"
         }
       }
     },
     "permission_reminder": {
-      "type": "string",
-      "title": "Permission Reminder",
-      "description": "The [permission reminder](https://mailchimp.com/help/edit-the-permission-reminder/) for the list."
+      "description": "The permission reminder for the list.",
+      "type": ["null", "string"],
+      "title": "Permission Reminder"
     },
     "use_archive_bar": {
+      "description": "Whether campaigns for this list use the Archive Bar in archives by default.",
       "type": "boolean",
       "title": "Use Archive Bar",
-      "description": "Whether campaigns for this list use the [Archive Bar](https://mailchimp.com/help/about-email-campaign-archives-and-pages/) in archives by default.",
       "default": false
     },
     "campaign_defaults": {
+      "description": "Default values for campaigns created for this list.",
       "type": "object",
       "title": "Campaign Defaults",
-      "description": "[Default values for campaigns](https://mailchimp.com/help/edit-your-emails-subject-preview-text-from-name-or-from-email-address/) created for this list.",
       "properties": {
         "from_name": {
-          "type": "string",
-          "title": "Sender's Name",
-          "description": "The default from name for campaigns sent to this list."
+          "description": "The default from name for campaigns sent to this list.",
+          "type": ["null", "string"],
+          "title": "Sender's Name"
         },
         "from_email": {
-          "type": "string",
-          "title": "Sender's Email Address",
-          "description": "The default from email for campaigns sent to this list."
+          "description": "The default from email for campaigns sent to this list.",
+          "type": ["null", "string"],
+          "title": "Sender's Email Address"
         },
         "subject": {
-          "type": "string",
-          "title": "Subject",
-          "description": "The default subject line for campaigns sent to this list."
+          "description": "The default subject line for campaigns sent to this list.",
+          "type": ["null", "string"],
+          "title": "Subject"
         },
         "language": {
-          "type": "string",
-          "title": "Language",
-          "description": "The default language for this lists's forms."
+          "description": "The default language for this list's forms.",
+          "type": ["null", "string"],
+          "title": "Language"
         }
       }
     },
     "notify_on_subscribe": {
-      "type": "string",
+      "description": "The email address to send subscribe notifications to.",
+      "type": ["null", "string"],
       "title": "Notify on Subscribe",
-      "description": "The email address to send [subscribe notifications](https://mailchimp.com/help/change-subscribe-and-unsubscribe-notifications/) to.",
       "default": false
     },
     "notify_on_unsubscribe": {
-      "type": "string",
+      "description": "The email address to send unsubscribe notifications to.",
+      "type": ["null", "string"],
       "title": "Notify on Unsubscribe",
-      "description": "The email address to send [unsubscribe notifications](https://mailchimp.com/help/change-subscribe-and-unsubscribe-notifications/) to.",
       "default": false
     },
     "date_created": {
+      "description": "The date and time that this list was created in ISO 8601 format.",
       "type": "string",
       "title": "Creation Date",
-      "description": "The date and time that this list was created in ISO 8601 format.",
       "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone",
       "readOnly": true
     },
     "list_rating": {
+      "description": "An auto-generated activity score for the list (0-5).",
       "type": "integer",
       "title": "List Rating",
-      "description": "An auto-generated activity score for the list (0-5).",
       "readOnly": true
     },
     "email_type_option": {
+      "description": "Whether the list supports multiple formats for emails. When set to `true`, subscribers can choose whether they want to receive HTML or plain-text emails. When set to `false`, subscribers will receive HTML emails, with a plain-text alternative backup.",
       "type": "boolean",
-      "title": "Email Type Option",
-      "description": "Whether the list supports [multiple formats for emails](https://mailchimp.com/help/change-list-name-and-defaults/). When set to `true`, subscribers can choose whether they want to receive HTML or plain-text emails. When set to `false`, subscribers will receive HTML emails, with a plain-text alternative backup."
+      "title": "Email Type Option"
     },
     "subscribe_url_short": {
-      "type": "string",
+      "description": "Our EepURL shortened version of this list's subscribe form.",
+      "type": ["null", "string"],
       "title": "Subscribe URL Short",
-      "description": "Our [EepURL shortened](https://mailchimp.com/help/share-your-signup-form/) version of this list's subscribe form.",
       "readOnly": true
     },
     "subscribe_url_long": {
-      "type": "string",
-      "title": "Subscribe URL Long",
       "description": "The full version of this list's subscribe form (host will vary).",
+      "type": ["null", "string"],
+      "title": "Subscribe URL Long",
       "readOnly": true
     },
     "beamer_address": {
-      "type": "string",
+      "description": "The list's Email Beamer address.",
+      "type": ["null", "string"],
       "title": "Beamer Address",
-      "description": "The list's [Email Beamer](https://mailchimp.com/help/use-email-beamer-to-create-a-campaign/) address.",
       "readOnly": true
     },
     "visibility": {
-      "type": "string",
+      "description": "Whether this list is public or private.",
+      "type": ["null", "string"],
       "title": "Visibility",
-      "enum": ["pub", "prv"],
-      "description": "Whether this list is [public or private](https://mailchimp.com/help/about-list-publicity/)."
+      "enum": ["pub", "prv"]
     },
     "double_optin": {
+      "description": "Whether or not to require the subscriber to confirm subscription via email.",
       "type": "boolean",
       "title": "Double Opt In",
-      "description": "Whether or not to require the subscriber to confirm subscription via email.",
       "default": false
     },
     "has_welcome": {
+      "description": "Whether or not this list has a welcome automation connected.",
       "type": "boolean",
       "title": "Has Welcome",
-      "description": "Whether or not this list has a welcome automation connected. Welcome Automations: welcomeSeries, singleWelcome, emailFollowup.",
       "default": false,
       "example": false
     },
     "marketing_permissions": {
+      "description": "Whether or not the list has marketing permissions (eg. GDPR) enabled.",
       "type": "boolean",
       "title": "Marketing Permissions",
-      "description": "Whether or not the list has marketing permissions (eg. GDPR) enabled.",
       "default": false
     },
     "modules": {
+      "description": "Any list-specific modules installed for this list.",
       "type": "array",
       "title": "Modules",
-      "description": "Any list-specific modules installed for this list.",
       "items": {
-        "type": "string"
+        "type": ["null", "string"]
       },
       "readOnly": true
     },
     "stats": {
+      "description": "Stats for the list. Many of these are cached for at least five minutes.",
       "type": "object",
       "title": "Statistics",
-      "description": "Stats for the list. Many of these are cached for at least five minutes.",
       "readOnly": true,
       "properties": {
         "member_count": {
+          "description": "The number of active members in the list.",
           "type": "integer",
           "title": "Member Count",
-          "description": "The number of active members in the list.",
           "readOnly": true
         },
         "total_contacts": {
+          "description": "The number of contacts in the list, including subscribed, unsubscribed, pending, cleaned, deleted, transactional, and those that need to be reconfirmed.",
           "type": "integer",
           "title": "Total Contacts",
-          "description": "The number of contacts in the list, including subscribed, unsubscribed, pending, cleaned, deleted, transactional, and those that need to be reconfirmed.",
           "readOnly": true
         },
         "unsubscribe_count": {
+          "description": "The number of members who have unsubscribed from the list.",
           "type": "integer",
           "title": "Unsubscribe Count",
-          "description": "The number of members who have unsubscribed from the list.",
           "readOnly": true
         },
         "cleaned_count": {
+          "description": "The number of members cleaned from the list.",
           "type": "integer",
           "title": "Cleaned Count",
-          "description": "The number of members cleaned from the list.",
           "readOnly": true
         },
         "member_count_since_send": {
+          "description": "The number of active members in the list since the last campaign was sent.",
           "type": "integer",
           "title": "Member Count Since Send",
-          "description": "The number of active members in the list since the last campaign was sent.",
           "readOnly": true
         },
         "unsubscribe_count_since_send": {
+          "description": "The number of members who have unsubscribed since the last campaign was sent.",
           "type": "integer",
           "title": "Unsubscribe Count Since Send",
-          "description": "The number of members who have unsubscribed since the last campaign was sent.",
           "readOnly": true
         },
         "cleaned_count_since_send": {
+          "description": "The number of members cleaned from the list since the last campaign was sent.",
           "type": "integer",
           "title": "Cleaned Count Since Send",
-          "description": "The number of members cleaned from the list since the last campaign was sent.",
           "readOnly": true
         },
         "campaign_count": {
+          "description": "The number of campaigns in any status that use this list.",
           "type": "integer",
           "title": "Campaign Count",
-          "description": "The number of campaigns in any status that use this list.",
           "readOnly": true
         },
         "campaign_last_sent": {
-          "type": "string",
-          "title": "Campaign Last Sent",
           "description": "The date and time the last campaign was sent to this list in ISO 8601 format. This is updated when a campaign is sent to 10 or more recipients.",
-          "readOnly": true
+          "type": ["null", "string"],
+          "title": "Campaign Last Sent",
+          "readOnly": true,
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone"
         },
         "merge_field_count": {
+          "description": "The number of merge vars for this list (not EMAIL, which is required).",
           "type": "integer",
           "title": "Merge Var Count",
-          "description": "The number of merge vars for this list (not EMAIL, which is required).",
           "readOnly": true
         },
         "avg_sub_rate": {
+          "description": "The average number of subscriptions per month for the list (not returned if we haven't calculated it yet).",
           "type": "number",
           "title": "Average Subscription Rate",
-          "description": "The average number of subscriptions per month for the list (not returned if we haven't calculated it yet).",
           "readOnly": true
         },
         "avg_unsub_rate": {
+          "description": "The average number of unsubscriptions per month for the list (not returned if we haven't calculated it yet).",
           "type": "number",
           "title": "Average Unsubscription Rate",
-          "description": "The average number of unsubscriptions per month for the list (not returned if we haven't calculated it yet).",
           "readOnly": true
         },
         "target_sub_rate": {
+          "description": "The target number of subscriptions per month for the list to keep it growing (not returned if we haven't calculated it yet).",
           "type": "number",
           "title": "Average Subscription Rate",
-          "description": "The target number of subscriptions per month for the list to keep it growing (not returned if we haven't calculated it yet).",
           "readOnly": true
         },
         "open_rate": {
+          "description": "The average open rate (a percentage represented as a number between 0 and 100) per campaign for the list (not returned if we haven't calculated it yet).",
           "type": "number",
           "title": "Open Rate",
-          "description": "The average open rate (a percentage represented as a number between 0 and 100) per campaign for the list (not returned if we haven't calculated it yet).",
           "readOnly": true
         },
         "click_rate": {
+          "description": "The average click rate (a percentage represented as a number between 0 and 100) per campaign for the list (not returned if we haven't calculated it yet).",
           "type": "number",
           "title": "Click Rate",
-          "description": "The average click rate (a percentage represented as a number between 0 and 100) per campaign for the list (not returned if we haven't calculated it yet).",
           "readOnly": true
         },
         "last_sub_date": {
-          "type": "string",
-          "title": "Date of Last List Subscribe",
           "description": "The date and time of the last time someone subscribed to this list in ISO 8601 format.",
-          "readOnly": true
+          "type": ["null", "string"],
+          "title": "Date of Last List Subscribe",
+          "readOnly": true,
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone"
         },
         "last_unsub_date": {
-          "type": "string",
-          "title": "Date of Last List Unsubscribe",
           "description": "The date and time of the last time someone unsubscribed from this list in ISO 8601 format.",
-          "readOnly": true
+          "type": ["null", "string"],
+          "title": "Date of Last List Unsubscribe",
+          "readOnly": true,
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone"
         }
       }
     }

@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the segment member.",
+      "type": ["null", "string"]
+    },
+    "email_address": {
+      "description": "The email address of the segment member.",
+      "type": ["null", "string"]
+    },
+    "unique_email_id": {
+      "description": "The unique identifier related to the email address.",
+      "type": ["null", "string"]
+    },
+    "email_type": {
+      "description": "The type of email the segment member receives.",
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "The subscription status of the segment member.",
+      "type": ["null", "string"]
+    },
+    "merge_fields": {
+      "description": "Additional information merged with the segment member data.",
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "interests": {
+      "description": "Interests or preferences of the segment member.",
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "stats": {
+      "description": "Statistics related to the email engagement of the segment member.",
+      "type": ["null", "object"],
+      "properties": {
+        "avg_open_rate": {
+          "description": "The average open rate of the segment member.",
+          "type": ["null", "number"]
+        },
+        "avg_click_rate": {
+          "description": "The average click-through rate of the segment member.",
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "ip_signup": {
+      "description": "The IP address where the segment member signed up.",
+      "type": ["null", "string"]
+    },
+    "timestamp_signup": {
+      "description": "The date and time when the segment member signed up.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "ip_opt": {
+      "description": "The IP address where the segment member opted in.",
+      "type": ["null", "string"]
+    },
+    "timestamp_opt": {
+      "description": "The date and time when the segment member opted in.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "member_rating": {
+      "description": "The rating assigned to the segment member.",
+      "type": ["null", "integer"]
+    },
+    "last_changed": {
+      "description": "The date and time when the segment member record was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "language": {
+      "description": "The preferred language of the segment member.",
+      "type": ["null", "string"]
+    },
+    "vip": {
+      "description": "Flag indicating if the segment member is a VIP.",
+      "type": ["null", "boolean"]
+    },
+    "email_client": {
+      "description": "The client used by the segment member to access their email.",
+      "type": ["null", "string"]
+    },
+    "location": {
+      "description": "Geographical location information of the segment member.",
+      "type": ["null", "object"],
+      "properties": {
+        "latitude": {
+          "description": "The latitude coordinate of the location.",
+          "type": ["null", "number"]
+        },
+        "longitude": {
+          "description": "The longitude coordinate of the location.",
+          "type": ["null", "number"]
+        },
+        "gmtoff": {
+          "description": "The GMT offset of the location.",
+          "type": ["null", "integer"]
+        },
+        "dstoff": {
+          "description": "The Daylight Saving Time offset of the location.",
+          "type": ["null", "integer"]
+        },
+        "country_code": {
+          "description": "The country code of the location.",
+          "type": ["null", "string"]
+        },
+        "timezone": {
+          "description": "The timezone of the location.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "last_note": {
+      "description": "The last note added for the segment member.",
+      "type": ["null", "object"],
+      "properties": {
+        "note_id": {
+          "description": "The unique identifier of the note.",
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "description": "The date and time when the note was created.",
+          "type": ["null", "string"],
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone"
+        },
+        "created_by": {
+          "description": "The user who created the note.",
+          "type": ["null", "string"]
+        },
+        "note": {
+          "description": "The content of the note.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "list_id": {
+      "description": "The identifier of the list to which the segment member belongs.",
+      "type": ["null", "string"]
+    },
+    "segment_id": {
+      "description": "The identifier of the segment the member belongs to.",
+      "type": ["null", "integer"]
+    }
+  }
+}

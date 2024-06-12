@@ -5,77 +5,22 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcStressTest;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import java.sql.JDBCType;
-import java.util.Map;
 import java.util.Optional;
-import javax.sql.DataSource;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 @Disabled
 public class MssqlStressTest extends JdbcStressTest {
 
-  private static MSSQLServerContainer<?> dbContainer;
-  private JsonNode config;
-
-  @BeforeAll
-  static void init() {
-    dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    dbContainer.start();
-  }
+  private MsSQLTestDatabase testdb;
 
   @BeforeEach
   public void setup() throws Exception {
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
-        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
-        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
-        .build());
-
-    final DataSource dataSource = DataSourceFactory.create(
-        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
-        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false"));
-
-    try {
-      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
-
-      final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
-
-      database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
-
-      config = Jsons.clone(configWithoutDbName);
-      ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-      ((ObjectNode) config).put("is_test", true);
-
-      super.setup();
-    } finally {
-      DataSourceFactory.close(dataSource);
-    }
-  }
-
-  @AfterAll
-  public static void tearDown() {
-    dbContainer.close();
+    testdb = MsSQLTestDatabase.in(MsSQLTestDatabase.BaseImage.MSSQL_2022);
+    super.setup();
   }
 
   @Override
@@ -85,7 +30,7 @@ public class MssqlStressTest extends JdbcStressTest {
 
   @Override
   public JsonNode getConfig() {
-    return Jsons.clone(config);
+    return testdb.testConfigBuilder().with("is_test", true).build();
   }
 
   @Override

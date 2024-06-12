@@ -30,14 +30,16 @@ airbyte_cdk.sources.streams.core.Stream
     │           ├── SponsoredDisplayCampaigns
     │           ├── SponsoredDisplayProductAds
     │           ├── SponsoredDisplayTargetings
-    │           ├── SponsoredProductAdGroups
-    │           ├── SponsoredProductAds
-    │           ├── SponsoredProductCampaigns
-    │           ├── SponsoredProductKeywords
-    │           ├── SponsoredProductNegativeKeywords
-    │           ├── SponsoredProductTargetings
-    │           ├── SponsoredBrandsCampaigns
-    │           ├── SponsoredBrandsAdGroups
+    │           ├── SponsoredProductsV3
+    │           |    ├── SponsoredProductAdGroups
+    │           |    ├── SponsoredProductAds
+    │           |    ├── SponsoredProductCampaigns
+    │           |    ├── SponsoredProductKeywords
+    │           |    ├── SponsoredProductNegativeKeywords
+    │           |    └── SponsoredProductTargetings
+    │           ├── SponsoredBrandsV4
+    │           |    ├── SponsoredBrandsCampaigns
+    │           |    └── SponsoredBrandsAdGroups
     │           └── SponsoredBrandsKeywords
     └── ReportStream
         ├── SponsoredBrandsReportStream
@@ -67,7 +69,7 @@ reports for profiles from BasicAmazonAdsStream _profiles list.
 class ErrorResponse(BaseModel):
     code: str
     details: str
-    requestId: str
+    requestId: Optional[str]
 
 
 class BasicAmazonAdsStream(Stream, ABC):
@@ -117,7 +119,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
+    def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:
         return {"Amazon-Advertising-API-ClientId": self._client_id}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -171,9 +173,9 @@ class SubProfilesStream(AmazonAdsStream):
 
     page_size = 100
 
-    def __init__(self, *args, **kvargs):
+    def __init__(self, *args, **kwargs):
         self._current_offset = 0
-        super().__init__(*args, **kvargs)
+        super().__init__(*args, **kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[int]:
         if not response:
@@ -199,15 +201,15 @@ class SubProfilesStream(AmazonAdsStream):
             "count": self.page_size,
         }
 
-    def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
         Iterate through self._profiles list and send read all records for each profile.
         """
         for profile in self._profiles:
             self._current_profile_id = profile.profileId
-            yield from super().read_records(*args, **kvargs)
+            yield from super().read_records(*args, **kwargs)
 
-    def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
-        headers = super().request_headers(*args, **kvargs)
+    def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:
+        headers = super().request_headers(*args, **kwargs)
         headers["Amazon-Advertising-API-Scope"] = str(self._current_profile_id)
         return headers

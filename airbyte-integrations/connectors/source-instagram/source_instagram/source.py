@@ -5,6 +5,7 @@
 from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
+import pendulum
 from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, DestinationSyncMode, OAuthConfigSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -17,8 +18,8 @@ class ConnectorConfig(BaseModel):
     class Config:
         title = "Source Instagram"
 
-    start_date: datetime = Field(
-        description="The date from which you'd like to replicate data for User Insights, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+    start_date: Optional[datetime] = Field(
+        description="The date from which you'd like to replicate data for User Insights, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
     )
@@ -59,8 +60,9 @@ class SourceInstagram(AbstractSource):
         error_msg = None
 
         try:
-            config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-            api = InstagramAPI(access_token=config.access_token)
+            self._validate_start_date(config)
+
+            api = InstagramAPI(access_token=config["access_token"])
             logger.info(f"Available accounts: {api.accounts}")
             ok = True
         except Exception as exc:
@@ -68,13 +70,22 @@ class SourceInstagram(AbstractSource):
 
         return ok, error_msg
 
+    def _validate_start_date(self, config):
+        # If start_date is not found in config, set it to 2 years ago
+        if not config.get("start_date"):
+            config["start_date"] = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
+        else:
+            if pendulum.parse(config["start_date"]) > pendulum.now():
+                raise ValueError("Please fix the start_date parameter in config, it cannot be in the future")
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """Discovery method, returns available streams
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-        api = InstagramAPI(access_token=config.access_token)
+        api = InstagramAPI(access_token=config["access_token"])
+
+        self._validate_start_date(config)
 
         return [
             Media(api=api),
@@ -83,7 +94,7 @@ class SourceInstagram(AbstractSource):
             StoryInsights(api=api),
             Users(api=api),
             UserLifetimeInsights(api=api),
-            UserInsights(api=api, start_date=config.start_date),
+            UserInsights(api=api, start_date=config["start_date"]),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

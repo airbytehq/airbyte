@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "customer_label.resource_name": {
+      "description": "The resource name that uniquely identifies the customer label in the system.",
       "type": ["null", "string"]
     },
     "customer_label.customer": {
+      "description": "The name or details of the customer that the label is associated with.",
       "type": ["null", "string"]
     },
     "customer.id": {
+      "description": "The unique identifier of the customer associated with the label.",
       "type": ["null", "integer"]
     },
     "customer_label.label": {
+      "description": "The category or tag applied to the customer for specific identification or grouping.",
       "type": ["null", "string"]
     }
   }

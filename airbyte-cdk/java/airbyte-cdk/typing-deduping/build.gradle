@@ -1,26 +1,26 @@
-plugins {
-    id 'java-library'
+compileTestKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+compileTestFixturesKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
 }
 
 dependencies {
-    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
-    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
 
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    implementation group: 'commons-codec', name: 'commons-codec', version: '1.16.0'
+    implementation 'commons-codec:commons-codec:1.16.0'
 
-    testFixturesImplementation libs.airbyte.protocol
-
-    testFixturesImplementation(platform('org.junit:junit-bom:5.8.2'))
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api'
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params'
-    testFixturesImplementation 'org.mockito:mockito-core:4.6.1'
-}
-
-java {
-    compileJava {
-        options.compilerArgs.remove("-Werror")
-    }
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation "io.mockk:mockk:1.13.11"
 }

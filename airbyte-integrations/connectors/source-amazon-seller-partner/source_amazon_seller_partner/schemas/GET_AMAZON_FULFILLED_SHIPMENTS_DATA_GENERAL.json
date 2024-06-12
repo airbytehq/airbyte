@@ -4,53 +4,207 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "amazon-order-id": { "type": ["null", "string"] },
-    "merchant-order-id": { "type": ["null", "string"] },
-    "shipment-id": { "type": ["null", "string"] },
-    "shipment-item-id": { "type": ["null", "string"] },
-    "amazon-order-item-id": { "type": ["null", "string"] },
-    "merchant-order-item-id": { "type": ["null", "string"] },
-    "purchase-date": { "type": ["null", "string"] },
-    "payments-date": { "type": ["null", "string"] },
-    "shipment-date": { "type": ["null", "string"] },
-    "reporting-date": { "type": ["null", "string"] },
-    "buyer-email": { "type": ["null", "string"] },
-    "buyer-name": { "type": ["null", "string"] },
-    "buyer-phone-number": { "type": ["null", "string"] },
-    "sku": { "type": ["null", "string"] },
-    "product-name": { "type": ["null", "string"] },
-    "quantity-shipped": { "type": ["null", "string"] },
-    "currency": { "type": ["null", "string"] },
-    "item-price": { "type": ["null", "string"] },
-    "item-tax": { "type": ["null", "string"] },
-    "shipping-price": { "type": ["null", "string"] },
-    "shipping-tax": { "type": ["null", "string"] },
-    "gift-wrap-price": { "type": ["null", "string"] },
-    "gift-wrap-tax": { "type": ["null", "string"] },
-    "ship-service-level": { "type": ["null", "string"] },
-    "recipient-name": { "type": ["null", "string"] },
-    "ship-address-1": { "type": ["null", "string"] },
-    "ship-address-2": { "type": ["null", "string"] },
-    "ship-address-3": { "type": ["null", "string"] },
-    "ship-city": { "type": ["null", "string"] },
-    "ship-state": { "type": ["null", "string"] },
-    "ship-postal-code": { "type": ["null", "string"] },
-    "ship-country": { "type": ["null", "string"] },
-    "ship-phone-number": { "type": ["null", "string"] },
-    "bill-address-1": { "type": ["null", "string"] },
-    "bill-address-2": { "type": ["null", "string"] },
-    "bill-address-3": { "type": ["null", "string"] },
-    "bill-city": { "type": ["null", "string"] },
-    "bill-state": { "type": ["null", "string"] },
-    "bill-postal-code": { "type": ["null", "string"] },
-    "bill-country": { "type": ["null", "string"] },
-    "item-promotion-discount": { "type": ["null", "string"] },
-    "ship-promotion-discount": { "type": ["null", "string"] },
-    "carrier": { "type": ["null", "string"] },
-    "tracking-number": { "type": ["null", "string"] },
-    "estimated-arrival-date": { "type": ["null", "string"] },
-    "fulfillment-center-id": { "type": ["null", "string"] },
-    "fulfillment-channel": { "type": ["null", "string"] },
-    "sales-channel": { "type": ["null", "string"] }
+    "amazon-order-id": {
+      "description": "The unique identifier for the Amazon order.",
+      "type": ["null", "string"]
+    },
+    "merchant-order-id": {
+      "description": "The unique identifier for the merchant's order.",
+      "type": ["null", "string"]
+    },
+    "shipment-id": {
+      "description": "The unique identifier for the shipment.",
+      "type": ["null", "string"]
+    },
+    "shipment-item-id": {
+      "description": "The unique identifier for the shipment item.",
+      "type": ["null", "string"]
+    },
+    "amazon-order-item-id": {
+      "description": "The unique identifier for the Amazon order item.",
+      "type": ["null", "string"]
+    },
+    "merchant-order-item-id": {
+      "description": "The unique identifier for the merchant's order item.",
+      "type": ["null", "string"]
+    },
+    "purchase-date": {
+      "description": "The date when the purchase was made.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "payments-date": {
+      "description": "The date when payments were made.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shipment-date": {
+      "description": "The date when the shipment is made.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "reporting-date": {
+      "description": "The date when the report is generated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "buyer-email": {
+      "description": "The email address of the buyer.",
+      "type": ["null", "string"]
+    },
+    "buyer-name": {
+      "description": "The name of the buyer.",
+      "type": ["null", "string"]
+    },
+    "buyer-phone-number": {
+      "description": "The phone number of the buyer.",
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "description": "The Stock Keeping Unit of the product.",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "The name of the product in the shipment.",
+      "type": ["null", "string"]
+    },
+    "quantity-shipped": {
+      "description": "The quantity of items shipped.",
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "description": "The currency used for the transaction.",
+      "type": ["null", "string"]
+    },
+    "item-price": {
+      "description": "The price of the item in the shipment.",
+      "type": ["null", "string"]
+    },
+    "item-tax": {
+      "description": "The tax applied to the item's price.",
+      "type": ["null", "string"]
+    },
+    "shipping-price": {
+      "description": "The price of shipping for the shipment.",
+      "type": ["null", "string"]
+    },
+    "shipping-tax": {
+      "description": "The tax applied to the shipping.",
+      "type": ["null", "string"]
+    },
+    "gift-wrap-price": {
+      "description": "The price of gift wrapping for the shipment.",
+      "type": ["null", "string"]
+    },
+    "gift-wrap-tax": {
+      "description": "The tax applied to the gift wrapping.",
+      "type": ["null", "string"]
+    },
+    "ship-service-level": {
+      "description": "The service level of the shipping method.",
+      "type": ["null", "string"]
+    },
+    "recipient-name": {
+      "description": "The name of the recipient of the shipment.",
+      "type": ["null", "string"]
+    },
+    "ship-address-1": {
+      "description": "The first line of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-address-2": {
+      "description": "The second line of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-address-3": {
+      "description": "The third line of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-city": {
+      "description": "The city of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-state": {
+      "description": "The state of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-postal-code": {
+      "description": "The postal code of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-country": {
+      "description": "The country of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-phone-number": {
+      "description": "The phone number of the recipient for shipping.",
+      "type": ["null", "string"]
+    },
+    "bill-address-1": {
+      "description": "The first line of the billing address.",
+      "type": ["null", "string"]
+    },
+    "bill-address-2": {
+      "description": "The second line of the billing address.",
+      "type": ["null", "string"]
+    },
+    "bill-address-3": {
+      "description": "The third line of the billing address.",
+      "type": ["null", "string"]
+    },
+    "bill-city": {
+      "description": "The city of the billing address.",
+      "type": ["null", "string"]
+    },
+    "bill-state": {
+      "description": "The state of the billing address.",
+      "type": ["null", "string"]
+    },
+    "bill-postal-code": {
+      "description": "The postal code of the billing address.",
+      "type": ["null", "string"]
+    },
+    "bill-country": {
+      "description": "The country of the billing address.",
+      "type": ["null", "string"]
+    },
+    "item-promotion-discount": {
+      "description": "Any promotional discount applied to the item.",
+      "type": ["null", "string"]
+    },
+    "ship-promotion-discount": {
+      "description": "Any promotional discount applied to shipping.",
+      "type": ["null", "string"]
+    },
+    "carrier": {
+      "description": "The carrier responsible for shipping the item.",
+      "type": ["null", "string"]
+    },
+    "tracking-number": {
+      "description": "The tracking number for the shipment.",
+      "type": ["null", "string"]
+    },
+    "estimated-arrival-date": {
+      "description": "The estimated arrival date of the shipment.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "fulfillment-center-id": {
+      "description": "The identifier of the fulfillment center.",
+      "type": ["null", "string"]
+    },
+    "fulfillment-channel": {
+      "description": "The channel through which the fulfillment is done.",
+      "type": ["null", "string"]
+    },
+    "sales-channel": {
+      "description": "The channel through which the sale is made.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time for the data represented.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

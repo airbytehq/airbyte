@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-db2
   githubIssueLabel: source-db2
   icon: db2.svg
@@ -20,9 +20,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/db2
   tags:
     - language:java
-    - language:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

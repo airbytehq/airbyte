@@ -1,32 +1,26 @@
 [
   {
-    "_id": null,
-    "fields": [
-      {
-        "_id": "string",
-        "name": "string",
-        "last_updated": "date",
-        "total": "int",
-        "price": "decimal",
-        "items": "array",
-        "owners": "object",
-        "amount": "null"
-      }
-    ]
+    "_id": {
+      "_id": "string",
+      "name": "string",
+      "last_updated": "date",
+      "total": "int",
+      "price": "decimal",
+      "items": "array",
+      "owners": "object",
+      "amount": "null"
+    }
   },
   {
-    "_id": null,
-    "fields": [
-      {
-        "_id": "string",
-        "name": "string",
-        "last_updated": "date",
-        "total": "int",
-        "price": "decimal",
-        "items": "array",
-        "owners": "object",
-        "other": "string"
-      }
-    ]
+    "_id": {
+      "_id": "string",
+      "name": "string",
+      "last_updated": "date",
+      "total": "int",
+      "price": "decimal",
+      "items": "array",
+      "owners": "object",
+      "other": "string"
+    }
   }
 ]

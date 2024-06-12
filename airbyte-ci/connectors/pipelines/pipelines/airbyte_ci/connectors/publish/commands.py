@@ -2,17 +2,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
+from pipelines.cli.click_decorators import click_ci_requirements_option
+from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import ContextState
+from pipelines.cli.secrets import wrap_gcp_credentials_in_secret, wrap_in_secret
+from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, ContextState
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
+from pipelines.models.secrets import Secret
 
 
 @click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
+@click_ci_requirements_option()
 @click.option("--pre-release/--main-release", help="Use this flag if you want to publish pre-release images.", default=True, type=bool)
 @click.option(
     "--spec-cache-gcs-credentials",
@@ -20,6 +26,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     type=click.STRING,
     required=True,
     envvar="SPEC_CACHE_GCS_CREDENTIALS",
+    callback=wrap_gcp_credentials_in_secret,
 )
 @click.option(
     "--spec-cache-bucket-name",
@@ -34,6 +41,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     type=click.STRING,
     required=True,
     envvar="METADATA_SERVICE_GCS_CREDENTIALS",
+    callback=wrap_gcp_credentials_in_secret,
 )
 @click.option(
     "--metadata-service-bucket-name",
@@ -55,23 +63,44 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     envvar="SLACK_CHANNEL",
     default="#connector-publish-updates",
 )
+@click.option(
+    "--python-registry-token",
+    help="Access token for python registry",
+    type=click.STRING,
+    envvar="PYTHON_REGISTRY_TOKEN",
+    callback=wrap_in_secret,
+)
+@click.option(
+    "--python-registry-url",
+    help="Which python registry url to publish to. If not set, the default pypi is used. For test pypi, use https://test.pypi.org/legacy/",
+    type=click.STRING,
+    default=DEFAULT_PYTHON_PACKAGE_REGISTRY_URL,
+    envvar="PYTHON_REGISTRY_URL",
+)
+@click.option(
+    "--python-registry-check-url",
+    help="Which url to check whether a certain version is published already. If not set, the default pypi is used. For test pypi, use https://test.pypi.org/pypi/",
+    type=click.STRING,
+    default=DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL,
+    envvar="PYTHON_REGISTRY_CHECK_URL",
+)
 @click.pass_context
 async def publish(
     ctx: click.Context,
     pre_release: bool,
-    spec_cache_gcs_credentials: str,
+    spec_cache_gcs_credentials: Secret,
     spec_cache_bucket_name: str,
     metadata_service_bucket_name: str,
-    metadata_service_gcs_credentials: str,
+    metadata_service_gcs_credentials: Secret,
     slack_webhook: str,
     slack_channel: str,
-):
-    ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
-    ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
-    ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
-    ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
+    python_registry_token: Secret,
+    python_registry_url: str,
+    python_registry_check_url: str,
+) -> bool:
+
     if ctx.obj["is_local"]:
-        click.confirm(
+        confirm(
             "Publishing from a local environment is not recommended and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
             abort=True,
         )
@@ -87,8 +116,8 @@ async def publish(
                 spec_cache_bucket_name=spec_cache_bucket_name,
                 metadata_service_gcs_credentials=metadata_service_gcs_credentials,
                 metadata_bucket_name=metadata_service_bucket_name,
-                docker_hub_username=ctx.obj["docker_hub_username"],
-                docker_hub_password=ctx.obj["docker_hub_password"],
+                docker_hub_username=Secret("docker_hub_username", ctx.obj["secret_stores"]["in_memory"]),
+                docker_hub_password=Secret("docker_hub_password", ctx.obj["secret_stores"]["in_memory"]),
                 slack_webhook=slack_webhook,
                 reporting_slack_channel=slack_channel,
                 ci_report_bucket=ctx.obj["ci_report_bucket_name"],
@@ -96,24 +125,28 @@ async def publish(
                 is_local=ctx.obj["is_local"],
                 git_branch=ctx.obj["git_branch"],
                 git_revision=ctx.obj["git_revision"],
+                diffed_branch=ctx.obj["diffed_branch"],
+                git_repo_url=ctx.obj["git_repo_url"],
                 gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
                 dagger_logs_url=ctx.obj.get("dagger_logs_url"),
                 pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
                 ci_context=ctx.obj.get("ci_context"),
-                ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+                ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
                 s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
                 s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
                 use_local_cdk=ctx.obj.get("use_local_cdk"),
+                python_registry_token=python_registry_token,
+                python_registry_url=python_registry_url,
+                python_registry_check_url=python_registry_check_url,
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
     )
-
     main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
     ctx.obj["concurrency"] = 1
 
-    publish_connector_contexts = await run_connectors_pipelines(
+    ran_publish_connector_contexts = await run_connectors_pipelines(
         publish_connector_contexts,
         run_connector_publish_pipeline,
         "Publishing connectors",
@@ -121,4 +154,4 @@ async def publish(
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
     )
-    return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)
+    return all(context.state is ContextState.SUCCESSFUL for context in ran_publish_connector_contexts)

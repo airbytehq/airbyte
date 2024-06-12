@@ -5,10 +5,14 @@
 import base64
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import backoff
 import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 logger = logging.getLogger("airbyte")
@@ -42,6 +46,7 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
     @backoff.on_exception(
         backoff.expo,
         DefaultBackoffException,
+        max_tries=2,
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
@@ -49,14 +54,25 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
     )
     def _get_refresh_access_token_response(self):
         try:
-            response = requests.request(
-                method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body(), headers=self.get_headers()
-            )
+            request_url = self.get_token_refresh_endpoint()
+            request_headers = self.get_headers()
+            request_body = self.build_refresh_request_body()
+
+            logger.info(f"Sending request to URL: {request_url}")
+
+            response = requests.request(method="POST", url=request_url, data=request_body, headers=request_headers)
+
             self._log_response(response)
             response.raise_for_status()
+
+            response_json = response.json()
+
+            self.access_token = response_json.get("access_token")
+
             return response.json()
+
         except requests.exceptions.RequestException as e:
-            if e.response.status_code == 429 or e.response.status_code >= 500:
+            if e.response and (e.response.status_code == 429 or e.response.status_code >= 500):
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
             raise
         except Exception as e:

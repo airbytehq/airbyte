@@ -4,12 +4,12 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Faker Source Spec",
     "type": "object",
-    "required": ["count"],
+    "required": [],
     "additionalProperties": true,
     "properties": {
       "count": {
         "title": "Count",
-        "description": "How many users should be generated in total.  This setting does not apply to the purchases or products stream.",
+        "description": "How many users should be generated in total. The purchases table will be scaled to match, with 10 purchases created per 10 users. This setting does not apply to the products stream.",
         "type": "integer",
         "minimum": 1,
         "default": 1000,

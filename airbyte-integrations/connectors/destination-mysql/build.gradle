@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.33.0'
+    features = ['db-destinations', 'typing-deduping']
     useLocalCdk = false
 }
 
@@ -24,7 +24,7 @@ application {
 }
 
 dependencies {
-
     implementation 'mysql:mysql-connector-java:8.0.22'
     integrationTestJavaImplementation libs.testcontainers.mysql
+    testFixturesApi libs.testcontainers.mysql
 }

@@ -4,29 +4,108 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "offer-state": { "type": ["null", "string"] },
-    "snapshot-date": { "type": ["null", "string"] },
-    "sku": { "type": ["null", "string"] },
-    "fnsku": { "type": ["null", "string"] },
-    "asin": { "type": ["null", "string"] },
-    "product-name": { "type": ["null", "string"] },
-    "country": { "type": ["null", "string"] },
-    "week-1-start-date": { "type": ["null", "string"] },
-    "sns-units-shipped-week-1": { "type": ["null", "string"] },
-    "oos-rate-week-1": { "type": ["null", "string"] },
-    "sns-sale-price-week-1": { "type": ["null", "string"] },
-    "sns-discount-week-1": { "type": ["null", "string"] },
-    "sns-units-shipped-week-2": { "type": ["null", "string"] },
-    "oos-rate-week-2": { "type": ["null", "string"] },
-    "sns-sale-price-week-2": { "type": ["null", "string"] },
-    "sns-discount-week-2": { "type": ["null", "string"] },
-    "sns-units-shipped-week-3": { "type": ["null", "string"] },
-    "oos-rate-week-3": { "type": ["null", "string"] },
-    "sns-sale-price-week-3": { "type": ["null", "string"] },
-    "sns-discount-week-3": { "type": ["null", "string"] },
-    "sns-units-shipped-week-4": { "type": ["null", "string"] },
-    "oos-rate-week-4": { "type": ["null", "string"] },
-    "sns-sale-price-week-4": { "type": ["null", "string"] },
-    "sns-discount-week-4": { "type": ["null", "string"] }
+    "offer-state": {
+      "description": "Current state of the offer for the product.",
+      "type": ["null", "string"]
+    },
+    "snapshot-date": {
+      "description": "Date and time when the snapshot of data is taken.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "sku": {
+      "description": "Stock Keeping Unit for the product.",
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "description": "Fulfillment Network SKU.",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "Unique identifier for the product ASIN.",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "Name of the product.",
+      "type": ["null", "string"]
+    },
+    "country": {
+      "description": "Country where the data is collected.",
+      "type": ["null", "string"]
+    },
+    "week-1-start-date": {
+      "description": "Start date of week 1 in date-time format.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "sns-units-shipped-week-1": {
+      "description": "Units shipped on SNS for week 1.",
+      "type": ["null", "string"]
+    },
+    "oos-rate-week-1": {
+      "description": "Out of stock rate for week 1.",
+      "type": ["null", "string"]
+    },
+    "sns-sale-price-week-1": {
+      "description": "Sale price on SNS for week 1.",
+      "type": ["null", "string"]
+    },
+    "sns-discount-week-1": {
+      "description": "Discount applied in week 1 on SNS.",
+      "type": ["null", "string"]
+    },
+    "sns-units-shipped-week-2": {
+      "description": "Units shipped on SNS for week 2.",
+      "type": ["null", "string"]
+    },
+    "oos-rate-week-2": {
+      "description": "Out of stock rate for week 2.",
+      "type": ["null", "string"]
+    },
+    "sns-sale-price-week-2": {
+      "description": "Sale price on SNS for week 2.",
+      "type": ["null", "string"]
+    },
+    "sns-discount-week-2": {
+      "description": "Discount applied in week 2 on SNS.",
+      "type": ["null", "string"]
+    },
+    "sns-units-shipped-week-3": {
+      "description": "Units shipped on SNS for week 3.",
+      "type": ["null", "string"]
+    },
+    "oos-rate-week-3": {
+      "description": "Out of stock rate for week 3.",
+      "type": ["null", "string"]
+    },
+    "sns-sale-price-week-3": {
+      "description": "Sale price on SNS for week 3.",
+      "type": ["null", "string"]
+    },
+    "sns-discount-week-3": {
+      "description": "Discount applied in week 3 on SNS.",
+      "type": ["null", "string"]
+    },
+    "sns-units-shipped-week-4": {
+      "description": "Units shipped on SNS for week 4.",
+      "type": ["null", "string"]
+    },
+    "oos-rate-week-4": {
+      "description": "Out of stock rate for week 4.",
+      "type": ["null", "string"]
+    },
+    "sns-sale-price-week-4": {
+      "description": "Sale price on SNS for week 4.",
+      "type": ["null", "string"]
+    },
+    "sns-discount-week-4": {
+      "description": "Discount applied in week 4 on SNS.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data in date format.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

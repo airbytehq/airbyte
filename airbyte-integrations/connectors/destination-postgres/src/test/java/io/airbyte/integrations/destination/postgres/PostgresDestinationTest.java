@@ -15,8 +15,9 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -30,10 +31,12 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.sql.DataSource;
@@ -42,9 +45,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+@Timeout(value = 10,
+         unit = TimeUnit.MINUTES)
 public class PostgresDestinationTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
@@ -240,20 +246,24 @@ public class PostgresDestinationTest {
   @Test
   void sanityTest() throws Exception {
     final Destination destination = new PostgresDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
+    DestinationConfig.initialize(config);
+    final SerializedAirbyteMessageConsumer consumer =
+        destination.getSerializedMessageConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
     consumer.start();
     expectedRecords.forEach(m -> {
       try {
-        consumer.accept(m);
+        String message = Jsons.serialize(m);
+        consumer.accept(message, message.getBytes(StandardCharsets.UTF_8).length);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     });
-    consumer.accept(new AirbyteMessage()
+    final String stateMessage = Jsons.serialize(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
+    consumer.accept(stateMessage, stateMessage.getBytes(StandardCharsets.UTF_8).length);
     consumer.close();
 
     final JdbcDatabase database = getJdbcDatabaseFromConfig(getDataSourceFromConfig(config));

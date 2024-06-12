@@ -1,5 +1,6 @@
 ---
 description: Start triggering Airbyte jobs with Prefect in minutes
+products: oss-*
 ---
 
 # Using the Prefect Airbyte Task
@@ -54,7 +55,7 @@ airbyte_conn = AirbyteConnectionTask(
 )
 
 with Flow("first-airbyte-task") as flow:
-    flow.add_task(airbyte_conn) 
+    flow.add_task(airbyte_conn)
 
 # Register the flow under the "airbyte" project
 flow.register(project_name="airbyte")
@@ -62,10 +63,10 @@ flow.register(project_name="airbyte")
 
 The Airbyte Prefect Task accepts the following parameters:
 
-* `airbyte_server_host`: The host URL to your Airbyte instance.
-* `airbyte_server_post`: The port value you have selected for your Airbyte instance.
-* `airbyte_api_version`: default value is `v1`.
-* `connection_id`: The ID of the Airbyte Connection to be triggered by Prefect.
+- `airbyte_server_host`: The host URL to your Airbyte instance.
+- `airbyte_server_post`: The port value you have selected for your Airbyte instance.
+- `airbyte_api_version`: default value is `v1`.
+- `connection_id`: The ID of the Airbyte Connection to be triggered by Prefect.
 
 After running the file, `python3 airbyte_prefect_flow.py` this will register the Flow in Prefect Server.
 
@@ -90,3 +91,8 @@ Don't be fooled by our simple example of only one Prefect Flow. Airbyte is a pow
 
 We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
+## Related articles and guides
+
+For additional information about using Prefect and Airbyte together, see the following:
+
+- [Build an e-commerce analytics stack with Airbyte, dbt, Prefect and BigQuery](https://github.com/airbytehq/quickstarts/tree/main/airbyte_dbt_prefect_bigquery)

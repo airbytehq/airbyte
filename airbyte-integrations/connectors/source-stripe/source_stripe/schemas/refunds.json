@@ -2,50 +2,97 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the refund.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Indicates the type of object, which should be 'refund'.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount refunded in the smallest currency unit (e.g. cents).",
       "type": ["null", "integer"]
     },
     "balance_transaction": {
+      "description": "ID of the balance transaction that describes the impact on your account balance.",
       "type": ["null", "string"]
     },
     "charge": {
+      "description": "ID of the charge that was refunded.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp representing when the refund was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp representing when the refund was last updated.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency of the refund.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Any additional data or information associated with the refund.",
       "type": ["null", "object"],
       "properties": {}
     },
     "payment_intent": {
+      "description": "ID of the payment intent associated with the refund.",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason for the refund (e.g. duplicate, fraudulent).",
       "type": ["null", "string"]
     },
     "receipt_number": {
+      "description": "Unique identifier for the refund receipt.",
       "type": ["null", "string"]
     },
     "source_transfer_reversal": {
+      "description": "Details of any transfer reversal associated with the refund source.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the refund (e.g. succeeded, pending).",
       "type": ["null", "string"]
     },
     "transfer_reversal": {
+      "description": "Details of any transfer reversal associated with the refund.",
       "type": ["null", "string"]
+    },
+    "destination_details": {
+      "description": "Details about the destination of the refunded amount.",
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "description": "The type of destination.",
+          "type": ["null", "string"]
+        },
+        "card": {
+          "description": "Information related to the card used for the refund.",
+          "type": ["null", "object"],
+          "properties": {
+            "reference": {
+              "description": "ID of the payment method used for the refund.",
+              "type": ["null", "string"]
+            },
+            "reference_status": {
+              "description": "The status of the payment method reference.",
+              "type": ["null", "string"]
+            },
+            "reference_type": {
+              "description": "The type of payment method reference (e.g. card).",
+              "type": ["null", "string"]
+            },
+            "type": {
+              "description": "Type of payment method (e.g. card).",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     }
   }
 }

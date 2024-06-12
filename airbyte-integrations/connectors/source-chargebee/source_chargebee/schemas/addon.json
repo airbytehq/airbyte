@@ -4,184 +4,206 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Unique identifier for the addon.",
+      "type": ["string", "null"]
     },
     "name": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Name of the addon.",
+      "type": ["string", "null"]
     },
     "invoice_name": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Name to be displayed on the invoice for the addon.",
+      "type": ["string", "null"]
     },
     "description": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "description": "Description of the addon.",
+      "type": ["string", "null"]
     },
     "pricing_model": {
+      "description": "Model used for pricing the addon.",
       "type": ["string", "null"]
     },
     "charge_type": {
+      "description": "Type of charge for the addon.",
       "type": ["string", "null"]
     },
     "price": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Price of the addon.",
+      "type": ["integer", "null"]
     },
     "currency_code": {
-      "type": ["string", "null"],
-      "maxLength": 3
+      "description": "Currency code for the addon pricing.",
+      "type": ["string", "null"]
     },
     "period": {
-      "type": ["integer", "null"],
-      "minimum": 1
+      "description": "Duration of the addon period.",
+      "type": ["integer", "null"]
     },
     "period_unit": {
+      "description": "Unit of duration for the addon period.",
       "type": ["string", "null"]
     },
     "unit": {
-      "type": ["string", "null"],
-      "maxLength": 30
+      "description": "Unit of the addon quantity.",
+      "type": ["string", "null"]
     },
     "status": {
+      "description": "Status of the addon.",
       "type": ["string", "null"]
     },
     "archived_at": {
+      "description": "Timestamp indicating when the addon was archived.",
       "type": ["integer", "null"]
     },
     "enabled_in_portal": {
+      "description": "Indicator for whether the addon is enabled in the customer portal.",
       "type": ["boolean", "null"]
     },
     "tax_code": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Tax code associated with the addon.",
+      "type": ["string", "null"]
     },
     "taxjar_product_code": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "TaxJar product code for tax calculation.",
+      "type": ["string", "null"]
     },
     "avalara_sale_type": {
+      "description": "Avalara sale type for tax calculation.",
       "type": ["string", "null"]
     },
     "avalara_transaction_type": {
+      "description": "Avalara transaction type for tax calculation.",
       "type": ["integer", "null"]
     },
     "avalara_service_type": {
+      "description": "Avalara service type for tax calculation.",
       "type": ["integer", "null"]
     },
     "sku": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Stock Keeping Unit (SKU) for the addon.",
+      "type": ["string", "null"]
     },
     "accounting_code": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Accounting code for the addon.",
+      "type": ["string", "null"]
     },
     "accounting_category1": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "First accounting category for the addon.",
+      "type": ["string", "null"]
     },
     "accounting_category2": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Second accounting category for the addon.",
+      "type": ["string", "null"]
     },
     "accounting_category3": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Third accounting category for the addon.",
+      "type": ["string", "null"]
     },
     "accounting_category4": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Fourth accounting category for the addon.",
+      "type": ["string", "null"]
     },
     "is_shippable": {
+      "description": "Indicator for whether the addon is shippable.",
       "type": ["boolean", "null"]
     },
     "shipping_frequency_period": {
-      "type": ["integer", "null"],
-      "minimum": 1
+      "description": "Frequency of shipping for the addon period.",
+      "type": ["integer", "null"]
     },
     "shipping_frequency_period_unit": {
+      "description": "Unit of frequency for shipping the addon.",
       "type": ["string", "null"]
     },
     "resource_version": {
+      "description": "Version of the resource.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "Timestamp of the last update to the addon data.",
       "type": ["integer", "null"]
     },
     "price_in_decimal": {
-      "type": ["string", "null"],
-      "maxLength": 33
+      "description": "Price of the addon in decimal format.",
+      "type": ["string", "null"]
     },
     "included_in_mrr": {
+      "description": "Indicator for whether the addon is included in Monthly Recurring Revenue (MRR).",
       "type": ["boolean", "null"]
     },
     "invoice_notes": {
-      "type": ["string", "null"],
-      "maxLength": 2000
+      "description": "Additional notes to include on the invoice for the addon.",
+      "type": ["string", "null"]
     },
     "taxable": {
+      "description": "Indicator for whether the addon is taxable.",
       "type": ["boolean", "null"]
     },
     "tax_profile_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Tax profile identifier for the addon.",
+      "type": ["string", "null"]
     },
     "meta_data": {
+      "description": "Additional metadata associated with the addon.",
       "type": ["object", "null"],
       "properties": {}
     },
     "show_description_in_invoices": {
+      "description": "Indicator for whether the description should appear on invoices.",
       "type": ["boolean", "null"]
     },
     "show_description_in_quotes": {
+      "description": "Indicator for whether the description should appear on quotes.",
       "type": ["boolean", "null"]
     },
+    "channel": {
+      "description": "Channel for which the addon is applicable.",
+      "type": ["string", "null"]
+    },
+    "object": {
+      "description": "Type of object, in this case, addon.",
+      "type": ["string", "null"]
+    },
+    "type": {
+      "description": "Type of addon.",
+      "type": ["string", "null"]
+    },
     "tiers": {
+      "description": "Tiers with specific pricing for the addon.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "starting_unit": {
-            "type": ["integer", "null"],
-            "minimum": 1
+            "description": "Starting unit quantity for the tier.",
+            "type": ["integer", "null"]
           },
           "ending_unit": {
+            "description": "Ending unit quantity for the tier.",
             "type": ["integer", "null"]
           },
           "price": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Price of the tier.",
+            "type": ["integer", "null"]
           },
           "starting_unit_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "description": "Starting unit quantity in decimal for the tier.",
+            "type": ["string", "null"]
           },
           "ending_unit_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "description": "Ending unit quantity in decimal for the tier.",
+            "type": ["string", "null"]
           },
           "price_in_decimal": {
-            "type": ["string", "null"],
-            "maxLength": 33
+            "description": "Price of the tier in decimal format.",
+            "type": ["string", "null"]
           }
         }
       }
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Custom fields associated with the addon.",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

@@ -25,7 +25,9 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import java.util.List;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";

@@ -1,22 +1,35 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-microsoft-teams:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_microsoft_teams/spec.json"
+    tests:
+      - spec_path: "source_microsoft_teams/spec.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "secrets/old_config.json"
-      status: "succeed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      empty_streams: []
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: team_device_usage_report
+            bypass_reason: "Could not seed this stream with sandbox credentails"
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
+  # TODO uncomment this block this block if your connector implements incremental sync:
+  #    tests:
+  #      - config_path: "secrets/config.json"
+  #        configured_catalog_path: "integration_tests/configured_catalog.json"
+  #        future_state:
+  #          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

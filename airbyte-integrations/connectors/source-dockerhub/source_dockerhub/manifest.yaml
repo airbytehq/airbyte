@@ -56,6 +56,120 @@ streams:
           cursor_value: '{{ response.get("next", {}) }}'
           stop_condition: '{{ not response.get("next", {}) }}'
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          user:
+            description: The user associated with the repository.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the repository.
+            type:
+              - "null"
+              - string
+          namespace:
+            description: The namespace associated with the repository.
+            type:
+              - "null"
+              - string
+          repository_type:
+            description: The type of the repository.
+            type:
+              - "null"
+              - string
+          status:
+            description: The status of the repository.
+            type:
+              - "null"
+              - integer
+          description:
+            description: The description of the repository.
+            type:
+              - "null"
+              - string
+          is_private:
+            description: Indicates whether the repository is private.
+            type:
+              - "null"
+              - boolean
+          is_automated:
+            description: Indicates whether the repository is automated.
+            type:
+              - "null"
+              - boolean
+          can_edit:
+            description: Indicates whether the user has edit permissions for the repository.
+            type:
+              - "null"
+              - boolean
+          star_count:
+            description: The count of stars or likes for the repository.
+            type:
+              - "null"
+              - integer
+          pull_count:
+            description: The count of pulls or downloads for the repository.
+            type:
+              - "null"
+              - integer
+          date_registered:
+            description: The date when the repository was registered on Docker Hub.
+            type:
+              - "null"
+              - string
+          status_description:
+            description: The description of the status of the repository.
+            type:
+              - "null"
+              - string
+          content_types:
+            description: The content types supported by the repository.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          media_types:
+            description: The media types supported by the repository.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          last_updated:
+            description: The date when the repository was last updated.
+            type:
+              - "null"
+              - string
+          is_migrated:
+            description: Indicates whether the repository has been migrated.
+            type:
+              - "null"
+              - boolean
+          collaborator_count:
+            description: The count of collaborators associated with the repository.
+            type:
+              - "null"
+              - integer
+          affiliation:
+            description: The affiliation of the user or organization that owns the repository.
+            type:
+              - "null"
+              - string
+          hub_user:
+            description: The user associated with the repository on Docker Hub.
+            type:
+              - "null"
+              - string
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/dockerhub
   type: Spec

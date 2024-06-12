@@ -9,18 +9,17 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Optional
 
-from connector_ops.utils import console
+from connector_ops.utils import console  # type: ignore
 from pipelines import main_logger
 from pipelines.consts import CIContext
+from pipelines.models.secrets import Secret
 
 if TYPE_CHECKING:
     from logging import Logger
 
-from github import Github, PullRequest
+from github import Auth, Github, PullRequest
 
 AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
-GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
-GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
 
 
 def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> None:
@@ -33,8 +32,15 @@ def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> Non
 
 
 def update_commit_status_check(
-    sha: str, state: str, target_url: str, description: str, context: str, is_optional=False, should_send=True, logger: Logger = None
-):
+    sha: str,
+    state: str,
+    target_url: str,
+    description: str,
+    context: str,
+    is_optional: bool = False,
+    should_send: bool = True,
+    logger: Optional[Logger] = None,
+) -> None:
     """Call the GitHub API to create commit status check.
 
     Args:
@@ -51,7 +57,7 @@ def update_commit_status_check(
 
     safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
     try:
-        github_client = Github(os.environ["CI_GITHUB_ACCESS_TOKEN"])
+        github_client = Github(auth=Auth.Token(os.environ["CI_GITHUB_ACCESS_TOKEN"]))
         airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
     except Exception as e:
         if logger:
@@ -77,28 +83,28 @@ def update_commit_status_check(
     safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.")
 
 
-def get_pull_request(pull_request_number: int, github_access_token: str) -> PullRequest:
+def get_pull_request(pull_request_number: int, github_access_token: Secret) -> PullRequest.PullRequest:
     """Get a pull request object from its number.
 
     Args:
         pull_request_number (str): The number of the pull request to get.
-        github_access_token (str): The GitHub access token to use to authenticate.
+        github_access_token (Secret): The GitHub access token to use to authenticate.
     Returns:
         PullRequest: The pull request object.
     """
-    github_client = Github(github_access_token)
+    github_client = Github(auth=Auth.Token(github_access_token.value))
     airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
     return airbyte_repo.get_pull(pull_request_number)
 
 
-def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Logger = None):
+def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Optional[Logger] = None) -> None:
 
     update_commit_status_check(
         click_context["git_revision"],
         github_state,
         click_context["gha_workflow_run_url"],
-        GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS,
-        GITHUB_GLOBAL_CONTEXT_FOR_TESTS,
+        click_context["global_status_check_description"],
+        click_context["global_status_check_context"],
         should_send=click_context.get("ci_context") == CIContext.PULL_REQUEST,
         logger=logger,
     )

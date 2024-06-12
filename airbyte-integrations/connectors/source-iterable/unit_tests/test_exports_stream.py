@@ -9,8 +9,8 @@ import pendulum
 import pytest
 import responses
 from airbyte_cdk.models import SyncMode
-from source_iterable.slice_generators import StreamSlice
-from source_iterable.streams import Users
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from source_iterable.source import SourceIterable
 
 
 @pytest.fixture
@@ -24,23 +24,20 @@ def session_mock():
         yield session_mock
 
 
-def test_send_email_stream(session_mock):
-    stream = Users(start_date="2020", authenticator=None)
-    stream_slice = StreamSlice(start_date=pendulum.parse("2020"), end_date=pendulum.parse("2021"))
-    _ = list(stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=stream_slice, stream_state={}))
-
-    assert session_mock.send.called
-    send_args = session_mock.send.call_args[1]
-    assert send_args.get("stream") is True
-
-
 @responses.activate
-def test_stream_correct():
-    stream_slice = StreamSlice(start_date=pendulum.parse("2020"), end_date=pendulum.parse("2021"))
-    record_js = {"profileUpdatedAt": "2020"}
-    NUMBER_OF_RECORDS = 10**2
-    resp_body = "\n".join([json.dumps(record_js)] * NUMBER_OF_RECORDS)
+def test_stream_correct(config):
+    start_date = pendulum.parse("2020-01-01 00:00:00+00:00")
+    end_date = pendulum.parse("2021-01-01 00:00:00+00:00")
+    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": start_date, "end_time": end_date})
+    record_js = {"profileUpdatedAt": "2020-01-01 00:00:00 +00:00"}
+    number_of_records = 10 ** 2
+    resp_body = "\n".join([json.dumps(record_js)] * number_of_records)
+
     responses.add("GET", "https://api.iterable.com/api/export/data.json", body=resp_body)
-    stream = Users(start_date="2020", authenticator=None)
+
+    stream_name = "users"
+    source_iterable = SourceIterable()
+    stream = next(filter(lambda x: x.name == stream_name, source_iterable.streams(config=config)))
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=stream_slice, stream_state={}))
-    assert len(records) == NUMBER_OF_RECORDS
+
+    assert len(records) == number_of_records

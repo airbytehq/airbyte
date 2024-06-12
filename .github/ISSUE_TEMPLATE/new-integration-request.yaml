@@ -1,0 +1,37 @@
+name: New Connector Request
+about: Use this to request a new connector
+title: ""
+labels: [area/connectors, new-connector]
+body:
+  - type: input
+    id: connector-name
+    attributes:
+      label: Connector Name
+      description: What is the service or database you want to integrate
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: What type of integration
+      multiple: false
+      options:
+        - Source
+        - Destination
+  - type: textarea
+    id: description
+    attributes:
+      label: Revelant Information
+      description: >-
+        Why do you need this integration? How does your team intend to use the data? This helps us understand the use case.
+        How often do you want to run syncs?
+        If this is an API source connector, which entities/endpoints do you need supported?
+        If the connector is for a paid service, can we name you as a mutual user when we subscribe for an account? Which company should we name?
+  - type: checkboxes
+    id: submit-pr
+    attributes:
+      label: Contribute
+      description: Are you willing to submit the fix?
+      options:
+        - label: Yes
+          required: true

@@ -2,14 +2,51 @@
   "additionalProperties": true,
   "properties": {
     "channel_id": {
+      "description": "Unique identifier of the channel where the message was posted",
       "type": ["null", "string"]
     },
     "blocks": {
+      "description": "List of blocks that make up the message",
       "items": {
         "additionalProperties": true,
         "properties": {
           "type": {
+            "description": "Type of block (e.g., section, actions, context, etc.)",
             "type": ["null", "string"]
+          },
+          "block_id": {
+            "description": "Unique identifier for the block",
+            "type": ["null", "string"]
+          },
+          "elements": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "elements": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "text": {
+                        "description": "Text content of the element",
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "description": "Type of element (e.g., text, image, etc.)",
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                "type": {
+                  "description": "Type of elements container (e.g., context, actions, etc.)",
+                  "type": ["null", "string"]
+                }
+              }
+            }
           }
         },
         "type": ["null", "object"]
@@ -17,45 +54,58 @@
       "type": ["null", "array"]
     },
     "bot_id": {
+      "description": "Unique identifier of the bot that sent the message",
       "type": ["null", "string"]
     },
     "bot_profile": {
+      "description": "Profile information of the bot user",
       "additionalProperties": true,
       "properties": {
         "app_id": {
+          "description": "ID of the Slack app associated with the bot",
           "type": ["null", "string"]
         },
         "deleted": {
+          "description": "Flag indicating if the bot profile has been deleted",
           "type": ["null", "boolean"]
         },
         "id": {
+          "description": "Unique identifier of the bot profile",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the bot",
           "type": ["null", "string"]
         },
         "team_id": {
+          "description": "ID of the team to which the bot belongs",
           "type": ["null", "string"]
         },
         "updated": {
+          "description": "Timestamp of the last profile update",
           "type": ["null", "integer"]
         }
       },
       "type": ["null", "object"]
     },
     "attachments": {
+      "description": "List of attachments included in the message",
       "items": {
         "properties": {
           "title": {
+            "description": "Title of the attachment",
             "type": ["null", "string"]
           },
           "id": {
+            "description": "Unique identifier for the attachment",
             "type": ["null", "integer"]
           },
           "color": {
+            "description": "Color code to be used for the attachment",
             "type": ["null", "string"]
           },
           "fallback": {
+            "description": "Plain text summary of the attachment",
             "type": ["null", "string"]
           }
         },
@@ -64,80 +114,102 @@
       "type": ["null", "array"]
     },
     "client_msg_id": {
+      "description": "Unique identifier for the client who sent the message",
       "type": ["null", "string"]
     },
     "display_as_bot": {
+      "description": "Flag indicating if the message is displayed as coming from a bot",
       "type": ["null", "boolean"]
     },
     "file_id": {
+      "description": "Unique identifier of the file attached to the message",
       "type": ["null", "string"]
     },
     "file_ids": {
+      "description": "List of unique identifiers of files attached to the message",
       "items": {
         "type": ["null", "string"]
       },
       "type": ["null", "array"]
     },
     "icons": {
+      "description": "Icons associated with the message",
       "additionalProperties": true,
       "properties": {
         "emoji": {
+          "description": "Emoji icon used in the message",
           "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
     },
     "inviter": {
+      "description": "User ID of the member who invited a user to the channel",
       "type": ["null", "string"]
     },
     "is_delayed_message": {
+      "description": "Flag indicating if the message was delayed",
       "type": ["null", "boolean"]
     },
     "is_intro": {
+      "description": "Flag indicating if the message is an introduction message",
       "type": ["null", "boolean"]
     },
     "is_starred": {
+      "description": "Flag indicating if the message is starred",
       "type": ["null", "boolean"]
     },
     "last_read": {
+      "description": "Timestamp when the message was last read",
       "type": ["null", "string"]
     },
     "latest_reply": {
+      "description": "Timestamp of the latest reply to the message",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the channel",
       "type": ["null", "string"]
     },
     "old_name": {
+      "description": "Previous name of the channel if renamed",
       "type": ["null", "string"]
     },
     "parent_user_id": {
+      "description": "Unique identifier of the parent user",
       "type": ["null", "string"]
     },
     "permalink": {
+      "description": "Permanent link to the message",
       "format": "uri",
       "type": ["null", "string"]
     },
     "pinned_to": {
+      "description": "List of channels where the message is pinned",
       "items": {
         "type": ["null", "string"]
       },
       "type": ["null", "array"]
     },
     "purpose": {
+      "description": "Purpose set for the channel",
       "type": ["null", "string"]
     },
     "reactions": {
+      "description": "List of reactions added to the message",
       "items": {
         "additionalProperties": true,
         "properties": {
           "count": {
+            "description": "Number of users who reacted",
             "type": ["null", "integer"]
           },
           "name": {
+            "description": "Emoji name of the reaction",
             "type": ["null", "string"]
           },
           "users": {
+            "description": "List of users who reacted",
             "items": {
               "type": ["null", "string"]
             },
@@ -149,63 +221,82 @@
       "type": ["null", "array"]
     },
     "reply_count": {
+      "description": "Number of replies to the message",
       "type": ["null", "integer"]
     },
     "reply_users": {
+      "description": "List of users who replied to the message",
       "items": {
         "type": ["null", "string"]
       },
       "type": ["null", "array"]
     },
     "reply_users_count": {
+      "description": "Number of users who replied to the message",
       "type": ["null", "integer"]
     },
     "source_team": {
+      "description": "Team ID of the source team",
       "type": ["null", "string"]
     },
     "subscribed": {
+      "description": "Flag indicating if the user is subscribed to the channel",
       "type": ["null", "boolean"]
     },
     "subtype": {
+      "description": "Type of message subtype",
       "type": ["null", "string"]
     },
     "team": {
+      "description": "Team ID where the message was posted",
       "type": ["null", "string"]
     },
     "text": {
+      "description": "Text content of the message",
       "type": ["null", "string"]
     },
     "thread_ts": {
+      "description": "Timestamp of the thread the message is part of",
       "type": ["null", "string"]
     },
     "topic": {
+      "description": "Topic set for the channel",
       "type": ["null", "string"]
     },
     "ts": {
+      "description": "Timestamp of the message",
       "type": ["null", "string"]
     },
     "float_ts": {
+      "description": "Timestamp of the message in float format",
       "type": ["null", "number"]
     },
     "is_locked": {
+      "description": "Flag indicating if the message is locked",
       "type": ["null", "boolean"]
     },
     "type": {
+      "description": "Type of message (e.g., message, reply, etc.)",
       "type": ["null", "string"]
     },
     "unread_count": {
+      "description": "Number of unread messages in the channel",
       "type": ["null", "integer"]
     },
     "upload": {
+      "description": "Flag indicating if the message contains uploaded content",
       "type": ["null", "boolean"]
     },
     "user": {
+      "description": "Unique identifier of the user who sent the message",
       "type": ["null", "string"]
     },
     "user_team": {
+      "description": "Team ID of the user who sent the message",
       "type": ["null", "string"]
     },
     "username": {
+      "description": "Username of the user who sent the message",
       "type": ["null", "string"]
     }
   },

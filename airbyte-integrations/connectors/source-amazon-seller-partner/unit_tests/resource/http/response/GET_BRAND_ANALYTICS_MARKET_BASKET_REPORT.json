@@ -1,0 +1,29 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT",
+    "reportOptions": {
+      "reportPeriod": "WEEK"
+    },
+    "dataStartTime": "2021-06-06",
+    "dataEndTime": "2021-06-19",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "dataByAsin": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B123456789",
+      "purchasedWithAsin": "B1A345B78C",
+      "purchasedWithRank": 1,
+      "combinationPct": 0.028
+    },
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B123456789",
+      "purchasedWithAsin": "B1D345E78F",
+      "purchasedWithRank": 2,
+      "combinationPct": 0.0229
+    }
+  ]
+}

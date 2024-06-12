@@ -4,52 +4,66 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "browseNodeId": {
+      "description": "The unique identifier of the browse node",
       "type": ["string"]
     },
     "browseNodeAttributes": {
+      "description": "Attributes associated with the browse node",
       "type": ["null", "object"],
       "properties": {
         "attribute": {
+          "description": "List of attributes",
           "type": ["array"],
           "items": {
             "type": ["null", "object"]
           },
           "properties": {
             "name": {
+              "description": "The name of the attribute",
               "type": ["null", "string"]
             },
             "text": {
+              "description": "The text value of the attribute",
               "type": ["null", "string"]
             }
           }
         },
         "count": {
+          "description": "The count of attributes",
           "type": ["null", "string"]
         }
       }
     },
     "browseNodeName": {
+      "description": "The name of the browse node",
       "type": ["null", "string"]
     },
     "browseNodeStoreContextName": {
+      "description": "The store context name of the browse node",
       "type": ["null", "string"]
     },
     "browsePathById": {
+      "description": "The path of the browse node by ID",
       "type": ["null", "string"]
     },
     "browsePathByName": {
+      "description": "The path of the browse node by name",
       "type": ["null", "string"]
     },
     "hasChildren": {
+      "description": "Flag indicating if the browse node has children",
       "type": ["string"]
     },
     "childNodes": {
+      "description": "Child nodes under the current node",
       "type": ["null", "object"],
       "properties": {
         "count": {
+          "description": "The count of child nodes",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "The unique identifiers of child nodes",
           "type": ["array"],
           "items": {
             "type": ["null", "string"]
@@ -58,30 +72,39 @@
       }
     },
     "productTypeDefinitions": {
+      "description": "Definitions of product types associated with the browse node",
       "type": ["null", "string"]
     },
     "refinementsInformation": {
+      "description": "Information on refinements available",
       "type": ["null", "object"],
       "properties": {
         "count": {
+          "description": "The count of refinements",
           "type": ["null", "string"]
         },
         "refinementName": {
+          "description": "Name of the refinement",
           "type": ["null", "object"],
           "properties": {
             "refinementField": {
+              "description": "Field related to the refinement",
               "type": ["null", "object"],
               "properties": {
                 "acceptedValues": {
+                  "description": "The accepted values for the refinement",
                   "type": ["null", "string"]
                 },
                 "hasModifier": {
+                  "description": "Flag indicating if the refinement has a modifier",
                   "type": ["null", "string"]
                 },
                 "modifiers": {
+                  "description": "Modifiers associated with the refinement",
                   "type": ["null", "string"]
                 },
                 "refinementAttribute": {
+                  "description": "The attribute associated with the refinement",
                   "type": ["null", "string"]
                 }
               }
@@ -89,6 +112,11 @@
           }
         }
       }
+    },
+    "dataEndTime": {
+      "description": "The end time of the data",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

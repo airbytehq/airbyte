@@ -3,6 +3,7 @@
 #
 
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
+from airbyte_cdk.sources.types import StreamSlice
 
 
 def test():
@@ -10,4 +11,4 @@ def test():
 
     stream_slices = iterator.stream_slices()
     next_slice = next(stream_slices)
-    assert next_slice == dict()
+    assert next_slice == StreamSlice(partition={}, cursor_slice={})

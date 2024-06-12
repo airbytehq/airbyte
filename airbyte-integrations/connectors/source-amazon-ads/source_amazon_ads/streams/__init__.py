@@ -16,7 +16,11 @@ from .report_streams import (
     SponsoredDisplayReportStream,
     SponsoredProductsReportStream,
 )
-from .sponsored_brands import SponsoredBrandsAdGroups, SponsoredBrandsCampaigns, SponsoredBrandsKeywords
+from .sponsored_brands import (
+    SponsoredBrandsAdGroups,
+    SponsoredBrandsCampaigns,
+    SponsoredBrandsKeywords
+)
 from .sponsored_display import (
     SponsoredDisplayAdGroups,
     SponsoredDisplayBudgetRules,

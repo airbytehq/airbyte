@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Configuring Airbyte
 
 This section covers how to configure Airbyte, and the various configuration Airbyte accepts.
@@ -17,7 +21,7 @@ If you want to manage your own docker files, please refer to Airbyte's docker fi
 
 The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/on-kubernetes-via-helm.md) is via the `Helm Charts`.
 
-To configure the  Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/on-kubernetes-via-helm.md#custom-deployment).
+To configure the Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/on-kubernetes-via-helm.md#custom-deployment).
 Each application will consume the appropriate values from that file.
 
 If you want to manage your own Kube manifests, please refer to the `Helm Chart`.
@@ -46,35 +50,37 @@ The following variables are relevant to both Docker and Kubernetes.
 
 1. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to AWS_SECRET_MANAGER to use AWS Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
 2. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
-3. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
-4. `VAULT_ADDRESS` - Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
-5. `VAULT_PREFIX` - Define the vault path prefix. Empty by default. Alpha Support.
+3. `SECRET_STORE_GCP_CREDENTIALS` - Defines the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
+4. `VAULT_ADDRESS` - Defines the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
+5. `VAULT_PREFIX` - Defines the vault path prefix. Empty by default. Alpha Support.
 6. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
 7. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
 8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager.
 9. `AWS_SECRET_ACCESS_KEY`- Defines aws_secret_access_key to use for the AWS Secret Manager.
+10. `AWS_KMS_KEY_ARN` - Optional param that defines the KMS Encryption key used for the AWS Secret Manager.
+11. `AWS_SECRET_MANAGER_SECRET_TAGS` - Defines the tags that will be included to all writes to the AWS Secret Manager. The format should be "key1=value1,key2=value2".
 
 #### Database
 
-1. `DATABASE_USER` - Define the Jobs Database user.
-2. `DATABASE_PASSWORD` - Define the Jobs Database password.
-3. `DATABASE_URL` - Define the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Do not include username or password.
-4. `JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Jobs Database to be initialized. This includes migrations.
-5. `CONFIG_DATABASE_USER` - Define the Configs Database user. Defaults to the Jobs Database user if empty.
-6. `CONFIG_DATABASE_PASSWORD` - Define the Configs Database password. Defaults to the Jobs Database password if empty.
-7. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Defaults to the Jobs Database url if empty.
-8. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Configs Database to be initialized. This includes migrations.
-9. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Define if the Bootloader should run migrations on start up.
+1. `DATABASE_USER` - Defines the Jobs Database user.
+2. `DATABASE_PASSWORD` - Defines the Jobs Database password.
+3. `DATABASE_URL` - Defines the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Do not include username or password.
+4. `JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS` - Defines the total time to wait for the Jobs Database to be initialized. This includes migrations.
+5. `CONFIG_DATABASE_USER` - Defines the Configs Database user. Defaults to the Jobs Database user if empty.
+6. `CONFIG_DATABASE_PASSWORD` - Defines the Configs Database password. Defaults to the Jobs Database password if empty.
+7. `CONFIG_DATABASE_URL` - Defines the Configs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Defaults to the Jobs Database url if empty.
+8. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Defines the total time to wait for the Configs Database to be initialized. This includes migrations.
+9. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Defines if the Bootloader should run migrations on start up.
 
 #### Airbyte Services
 
-1. `TEMPORAL_HOST` - Define the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
-2. `INTERNAL_API_HOST` - Define the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
-3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
+1. `TEMPORAL_HOST` - Defines the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
+2. `INTERNAL_API_HOST` - Defines the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
+3. `WEBAPP_URL` - Defines the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
 
 #### Jobs
 
-1. `SYNC_JOB_MAX_ATTEMPTS` - Define the number of attempts a sync will attempt before failing. *Legacy - this is superseded by the values below*
+1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the number of attempts a sync will attempt before failing. _Legacy - this is superseded by the values below_
 2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the max number of successive attempts in which no data was synchronized before failing the job.
 3. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which no data was synchronized before failing the job.
 4. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MIN_INTERVAL_S` - Defines the minimum backoff interval in seconds between failed attempts in which no data was synchronized.
@@ -82,34 +88,40 @@ The following variables are relevant to both Docker and Kubernetes.
 6. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_BASE` - Defines the exponential base of the backoff interval between failed attempts in which no data was synchronized.
 7. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_SUCCESSIVE` - Defines the max number of attempts in which some data was synchronized before failing the job.
 8. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which some data was synchronized before failing the job.
-9. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Define the number of days a sync job will execute for before timing out.
-10. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-11. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-12. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-13. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+9. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Defines the number of days a sync job will execute for before timing out.
+10. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Defines the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+11. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Defines the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+12. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Defines the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+13. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Defines the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+
+#### Connections
+
+1. `MAX_FIELDS_PER_CONNECTION` - Defines the maximum number of fields able to be selected for a single connection.
+2. `MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE` - Defines the number of consecuative days of only failed jobs before the connection is disabled.
+3. `MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE` - Defines the number of consecuative failed jobs before the connection is disabled.
 
 #### Logging
 
-1. `LOG_LEVEL` - Define log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
+1. `LOG_LEVEL` - Defines log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
 
 #### Monitoring
 
-1. `PUBLISH_METRICS` - Define whether to publish metrics collected by the Metrics Reporter. Defaults to false.
+1. `PUBLISH_METRICS` - Defines whether to publish metrics collected by the Metrics Reporter. Defaults to false.
 2. `METRIC_CLIENT` - Defines which metrics client to use. Only relevant if `PUBLISH_METRICS` is set to true. Accepts either `datadog` or `otel`. Default to none.
 3. `DD_AGENT_HOST` - Defines the ip the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
 4. `DD_AGENT_PORT` - Defines the port the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
-5. `OTEL_COLLECTOR_ENDPOIN` - Define the ip:port the OTEL metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `otel`. Defaults to none.
+5. `OTEL_COLLECTOR_ENDPOIN` - Defines the ip:port the OTEL metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `otel`. Defaults to none.
 
 #### Worker
 
-1. `MAX_SPEC_WORKERS` - Define the maximum number of Spec workers each Airbyte Worker container can support. Defaults to 5.
-2. `MAX_CHECK_WORKERS` - Define the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
-3. `MAX_SYNC_WORKERS` - Define the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
-4. `MAX_DISCOVER_WORKERS` - Define the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
+1. `MAX_SPEC_WORKERS` - Defines the maximum number of Spec workers each Airbyte Worker container can support. Defaults to 5.
+2. `MAX_CHECK_WORKERS` - Defines the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
+3. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
+4. `MAX_DISCOVER_WORKERS` - Defines the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
 
 #### Data Retention
 
-1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Define the retention period of the job history in Temporal, defaults to 30 days. When running in docker,
+1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Defines the retention period of the job history in Temporal, defaults to 30 days. When running in docker,
    this same value is applied to the log retention.
 
 ### Docker-Only
@@ -130,31 +142,31 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 #### Jobs
 
-1. `JOB_KUBE_TOLERATIONS` - Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
-2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod node selectors of the sync job and the default pod node selectors fallback for others jobs.
-3. `JOB_KUBE_ANNOTATIONS` - Define one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod annotations of the sync job and the default pod annotations fallback for others jobs.
-4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Define the Job pod connector image pull policy.
-5. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Define the Job pod connector image pull secret. Useful when hosting private images.
-6. `JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY` - Define the image pull policy on the sidecar containers in the Job pod. Useful when there are cluster policies enforcing to always pull.
-7. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
-8. `JOB_KUBE_BUSYBOX_IMAGE` - Define the Job pod busybox image.
-9. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
-10. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
+1. `JOB_KUBE_TOLERATIONS` - Defines one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
+2. `JOB_KUBE_NODE_SELECTORS` - Defines one or more Job pod node selectors. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod node selectors of the sync job and the default pod node selectors fallback for others jobs.
+3. `JOB_KUBE_ANNOTATIONS` - Defines one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod annotations of the sync job and the default pod annotations fallback for others jobs.
+4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Defines the Job pod connector image pull policy.
+5. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Defines the Job pod connector image pull secret. Useful when hosting private images.
+6. `JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY` - Defines the image pull policy on the sidecar containers in the Job pod. Useful when there are cluster policies enforcing to always pull.
+7. `JOB_KUBE_SOCAT_IMAGE` - Defines the Job pod socat image.
+8. `JOB_KUBE_BUSYBOX_IMAGE` - Defines the Job pod busybox image.
+9. `JOB_KUBE_CURL_IMAGE` - Defines the Job pod curl image pull.
+10. `JOB_KUBE_NAMESPACE` - Defines the Kubernetes namespace Job pods are created in.
 
 #### Jobs specific
 
 A job specific variable overwrites the default sync job variable defined above.
 
-1. `SPEC_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
-2. `CHECK_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
-3. `DISCOVER_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
-4. `SPEC_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
-5. `CHECK_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
-6. `DISCOVER_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+1. `SPEC_JOB_KUBE_NODE_SELECTORS` - Defines one or more pod node selectors for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+2. `CHECK_JOB_KUBE_NODE_SELECTORS` - Defines one or more pod node selectors for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+3. `DISCOVER_JOB_KUBE_NODE_SELECTORS` - Defines one or more pod node selectors for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+4. `SPEC_JOB_KUBE_ANNOTATIONS` - Defines one or more pod annotations for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+5. `CHECK_JOB_KUBE_ANNOTATIONS` - Defines one or more pod annotations for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+6. `DISCOVER_JOB_KUBE_ANNOTATIONS` - Defines one or more pod annotations for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 
 #### Worker
 
-1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Helm Chart.
+1. `TEMPORAL_WORKER_PORTS` - Defines the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Helm Chart.
 
 #### Logging
 
@@ -162,10 +174,10 @@ Note that Airbyte does not support logging to separate Cloud Storage providers.
 
 Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes-via-helm#configure-logs) for more information on configuring Kubernetes logging.
 
-1. `GCS_LOG_BUCKET` - Define the GCS bucket to store logs.
-2. `S3_BUCKET` - Define the S3 bucket to store logs.
-3. `S3_RREGION` - Define the S3 region the S3 log bucket is in.
-4. `S3_AWS_KEY` - Define the key used to access the S3 log bucket.
-5. `S3_AWS_SECRET` - Define the secret used to access the S3 log bucket.
-6. `S3_MINIO_ENDPOINT` - Define the url Minio is hosted at so Airbyte can use Minio to store logs.
+1. `GCS_LOG_BUCKET` - Defines the GCS bucket to store logs.
+2. `S3_BUCKET` - Defines the S3 bucket to store logs.
+3. `S3_RREGION` - Defines the S3 region the S3 log bucket is in.
+4. `S3_AWS_KEY` - Defines the key used to access the S3 log bucket.
+5. `S3_AWS_SECRET` - Defines the secret used to access the S3 log bucket.
+6. `S3_MINIO_ENDPOINT` - Defines the url Minio is hosted at so Airbyte can use Minio to store logs.
 7. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.

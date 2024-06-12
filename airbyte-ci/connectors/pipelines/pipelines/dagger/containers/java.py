@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+
 from dagger import CacheVolume, Container, File, Platform
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
@@ -33,13 +35,15 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
         context.dagger_client.container(platform=build_platform)
         # Use a linux+jdk base image with long-term support, such as amazoncorretto.
         .from_(AMAZONCORRETTO_IMAGE)
+        # Bust the cache on a daily basis to get fresh packages.
+        .with_env_variable("DAILY_CACHEBUSTER", datetime.datetime.now().strftime("%Y-%m-%d"))
         # Install a bunch of packages as early as possible.
         .with_exec(
             sh_dash_c(
                 [
                     # Update first, but in the same .with_exec step as the package installation.
                     # Otherwise, we risk caching stale package URLs.
-                    "yum update -y",
+                    "yum update -y --security",
                     #
                     f"yum install -y {' '.join(yum_packages_to_install)}",
                     # Remove any dangly bits.
@@ -68,7 +72,7 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
     )
 
 
-def with_integration_base_java_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
+def with_integration_base_java_and_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
     yum_packages_to_install = [
         "python3",
         "python3-devel",
@@ -81,16 +85,20 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     yum_packages_to_install += additional_yum_packages
 
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
+    assert isinstance(dbt_adapter_package, str)
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
+    assert isinstance(normalization_integration_name, str)
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 
     return (
         with_integration_base_java(context, build_platform)
+        # Bust the cache on a daily basis to get fresh packages.
+        .with_env_variable("DAILY_CACHEBUSTER", datetime.datetime.now().strftime("%Y-%m-%d"))
         .with_exec(
             sh_dash_c(
                 [
-                    "yum update -y",
+                    "yum update -y --security",
                     f"yum install -y {' '.join(yum_packages_to_install)}",
                     "yum clean all",
                     "alternatives --install /usr/bin/python python /usr/bin/python3 60",

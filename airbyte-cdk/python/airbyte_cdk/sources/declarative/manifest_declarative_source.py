@@ -6,6 +6,7 @@ import json
 import logging
 import pkgutil
 import re
+from copy import deepcopy
 from importlib import metadata
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -25,9 +26,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import ConnectionDefinition
 from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, DebugSliceLogger, SliceLogger
 from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validate
@@ -91,18 +92,46 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
+        stream_configs = self._stream_configs(self._source_config)
 
         source_streams = [
             self._constructor.create_component(
                 DeclarativeStreamModel, stream_config, config, emit_connector_builder_messages=self._emit_connector_builder_messages
             )
-            for stream_config in self._stream_configs(self._source_config)
+            for stream_config in self._initialize_cache_for_parent_streams(deepcopy(stream_configs))
         ]
 
-        for stream in source_streams:
-            # make sure the log level is always applied to the stream's logger
-            self._apply_log_level_to_stream_logger(self.logger, stream)
         return source_streams
+
+    @staticmethod
+    def _initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        parent_streams = set()
+
+        def update_with_cache_parent_configs(parent_configs: list[dict[str, Any]]) -> None:
+            for parent_config in parent_configs:
+                parent_streams.add(parent_config["stream"]["name"])
+                parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
+
+        for stream_config in stream_configs:
+            if stream_config.get("incremental_sync", {}).get("parent_stream"):
+                parent_streams.add(stream_config["incremental_sync"]["parent_stream"]["name"])
+                stream_config["incremental_sync"]["parent_stream"]["retriever"]["requester"]["use_cache"] = True
+
+            elif stream_config.get("retriever", {}).get("partition_router", {}):
+                partition_router = stream_config["retriever"]["partition_router"]
+
+                if isinstance(partition_router, dict) and partition_router.get("parent_stream_configs"):
+                    update_with_cache_parent_configs(partition_router["parent_stream_configs"])
+                elif isinstance(partition_router, list):
+                    for router in partition_router:
+                        if router.get("parent_stream_configs"):
+                            update_with_cache_parent_configs(router["parent_stream_configs"])
+
+        for stream_config in stream_configs:
+            if stream_config["name"] in parent_streams:
+                stream_config["retriever"]["requester"]["use_cache"] = True
+
+        return stream_configs
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """

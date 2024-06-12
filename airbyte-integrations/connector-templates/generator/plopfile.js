@@ -1,15 +1,21 @@
-'use strict';
-const path = require('path');
-const uuid = require('uuid');
-const capitalCase = require('capital-case');
-const changeCase = require('change-case')
-const getSuccessMessage = function(connectorName, outputPath, additionalMessage){
-    return `
+"use strict";
+const path = require("path");
+const uuid = require("uuid");
+const capitalCase = require("capital-case");
+const changeCase = require("change-case");
+const getSuccessMessage = function (
+  connectorName,
+  outputPath,
+  additionalMessage
+) {
+  return `
 🚀 🚀 🚀 🚀 🚀 🚀
 
 Success!
 
-Your ${connectorName} connector has been created at .${path.resolve(outputPath)}.
+Your ${connectorName} connector has been created at .${path.resolve(
+  outputPath
+)}.
 
 Follow the TODOs in the generated module to implement your connector.
 
@@ -19,130 +25,141 @@ https://discuss.airbyte.io/c/connector-development/16
 We're always happy to provide any support!
 
 ${additionalMessage || ""}
-`
-}
+`;
+};
 
 module.exports = function (plop) {
-  const docRoot = '../../../docs/integrations';
-  const definitionRoot = '../../../airbyte-config-oss/init-oss/src/main/resources';
+  const connectorAcceptanceTestFilesInputRoot =
+    "../connector_acceptance_test_files";
 
-  const connectorAcceptanceTestFilesInputRoot = '../connector_acceptance_test_files';
+  const pythonSourceInputRoot = "../source-python";
+  const lowCodeSourceInputRoot = "../source-low-code";
+  const pythonDestinationInputRoot = "../destination-python";
 
-  const pythonSourceInputRoot = '../source-python';
-  const singerSourceInputRoot = '../source-singer';
-  const genericSourceInputRoot = '../source-generic';
-  const genericJdbcSourceInputRoot = '../source-java-jdbc';
-  const httpApiInputRoot = '../source-python-http-api';
-  const lowCodeSourceInputRoot = '../source-configuration-based';
-  const javaDestinationInput = '../destination-java';
-  const pythonDestinationInputRoot = '../destination-python';
+  const outputDir = "../../connectors";
 
-  const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
-  const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
-  const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
-  const genericJdbcSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
-  const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
-  const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
   const pythonDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
-  const sourceConnectorImagePrefix = 'airbyte/source-'
-  const sourceConnectorImageTag = 'dev'
-  const defaultSpecPathFolderPrefix = 'source_'
-  const specFileName = 'spec.yaml'
 
+  const sourceConnectorImagePrefix = "airbyte/source-";
+  const sourceConnectorImageTag = "dev";
+  const defaultSpecPathFolderPrefix = "source_";
 
-  plop.setHelper('capitalCase', function(name) {
+  const specFileName = "spec.yaml";
+
+  plop.setHelper("capitalCase", function (name) {
     return capitalCase.capitalCase(name);
   });
 
-  plop.setHelper('generateDefinitionId', function() {
+  plop.setHelper("currentYear", function () {
+    return new Date().getFullYear();
+  });
+
+  plop.setHelper("generateDefinitionId", function () {
     // if the env var CI is set then return a fixed FAKE uuid  so that the tests are deterministic
     if (process.env.CI) {
-      return 'FAKE-UUID-0000-0000-000000000000';
+      return "FAKE-UUID-0000-0000-000000000000";
     }
     return uuid.v4().toLowerCase();
   });
 
-  plop.setHelper('connectorImage', function() {
-    let suffix = ""
-    if (typeof this.connectorImageNameSuffix !== 'undefined') {
-      suffix = this.connectorImageNameSuffix
+  plop.setHelper("connectorImage", function () {
+    let suffix = "";
+    if (typeof this.connectorImageNameSuffix !== "undefined") {
+      suffix = this.connectorImageNameSuffix;
     }
-    return `${sourceConnectorImagePrefix}${changeCase.paramCase(this.name)}${suffix}:${sourceConnectorImageTag}`
+    return `${sourceConnectorImagePrefix}${changeCase.paramCase(this.name)}${suffix}:${sourceConnectorImageTag}`;
   });
 
-  plop.setHelper('specPath', function() {
-    let suffix = ""
-    if (typeof this.specPathFolderSuffix !== 'undefined') {
-      suffix = this.specPathFolderSuffix
+  plop.setHelper("specPath", function () {
+    let suffix = "";
+    if (typeof this.specPathFolderSuffix !== "undefined") {
+      suffix = this.specPathFolderSuffix;
     }
-    let inSubFolder = true
-    if (typeof this.inSubFolder !== 'undefined') {
-      inSubFolder = this.inSubFolder
+    let inSubFolder = true;
+    if (typeof this.inSubFolder !== "undefined") {
+      inSubFolder = this.inSubFolder;
     }
     if (inSubFolder) {
-      return `${defaultSpecPathFolderPrefix}${changeCase.snakeCase(this.name)}${suffix}/${specFileName}`
+      return `${defaultSpecPathFolderPrefix}${changeCase.snakeCase(
+        this.name
+      )}${suffix}/${specFileName}`;
     } else {
-      return specFileName
+      return specFileName;
     }
   });
 
-
-  plop.setActionType('emitSuccess', function(answers, config, plopApi){
-      console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
+  plop.setActionType("emitSuccess", function (answers, config, plopApi) {
+    console.log(
+      getSuccessMessage(
+        answers.name,
+        plopApi.renderString(config.outputPath, answers),
+        config.message
+      )
+    );
   });
 
-  plop.setGenerator('Python Destination', {
-    description: 'Generate a destination connector written in Python',
+  plop.setGenerator("Python CDK Destination", {
+    description: "Generate a destination connector based on Python CDK.",
     prompts: [
-      {type:'input', name:'name', 'message': 'Connector name e.g: redis'},
+      { type: "input", name: "name", message: "Connector name e.g: redis" },
     ],
     actions: [
       {
         abortOnFail: true,
-        type:'addMany',
+        type: "addMany",
         destination: pythonDestinationOutputRoot,
         base: pythonDestinationInputRoot,
         templateFiles: `${pythonDestinationInputRoot}/**/**`,
       },
-      {type: 'emitSuccess', outputPath: pythonDestinationOutputRoot}
-    ]
-  })
+      { type: "emitSuccess", outputPath: pythonDestinationOutputRoot },
+    ],
+  });
 
-  plop.setGenerator('Python HTTP API Source', {
-    description: 'Generate a Source that pulls data from a synchronous HTTP API.',
+  plop.setGenerator("Python CDK Source", {
+    description:
+      "Generate a source connector based on Python CDK.",
     prompts: [
-      {type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'},
+      {
+        type: "input",
+        name: "name",
+        message: 'Source name e.g: "google-analytics"',
+      },
     ],
     actions: [
       {
         abortOnFail: true,
-        type:'addMany',
-        destination: httpApiOutputRoot,
-        base: httpApiInputRoot,
-        templateFiles: `${httpApiInputRoot}/**/**`,
+        type: "addMany",
+        destination: pythonSourceOutputRoot,
+        base: pythonSourceInputRoot,
+        templateFiles: `${pythonSourceInputRoot}/**/**`,
       },
       // common acceptance tests
       {
         abortOnFail: true,
-        type:'addMany',
-        destination: httpApiOutputRoot,
+        type: "addMany",
+        destination: pythonSourceOutputRoot,
         base: connectorAcceptanceTestFilesInputRoot,
         templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
       },
-      {type: 'emitSuccess', outputPath: httpApiOutputRoot}
-    ]
+      { type: "emitSuccess", outputPath: pythonSourceOutputRoot },
+    ],
   });
 
-  plop.setGenerator('Configuration Based Source', {
-    description: 'Generate a Source that is described using a low code configuration file',
+  plop.setGenerator("Low-code Source", {
+    description:
+      "Generate a source based on the low-code CDK.",
     prompts: [
-      {type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'},
+      {
+        type: "input",
+        name: "name",
+        message: 'Source name e.g: "google-analytics"',
+      },
     ],
-        actions: [
+    actions: [
       {
         abortOnFail: true,
-        type:'addMany',
+        type: "addMany",
         destination: pythonSourceOutputRoot,
         base: lowCodeSourceInputRoot,
         templateFiles: `${lowCodeSourceInputRoot}/**/**`,
@@ -150,195 +167,12 @@ module.exports = function (plop) {
       // common acceptance tests
       {
         abortOnFail: true,
-        type:'addMany',
+        type: "addMany",
         destination: pythonSourceOutputRoot,
         base: connectorAcceptanceTestFilesInputRoot,
         templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
       },
-      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot}
-    ]
-  });
-
-  plop.setGenerator('Python Singer Source', {
-    description: 'Generate a Singer-tap-based Airbyte Source.',
-    prompts: [
-      {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
-        return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
-      }},
-       {type: 'input', name: 'tap_name', message: 'Singer tap package e.g "tap-mixpanel"'},
+      { type: "emitSuccess", outputPath: pythonSourceOutputRoot },
     ],
-    actions: [
-       {
-         abortOnFail: true,
-         type:'addMany',
-         destination: singerSourceOutputRoot,
-         base: singerSourceInputRoot,
-         templateFiles: `${singerSourceInputRoot}/**/**`,
-       },
-       // common acceptance tests
-       {
-         abortOnFail: true,
-         type:'addMany',
-         destination: singerSourceOutputRoot,
-         base: connectorAcceptanceTestFilesInputRoot,
-         templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
-         data: {
-          connectorImageNameSuffix: "-singer",
-          specPathFolderSuffix: "_singer"
-        }
-       },
-       {
-         type:'add',
-         abortOnFail: true,
-         templateFile: `${singerSourceInputRoot}/.gitignore.hbs`,
-         path: `${singerSourceOutputRoot}/.gitignore`
-       },
-       {
-         type:'add',
-         abortOnFail: true,
-         templateFile: `${singerSourceInputRoot}/.dockerignore.hbs`,
-         path: `${singerSourceOutputRoot}/.dockerignore`
-       },
-        {type: 'emitSuccess', outputPath: singerSourceOutputRoot},
-    ]
-  });
-
-  plop.setGenerator('Python Source', {
-        description: 'Generate a minimal Python Airbyte Source Connector that works with any kind of data source. Use this if none of the other Python templates serve your use case.',
-        prompts: [
-          {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'},
-        ],
-        actions: [
-            {
-                abortOnFail: true,
-                type:'addMany',
-                destination: pythonSourceOutputRoot,
-                base: pythonSourceInputRoot,
-                templateFiles: `${pythonSourceInputRoot}/**/**`,
-            },
-            // common acceptance tests
-            {
-              abortOnFail: true,
-              type:'addMany',
-              destination: pythonSourceOutputRoot,
-              base: connectorAcceptanceTestFilesInputRoot,
-              templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
-            },
-            {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.com/connector-development/tutorials/building-a-python-source"}]
-    });
-
-  plop.setGenerator('Java JDBC Source', {
-    description: 'Generate a minimal Java JDBC Airbyte Source Connector.',
-    prompts: [
-      {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "mysql"'},
-    ],
-    actions: [
-      {
-        abortOnFail: true,
-        type:'addMany',
-        destination: genericJdbcSourceOutputRoot,
-        base: genericJdbcSourceInputRoot,
-        templateFiles: `${genericJdbcSourceInputRoot}/**/**`,
-      },
-      {type: 'emitSuccess', outputPath: genericJdbcSourceOutputRoot}
-    ]
-  });
-
-  plop.setGenerator('Generic Source', {
-      description: 'Use if none of the other templates apply to your use case.',
-      prompts: [
-        {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'},
-      ],
-      actions: [
-        {
-          abortOnFail: true,
-          type:'addMany',
-          destination: genericSourceOutputRoot,
-          base: genericSourceInputRoot,
-          templateFiles: `${genericSourceInputRoot}/**/**`,
-        },
-        // common acceptance tests
-        {
-          abortOnFail: true,
-          type:'addMany',
-          destination: genericSourceOutputRoot,
-          base: connectorAcceptanceTestFilesInputRoot,
-          templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
-          data: {
-            inSubFolder: false
-          }
-        },
-        {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
-      ]
-    });
-
-  plop.setGenerator('Java Destination', {
-    description: 'Generate a Java Destination Connector.',
-    prompts: [
-      {
-        type: 'input',
-        name: 'name',
-        message: 'Destination name, without the "destination-" prefix e.g: "google-pubsub"',
-      },
-    ],
-    actions: [
-      // Gradle
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/build.gradle.hbs`,
-        path: `${javaDestinationOutputRoot}/build.gradle`
-      },
-      // Docker
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/.dockerignore.hbs`,
-        path: `${javaDestinationOutputRoot}/.dockerignore`
-      },
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/Dockerfile.hbs`,
-        path: `${javaDestinationOutputRoot}/Dockerfile`
-      },
-      // Java
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/Destination.java.hbs`,
-        path: `${javaDestinationOutputRoot}/src/main/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}Destination.java`
-      },
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/DestinationAcceptanceTest.java.hbs`,
-        path: `${javaDestinationOutputRoot}/src/test-integration/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}DestinationAcceptanceTest.java`
-      },
-      // Doc
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/README.md.hbs`,
-        path: `${javaDestinationOutputRoot}/README.md`
-      },
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/doc.md.hbs`,
-        path: `${docRoot}/destinations/{{dashCase name}}.md`
-      },
-      // Definition
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/spec.json.hbs`,
-        path: `${javaDestinationOutputRoot}/src/main/resources/spec.json`
-      },
-      {
-        type: 'emitSuccess',
-        outputPath: javaDestinationOutputRoot,
-      }
-    ]
   });
 };
