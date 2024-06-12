@@ -25,7 +25,8 @@ You can learn more about abctl on the associated [GitHub repository](https://git
 
 Follow the instructions for your operating system:
 
-<Tabs>
+<Tabs
+defaultValue="abctl-mac">
 <TabItem value="abctl-mac" label="Mac">
 
 We recommend that Mac users use Brew to install the `abctl` command. 
@@ -179,7 +180,7 @@ There are several channels for community support of local setup and deployment.
  - Search the questions others have asked or ask a new question of your own. 
 
 **Airbyte Knowledge Base:**
-- While support services are limited to Cloud and Enterprise customers, you can freely search our support team's Help Center.
+- While support services are limited to Cloud and Enterprise customers, anyone may search the support team's [Help Center](https://support.airbyte.com/hc).
 
 **Community Slack** 
 Helpful channels for troubleshooting include:
@@ -190,8 +191,13 @@ Helpful channels for troubleshooting include:
 ## Next Steps
 
 In the Building Connections section, you'll learn how to start moving data. Generally, there are three steps: 
+
 1: [Set up a Source](./add-a-source)
+
 2: [Set up a Destination](./add-a-destination.md)
+
 3: [Set up a Connection](./set-up-a-connection.md)
+
+**Introductory Course**
 
 For an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-in Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
