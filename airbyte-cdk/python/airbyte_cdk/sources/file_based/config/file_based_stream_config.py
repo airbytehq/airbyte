@@ -65,8 +65,8 @@ class FileBasedStreamConfig(BaseModel):
         default=False,
     )
 
-    @field_validator("input_schema", mode="before")
     @classmethod
+    @field_validator("input_schema", mode="before")
     def validate_input_schema(cls, v: Optional[str]) -> Optional[str]:
         if v:
             if type_mapping_to_jsonschema(v):
