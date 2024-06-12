@@ -26,8 +26,8 @@ internal class DestSingleStateLifecycleManagerTest {
     fun testBasicLifeCycle() {
         // starts with no state.
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertTrue(mgr!!.listFlushed()!!.isEmpty())
-        Assertions.assertTrue(mgr!!.listCommitted()!!.isEmpty())
+        Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
+        Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
 
         mgr!!.addState(MESSAGE1)
         // new state supersedes previous ones. we should only see MESSAGE2 from here on out.
@@ -35,22 +35,22 @@ internal class DestSingleStateLifecycleManagerTest {
 
         // after adding a state, it is in pending only.
         Assertions.assertEquals(MESSAGE2, mgr!!.listPending().poll())
-        Assertions.assertTrue(mgr!!.listFlushed()!!.isEmpty())
-        Assertions.assertTrue(mgr!!.listCommitted()!!.isEmpty())
+        Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
+        Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
 
         mgr!!.markPendingAsFlushed()
 
         // after flushing the state it is in flushed only.
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertEquals(MESSAGE2, mgr!!.listFlushed()!!.poll())
-        Assertions.assertTrue(mgr!!.listCommitted()!!.isEmpty())
+        Assertions.assertEquals(MESSAGE2, mgr!!.listFlushed().poll())
+        Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
 
         // after committing the state it is in committed only.
         mgr!!.markFlushedAsCommitted()
 
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertTrue(mgr!!.listFlushed()!!.isEmpty())
-        Assertions.assertEquals(MESSAGE2, mgr!!.listCommitted()!!.poll())
+        Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
+        Assertions.assertEquals(MESSAGE2, mgr!!.listCommitted().poll())
     }
 
     @Test
@@ -60,8 +60,8 @@ internal class DestSingleStateLifecycleManagerTest {
 
         // verify the LAST message is returned.
         Assertions.assertEquals(MESSAGE2, mgr!!.listPending().poll())
-        Assertions.assertTrue(mgr!!.listFlushed()!!.isEmpty())
-        Assertions.assertTrue(mgr!!.listCommitted()!!.isEmpty())
+        Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
+        Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
     }
 
     @Test
@@ -71,8 +71,8 @@ internal class DestSingleStateLifecycleManagerTest {
         mgr!!.markPendingAsFlushed()
 
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertEquals(MESSAGE2, mgr!!.listFlushed()!!.poll())
-        Assertions.assertTrue(mgr!!.listCommitted()!!.isEmpty())
+        Assertions.assertEquals(MESSAGE2, mgr!!.listFlushed().poll())
+        Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
 
         // verify that multiple calls to markPendingAsFlushed overwrite old states
         mgr!!.addState(MESSAGE1)
@@ -80,8 +80,8 @@ internal class DestSingleStateLifecycleManagerTest {
         mgr!!.markPendingAsFlushed()
 
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertEquals(MESSAGE1, mgr!!.listFlushed()!!.poll())
-        Assertions.assertTrue(mgr!!.listCommitted()!!.isEmpty())
+        Assertions.assertEquals(MESSAGE1, mgr!!.listFlushed().poll())
+        Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
     }
 
     @Test
@@ -92,8 +92,8 @@ internal class DestSingleStateLifecycleManagerTest {
         mgr!!.markFlushedAsCommitted()
 
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertTrue(mgr!!.listFlushed()!!.isEmpty())
-        Assertions.assertEquals(MESSAGE2, mgr!!.listCommitted()!!.poll())
+        Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
+        Assertions.assertEquals(MESSAGE2, mgr!!.listCommitted().poll())
 
         // verify that multiple calls to markFlushedAsCommitted overwrite old states
         mgr!!.addState(MESSAGE1)
@@ -102,8 +102,8 @@ internal class DestSingleStateLifecycleManagerTest {
         mgr!!.markFlushedAsCommitted()
 
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertTrue(mgr!!.listFlushed()!!.isEmpty())
-        Assertions.assertEquals(MESSAGE1, mgr!!.listCommitted()!!.poll())
+        Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
+        Assertions.assertEquals(MESSAGE1, mgr!!.listCommitted().poll())
     }
 
     /*
@@ -121,8 +121,8 @@ internal class DestSingleStateLifecycleManagerTest {
         mgr!!.markPendingAsCommitted()
 
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertTrue(mgr!!.listFlushed()!!.isEmpty())
-        Assertions.assertEquals(MESSAGE2, mgr!!.listCommitted()!!.poll())
+        Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
+        Assertions.assertEquals(MESSAGE2, mgr!!.listCommitted().poll())
     }
 
     companion object {

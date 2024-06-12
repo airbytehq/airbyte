@@ -1,20 +1,19 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import logging
 from functools import wraps
 from time import sleep
 from typing import Any, Callable, Final, Optional, Tuple, Type
-
-from airbyte_cdk import AirbyteLogger
 
 from .exceptions import ShopifyBulkExceptions
 
 BULK_RETRY_ERRORS: Final[Tuple] = (
     ShopifyBulkExceptions.BulkJobBadResponse,
-    ShopifyBulkExceptions.BulkJobUnknownError,
+    ShopifyBulkExceptions.BulkJobError,
 )
 
 
-def bulk_retry_on_exception(logger: AirbyteLogger, more_exceptions: Optional[Tuple[Type[Exception], ...]] = None) -> Callable:
+def bulk_retry_on_exception(logger: logging.Logger, more_exceptions: Optional[Tuple[Type[Exception], ...]] = None) -> Callable:
     """
     A decorator to retry a function when specified exceptions are raised.
 
@@ -44,6 +43,17 @@ def bulk_retry_on_exception(logger: AirbyteLogger, more_exceptions: Optional[Tup
                             f"Stream `{stream_name}`: {ex}. Retrying {current_retries}/{max_retries} after {backoff_time} seconds."
                         )
                         sleep(backoff_time)
+                except ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError:
+                    if self._concurrent_attempt == self._concurrent_max_retry:
+                        message = f"The BULK Job couldn't be created at this time, since another job is running."
+                        logger.error(message)
+                        raise ShopifyBulkExceptions.BulkJobConcurrentError(message)
+
+                    self._concurrent_attempt += 1
+                    logger.warning(
+                        f"Stream: `{self.stream_name}`, the BULK concurrency limit has reached. Waiting {self._concurrent_interval} sec before retry, attempt: {self._concurrent_attempt}.",
+                    )
+                    sleep(self._concurrent_interval)
 
         return wrapper
 
