@@ -7,6 +7,7 @@ import os
 import urllib
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
+from functools import cached_property
 
 import requests
 import requests_cache
@@ -147,6 +148,7 @@ class HttpClient:
 
         return prepared_request
 
+    @cached_property
     def _max_retries(self) -> int:
         max_retries = self._DEFAULT_MAX_RETRY
         if self._disable_retries:
@@ -160,6 +162,7 @@ class HttpClient:
                     break
         return max_retries
 
+    @cached_property
     def _max_time(self) -> int:
         max_time = self._DEFAULT_MAX_TIME
         if hasattr(self._error_handler, "max_time") and self._error_handler.max_time is not None:
@@ -171,6 +174,7 @@ class HttpClient:
                     break
         return max_time
 
+    @cached_property
     def _factor(self) -> float:
         factor = self._DEFAULT_RETRY_FACTOR
         for backoff_strategy in self._backoff_strategies:
@@ -208,10 +212,10 @@ class HttpClient:
             requests.Response: The HTTP response received from the server after retries.
         """
 
-        max_retries = self._max_retries()
+        max_retries = self._max_retries
         max_tries = max(0, max_retries) + 1
-        max_time = self._max_time()
-        factor = self._factor()
+        max_time = self._max_time
+        factor = self._factor
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
