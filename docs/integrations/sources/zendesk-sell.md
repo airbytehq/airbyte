@@ -77,6 +77,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| 0.2.2 | 2024-06-06 | [39258](https://github.com/airbytehq/airbyte/pull/39258) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.1 | 2024-05-20 | [38426](https://github.com/airbytehq/airbyte/pull/38426) | [autopull] base image + poetry + up_to_date |
 | 0.2.0 | 2023-10-23 | [31016](https://github.com/airbytehq/airbyte/pull/31016) | Migrated to Low Code CDK |
 | 0.1.1 | 2023-08-30 | [29830](https://github.com/airbytehq/airbyte/pull/29830) | Change phone_number in Calls to string (bug in zendesk sell api documentation) |
