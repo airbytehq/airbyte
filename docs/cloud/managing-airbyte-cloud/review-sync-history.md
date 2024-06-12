@@ -8,7 +8,7 @@ The job history displays information about synced data, such as the amount of da
 
 ![Job History](./assets/connection-job-history.png)
 
-To review the sync history, click a connection in the list to view its sync history. Sync History displays the sync status or [reset](/operator-guides/reset.md) status. The sync status is defined as:
+To review the sync history, click a connection in the list to view its sync history. Sync History displays the sync status or [clear](/operator-guides/clear) status. The sync status is defined as:
 
 | Status              | Description                                                       |
 | ------------------- | ----------------------------------------------------------------- |
@@ -32,6 +32,12 @@ Each sync shows the time the sync was initiated and additional metadata. This in
 :::note
 
 In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. The latest rules can be read about [here](../../understanding-airbyte/jobs.md#retry-rules).
+
+:::
+
+:::info
+
+For Airbyte Cloud syncs which [are priced based on the size of the records moved](https://airbyte.com/pricing), we use the information presented in the sync summary in the Airbyte user interface. As every database stores and compresses data differently, the measure of data volume which is used is that which is observed by the Airbyte Platform during the sync. When the data is in transit, it is serialized to [Airbyte Protocol format](/understanding-airbyte/airbyte-protocol/#airbyterecordmessage) records. This is likely to be a larger representation of your data than you would see if you were to query your database directly.
 
 :::
 

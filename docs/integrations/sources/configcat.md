@@ -32,6 +32,13 @@ Configcat APIs are under rate limits for the number of API calls allowed per API
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                     |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------ |
+| 0.1.2 | 2024-06-06 | [39230](https://github.com/airbytehq/airbyte/pull/39230) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.1 | 2024-05-21 | [38547](https://github.com/airbytehq/airbyte/pull/38547) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-30 | [#18649](https://github.com/airbytehq/airbyte/pull/18649) | 🎉 New Source: Configcat API [low-code CDK] |
+
+</details>

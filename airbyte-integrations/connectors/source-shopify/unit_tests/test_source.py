@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException
-from conftest import records_per_slice
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import (
@@ -50,6 +49,8 @@ from source_shopify.streams.streams import (
     TransactionsGraphql,
 )
 
+from .conftest import records_per_slice
+
 
 @pytest.fixture
 def config(basic_config) -> dict:
@@ -73,18 +74,18 @@ def config(basic_config) -> dict:
         (MetafieldProductVariants, None, "graphql.json"),
         (MetafieldLocations, None, "graphql.json"),
         (MetafieldCollections, None, "graphql.json"),
-        # 
+        (Products, None, "graphql.json"),
+        (ProductImages, None, "graphql.json"),
+        (ProductVariants, None, "graphql.json"),
+        # Nested Substreams
+        (OrderRefunds, None, ""),
+        # regular streams
         (MetafieldSmartCollections, {"id": 123}, "smart_collections/123/metafields.json"),
         (MetafieldPages, {"id": 123}, "pages/123/metafields.json"),
         (MetafieldShops, None, "metafields.json"),
-        # Nested Substreams
-        (ProductImages, None, ""),
-        (ProductVariants, None, ""),
-        # 
         (Customers, None, "customers.json"),
         (Orders, None, "orders.json"),
         (DraftOrders, None, "draft_orders.json"),
-        (Products, None, "products.json"),
         (AbandonedCheckouts, None, "checkouts.json"),
         (Collects, None, "collects.json"),
         (TenderTransactions, None, "tender_transactions.json"),
@@ -107,12 +108,12 @@ def test_path(stream, stream_slice, expected_path, config) -> None:
 @pytest.mark.parametrize(
     "stream,stream_slice,expected_path",
     [
-        (OrderRisks, {"order_id": 12345}, "orders/12345/risks.json"),
         (Transactions, {"order_id": 12345}, "orders/12345/transactions.json"),
         # Nested Substreams
         (OrderRefunds, None, ""),
         (Fulfillments, None, ""),
         # GQL BULK stream
+        (OrderRisks, None, "graphql.json"),
         (DiscountCodes, None, "graphql.json"),
         (FulfillmentOrders, None, "graphql.json"),
         (InventoryLevels, None, "graphql.json"),
@@ -131,13 +132,13 @@ def test_path_with_stream_slice_param(stream, stream_slice, expected_path, confi
     "stream, parent_records, state_checkpoint_interval",
     [
         (
-            ProductImages, 
+            OrderRefunds, 
             [
-                {"id": 1, "images": [{"updated_at": "2021-01-01T00:00:00+00:00"}]},
-                {"id": 2, "images": [{"updated_at": "2021-02-01T00:00:00+00:00"}]},
-                {"id": 3, "images": [{"updated_at": "2021-03-01T00:00:00+00:00"}]},
-                {"id": 4, "images": [{"updated_at": "2021-04-01T00:00:00+00:00"}]},
-                {"id": 5, "images": [{"updated_at": "2021-05-01T00:00:00+00:00"}]},
+                {"id": 1, "refunds": [{"created_at": "2021-01-01T00:00:00+00:00"}]},
+                {"id": 2, "refunds": [{"created_at": "2021-02-01T00:00:00+00:00"}]},
+                {"id": 3, "refunds": [{"created_at": "2021-03-01T00:00:00+00:00"}]},
+                {"id": 4, "refunds": [{"created_at": "2021-04-01T00:00:00+00:00"}]},
+                {"id": 5, "refunds": [{"created_at": "2021-05-01T00:00:00+00:00"}]},
             ],
             2,
         ),
@@ -211,17 +212,17 @@ def test_request_params(config, stream, expected) -> None:
     "last_record, current_state, expected",
     [
         # no init state
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # state is empty str
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # state is None
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # last rec cursor is None
-        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": None}),
+        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # last rec cursor is empty str
-        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": None}),
+        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # no values at all
-        ({}, {}, {"created_at": "", "orders": None}),
+        ({}, {}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
     ],
     ids=[
         "no init state",

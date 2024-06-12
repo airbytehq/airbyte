@@ -193,3 +193,58 @@ jobs:
           name: pipeline-reports
           path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/pull_request/**/output.html
           retention-days: 7
+
+  internal_poetry_packages_ci:
+    name: Internal Poetry packages CI
+    if: github.event.pull_request.head.repo.fork == true
+    # Deployment of jobs on the community-ci environment requires manual approval
+    # This is something we set up in the GitHub environment settings:
+    # https://github.com/airbytehq/airbyte/settings/environments/2091483613/edit
+    # This is a safety measure to make sure the code running on our infrastructure has been reviewed before running on it
+    needs: fail_on_protected_path_changes
+    environment: community-ci
+    runs-on: community-tooling-test-small
+    timeout-minutes: 180 # 3 hours
+    permissions:
+      statuses: write
+    env:
+      MAIN_BRANCH_NAME: "master"
+
+    steps:
+      # This checkouts a fork which can contain untrusted code
+      # It's deemed safe as the community-ci environment requires manual reviewer approval to run
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      # This will sync the .github folder of the main repo with the fork
+      # This allows us to use up to date actions and CI logic from the main repo
+      - name: Pull .github folder from main repository
+        id: pull_github_folder
+        run: |
+          git remote add main https://github.com/airbytehq/airbyte.git
+          git fetch main ${MAIN_BRANCH_NAME}
+          git checkout main/${MAIN_BRANCH_NAME} -- .github
+          git checkout main/${MAIN_BRANCH_NAME} -- airbyte-ci
+
+      - name: Run poe tasks for modified internal packages [PULL REQUEST]
+        # This path refers to the fork .github folder.
+        # We make sure its content is in sync with the main repo .github folder by pulling it in the previous step
+        id: run-airbyte-ci-test-pr
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ github.event.pull_request.head.sha }}
+          github_token: ${{ github.token }}
+          subcommand: "test --modified"
+          is_fork: "true"
