@@ -7,7 +7,8 @@ from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from airbyte_cdk.utils.oneof_option_config import one_of_model_config
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator, root_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator, root_validator
+from pydantic.v1.error_wrappers import ValidationError
 
 
 class InferenceType(Enum):
@@ -164,12 +165,13 @@ class CsvFormat(BaseModel):
             raise ValueError(f"invalid encoding format: {v}")
         return v
 
-    @model_validator(mode="before")
+    @classmethod
+    @field_validator("header_definition")
     def validate_header_definition(cls, values):
         definition_type = values.get("header_definition_type")
         column_names = values.get("user_provided_column_names")
         if definition_type == CsvHeaderDefinitionType.USER_PROVIDED and not column_names:
-            raise ValueError("`user_provided_column_names` should be defined if the definition is 'User Provided'.")
+            raise ValidationError("`user_provided_column_names` should be defined if the definition is 'User Provided'.", model=CsvFormat)
         if definition_type != CsvHeaderDefinitionType.USER_PROVIDED and column_names:
-            raise ValueError("`user_provided_column_names` should not be defined if the definition is not 'User Provided'.")
+            raise ValidationError("`user_provided_column_names` should not be defined if the definition is not 'User Provided'.", model=CsvFormat)
         return values
