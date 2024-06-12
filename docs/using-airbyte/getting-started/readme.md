@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Getting Started
+# Airbyte Overview
 
 Airbyte is an open-source data integration platform designed to help you consolidate data from various sources into your data warehouses, lakes, and databases.
 
