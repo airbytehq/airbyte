@@ -5,7 +5,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional, Set
 
 import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
@@ -117,8 +117,8 @@ def get_connection_objects(
     Returns:
         ConnectionObjects: The connection objects values.
     """
-    if connection_id is None and not auto_select_connection:
-        raise ValueError("A connection id or auto_select_connection must be provided to retrieve the connection objects.")
+    if connection_id and auto_select_connection:
+        raise ValueError("Cannot set both `connection_id` and `auto_select_connection`.")
     if auto_select_connection and not connector_image:
         raise ValueError("A connector image must be provided when using auto_select_connection.")
 
@@ -127,68 +127,52 @@ def get_connection_objects(
         get_configured_catalog_from_path(custom_configured_catalog_path, selected_streams) if custom_configured_catalog_path else None
     )
     custom_state = get_state_from_path(custom_state_path) if custom_state_path else None
+    is_ci = os.getenv("CI", False)
 
-    if not connection_id and not auto_select_connection:
-        connection_object = ConnectionObjects(
-            source_config=custom_config,
-            destination_config=custom_config,
-            catalog=None,
-            configured_catalog=custom_configured_catalog,
-            state=custom_state,
-            workspace_id=None,
-            source_id=None,
-            destination_id=None,
-            connection_id=None,
-            source_docker_image=None,
-        )
-    else:
+    if connection_id:
         if not retrieval_reason:
             raise ValueError("A retrieval reason is required to access the connection objects when passing a connection id.")
-        LOGGER.info("Retrieving connection objects from the database...")
+
+        connection_object = _get_connection_objects_from_retrieved_objects(
+            requested_objects,
+            retrieval_reason=retrieval_reason,
+            source_docker_repository=connector_image,
+            prompt_for_connection_selection=False,
+            selected_streams=selected_streams,
+            connection_id=connection_id,
+            custom_config=custom_config,
+            custom_configured_catalog=custom_configured_catalog,
+            custom_state=custom_state,
+        )
+
+    else:
         if auto_select_connection:
-            is_ci = os.getenv("CI", False)
-            connection_id, retrieved_objects = retrieve_objects(
+            connection_object = _get_connection_objects_from_retrieved_objects(
                 requested_objects,
                 retrieval_reason=retrieval_reason,
                 source_docker_repository=connector_image,
                 prompt_for_connection_selection=not is_ci,
-                with_streams=selected_streams,
+                selected_streams=selected_streams,
+                custom_config=custom_config,
+                custom_configured_catalog=custom_configured_catalog,
+                custom_state=custom_state,
             )
+
         else:
-            connection_id, retrieved_objects = retrieve_objects(
-                requested_objects,
-                retrieval_reason=retrieval_reason,
-                connection_id=connection_id,
-                with_streams=selected_streams,
-            )
-        retrieved_source_config = parse_config(retrieved_objects.get(ConnectionObject.SOURCE_CONFIG))
-        rerieved_destination_config = parse_config(retrieved_objects.get(ConnectionObject.DESTINATION_CONFIG))
-        retrieved_catalog = parse_catalog(retrieved_objects.get(ConnectionObject.CATALOG))
-        retrieved_configured_catalog = parse_configured_catalog(
-            retrieved_objects.get(ConnectionObject.CONFIGURED_CATALOG), selected_streams
-        )
-        retrieved_state = parse_state(retrieved_objects.get(ConnectionObject.STATE))
-
-        retrieved_source_docker_image = retrieved_objects.get(ConnectionObject.SOURCE_DOCKER_IMAGE)
-        if retrieved_source_docker_image is None:
-            raise ValueError(f"A docker image was not found for connection ID {connection_id}.")
-        elif retrieved_source_docker_image.split(":")[0] != connector_image:
-            raise NotPermittedError(
-                f"The provided docker image ({connector_image}) does not match the image for connection ID {connection_id}."
+            # We don't make any requests to the connection-retriever; it is expected that config/catalog/state have been provided if needed for the commands being run.
+            connection_object = ConnectionObjects(
+                source_config=custom_config,
+                destination_config=custom_config,
+                catalog=None,
+                configured_catalog=custom_configured_catalog,
+                state=custom_state,
+                workspace_id=None,
+                source_id=None,
+                destination_id=None,
+                connection_id=None,
+                source_docker_image=None,
             )
 
-        connection_object = ConnectionObjects(
-            source_config=custom_config if custom_config else retrieved_source_config,
-            destination_config=custom_config if custom_config else rerieved_destination_config,
-            catalog=retrieved_catalog,
-            configured_catalog=custom_configured_catalog if custom_configured_catalog else retrieved_configured_catalog,
-            state=custom_state if custom_state else retrieved_state,
-            workspace_id=retrieved_objects.get(ConnectionObject.WORKSPACE_ID),
-            source_id=retrieved_objects.get(ConnectionObject.SOURCE_ID),
-            destination_id=retrieved_objects.get(ConnectionObject.DESTINATION_ID),
-            source_docker_image=retrieved_source_docker_image,
-            connection_id=connection_id,
-        )
     if fail_if_missing_objects:
         if not connection_object.source_config and ConnectionObject.SOURCE_CONFIG in requested_objects:
             raise ValueError("A source config is required to run the command.")
@@ -197,3 +181,52 @@ def get_connection_objects(
         if not connection_object.state and ConnectionObject.STATE in requested_objects:
             raise ValueError("A state is required to run the command.")
     return connection_object
+
+
+def _get_connection_objects_from_retrieved_objects(
+    requested_objects: Set[ConnectionObject],
+    retrieval_reason: str,
+    source_docker_repository: str,
+    prompt_for_connection_selection: bool,
+    selected_streams: Optional[Set[str]],
+    connection_id: Optional[str] = None,
+    custom_config: Optional[Dict] = None,
+    custom_configured_catalog: Optional[ConfiguredAirbyteCatalog] = None,
+    custom_state: Optional[Dict] = None,
+):
+    LOGGER.info("Retrieving connection objects from the database...")
+    connection_id, retrieved_objects = retrieve_objects(
+        requested_objects,
+        retrieval_reason=retrieval_reason,
+        source_docker_repository=source_docker_repository,
+        prompt_for_connection_selection=prompt_for_connection_selection,
+        with_streams=selected_streams,
+        connection_id=connection_id,
+    )
+
+    retrieved_source_config = parse_config(retrieved_objects.get(ConnectionObject.SOURCE_CONFIG))
+    retrieved_destination_config = parse_config(retrieved_objects.get(ConnectionObject.DESTINATION_CONFIG))
+    retrieved_catalog = parse_catalog(retrieved_objects.get(ConnectionObject.CATALOG))
+    retrieved_configured_catalog = parse_configured_catalog(retrieved_objects.get(ConnectionObject.CONFIGURED_CATALOG), selected_streams)
+    retrieved_state = parse_state(retrieved_objects.get(ConnectionObject.STATE))
+
+    retrieved_source_docker_image = retrieved_objects.get(ConnectionObject.SOURCE_DOCKER_IMAGE)
+    if retrieved_source_docker_image is None:
+        raise ValueError(f"A docker image was not found for connection ID {connection_id}.")
+    elif retrieved_source_docker_image.split(":")[0] != source_docker_repository:
+        raise NotPermittedError(
+            f"The provided docker image ({source_docker_repository}) does not match the image for connection ID {connection_id}."
+        )
+
+    return ConnectionObjects(
+        source_config=custom_config if custom_config else retrieved_source_config,
+        destination_config=custom_config if custom_config else retrieved_destination_config,
+        catalog=retrieved_catalog,
+        configured_catalog=custom_configured_catalog if custom_configured_catalog else retrieved_configured_catalog,
+        state=custom_state if custom_state else retrieved_state,
+        workspace_id=retrieved_objects.get(ConnectionObject.WORKSPACE_ID),
+        source_id=retrieved_objects.get(ConnectionObject.SOURCE_ID),
+        destination_id=retrieved_objects.get(ConnectionObject.DESTINATION_ID),
+        source_docker_image=retrieved_source_docker_image,
+        connection_id=connection_id,
+    )

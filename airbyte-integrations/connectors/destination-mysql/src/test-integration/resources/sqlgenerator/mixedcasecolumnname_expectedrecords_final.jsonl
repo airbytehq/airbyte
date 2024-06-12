@@ -1,0 +1,3 @@
+// Note that the column name is lowercased in the final table.
+// MySQL column names are case-insensitive, so we just downcase them.
+{"_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fce", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000", "_airbyte_meta": {"changes": []}, "id1": 6, "id2": 100, "updated_at": "2023-01-01T01:00:00Z", "iamacasesensitivecolumnname": "Case senstive value"}

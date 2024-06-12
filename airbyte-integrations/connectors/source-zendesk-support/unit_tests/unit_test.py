@@ -5,6 +5,7 @@
 
 import calendar
 import copy
+import logging
 import re
 from datetime import datetime
 from unittest.mock import Mock, patch
@@ -15,7 +16,6 @@ import pendulum
 import pytest
 import pytz
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
@@ -113,7 +113,7 @@ def get_stream_instance(stream_class, args):
     if stream_class in TICKET_SUBSTREAMS:
         parent = Tickets(**args)
         return stream_class(parent=parent, **args)
-    return stream_class( **args)
+    return stream_class(**args)
 
 
 def test_date_time_format():
@@ -175,7 +175,7 @@ def test_check(response, start_date, check_passed):
     config = copy.deepcopy(TEST_CONFIG)
     config["start_date"] = start_date
     with patch.object(UserSettingsStream, "get_settings", return_value=response) as mock_method:
-        ok, _ = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=config)
+        ok, _ = SourceZendeskSupport().check_connection(logger=logging.Logger, config=config)
         assert check_passed == ok
         if ok:
             mock_method.assert_called()
@@ -184,22 +184,22 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 34, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 35, [], None),
         (
             '{"error": "Not sufficient permissions"}',
             403,
-            31,
+            32,
             [
-                "Skipping stream ticket_forms, error message: Not sufficient permissions. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 403 and error message Not sufficient permissions. Skipping this stream."
             ],
             None,
         ),
         (
             "",
             404,
-            31,
+            32,
             [
-                "Skipping stream ticket_forms, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 404 and error message None. Skipping this stream."
             ],
             "Not Found",
         ),
@@ -210,7 +210,7 @@ def test_full_access_streams(caplog, requests_mock, ticket_forms_response, statu
     requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
     result = SourceZendeskSupport().streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
-    logged_warnings = (record for record in caplog.records if record.levelname == "ERROR")
+    logged_warnings = (record for record in caplog.records if record.levelname == "WARNING")
     for msg in expected_warnings:
         assert msg in next(logged_warnings).message
 
@@ -279,73 +279,6 @@ def test_parse_response(requests_mock):
 
 
 class TestAllStreams:
-    @pytest.mark.parametrize(
-        "expected_stream_cls",
-        [
-            (AuditLogs),
-            (GroupMemberships),
-            (Groups),
-            (Macros),
-            (Organizations),
-            (Posts),
-            (OrganizationMemberships),
-            (SatisfactionRatings),
-            (SlaPolicies),
-            (Tags),
-            (TicketAudits),
-            (TicketComments),
-            (TicketFields),
-            (TicketForms),
-            (TicketMetrics),
-            (TicketSkips),
-            (TicketMetricEvents),
-            (Tickets),
-            (Topics),
-            (Users),
-            (Brands),
-            (CustomRoles),
-            (Schedules),
-            (AccountAttributes),
-            (AttributeDefinitions),
-            (UserFields),
-        ],
-        ids=[
-            "AuditLogs",
-            "GroupMemberships",
-            "Groups",
-            "Macros",
-            "Organizations",
-            "Posts",
-            "OrganizationMemberships",
-            "SatisfactionRatings",
-            "SlaPolicies",
-            "Tags",
-            "TicketAudits",
-            "TicketComments",
-            "TicketFields",
-            "TicketForms",
-            "TicketMetrics",
-            "TicketSkips",
-            "TicketMetricEvents",
-            "Tickets",
-            "Topics",
-            "Users",
-            "Brands",
-            "CustomRoles",
-            "Schedules",
-            "AccountAttributes",
-            "AttributeDefinitions",
-            "UserFields",
-        ],
-    )
-    def test_streams(self, expected_stream_cls):
-        with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
-            streams = SourceZendeskSupport().streams(TEST_CONFIG)
-            mocked_records.assert_called()
-            for stream in streams:
-                if expected_stream_cls in streams:
-                    assert isinstance(stream, expected_stream_cls)
-
     def test_ticket_forms_exception_stream(self):
         with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
             mocked_records.side_effect = Exception("The error")
@@ -1114,8 +1047,19 @@ class TestTicketSubstream:
     @pytest.mark.parametrize(
         "stream_state, response, expected_slices",
         [
-            ({}, {"tickets": [{"id": "13"}, {"id": "80"}]}, [{"ticket_id": "13"}, {"ticket_id": "80"}]),
-            ({"updated_at": "2024-04-17T19:34:06Z"}, {"tickets": [{"id": "80"}]}, [{"ticket_id": "80"}]),
+            (
+                {},
+                {"tickets": [{"id": "13"}, {"id": "80"}]},
+                [
+                    {"ticket_id": "13", "updated_at": STREAM_ARGS["start_date"]},
+                    {"ticket_id": "80", "updated_at": STREAM_ARGS["start_date"]},
+                ],
+            ),
+            (
+                {"updated_at": "2024-04-17T19:34:06Z"},
+                {"tickets": [{"id": "80"}]},
+                [{"ticket_id": "80", "updated_at": "2024-04-17T19:34:06Z"}],
+            ),
             ({"updated_at": "2224-04-17T19:34:06Z"}, {"tickets": []}, []),
         ],
         ids=[
@@ -1126,34 +1070,36 @@ class TestTicketSubstream:
     )
     def test_stream_slices(self, requests_mock, stream_state, response, expected_slices):
         stream = get_stream_instance(TicketSubstream, STREAM_ARGS)
-        requests_mock.get(
-            f"https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json",
-            json=response
-        )
+        requests_mock.get(f"https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json", json=response)
         assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
 
     @pytest.mark.parametrize(
-        "stream_state, response, expected_records",
+        "stream_slice, response, expected_records",
         [
-            ({}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]),
-            ({}, {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}, []),
-            ({"updated_at": "2024-04-17T19:34:06Z"}, {"updated_at": "2024-04-18T19:34:06Z", "id": "test id"},
-             [{"updated_at": "2024-04-18T19:34:06Z", "id": "test id"}]),
-            ({"updated_at": "2024-04-17T19:34:06Z"}, {"updated_at": "1979-04-18T19:34:06Z", "id": "test id"}, []),
+            ({"updated_at": "2024-05-17T19:34:06Z"}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, []),
+            (
+                {"updated_at": "2024-03-17T19:34:06Z"},
+                {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"},
+                [{"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}],
+            ),
+            (
+                {},
+                {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"},
+                [{"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}],
+            ),
         ],
         ids=[
-            "read_without_state",
-            "read_without_state_cursor_older_then_start_date",
-            "read_with_state",
-            "read_with_state_cursor_older_then_state_value",
+            "read_with_slice_cursor_greater_than_record_cursor",
+            "read_with_slice_cursor_less_than_record_cursor",
+            "read_without_slice_cursor",
         ],
     )
-    def test_ticket_metrics_parse_response(self, stream_state, response, expected_records):
+    def test_ticket_metrics_parse_response(self, stream_slice, response, expected_records):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
         mocked_response = Mock()
-        mocked_response.json.return_value = {"ticket_metric": {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}}
-        records = list(stream.parse_response(mocked_response, stream_state=stream_state))
-        assert records == [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]
+        mocked_response.json.return_value = {"ticket_metric": response}
+        records = list(stream.parse_response(mocked_response, stream_state={}, stream_slice=stream_slice))
+        assert records == expected_records
 
     def test_read_ticket_metrics_with_error(self, requests_mock):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
@@ -1185,9 +1131,7 @@ class TestTicketSubstream:
 def test_read_ticket_audits_504_error(requests_mock, caplog):
     requests_mock.get("https://subdomain.zendesk.com/api/v2/ticket_audits", status_code=504, text="upstream request timeout")
     stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
-    expected_message = (
-        "Skipping stream `ticket_audits`. Timed out waiting for response: upstream request timeout..."
-    )
+    expected_message = "Skipping stream `ticket_audits`. Timed out waiting for response: upstream request timeout..."
     read_full_refresh(stream)
     assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
 
@@ -1199,7 +1143,7 @@ def test_read_ticket_audits_504_error(requests_mock, caplog):
         ("2020-01-01T00:00:00Z", {}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
         ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "2022-01-01T00:00:00Z"}], True),
         ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
-    ]
+    ],
 )
 def test_validate_response_ticket_audits(start_date, stream_state, audits_response, expected):
     stream = TicketAudits(subdomain="subdomain", start_date=start_date)
@@ -1213,7 +1157,7 @@ def test_validate_response_ticket_audits(start_date, stream_state, audits_respon
     [
         ({"no_audits": []}, False),
         ({}, False),
-    ]
+    ],
 )
 def test_validate_response_ticket_audits_handle_empty_response(audits_response, expected):
     stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")

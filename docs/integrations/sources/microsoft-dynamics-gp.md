@@ -15,4 +15,3 @@ Reach out to your service representative or system admin to find the parameters 
 ### Output schema
 
 To understand your MS Dynamics GP database schema, see the [Microsoft docs](https://docs.microsoft.com/en-us/dynamicsax-2012/developer/tables-overview). Otherwise, the schema will be loaded according to the rules of MSSQL connector.
-

@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the customer.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The full name of the customer.",
       "type": ["null", "string"]
     },
     "signup_date": {
+      "description": "The date and time when the customer signed up.",
       "type": ["null", "string"],
       "format": "date-time"
     }

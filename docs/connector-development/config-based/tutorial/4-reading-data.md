@@ -10,9 +10,7 @@ Let's first add the stream to the configured catalog in `source-exchange-rates-t
       "stream": {
         "name": "rates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

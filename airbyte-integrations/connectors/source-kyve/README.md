@@ -1,29 +1,91 @@
-# KYVE
+# Kyve source connector
 
-This page contains the setup guide and reference information for the **KYVE** source connector.
 
-The KYVE Data Pipeline enables easy import of KYVE data into any data warehouse or destination
-supported by [Airbyte](https://airbyte.com/). With the `ELT` format, data analysts and engineers can now confidently source KYVE data without worrying about its validity or reliability.
+This is the repository for the Kyve source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/kyve).
 
-For information about how to set up an end-to-end pipeline with this connector, see [the documentation](https://docs.kyve.network/data_engineers/accessing_data/elt_pipeline/overview).
+## Local development
 
-## Source configuration setup
+### Prerequisites
+* Python (~=3.9)
+* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-1. In order to  create an ELT pipeline with KYVE source you should specify the **`Pool-ID`** of the [KYVE storage pool](https://app.kyve.network/#/pools) from which you want to retrieve data.
 
-2. You can specify a specific **`Bundle-Start-ID`** in case you want to narrow the records that will be retrieved from the pool. You can find the valid bundles in the KYVE app (e.g. [Cosmos Hub pool](https://app.kyve.network/#/pools/0/bundles)).
+### Installing the connector
+From this connector directory, run:
+```bash
+poetry install --with dev
+```
 
-3. In order to extract the validated data from KYVE, you can specify the endpoint which will be requested **`KYVE-API URL Base`**. By default, the official KYVE **`mainnet`** endpoint will be used, providing the data of [these pools](https://app.kyve.network/#/pools).
 
-    ***Note:***
-    KYVE Network consists of three individual networks: *Korellia* is the `devnet` used for development purposes, *Kaon* is the `testnet` used for testing purposes, and **`mainnet`** is the official network. Although through Kaon and Korellia validated data can be used for development purposes, it is recommended to only trust the data validated on Mainnet.
+### Create credentials
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/kyve)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_kyve/spec.yaml` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
+See `sample_files/sample_config.json` for a sample config file.
 
-## Multiple pools
-You can fetch with one source configuration more than one pool simultaneously. You just need to specify the **`Pool-IDs`** and the **`Bundle-Start-IDs`** for the KYVE storage pool you want to archive separated with comma.
 
-## Changelog
+### Locally running the connector
+```
+poetry run source-kyve spec
+poetry run source-kyve check --config secrets/config.json
+poetry run source-kyve discover --config secrets/config.json
+poetry run source-kyve read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```
 
-| Version | Date     | Subject                                              |
-| :------ |:---------|:-----------------------------------------------------|
-| 0.1.0   | 25-05-23 | Initial release of KYVE source connector             |
-| 0.2.0   | 10-11-23 | Update KYVE source to support to Mainnet and Testnet |
+### Running unit tests
+To run unit tests locally, from the connector directory run:
+```
+poetry run pytest unit_tests
+```
+
+### Building the docker image
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
+```bash
+airbyte-ci connectors --name=source-kyve build
+```
+
+An image will be available on your host with the tag `airbyte/source-kyve:dev`.
+
+
+### Running as a docker container
+Then run any of the connector commands as follows:
+```
+docker run --rm airbyte/source-kyve:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-kyve:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-kyve:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-kyve:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+```
+
+### Running our CI test suite
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+```bash
+airbyte-ci connectors --name=source-kyve test
+```
+
+### Customizing acceptance Tests
+Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+
+### Dependency Management
+All of your dependencies should be managed via Poetry. 
+To add a new dependency, run:
+```bash
+poetry add <package-name>
+```
+
+Please commit the changes to `pyproject.toml` and `poetry.lock` files.
+
+## Publishing a new version of the connector
+You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-kyve test`
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+    - bump the `version` value in `pyproject.toml`
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/kyve.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.

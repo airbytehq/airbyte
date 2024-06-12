@@ -103,6 +103,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             unknown_error = exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
             connection_reset_error = exc.api_error_code() == FACEBOOK_CONNECTION_RESET_ERROR_CODE
             server_error = exc.http_status() == http.client.INTERNAL_SERVER_ERROR
+            service_unavailable_error = exc.http_status() == http.client.SERVICE_UNAVAILABLE
             return any(
                 (
                     exc.api_transient_error(),
@@ -113,6 +114,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
                     connection_reset_error,
                     temporary_oauth_error,
                     server_error,
+                    service_unavailable_error,
                 )
             )
         return True
@@ -150,7 +152,7 @@ def traced_exception(fb_exception: FacebookRequestError):
     Please see ../unit_tests/test_errors.py for full error examples
     Please add new errors to the tests
     """
-    msg = fb_exception.api_error_message()
+    msg = fb_exception.api_error_message() or fb_exception.get_message()
 
     if "Error validating access token" in msg:
         failure_type = FailureType.config_error
@@ -188,9 +190,18 @@ def traced_exception(fb_exception: FacebookRequestError):
             exception=fb_exception,
         )
 
+    elif fb_exception.http_status() == 503:
+        return AirbyteTracedException(
+            message="The Facebook API service is temporarily unavailable. This issue should resolve itself, and does not require further action.",
+            internal_message=str(fb_exception),
+            failure_type=FailureType.transient_error,
+            exception=fb_exception,
+        )
+
     else:
         failure_type = FailureType.system_error
-        friendly_msg = f"Error: {fb_exception.api_error_code()}, {fb_exception.api_error_message()}."
+        error_code = fb_exception.api_error_code() if fb_exception.api_error_code() else fb_exception.http_status()
+        friendly_msg = f"Error code {error_code}: {msg}."
 
     return AirbyteTracedException(
         message=friendly_msg or msg,

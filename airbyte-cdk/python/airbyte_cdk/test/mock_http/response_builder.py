@@ -138,10 +138,7 @@ class RecordBuilder:
 
 class HttpResponseBuilder:
     def __init__(
-        self,
-        template: Dict[str, Any],
-        records_path: Union[FieldPath, NestedPath],
-        pagination_strategy: Optional[PaginationStrategy]
+        self, template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy]
     ):
         self._response = template
         self._records: List[RecordBuilder] = []
@@ -198,16 +195,16 @@ def create_record_builder(
     try:
         record_template = records_path.extract(response_template)[0]
         if not record_template:
-            raise ValueError(f"Could not extract any record from template at path `{records_path}`. "
-                             f"Please fix the template to provide a record sample or fix `records_path`.")
+            raise ValueError(
+                f"Could not extract any record from template at path `{records_path}`. "
+                f"Please fix the template to provide a record sample or fix `records_path`."
+            )
         return RecordBuilder(record_template, record_id_path, record_cursor_path)
     except (IndexError, KeyError):
         raise ValueError(f"Error while extracting records at path `{records_path}` from response template `{response_template}`")
 
 
 def create_response_builder(
-    response_template: Dict[str, Any],
-    records_path: Union[FieldPath, NestedPath],
-    pagination_strategy: Optional[PaginationStrategy] = None
+    response_template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy] = None
 ) -> HttpResponseBuilder:
     return HttpResponseBuilder(response_template, records_path, pagination_strategy)

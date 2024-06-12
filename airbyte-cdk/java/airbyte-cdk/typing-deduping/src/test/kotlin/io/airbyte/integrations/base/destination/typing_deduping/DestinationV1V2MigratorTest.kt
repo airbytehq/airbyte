@@ -77,7 +77,7 @@ class DestinationV1V2MigratorTest {
         migrator: BaseDestinationV1V2Migrator<*>,
         expected: Boolean
     ) {
-        val config = StreamConfig(STREAM_ID, null, destinationSyncMode, null, null, null)
+        val config = StreamConfig(STREAM_ID, destinationSyncMode, mock(), mock(), mock(), 0, 0, 0)
         val actual = migrator.shouldMigrate(config)
         Assertions.assertEquals(expected, actual)
     }
@@ -86,7 +86,16 @@ class DestinationV1V2MigratorTest {
     @Throws(Exception::class)
     fun testMismatchedSchemaThrowsException() {
         val config =
-            StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null)
+            StreamConfig(
+                STREAM_ID,
+                DestinationSyncMode.APPEND_DEDUP,
+                mock(),
+                mock(),
+                mock(),
+                0,
+                0,
+                0,
+            )
         val migrator = makeMockMigrator(true, true, false, false, false)
         val exception =
             Assertions.assertThrows(UnexpectedSchemaException::class.java) {
@@ -103,7 +112,16 @@ class DestinationV1V2MigratorTest {
     fun testMigrate() {
         val sqlGenerator = MockSqlGenerator()
         val stream =
-            StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null)
+            StreamConfig(
+                STREAM_ID,
+                DestinationSyncMode.APPEND_DEDUP,
+                mock(),
+                mock(),
+                mock(),
+                0,
+                0,
+                0,
+            )
         val handler = Mockito.mock(DestinationHandler::class.java)
         val sql = sqlGenerator.migrateFromV1toV2(STREAM_ID, "v1_raw_namespace", "v1_raw_table")
         // All is well
@@ -123,7 +141,7 @@ class DestinationV1V2MigratorTest {
     }
 
     companion object {
-        private val STREAM_ID = StreamId("final", "final_table", "raw", "raw_table", null, null)
+        private val STREAM_ID = StreamId("final", "final_table", "raw", "raw_table", "fake", "fake")
 
         @Throws(Exception::class)
         fun makeMockMigrator(

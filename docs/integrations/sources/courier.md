@@ -4,7 +4,7 @@
 
 ## Deprecation Notice
 
-The Courier source connector is scheduled for deprecation on March 5th, 2024 due to incompatibility with upcoming platform updates as we prepare to launch Airbyte 1.0. This means it will no longer be supported or available for use in Airbyte. 
+The Courier source connector is scheduled for deprecation on March 5th, 2024 due to incompatibility with upcoming platform updates as we prepare to launch Airbyte 1.0. This means it will no longer be supported or available for use in Airbyte.
 
 This connector does not support new per-stream features which are vital for ensuring data integrity in Airbyte's synchronization processes. Without these capabilities, we cannot enforce our standards of reliability and correctness for data syncing operations.
 
@@ -66,6 +66,11 @@ Courier's [API reference](https://www.courier.com/docs/reference/) does not addr
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-09-10 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Initial commit |
+
+</details>
