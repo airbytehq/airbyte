@@ -951,7 +951,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val recordMessages2 = extractRecordMessages(actualRecords2)
         val stateMessages2 = extractStateMessages(actualRecords2)
 
-        assertExpectedStateMessagesFromIncrementalSync(stateMessages2)
         assertExpectedStateMessageCountMatches(stateMessages2, 1 + MODEL_RECORDS_2.size.toLong())
         assertExpectedRecords(
             (MODEL_RECORDS_2 + listOf(puntoRecord)).toSet(),

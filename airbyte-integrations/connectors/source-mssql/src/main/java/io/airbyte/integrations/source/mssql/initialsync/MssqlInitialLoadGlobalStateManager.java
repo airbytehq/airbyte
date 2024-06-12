@@ -61,6 +61,8 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
                            final ConfiguredAirbyteCatalog catalog) {
     this.streamsThatHaveCompletedSnapshot = new HashSet<>();
     this.resumableFullRefreshStreams = new HashSet<>();
+    this.nonResumableFullRefreshStreams = new HashSet<>();
+
     catalog.getStreams().forEach(configuredAirbyteStream -> {
       var pairInStream =
           new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace());
