@@ -56,7 +56,6 @@ div.connectorMetadataCallout  {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-
 }
 
 .connectorMetadata .availability > span {
@@ -87,4 +86,3 @@ div.connectorMetadataCallout  {
   height: 12px;
   width: 40px;
 }
-
