@@ -380,33 +380,6 @@ class SourceYandexMetrika(AbstractSource):
         else:
             return {item["old_value"]: item["new_value"] for item in field_name_map}
 
-    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
-        spec = super().spec(logger)
-        # properties = spec.connectionSpecification["properties"]
-        # raw_data_hits_report_property = properties["raw_data_hits_report"]["oneOf"][0]["properties"]
-        # raw_data_visits_report_property = properties["raw_data_visits_report"]["oneOf"][0]["properties"]
-        # agg_data_metrics_property = properties["aggregated_reports"]["items"]["properties"]["metrics"]
-        # agg_data_dimendions_property = properties["aggregated_reports"]["items"]["properties"]["dimensions"]
-
-        # agg_data_metrics_property["items"] = {
-        #     "title": "AggDataMetricsField",
-        #     "enum": list(map(lambda field: field[0], _RAW_METRICS_FIELDS)),
-        # }
-        # agg_data_dimendions_property["items"] = {
-        #     "title": "AggDataDimensionsField",
-        #     "enum": _RAW_GROUP_FIELDS,
-        # }
-
-        # raw_data_hits_report_property["fields"]["items"] = {
-        #     "title": "RawDataHitsReportField",
-        #     "enum": list(map(lambda field: field["name"], HITS_AVAILABLE_FIELDS.get_all_fields())),
-        # }
-        # raw_data_visits_report_property["fields"]["items"] = {
-        #     "title": "RawDataVisitsReportField",
-        #     "enum": list(map(lambda field: field["name"], VISITS_AVAILABLE_FIELDS.get_all_fields())),
-        # }
-        return spec
-
     def streams(self, config: Mapping[str, any], init_for_test: bool = False) -> list[Stream]:
         config = self.transform_config(config)
         auth = self.get_auth(config)

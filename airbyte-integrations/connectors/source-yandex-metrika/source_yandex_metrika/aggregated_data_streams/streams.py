@@ -14,9 +14,11 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from . import supported_fields
 from .translations import attribution_translations, currency_translations, date_group_translations, preset_name_translations
 from ..base_stream import YandexMetrikaStream
+
+from ..fields import field_lookup
+from .supported_fields import METRICS_FIELDS
 
 logger = logging.getLogger("airbyte")
 
@@ -101,10 +103,10 @@ class AggregateDataYandexMetrikaReport(YandexMetrikaStream, ABC):
         for dimension in test_response["query"]["dimensions"]:
             schema["properties"][dimension] = {"type": ["string", "null"]}
         for metric in test_response["query"]["metrics"]:
-            lookup = supported_fields.field_lookup(metric, supported_fields.METRICS_FIELDS)
-            if not lookup[0]:
+            lookup_ok, field_type = field_lookup(metric, METRICS_FIELDS)
+            if not lookup_ok:
                 raise Exception(f"Field '{metric}' is not supported in the connector")
-            schema["properties"][metric] = {"type": [lookup[1][1], "null"]}
+            schema["properties"][metric] = {"type": [field_type, "null"]}
 
         super().replace_keys(schema["properties"])
         return schema
@@ -169,19 +171,6 @@ class AggregateDataYandexMetrikaReport(YandexMetrikaStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         logger.info(f"Request url with params: {response.request.url}")
         response_data = response.json()
-        sampling_info = {
-            "sampled": response_data["sampled"],
-            "sample_share": response_data["sample_share"],
-            "sample_size": response_data["sample_size"],
-            "sample_space": response_data["sample_space"],
-            "data_lag": response_data["data_lag"],
-            "total_rows": response_data["total_rows"],
-            "total_rows_rounded": response_data["total_rows_rounded"],
-            "totals": response_data["totals"],
-            "min": response_data["min"],
-            "max": response_data["max"],
-        }
-        logger.info(f"Response sampling info: {sampling_info}")
         data = response_data["data"]
         query = response_data["query"]
         keys = query["dimensions"] + query["metrics"]
