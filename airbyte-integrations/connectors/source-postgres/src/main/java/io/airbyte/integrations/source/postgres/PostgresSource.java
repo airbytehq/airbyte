@@ -65,6 +65,7 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
@@ -78,7 +79,6 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultWithFailed;
 import io.airbyte.integrations.source.postgres.cdc.PostgresReplicationConnection;
-import io.airbyte.integrations.source.postgres.ctid.CtidCountStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidGlobalStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
@@ -845,7 +845,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
-    return new CtidCountStateManager(database.getSourceConfig(), ctidStateManager);
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), ctidStateManager);
   }
 
   @Override
