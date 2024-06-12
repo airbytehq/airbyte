@@ -29,7 +29,7 @@ div.connectorMetadataCallout  {
   align-items: center;
 
   font-weight: var(--ifm-font-weight-semibold);
-  margin-right: 10px;
+  margin-right: 5px;
 }
 
 .metadataStatValue {
@@ -66,4 +66,18 @@ div.connectorMetadataCallout  {
 
 [data-theme="dark"] .connectorMetadata .availability .unavailable {
   color: var(--ifm-color-emphasis-400);
+}
+
+.iconRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.metricIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 12px;
+  width: 40px;
 }
