@@ -473,33 +473,27 @@ const understandingAirbyte = {
 
 module.exports = {
   docs: [
-    sectionHeader("Airbyte Connectors"),
-    connectorCatalog,
-    buildAConnector,
-    "integrations/connector-support-levels",
-    sectionHeader("Using Airbyte"),
+    sectionHeader("Getting Started"),
     {
-      type: "category",
-      label: "Getting Started",
-      link: {
-        type: "doc",
+      type: "doc",
         id: "using-airbyte/getting-started/readme",
-      },
-      items: [
-        "using-airbyte/core-concepts/readme",
-        "using-airbyte/getting-started/add-a-source",
-        "using-airbyte/getting-started/add-a-destination",
-        "using-airbyte/getting-started/set-up-a-connection",
-      ],
+    },
+    {
+        type: "doc",
+        id: "using-airbyte/core-concepts/readme",
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/getting-started/oss-quickstart",
     },
     {
       type: "category",
-      label: "Configuring Connections",
-      link: {
-        type: "doc",
-        id: "cloud/managing-airbyte-cloud/configuring-connections",
-      },
+      label: "Building Connections",
       items: [
+        "using-airbyte/getting-started/add-a-source",
+        "using-airbyte/getting-started/add-a-destination",
+        "using-airbyte/getting-started/set-up-a-connection",
+        "cloud/managing-airbyte-cloud/configuring-connections",
         "using-airbyte/core-concepts/sync-schedules",
         "using-airbyte/core-concepts/namespaces",
         {
@@ -537,6 +531,10 @@ module.exports = {
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
+    sectionHeader("Airbyte Connectors"),
+    connectorCatalog,
+    buildAConnector,
+    "integrations/connector-support-levels",
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
     {
