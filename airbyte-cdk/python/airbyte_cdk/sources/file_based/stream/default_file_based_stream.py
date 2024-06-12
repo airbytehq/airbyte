@@ -228,7 +228,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def get_files(self, number_of_files: Optional[int] = None) -> Iterable[RemoteFile]:
         """
-        Return the first X files if number_of_files is defined, otherwise all files
+        Return the first `number_of_files` files if `number_of_files` is defined, otherwise all files
         that belong to the stream as defined by the stream's globs.
         """
         matching_files = self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
