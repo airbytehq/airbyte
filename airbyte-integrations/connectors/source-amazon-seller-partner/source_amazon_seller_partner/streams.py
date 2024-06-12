@@ -108,7 +108,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, CheckpointMixin, ABC):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
@@ -163,8 +163,14 @@ class IncrementalAmazonSPStream(AmazonSPStream, CheckpointMixin, ABC):
         if stream_state := current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_record_state, stream_state)}
         return {self.cursor_field: latest_record_state}
-    
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] | None = None, stream_slice: Mapping[str, Any] | None = None, stream_state: Mapping[str, Any] | None = None) -> Iterable[Mapping[str, Any]]:
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] | None = None,
+        stream_slice: Mapping[str, Any] | None = None,
+        stream_state: Mapping[str, Any] | None = None,
+    ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             self.state = self._get_updated_state(self.state, record)
             yield record
@@ -455,11 +461,11 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream, CheckpointMixin):
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         return "dataEndTime"
-    
+
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
@@ -488,10 +494,17 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream, CheckpointMixin):
             return {self.cursor_field: max(latest_record_state, stream_state)}
         return {self.cursor_field: latest_record_state}
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             self.state = self._get_updated_state(self.state, record)
             yield record
+
 
 class MerchantReports(IncrementalReportsAmazonSPStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
@@ -796,7 +809,7 @@ class IncrementalAnalyticsStream(AnalyticsStream, CheckpointMixin):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
@@ -804,7 +817,7 @@ class IncrementalAnalyticsStream(AnalyticsStream, CheckpointMixin):
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         return "endDate"
-    
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._state = {}
@@ -866,7 +879,13 @@ class IncrementalAnalyticsStream(AnalyticsStream, CheckpointMixin):
             }
             start_date = end_date_slice
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             self.state = self._get_updated_state(self.state, record)
             yield record
