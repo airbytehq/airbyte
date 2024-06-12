@@ -46,14 +46,22 @@ class YandexMetrikaSourceField:
         Example: field<currency> -> fieldUSD, fieldRUB, ...
         """
         res: list[str] = []
-        while any([replace_key in self.field_name for replace_key in format_funcs.keys()]):
-            replace_key, format_func = [(key, func) for key, func in format_funcs.items() if key in self.field_name][0]
-            res.extend(format_func(self.field_name))
+        fields_to_replace: set[str] = {self.field_name}
+        while fields_to_replace:
+            field = fields_to_replace.pop()
+            found_replace: bool = False
+
+            for replace_key, format_func in format_funcs.items():
+                if replace_key in field:
+                    fields_to_replace.update(format_func(field))
+                    found_replace = True
+            if not found_replace:
+                res.append(field)
 
         return res
 
 
-class YandexMetrikaFieldManager:
+class YandexMetrikaFieldsManager:
     """Stores all configured fields"""
 
     def __init__(self, fields: list[YandexMetrikaSourceField]):
@@ -66,27 +74,25 @@ class YandexMetrikaFieldManager:
                 return pattern_field_type
         return None
 
+    def prepare_fields_list(self) -> list[tuple[str, str]]:
+        """Get list of all processed fields with required types"""
+        res: list[tuple[str, str]] = []
+        for field in self.fields:
+            res.extend([(variant, field.field_type) for variant in field.variants()])
 
-def prepare_fields_list(fields_list) -> tuple[list[str | tuple[str, str]], list[str]]:
-    """Create list of processed fields with replaced <> sequences (like goal_id)"""
-    prepared_fields_list: list[str | tuple[str, str]] = []
-    original_fields_list: list[str] = []
-    for field in fields_list:
-        field_name, field_type = field if isinstance(field, tuple) else field, "string"
+        return res
 
-        original_fields_list.append(field_name)
-        while any([replace_key in field_name for replace_key in format_funcs]):
-            replace_key, format_func = [(key, func) for key, func in format_funcs.items() if key in field_name][0]
-            if isinstance(field, tuple):
-                prepared_fields_list += [(formatted_name, field_type) for formatted_name in format_func(field_name)]
-            else:
-                prepared_fields_list += format_func(field_name)
+    def get_all_fields(self) -> list[YandexMetrikaSourceField]:
+        return self.fields
 
-    return prepared_fields_list, original_fields_list
+    def get_all_fields_values(self) -> list[str]:
+        res: list[str] = []
+        for field in self.fields:
+            res.extend(field.variants())
+        return res
 
+    def get_required_fields(self) -> list[YandexMetrikaSourceField]:
+        return [field for field in self.fields if field.required]
 
-def field_lookup(field_name: str, list_of_fields: list[tuple]) -> tuple[bool, str | None]:
-    for pattern, pattern_field_type in list_of_fields:
-        if re.match(pattern, field_name):
-            return True, pattern_field_type
-    return False, None
+    def get_required_fields_names(self) -> list[str]:
+        return [field.field_name for field in self.get_required_fields()]

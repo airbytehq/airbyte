@@ -1,77 +1,77 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/connector-development",
-  "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Yandex Metrica Spec",
-    "type": "object",
-    "required": [
+  "documentationUrl" : "https://docs.airbyte.io/connector-development",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Yandex Metrica Spec",
+    "type" : "object",
+    "required" : [
       "credentials",
       "counter_id",
       "date_range"
     ],
-    "additionalProperties": false,
-    "properties": {
-      "credentials": {
-        "title": "Метод авторизации",
-        "order": 0,
-        "type": "object",
-        "group": "auth",
-        "oneOf": [
+    "additionalProperties" : false,
+    "properties" : {
+      "credentials" : {
+        "title" : "Метод авторизации",
+        "order" : 0,
+        "type" : "object",
+        "group" : "auth",
+        "oneOf" : [
           {
-            "title": "Access Token",
-            "type": "object",
-            "properties": {
-              "auth_type": {
-                "title": "Auth Type",
-                "const": "access_token_auth",
-                "order": 0,
-                "type": "string"
+            "title" : "Access Token",
+            "type" : "object",
+            "properties" : {
+              "auth_type" : {
+                "title" : "Auth Type",
+                "const" : "access_token_auth",
+                "order" : 0,
+                "type" : "string"
               },
-              "access_token": {
-                "title": "Access Token",
-                "description": "Long-term Authorized Access Token.",
-                "airbyte_secret": true,
-                "type": "string"
+              "access_token" : {
+                "title" : "Access Token",
+                "description" : "Long-term Authorized Access Token.",
+                "airbyte_secret" : true,
+                "type" : "string"
               }
             },
-            "required": [
+            "required" : [
               "access_token"
             ]
           },
           {
-            "title": "CredentialsCraft",
-            "type": "object",
-            "properties": {
-              "auth_type": {
-                "title": "Auth Type",
-                "const": "credentials_craft_auth",
-                "order": 0,
-                "type": "string"
+            "title" : "CredentialsCraft",
+            "type" : "object",
+            "properties" : {
+              "auth_type" : {
+                "title" : "Auth Type",
+                "const" : "credentials_craft_auth",
+                "order" : 0,
+                "type" : "string"
               },
-              "credentials_craft_host": {
-                "title": "CredentialsCraft Host",
-                "description": "По какому адресу находится сервис CredentialsCraft?",
-                "examples": [
+              "credentials_craft_host" : {
+                "title" : "CredentialsCraft Host",
+                "description" : "По какому адресу находится сервис CredentialsCraft?",
+                "examples" : [
                   "https://credentialscraft.mysite.com"
                 ],
-                "type": "string"
+                "type" : "string"
               },
-              "credentials_craft_token": {
-                "title": "CredentialsCraft Token",
-                "description": "Токен CredentialsCraft (НЕ токен Яндекс).",
-                "type": "string",
-                "airbyte_secret": true
+              "credentials_craft_token" : {
+                "title" : "CredentialsCraft Token",
+                "description" : "Токен CredentialsCraft (НЕ токен Яндекс).",
+                "type" : "string",
+                "airbyte_secret" : true
               },
-              "credentials_craft_token_id": {
-                "title": "ID авторизации в CredentialsCraft",
-                "desctiption": "ID авторизации Yandex внутри CredentialsCraft",
-                "examples": [
+              "credentials_craft_token_id" : {
+                "title" : "ID авторизации в CredentialsCraft",
+                "desctiption" : "ID авторизации Yandex внутри CredentialsCraft",
+                "examples" : [
                   3345435
                 ],
-                "type": "integer"
+                "type" : "integer"
               }
             },
-            "required": [
+            "required" : [
               "auth_type",
               "credentials_craft_host",
               "credentials_craft_token",
@@ -80,37 +80,37 @@
           }
         ]
       },
-      "counter_id": {
-        "title": "ID счётчика",
-        "description": "Идентификатор счётчика Яндекс.Метрики",
-        "type": "integer",
-        "group": "auth",
-        "order": 1
+      "counter_id" : {
+        "title" : "ID счётчика",
+        "description" : "Идентификатор счётчика Яндекс.Метрики",
+        "type" : "integer",
+        "group" : "auth",
+        "order" : 1
       },
-      "aggregated_reports": {
-        "title": "Агрегированные отчёты",
-        "type": "array",
-        "order": 2,
-        "always_show": true,
-        "group": "streams_config",
-        "items": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
+      "aggregated_reports" : {
+        "title" : "Агрегированные отчёты",
+        "type" : "array",
+        "order" : 2,
+        "always_show" : true,
+        "group" : "streams_config",
+        "items" : {
+          "type" : "object",
+          "additionalProperties" : false,
+          "required" : [
             "name"
           ],
-          "properties": {
-            "name": {
-              "type": "string",
-              "title": "Название",
-              "order": 0
+          "properties" : {
+            "name" : {
+              "type" : "string",
+              "title" : "Название",
+              "order" : 0
             },
-            "preset_name": {
-              "type": "string",
-              "title": "Шаблон",
-              "always_show": true,
-              "desctiption": "Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/presets/presets.html",
-              "enum": [
+            "preset_name" : {
+              "type" : "string",
+              "title" : "Шаблон",
+              "always_show" : true,
+              "desctiption" : "Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/presets/presets.html",
+              "enum" : [
                 "Пользовательский отчёт",
                 "Источники, сводка",
                 "Поисковые фразы",
@@ -184,63 +184,63 @@
                 "Источники заказов из CRM",
                 "Источники, расходы и ROI"
               ],
-              "default": "Пользовательский отчёт",
-              "order": 1
+              "default" : "Пользовательский отчёт",
+              "order" : 1
             },
-            "metrics": {
-              "type": "array",
-              "title": "Список метрик в отчёте (metrics)",
-              "description": "Лимит: 20 метрик. Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/attrandmetr/dim_all.html",
-              "maxItems": 20,
-              "always_show": true,
-              "items": {
-                "type": "string"
+            "metrics" : {
+              "type" : "array",
+              "title" : "Список метрик в отчёте (metrics)",
+              "description" : "Лимит: 20 метрик. Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/attrandmetr/dim_all.html",
+              "maxItems" : 20,
+              "always_show" : true,
+              "items" : {
+                "type" : "string"
               },
-              "order": 2
+              "order" : 2
             },
-            "dimensions": {
-              "type": "array",
-              "title": "Список группировок в отчёте (dimensions)",
-              "description": "Лимит: 10 группировок. Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/attrandmetr/dim_all.html",
-              "maxItems": 10,
-              "always_show": true,
-              "items": {
-                "type": "string"
+            "dimensions" : {
+              "type" : "array",
+              "title" : "Список группировок в отчёте (dimensions)",
+              "description" : "Лимит: 10 группировок. Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/attrandmetr/dim_all.html",
+              "maxItems" : 10,
+              "always_show" : true,
+              "items" : {
+                "type" : "string"
               },
-              "order": 3
+              "order" : 3
             },
-            "filters": {
-              "type": "string",
-              "title": "Фильтр сегментации отчёта",
-              "description": "Необязательно. Документация: https://yandex.ru/dev/appmetrica/doc/mobile-api/api_v1/segmentation.html",
-              "examples": [
+            "filters" : {
+              "type" : "string",
+              "title" : "Фильтр сегментации отчёта",
+              "description" : "Необязательно. Документация: https://yandex.ru/dev/appmetrica/doc/mobile-api/api_v1/segmentation.html",
+              "examples" : [
                 "ym:s:regionCityName=='Санкт-Петербург'",
                 "EXISTS(ym:s:paramsLevel1=='client_id')",
                 "NOT(ym:s:age!=18)",
                 "ym:s:regionCityName=='Москва' OR ym:s:regionCityName=='Санкт-Петербург'"
               ],
-              "order": 4
+              "order" : 4
             },
-            "date_group": {
-              "title": "Группировка дат",
-              "description": "Группировка дат в отчёте для некоторых полей, например, для ym:s:datePeriod&lt;group&gt;. По умолчанию: день. Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/param.html",
-              "type": "string",
-              "always_show": true,
-              "enum": [
+            "date_group" : {
+              "title" : "Группировка дат",
+              "description" : "Группировка дат в отчёте для некоторых полей, например, для ym:s:datePeriod&lt;group&gt;. По умолчанию: день. Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/param.html",
+              "type" : "string",
+              "always_show" : true,
+              "enum" : [
                 "день",
                 "неделя",
                 "месяц",
                 "квартал",
                 "год"
               ],
-              "default": "день",
-              "order": 8
+              "default" : "день",
+              "order" : 8
             },
-            "attribution": {
-              "title": "Модель аттрибуции",
-              "description": "Необязательно. Используется, например, для ym:ad:&lt;attribution&gt;Currency. По умолчанию: lastsign. Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/param.html",
-              "type": "string",
-              "enum": [
+            "attribution" : {
+              "title" : "Модель аттрибуции",
+              "description" : "Необязательно. Используется, например, для ym:ad:&lt;attribution&gt;Currency. По умолчанию: lastsign. Документация: https://yandex.ru/dev/metrika/doc/api2/api_v1/param.html",
+              "type" : "string",
+              "enum" : [
                 "Первый источник",
                 "Последний источник",
                 "Последний значимый источник",
@@ -251,291 +251,349 @@
                 "Последний переход из Директа со всех устройств",
                 "Автоматический"
               ],
-              "default": "Последний значимый источник",
-              "order": 9
+              "default" : "Последний значимый источник",
+              "order" : 9
+            }
+          },
+          "field_name_map" : {
+            "title" : "Замена ключей",
+            "description" : "Этот параметр заменяет ключи в итоговых записях. Например, если вы хотите заменить поле \"ym:s:watchIDs\" на \"watch_ids\", то укажите в этом параметре \"Старый ключ\" - \"ym:s:watchIDs\", \"Новый ключ\" - \"watch_ids\".",
+            "type" : "array",
+            "group" : "replace",
+            "order" : 10,
+            "items" : {
+              "type" : "object",
+              "additionalProperties" : false,
+              "required" : [
+                "old_value",
+                "new_value"
+              ],
+              "title" : "Замена ключей",
+              "description" : "Пара: старый и новый ключ",
+              "properties" : {
+                "old_value" : {
+                  "type" : "string",
+                  "title" : "Старый ключ",
+                  "order" : 0
+                },
+                "new_value" : {
+                  "type" : "string",
+                  "title" : "Новый ключ",
+                  "order" : 1
+                }
+              }
             }
           }
         }
       },
-      "raw_data_hits_report": {
-        "title": "Сырой отчёт по просмотрам",
-        "type": "object",
-        "order": 3,
-        "group": "streams_config",
-        "always_show": true,
-        "oneOf": [
+      "raw_data_hits_report" : {
+        "title" : "Сырой отчёт по просмотрам (hits)",
+        "type" : "object",
+        "order" : 3,
+        "group" : "streams_config",
+        "always_show" : true,
+        "oneOf" : [
           {
-            "title": "Включено",
-            "type": "object",
-            "properties": {
-              "is_enabled": {
-                "type": "string",
-                "const": "enabled",
-                "order": 0
+            "title" : "Включено",
+            "type" : "object",
+            "properties" : {
+              "is_enabled" : {
+                "type" : "string",
+                "const" : "enabled",
+                "order" : 0
               },
-              "fields": {
-                "title": "Поля данных",
-                "description": "Укажите список полей в отчёте. Обязательные поля: ym:pv:watchID и ym:pv:dateTime. Документация полей для просмотров: https://yandex.ru/dev/metrika/doc/api2/logs/fields/hits.html",
-                "default": [],
-                "type": "array",
-                "always_show": true,
-                "items": {
-                  "type": "string"
+              "fields" : {
+                "title" : "Поля данных",
+                "description" : "Укажите список полей в отчёте. Обязательные поля: ym:pv:watchID и ym:pv:dateTime. Документация полей для просмотров: https://yandex.ru/dev/metrika/doc/api2/logs/fields/hits.html",
+                "default" : [],
+                "type" : "array",
+                "always_show" : true,
+                "items" : {
+                  "type" : "string"
                 },
-                "order": 1
+                "order" : 1
               },
-              "split_range_days_count": {
-                "title": "Разделить отчёт (количество дней)",
-                "description": "Минимум - 1 день. Например, отчёт за 30 дней с настройкой \"разделять по 5 дней\" будет разделён на 6 равных частей. Это может увеличить время выгрузки",
-                "minimum": 1,
-                "maximum": 3650,
-                "type": "integer",
-                "order": 2
+              "split_range_days_count" : {
+                "title" : "Разделить отчёт (количество дней)",
+                "description" : "Минимум - 1 день. Например, отчёт за 30 дней с настройкой \"разделять по 5 дней\" будет разделён на 6 равных частей. Это может увеличить время выгрузки",
+                "minimum" : 1,
+                "maximum" : 3650,
+                "type" : "integer",
+                "order" : 2
               },
-              "multithreading_threads_count": {
-                "title": "Количество потоков",
-                "description": "Яндекс.Метрика поддерживает до трёх одновременно загружаемых отчётов",
-                "type": "integer",
-                "examples": [
+              "multithreading_threads_count" : {
+                "title" : "Количество потоков",
+                "description" : "Яндекс.Метрика поддерживает до трёх одновременно загружаемых отчётов",
+                "type" : "integer",
+                "examples" : [
                   1
                 ],
-                "order": 3,
-                "minimum": 1,
-                "maximum": 3,
-                "default": 1
+                "order" : 3,
+                "minimum" : 1,
+                "maximum" : 3,
+                "default" : 1
               },
-              "check_log_requests_ability": {
-                "title": "Проверять возможность загрузки",
-                "description": "Проверка на возможность создания отчёта перед загрузкой",
-                "type": "boolean",
-                "order": 4
+              "check_log_requests_ability" : {
+                "title" : "Проверять возможность загрузки",
+                "description" : "Проверка на возможность создания отчёта перед загрузкой",
+                "type" : "boolean",
+                "order" : 4
               },
-              "clean_log_requests_before_replication": {
-                "title": "Удалять отчёты перед загрузкой",
-                "description": "Все отчёты на серверах Яндекс.Метрики будут удалены перед каждой загрузкой",
-                "type": "boolean",
-                "order": 5
+              "clean_log_requests_before_replication" : {
+                "title" : "Удалять отчёты перед загрузкой",
+                "description" : "Все отчёты на серверах Яндекс.Метрики будут удалены перед каждой загрузкой",
+                "type" : "boolean",
+                "order" : 5
               },
-              "clean_every_log_request_after_success": {
-                "title": "Удалять отчёты после загрузки",
-                "description": "Все отчёты на серверах Яндекс.Метрики будут удалены после каждой загрузки",
-                "type": "boolean",
-                "order": 6
+              "clean_every_log_request_after_success" : {
+                "title" : "Удалять отчёты после загрузки",
+                "description" : "Все отчёты на серверах Яндекс.Метрики будут удалены после каждой загрузки",
+                "type" : "boolean",
+                "order" : 6
+              },
+              "field_name_map" : {
+                "title" : "Замена ключей",
+                "description" : "Этот параметр заменяет ключи в итоговых записях. Например, если вы хотите заменить поле \"ym:s:watchIDs\" на \"watch_ids\", то укажите в этом параметре \"Старый ключ\" - \"ym:s:watchIDs\", \"Новый ключ\" - \"watch_ids\".",
+                "type" : "array",
+                "group" : "replace",
+                "order" : 7,
+                "items" : {
+                  "type" : "object",
+                  "additionalProperties" : false,
+                  "required" : [
+                    "old_value",
+                    "new_value"
+                  ],
+                  "title" : "Замена ключей (нельзя переименовывать ym:pv:watchID)",
+                  "description" : "Пара: старый и новый ключ",
+                  "properties" : {
+                    "old_value" : {
+                      "type" : "string",
+                      "title" : "Старый ключ",
+                      "order" : 0
+                    },
+                    "new_value" : {
+                      "type" : "string",
+                      "title" : "Новый ключ",
+                      "order" : 1
+                    }
+                  }
+                }
               }
             },
-            "required": [
+            "required" : [
               "is_enabled"
             ]
           },
           {
-            "title": "Выключено",
-            "type": "object",
-            "properties": {
-              "is_enabled": {
-                "type": "string",
-                "const": "disabled",
-                "order": 0
+            "title" : "Выключено",
+            "type" : "object",
+            "properties" : {
+              "is_enabled" : {
+                "type" : "string",
+                "const" : "disabled",
+                "order" : 0
               }
             },
-            "required": [
+            "required" : [
               "is_enabled"
             ]
           }
         ]
       },
-      "raw_data_visits_report": {
-        "title": "Сырой отчёт по визитам",
-        "type": "object",
-        "order": 4,
-        "group": "streams_config",
-        "always_show": true,
-        "oneOf": [
+      "raw_data_visits_report" : {
+        "title" : "Сырой отчёт по визитам (visits)",
+        "type" : "object",
+        "order" : 4,
+        "group" : "streams_config",
+        "always_show" : true,
+        "oneOf" : [
           {
-            "title": "Включено",
-            "type": "object",
-            "properties": {
-              "is_enabled": {
-                "type": "string",
-                "const": "enabled",
-                "order": 0
+            "title" : "Включено",
+            "type" : "object",
+            "properties" : {
+              "is_enabled" : {
+                "type" : "string",
+                "const" : "enabled",
+                "order" : 0
               },
-              "fields": {
-                "title": "Поля данных",
-                "description": "Укажите список полей в отчёте. Обязательные поля: ym:s:visitID и ym:s:dateTime. Документация: https://yandex.ru/dev/metrika/doc/api2/logs/fields/visits.html",
-                "default": [],
-                "type": "array",
-                "always_show": true,
-                "items": {
-                  "type": "string"
+              "fields" : {
+                "title" : "Поля данных",
+                "description" : "Укажите список полей в отчёте. Обязательные поля: ym:s:visitID и ym:s:dateTime. Документация: https://yandex.ru/dev/metrika/doc/api2/logs/fields/visits.html",
+                "default" : [],
+                "type" : "array",
+                "always_show" : true,
+                "items" : {
+                  "type" : "string"
                 },
-                "order": 1
+                "order" : 1
               },
-              "split_range_days_count": {
-                "title": "Разделить отчёт (количество дней)",
-                "description": "Минимум - 1 день. Например, отчёт за 30 дней с настройкой \"разделять по 5 дней\" будет разделён на 6 равных частей. Это может увеличить время выгрузки",
-                "minimum": 1,
-                "maximum": 3650,
-                "type": "integer",
-                "order": 3
+              "split_range_days_count" : {
+                "title" : "Разделить отчёт (количество дней)",
+                "description" : "Минимум - 1 день. Например, отчёт за 30 дней с настройкой \"разделять по 5 дней\" будет разделён на 6 равных частей. Это может увеличить время выгрузки",
+                "minimum" : 1,
+                "maximum" : 3650,
+                "type" : "integer",
+                "order" : 3
               },
-              "multithreading_threads_count": {
-                "title": "Количество потоков",
-                "description": "Яндекс.Метрика поддерживает до трёх одновременно загружаемых отчётов",
-                "type": "integer",
-                "examples": [
+              "multithreading_threads_count" : {
+                "title" : "Количество потоков",
+                "description" : "Яндекс.Метрика поддерживает до трёх одновременно загружаемых отчётов",
+                "type" : "integer",
+                "examples" : [
                   1
                 ],
-                "order": 3,
-                "minimum": 1,
-                "maximum": 3,
-                "default": 1
+                "order" : 3,
+                "minimum" : 1,
+                "maximum" : 3,
+                "default" : 1
               },
-              "check_log_requests_ability": {
-                "title": "Проверять возможность загрузки",
-                "description": "Проверка на возможность создания отчёта перед загрузкой",
-                "type": "boolean",
-                "order": 4
+              "check_log_requests_ability" : {
+                "title" : "Проверять возможность загрузки",
+                "description" : "Проверка на возможность создания отчёта перед загрузкой",
+                "type" : "boolean",
+                "order" : 4
               },
-              "clean_log_requests_before_replication": {
-                "title": "Удалять отчёты перед загрузкой",
-                "description": "Все отчёты на серверах Яндекс.Метрики будут удалены перед каждой загрузкой",
-                "type": "boolean",
-                "order": 5
+              "clean_log_requests_before_replication" : {
+                "title" : "Удалять отчёты перед загрузкой",
+                "description" : "Все отчёты на серверах Яндекс.Метрики будут удалены перед каждой загрузкой",
+                "type" : "boolean",
+                "order" : 5
               },
-              "clean_every_log_request_after_success": {
-                "title": "Удалять отчёты после загрузки",
-                "description": "Все отчёты на серверах Яндекс.Метрики будут удалены после каждой загрузки",
-                "type": "boolean",
-                "order": 6
+              "clean_every_log_request_after_success" : {
+                "title" : "Удалять отчёты после загрузки",
+                "description" : "Все отчёты на серверах Яндекс.Метрики будут удалены после каждой загрузки",
+                "type" : "boolean",
+                "order" : 6
+              },
+              "field_name_map" : {
+                "title" : "Замена ключей",
+                "description" : "Этот параметр заменяет ключи в итоговых записях. Например, если вы хотите заменить поле \"ym:s:watchIDs\" на \"watch_ids\", то укажите в этом параметре \"Старый ключ\" - \"ym:s:watchIDs\", \"Новый ключ\" - \"watch_ids\".",
+                "type" : "array",
+                "group" : "replace",
+                "order" : 7,
+                "items" : {
+                  "type" : "object",
+                  "additionalProperties" : false,
+                  "required" : [
+                    "old_value",
+                    "new_value"
+                  ],
+                  "title" : "Замена ключей (Нельзя переименовывать обязательные поля ym:s:visitID)",
+                  "description" : "Пара: старый и новый ключ",
+                  "properties" : {
+                    "old_value" : {
+                      "type" : "string",
+                      "title" : "Старый ключ",
+                      "order" : 0
+                    },
+                    "new_value" : {
+                      "type" : "string",
+                      "title" : "Новый ключ",
+                      "order" : 1
+                    }
+                  }
+                }
               }
             },
-            "required": [
+            "required" : [
               "is_enabled"
             ]
           },
           {
-            "title": "Выключено",
-            "type": "object",
-            "properties": {
-              "is_enabled": {
-                "type": "string",
-                "const": "disabled",
-                "order": 0
+            "title" : "Выключено",
+            "type" : "object",
+            "properties" : {
+              "is_enabled" : {
+                "type" : "string",
+                "const" : "disabled",
+                "order" : 0
               }
             },
-            "required": [
+            "required" : [
               "is_enabled"
             ]
           }
         ]
       },
-      "date_range": {
-        "title": "Период отчётов",
-        "type": "object",
-        "group": "date_range",
-        "order": 5,
-        "oneOf": [
+      "date_range" : {
+        "title" : "Период отчётов",
+        "type" : "object",
+        "group" : "date_range",
+        "order" : 5,
+        "oneOf" : [
           {
-            "type": "object",
-            "title": "Пользовательский период",
-            "required": [
+            "type" : "object",
+            "title" : "Пользовательский период",
+            "required" : [
               "date_from",
               "date_to"
             ],
-            "properties": {
-              "date_range_type": {
-                "type": "string",
-                "const": "custom_date",
-                "order": 1
+            "properties" : {
+              "date_range_type" : {
+                "type" : "string",
+                "const" : "custom_date",
+                "order" : 1
               },
-              "date_from": {
-                "title": "Начало периода",
-                "description": "Начало периода в формате YYYY-MM-DD",
-                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-                "pattern_descriptor": "YYYY-MM-DD",
-                "examples": [
+              "date_from" : {
+                "title" : "Начало периода",
+                "description" : "Начало периода в формате YYYY-MM-DD",
+                "pattern" : "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "pattern_descriptor" : "YYYY-MM-DD",
+                "examples" : [
                   "2023-05-01"
                 ],
-                "order": 2,
-                "type": "string"
+                "order" : 2,
+                "type" : "string"
               },
-              "date_to": {
-                "title": "Конец периода",
-                "description": "Конец периода в формате YYYY-MM-DD",
-                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-                "pattern_descriptor": "YYYY-MM-DD",
-                "examples": [
+              "date_to" : {
+                "title" : "Конец периода",
+                "description" : "Конец периода в формате YYYY-MM-DD",
+                "pattern" : "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "pattern_descriptor" : "YYYY-MM-DD",
+                "examples" : [
                   "2023-05-01"
                 ],
-                "order": 3,
-                "type": "string"
+                "order" : 3,
+                "type" : "string"
               }
             }
           },
           {
-            "type": "object",
-            "title": "Последние несколько дней",
-            "required": [
+            "type" : "object",
+            "title" : "Последние несколько дней",
+            "required" : [
               "last_days_count"
             ],
-            "properties": {
-              "date_range_type": {
-                "type": "string",
-                "order": 0,
-                "const": "last_n_days"
+            "properties" : {
+              "date_range_type" : {
+                "type" : "string",
+                "order" : 0,
+                "const" : "last_n_days"
               },
-              "last_days_count": {
-                "title": "Количество дней",
-                "description": "Количество дней",
-                "examples": [
+              "last_days_count" : {
+                "title" : "Количество дней",
+                "description" : "Количество дней",
+                "examples" : [
                   6,
                   30
                 ],
-                "type": "integer",
-                "order": 1,
-                "minimum": 0,
-                "maximum": 3650
+                "type" : "integer",
+                "order" : 1,
+                "minimum" : 0,
+                "maximum" : 3650
               },
-              "load_today": {
-                "title": "Загружать сегодняшний день",
-                "description": "Если выключено, концом периода будет вчерашний день",
-                "type": "boolean",
-                "order": 2,
-                "always_show": true,
-                "default": false
+              "load_today" : {
+                "title" : "Загружать сегодняшний день",
+                "description" : "Если выключено, концом периода будет вчерашний день",
+                "type" : "boolean",
+                "order" : 2,
+                "always_show" : true,
+                "default" : false
               }
             }
           }
         ]
-      },
-      "field_name_map": {
-        "title": "Замена ключей",
-        "description": "Этот параметр заменяет ключи в итоговых записях. Например, если вы хотите заменить поле \"ym:s:watchIDs\" на \"watch_ids\", то укажите в этом параметре \"Старый ключ\" - \"ym:s:watchIDs\", \"Новый ключ\" - \"watch_ids\".",
-        "type": "array",
-        "group": "replace",
-        "order": 6,
-        "items": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "old_value",
-            "new_value"
-          ],
-          "title": "Замена ключей",
-          "description": "Пара: старый и новый ключ",
-          "properties": {
-            "old_value": {
-              "type": "string",
-              "title": "Старый ключ",
-              "order": 0
-            },
-            "new_value": {
-              "type": "string",
-              "title": "Новый ключ",
-              "order": 1
-            }
-          }
-        }
       }
     }
   }

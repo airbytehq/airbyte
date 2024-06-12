@@ -17,8 +17,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from .translations import attribution_translations, currency_translations, date_group_translations, preset_name_translations
 from ..base_stream import YandexMetrikaStream
 
-from ..fields import field_lookup
-from .supported_fields import METRICS_FIELDS
+from .supported_fields import aggregated_data_streams_fields_manager
 
 logger = logging.getLogger("airbyte")
 
@@ -103,7 +102,7 @@ class AggregateDataYandexMetrikaReport(YandexMetrikaStream, ABC):
         for dimension in test_response["query"]["dimensions"]:
             schema["properties"][dimension] = {"type": ["string", "null"]}
         for metric in test_response["query"]["metrics"]:
-            lookup_ok, field_type = field_lookup(metric, METRICS_FIELDS)
+            lookup_ok, field_type = aggregated_data_streams_fields_manager.field_lookup(metric)
             if not lookup_ok:
                 raise Exception(f"Field '{metric}' is not supported in the connector")
             schema["properties"][metric] = {"type": [field_type, "null"]}

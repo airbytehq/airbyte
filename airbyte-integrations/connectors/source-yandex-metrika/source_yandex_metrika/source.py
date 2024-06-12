@@ -9,13 +9,7 @@ import shutil
 from datetime import datetime, timedelta
 from typing import Iterator, Mapping, MutableMapping
 
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    ConnectorSpecification,
-    SyncMode,
-)
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -23,19 +17,19 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from source_yandex_metrika.aggregated_data_streams.streams import (
+
+from .aggregated_data_streams.streams import (
     AggregateDataYandexMetrikaReport,
     ReportConfig,
 )
-from source_yandex_metrika.raw_data_streams.stream import YandexMetrikaRawDataStream
-from source_yandex_metrika.raw_data_streams.threads import (
+from .auth import CredentialsCraftAuthenticator
+from .raw_data_streams.exceptions import MissingChunkIdsError
+from .raw_data_streams.stream import YandexMetrikaRawDataStream
+from .raw_data_streams.supported_fields import hits_fields_manager, visits_fields_manager
+from .raw_data_streams.threads import (
     PreprocessedSlicePartThreadsController,
     YandexMetrikaRawSliceMissingChunksObserver,
 )
-
-from .auth import CredentialsCraftAuthenticator
-from .raw_data_streams.exceptions import MissingChunkIdsError
-from .raw_data_streams.fields import HITS_AVAILABLE_FIELDS, VISITS_AVAILABLE_FIELDS
 
 logger = logging.getLogger("airbyte")
 CONFIG_DATE_FORMAT = "%Y-%m-%d"
@@ -43,8 +37,6 @@ CONFIG_DATE_FORMAT = "%Y-%m-%d"
 
 # Source
 class SourceYandexMetrika(AbstractSource):
-    def __init__(self):
-        self.field_name_map: dict[str, str] | None = None
 
     def preprocess_raw_stream_slice(
         self,
@@ -233,40 +225,58 @@ class SourceYandexMetrika(AbstractSource):
             yield from super()._read_full_refresh(logger, stream_instance, configured_stream, internal_config)
 
     def check_connection(self, logger, config) -> tuple[bool, any]:
+        """Check connection"""
+
+        """Check hits config"""
         raw_hits_config: dict = config.get("raw_data_hits_report")
         if raw_hits_config.get("is_enabled") == "enabled":
             for f in raw_hits_config.get("fields", []):
-                if f not in HITS_AVAILABLE_FIELDS.get_all_fields_names_list():
+                if f not in hits_fields_manager.get_all_fields_values():
                     return (
                         False,
                         f'Сырые отчёты - источник "Просмотры" (hits) не может содержать поле "{f}". См. доступные поля: '
                         "https://yandex.ru/dev/metrika/doc/api2/logs/fields/hits.html",
                     )
 
-            for r_f in HITS_AVAILABLE_FIELDS.get_required_fields_names_list():
+            for r_f in hits_fields_manager.get_required_fields_names():
                 if r_f not in raw_hits_config.get("fields", []):
                     return (
                         False,
                         'Сырые отчёты - источник "Просмотры" (hits) должен содержать поля "ym:pv:watchID" и "ym:pv:dateTime"',
                     )
+            replace_old_values: list[str] = [value["old_value"] for value in raw_hits_config.get("field_name_map", {})]
+            if "ym:pv:watchID" in replace_old_values:
+                return (
+                    False,
+                    'Сырые отчёты - источник "Просмотры" (hits) не допускает переименования поля "ym:pv:watchID"',
+                )
 
+        """Check visits config"""
         raw_visits_config: dict = config.get("raw_data_visits_report")
         if raw_visits_config.get("is_enabled") == "enabled":
             for f in raw_visits_config.get("fields", []):
-                if f not in VISITS_AVAILABLE_FIELDS.get_all_fields_names_list():
+                if f not in visits_fields_manager.get_all_fields_values():
                     return (
                         False,
                         f'Сырые отчёты - источник "Визиты" (visits) не может содержать поле "{f}". См. доступные поля: '
                         "https://yandex.ru/dev/metrika/doc/api2/logs/fields/visits.html",
                     )
 
-            for r_f in VISITS_AVAILABLE_FIELDS.get_required_fields_names_list():
+            for r_f in visits_fields_manager.get_required_fields_names():
                 if r_f not in raw_visits_config.get("fields", []):
                     return (
                         False,
-                        'Сырые отчёты - источник "Просмотры" (hits) должен содержать поля "ym:s:visitID" и "ym:s:dateTime"',
+                        'Сырые отчёты - источник "Визиты" (visits) должен содержать поля "ym:s:visitID" и "ym:s:dateTime"',
                     )
 
+            replace_old_values: list[str] = [value["old_value"] for value in raw_visits_config.get("field_name_map", {})]
+            if "ym:s:visitID" in replace_old_values:
+                return (
+                    False,
+                    'Сырые отчёты - источник "Визиты" (visits) не допускает переименования поля "ym:s:visitID"',
+                )
+
+        """Check auth"""
         auth = self.get_auth(config)
         if isinstance(auth, CredentialsCraftAuthenticator):
             auth.check_connection(raise_exception=True)
@@ -323,7 +333,6 @@ class SourceYandexMetrika(AbstractSource):
         transformed_config.update(self.transform_date_range(raw_config))
         raw_config.update(transformed_config)
 
-        self.field_name_map = self.get_field_name_map(config=raw_config)
         return raw_config
 
     def transform_date_range(self, config: Mapping[str, any]) -> dict[str, any]:
@@ -372,13 +381,9 @@ class SourceYandexMetrika(AbstractSource):
             raise Exception("Неверный типа авторизации. Доступные: access_token_auth и credentials_craft_auth")
 
     @staticmethod
-    def get_field_name_map(config: Mapping[str, any]) -> dict[str, str]:
+    def format_field_name_map(field_name_map_old_format: list[dict[str, any]] | None) -> dict[str, str]:
         """Get values that needs to be replaced and their replacements"""
-        field_name_map: list[dict[str, str]] | None
-        if not (field_name_map := config.get("field_name_map")):
-            return {}
-        else:
-            return {item["old_value"]: item["new_value"] for item in field_name_map}
+        return {item["old_value"]: item["new_value"] for item in field_name_map_old_format} if field_name_map_old_format else {}
 
     def streams(self, config: Mapping[str, any], init_for_test: bool = False) -> list[Stream]:
         config = self.transform_config(config)
@@ -429,14 +434,17 @@ class SourceYandexMetrika(AbstractSource):
                         self,
                         source_to_stream_config["kwargs_field_name"],
                     ),
-                    field_name_map=self.field_name_map,
+                    field_name_map=self.format_field_name_map(stream_config["field_name_map"]),
                 )
                 raw_data_streams.append(stream)
                 setattr(self, source_to_stream_config["preprocessor_field_name"], stream.preprocessor)
 
         agg_data_streams = [
             AggregateDataYandexMetrikaReport(
-                authenticator=auth, global_config=config, report_config=stream_config, field_name_map=self.field_name_map
+                authenticator=auth,
+                global_config=config,
+                report_config=stream_config,
+                field_name_map=self.format_field_name_map(stream_config["field_name_map"]),
             )
             for stream_config in config.get("aggregated_reports", [])
         ]
