@@ -4,13 +4,13 @@
 
 
 import logging
+
 import pytest
 import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from conftest import find_stream
 from source_linkedin_ads.source import SourceLinkedinAds
-
 
 logger = logging.getLogger("airbyte")
 
