@@ -190,3 +190,17 @@ def test_should_retry(authenticator, token_config, status_code, expected):
     )
     mocked_response = Mock(status_code=status_code)
     assert stream.should_retry(mocked_response) == expected
+
+def test_channels_stream_with_include_private_channels_false(authenticator) -> None:
+    stream = Channels(channel_filter=[], include_private_channels=False, authenticator=authenticator)
+
+    params = stream.request_params(stream_slice={}, stream_state={})
+
+    assert params.get("types") == 'public_channel'
+
+def test_channels_stream_with_include_private_channels(authenticator) -> None:
+    stream = Channels(channel_filter=[], include_private_channels=True, authenticator=authenticator)
+
+    params = stream.request_params(stream_slice={}, stream_state={})
+
+    assert params.get("types") == 'public_channel,private_channel'
