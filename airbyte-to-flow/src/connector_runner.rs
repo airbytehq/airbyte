@@ -58,6 +58,8 @@ pub async fn run_airbyte_source_connector(
     let in_stream = flow_read_stream().await;
     let (op, first_request) = airbyte_interceptor.first_request(in_stream).await?;
 
+    let config = first_request.open.as_ref().map(|o| serde_json::from_str::<serde_json::Value>(&o.capture.as_ref().unwrap().config_json));
+
     let args = airbyte_interceptor.adapt_command_args(&op);
     let full_entrypoint = format!("{} \"{}\"", entrypoint, args.join("\" \""));
     let log_level = log_args.level.to_string();
@@ -196,6 +198,13 @@ pub async fn run_airbyte_source_connector(
         if *op_ref != Operation::Capture {
             return Ok(());
         };
+
+        if let Some(Ok(cfg)) = config {
+            if cfg.pointer("/_atf_skip_interval") == Some(&serde_json::Value::Bool(true)) {
+                tracing::info!("atf: skipping interval");
+                return Ok(());
+            }
+        }
 
         let run_interval_minutes = std::fs::read_to_string(RUN_INTERVAL_FILE_NAME)
             .ok()
