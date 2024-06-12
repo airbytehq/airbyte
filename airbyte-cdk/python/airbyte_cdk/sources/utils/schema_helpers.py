@@ -50,7 +50,7 @@ def resolve_ref_links(obj: Any) -> Any:
         # Omit existing definitions for external resource since
         # we dont need it anymore.
         if isinstance(obj, dict):
-            obj.pop("definitions", None)
+            obj.pop("$defs", None)
             return obj
         else:
             raise ValueError(f"Expected obj to be a dict. Got {obj}")
@@ -90,7 +90,7 @@ def expand_refs(schema: Any) -> None:
     :param schema: schema that will be patched
     """
     _expand_refs(schema)
-    schema.pop("definitions", None)  # remove definitions created by $ref
+    schema.pop("$defs", None)  # remove definitions created by $ref
 
 
 class ResourceSchemaLoader:

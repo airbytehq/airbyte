@@ -4,19 +4,17 @@
 
 from typing import List, Literal, Optional, Union
 
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+from airbyte_cdk.utils.oneof_option_config import one_of_model_config
 from pydantic import BaseModel, Field
 
 
 class LocalProcessingConfigModel(BaseModel):
     mode: Literal["local"] = "local"
-
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(OneOfOptionConfig):
-        title = "Local"
-        description = "Process files locally, supporting `fast` and `ocr` modes. This is the default option."
-        discriminator = "mode"
+    model_config = one_of_model_config(
+        title="Local",
+        description="Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
+        discriminator="mode",
+    )
 
 
 class APIParameterConfigModel(BaseModel):
@@ -30,6 +28,11 @@ class APIParameterConfigModel(BaseModel):
 
 class APIProcessingConfigModel(BaseModel):
     mode: Literal["api"] = "api"
+    model_config = one_of_model_config(
+        title="API",
+        description="Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured.",
+        discriminator="mode",
+    )
 
     api_key: str = Field(
         default="",
@@ -54,21 +57,13 @@ class APIProcessingConfigModel(BaseModel):
         description="List of parameters send to the API",
     )
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(OneOfOptionConfig):
-        title = "via API"
-        description = "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured."
-        discriminator = "mode"
-
 
 class UnstructuredFormat(BaseModel):
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(OneOfOptionConfig):
-        title = "Unstructured Document Format"
-        description = "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file."
-        discriminator = "filetype"
+    model_config = one_of_model_config(
+        title="Unstructured Document Format",
+        description="Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
+        discriminator="filetype",
+    )
 
     filetype: Literal["unstructured"] = "unstructured"
 
@@ -88,7 +83,7 @@ class UnstructuredFormat(BaseModel):
         description="The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf",
     )
 
-    processing: Union[LocalProcessingConfigModel, APIProcessingConfigModel,] = Field(
+    processing: Union[LocalProcessingConfigModel, APIProcessingConfigModel] = Field(
         default=LocalProcessingConfigModel(mode="local"),
         title="Processing",
         description="Processing configuration",

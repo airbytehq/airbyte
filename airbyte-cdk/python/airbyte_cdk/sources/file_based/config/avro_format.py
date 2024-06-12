@@ -5,16 +5,12 @@
 
 from typing import Literal
 
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+from airbyte_cdk.utils.oneof_option_config import one_of_model_config
 from pydantic import BaseModel, Field
 
 
 class AvroFormat(BaseModel):
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(OneOfOptionConfig):
-        title = "Avro Format"
-        discriminator = "filetype"
+    model_config = one_of_model_config(title="Avro Format", description="Read data from Avro files.", discriminator="filetype")
 
     filetype: Literal["avro"] = "avro"
 

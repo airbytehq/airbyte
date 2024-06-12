@@ -43,11 +43,11 @@ class AbstractFileBasedSpec(BaseModel):
         """
 
     @classmethod
-    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def model_json_schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         Generates the mapping comprised of the config fields
         """
-        schema = super().schema(*args, **kwargs)
+        schema = super().model_json_schema(*args, **kwargs)
         transformed_schema: Dict[str, Any] = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
         cls.replace_enum_allOf_and_anyOf(transformed_schema)

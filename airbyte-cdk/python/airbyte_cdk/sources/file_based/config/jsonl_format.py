@@ -4,15 +4,10 @@
 
 from typing import Literal
 
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+from airbyte_cdk.utils.oneof_option_config import one_of_model_config
 from pydantic import BaseModel
 
 
 class JsonlFormat(BaseModel):
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(OneOfOptionConfig):
-        title = "Jsonl Format"
-        discriminator = "filetype"
-
+    model_config = one_of_model_config(title="Jsonl Format", description="Read data from JSONL files.", discriminator="filetype")
     filetype: Literal["jsonl"] = "jsonl"
