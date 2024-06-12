@@ -17,14 +17,14 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['site_api_key'] }}"
     error_handler:
-        type: DefaultErrorHandler
-        response_filters:
-          - error_message_contains: "This API operation is not enabled for this site"
-            action: IGNORE
-            error_message: "Stream is available only for Product Catalog 1.0"
-        backoff_strategies:
-          - type: WaitTimeFromHeader
-            header: "Retry-After"
+      type: DefaultErrorHandler
+      response_filters:
+        - error_message_contains: "This API operation is not enabled for this site"
+          action: IGNORE
+          error_message: "Stream is available only for Product Catalog 1.0"
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
   date_stream_slicer:
     type: DatetimeBasedCursor
     start_datetime:
@@ -288,15 +288,15 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-                error_message: "Entity unavailable. Subscription may have been deleted."
-              - http_codes: [400]
-                action: IGNORE
-                error_message_contains: "No changes are scheduled for this subscription."
-                error_message: "No scheduled changes for subscription."
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [404]
+              action: IGNORE
+              error_message: "Entity unavailable. Subscription may have been deleted."
+            - http_codes: [400]
+              action: IGNORE
+              error_message_contains: "No changes are scheduled for this subscription."
+              error_message: "No scheduled changes for subscription."
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:

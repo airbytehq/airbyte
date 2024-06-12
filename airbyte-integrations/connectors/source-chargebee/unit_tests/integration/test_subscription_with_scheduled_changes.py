@@ -9,10 +9,10 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
-    Path,
     FieldPath,
     HttpResponseBuilder,
     NestedPath,
+    Path,
     RecordBuilder,
     create_record_builder,
     create_response_builder,
