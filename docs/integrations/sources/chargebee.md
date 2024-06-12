@@ -69,6 +69,7 @@ Most streams are supported regardless of your Chargebee site's [Product Catalog 
 | [Quote Line Groups](https://apidocs.chargebee.com/docs/api/quote_line_groups)                          | ✔                   | ✔                   |
 | [Site Migration Details](https://apidocs.chargebee.com/docs/api/site_migration_details)                | ✔                   | ✔                   |
 | [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions)                                  | ✔                   | ✔                   |
+| [Subscriptions With Scheduled Changes](https://apidocs.chargebee.com/docs/api/subscriptions?lang=curl#retrieve_with_scheduled_changes)           | ✔                   | ✔                   |
 | [Transactions](https://apidocs.chargebee.com/docs/api/transactions)                                    | ✔                   | ✔                   |
 | [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges)                            | ✔                   | ✔                   |
 | [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts)                  | ✔                   | ✔                   |
@@ -103,6 +104,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.2 | 2024-06-06 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | Adds new stream `subscription_with_scheduled_changes`   |
 | 0.5.2 | 2024-06-06 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.1 | 2024-04-24 | [36633](https://github.com/airbytehq/airbyte/pull/36633) | Schema descriptions and CDK 0.80.0 |
 | 0.5.0 | 2024-03-28 | [36518](https://github.com/airbytehq/airbyte/pull/36518) | Updates CDK to ^0, updates IncrementalSingleSliceCursor |
