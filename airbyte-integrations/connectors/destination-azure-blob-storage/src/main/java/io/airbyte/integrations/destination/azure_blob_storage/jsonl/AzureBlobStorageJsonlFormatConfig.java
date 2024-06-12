@@ -29,7 +29,8 @@ public class AzureBlobStorageJsonlFormatConfig implements AzureBlobStorageFormat
   @Override
   public String toString() {
     return "AzureBlobStorageJsonlFormatConfig{" +
-            "fileExtensionRequired=" + fileExtensionRequired +
-            '}';
+        "fileExtensionRequired=" + fileExtensionRequired +
+        '}';
   }
+
 }

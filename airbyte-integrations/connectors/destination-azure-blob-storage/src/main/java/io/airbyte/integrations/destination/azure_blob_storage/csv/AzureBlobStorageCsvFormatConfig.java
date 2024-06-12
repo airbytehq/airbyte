@@ -63,8 +63,9 @@ public class AzureBlobStorageCsvFormatConfig implements AzureBlobStorageFormatCo
   @Override
   public String toString() {
     return "AzureBlobStorageCsvFormatConfig{" +
-            "flattening=" + flattening +
-            ", fileExtensionRequired=" + fileExtensionRequired +
-            '}';
+        "flattening=" + flattening +
+        ", fileExtensionRequired=" + fileExtensionRequired +
+        '}';
   }
+
 }
