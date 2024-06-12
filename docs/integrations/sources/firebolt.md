@@ -54,6 +54,7 @@ You can now use the Airbyte Firebolt source.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 2.0.3 | 2024-06-06 | [39183](https://github.com/airbytehq/airbyte/pull/39183) | [autopull] Upgrade base image to v1.2.2 |
 | 2.0.2 | 2024-06-03 | [38892](https://github.com/airbytehq/airbyte/pull/38892) | Replace AirbyteLogger with logging.Logger |
 | 2.0.1 | 2024-06-03 | [38892](https://github.com/airbytehq/airbyte/pull/38892) | Replace AirbyteLogger with logging.Logger |
 | 2.0.0 | 2024-06-01 | [36349](https://github.com/airbytehq/airbyte/pull/36349) | Service account authentication support |
