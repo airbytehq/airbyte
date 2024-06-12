@@ -48,14 +48,15 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.5   | 2024-05-28 | [38700](https://github.com/airbytehq/airbyte/pull/38700) | Make compatible with builder                                                    |
-| 0.3.4   | 2024-04-19 | [37212](https://github.com/airbytehq/airbyte/pull/37212) | Updating to 0.80.0 CDK                                                          |
-| 0.3.3   | 2024-04-18 | [37212](https://github.com/airbytehq/airbyte/pull/37212) | Manage dependencies with Poetry.                                                |
-| 0.3.2   | 2024-04-15 | [37212](https://github.com/airbytehq/airbyte/pull/37212) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.3.1   | 2024-04-12 | [37212](https://github.com/airbytehq/airbyte/pull/37212) | schema descriptions                                                             |
-| 0.3.0   | 2023-10-25 | [30976](https://github.com/airbytehq/airbyte/pull/30976) | Migrate to low-code framework                                                   |
-| 0.2.0   | 2023-10-23 | [31747](https://github.com/airbytehq/airbyte/pull/31747) | Update schema                                                                   |
-| 0.1.1   | 2022-06-28 | [14208](https://github.com/airbytehq/airbyte/pull/14208) | Remove unused schema                                                            |
-| 0.1.0   | 2022-06-27 | [13390](https://github.com/airbytehq/airbyte/pull/13390) | Initial Release                                                                 |
+| 0.3.6 | 2024-06-06 | [39179](https://github.com/airbytehq/airbyte/pull/39179) | [autopull] Upgrade base image to v1.2.2 |
+| 0.3.5 | 2024-05-28 | [38700](https://github.com/airbytehq/airbyte/pull/38700) | Make compatible with builder |
+| 0.3.4 | 2024-04-19 | [37212](https://github.com/airbytehq/airbyte/pull/37212) | Updating to 0.80.0 CDK |
+| 0.3.3 | 2024-04-18 | [37212](https://github.com/airbytehq/airbyte/pull/37212) | Manage dependencies with Poetry. |
+| 0.3.2 | 2024-04-15 | [37212](https://github.com/airbytehq/airbyte/pull/37212) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.3.1 | 2024-04-12 | [37212](https://github.com/airbytehq/airbyte/pull/37212) | schema descriptions |
+| 0.3.0 | 2023-10-25 | [30976](https://github.com/airbytehq/airbyte/pull/30976) | Migrate to low-code framework |
+| 0.2.0 | 2023-10-23 | [31747](https://github.com/airbytehq/airbyte/pull/31747) | Update schema |
+| 0.1.1 | 2022-06-28 | [14208](https://github.com/airbytehq/airbyte/pull/14208) | Remove unused schema |
+| 0.1.0 | 2022-06-27 | [13390](https://github.com/airbytehq/airbyte/pull/13390) | Initial Release |
 
 </details>

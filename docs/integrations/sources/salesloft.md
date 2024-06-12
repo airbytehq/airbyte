@@ -105,6 +105,8 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 1.2.3 | 2024-06-07 | [38362](https://github.com/airbytehq/airbyte/pull/38362) | Migrate to Low Code |
+| 1.2.2 | 2024-06-04 | [39042](https://github.com/airbytehq/airbyte/pull/39042) | [autopull] Upgrade base image to v1.2.1 |
 | 1.2.1 | 2024-05-20 | [38383](https://github.com/airbytehq/airbyte/pull/38383) | [autopull] base image + poetry + up_to_date |
 | 1.2.0 | 2023-06-20 | [27505](https://github.com/airbytehq/airbyte/pull/27505) | Added new streams (Call Data Records, Call Dispositions, ... ) |
 | 1.1.1 | 2023-06-17 | [27484](https://github.com/airbytehq/airbyte/pull/27484) | Bump version on py files updates |
@@ -116,7 +118,6 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 | 0.1.3 | 2022-03-28 | [11460](https://github.com/airbytehq/airbyte/pull/11460) | Added multiple new streams (Accounts, Actions, Calls, Notes ... ) |
 | 0.1.2 | 2022-03-17 | [11239](https://github.com/airbytehq/airbyte/pull/11239) | Added new Emails stream |
 | 0.1.1 | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
-| 0.1.0 | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962) | Salesloft Connector |
-| 0.1.0   | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962)   | Salesloft Connector                                               |
+| 0.1.0 | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962) | Salesloft Connector |                                      |
 
 </details>
