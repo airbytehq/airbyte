@@ -115,7 +115,7 @@ class ProcessingConfigModel(BaseModel):
         always_show=True,
         examples=["age", "user", "user.name"],
     )
-    text_splitter: TextSplitterConfigModel = Field(
+    text_splitter: Optional[TextSplitterConfigModel] = Field(
         default=None,
         title="Text splitter",
         discriminator="mode",
