@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.2"
+version = "0.3.3"
 name = "source-aha"
 description = "Source implementation for aha."
 authors = [ "Airbyte <contact@airbyte.io>",]
