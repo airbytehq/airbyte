@@ -3,5 +3,6 @@
   "credentials": {
     "auth_method": "access_token",
     "access_token": "wrong_token_sra6ibiw0ZWEdMnC0ZizeD1gLRQP6u1pkQl"
-  }
+  },
+  "start_date": "2002-03-31T00:00:00Z"
 }
