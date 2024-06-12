@@ -187,21 +187,20 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def _get_raw_json_schema(self) -> JsonSchema:
         if self.config.input_schema:
             return self.config.get_input_schema()  # type: ignore
-        if self.config.schemaless:
+        elif self.config.schemaless:
             return schemaless_schema
-
-        if self.config.files_to_read_for_schema_discover:
-            self.logger.info(
-                msg=(
-                    f"Only first {self.config.files_to_read_for_schema_discover} files will be used to infer schema "
-                    f"for stream {self.name} due to limitation in config."
-                )
-            )
-            files = self.list_first_n_files(self.config.files_to_read_for_schema_discover)
         else:
-            files = self.list_files()
+            if self.config.files_to_read_for_schema_discovery:
+                self.logger.info(
+                    msg=(
+                        f"Only first {self.config.files_to_read_for_schema_discovery} files will be used to infer schema "
+                        f"for stream {self.name} due to limitation in config."
+                    )
+                )
 
-        total_n_files = len(files)
+            files = self.list_files(number_of_files=self.config.files_to_read_for_schema_discovery)
+            total_n_files = len(files)
+
         if total_n_files == 0:
             self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
             return schemaless_schema
@@ -227,11 +226,19 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         return schema
 
-    def get_files(self) -> Iterable[RemoteFile]:
+    def get_files(self, number_of_files: Optional[int] = None) -> Iterable[RemoteFile]:
         """
-        Return all files that belong to the stream as defined by the stream's globs.
+        Return the first X files if number_of_files is defined, otherwise all files
+        that belong to the stream as defined by the stream's globs.
         """
-        return self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
+        matching_files = self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
+
+        if number_of_files:
+            while number_of_files:
+                yield next(matching_files)
+                number_of_files -= 1
+        else:
+            yield from matching_files
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
