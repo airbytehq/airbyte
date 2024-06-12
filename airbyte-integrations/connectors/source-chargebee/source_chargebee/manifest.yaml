@@ -17,17 +17,14 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['site_api_key'] }}"
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-            - error_message_contains: "This API operation is not enabled for this site"
-              action: IGNORE
-              error_message: "Stream is available only for Product Catalog 1.0"
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: "Retry-After"
+        type: DefaultErrorHandler
+        response_filters:
+          - error_message_contains: "This API operation is not enabled for this site"
+            action: IGNORE
+            error_message: "Stream is available only for Product Catalog 1.0"
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: "Retry-After"
   date_stream_slicer:
     type: DatetimeBasedCursor
     start_datetime:
@@ -284,15 +281,12 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/subscription_stream"
-            parent_key: id
-            partition_field: id
+      record_selector:
+        type: RecordSelector
+        extractor:
+          field_path: []
       requester:
-        $ref: "#/definitions/retriever/requester"
+        $ref: "#/definitions/requester"
         error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -301,25 +295,18 @@ definitions:
                 error_message: "Entity unavailable. Subscription may have been deleted."
               - http_codes: [400]
                 action: IGNORE
-                error_message: "No changes scheduled for subscription."
-        request_parameters:
-          sort_by[asc]: updated_at
-          include_deleted: "true"
-          updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
-    incremental_sync:
-      $ref: "#/definitions/date_stream_slicer"
-    transformations:
-      - type: AddFields
-        fields:
-          - path: ["subscription_id"]
-            value: "{{ stream_slice.id }}"
-      - type: CustomTransformation
-        class_name: source_chargebee.components.CustomFieldTransformation
+                error_message_contains: "No changes are scheduled for this subscription."
+                error_message: "No scheduled changes for subscription."
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/subscription_stream"
+            parent_key: "id"
+            partition_field: "subscription_id"
     $parameters:
       name: "subscription_with_scheduled_changes"
       primary_key: "id"
-      path: "/subscriptions/{{ stream_slice.id }}/retrieve_with_scheduled_changes"
-      stream_cursor_field: "updated_at"
+      path: "/subscriptions/{{ stream_slice.subscription_id }}/retrieve_with_scheduled_changes"
   transaction_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
