@@ -60,7 +60,7 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-<<<<<<< dlecocq/source-datadog-slo-history
+source-datadog-slo-history
 * [AuditLogs](https://docs.datadoghq.com/api/latest/audit/#search-audit-logs-events)
 * [Dashboards](https://docs.datadoghq.com/api/latest/dashboards/#get-all-dashboards)
 * [Downtimes](https://docs.datadoghq.com/api/latest/downtimes/#get-all-downtimes)
@@ -74,20 +74,7 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 * [SyntheticTests](https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests)
 * [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
 * [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
-=======
-- [AuditLogs](https://docs.datadoghq.com/api/latest/audit/#search-audit-logs-events)
-- [Dashboards](https://docs.datadoghq.com/api/latest/dashboards/#get-all-dashboards)
-- [Downtimes](https://docs.datadoghq.com/api/latest/downtimes/#get-all-downtimes)
-- [IncidentTeams](https://docs.datadoghq.com/api/latest/incident-teams/#get-a-list-of-all-incident-teams)
-- [Incidents](https://docs.datadoghq.com/api/latest/incidents/#get-a-list-of-incidents)
-- [Logs](https://docs.datadoghq.com/api/latest/logs/#search-logs)
-- [Metrics](https://docs.datadoghq.com/api/latest/metrics/#get-a-list-of-metrics)
-- [Monitors](https://docs.datadoghq.com/api/latest/monitors/#get-all-monitor-details)
-- [ServiceLevelObjectives](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-all-slos)
-- [SyntheticTests](https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests)
-- [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
-- [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
->>>>>>> master
+
 
 ## Changelog
 
@@ -96,6 +83,7 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| 0.5.0 | 2024-06-12 | [35362](https://github.com/airbytehq/airbyte/pull/35362) | Refactor connector and add new stream service_level_objectives_history |
 | 0.4.2 | 2024-06-04 | [39060](https://github.com/airbytehq/airbyte/pull/39060) | [autopull] Upgrade base image to v1.2.1 |
 | 0.4.1 | 2024-05-20 | [38424](https://github.com/airbytehq/airbyte/pull/38424) | [autopull] base image + poetry + up_to_date |
 | 0.4.0 | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999) | Add `monitors` and `service_level_objectives` Streams |
