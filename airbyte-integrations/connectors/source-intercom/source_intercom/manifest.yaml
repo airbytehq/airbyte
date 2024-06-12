@@ -2397,7 +2397,10 @@ definitions:
       schema:
         "$ref": "#/definitions/ticket"
   ticket:
-    type: object
+    type:
+      - "null"
+      - object
+    additionalProperties: true
     properties:
       type:
         description: Always ticket.
@@ -2481,10 +2484,13 @@ definitions:
           - boolean
   ticket_contacts:
     title: Contacts
-    type: object
+    type:
+      - "null"
+      - object
     x-tags:
       - Tickets
     description: The list of contacts affected by a ticket.
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2499,8 +2505,11 @@ definitions:
           "$ref": "#/definitions/contact_reference"
   contact_reference:
     title: Contact Reference
-    type: object
+    type:
+      - "null"
+      - object
     description: reference to contact object
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2519,16 +2528,11 @@ definitions:
         example: f3b87a2e09d514c6c2e79b9a
   ticket_custom_attributes:
     title: Ticket Attributes
-    type: object
+    type:
+      - "null"
+      - object
     description: An object containing the different attributes associated to the ticket as key-value pairs. For the default title and description attributes, the keys are `_default_title_` and `_default_description_`.
-    additionalProperties:
-      anyOf:
-        - type: string
-          nullable: true
-        - type: number
-        - type: boolean
-        - type: array
-        - "$ref": "#/definitions/file_attribute"
+    additionalProperties: true
     example:
       _default_title_: Found a bug
       _default_description_: The button's not working
@@ -2537,6 +2541,7 @@ definitions:
     type:
       - "null"
       - object
+    additionalProperties: true
     properties:
       id:
         description: The id representing the ticket type.
@@ -2575,11 +2580,11 @@ definitions:
         format: timestamp
   ticket_type_attribute:
     title: Ticket Type Attribute
-    type: object
-    description:
-      Ticket type attribute, used to define each data field to be captured
-      in a ticket.
-    nullable: true
+    type:
+      - "null"
+      - object
+    description: Ticket type attribute, used to define each data field to be captured in a ticket.
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2660,8 +2665,11 @@ definitions:
         description: The date and time the ticket type attribute was last updated.
   ticket_type_attribute_list:
     title: Ticket Type Attributes
-    type: object
+    type:
+      - "null"
+      - object
     description: A list of attributes associated with a given ticket type.
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2676,10 +2684,11 @@ definitions:
           "$ref": "#/definitions/ticket_type_attribute"
   linked_object_list:
     title: Linked Objects
-    type: object
-    description:
-      An object containing metadata about linked conversations and linked
-      tickets. Up to 1000 can be returned.
+    type:
+      - "null"
+      - object
+    description: An object containing metadata about linked conversations and linked tickets. Up to 1000 can be returned.
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2702,8 +2711,11 @@ definitions:
           "$ref": "#/definitions/linked_object"
   linked_object:
     title: Linked Object
-    type: object
+    type:
+      - "null"
+      - object
     description: A linked conversation or ticket.
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2728,8 +2740,11 @@ definitions:
         nullable: true
   ticket_parts:
     title: Ticket Parts
-    type: object
+    type:
+      - "null"
+      - object
     description: A list of Ticket Part objects for each note and event in the ticket. There is a limit of 500 parts.
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2749,10 +2764,13 @@ definitions:
         example: 2
   ticket_part:
     title: Ticket Part
-    type: object
+    type:
+      - "null"
+      - object
     x-tags:
       - Tickets
     description: A Ticket Part represents a message in the ticket.
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2824,10 +2842,11 @@ definitions:
         example: false
   ticket_part_author:
     title: Ticket part author
-    type: object
-    description:
-      The author that wrote or triggered the part. Can be a bot, admin,
-      team or user.
+    type:
+      - "null"
+      - object
+    description: The author that wrote or triggered the part. Can be a bot, admin, team or user.
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2854,8 +2873,11 @@ definitions:
         example: operator+abcd1234@intercom.io
   reference:
     title: Reference
-    type: object
+    type:
+      - "null"
+      - object
     description: reference to another object
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2868,8 +2890,11 @@ definitions:
         example: 1a2b3c
   file_attribute:
     title: File
-    type: object
+    type:
+      - "null"
+      - object
     description: The value describing a file upload set for a custom attribute
+    additionalProperties: true
     properties:
       type:
         type: string
@@ -2900,8 +2925,11 @@ definitions:
         example: 1964
   part_attachment:
     title: Part attachment
-    type: object
+    type:
+      - "null"
+      - object
     description: The file attached to a part
+    additionalProperties: true
     properties:
       type:
         type: string
