@@ -52,7 +52,7 @@ class EntrypointOutput:
     @staticmethod
     def _parse_message(message: str) -> AirbyteMessage:
         try:
-            return AirbyteMessage.parse_obj(json.loads(message))
+            return AirbyteMessage.model_validate(json.loads(message))
         except (json.JSONDecodeError, ValidationError):
             # The platform assumes that logs that are not of AirbyteMessage format are log messages
             return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))

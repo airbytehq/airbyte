@@ -244,7 +244,7 @@ class ModelToComponentFactory:
         if component_definition.get("type") != model_type.__name__:
             raise ValueError(f"Expected manifest component of type {model_type.__name__}, but received {component_type} instead")
 
-        declarative_component_model = model_type.parse_obj(component_definition)
+        declarative_component_model = model_type.model_validate(component_definition)
 
         if not isinstance(declarative_component_model, model_type):
             raise ValueError(f"Expected {model_type.__name__} component, but received {declarative_component_model.__class__.__name__}")
@@ -522,7 +522,7 @@ class ModelToComponentFactory:
 
         model_type = self.TYPE_NAME_TO_MODEL.get(type_name, None)
         if model_type:
-            parsed_model = model_type.parse_obj(model_value)
+            parsed_model = model_type.model_validate(model_value)
             try:
                 # To improve usability of the language, certain fields are shared between components. This can come in the form of
                 # a parent component passing some of its fields to a child component or the parent extracting fields from other child

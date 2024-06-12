@@ -204,4 +204,4 @@ def split_config(config: Mapping[str, Any]) -> Tuple[dict[str, Any], InternalCon
             internal_config[k] = v
         else:
             main_config[k] = v
-    return main_config, InternalConfig.parse_obj(internal_config)
+    return main_config, InternalConfig.model_validate(internal_config)

@@ -77,7 +77,7 @@ _AN_ANALYTIC_MESSAGE = AirbyteMessage(
 
 _A_STREAM_NAME = "a stream name"
 _A_CONFIG = {"config_key": "config_value"}
-_A_CATALOG = ConfiguredAirbyteCatalog.parse_obj(
+_A_CATALOG = ConfiguredAirbyteCatalog.model_validate(
     {
         "streams": [
             {

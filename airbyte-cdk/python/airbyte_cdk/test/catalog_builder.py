@@ -33,7 +33,7 @@ class ConfiguredAirbyteStreamBuilder:
         return self
 
     def build(self) -> ConfiguredAirbyteStream:
-        return ConfiguredAirbyteStream.parse_obj(self._stream)
+        return ConfiguredAirbyteStream.model_validate(self._stream)
 
 
 class CatalogBuilder:

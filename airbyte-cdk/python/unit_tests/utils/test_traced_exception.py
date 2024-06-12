@@ -106,7 +106,7 @@ def test_emit_message(capsys):
     traced_exc.emit_message()
 
     stdout = capsys.readouterr().out
-    printed_message = AirbyteMessage.parse_obj(json.loads(stdout))
+    printed_message = AirbyteMessage.model_validate(json.loads(stdout))
     printed_message.trace.emitted_at = 0.0
 
     assert printed_message == expected_message

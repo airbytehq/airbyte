@@ -229,7 +229,7 @@ def read(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
     return entrypoint_read(
         scenario.source,
         scenario.config,
-        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.full_refresh)),
+        ConfiguredAirbyteCatalog.model_validate(scenario.configured_catalog(SyncMode.full_refresh)),
     )
 
 
@@ -237,7 +237,7 @@ def read_with_state(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
     return entrypoint_read(
         scenario.source,
         scenario.config,
-        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.incremental)),
+        ConfiguredAirbyteCatalog.model_validate(scenario.configured_catalog(SyncMode.incremental)),
         scenario.input_state(),
     )
 

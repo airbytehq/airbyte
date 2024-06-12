@@ -415,7 +415,7 @@ def _as_state(stream_name: str = "", per_stream_state: Dict[str, Any] = None):
         state=AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(per_stream_state)
+                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.model_validate(per_stream_state)
             ),
         ),
     )
@@ -569,14 +569,14 @@ def test_full_refresh_does_not_use_incoming_state(mocker):
     #         type=AirbyteStateType.STREAM,
     #         stream=AirbyteStreamState(
     #             stream_descriptor=StreamDescriptor(name="s1"),
-    #             stream_state=AirbyteStateBlob.parse_obj({"created_at": "2024-01-31"}),
+    #             stream_state=AirbyteStateBlob.model_validate({"created_at": "2024-01-31"}),
     #         ),
     #     ),
     #     AirbyteStateMessage(
     #         type=AirbyteStateType.STREAM,
     #         stream=AirbyteStreamState(
     #             stream_descriptor=StreamDescriptor(name="s2"),
-    #             stream_state=AirbyteStateBlob.parse_obj({"__ab_no_cursor_state_message": True}),
+    #             stream_state=AirbyteStateBlob.model_validate({"__ab_no_cursor_state_message": True}),
     #         ),
     #     ),
     # ]
@@ -682,7 +682,7 @@ class TestIncrementalRead:
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(old_state)
+                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.model_validate(old_state)
                     ),
                 ),
             ]
@@ -987,13 +987,13 @@ class TestIncrementalRead:
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(state)
+                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.model_validate(state)
                     ),
                 ),
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob.parse_obj(state)
+                        stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob.model_validate(state)
                     ),
                 ),
             ]
@@ -1372,7 +1372,7 @@ class TestResumableFullRefreshRead:
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s1"),
-                    stream_state=AirbyteStateBlob.parse_obj({"page": 10}),
+                    stream_state=AirbyteStateBlob.model_validate({"page": 10}),
                 ),
             )
         ]
@@ -1499,14 +1499,14 @@ class TestResumableFullRefreshRead:
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s1"),
-                    stream_state=AirbyteStateBlob.parse_obj({"__ab_full_refresh_sync_complete": True}),
+                    stream_state=AirbyteStateBlob.model_validate({"__ab_full_refresh_sync_complete": True}),
                 ),
             ),
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s2"),
-                    stream_state=AirbyteStateBlob.parse_obj({"page": 10}),
+                    stream_state=AirbyteStateBlob.model_validate({"page": 10}),
                 ),
             )
         ]

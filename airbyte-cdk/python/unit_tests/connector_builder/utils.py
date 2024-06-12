@@ -24,4 +24,4 @@ def create_configured_catalog_dict(stream_name: str) -> Mapping[str, Any]:
 
 
 def create_configured_catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
-    return ConfiguredAirbyteCatalog.parse_obj(create_configured_catalog_dict(stream_name))
+    return ConfiguredAirbyteCatalog.model_validate(create_configured_catalog_dict(stream_name))

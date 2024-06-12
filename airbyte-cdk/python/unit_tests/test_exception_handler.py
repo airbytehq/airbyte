@@ -70,10 +70,10 @@ def test_uncaught_exception_handler():
 
     log_output, trace_output = stdout_lines
 
-    out_log_message = AirbyteMessage.parse_obj(json.loads(log_output))
+    out_log_message = AirbyteMessage.model_validate(json.loads(log_output))
     assert out_log_message == expected_log_message, "Log message should be emitted in expected form"
 
-    out_trace_message = AirbyteMessage.parse_obj(json.loads(trace_output))
+    out_trace_message = AirbyteMessage.model_validate(json.loads(trace_output))
     assert out_trace_message.trace.emitted_at > 0
     out_trace_message.trace.emitted_at = 0.0  # set a specific emitted_at value for testing
     assert out_trace_message == expected_trace_message, "Trace message should be emitted in expected form"

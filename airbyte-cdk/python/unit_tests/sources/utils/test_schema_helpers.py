@@ -54,7 +54,7 @@ def spec_object():
             },
         },
     }
-    yield ConnectorSpecification.parse_obj(spec)
+    yield ConnectorSpecification.model_validate(spec)
 
 
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):

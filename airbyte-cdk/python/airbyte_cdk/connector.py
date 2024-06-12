@@ -84,7 +84,7 @@ class BaseConnector(ABC, Generic[TConfig]):
         else:
             raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
 
-        return ConnectorSpecification.parse_obj(spec_obj)
+        return ConnectorSpecification.model_validate(spec_obj)
 
     @abstractmethod
     def check(self, logger: logging.Logger, config: TConfig) -> AirbyteConnectionStatus:

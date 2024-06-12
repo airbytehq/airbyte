@@ -11,7 +11,7 @@ class StateBuilder:
 
     def with_stream_state(self, stream_name: str, state: Any) -> "StateBuilder":
         self._state.append(
-            AirbyteStateMessage.parse_obj({"type": "STREAM", "stream": {"stream_state": state, "stream_descriptor": {"name": stream_name}}})
+            AirbyteStateMessage.model_validate({"type": "STREAM", "stream": {"stream_state": state, "stream_descriptor": {"name": stream_name}}})
         )
         return self
 
