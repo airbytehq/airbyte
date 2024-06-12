@@ -4,18 +4,14 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.jackson.MoreMappers;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.ProductionWriterFactory;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -25,14 +21,10 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
-import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class AzureBlobStorageSpillTest {
 
@@ -77,27 +69,27 @@ public class AzureBlobStorageSpillTest {
 
   // @Test
   // void testSpillBlobWithExceedingSize() throws Exception {
-  //   // when
-  //   String content = Files.readString(Paths.get("src/test-integration/resources/test_data"));
+  // // when
+  // String content = Files.readString(Paths.get("src/test-integration/resources/test_data"));
 
-  //   azureBlobStorageConsumer.startTracked();
+  // azureBlobStorageConsumer.startTracked();
 
-  //   Function<String, JsonNode> function =
-  //       data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
+  // Function<String, JsonNode> function =
+  // data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
 
-  //   // create blob exceeding 1mb in size
-  //   for (int i = 1; i <= 512; i++) {
-  //     azureBlobStorageConsumer.acceptTracked(
-  //         createAirbyteMessage(function.apply(content)));
-  //   }
+  // // create blob exceeding 1mb in size
+  // for (int i = 1; i <= 512; i++) {
+  // azureBlobStorageConsumer.acceptTracked(
+  // createAirbyteMessage(function.apply(content)));
+  // }
 
-  //   azureBlobStorageConsumer.close(false);
+  // azureBlobStorageConsumer.close(false);
 
-  //   // then
-  //   assertThat(blobContainerClient.listBlobs())
-  //       .hasSize(2)
-  //       .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
-  //       .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
+  // // then
+  // assertThat(blobContainerClient.listBlobs())
+  // .hasSize(2)
+  // .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
+  // .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
 
   // }
 
