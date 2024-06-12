@@ -13,7 +13,7 @@ There are two options to consider for running Airbyte:
 - **Self-managed Airbyte**: can be deployed either locally or in an infrastructure you've set up. Our OSS can be used as a free Community product or implemented with support of Enterprise operations. 
 
 :::tip
-If you are have already deployed Airbyte or signed up for Airbyte Cloud, and you're familiar with [Airbyte's core concepts](../../using-airbyte/core-concepts/), jump ahead to [Building Connections](../../cloud/managing-airbyte-cloud/configuring-connections.md).
+If you have already deployed Airbyte or you've signed up to use Airbyte Cloud, and you're familiar with [Airbyte's core concepts](../../using-airbyte/core-concepts/), jump ahead to [Building Connections](../../cloud/managing-airbyte-cloud/configuring-connections.md).
 :::
 
 ## Airbyte Cloud
@@ -39,5 +39,5 @@ If your use case calls for it, you can also deploy our OSS. When you're ready to
 Airbyte Self-Managed Enterprise is the most robust way to run Airbyte yourself. With this option, you'll have access to all 300+ pre-built connectors and data will never  need to leave your environment. Enterprise setup means that Airbyte becomes self-serve in your organization with new tools to manage multiple users, and the ability to set up multiple teams using Airbyte all in one place.
 
 :::tip
-To start with Self-Managed Enterprise, you'll need a licence key. [Talk to sales](https://airbyte.com/company/talk-to-sales) to get started with Enterprise. For more details about Enterprise, review our [Enterprise setup guide](/enterprise-setup/README.md).
+To start with Self-Managed Enterprise, you'll need a licence key. [Talk to sales](https://airbyte.com/company/talk-to-sales) to get started with Enterprise. For more details, review our [Enterprise setup guide](/enterprise-setup/README.md).
 :::

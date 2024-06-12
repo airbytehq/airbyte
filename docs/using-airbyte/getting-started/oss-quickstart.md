@@ -19,7 +19,7 @@ You can learn more about abctl on the associated [GitHub repository](https://git
 
 ## Prerequisites
 
-- To use abctl, you'll need to have **Docker Desktop** installed. See Docker's instructions for installation: [Mac](https://docs.docker.com/desktop/install/mac-install/), [Windows](https://docs.docker.com/desktop/install/windows-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/)
+- To use `abctl`, you'll need to have **Docker Desktop** installed. See Docker's instructions for installation: [Mac](https://docs.docker.com/desktop/install/mac-install/), [Windows](https://docs.docker.com/desktop/install/windows-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/)
 
 ## Install abctl
 
@@ -141,7 +141,7 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 
 ## Run Airbyte
 
-Ensure that Docker Desktop is up and running. Then, once  abctl is installed, you can run Airbyte with the following command:
+Ensure that Docker Desktop is up and running. Then, with abctl installed, the following command gets Airbyte running:
 
 ```
 abctl local install
@@ -149,7 +149,7 @@ abctl local install
 
 Your browser may open automatically to the Airbyte Application. If not, access it by visiting [http://localhost8000](http://localhost8000).
 
-When prompted for a username and password, you can enter the following default values: 
+When prompted for a username and password, enter the following default values: 
 - username: `airbyte`
 - password: `password`
 
