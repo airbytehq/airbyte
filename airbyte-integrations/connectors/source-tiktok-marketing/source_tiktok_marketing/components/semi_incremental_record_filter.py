@@ -32,7 +32,11 @@ class PerPartitionRecordFilter(RecordFilter):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = next(
-            (p["cursor"] for p in stream_state.get("states", []) if p["partition"][self._partition_field] == stream_slice[self._partition_field]),
+            (
+                p["cursor"]
+                for p in stream_state.get("states", [])
+                if p["partition"][self._partition_field] == stream_slice[self._partition_field]
+            ),
             {},
         )
 
