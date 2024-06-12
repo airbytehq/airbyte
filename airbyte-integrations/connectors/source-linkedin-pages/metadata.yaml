@@ -16,7 +16,7 @@ data:
       enabled: true
       packageName: airbyte-source-linkedin-pages
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
@@ -41,6 +41,4 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
-metadataSpecVersion: "1.0"
+  metadataSpecVersion: "1.0"
