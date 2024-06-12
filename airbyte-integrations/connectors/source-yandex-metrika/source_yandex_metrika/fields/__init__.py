@@ -35,7 +35,7 @@ format_funcs: dict[str, Callable[[str], list[str]]] = {
 class YandexMetrikaSourceField:
     """Field for yandex metrika source"""
 
-    def __init__(self, field_name: str, field_type: str, required: bool = False):
+    def __init__(self, field_name: str, field_type: str = "string", required: bool = False):
         self.field_name: str = field_name
         self.field_type: str = field_type
         self.required: bool = required
