@@ -173,5 +173,7 @@ class CsvFormat(BaseModel):
         if definition_type == CsvHeaderDefinitionType.USER_PROVIDED and not column_names:
             raise ValidationError("`user_provided_column_names` should be defined if the definition is 'User Provided'.", model=CsvFormat)
         if definition_type != CsvHeaderDefinitionType.USER_PROVIDED and column_names:
-            raise ValidationError("`user_provided_column_names` should not be defined if the definition is not 'User Provided'.", model=CsvFormat)
+            raise ValidationError(
+                "`user_provided_column_names` should not be defined if the definition is not 'User Provided'.", model=CsvFormat
+            )
         return values
