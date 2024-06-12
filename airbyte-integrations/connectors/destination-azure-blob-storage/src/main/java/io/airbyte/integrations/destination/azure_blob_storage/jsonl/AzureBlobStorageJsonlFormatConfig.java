@@ -13,7 +13,7 @@ public class AzureBlobStorageJsonlFormatConfig implements AzureBlobStorageFormat
   private final boolean fileExtensionRequired;
 
   public AzureBlobStorageJsonlFormatConfig(final JsonNode formatConfig) {
-    this.fileExtensionRequired = formatConfig.get("file_extension").asBoolean();
+    this.fileExtensionRequired = formatConfig.has("file_extension") ? formatConfig.get("file_extension").asBoolean() : false;
   }
 
   @Override
