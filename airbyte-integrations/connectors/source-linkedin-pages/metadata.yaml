@@ -41,4 +41,4 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-  metadataSpecVersion: "1.0"
+metadataSpecVersion: "1.0"
