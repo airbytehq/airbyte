@@ -223,6 +223,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.4   | 2024-06-12 | [39379](https://github.com/airbytehq/airbyte/pull/38331)   | Removing requirement of a redundant permission bigquery.datasets.create permission                                                                              |
 | 2.6.3   | 2024-05-30 | [38331](https://github.com/airbytehq/airbyte/pull/38331)   | Internal code changes in preparation for future feature release                                                                                                 |
 | 2.6.2   | 2024-06-07 | [38764](https://github.com/airbytehq/airbyte/pull/38764)   | Increase message length limit to 50MiB                                                                                                                          |
 | 2.6.1   | 2024-05-29 | [38770](https://github.com/airbytehq/airbyte/pull/38770)   | Internal code change (switch to CDK artifact)                                                                                                                   |

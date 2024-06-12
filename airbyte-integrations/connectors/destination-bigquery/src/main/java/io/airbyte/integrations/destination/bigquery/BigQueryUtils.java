@@ -95,6 +95,19 @@ public class BigQueryUtils {
     return dataset;
   }
 
+  /**
+  * Creates a partitioned table with clustering based on time
+   *
+           * <p>
+   * https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
+          * </p>
+          *
+          * @param bigquery BigQuery interface
+   * @param tableId equivalent to table name
+   * @param schema representation for table schema
+   * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
+   *         was not successfully created
+   */
   public static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
       // Partition by generation ID. This will be useful for when we want to build
