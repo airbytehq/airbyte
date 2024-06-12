@@ -17,14 +17,17 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['site_api_key'] }}"
     error_handler:
-      type: DefaultErrorHandler
-      response_filters:
-        - error_message_contains: "This API operation is not enabled for this site"
-          action: IGNORE
-          error_message: "Stream is available only for Product Catalog 1.0"
-      backoff_strategies:
-        - type: WaitTimeFromHeader
-          header: "Retry-After"
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - error_message_contains: "This API operation is not enabled for this site"
+              action: IGNORE
+              error_message: "Stream is available only for Product Catalog 1.0"
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
   date_stream_slicer:
     type: DatetimeBasedCursor
     start_datetime:
