@@ -234,11 +234,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         matching_files = self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
 
         if number_of_files:
-            while number_of_files:
-                yield next(matching_files)
-                number_of_files -= 1
-        else:
-            yield from matching_files
+            return matching_files[:number_of_files]
+        return matching_files
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()

@@ -832,7 +832,7 @@ multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
                     "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "files_to_read_for_schema_discovery": 2,
+                    "files_to_read_for_schema_discovery": 3,
                 }
             ]
         }
