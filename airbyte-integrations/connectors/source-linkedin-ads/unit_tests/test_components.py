@@ -2,7 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-
 import pytest
 from source_linkedin_ads.components import *
 

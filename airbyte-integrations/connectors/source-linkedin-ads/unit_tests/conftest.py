@@ -1,6 +1,10 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+#
 
+import json
 import os
+from typing import Any, Mapping
 
 from source_linkedin_ads.source import SourceLinkedinAds
 
@@ -19,3 +23,8 @@ def find_stream(stream_name, config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+def load_config(config_path: str) -> Mapping[str, Any]:
+    with open(config_path, "r") as config:
+        return json.load(config)
