@@ -53,6 +53,7 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.2.5   | 2024-06-12 | [32538](https://github.com/airbytehq/airbyte/pull/32538)                                           | Fix empty airbyte data column   |
 | 0.2.4   | 2024-02-13 | [35229](https://github.com/airbytehq/airbyte/pull/35229)                                           | Adopt CDK 0.20.4                                                     |
 | 0.2.4   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453)                                           | bump CDK version                                                     |
 | 0.2.3   | 2022-12-06 | [19587](https://github.com/airbytehq/airbyte/pull/19587)                                           | Fix missing data before consumer is closed                           |
