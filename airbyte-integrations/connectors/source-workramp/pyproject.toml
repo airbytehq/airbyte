@@ -3,16 +3,17 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.1"
+version = "0.1.3"
 name = "source-workramp"
-description = "Source implementation for workramp."
-authors = [ "Airbyte <contact@airbyte.io>",]
+description = "Source implementation for Workramp."
+authors = [ "Elliot Trabac <elliot.trabac1@gmail.com>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/workramp"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_workramp" }, {include = "main.py" } ]
+[[tool.poetry.packages]]
+include = "source_workramp"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
@@ -23,5 +24,5 @@ source-workramp = "source_workramp.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
-pytest-mock = "^3.6.1"
 pytest = "^6.1"
+pytest-mock = "^3.6.1"
