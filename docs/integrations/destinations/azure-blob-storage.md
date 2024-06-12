@@ -128,7 +128,6 @@ With the field `File Extension`, it is possible to save the output files with ex
 
 ### Setup guide
 
-<<<<<<< HEAD
 * Fill up AzureBlobStorage info
   * **Endpoint Domain Name**
     * Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one or use your own.
