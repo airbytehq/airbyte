@@ -3,11 +3,12 @@
 from dataclasses import dataclass
 from typing import Any, Mapping, Union
 
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth, DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, BasicHttpAuthenticator
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
+
 
 @dataclass
 class CustomAuthenticator(NoAuth):
