@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "1.0.0"
+version = "1.3.3"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-1.0.0-py3-none-any.whl", hash = "sha256:74cd8d4f9790b9a164731c42236cb015166b5ab2b0754b6a1fd730f223eb4e7f"},
-    {file = "airbyte_cdk-1.0.0.tar.gz", hash = "sha256:102b75ce589460be4f75dabd3402ac7aa633c90758558c81d140fd436b76371f"},
+    {file = "airbyte_cdk-1.3.3-py3-none-any.whl", hash = "sha256:c3bf5832928cda6ddafaabe61950cb1a7ed8e8cca23c5d62b21c654586d4efd8"},
+    {file = "airbyte_cdk-1.3.3.tar.gz", hash = "sha256:daba6e3265bc9837c865a2fd3dd3061d1c064af3113a5eebcc194c387dc7074a"},
 ]
 
 [package.dependencies]
@@ -17,7 +17,7 @@ backoff = "*"
 cachetools = "*"
 cryptography = ">=42.0.5,<43.0.0"
 Deprecated = ">=1.2,<1.3"
-dpath = ">=2.0.1,<2.1.0"
+dpath = ">=2.1.6,<3.0.0"
 genson = "1.2.2"
 isodate = ">=0.6.1,<0.7.0"
 Jinja2 = ">=3.1.2,<3.2.0"
@@ -399,13 +399,13 @@ dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
 name = "dpath"
-version = "2.0.8"
+version = "2.1.6"
 description = "Filesystem-like pathing and searching for dictionaries"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "dpath-2.0.8-py3-none-any.whl", hash = "sha256:f92f595214dd93a00558d75d4b858beee519f4cffca87f02616ad6cd013f3436"},
-    {file = "dpath-2.0.8.tar.gz", hash = "sha256:a3440157ebe80d0a3ad794f1b61c571bef125214800ffdb9afc9424e8250fe9b"},
+    {file = "dpath-2.1.6-py3-none-any.whl", hash = "sha256:31407395b177ab63ef72e2f6ae268c15e938f2990a8ecf6510f5686c02b6db73"},
+    {file = "dpath-2.1.6.tar.gz", hash = "sha256:f1e07c72e8605c6a9e80b64bc8f42714de08a789c7de417e49c3f87a19692e47"},
 ]
 
 [[package]]
@@ -1322,4 +1322,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "7837a8e446313e068be6245532d7ddb3a63f70da7bc4c6613d26c3a1443db8e7"
+content-hash = "39d3a9ac9f5327e63f0df77c43f7b378920e9d3eab37e659322d86ef7f9432ea"
