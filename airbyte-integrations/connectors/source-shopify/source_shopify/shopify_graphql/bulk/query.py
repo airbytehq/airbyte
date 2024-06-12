@@ -1251,7 +1251,12 @@ class FulfillmentOrder(ShopifyBulkQuery):
         "updatedAt",
         "requestStatus",
         "status",
-        Field(name="supportedActions", fields=["action", "externalUrl"]),
+        # The "supportedActions" field causes `INTERNAL_SERVER_ERROR` for certain data scenarios,
+        # the actual root cause is not identified, because this could be Customer-specific and should be addressed to Shopify Support.
+        # reference issue: https://github.com/airbytehq/oncall/issues/5539
+        # TODO: uncomment li_no: 1259,
+        # when this issue is resolved on the Shopify side or at least we know the workaround.
+        # Field(name="supportedActions", fields=["action", "externalUrl"]),
         Field(name="merchantRequests", fields=[Field(name="edges", fields=[Field(name="node", fields=merchant_requests_fields)])]),
     ]
 
