@@ -108,17 +108,27 @@ poe lint
 
 ## Changelog
 
+### 1.4.0
+
+Added the `IntegrationTestsEnabledCheck` check that verifies if the integration tests are enabled for connectors with higher cloud usage.
+
+### 1.3.2
+
+Removed documentation checks in `MedatadaCheck` since it's already verified in `DocumentationCheck`.
+
 ### 1.3.1
 
 Remove requirements on DockerHub credentials to run metadata validation.
 
 ### 1.3.0
 
-Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presence of `maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
+Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presence of
+`maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
 
 ### 1.2.0
 
-Added `ValidateBreakingChangesDeadlines` check that verifies the minimal compliance of breaking change rollout deadline.
+Added `ValidateBreakingChangesDeadlines` check that verifies the minimal compliance of breaking
+change rollout deadline.
 
 ### 1.1.0
 

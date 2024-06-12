@@ -51,11 +51,6 @@ For COPY strategy:
     to objects in the staging bucket.
 - **Secret Access Key**
   - Corresponding key to the above key id.
-- **S3 Filename pattern**
-  - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders
-    combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
-    `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
-    Please, don't use empty space and not supportable placeholders, as they won't recognized.
 
 Optional parameters:
 
@@ -63,6 +58,10 @@ Optional parameters:
   - The directory within the S3 bucket to place the staging data. For example, if you set this to
     `yourFavoriteSubdirectory`, we will place the staging data inside
     `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
+- **S3 Filename pattern**
+   - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
+    `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
+    The pattern you supply will apply to anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Please, don't use empty space and not supportable placeholders, as they won't recognized.
 - **Purge Staging Data**
   - Whether to delete the staging files from S3 after completing the sync. Specifically, the
     connector will create CSV files named
@@ -240,8 +239,16 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.4   | 2024-05-31 | [38825](https://github.com/airbytehq/airbyte/pull/38825)   | Adopt CDK 0.35.15                                                                                                                                                                                                |
+| 2.6.3   | 2024-05-31 | [38803](https://github.com/airbytehq/airbyte/pull/38803)   | Source auto-conversion to Kotlin                                                                                                                                                                                 |
+| 2.6.2   | 2024-05-14 | [38189](https://github.com/airbytehq/airbyte/pull/38189)   | adding an option to DROP CASCADE on resets                                                                                                                                                                       |
+| 2.6.1   | 2024-05-13 | [\#38126](https://github.com/airbytehq/airbyte/pull/38126) | Adapt to signature changes in `StreamConfig`                                                                                                                                                                     |
+| 2.6.0   | 2024-05-08 | [\#37713](https://github.com/airbytehq/airbyte/pull/37713) | Remove option for incremental typing and deduping                                                                                                                                                                |
 | 2.5.0   | 2024-05-06 | [\#34613](https://github.com/airbytehq/airbyte/pull/34613) | Upgrade Redshift driver to work with Cluster patch 181; Adapt to CDK 0.33.0; Minor signature changes                                                                                                             |
 | 2.4.3   | 2024-04-10 | [\#36973](https://github.com/airbytehq/airbyte/pull/36973) | Limit the Standard inserts SQL statement to less than 16MB                                                                                                                                                       |
 | 2.4.2   | 2024-04-05 | [\#36365](https://github.com/airbytehq/airbyte/pull/36365) | Remove unused config option                                                                                                                                                                                      |
@@ -307,7 +314,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
 | 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |
 | 0.3.53  | 2023-01-03 | [\#17273](https://github.com/airbytehq/airbyte/pull/17273) | Flatten JSON arrays to fix maximum size check for SUPER field                                                                                                                                                    |
-| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                      |
+| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                       |
 | 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling                                                                                                                                                                                |
 | 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                                                                   |
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |
@@ -343,3 +350,5 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.13  | 2021-09-02 | [\#5745](https://github.com/airbytehq/airbyte/pull/5745)   | Disable STATUPDATE flag when using S3 staging to speed up performance                                                                                                                                            |
 | 0.3.12  | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Enable partial checkpointing for halfway syncs                                                                                                                                                                   |
 | 0.3.11  | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874)   | allow `additionalProperties` in connector spec                                                                                                                                                                   |
+
+</details>

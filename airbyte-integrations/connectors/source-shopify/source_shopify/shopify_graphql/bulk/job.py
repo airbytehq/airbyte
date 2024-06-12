@@ -10,13 +10,14 @@ from typing import Any, Final, Iterable, List, Mapping, Optional
 
 import pendulum as pdm
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.sources.streams.http import HttpClient
 from requests.exceptions import JSONDecodeError
 from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
+from ...http_request import ShopifyErrorHandler
 from .exceptions import AirbyteTracedException, ShopifyBulkExceptions
-from .query import ShopifyBulkTemplates
+from .query import ShopifyBulkQuery, ShopifyBulkTemplates
 from .retry import bulk_retry_on_exception
 from .status import ShopifyBulkJobStatus
 from .tools import END_OF_FILE, BulkTools
@@ -27,16 +28,15 @@ class ShopifyBulkManager:
     session: requests.Session
     base_url: str
     stream_name: str
+    query: ShopifyBulkQuery
 
     # default logger
-    logger: Final[AirbyteLogger] = logging.getLogger("airbyte")
+    logger: Final[logging.Logger] = logging.getLogger("airbyte")
 
     # 10Mb chunk size to save the file
     _retrieve_chunk_size: Final[int] = 1024 * 1024 * 10
     _job_max_retries: Final[int] = 6
     _job_backoff_time: int = 5
-    # saved latest request
-    _request: Optional[requests.Request] = None
 
     # running job logger constrain, every 100-ish message will be printed
     _log_job_msg_frequency: Final[int] = 100
@@ -52,7 +52,7 @@ class ShopifyBulkManager:
 
     # currents: _job_id, _job_state, _job_created_at, _job_self_canceled
     _job_id: Optional[str] = field(init=False, default=None)
-    _job_state: ShopifyBulkJobStatus = field(init=False, default=None)
+    _job_state: str = field(init=False, default=None)  # this string is based on ShopifyBulkJobStatus
     # completed and saved Bulk Job result filename
     _job_result_filename: Optional[str] = field(init=False, default=None)
     # date-time when the Bulk Job was created on the server
@@ -67,7 +67,7 @@ class ShopifyBulkManager:
     # P365D, upper boundary for slice size
     _job_size_max: Final[float] = 365.0
     # dynamically adjusted slice interval
-    _job_size: float = field(init=False, default=0.0)
+    job_size: float = field(init=False, default=0.0)
     # expand slice factor
     _job_size_expand_factor: int = field(init=False, default=2)
     # reduce slice factor
@@ -81,6 +81,9 @@ class ShopifyBulkManager:
     _job_max_elapsed_time: Final[float] = 2700.0
     # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
     _job_last_elapsed_time: float = field(init=False, default=2.0)
+
+    def __post_init__(self):
+        self._http_client = HttpClient(self.stream_name, self.logger, ShopifyErrorHandler(), session=self.session)
 
     @property
     def _tools(self) -> BulkTools:
@@ -138,13 +141,10 @@ class ShopifyBulkManager:
         return False
 
     def _expand_job_size(self) -> None:
-        self._job_size += self._job_size_adjusted_expand_factor
+        self.job_size += self._job_size_adjusted_expand_factor
 
     def _reduce_job_size(self) -> None:
-        self._job_size /= self._job_size_adjusted_reduce_factor
-
-    def _save_latest_request(self, response: requests.Response) -> None:
-        self._request = response.request
+        self.job_size /= self._job_size_adjusted_reduce_factor
 
     def _job_size_reduce_next(self) -> None:
         # revert the flag
@@ -162,7 +162,7 @@ class ShopifyBulkManager:
             # set the last job time
             self._job_last_elapsed_time = job_current_elapsed_time
             # check the job size slice interval are acceptable
-            self._job_size = max(self._job_size_min, min(self._job_size, self._job_size_max))
+            self.job_size = max(self._job_size_min, min(self.job_size, self._job_size_max))
 
     def __reset_state(self) -> None:
         # reset the job state to default
@@ -181,14 +181,17 @@ class ShopifyBulkManager:
         return self._job_state == ShopifyBulkJobStatus.CANCELED.value
 
     def _job_cancel(self) -> None:
-        # re-use of `self._session(*, **)` to make BULK Job cancel request
-        cancel_args = self._job_get_request_args(ShopifyBulkTemplates.cancel)
-        with self.session as cancel_job:
-            canceled_response = cancel_job.request(**cancel_args)
-            # mark the job was self-canceled
-            self._job_self_canceled = True
-            # check CANCELED Job health
-            self._job_healthcheck(canceled_response)
+        _, canceled_response = self._http_client.send_request(
+            http_method="POST",
+            url=self.base_url,
+            data=ShopifyBulkTemplates.cancel(self._job_id),
+            headers={"Content-Type": "application/graphql"},
+            request_kwargs={},
+        )
+        # mark the job was self-canceled
+        self._job_self_canceled = True
+        # check CANCELED Job health
+        self._job_healthcheck(canceled_response)
         # sleep to ensure the cancelation
         sleep(self._job_check_interval)
 
@@ -210,27 +213,19 @@ class ShopifyBulkManager:
         else:
             self.logger.info(pattern)
 
-    def _job_get_request_args(self, template: ShopifyBulkTemplates) -> Mapping[str, Any]:
-        return {
-            "method": "POST",
-            "url": self.base_url,
-            "data": template(self._job_id),
-            "headers": {"Content-Type": "application/graphql"},
-        }
-
     def _job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
         parsed_response = response.json().get("data", {}).get("node", {}) if response else None
         job_result_url = parsed_response.get("url") if parsed_response and not self._job_self_canceled else None
         if job_result_url:
             # save to local file using chunks to avoid OOM
             filename = self._tools.filename_from_url(job_result_url)
-            with self.session.get(job_result_url, stream=True) as response:
-                response.raise_for_status()
-                with open(filename, "wb") as file:
-                    for chunk in response.iter_content(chunk_size=self._retrieve_chunk_size):
-                        file.write(chunk)
-                    # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
-                    file.write(END_OF_FILE.encode())
+            _, response = self._http_client.send_request(http_method="GET", url=job_result_url, request_kwargs={"stream": True})
+            response.raise_for_status()
+            with open(filename, "wb") as file:
+                for chunk in response.iter_content(chunk_size=self._retrieve_chunk_size):
+                    file.write(chunk)
+                # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
+                file.write(END_OF_FILE.encode())
             return filename
 
     def _job_update_state(self, response: Optional[requests.Response] = None) -> None:
@@ -282,38 +277,44 @@ class ShopifyBulkManager:
         )
 
     def _on_job_with_errors(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
-        raise ShopifyBulkExceptions.BulkJobUnknownError(
-            f"Could not validate the status of the BULK Job `{self._job_id}`. Errors: {errors}."
-        )
+        raise ShopifyBulkExceptions.BulkJobError(f"Could not validate the status of the BULK Job `{self._job_id}`. Errors: {errors}.")
 
-    def _job_check_for_errors(self, response: requests.Response) -> Optional[Iterable[Mapping[str, Any]]]:
+    def _on_non_handable_job_error(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
+        raise ShopifyBulkExceptions.BulkJobNonHandableError(f"The Stream: `{self.stream_name}`, Non-handable error occured: {errors}")
+
+    def _collect_bulk_errors(self, response: requests.Response) -> List[Optional[dict]]:
         try:
-
-            return response.json().get("errors") or response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
+            server_errors = response.json().get("errors", [])
+            user_errors = response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
+            errors = server_errors + user_errors
+            return errors
         except (Exception, JSONDecodeError) as e:
             raise ShopifyBulkExceptions.BulkJobBadResponse(
                 f"Couldn't check the `response` for `errors`, status: {response.status_code}, response: `{response.text}`. Trace: {repr(e)}."
             )
 
-    def _job_send_state_request(self) -> requests.Response:
-        with self.session as job_state_request:
-            status_args = self._job_get_request_args(ShopifyBulkTemplates.status)
-            self._request = requests.Request(**status_args, auth=self.session.auth).prepare()
-            return job_state_request.send(self._request)
+    def _job_healthcheck(self, response: requests.Response) -> Optional[Exception]:
+        errors = self._collect_bulk_errors(response)
 
-    def _job_track_running(self) -> None:
-        job_state_response = self._job_send_state_request()
-        errors = self._job_check_for_errors(job_state_response)
-        if errors:
-            # the exception raised when there are job-related errors, and the Job cannot be run futher.
+        if self._job_state and errors:
             self._on_job_with_errors(errors)
 
-        self._job_update_state(job_state_response)
-        self._job_state_to_fn_map.get(self._job_state)(response=job_state_response)
+    def _job_track_running(self) -> None:
+        _, response = self._http_client.send_request(
+            http_method="POST",
+            url=self.base_url,
+            data=ShopifyBulkTemplates.status(self._job_id),
+            headers={"Content-Type": "application/graphql"},
+            request_kwargs={},
+        )
+        self._job_healthcheck(response)
+
+        self._job_update_state(response)
+        self._job_state_to_fn_map.get(self._job_state)(response=response)
 
     def _has_running_concurrent_job(self, errors: Optional[Iterable[Mapping[str, Any]]] = None) -> bool:
         """
-        When concurent BULK Job is already running for the same SHOP we receive:
+        When concurrent BULK Job is already running for the same SHOP we receive:
         Error example:
         [
             {
@@ -323,83 +324,73 @@ class ShopifyBulkManager:
         ]
         """
 
-        concurent_job_pattern = "A bulk query operation for this app and shop is already in progress"
+        concurrent_job_pattern = "A bulk query operation for this app and shop is already in progress"
         # the errors are handled in `job_job_check_for_errors`
         if errors:
             for error in errors:
                 message = error.get("message", "") if isinstance(error, dict) else ""
-                if concurent_job_pattern in message:
+                if concurrent_job_pattern in message:
                     return True
-        # reset the `_concurrent_attempt` counter, once there is no concurrent job error
-        self._concurrent_attempt = 0
         return False
 
     def _has_reached_max_concurrency(self) -> bool:
         return self._concurrent_attempt == self._concurrent_max_retry
 
-    def _job_retry_request(self) -> Optional[requests.Response]:
-        with self.session.send(self._request) as retried_request:
-            return retried_request
-
-    def _job_retry_concurrent(self) -> Optional[requests.Response]:
-        self._concurrent_attempt += 1
-        self.logger.warning(
-            f"Stream: `{self.stream_name}`, the BULK concurrency limit has reached. Waiting {self._concurrent_interval} sec before retry, atttempt: {self._concurrent_attempt}.",
-        )
-        sleep(self._concurrent_interval)
-        retried_response = self._job_retry_request()
-        return self._job_healthcheck(retried_response)
-
-    def _job_retry_on_concurrency(self) -> Optional[requests.Response]:
-        if self._has_reached_max_concurrency():
-            # indicate we're out of attempts to retry with job creation
-            message = f"The BULK Job couldn't be created at this time, since another job is running."
-            self.logger.error(message)
-            # raise AibyteTracebackException with `INCOMPLETE` status
-            raise ShopifyBulkExceptions.BulkJobConcurrentError(message)
-        else:
-            return self._job_retry_concurrent()
-
-    def _job_healthcheck(self, response: requests.Response) -> Optional[requests.Response]:
-        # save the latest request to retry
-        self._save_latest_request(response)
-        # check for query errors
-        errors = self._job_check_for_errors(response)
-        # when the concurrent job takes place, we typically need to wait and retry, but no longer than 10 min.
-        if self._has_running_concurrent_job(errors):
-            return self._job_retry_on_concurrency()
-
-        return response if not errors else None
-
     @bulk_retry_on_exception(logger)
-    def _job_check_state(self) -> Optional[str]:
+    def _job_check_state(self) -> None:
         while not self._job_completed():
             if self._job_canceled():
                 break
             else:
                 self._job_track_running()
 
-    # external method to be used within other components
+    @bulk_retry_on_exception(logger)
+    def create_job(self, stream_slice: Mapping[str, str], filter_field: str) -> None:
+        if stream_slice:
+            query = self.query.get(filter_field, stream_slice["start"], stream_slice["end"])
+        else:
+            query = self.query.get()
 
-    def job_process_created(self, response: requests.Response) -> None:
+        _, response = self._http_client.send_request(
+            http_method="POST",
+            url=self.base_url,
+            json={"query": ShopifyBulkTemplates.prepare(query)},
+            request_kwargs={},
+        )
+
+        errors = self._collect_bulk_errors(response)
+        if self._has_running_concurrent_job(errors):
+            # when the concurrent job takes place, another job could not be created
+            # we typically need to wait and retry, but no longer than 10 min. (see retry in `bulk_retry_on_exception`)
+            raise ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError(f"Failed to create job for stream {self.stream_name}")
+        else:
+            # There were no concurrent error for this job so even if there were other errors, we can reset this
+            self._concurrent_attempt = 0
+
+        if errors:
+            self._on_non_handable_job_error(errors)
+
+        self._job_process_created(response)
+
+    def _job_process_created(self, response: requests.Response) -> None:
         """
         The Bulk Job with CREATED status, should be processed, before we move forward with Job Status Checks.
         """
-        response = self._job_healthcheck(response)
-        bulk_response = response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("bulkOperation", {})
+        bulk_response = response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("bulkOperation", {}) if response else None
         if bulk_response and bulk_response.get("status") == ShopifyBulkJobStatus.CREATED.value:
             self._job_id = bulk_response.get("id")
             self._job_created_at = bulk_response.get("createdAt")
+            self._job_state = ShopifyBulkJobStatus.CREATED.value
             self.logger.info(f"Stream: `{self.stream_name}`, the BULK Job: `{self._job_id}` is {ShopifyBulkJobStatus.CREATED.value}")
 
     def job_size_normalize(self, start: datetime, end: datetime) -> datetime:
         # adjust slice size when it's bigger than the loop point when it should end,
         # to preserve correct job size adjustments when this is the only job we need to run, based on STATE provided
         requested_slice_size = (end - start).total_days()
-        self._job_size = requested_slice_size if requested_slice_size < self._job_size else self._job_size
+        self.job_size = requested_slice_size if requested_slice_size < self.job_size else self.job_size
 
     def get_adjusted_job_start(self, slice_start: datetime) -> datetime:
-        step = self._job_size if self._job_size else self._job_size_min
+        step = self.job_size if self.job_size else self._job_size_min
         return slice_start.add(days=step)
 
     def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime) -> datetime:
@@ -415,19 +406,19 @@ class ShopifyBulkManager:
         This method checks the status for the `CREATED` Shopify BULK Job, using it's `ID`.
         The time spent for the Job execution is tracked to understand the effort.
         """
-        # track created job until it's COMPLETED
+
         job_started = time()
         try:
+            # track created job until it's COMPLETED
             self._job_check_state()
             return self._job_result_filename
         except (
-            ShopifyBulkExceptions.BulkJobCanceled,
             ShopifyBulkExceptions.BulkJobFailed,
             ShopifyBulkExceptions.BulkJobTimout,
             ShopifyBulkExceptions.BulkJobAccessDenied,
-            # this one is retryable, but stil needs to be raised,
-            # if the max attempts value is reached.
-            ShopifyBulkExceptions.BulkJobUnknownError,
+            # when the job is canceled by non-source actions,
+            # we should raise the system_error
+            ShopifyBulkExceptions.BulkJobCanceled,
         ) as bulk_job_error:
             raise bulk_job_error
         finally:

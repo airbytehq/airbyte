@@ -70,7 +70,7 @@ On the following screen you'll need to configure all parameters for your Okta ap
 
     <dl>
       <dt>**App integration name**</dt>
-      <dd>Please choose a URL-friendly app integraiton name without spaces or special characters, such as `my-airbyte-app`. Screenshot of Okta app integration name Spaces or special characters in this field could result in invalid redirect URIs.</dd>
+      <dd>Please choose a URL-friendly app integration name without spaces or special characters, such as `my-airbyte-app`. Screenshot of Okta app integration name Spaces or special characters in this field could result in invalid redirect URIs.</dd>
       <dt>**Logo** (optional)</dt>
       <dd>You can upload an Airbyte logo, which you can find at https://airbyte.com/company/press</dd>
       <dt>**Grant type**</dt>

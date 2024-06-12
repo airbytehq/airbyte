@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "created_at": {
+      "type": "string"
+    },
+    "custom_fields": {
+      "type": ["object", "null"]
+    },
+    "expense_entry_type_id": {
+      "type": ["number", "null"]
+    },
+    "expense_entry_type_name": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": "number"
+    },
+    "notes": {
+      "type": ["string", "null"]
+    },
+    "occurred_at": {
+      "type": ["string", "null"]
+    },
+    "total_amount": {
+      "type": ["number", "null"]
+    },
+    "total_amount_cents": {
+      "type": ["number", "null"]
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "vehicle_id": {
+      "type": ["number", "null"]
+    },
+    "vehicle_name": {
+      "type": ["string", "null"]
+    },
+    "vehicle": {
+      "type": ["object", "null"]
+    },
+    "vendor_id": {
+      "type": ["number", "null"]
+    },
+    "vendor_name": {
+      "type": ["string", "null"]
+    },
+    "vendor": {
+      "type": ["object", "null"]
+    }
+  },
+  "type": "object"
+}

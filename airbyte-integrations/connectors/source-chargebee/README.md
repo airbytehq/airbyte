@@ -94,7 +94,7 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-chargebee test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
-   - bump the `dockerImageTag` value in in `metadata.yaml`
+   - bump the `dockerImageTag` value in `metadata.yaml`
    - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/chargebee.md`).

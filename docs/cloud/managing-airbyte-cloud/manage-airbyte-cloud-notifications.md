@@ -43,9 +43,143 @@ All email notifications except for Successful Syncs are enabled by default.
 
 To change the recipient, edit and save the **notification email recipient**. If you would like to send email notifications to more than one recipient, you can enter an email distribution list (ie Google Group) as the recipient.
 
-## Configure Slack Notification settings
+## Configure Webhook Notification Settings
+Airbyte can send notifications to any generic webhook service. This is helpful when using a downstream service to trigger transformations or other tasks in your data stack.
 
-If you're more of a visual learner, head over to [this video](https://www.youtube.com/watch?v=NjYm8F-KiFc&ab_channel=Airbyte) to learn how to do this. You can also refer to the Slack documentation on how to [create an incoming webhook for Slack](https://api.slack.com/messaging/webhooks).
+### Example Webhook Notification Payload
+Open each section to see an example of the payload returned for the notification type. 
+
+:::info
+Airbyte passes both the `data` payload along with text blocks that are intended for Slack usage.
+:::
+
+<details>
+  <summary>Failed Sync</summary>
+
+```
+{
+    "data": {
+        "workspace": {
+            "id":"b510e39b-e9e2-4833-9a3a-963e51d35fb4",
+            "name":"Workspace1",
+            "url":"https://link/to/ws"
+        },
+        "connection":{
+            "id":"64d901a1-2520-4d91-93c8-9df438668ff0",
+            "name":"Connection",
+            "url":"https://link/to/connection"
+        },
+        "source":{
+            "id":"c0655b08-1511-4e72-b7da-24c5d54de532",
+            "name":"Source",
+            "url":"https://link/to/source"
+        },
+        "destination":{
+            "id":"5621c38f-8048-4abb-85ca-b34ff8d9a298",
+            "name":"Destination",
+            "url":"https://link/to/destination"
+        },
+        "jobId":9988,
+        "startedAt":"2024-01-01T00:00:00Z",
+        "finishedAt":"2024-01-01T01:00:00Z",
+        "bytesEmitted":1000,
+        "bytesCommitted":90,
+        "recordsEmitted":89,
+        "recordsCommitted":45,
+        "errorMessage":"Something failed",
+        "bytesEmittedFormatted": "1000 B",
+        "bytesCommittedFormatted":"90 B",
+        "success":false,
+        "durationInSeconds":3600,
+        "durationFormatted":"1 hours 0 min"
+    }
+}
+```
+
+</details>
+<details>
+  <summary>Succesful Sync</summary>
+
+```
+{
+    "data": {
+        "workspace": {
+            "id":"b510e39b-e9e2-4833-9a3a-963e51d35fb4",
+            "name":"Workspace1",
+            "url":"https://link/to/ws"
+        },
+        "connection":{
+            "id":"64d901a1-2520-4d91-93c8-9df438668ff0",
+            "name":"Connection",
+            "url":"https://link/to/connection"
+        },
+        "source":{
+            "id":"c0655b08-1511-4e72-b7da-24c5d54de532",
+            "name":"Source",
+            "url":"https://link/to/source"
+        },
+        "destination":{
+            "id":"5621c38f-8048-4abb-85ca-b34ff8d9a298",
+            "name":"Destination",
+            "url":"https://link/to/destination"
+        },
+        "jobId":9988,
+        "startedAt":"2024-01-01T00:00:00Z",
+        "finishedAt":"2024-01-01T01:00:00Z",
+        "bytesEmitted":1000,
+        "bytesCommitted":1000,
+        "recordsEmitted":89,
+        "recordsCommitted":89,
+        "bytesEmittedFormatted": "1000 B",
+        "bytesCommittedFormatted":"90 B",
+        "success":true,
+        "durationInSeconds":3600,
+        "durationFormatted":"1 hours 0 min"
+    }
+}
+```
+
+</details>
+
+<details>
+  <summary>Automated Connection Updates</summary>
+
+  Webhook does not contain payload and only works for Slack notifications
+</details>
+
+<details>
+  <summary>Connection Updates Requiring Action</summary>
+  
+  Webhook does not contain payload and only works for Slack notifications
+</details>
+
+<details>
+  <summary>Warning - Repeated Failures</summary>
+  
+  Webhook does not contain payload and only works for Slack notifications
+</details>
+
+<details>
+  <summary>Sync Disabled - Repeated Failures</summary>
+  
+  Webhook does not contain payload and only works for Slack notifications
+</details>
+<details>
+  <summary>Warning - Upgrade Required</summary>
+  
+  Webhook does not contain payload and only works for Slack notifications
+</details>
+<details>
+  <summary>Sync Disabled - Upgrade Required</summary>
+  
+  Webhook does not contain payload and only works for Slack notifications
+</details>
+
+### Configuring Slack Notifications
+
+The webhook notification also integrates easily with Slack. 
+
+If you're more of a visual learner, head over to [this video](https://www.youtube.com/watch?v=NjYm8F-KiFc&ab_channel=Airbyte) to learn how to set up a Slack app to receive notifications. You can also refer to the Slack documentation on how to [create an incoming webhook for Slack](https://api.slack.com/messaging/webhooks).
 
 ### Create a Slack app
 

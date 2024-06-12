@@ -6,8 +6,13 @@ package io.airbyte.integrations.destination.redshift.typing_deduping;
 
 import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLTime;
 import static io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations.escapeStringLiteral;
+import static org.jooq.impl.DSL.createView;
+import static org.jooq.impl.DSL.quotedName;
+import static org.jooq.impl.DSL.select;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +24,7 @@ import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
@@ -39,6 +45,7 @@ import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
+import org.jooq.conf.ParamType;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
@@ -143,7 +150,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
 
   @Override
   protected JdbcSqlGenerator getSqlGenerator() {
-    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false) {
 
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
       // to save bytes.
@@ -191,6 +198,43 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     assertTrue(initialStatus.isFinalTablePresent());
     assertFalse(initialStatus.isSchemaMismatch());
     // TODO assert on table clustering, etc.
+  }
+
+  /**
+   * Verify that we correctly DROP...CASCADE the final table when cascadeDrop is enabled.
+   */
+  @Test
+  public void testCascadeDropEnabled() throws Exception {
+    // Explicitly create a sqlgenerator with cascadeDrop=true
+    final RedshiftSqlGenerator generator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), true);
+    // Create a table, then create a view referencing it
+    getDestinationHandler().execute(generator.createTable(getIncrementalAppendStream(), "", false));
+    database.execute(createView(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), "example_view"))
+        .as(select().from(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), getIncrementalAppendStream().getId().getFinalName())))
+        .getSQL(ParamType.INLINED));
+    // Create a "soft reset" table
+    getDestinationHandler().execute(generator.createTable(getIncrementalDedupStream(), "_soft_reset", false));
+
+    // Overwriting the first table with the second table should succeed.
+    assertDoesNotThrow(() -> getDestinationHandler().execute(generator.overwriteFinalTable(getIncrementalDedupStream().getId(), "_soft_reset")));
+  }
+
+  @Test
+  public void testCascadeDropDisabled() throws Exception {
+    // Explicitly create a sqlgenerator with cascadeDrop=false
+    final RedshiftSqlGenerator generator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false);
+    // Create a table, then create a view referencing it
+    getDestinationHandler().execute(generator.createTable(getIncrementalAppendStream(), "", false));
+    database.execute(createView(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), "example_view"))
+        .as(select().from(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), getIncrementalAppendStream().getId().getFinalName())))
+        .getSQL(ParamType.INLINED));
+    // Create a "soft reset" table
+    getDestinationHandler().execute(generator.createTable(getIncrementalDedupStream(), "_soft_reset", false));
+
+    // Overwriting the first table with the second table should fal with a configurationError.
+    Throwable t = assertThrowsExactly(ConfigErrorException.class,
+        () -> getDestinationHandler().execute(generator.overwriteFinalTable(getIncrementalDedupStream().getId(), "_soft_reset")));
+    assertTrue(t.getMessage().equals("Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter"));
   }
 
 }

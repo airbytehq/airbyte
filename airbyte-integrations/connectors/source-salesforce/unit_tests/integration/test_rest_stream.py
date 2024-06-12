@@ -28,8 +28,11 @@ _REFRESH_TOKEN = "a_refresh_token"
 _STREAM_NAME = UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS[0]
 
 
-def create_http_request(stream_name: str, field_names: List[str]) -> HttpRequest:
-    return HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{','.join(field_names)}+FROM+{stream_name}+")
+def create_http_request(stream_name: str, field_names: List[str], access_token: Optional[str] = None) -> HttpRequest:
+    return HttpRequest(
+        f"{_BASE_URL}/queryAll?q=SELECT+{','.join(field_names)}+FROM+{stream_name}+",
+        headers={"Authorization": f"Bearer {access_token}"} if access_token else None
+    )
 
 
 def create_http_response(field_names: List[str], record_count: int = 1) -> HttpResponse:
@@ -66,7 +69,7 @@ class FullRefreshTest(TestCase):
         self._config = ConfigBuilder().client_id(_CLIENT_ID).client_secret(_CLIENT_SECRET).refresh_token(_REFRESH_TOKEN)
 
     @HttpMocker()
-    def test_given_error_on_fetch_chunk_when_read_then_retry(self, http_mocker: HttpMocker) -> None:
+    def test_given_error_on_fetch_chunk_of_properties_when_read_then_retry(self, http_mocker: HttpMocker) -> None:
         given_authentication(http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN, _INSTANCE_URL)
         given_stream(http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         http_mocker.get(

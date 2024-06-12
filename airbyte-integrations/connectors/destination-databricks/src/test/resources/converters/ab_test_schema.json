@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Airbyte Data Types",
+  "type": "object",
+  "properties": {
+    "string": { "type": "string" },
+    "boolean": { "type": "boolean" },
+    "date": { "type": "string", "format": "date" },
+    "tsntz": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "tstz": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "tntz": {
+      "type": "string",
+      "format": "time",
+      "airbyte_type": "time_without_timezone"
+    },
+    "ttz": {
+      "type": "string",
+      "format": "time",
+      "airbyte_type": "time_with_timezone"
+    },
+    "integer": { "type": "integer" },
+    "number": { "type": "number" },
+    "object": {
+      "type": "object",
+      "properties": {
+        "nestedStringProperty": { "type": "string" },
+        "nestedIntegerProperty": { "type": "integer" }
+      },
+      "required": ["nestedStringProperty"]
+    },
+    "array": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "arrayItemProperty": { "type": "string" }
+        },
+        "required": ["arrayItemProperty"]
+      }
+    }
+  }
+}

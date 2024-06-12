@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
-  dockerImageTag: 2.5.0
+  dockerImageTag: 2.6.4
   dockerRepository: airbyte/destination-redshift
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   githubIssueLabel: destination-redshift
@@ -35,4 +35,38 @@ data:
   supportsDbt: true
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG
+          fileName: 1s1t_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
+          fileName: 1s1t_config_raw_schema_override.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING
+          fileName: 1s1t_config_staging.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
+          fileName: 1s1t_config_staging_raw_schema_override.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-REDSHIFT_STAGING__CREDS
+          fileName: config_staging.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-REDSHIFT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

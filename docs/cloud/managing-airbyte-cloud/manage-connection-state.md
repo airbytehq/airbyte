@@ -19,11 +19,11 @@ To review the connection state:
 Editing the connection state allows the sync to start from any date in the past. If the state is edited, Airbyte will start syncing incrementally from the new date. This is helpful if you do not want to fully resync your data. To edit the connection state:
 
 :::warning
-Updates to connection state should be handled with extreme care. Updates may break your syncs, requiring a reset to fix. Make changes only as directed by the Airbyte team.
+Updates to connection state should be handled with extreme care. Updates may break your syncs, requiring a full historical sync of your data to fix. Make changes only as directed by the Airbyte team.
 :::
 
 1. Click anywhere in the Connection state to start editing.
 
-2. Confirm changes by clicking "Update state". Discard any changes by clikcing "Revert changes".
+2. Confirm changes by clicking "Update state". Discard any changes by clicking "Revert changes".
 
 3. Confirm the changes to the connection state update.

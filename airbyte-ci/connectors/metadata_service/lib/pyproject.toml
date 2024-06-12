@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "metadata-service"
-version = "0.3.5"
+version = "0.8.0"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"
@@ -16,6 +16,7 @@ gcloud = "^0.18.3"
 google-cloud-storage = "^2.8.0"
 pydash = "^6.0.2"
 semver = "^3.0.1"
+gitpython = "^3.1.40"
 
 
 

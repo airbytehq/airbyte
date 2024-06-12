@@ -31,9 +31,9 @@ and place them into `secrets/config.json`.
 ### Locally running the connector
 
 ```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py write --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run python main.py spec
+poetry run python main.py check --config secrets/config.json
+poetry run python main.py write --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image

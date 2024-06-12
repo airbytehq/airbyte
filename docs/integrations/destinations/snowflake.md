@@ -60,74 +60,76 @@ entities:
     [Snowflake identifier requirements](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html)
     while renaming the resources.
 
-        -- set variables (these need to be uppercase)
-        set airbyte_role = 'AIRBYTE_ROLE';
-        set airbyte_username = 'AIRBYTE_USER';
-        set airbyte_warehouse = 'AIRBYTE_WAREHOUSE';
-        set airbyte_database = 'AIRBYTE_DATABASE';
-        set airbyte_schema = 'AIRBYTE_SCHEMA';
+```sql
+-- set variables (these need to be uppercase)
+set airbyte_role = 'AIRBYTE_ROLE';
+set airbyte_username = 'AIRBYTE_USER';
+set airbyte_warehouse = 'AIRBYTE_WAREHOUSE';
+set airbyte_database = 'AIRBYTE_DATABASE';
+set airbyte_schema = 'AIRBYTE_SCHEMA';
 
-        -- set user password
-        set airbyte_password = 'password';
+-- set user password
+set airbyte_password = 'password';
 
-        begin;
+begin;
 
-        -- create Airbyte role
-        use role securityadmin;
-        create role if not exists identifier($airbyte_role);
-        grant role identifier($airbyte_role) to role SYSADMIN;
+-- create Airbyte role
+use role securityadmin;
+create role if not exists identifier($airbyte_role);
+grant role identifier($airbyte_role) to role SYSADMIN;
 
-        -- create Airbyte user
-        create user if not exists identifier($airbyte_username)
-        password = $airbyte_password
-        default_role = $airbyte_role
-        default_warehouse = $airbyte_warehouse;
+-- create Airbyte user
+create user if not exists identifier($airbyte_username)
+password = $airbyte_password
+default_role = $airbyte_role
+default_warehouse = $airbyte_warehouse;
 
-        grant role identifier($airbyte_role) to user identifier($airbyte_username);
+grant role identifier($airbyte_role) to user identifier($airbyte_username);
 
-        -- change role to sysadmin for warehouse / database steps
-        use role sysadmin;
+-- change role to sysadmin for warehouse / database steps
+use role sysadmin;
 
-        -- create Airbyte warehouse
-        create warehouse if not exists identifier($airbyte_warehouse)
-        warehouse_size = xsmall
-        warehouse_type = standard
-        auto_suspend = 60
-        auto_resume = true
-        initially_suspended = true;
+-- create Airbyte warehouse
+create warehouse if not exists identifier($airbyte_warehouse)
+warehouse_size = xsmall
+warehouse_type = standard
+auto_suspend = 60
+auto_resume = true
+initially_suspended = true;
 
-        -- create Airbyte database
-        create database if not exists identifier($airbyte_database);
+-- create Airbyte database
+create database if not exists identifier($airbyte_database);
 
-        -- grant Airbyte warehouse access
-        grant USAGE
-        on warehouse identifier($airbyte_warehouse)
-        to role identifier($airbyte_role);
+-- grant Airbyte warehouse access
+grant USAGE
+on warehouse identifier($airbyte_warehouse)
+to role identifier($airbyte_role);
 
-        -- grant Airbyte database access
-        grant OWNERSHIP
-        on database identifier($airbyte_database)
-        to role identifier($airbyte_role);
+-- grant Airbyte database access
+grant OWNERSHIP
+on database identifier($airbyte_database)
+to role identifier($airbyte_role);
 
-        commit;
+commit;
 
-        begin;
+begin;
 
-        USE DATABASE identifier($airbyte_database);
+USE DATABASE identifier($airbyte_database);
 
-        -- create schema for Airbyte data
-        CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
+-- create schema for Airbyte data
+CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
 
-        commit;
+commit;
 
-        begin;
+begin;
 
-        -- grant Airbyte schema access
-        grant OWNERSHIP
-        on schema identifier($airbyte_schema)
-        to role identifier($airbyte_role);
+-- grant Airbyte schema access
+grant OWNERSHIP
+on schema identifier($airbyte_schema)
+to role identifier($airbyte_role);
 
-        commit;
+commit;
+```
 
 3.  Run the script using the
     [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or
@@ -145,7 +147,7 @@ Make sure the database and schema have the `USAGE` privilege.
 ### Step 3: Set up Snowflake as a destination in Airbyte
 
 Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using
-username/password or OAuth 2.0:
+username/password or key pair authentication:
 
 ### Login and Password
 
@@ -160,19 +162,6 @@ username/password or OAuth 2.0:
 | Password                                                                                              | The password associated with the username.                                                                                                                                                                                           |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`                                      |
 | Disable Final Tables (Optional)                                                                       | Disables writing final Typed tables See [output schema](#output-schema). WARNING! The data format in \_airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions |
-
-### OAuth 2.0
-
-| Field                                                                                                 | Description                                                                                                                                                                                       |
-| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
-| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                     |
-| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                          |
-| Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                               |
-| OAuth2                                                                                                | The Login name and password to obtain auth token.                                                                                                                                                 |
-| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
 
 ### Key pair authentication
 
@@ -274,8 +263,21 @@ desired namespace.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
-| :-------------- | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:----------------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.10.1          | 2024-06-11 | [\#39399](https://github.com/airbytehq/airbyte/pull/39399) | Bug fix for _airbyte_meta not migrated in OVERWRITE mode                                                                                                         |
+| 3.10.0          | 2024-06-10 | [\#39107](https://github.com/airbytehq/airbyte/pull/39107) | _airbyte_meta and _airbyte_generation_id in Raw tables and final tables                                                                                          |
+| 3.9.1           | 2024-06-05 | [\#39135](https://github.com/airbytehq/airbyte/pull/39135) | Improved error handling for Staging files                                                                                                                        |
+| 3.9.0           | 2024-05-23 | [\#38658](https://github.com/airbytehq/airbyte/pull/38658) | Adapting to newer interfaces from #38107                                                                                                                         |
+| 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                                                                                      |
+| 3.8.3           | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | Bump CDK version                                                                                                                                                 |
+| 3.8.2           | 2024-05-22 | [\#38553](https://github.com/airbytehq/airbyte/pull/38553) | Remove `SwitchingDestination` and `AbstractJdbcDestination` dependency in destination                                                                            |
+| 3.8.1           | 2024-05-22 | [\#38568](https://github.com/airbytehq/airbyte/pull/38568) | Adopt latest CDK                                                                                                                                                 |
+| 3.8.0           | 2024-05-08 | [\#37715](https://github.com/airbytehq/airbyte/pull/37715) | Remove option for incremental typing and deduping                                                                                                                |
+| 3.7.4           | 2024-05-07 | [\#38052](https://github.com/airbytehq/airbyte/pull/38052) | Revert problematic optimization                                                                                                                                  |
 | 3.7.3           | 2024-05-07 | [\#34612](https://github.com/airbytehq/airbyte/pull/34612) | Adopt CDK 0.33.2                                                                                                                                                 |
 | 3.7.2           | 2024-05-06 | [\#37857](https://github.com/airbytehq/airbyte/pull/37857) | Use safe executeMetadata call                                                                                                                                    |
 | 3.7.1           | 2024-04-30 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | Bump CDK version                                                                                                                                                 |
@@ -460,3 +462,5 @@ desired namespace.
 | 0.3.12          | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                                                                                     |
 | 0.3.11          | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                                                                                        |
 | 0.3.10          | 2021-07-12 | [\#4713](https://github.com/airbytehq/airbyte/pull/4713)   | Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake                                                                             |
+
+</details>

@@ -52,8 +52,13 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.3.12  | 2024-06-06 | [39103](https://github.com/airbytehq/airbyte/pull/39103) | Use `CheckpointMixin` for state management                                                   |
+| 0.3.11  | 2024-06-04 | [38988](https://github.com/airbytehq/airbyte/pull/38988) | [autopull] Upgrade base image to v1.2.1                                                      |
 | 0.3.10  | 2024-04-19 | [36631](https://github.com/airbytehq/airbyte/pull/36631) | Updating to 0.80.0 CDK                                                                       |
 | 0.3.9   | 2024-04-12 | [36631](https://github.com/airbytehq/airbyte/pull/36631) | schema descriptions                                                                          |
 | 0.3.8   | 2024-03-12 | [35987](https://github.com/airbytehq/airbyte/pull/35987) | Unpin CDK version                                                                            |
@@ -95,5 +100,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 | 0.1.2   | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353)   | Correct output schemas on cohorts, events, active_users, and average_session_lengths streams |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE_ENTRYPOINT for kubernetes support                                                |
 | 0.1.0   | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664)   | New Source: Amplitude                                                                        |
+
+</details>
 
 <!-- /env:oss -->
