@@ -1,4 +1,7 @@
+#
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+#
+
 
 import datetime
 from collections import defaultdict
@@ -142,10 +145,6 @@ class AnalyticsDatetimeBasedCursor(DatetimeBasedCursor):
 
 @dataclass
 class LinkedInAdsRecordExtractor(RecordExtractor):
-    """
-    Unnesting nested bans: `visitor`, `ip_address`.
-    """
-
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Transform 'date-time' items to RFC3339 format

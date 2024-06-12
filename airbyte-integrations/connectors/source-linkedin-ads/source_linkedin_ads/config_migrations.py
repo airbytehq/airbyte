@@ -14,7 +14,7 @@ logger = logging.getLogger("airbyte_logger")
 
 class MigrateCredentials(ABC):
     """
-    This class stands for migrating the config azure_blob_storage_account_key inside object `credentials`
+    This class stands for migrating the config inside object `credentials`
     """
 
     @classmethod
