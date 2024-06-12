@@ -303,6 +303,9 @@ definitions:
           - stream: "#/definitions/subscription_stream"
             parent_key: "id"
             partition_field: "subscription_id"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_chargebee.components.CustomFieldTransformation
     $parameters:
       name: "subscription_with_scheduled_changes"
       primary_key: "id"

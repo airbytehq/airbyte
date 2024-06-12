@@ -34,7 +34,7 @@
         "deleted": false,
         "due_invoices_count": 1,
         "due_since": 1612890920,
-        "has_scheduled_changes": false,
+        "has_scheduled_changes": true,
         "id": "__test__8asukSOXdvliPG",
         "mrr": 0,
         "next_billing_at": 1615310120,
