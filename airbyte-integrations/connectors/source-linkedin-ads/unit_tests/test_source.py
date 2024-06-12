@@ -85,6 +85,12 @@ class TestAllStreams:
         result = stream.retriever.requester.path
         assert result == expected
 
+    def test_check_connection(self, check_availability_mock):
+        check_availability_mock.return_value = (True, None)
+        is_available, error = self._instance.check_connection(logger=Mock(), config=TEST_CONFIG)
+        assert is_available
+        assert not error
+
 
 class TestLinkedinAdsStream:
     stream: Stream = find_stream("accounts", TEST_CONFIG)

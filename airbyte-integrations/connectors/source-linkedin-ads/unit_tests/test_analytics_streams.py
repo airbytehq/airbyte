@@ -60,5 +60,5 @@ def test_read_records(requests_mock):
     )
 
     stream_slice = load_json_file("output_slices.json")[0]
-    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=StreamSlice(partition={}, cursor_slice=stream_slice), stream_state=None))
+    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=StreamSlice(partition={"campaign_id":  1111}, cursor_slice=stream_slice), stream_state=None))
     assert len(records) == 2
