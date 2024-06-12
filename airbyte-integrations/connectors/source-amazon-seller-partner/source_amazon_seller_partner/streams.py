@@ -1488,12 +1488,12 @@ class FbaReimbursementsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G200732720
     """
-    name = "GET_FBA_REIMBURSEMENTS_DATA"
+
     report_name = "GET_FBA_REIMBURSEMENTS_DATA"
 
-    
+
 class FlatFileV2SettlementV2Reports(IncrementalReportsAmazonSPStream):
-    name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
+    report_name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
     cursor_field = "dataEndTime"
 
     def _create_report(
