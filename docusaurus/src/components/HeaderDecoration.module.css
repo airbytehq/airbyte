@@ -39,6 +39,7 @@ div.connectorMetadataCallout  {
   margin: 0;
   gap: 5px;
   flex: 0 1 auto;
+  width: fit-content;
 }
 
 .deemphasizeText {
@@ -73,16 +74,13 @@ div.connectorMetadataCallout  {
   color: var(--ifm-color-emphasis-400);
 }
 
-.iconRow {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
 .metricIcon {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.metricIcon svg {
   height: 12px;
-  width: 40px;
+  width: fit-content;
 }
