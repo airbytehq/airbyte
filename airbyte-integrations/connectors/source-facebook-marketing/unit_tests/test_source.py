@@ -161,23 +161,6 @@ class TestSourceFacebookMarketing:
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
 
-    def test_get_custom_insights_streams_status_filter(self, api, config, fb_marketing):
-        config["custom_insights"] = [
-            {
-                "name": "test",
-                "fields": ["account_id"],
-                "breakdowns": ["ad_format_asset"],
-                "action_breakdowns": ["action_device"],
-                "level": "ad"
-            },
-        ]
-        config["ad_statuses"] = ["ACTIVE", "ARCHIVED"]
-        config["adset_statuses"] = ["ACTIVE", "DELETED"]
-        config = ConnectorConfig.parse_obj(config)
-        streams = fb_marketing.get_custom_insights_streams(api, config)
-        assert len(streams) == 1
-        assert streams[0]._filter_statuses == ["ACTIVE", "ARCHIVED"]
-
     def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config, fb_marketing):
         config["custom_insights"] = [
             {
