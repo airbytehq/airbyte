@@ -236,7 +236,7 @@ class HttpClient:
         else:
             self._request_attempt_count[request] += 1
 
-        self._logger.info(
+        self._logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
 
@@ -253,7 +253,7 @@ class HttpClient:
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
         if self._logger.isEnabledFor(logging.DEBUG) and response is not None:
-            self._logger.info(
+            self._logger.debug(
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
 
@@ -289,21 +289,21 @@ class HttpClient:
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = None
+            user_defined_backoff_time = None
             for backoff_strategy in self._backoff_strategies:
                 backoff_time = backoff_strategy.backoff_time(
                     response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request]
                 )
                 if backoff_time:
-                    custom_backoff_time = backoff_time
+                    user_defined_backoff_time = backoff_time
                     break
             error_message = (
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
-            if custom_backoff_time:
+            if user_defined_backoff_time:
                 raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time,
+                    backoff=user_defined_backoff_time,
                     request=request,
                     response=(response if response is not None else exc),
                     error_message=error_message,
