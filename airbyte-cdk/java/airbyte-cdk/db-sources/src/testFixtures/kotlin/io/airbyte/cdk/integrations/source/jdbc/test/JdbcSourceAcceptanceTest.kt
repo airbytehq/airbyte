@@ -335,6 +335,10 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
     }
 
+    protected open fun supportResumeableFullRefreshWithoutPk(): Boolean? {
+        return false
+    }
+
     @Test
     @Throws(Exception::class)
     protected fun testDiscoverWithMultipleSchemas() {
@@ -342,6 +346,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         // for them.
         when (testdb.databaseDriver) {
             DatabaseDriver.MYSQL,
+            DatabaseDriver.SINGLESTORE,
             DatabaseDriver.CLICKHOUSE,
             DatabaseDriver.TERADATA -> return
             else -> {}
@@ -379,7 +384,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 )
                 .withSupportedSyncModes(
                     java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-                ),
+                )
+                .withIsResumable(supportResumeableFullRefreshWithoutPk()),
         )
         expected.streams = catalogStreams
         // sort streams by name so that we are comparing lists with the same order.
@@ -1206,6 +1212,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         // some databases don't make insertion order guarantee when equal ordering value
         if (
             testdb.databaseDriver == DatabaseDriver.TERADATA ||
+                testdb.databaseDriver == DatabaseDriver.SINGLESTORE ||
                 testdb.databaseDriver == DatabaseDriver.ORACLE
         ) {
             MatcherAssert.assertThat(
@@ -1306,7 +1313,10 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .map { r: AirbyteMessage -> r.record.data[COL_NAME].asText() }
 
         // teradata doesn't make insertion order guarantee when equal ordering value
-        if (testdb.databaseDriver == DatabaseDriver.TERADATA) {
+        if (
+            testdb.databaseDriver == DatabaseDriver.TERADATA ||
+                testdb.databaseDriver == DatabaseDriver.SINGLESTORE
+        ) {
             MatcherAssert.assertThat(
                 listOf("c", "d", "e", "f"),
                 Matchers.containsInAnyOrder<Any>(*thirdSyncExpectedNames.toTypedArray()),
@@ -1701,6 +1711,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         get() =
             when (testdb.databaseDriver) {
                 DatabaseDriver.MYSQL,
+                DatabaseDriver.SINGLESTORE,
                 DatabaseDriver.CLICKHOUSE,
                 DatabaseDriver.TERADATA -> testdb.databaseName
                 else -> SCHEMA_NAME
