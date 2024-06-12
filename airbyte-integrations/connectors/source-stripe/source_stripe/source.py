@@ -232,9 +232,11 @@ class SourceStripe(ConcurrentSourceAdapter):
             use_cache=USE_CACHE,
             event_types=[
                 "invoice.created",
+                "invoice.deleted",
                 "invoice.finalization_failed",
                 "invoice.finalized",
                 "invoice.marked_uncollectible",
+                "invoice.overdue",
                 "invoice.paid",
                 "invoice.payment_action_required",
                 "invoice.payment_failed",
@@ -242,7 +244,10 @@ class SourceStripe(ConcurrentSourceAdapter):
                 "invoice.sent",
                 "invoice.updated",
                 "invoice.voided",
-                "invoice.deleted",
+                "invoice.will_be_due",
+                # the event type = "invoice.upcoming" doesn't contain the `primary_key = `id` field,
+                # thus isn't used, see the doc: https://docs.stripe.com/api/invoices/object#invoice_object-id
+                # reference issue: https://github.com/airbytehq/oncall/issues/5560
             ],
             **args,
         )
@@ -373,7 +378,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="invoice_items",
                 path="invoiceitems",
                 legacy_cursor_field="date",
-                event_types=["invoiceitem.created", "invoiceitem.updated", "invoiceitem.deleted"],
+                event_types=[
+                    "invoiceitem.created",
+                    "invoiceitem.updated",
+                    "invoiceitem.deleted",
+                ],
                 **args,
             ),
             IncrementalStripeStream(
