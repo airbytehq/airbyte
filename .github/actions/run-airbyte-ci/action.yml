@@ -172,6 +172,6 @@ runs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: dagger_engine_logs.tgz
+        name: ${{ github.job }}_dagger_engine_logs.tgz
         path: ./dagger_engine_logs.tgz
         retention-days: 7

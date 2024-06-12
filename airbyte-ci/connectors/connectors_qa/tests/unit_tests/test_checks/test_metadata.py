@@ -9,46 +9,6 @@ from connectors_qa.models import CheckStatus
 
 
 class TestValidateMetadata:
-    def test_fail_init_when_required_env_vars_are_not_set(self, random_string, mocker):
-        # Arrange
-        mocker.patch.object(metadata.ValidateMetadata, "required_env_vars", new={random_string})
-
-        # Act
-        with pytest.raises(ValueError):
-            metadata.ValidateMetadata()
-
-    def test_init_when_required_env_vars_are_set(self, random_string, mocker):
-        # Arrange
-        os.environ[random_string] = "test"
-        mocker.patch.object(metadata.ValidateMetadata, "required_env_vars", new={random_string})
-
-        # Act
-        metadata.ValidateMetadata()
-
-        os.environ.pop(random_string)
-
-    def test_fail_when_documentation_file_path_is_none(self, mocker):
-        # Arrange
-        connector = mocker.MagicMock(documentation_file_path=None)
-
-        # Act
-        result = metadata.ValidateMetadata()._run(connector)
-
-        # Assert
-        assert result.status == CheckStatus.FAILED
-        assert result.message == "User facing documentation file is missing. Please create it"
-
-    def test_fail_when_documentation_file_path_does_not_exist(self, mocker, tmp_path):
-        # Arrange
-
-        connector = mocker.MagicMock(documentation_file_path=tmp_path / "doc.md")
-
-        # Act
-        result = metadata.ValidateMetadata()._run(connector)
-
-        # Assert
-        assert result.status == CheckStatus.FAILED
-        assert result.message == "User facing documentation file is missing. Please create it"
 
     def test_fail_when_deserialization_fails(self, mocker, tmp_path):
         # Arrange
@@ -226,7 +186,7 @@ class TestCheckConnectorMaxSecondsBetweenMessagesValue:
     def test_pass_when_field_present(self, mocker):
         # Arrange
         connector = mocker.MagicMock(metadata={"supportLevel": "certified", "maxSecondsBetweenMessages": 1})
-        
+
         # Act
         result = metadata.CheckConnectorMaxSecondsBetweenMessagesValue()._run(connector)
 

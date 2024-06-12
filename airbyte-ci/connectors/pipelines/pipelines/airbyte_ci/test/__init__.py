@@ -5,6 +5,7 @@
 from pathlib import Path
 
 INTERNAL_POETRY_PACKAGES = [
+    "airbyte-ci/connectors/auto_merge",
     "airbyte-ci/connectors/pipelines",
     "airbyte-ci/connectors/base_images",
     "airbyte-ci/connectors/common_utils",
@@ -14,6 +15,7 @@ INTERNAL_POETRY_PACKAGES = [
     "airbyte-ci/connectors/live-tests",
     "airbyte-ci/connectors/metadata_service/lib",
     "airbyte-ci/connectors/metadata_service/orchestrator",
+    "airbyte-cdk/python",
     "airbyte-integrations/bases/connector-acceptance-test",
 ]
 

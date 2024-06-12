@@ -2,22 +2,22 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-- [Developing with the Java CDK](#developing-with-the-java-cdk)
-  - [Intro to the Java CDK](#intro-to-the-java-cdk)
-    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    - [How is the CDK published?](#how-is-the-cdk-published)
-  - [Using the Java CDK](#using-the-java-cdk)
-    - [Building the CDK](#building-the-cdk)
-    - [Bumping the CDK version](#bumping-the-cdk-version)
-    - [Publishing the CDK](#publishing-the-cdk)
-  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    - [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-    - [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  - [Changelog](#changelog)
-    - [Java CDK](#java-cdk)
+* [Developing with the Java CDK](#developing-with-the-java-cdk)
+  * [Intro to the Java CDK](#intro-to-the-java-cdk)
+    * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    * [How is the CDK published?](#how-is-the-cdk-published)
+  * [Using the Java CDK](#using-the-java-cdk)
+    * [Building the CDK](#building-the-cdk)
+    * [Bumping the CDK version](#bumping-the-cdk-version)
+    * [Publishing the CDK](#publishing-the-cdk)
+  * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  * [Changelog](#changelog)
+    * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -173,7 +173,48 @@ corresponds to that version.
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
-|:--------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.37.1  | 2024-06-10 | [\#38075](https://github.com/airbytehq/airbyte/pull/38075) | Destinations: Track stream statuses in async framework |
+| 0.37.0  | 2024-06-10 | [\#38121](https://github.com/airbytehq/airbyte/pull/38121) | Destinations: Set default namespace via CatalogParser |
+| 0.36.8  | 2024-06-07 | [\#38763](https://github.com/airbytehq/airbyte/pull/38763) | Increase Jackson message length limit |
+| 0.36.7  | 2024-06-06 | [\#39220](https://github.com/airbytehq/airbyte/pull/39220) | Handle null messages in ConnectorExceptionUtil |
+| 0.36.6  | 2024-06-05 | [\#39106](https://github.com/airbytehq/airbyte/pull/39106) | Skip write to storage with 0 byte file                                                                                                                         |
+| 0.36.5  | 2024-06-01 | [\#38792](https://github.com/airbytehq/airbyte/pull/38792) | Throw config exception if no selectable table exists in user provided schemas                                                                                  |
+| 0.36.4  | 2024-05-31 | [\#38824](https://github.com/airbytehq/airbyte/pull/38824) | Param marked as non-null to nullable in JdbcDestinationHandler for NPE fix                                                                                     |
+| 0.36.2  | 2024-05-29 | [\#38538](https://github.com/airbytehq/airbyte/pull/38357) | Exit connector when encountering a config error.                                                                                                               |
+| 0.36.0  | 2024-05-29 | [\#38358](https://github.com/airbytehq/airbyte/pull/38358) | Plumb generation_id / sync_id to destinations code                                                                                                             |
+| 0.35.15 | 2024-05-31 | [\#38824](https://github.com/airbytehq/airbyte/pull/38824) | Param marked as non-null to nullable in JdbcDestinationHandler for NPE fix                                                                                     |
+| 0.35.14 | 2024-05-28 | [\#38738](https://github.com/airbytehq/airbyte/pull/38738) | make ThreadCreationInfo cast as nullable                                                                                                                       |
+| 0.35.13 | 2024-05-28 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | minor changes to allow conversion of snowflake tests to kotlin                                                                                                 |
+| 0.35.12 | 2024-05-23 | [\#38638](https://github.com/airbytehq/airbyte/pull/38638) | Minor change to support Snowflake conversion to Kotlin                                                                                                         |
+| 0.35.11 | 2024-05-23 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | This release fixes an error on the previous release.                                                                                                           |
+| 0.35.10 | 2024-05-23 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | Add shared code for db sources stream status trace messages and testing.                                                                                       |
+| 0.35.9  | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37583](https://github.com/airbytehq/airbyte/pull/37583) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37555](https://github.com/airbytehq/airbyte/pull/37555) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37540](https://github.com/airbytehq/airbyte/pull/37540) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37539](https://github.com/airbytehq/airbyte/pull/37539) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37538](https://github.com/airbytehq/airbyte/pull/37538) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37537](https://github.com/airbytehq/airbyte/pull/37537) | code cleanup                                                                                                                                                   |
+| 0.35.9  | 2024-05-23 | [\#37518](https://github.com/airbytehq/airbyte/pull/37518) | code cleanup                                                                                                                                                   |
+| 0.35.8  | 2024-05-22 | [\#38572](https://github.com/airbytehq/airbyte/pull/38572) | Add a temporary static method to decouple SnowflakeDestination from AbstractJdbcDestination                                                                    |
+| 0.35.7  | 2024-05-20 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | Decouple create namespace from per stream operation interface.                                                                                                 |
+| 0.35.6  | 2024-05-17 | [\#38107](https://github.com/airbytehq/airbyte/pull/38107) | New interfaces for Destination connectors to plug into AsyncStreamConsumer                                                                                     |
+| 0.35.5  | 2024-05-17 | [\#38204](https://github.com/airbytehq/airbyte/pull/38204) | add assume-role authentication to s3                                                                                                                           |
+| 0.35.2  | 2024-05-13 | [\#38104](https://github.com/airbytehq/airbyte/pull/38104) | Handle transient error messages                                                                                                                                |
+| 0.35.0  | 2024-05-13 | [\#38127](https://github.com/airbytehq/airbyte/pull/38127) | Destinations: Populate generation/sync ID on StreamConfig                                                                                                      |
+| 0.34.4  | 2024-05-10 | [\#37712](https://github.com/airbytehq/airbyte/pull/37712) | make sure the exceptionHandler always terminates                                                                                                               |
+| 0.34.3  | 2024-05-10 | [\#38095](https://github.com/airbytehq/airbyte/pull/38095) | Minor changes for databricks connector                                                                                                                         |
+| 0.34.1  | 2024-05-07 | [\#38030](https://github.com/airbytehq/airbyte/pull/38030) | Add support for transient errors                                                                                                                               |
+| 0.34.0  | 2024-05-01 | [\#37712](https://github.com/airbytehq/airbyte/pull/37712) | Destinations: Remove incremental T+D                                                                                                                           |
+| 0.33.2  | 2024-05-03 | [\#37824](https://github.com/airbytehq/airbyte/pull/37824) | improve source acceptance tests                                                                                                                                |
+| 0.33.1  | 2024-05-03 | [\#37824](https://github.com/airbytehq/airbyte/pull/37824) | Add a unit test for cursor based sync                                                                                                                          |
+| 0.33.0  | 2024-05-03 | [\#36935](https://github.com/airbytehq/airbyte/pull/36935) | Destinations: Enable non-safe-casting DV2 tests                                                                                                                |
+| 0.32.0  | 2024-05-03 | [\#36929](https://github.com/airbytehq/airbyte/pull/36929) | Destinations: Assorted DV2 changes for mysql                                                                                                                   |
+| 0.31.7  | 2024-05-02 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | changes for destination-snowflake                                                                                                                              |
+| 0.31.6  | 2024-05-02 | [\#37746](https://github.com/airbytehq/airbyte/pull/37746) | debuggability improvements.                                                                                                                                    |
+| 0.31.5  | 2024-04-30 | [\#37758](https://github.com/airbytehq/airbyte/pull/37758) | Set debezium max retries to zero                                                                                                                               |
+| 0.31.4  | 2024-04-30 | [\#37754](https://github.com/airbytehq/airbyte/pull/37754) | Add DebeziumEngine notification log                                                                                                                            |
 | 0.31.3  | 2024-04-30 | [\#37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                        |
 | 0.31.2  | 2024-04-30 | [\#37507](https://github.com/airbytehq/airbyte/pull/37507) | Better error messages when switching between global/per-stream modes.                                                                                          |
 | 0.31.0  | 2024-04-26 | [\#37584](https://github.com/airbytehq/airbyte/pull/37584) | Update S3 destination deps to exclude zookeeper and hadoop-yarn-common                                                                                         |

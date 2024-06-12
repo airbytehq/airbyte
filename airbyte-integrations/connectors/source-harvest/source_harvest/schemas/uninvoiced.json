@@ -3,36 +3,47 @@
   "type": "object",
   "properties": {
     "client_id": {
+      "description": "Unique identifier for the client",
       "type": ["null", "integer"]
     },
     "client_name": {
+      "description": "Name of the client",
       "type": ["null", "string"]
     },
     "project_id": {
+      "description": "Unique identifier for the project",
       "type": ["null", "integer"]
     },
     "project_name": {
+      "description": "Name of the project",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "Currency used for the transaction",
       "type": ["null", "string"]
     },
     "total_hours": {
+      "description": "Total hours tracked for the project within the data range",
       "type": ["null", "number"]
     },
     "uninvoiced_hours": {
+      "description": "Total hours yet to be invoiced for the project within the data range",
       "type": ["null", "number"]
     },
     "uninvoiced_expenses": {
+      "description": "Total expenses yet to be invoiced for the project within the data range",
       "type": ["null", "number"]
     },
     "uninvoiced_amount": {
+      "description": "Total amount yet to be invoiced for the project within the data range",
       "type": ["null", "number"]
     },
     "from": {
+      "description": "Start date for the data range",
       "type": ["null", "string"]
     },
     "to": {
+      "description": "End date for the data range",
       "type": ["null", "string"]
     }
   }

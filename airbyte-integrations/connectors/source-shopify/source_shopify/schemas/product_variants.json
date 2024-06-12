@@ -121,8 +121,17 @@
             }
           },
           "compare_at_price": {
-            "description": "The original price of the variant in a different currency before any discount",
-            "type": ["null", "number"]
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "description": "The amount of the price",
+                "type": ["null", "number"]
+              },
+              "currency_code": {
+                "description": "The currency code of the price",
+                "type": ["null", "string"]
+              }
+            }
           }
         }
       }

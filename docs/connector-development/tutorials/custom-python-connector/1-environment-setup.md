@@ -3,7 +3,7 @@
 Let's first start by cloning the repository, optionally forking it first
 
 ```bash
-git@github.com:airbytehq/airbyte.git
+git clone git@github.com:airbytehq/airbyte.git
 cd airbyte
 ```
 

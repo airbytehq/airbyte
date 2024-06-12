@@ -71,3 +71,10 @@ def test_timestamp(test_name, input_value, expected_output):
     timestamp_function = macros["timestamp"]
     actual_output = timestamp_function(input_value)
     assert actual_output == expected_output
+
+
+def test_utc_datetime_to_local_timestamp_conversion():
+    """
+    This test ensures correct timezone handling independent of the timezone of the system on which the sync is running.
+    """
+    assert macros["format_datetime"](dt="2020-10-01T00:00:00Z", format="%s") == "1601510400"

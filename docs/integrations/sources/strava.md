@@ -122,8 +122,12 @@ More information about Strava rate limits and adjustments to those limits can be
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                    |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.5 | 2024-06-06 | [39221](https://github.com/airbytehq/airbyte/pull/39221) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.4 | 2024-04-19 | [37266](https://github.com/airbytehq/airbyte/pull/37266) | Updating to 0.80.0 CDK |
 | 0.2.3 | 2024-04-18 | [37266](https://github.com/airbytehq/airbyte/pull/37266) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37266](https://github.com/airbytehq/airbyte/pull/37266) | Base image migration: remove Dockerfile and use the python-connector-base image |
@@ -134,3 +138,5 @@ More information about Strava rate limits and adjustments to those limits can be
 | 0.1.2 | 2021-12-15 | [8799](https://github.com/airbytehq/airbyte/pull/8799) | Implement OAuth 2.0 support |
 | 0.1.1 | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
 | 0.1.0 | 2021-10-18 | [7151](https://github.com/airbytehq/airbyte/pull/7151) | Initial release supporting Strava API |
+
+</details>

@@ -44,8 +44,12 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.5 | 2024-06-06 | [39223](https://github.com/airbytehq/airbyte/pull/39223) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.4 | 2024-04-19 | [37248](https://github.com/airbytehq/airbyte/pull/37248) | Updating to 0.80.0 CDK |
 | 0.2.3 | 2024-04-18 | [37248](https://github.com/airbytehq/airbyte/pull/37248) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37248](https://github.com/airbytehq/airbyte/pull/37248) | Base image migration: remove Dockerfile and use the python-connector-base image |
@@ -58,3 +62,5 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 | 0.1.2 | 2021-12-28 | [9045](https://github.com/airbytehq/airbyte/pull/9045) | Update titles and descriptions |
 | 0.1.1 | 2021-12-06 | [8043](https://github.com/airbytehq/airbyte/pull/8043) | 🎉 Source Retently: add OAuth 2.0 |
 | 0.1.0 | 2021-11-02 | [6966](https://github.com/airbytehq/airbyte/pull/6966) | 🎉 New Source: Retently |
+
+</details>

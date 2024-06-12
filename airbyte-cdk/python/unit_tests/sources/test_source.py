@@ -7,7 +7,7 @@ import logging
 import tempfile
 from collections import defaultdict
 from contextlib import nullcontext as does_not_raise
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pytest
 import requests
@@ -89,9 +89,11 @@ def abstract_source(mocker):
         url_base = "http://example.com"
         path = "/dummy/path"
         get_json_schema = mocker.MagicMock()
+        _state = {}
 
-        def supports_incremental(self):
-            return True
+        @property
+        def cursor_field(self) -> Union[str, List[str]]:
+            return ["updated_at"]
 
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
@@ -101,6 +103,14 @@ def abstract_source(mocker):
         @property
         def availability_strategy(self):
             return None
+
+        @property
+        def state(self) -> MutableMapping[str, Any]:
+            return self._state
+
+        @state.setter
+        def state(self, value: MutableMapping[str, Any]) -> None:
+            self._state = value
 
     class MockStream(mocker.MagicMock, Stream):
         page_size = None
@@ -497,13 +507,22 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
         path = "/dummy/path"
         get_json_schema = mocker.MagicMock()
 
-        def supports_incremental(self):
-            return True
+        @property
+        def cursor_field(self) -> Union[str, List[str]]:
+            return ["updated_at"]
 
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
             HttpStream.__init__(self, *args, kvargs)
             self.read_records = mocker.MagicMock()
+
+        @property
+        def state(self) -> MutableMapping[str, Any]:
+            return self._state
+
+        @state.setter
+        def state(self, value: MutableMapping[str, Any]) -> None:
+            self._state = value
 
     class MockStream(mocker.MagicMock, Stream):
         page_size = None
