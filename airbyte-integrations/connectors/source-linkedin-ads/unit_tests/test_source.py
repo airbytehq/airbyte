@@ -3,12 +3,16 @@
 #
 
 
+import logging
 import pytest
 import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from conftest import find_stream
 from source_linkedin_ads.source import SourceLinkedinAds
+
+
+logger = logging.getLogger("airbyte")
 
 LINKEDIN_VERSION_API = 202404
 
@@ -85,11 +89,41 @@ class TestAllStreams:
         result = stream.retriever.requester.path
         assert result == expected
 
-    def test_check_connection(self, check_availability_mock):
-        check_availability_mock.return_value = (True, None)
-        is_available, error = self._instance.check_connection(logger=Mock(), config=TEST_CONFIG)
-        assert is_available
-        assert not error
+    @pytest.mark.parametrize(
+        ("status_code", "is_connection_successful", "error_msg"),
+        (
+                (
+                        400,
+                        False,
+                        (
+                                "Unable to connect to stream accounts - "
+                                "Request to https://api.linkedin.com/rest/adAccounts?q=search&pageSize=500 "
+                                "failed with status code 400 and error message None"
+                        ),
+                ),
+                (
+                        403,
+                        False,
+                        (
+                                "Unable to connect to stream accounts - "
+                                "Request to https://api.linkedin.com/rest/adAccounts?q=search&pageSize=500 "
+                                "failed with status code 403 and error message None"
+                        ),
+                ),
+                (200, True, None),
+        ),
+    )
+    def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg):
+        json = {"elements": [{"data": []}] * 500} if 200 >= status_code < 300 else {}
+        requests_mock.register_uri(
+            "GET",
+            "https://api.linkedin.com/rest/adAccounts?q=search&pageSize=500",
+            status_code=status_code,
+            json=json,
+        )
+        success, error = self._instance.check_connection(logger=logger, config=TEST_CONFIG)
+        assert success is is_connection_successful
+        assert error == error_msg
 
 
 class TestLinkedinAdsStream:
