@@ -72,7 +72,7 @@ Based on the outcome of previous attempts, the number of permitted attempts per 
 
 - 5 subsequent attempts where no data was synchronized
 - 10 total attempts where no data was synchronized
-- 10 total attempts where some data was synchronized
+- 20 total attempts where some data was synchronized
 
 For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
 

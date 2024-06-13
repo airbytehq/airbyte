@@ -1,165 +1,229 @@
-version: "0.29.0"
+version: 0.79.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - tags
 
 definitions:
-  selector:
-    extractor:
-      field_path: []
-  requester:
-    url_base: "https://api.smartengage.com"
-    http_method: "GET"
-    # API Docs: https://smartengage.com/docs/#authentication
+  streams:
+    avatars:
+      type: DeclarativeStream
+      name: avatars
+      primary_key:
+        - avatar_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /avatars/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/avatars"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - tag_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags/list
+          http_method: GET
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: avatar_id
+                partition_field: avatar_id
+                stream:
+                  $ref: "#/definitions/streams/avatars"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - custom_field_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customfields/list
+          http_method: GET
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: avatar_id
+                partition_field: avatar_id
+                stream:
+                  $ref: "#/definitions/streams/avatars"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    sequences:
+      type: DeclarativeStream
+      name: sequences
+      primary_key:
+        - sequence_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sequences/list
+          http_method: GET
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: avatar_id
+                partition_field: avatar_id
+                stream:
+                  $ref: "#/definitions/streams/avatars"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequences"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.smartengage.com
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-  base_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-  # API Docs: https://smartengage.com/docs/#list-all-avatars
-  avatars_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "avatars"
-      primary_key: "avatar_id"
-      path: "/avatars/list"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        properties:
-          brand_name:
-            description: Name of the brand or company related to the avatar
-            type:
-              - string
-              - "null"
-          avatar_id:
-            description: Unique identifier for the avatar
-            type: string
-          brand_image:
-            description: URL to the brand image associated with the avatar
-            type:
-              - string
-              - "null"
-          user_role:
-            description: Role or position of the user associated with the avatar
-            type:
-              - string
-              - "null"
-          facebook_page_id:
-            description: Identifier for the Facebook page linked to the avatar
-            type:
-              - string
-              - "null"
-        required:
-          - avatar_id
-  avatars_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/avatars_stream"
-        parent_key: "avatar_id"
-        partition_field: "avatar_id"
-  # API Docs: https://smartengage.com/docs/#list-all-tags
-  tags_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "tags"
-      primary_key: "tag_id"
-      path: "/tags/list"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          avatar_id: "{{ stream_slice.avatar_id }}"
-      partition_router:
-        $ref: "#/definitions/avatars_partition_router"
-    # API Docs: https://smartengage.com/docs/#list-all-custom-fields
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        properties:
-          tag_id:
-            description: Unique identifier for a tag.
-            type: string
-          tag_name:
-            description: Name or label associated with the tag.
-            type:
-              - string
-              - "null"
-        required:
-          - tag_id
-  custom_fields_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "custom_fields"
-      primary_key: "custom_field_id"
-      path: "/customfields/list"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          avatar_id: "{{ stream_slice.avatar_id }}"
-      partition_router:
-        $ref: "#/definitions/avatars_partition_router"
-    # API Docs: https://smartengage.com/docs/#list-all-sequences
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        properties:
-          custom_field_id:
-            description: The unique identifier for the custom field.
-            type: string
-          custom_field_name:
-            description: The name or label associated with the custom field.
-            type:
-              - string
-              - "null"
-        required:
-          - custom_field_id
-  sequences_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "sequences"
-      primary_key: "sequence_id"
-      path: "/sequences/list"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          avatar_id: "{{ stream_slice.avatar_id }}"
-      partition_router:
-        $ref: "#/definitions/avatars_partition_router"
 
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        properties:
-          sequence_id:
-            description: Unique identifier for the sequence data
-            type: string
-          sequence_name:
-            description: Name of the sequence
-            type:
-              - string
-              - "null"
-        required:
-          - sequence_id
 streams:
-  - "#/definitions/avatars_stream"
-  - "#/definitions/tags_stream"
-  - "#/definitions/custom_fields_stream"
-  - "#/definitions/sequences_stream"
+  - $ref: "#/definitions/streams/avatars"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/sequences"
 
-check:
-  stream_names: ["tags"]
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        description: API Key
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    avatars: false
+    tags: false
+    custom_fields: false
+    sequences: false
+
+schemas:
+  avatars:
+    type: object
+    additionalProperties: true
+    properties:
+      avatar_id:
+        type: string
+        description: Unique identifier for the avatar
+      brand_image:
+        type:
+          - string
+          - "null"
+        description: URL to the brand image associated with the avatar
+      brand_name:
+        type:
+          - string
+          - "null"
+        description: Name of the brand or company related to the avatar
+      facebook_page_id:
+        type:
+          - string
+          - "null"
+        description: Identifier for the Facebook page linked to the avatar
+      user_role:
+        type:
+          - string
+          - "null"
+        description: Role or position of the user associated with the avatar
+    required:
+      - avatar_id
+  tags:
+    type: object
+    additionalProperties: true
+    properties:
+      tag_id:
+        type: string
+        description: Unique identifier for a tag.
+      tag_name:
+        type:
+          - string
+          - "null"
+        description: Name or label associated with the tag.
+    required:
+      - tag_id
+  custom_fields:
+    type: object
+    additionalProperties: true
+    properties:
+      custom_field_id:
+        type: string
+        description: The unique identifier for the custom field.
+      custom_field_name:
+        type:
+          - string
+          - "null"
+        description: The name or label associated with the custom field.
+    required:
+      - custom_field_id
+  sequences:
+    type: object
+    additionalProperties: true
+    properties:
+      sequence_id:
+        type: string
+        description: Unique identifier for the sequence data
+      sequence_name:
+        type:
+          - string
+          - "null"
+        description: Name of the sequence
+    required:
+      - sequence_id
