@@ -24,6 +24,8 @@ import java.util.*
 import javax.sql.DataSource
 import kotlin.concurrent.Volatile
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
@@ -150,6 +152,10 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         // proving to be tricky
 
         // Second sync
+        // Running with last known version without Meta&GenID columns. Because the V1V2 migrator
+        // will no longer
+        // trigger changes to add meta or genid. Explicit Meta-GenID columns are added with a
+        // another migrator.
         runSync(catalog, messages) // does not throw with latest version
         Assertions.assertEquals(
             1,
@@ -212,7 +218,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
             BaseTypingDedupingTest.readRecords("dat/sync2_expectedrecords_v1v2_raw.jsonl")
         val expectedFinalRecords2 =
             BaseTypingDedupingTest.readRecords(
-                "dat/sync2_expectedrecords_v1v2_fullrefresh_append_final.jsonl"
+                "dat/sync2_expectedrecords_v1v2_fullrefresh_append_final.jsonl",
             )
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
@@ -242,11 +248,9 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         val messages1 = readMessages("dat/sync1_messages.jsonl")
         runSync(catalog, messages1, "airbyte/destination-snowflake:3.5.11")
 
-        val expectedRawRecords1 =
-            readRecords("dat/ltz_extracted_at_sync1_expectedrecords_raw.jsonl")
-        val expectedFinalRecords1 =
-            readRecords("dat/ltz_extracted_at_sync1_expectedrecords_dedup_final.jsonl")
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        // The dumpRawTable code already accounts for Meta and GenID columns, so we cannot use it
+        // to verify expected records. We will rely on the second sync to verify raw and final
+        // tables.
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -256,6 +260,156 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw_mixed_tzs.jsonl")
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final_mixed_tzs.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+    }
+
+    @Test
+    fun testAirbyteMetaAndGenerationIdMigration() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
+                            ),
+                    ),
+                )
+
+        // First sync
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1")
+
+        // Second sync
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog, messages2)
+
+        // The first 5 records in these files were written by the old version, and have
+        // several differences with the new records:
+        // In raw tables: no _airbyte_meta or _airbyte_generation_id at all
+        // In final tables: no generation ID, and airbyte_meta still uses the old `{errors: [...]}`
+        // structure
+        // So modify the expected records to reflect those differences.
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
+        for (i in 0..4) {
+            val record = expectedRawRecords2[i] as ObjectNode
+            record.remove(JavaBaseConstants.COLUMN_NAME_AB_META)
+            record.remove(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+        }
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
+        for (i in 0..4) {
+            val record = expectedFinalRecords2[i] as ObjectNode
+            record.set<ObjectNode>(
+                JavaBaseConstants.COLUMN_NAME_AB_META.uppercase(),
+                deserialize(
+                    """
+                    {"errors": []}
+                    """.trimIndent(),
+                ),
+            )
+            record.remove(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase())
+        }
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+
+        // Verify that we didn't trigger a soft reset.
+        // There should be two unique loaded_at values in the raw table.
+        // (only do this if T+D is enabled to begin with; otherwise loaded_at will just be null)
+        if (!disableFinalTableComparison()) {
+            val actualRawRecords2 = dumpRawTableRecords(streamNamespace, streamName)
+            val loadedAtValues: Set<JsonNode> =
+                actualRawRecords2
+                    .map { record: JsonNode -> record[JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT] }
+                    .toSet()
+            assertEquals(
+                2,
+                loadedAtValues.size,
+                "Expected two different values for loaded_at. If there is only 1 value, then we incorrectly triggered a soft reset. If there are more than 2, then something weird happened?",
+            )
+        }
+    }
+
+    @Test
+    fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
+                            ),
+                    ),
+                )
+
+        // First sync
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1")
+
+        // Second sync
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog, messages2)
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+    }
+
+    @Test
+    fun testAirbyteMetaAndGenerationIdMigrationForOverwrite310Broken() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
+                            ),
+                    ),
+                )
+
+        // First sync
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1")
+
+        // Second sync
+        // This throws exception due to a broken migration in connector
+        assertThrows(TestHarnessException::class.java) {
+            runSync(catalog, messages1, "airbyte/destination-snowflake:3.10.0")
+        }
+
+        // Third sync
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog, messages2)
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
