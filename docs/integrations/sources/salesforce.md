@@ -40,7 +40,7 @@ Orgs predating Spring 2021 may choose to create either a Minimum Access user or 
     
     You should grant this user read access to the data you want Airbyte to have access to.
 
-    1. [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
+   1. [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
    2. On the top right of the screen, click the gear icon and then click **Setup**.
    3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
    4. For Existing Profile, select **Minimum Access**. For Profile Name, enter **Airbyte User**.
