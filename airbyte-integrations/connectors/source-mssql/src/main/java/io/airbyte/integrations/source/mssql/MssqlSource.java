@@ -470,10 +470,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
     final var emptyHistory = new AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>>(Optional.empty(), false);
     final var schemaHistoryManager = AirbyteSchemaHistoryStorage.initializeDBHistory(emptyHistory, cdcStateHandler.compressSchemaHistoryForState());
-    final var cdcStreamList = catalog.getStreams().stream()
-        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
-    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(properties, config, catalog, cdcStreamList);
+    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(properties, config, catalog, Collections.emptyList());
     final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(propertiesManager);
     tableSnapshotPublisher.start(queue, offsetManager, Optional.of(schemaHistoryManager));
 
