@@ -1,1 +1,1 @@
-FROM airbyte/destination-postgres:2.0.10
+FROM airbyte/destination-postgres:2.0.11
