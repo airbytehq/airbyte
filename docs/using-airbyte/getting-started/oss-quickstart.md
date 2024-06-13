@@ -172,12 +172,12 @@ As long as your Docker Desktop daemon is running in the background, you can use 
 
 If you quit Docker Decktop and want to return to your local Airbyte workspace, just start Docker Desktop again. After a short period of time, you'll be able to access Airbyte's local installation normally. 
 
-## Troubleshooting Support
+## Troubleshooting
 
 There are several channels for community support of local setup and deployment. 
 
 **GitHub Airbyte Forum's Getting Started FAQ:**
- - Search the questions others have asked or ask a new question of your own. 
+ - Search the questions others have asked or ask a new question of your own.
 
 **Airbyte Knowledge Base:**
 - While support services are limited to Cloud and Enterprise customers, anyone may search the support team's [Help Center](https://support.airbyte.com/hc).
@@ -190,7 +190,7 @@ Helpful channels for troubleshooting include:
 
 ## Next Steps
 
-In the Building Connections section, you'll learn how to start moving data. Generally, there are three steps: 
+In the Building Connections section, you'll learn how to start moving data. Generally, there are three steps:
 
 1: [Set up a Source](./add-a-source)
 
