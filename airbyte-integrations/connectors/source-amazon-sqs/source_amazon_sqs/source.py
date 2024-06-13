@@ -4,11 +4,11 @@
 
 
 import json
+import logging
 from datetime import datetime
 from typing import Dict, Generator
 
 import boto3
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -41,7 +41,7 @@ class SourceAmazonSqs(Source):
     def parse_queue_name(self, url: str) -> str:
         return url.rsplit("/", 1)[-1]
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: json) -> AirbyteConnectionStatus:
         try:
             if "max_batch_size" in config:
                 # Max batch size must be between 1 and 10
@@ -67,7 +67,9 @@ class SourceAmazonSqs(Source):
                 logger.debug("Amazon SQS Source Config Check - secret_key (ends with): " + session_token[-1])
 
             logger.debug("Amazon SQS Source Config Check - Starting connection test ---")
-            session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, aws_session_token=session_token, region_name=queue_region)
+            session = boto3.Session(
+                aws_access_key_id=access_key, aws_secret_access_key=secret_key, aws_session_token=session_token, region_name=queue_region
+            )
             sqs = session.resource("sqs")
             queue = sqs.Queue(url=queue_url)
             if hasattr(queue, "attributes"):
@@ -82,7 +84,7 @@ class SourceAmazonSqs(Source):
                 status=Status.FAILED, message=f"Amazon SQS Source Config Check - An exception occurred: {str(e)}"
             )
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: json) -> AirbyteCatalog:
         streams = []
 
         # Get the queue name by getting substring after last /
@@ -98,7 +100,7 @@ class SourceAmazonSqs(Source):
         return AirbyteCatalog(streams=streams)
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: logging.Logger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         stream_name = self.parse_queue_name(config["queue_url"])
         logger.debug("Amazon SQS Source Read - stream is: " + stream_name)

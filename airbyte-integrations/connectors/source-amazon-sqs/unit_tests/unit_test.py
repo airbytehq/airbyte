@@ -3,10 +3,10 @@
 #
 
 import json
+import logging
 from typing import Any, Dict, Mapping
 
 import boto3
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
 
 # from airbyte_cdk.sources.source import Source
@@ -67,7 +67,7 @@ def test_check():
     # Create config
     config = create_config(queue_url, user["AccessKeyId"], user["SecretAccessKey"], queue_region, False)
     # Create AirbyteLogger
-    logger = AirbyteLogger()
+    logger = logging.Logger()
     # Create Source
     source = SourceAmazonSqs()
     # Run check
@@ -85,7 +85,7 @@ def test_discover():
     # Create config
     config = create_config(queue_url, "xxx", "xxx", queue_region, False)
     # Create AirbyteLogger
-    logger = AirbyteLogger()
+    logger = logging.Logger()
     # Create Source
     source = SourceAmazonSqs()
     # Run discover
@@ -112,7 +112,7 @@ def test_read():
     # Create ConfiguredAirbyteCatalog
     catalog = ConfiguredAirbyteCatalog(streams=get_catalog()["streams"])
     # Create AirbyteLogger
-    logger = AirbyteLogger()
+    logger = logging.Logger()
     # Create State
     state = Dict[str, any]
     # Create Source
