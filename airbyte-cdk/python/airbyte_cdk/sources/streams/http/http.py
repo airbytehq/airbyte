@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import logging
 import os
 import urllib
@@ -17,8 +16,11 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
-from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.checkpoint.cursor import Cursor
+from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests.auth import AuthBase
@@ -30,7 +32,7 @@ from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
-class HttpStream(Stream, ABC):
+class HttpStream(Stream, CheckpointMixin, ABC):
     """
     Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
     """
@@ -469,9 +471,47 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
-        )
+        # A cursor_field indicates this is an incremental stream which offers better checkpointing than RFR enabled via the cursor
+        if self.cursor_field or not isinstance(self.get_cursor(), ResumableFullRefreshCursor):
+            yield from self._read_pages(
+                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+                stream_slice,
+                stream_state,
+            )
+        else:
+            yield from self._read_page(
+                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+                stream_slice,
+                stream_state,
+            )
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        cursor = self.get_cursor()
+        if cursor:
+            return cursor.get_stream_state()  # type: ignore
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        cursor = self.get_cursor()
+        if cursor:
+            cursor.set_initial_state(value)
+        self._state = value
+
+    def get_cursor(self) -> Optional[Cursor]:
+        # I don't love that this is semi-stateful but not sure what else to do. We don't know what type of cursor to instantiate
+        # when creating the class, so during our first attempt to use the cursor we create it. This makes for a slightly awkward
+        # implementation since we only invoke this flow the first time when the cursor is None
+        if self.cursor is None:
+            if len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records and not self.is_substream:
+                # We are temporarily gating RFR to Python HttpStreams to minimize complexity. While implementing RFR for
+                # substreams we'll remove this self.is_substream condition
+                self.cursor = ResumableFullRefreshCursor()
+            else:
+                self.cursor = None
+
+        return self.cursor
 
     def _read_pages(
         self,
@@ -494,6 +534,46 @@ class HttpStream(Stream, ABC):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+    def _read_page(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        partition, cursor_slice, remaining_slice = self._extract_slice_fields(stream_slice=stream_slice)
+        stream_state = stream_state or {}
+        next_page_token = cursor_slice or None
+
+        request, response = self._fetch_next_page(remaining_slice, stream_state, next_page_token)
+        yield from records_generator_fn(request, response, stream_state, remaining_slice)
+
+        next_page_token = self.next_page_token(response) or {"__ab_full_refresh_sync_complete": True}
+
+        self.get_cursor().close_slice(StreamSlice(cursor_slice=next_page_token, partition=partition))
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
+    @staticmethod
+    def _extract_slice_fields(stream_slice: Optional[Mapping[str, Any]]) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+        if not stream_slice:
+            return {}, {}, {}
+
+        if isinstance(stream_slice, StreamSlice):
+            partition = stream_slice.partition
+            cursor_slice = stream_slice.cursor_slice
+            remaining = {k: v for k, v in stream_slice.items()}
+        else:
+            # RFR streams that implement stream_slices() to generate stream slices in the legacy mapping format are converted into a
+            # structured stream slice mapping by the LegacyCursorBasedCheckpointReader. The structured mapping object has separate
+            # fields for the partition and cursor_slice value
+            partition = stream_slice.get("partition", {})
+            cursor_slice = stream_slice.get("cursor_slice", {})
+            remaining = {key: val for key, val in stream_slice.items() if key != "partition" and key != "cursor_slice"}
+        return partition, cursor_slice, remaining
 
     def _fetch_next_page(
         self,

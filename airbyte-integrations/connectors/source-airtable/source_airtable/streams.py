@@ -157,7 +157,7 @@ class AirtableStream(HttpStream, ABC):
         """
         All available params: https://airtable.com/developers/web/api/list-records#query
         """
-        params = {}
+        params = {"pageSize": 5}
         if next_page_token:
             params.update(next_page_token)
         return params

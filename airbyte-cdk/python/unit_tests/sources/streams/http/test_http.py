@@ -4,13 +4,15 @@
 
 
 import json
+import logging
 from http import HTTPStatus
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Union
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.checkpoint import ResumableFullRefreshCursor
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -38,6 +40,9 @@ class StubBasicReadHttpStream(HttpStream):
 
     def must_deduplicate_query_params(self) -> bool:
         return self._deduplicate_query_params
+
+    def cursor_field(self) -> Union[str, List[str]]:
+        return ["updated_at"]
 
 
 def test_default_authenticator():
@@ -623,3 +628,232 @@ def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, pa
 def test_connection_pool():
     stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
     assert stream._session.adapters["https://"]._pool_connections == 20
+
+
+class StubFullRefreshHttpStream(HttpStream):
+    url_base = "https://test_base_url.com"
+    primary_key = "id"
+
+    def __init__(self, deduplicate_query_params: bool = False, pages: int = 5, **kwargs):
+        super().__init__(**kwargs)
+        self._pages_request_count = 0
+        self._page_counter = 0
+        self.resp_counter = 0
+        self._deduplicate_query_params = deduplicate_query_params
+        self._pages = pages
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        current_page = self.cursor.get_stream_state().get("page", 1)
+        if current_page < self._pages:
+            current_page += 1
+            page_token = {"page": current_page}
+            return page_token
+        return None
+
+    def path(self, **kwargs) -> str:
+        return ""
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.resp_counter += 1
+        stubResp = {"data": self.resp_counter}
+        yield stubResp
+
+    def must_deduplicate_query_params(self) -> bool:
+        return self._deduplicate_query_params
+
+
+class StubFullRefreshLegacySliceHttpStream(StubFullRefreshHttpStream):
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
+
+
+def test_resumable_full_refresh_read_from_start(mocker):
+    """
+    Validates the default behavior of a stream that supports resumable full refresh by using read_records() which gets one
+    page per invocation and emits state afterward.
+    parses over
+    """
+    pages = 5
+    stream = StubFullRefreshHttpStream(pages=pages)
+    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(StubFullRefreshHttpStream, "_send_request", return_value=blank_response)
+
+    # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
+    mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
+    methods = ["request_params", "request_headers", "request_body_json"]
+    for method in methods:
+        mocker.patch.object(stream, method, wraps=getattr(stream, method))
+
+    checkpoint_reader = stream._get_checkpoint_reader(
+        cursor_field=[], logger=logging.getLogger("airbyte"), sync_mode=SyncMode.full_refresh, stream_state={}
+    )
+    next_stream_slice = checkpoint_reader.next()
+    records = []
+
+    expected_checkpoints = [{"page": 2}, {"page": 3}, {"page": 4}, {"page": 5}, {"__ab_full_refresh_sync_complete": True}]
+    i = 0
+    while next_stream_slice is not None:
+        next_records = list(stream.read_records(SyncMode.full_refresh, stream_slice=next_stream_slice))
+        records.extend(next_records)
+        checkpoint_reader.observe(stream.state)
+        assert checkpoint_reader.get_checkpoint() == expected_checkpoints[i]
+        next_stream_slice = checkpoint_reader.next()
+        i += 1
+
+    assert getattr(stream, "_read_page").call_count == 5
+
+    # Since we have 5 pages, and we don't pass in the first page, we expect 4 tokens starting at {"page":2}, {"page":3}, etc...
+    expected_next_page_tokens = expected_checkpoints[:4]
+    for method in methods:
+        # First assert that they were called with no next_page_token. This is the first call in the pagination loop.
+        getattr(stream, method).assert_any_call(next_page_token=None, stream_slice={}, stream_state={})
+        for token in expected_next_page_tokens:
+            # Then verify that each method
+            getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=token, stream_state={})
+
+    expected = [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}]
+
+    assert records == expected
+
+
+def test_resumable_full_refresh_read_from_state(mocker):
+    """
+    Validates the default behavior of a stream that supports resumable full refresh with an incoming state by using
+    read_records() which gets one page per invocation and emits state afterward.
+    parses over
+    """
+    pages = 5
+    stream = StubFullRefreshHttpStream(pages=pages)
+    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(StubFullRefreshHttpStream, "_send_request", return_value=blank_response)
+
+    # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
+    mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
+    methods = ["request_params", "request_headers", "request_body_json"]
+    for method in methods:
+        mocker.patch.object(stream, method, wraps=getattr(stream, method))
+
+    checkpoint_reader = stream._get_checkpoint_reader(
+        cursor_field=[],
+        logger=logging.getLogger("airbyte"),
+        sync_mode=SyncMode.full_refresh,
+        stream_state={"page": 3}
+    )
+    next_stream_slice = checkpoint_reader.next()
+    records = []
+
+    expected_checkpoints = [{"page": 4}, {"page": 5}, {"__ab_full_refresh_sync_complete": True}]
+    i = 0
+    while next_stream_slice is not None:
+        next_records = list(stream.read_records(SyncMode.full_refresh, stream_slice=next_stream_slice))
+        records.extend(next_records)
+        checkpoint_reader.observe(stream.state)
+        assert checkpoint_reader.get_checkpoint() == expected_checkpoints[i]
+        next_stream_slice = checkpoint_reader.next()
+        i += 1
+
+    assert getattr(stream, "_read_page").call_count == 3
+
+    # Since we start at page 3, we expect 3 tokens starting at {"page":3}, {"page":4}, etc...
+    expected_next_page_tokens = [{"page": 3}, {"page": 4}, {"page": 5}]
+    for method in methods:
+        for token in expected_next_page_tokens:
+            # Then verify that each method
+            getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=token, stream_state={})
+
+    expected = [{"data": 1}, {"data": 2}, {"data": 3}]
+
+    assert records == expected
+
+
+def test_resumable_full_refresh_legacy_stream_slice(mocker):
+    """
+    Validates the default behavior of a stream that supports resumable full refresh where incoming stream slices use the
+    legacy Mapping format
+    """
+    pages = 5
+    stream = StubFullRefreshLegacySliceHttpStream(pages=pages)
+    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(StubFullRefreshLegacySliceHttpStream, "_send_request", return_value=blank_response)
+
+    # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
+    mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
+    methods = ["request_params", "request_headers", "request_body_json"]
+    for method in methods:
+        mocker.patch.object(stream, method, wraps=getattr(stream, method))
+
+    checkpoint_reader = stream._get_checkpoint_reader(
+        cursor_field=[],
+        logger=logging.getLogger("airbyte"),
+        sync_mode=SyncMode.full_refresh,
+        stream_state={"page": 2}
+    )
+    next_stream_slice = checkpoint_reader.next()
+    records = []
+
+    expected_checkpoints = [{"page": 3}, {"page": 4}, {"page": 5}, {"__ab_full_refresh_sync_complete": True}]
+    i = 0
+    while next_stream_slice is not None:
+        next_records = list(stream.read_records(SyncMode.full_refresh, stream_slice=next_stream_slice))
+        records.extend(next_records)
+        checkpoint_reader.observe(stream.state)
+        assert checkpoint_reader.get_checkpoint() == expected_checkpoints[i]
+        next_stream_slice = checkpoint_reader.next()
+        i += 1
+
+    assert getattr(stream, "_read_page").call_count == 4
+
+    # Since we start at page 3, we expect 3 tokens starting at {"page":3}, {"page":4}, etc...
+    expected_next_page_tokens = [{"page": 2}, {"page": 3}, {"page": 4}, {"page": 5}]
+    for method in methods:
+        for token in expected_next_page_tokens:
+            # Then verify that each method
+            getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=token, stream_state={})
+
+    expected = [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}]
+
+    assert records == expected
+
+
+class StubWithCursorFields(StubBasicReadHttpStream):
+    def __init__(self, is_substream: bool, set_cursor_field: List[str], deduplicate_query_params: bool = False, **kwargs):
+        super().__init__()
+        self.is_substream = is_substream
+        self._cursor_field = set_cursor_field
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return self._cursor_field
+
+
+@pytest.mark.parametrize(
+    "cursor_field, is_substream, expected_cursor",
+    [
+        pytest.param([], False, ResumableFullRefreshCursor(), id="test_stream_supports_resumable_full_refresh_cursor"),
+        pytest.param(["updated_at"], False, None, id="test_incremental_stream_does_not_use_cursor"),
+        pytest.param([], True, None, id="test_substream_does_not_use_cursor"),
+        pytest.param(["updated_at"], True, None, id="test_incremental_substream_does_not_use_cursor"),
+    ]
+)
+def test_get_cursor(cursor_field, is_substream, expected_cursor):
+    stream = StubWithCursorFields(set_cursor_field=cursor_field, is_substream=is_substream)
+    actual_cursor = stream.get_cursor()
+
+    assert actual_cursor == expected_cursor
+
+
+def test_get_cursor_uses_already_assigned_cursor():
+    """
+    This is a special test that verifies that when get_cursor() is invoked, the same cursor is returned. Because we don't
+    know what type of cursor to use when instantiating the stream, we have to create and assign the cursor at runtime
+    within get_cursor(). And since get_cursor() is called throughout the sync, we need to assign it the first time this
+    is called and reuse it on subsequent invocations
+    """
+
+    stream = StubWithCursorFields(set_cursor_field=[], is_substream=False)
+    actual_cursor = stream.get_cursor()
+    should_be_same_cursor = stream.get_cursor()
+
+    assert actual_cursor is should_be_same_cursor
