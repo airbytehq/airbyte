@@ -91,23 +91,23 @@ class PerPartitionCursor(DeclarativeCursor):
 
         Args:
             stream_state (StreamState): The state of the streams to be set. The format of the stream state should be:
-                                        {
-                                            "states": [
-                                                {
-                                                    "partition": {
-                                                        "partition_key": "value"
-                                                    },
-                                                    "cursor": {
-                                                        "last_updated": "2023-05-27T00:00:00Z"
-                                                    }
-                                                }
-                                            ],
-                                            "parent_state": {
-                                                "parent_stream_name": {
-                                                    "last_updated": "2023-05-27T00:00:00Z"
-                                                }
-                                            }
-                                        }
+                {
+                    "states": [
+                        {
+                            "partition": {
+                                "partition_key": "value"
+                            },
+                            "cursor": {
+                                "last_updated": "2023-05-27T00:00:00Z"
+                            }
+                        }
+                    ],
+                    "parent_state": {
+                        "parent_stream_name": {
+                            "last_updated": "2023-05-27T00:00:00Z"
+                        }
+                    }
+                }
         """
         if not stream_state:
             return
