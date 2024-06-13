@@ -64,6 +64,7 @@ Punk API's [API reference](https://punkapi.com/documentation/v2) has v2 at prese
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.1.2 | 2024-06-06 | [39158](https://github.com/airbytehq/airbyte/pull/39158) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.1 | 2024-05-20 | [38441](https://github.com/airbytehq/airbyte/pull/38441) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-31 | [Init](https://github.com/airbytehq/airbyte/pull/<yet>) | Initial commit |
 

@@ -60,74 +60,76 @@ entities:
     [Snowflake identifier requirements](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html)
     while renaming the resources.
 
-        -- set variables (these need to be uppercase)
-        set airbyte_role = 'AIRBYTE_ROLE';
-        set airbyte_username = 'AIRBYTE_USER';
-        set airbyte_warehouse = 'AIRBYTE_WAREHOUSE';
-        set airbyte_database = 'AIRBYTE_DATABASE';
-        set airbyte_schema = 'AIRBYTE_SCHEMA';
+```sql
+-- set variables (these need to be uppercase)
+set airbyte_role = 'AIRBYTE_ROLE';
+set airbyte_username = 'AIRBYTE_USER';
+set airbyte_warehouse = 'AIRBYTE_WAREHOUSE';
+set airbyte_database = 'AIRBYTE_DATABASE';
+set airbyte_schema = 'AIRBYTE_SCHEMA';
 
-        -- set user password
-        set airbyte_password = 'password';
+-- set user password
+set airbyte_password = 'password';
 
-        begin;
+begin;
 
-        -- create Airbyte role
-        use role securityadmin;
-        create role if not exists identifier($airbyte_role);
-        grant role identifier($airbyte_role) to role SYSADMIN;
+-- create Airbyte role
+use role securityadmin;
+create role if not exists identifier($airbyte_role);
+grant role identifier($airbyte_role) to role SYSADMIN;
 
-        -- create Airbyte user
-        create user if not exists identifier($airbyte_username)
-        password = $airbyte_password
-        default_role = $airbyte_role
-        default_warehouse = $airbyte_warehouse;
+-- create Airbyte user
+create user if not exists identifier($airbyte_username)
+password = $airbyte_password
+default_role = $airbyte_role
+default_warehouse = $airbyte_warehouse;
 
-        grant role identifier($airbyte_role) to user identifier($airbyte_username);
+grant role identifier($airbyte_role) to user identifier($airbyte_username);
 
-        -- change role to sysadmin for warehouse / database steps
-        use role sysadmin;
+-- change role to sysadmin for warehouse / database steps
+use role sysadmin;
 
-        -- create Airbyte warehouse
-        create warehouse if not exists identifier($airbyte_warehouse)
-        warehouse_size = xsmall
-        warehouse_type = standard
-        auto_suspend = 60
-        auto_resume = true
-        initially_suspended = true;
+-- create Airbyte warehouse
+create warehouse if not exists identifier($airbyte_warehouse)
+warehouse_size = xsmall
+warehouse_type = standard
+auto_suspend = 60
+auto_resume = true
+initially_suspended = true;
 
-        -- create Airbyte database
-        create database if not exists identifier($airbyte_database);
+-- create Airbyte database
+create database if not exists identifier($airbyte_database);
 
-        -- grant Airbyte warehouse access
-        grant USAGE
-        on warehouse identifier($airbyte_warehouse)
-        to role identifier($airbyte_role);
+-- grant Airbyte warehouse access
+grant USAGE
+on warehouse identifier($airbyte_warehouse)
+to role identifier($airbyte_role);
 
-        -- grant Airbyte database access
-        grant OWNERSHIP
-        on database identifier($airbyte_database)
-        to role identifier($airbyte_role);
+-- grant Airbyte database access
+grant OWNERSHIP
+on database identifier($airbyte_database)
+to role identifier($airbyte_role);
 
-        commit;
+commit;
 
-        begin;
+begin;
 
-        USE DATABASE identifier($airbyte_database);
+USE DATABASE identifier($airbyte_database);
 
-        -- create schema for Airbyte data
-        CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
+-- create schema for Airbyte data
+CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
 
-        commit;
+commit;
 
-        begin;
+begin;
 
-        -- grant Airbyte schema access
-        grant OWNERSHIP
-        on schema identifier($airbyte_schema)
-        to role identifier($airbyte_role);
+-- grant Airbyte schema access
+grant OWNERSHIP
+on schema identifier($airbyte_schema)
+to role identifier($airbyte_role);
 
-        commit;
+commit;
+```
 
 3.  Run the script using the
     [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or
@@ -266,6 +268,9 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:----------------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.10.1          | 2024-06-11 | [\#39399](https://github.com/airbytehq/airbyte/pull/39399) | Bug fix for _airbyte_meta not migrated in OVERWRITE mode                                                                                                         |
+| 3.10.0          | 2024-06-10 | [\#39107](https://github.com/airbytehq/airbyte/pull/39107) | _airbyte_meta and _airbyte_generation_id in Raw tables and final tables                                                                                          |
+| 3.9.1           | 2024-06-05 | [\#39135](https://github.com/airbytehq/airbyte/pull/39135) | Improved error handling for Staging files                                                                                                                        |
 | 3.9.0           | 2024-05-23 | [\#38658](https://github.com/airbytehq/airbyte/pull/38658) | Adapting to newer interfaces from #38107                                                                                                                         |
 | 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                                                                                      |
 | 3.8.3           | 2024-05-23 | [\#38586](https://github.com/airbytehq/airbyte/pull/38586) | Bump CDK version                                                                                                                                                 |
