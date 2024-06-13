@@ -87,7 +87,7 @@ Senseforce utilizes an undocumented rate limit which - under normal use - should
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
-|  0.1.4  | 2024-06-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Make compatible with builder                   |
+|  0.1.4  | 2024-06-15 | [39462](https://github.com/airbytehq/airbyte/pull/39462) | Make compatible with builder                   |
 |  0.1.3  | 2024-06-04 | [39073](https://github.com/airbytehq/airbyte/pull/39073) | [autopull] Upgrade base image to v1.2.1        |
 |  0.1.2  | 2024-05-20 | [38431](https://github.com/airbytehq/airbyte/pull/38431) | [autopull] base image + poetry + up_to_date    |
 |  0.1.1  | 2023-02-13 | [22892](https://github.com/airbytehq/airbyte/pull/22892) | Specified date formatting in specification     |
