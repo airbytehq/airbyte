@@ -44,10 +44,10 @@ class CompositeErrorHandler(ErrorHandler):
 
     @property
     def max_retries(self) -> Optional[int]:
-        return self.error_handlers[0].max_retries  # type: ignore # property not defined in ErrorHandler
+        return self.error_handlers[0].max_retries
 
     @property
-    def max_time(self) -> Union[int, None]:
+    def max_time(self) -> Optional[int]:
         return max([error_handler.max_time or 0 for error_handler in self.error_handlers])  # type: ignore # property not defined in ErrorHandler
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
