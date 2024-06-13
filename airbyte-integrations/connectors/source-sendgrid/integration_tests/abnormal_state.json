@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "created": "7270247822"
+        "created": 7270247822
       },
       "stream_descriptor": {
         "name": "global_suppressions"
@@ -14,7 +14,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "created": "7270247822"
+        "created": 7270247822
       },
       "stream_descriptor": {
         "name": "blocks"
@@ -25,7 +25,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "created": "7270247822"
+        "created": 7270247822
       },
       "stream_descriptor": {
         "name": "bounces"
@@ -36,7 +36,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "created": "7270247822"
+        "created": 7270247822
       },
       "stream_descriptor": {
         "name": "invalid_emails"
@@ -47,7 +47,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "created_at": "7270247822"
+        "created_at": 7270247822
       },
       "stream_descriptor": {
         "name": "suppression_group_members"
