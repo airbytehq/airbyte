@@ -2,22 +2,22 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-* [Developing with the Java CDK](#developing-with-the-java-cdk)
-  * [Intro to the Java CDK](#intro-to-the-java-cdk)
-    * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    * [How is the CDK published?](#how-is-the-cdk-published)
-  * [Using the Java CDK](#using-the-java-cdk)
-    * [Building the CDK](#building-the-cdk)
-    * [Bumping the CDK version](#bumping-the-cdk-version)
-    * [Publishing the CDK](#publishing-the-cdk)
-  * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-    * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-    * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  * [Changelog](#changelog)
-    * [Java CDK](#java-cdk)
+- [Developing with the Java CDK](#developing-with-the-java-cdk)
+  - [Intro to the Java CDK](#intro-to-the-java-cdk)
+    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    - [How is the CDK published?](#how-is-the-cdk-published)
+  - [Using the Java CDK](#using-the-java-cdk)
+    - [Building the CDK](#building-the-cdk)
+    - [Bumping the CDK version](#bumping-the-cdk-version)
+    - [Publishing the CDK](#publishing-the-cdk)
+  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    - [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    - [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  - [Changelog](#changelog)
+    - [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -173,11 +173,12 @@ corresponds to that version.
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
-|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.37.1  | 2024-06-10 | [\#38075](https://github.com/airbytehq/airbyte/pull/38075) | Destinations: Track stream statuses in async framework |
-| 0.37.0  | 2024-06-10 | [\#38121](https://github.com/airbytehq/airbyte/pull/38121) | Destinations: Set default namespace via CatalogParser |
-| 0.36.8  | 2024-06-07 | [\#38763](https://github.com/airbytehq/airbyte/pull/38763) | Increase Jackson message length limit |
-| 0.36.7  | 2024-06-06 | [\#39220](https://github.com/airbytehq/airbyte/pull/39220) | Handle null messages in ConnectorExceptionUtil |
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.37.3  | 2024-06-13 | [\#xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | Bump postgres JDBC driver version                                                                                                                              |
+| 0.37.1  | 2024-06-10 | [\#38075](https://github.com/airbytehq/airbyte/pull/38075) | Destinations: Track stream statuses in async framework                                                                                                         |
+| 0.37.0  | 2024-06-10 | [\#38121](https://github.com/airbytehq/airbyte/pull/38121) | Destinations: Set default namespace via CatalogParser                                                                                                          |
+| 0.36.8  | 2024-06-07 | [\#38763](https://github.com/airbytehq/airbyte/pull/38763) | Increase Jackson message length limit                                                                                                                          |
+| 0.36.7  | 2024-06-06 | [\#39220](https://github.com/airbytehq/airbyte/pull/39220) | Handle null messages in ConnectorExceptionUtil                                                                                                                 |
 | 0.36.6  | 2024-06-05 | [\#39106](https://github.com/airbytehq/airbyte/pull/39106) | Skip write to storage with 0 byte file                                                                                                                         |
 | 0.36.5  | 2024-06-01 | [\#38792](https://github.com/airbytehq/airbyte/pull/38792) | Throw config exception if no selectable table exists in user provided schemas                                                                                  |
 | 0.36.4  | 2024-05-31 | [\#38824](https://github.com/airbytehq/airbyte/pull/38824) | Param marked as non-null to nullable in JdbcDestinationHandler for NPE fix                                                                                     |
