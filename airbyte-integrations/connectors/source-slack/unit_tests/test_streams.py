@@ -96,7 +96,7 @@ def test_get_updated_state(authenticator, token_config, current_state, latest_re
         default_start_date=pendulum.parse(token_config["start_date"]),
         lookback_window=token_config["lookback_window"]
     )
-    assert stream.get_updated_state(current_stream_state=current_state, latest_record=latest_record) == expected_state
+    assert stream._get_updated_state(current_stream_state=current_state, latest_record=latest_record) == expected_state
 
 
 def test_threads_request_params(authenticator, token_config):
