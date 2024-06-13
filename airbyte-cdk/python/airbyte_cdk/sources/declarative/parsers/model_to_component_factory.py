@@ -985,7 +985,7 @@ class ModelToComponentFactory:
             stream=declarative_stream,
             partition_field=model.partition_field,
             config=config,
-            incremental_dependency=model.incremental_dependency,
+            incremental_dependency=model.incremental_dependency or False,
             parameters=model.parameters or {},
         )
 
