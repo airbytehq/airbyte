@@ -68,7 +68,10 @@ class PostgresRawTableAirbyteMetaMigration(
         destinationHandler.execute(
             Sql.of(
                 DSL.alterTable(DSL.name(stream.id.rawNamespace, stream.id.rawName))
-                    .addColumn(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_META), JSONB_TYPE)
+                    .addColumn(
+                        DSL.name(JavaBaseConstants.COLUMN_NAME_AB_META),
+                        PostgresSqlGenerator.JSONB_TYPE
+                    )
                     .getSQL(ParamType.INLINED)
             )
         )
