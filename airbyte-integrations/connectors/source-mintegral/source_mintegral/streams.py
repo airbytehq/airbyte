@@ -97,6 +97,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             "start_date": stream_slice[self.cursor_field],
             "end_date": stream_slice[self.cursor_field],
             "per_page": self.page_size,
+            "utc": "+0",
             "page": next_page_token["page"] if next_page_token else 1
         }
         self.log(f"Request params: {request_params}")
