@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/dataset/execute/{{ config['dataset_id']}}
           http_method: POST
           request_headers:
@@ -55,16 +55,16 @@ definitions:
           - id
         path: /api/dataset/execute/{{ config['dataset_id']}}
         cursor_datetime_formats:
-          - '%s'
-        datetime_format: '%s'
+          - "%s"
+        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P100D
         cursor_granularity: PT1S
       transformations:
@@ -72,20 +72,20 @@ definitions:
           fields:
             - path:
                 - airbyte_cursor
-              value: '{{ record[''timestamp''] | int / 1000 }}'
+              value: "{{ record['timestamp'] | int / 1000 }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dataset'
+          $ref: "#/schemas/dataset"
   base_requester:
     type: HttpRequester
-    url_base: '{{ config[''backend_url''] }}'
+    url_base: "{{ config['backend_url'] }}"
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''access_token''] }}'
+      api_token: "{{ config['access_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/dataset'
+  - $ref: "#/definitions/streams/dataset"
 
 spec:
   type: Spec
@@ -168,7 +168,7 @@ spec:
           your dataset has data from 2020-10-10 10:21:10, set the start_date to
           2020-10-10 or later
         examples:
-          - '2017-01-25'
+          - "2017-01-25"
         format: date
         order: 4
     additionalProperties: true
@@ -187,7 +187,7 @@ schemas:
         type: number
       id:
         type:
-          - 'null'
+          - "null"
           - string
       thing:
         type: string
