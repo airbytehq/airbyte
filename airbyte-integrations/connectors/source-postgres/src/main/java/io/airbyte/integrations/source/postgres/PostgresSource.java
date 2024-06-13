@@ -518,7 +518,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     if (isAnyStreamIncrementalSyncMode(catalog) && isXmin(sourceConfig)) {
-      // Log and save the xmin status.
+      // Log and save the xmin status
       final XminStatus xminStatus;
       try {
         xminStatus = PostgresQueryUtils.getXminStatus(database);
