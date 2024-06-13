@@ -228,8 +228,12 @@ Any database or table encoding combination of charset and collation is supported
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.8   | 2024-06-05 | [39144](https://github.com/airbytehq/airbyte/pull/39144) | Upgrade Debezium to 2.5.4 |
 | 3.4.7   | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                                                              |
 | 3.4.6   | 2024-05-29 | [38538](https://github.com/airbytehq/airbyte/pull/38538) | Exit connector when encountering a config error.                                                                                                |
 | 3.4.5   | 2024-05-23 | [38198](https://github.com/airbytehq/airbyte/pull/38198)   | Sync sending trace status messages indicating progress.                                                                                         |
@@ -402,3 +406,5 @@ Any database or table encoding combination of charset and collation is supported
 | 0.1.6   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307)     | Migrate Postgres and MySQL to use new JdbcSource                                                                                                |
 | 0.1.5   | 2020-12-11 | [1267](https://github.com/airbytehq/airbyte/pull/1267)     | Support incremental sync                                                                                                                        |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)     | Add connectors using an index YAML file                                                                                                         |
+
+</details>

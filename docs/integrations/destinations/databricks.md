@@ -341,7 +341,10 @@ Suppose you are interested in learning more about the Databricks connector or de
 Delta Lake tables are created. You may want to consult the tutorial on
 [How to Load Data into Delta Lake on Databricks Lakehouse](https://airbyte.com/tutorials/load-data-into-delta-lake-on-databricks-lakehouse).
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                  |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
@@ -368,3 +371,5 @@ Delta Lake tables are created. You may want to consult the tutorial on
 | 0.1.2   | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288)                                                          | Support Json `additionalProperties`.                                                                                     |
 | 0.1.1   | 2021-10-05 | [\#6792](https://github.com/airbytehq/airbyte/pull/6792)                                                            | Require users to accept Databricks JDBC Driver [Terms & Conditions](https://databricks.com/jdbc-odbc-driver-license).    |
 | 0.1.0   | 2021-09-14 | [\#5998](https://github.com/airbytehq/airbyte/pull/5998)                                                            | Initial private release.                                                                                                 |
+
+</details>

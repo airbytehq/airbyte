@@ -1,7 +1,6 @@
 # Linkedin-Pages source connector
 
-
-This is the repository for the Linkedin-Pages source connector, written in Python.
+This is the repository for the Linkedin-Pages configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/linkedin-pages).
 
 ## Local development
@@ -12,6 +11,7 @@ For information about how to use this connector within Airbyte, see [the documen
 
 
 ### Installing the connector
+
 From this connector directory, run:
 ```bash
 poetry install --with dev
@@ -19,18 +19,20 @@ poetry install --with dev
 
 
 ### Create credentials
+
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/linkedin-pages)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_linkedin_pages/spec.yaml` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_linkedin_pages/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
 
 ### Locally running the connector
+
 ```
 poetry run source-linkedin-pages spec
 poetry run source-linkedin-pages check --config secrets/config.json
 poetry run source-linkedin-pages discover --config secrets/config.json
-poetry run source-linkedin-pages read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-linkedin-pages read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests

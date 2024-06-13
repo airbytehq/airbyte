@@ -57,11 +57,18 @@ Connector will handle an issue with rate limiting as Klarna returns 429 status c
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.4   | 2024-04-19 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | Updating to 0.80.0 CDK                                                          |
-| 0.2.3   | 2024-04-18 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | Manage dependencies with Poetry.                                                |
-| 0.2.2   | 2024-04-15 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.1   | 2024-04-12 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | schema descriptions                                                             |
-| 0.2.0   | 2023-10-23 | [31003](https://github.com/airbytehq/airbyte/pull/31003) | Migrate to low-code                                                             |
-| 0.1.0   | 2022-10-24 | [18385](https://github.com/airbytehq/airbyte/pull/18385) | Klarna Settlements Payout and Transactions API                                  |
+| 0.2.6 | 2024-06-07 | [38709](https://github.com/airbytehq/airbyte/pull/38709) | Updating US endpoints                                                           |
+| 0.2.5 | 2024-06-04 | [39045](https://github.com/airbytehq/airbyte/pull/39045) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.4 | 2024-04-19 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | Updating to 0.80.0 CDK |
+| 0.2.3 | 2024-04-18 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | Manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | schema descriptions |
+| 0.2.0 | 2023-10-23 | [31003](https://github.com/airbytehq/airbyte/pull/31003) | Migrate to low-code |
+| 0.1.0 | 2022-10-24 | [18385](https://github.com/airbytehq/airbyte/pull/18385) | Klarna Settlements Payout and Transactions API |
+
+</details>
