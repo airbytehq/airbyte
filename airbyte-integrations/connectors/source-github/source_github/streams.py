@@ -13,6 +13,7 @@ import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
@@ -255,7 +256,7 @@ class GithubStream(GithubStreamABC):
         return record
 
 
-class SemiIncrementalMixin:
+class SemiIncrementalMixin(CheckpointMixin):
     """
     Semi incremental streams are also incremental but with one difference, they:
       - read all records;
@@ -280,6 +281,14 @@ class SemiIncrementalMixin:
         self._starting_point_cache = {}
 
     @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+    
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
+    @property
     def slice_keys(self):
         if hasattr(self, "repositories"):
             return ["repository"]
@@ -295,7 +304,7 @@ class SemiIncrementalMixin:
         if self.is_sorted == "asc":
             return self.page_size
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
@@ -306,6 +315,7 @@ class SemiIncrementalMixin:
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
         current_stream_state.setdefault(slice_value, {})[self.cursor_field] = updated_state
+        print(f"updated state: {current_stream_state}")
         return current_stream_state
 
     def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -337,6 +347,7 @@ class SemiIncrementalMixin:
         ):
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
             if not start_point or cursor_value > start_point:
+                self.state = self._get_updated_state(self.state, record)
                 yield record
             elif self.is_sorted == "desc" and cursor_value < start_point:
                 break
@@ -719,7 +730,7 @@ class Commits(IncrementalMixin, GithubStream):
 
         return record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
         branch = latest_record["branch"]
         updated_state = latest_record[self.cursor_field]
@@ -1004,7 +1015,7 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
 # Reactions streams
 
 
-class ReactionStream(GithubStream, ABC):
+class ReactionStream(GithubStream, CheckpointMixin, ABC):
 
     parent_key = "id"
     copy_parent_key = "comment_id"
@@ -1023,6 +1034,14 @@ class ReactionStream(GithubStream, ABC):
         Specify the class of the parent stream for which receive reactions
         """
 
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+    
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         parent_path = self._parent_stream.path(stream_slice=stream_slice, **kwargs)
         return f"{parent_path}/{stream_slice[self.copy_parent_key]}/reactions"
@@ -1032,7 +1051,7 @@ class ReactionStream(GithubStream, ABC):
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {self.copy_parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
         parent_id = str(latest_record[self.copy_parent_key])
         updated_state = latest_record[self.cursor_field]
@@ -1065,6 +1084,7 @@ class ReactionStream(GithubStream, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
+                self.state = self._get_updated_state(self.state, record)
                 yield record
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
