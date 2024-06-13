@@ -47,7 +47,7 @@ public class AzureBlobStorageSpillTest {
   void setup() {
     azureBlobStorageContainer = new AzureBlobStorageContainer().withExposedPorts(10000);
     azureBlobStorageContainer.start();
-    var azureBlobStorageDestinationConfig = createConfig(azureBlobStorageContainer.getMappedPort(10000));
+    var azureBlobStorageDestinationConfig = createConfig(azureBlobStorageContainer.getHost(), azureBlobStorageContainer.getMappedPort(10000));
     var configuredAirbyteCatalog = createConfiguredAirbyteCatalog();
     azureBlobStorageConsumer =
         new AzureBlobStorageConsumer(azureBlobStorageDestinationConfig, configuredAirbyteCatalog,
@@ -96,9 +96,9 @@ public class AzureBlobStorageSpillTest {
 
   }
 
-  private static AzureBlobStorageDestinationConfig createConfig(Integer mappedPort) {
+  private static AzureBlobStorageDestinationConfig createConfig(String host, Integer mappedPort) {
     return new AzureBlobStorageDestinationConfig(
-        "http://127.0.0.1:" + mappedPort + "/devstoreaccount1",
+        "http://" + host + ":" + mappedPort + "/devstoreaccount1",
         "devstoreaccount1",
         "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
         "container-name",
