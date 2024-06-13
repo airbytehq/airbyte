@@ -51,7 +51,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           LOGGER.info("jsonData: " + jsonData);
           LOGGER.info("emittedAt: " + emittedAt);
           pstmt.setString(1, uuid);
-          pstmt.setObject (2, new JSONStruct("JSON",new Object[] {jsonData}));
+          pstmt.setObject(2, new JSONStruct("JSON", new Object[] {jsonData}));
           pstmt.setTimestamp(3, emittedAt);
           pstmt.addBatch();
 
