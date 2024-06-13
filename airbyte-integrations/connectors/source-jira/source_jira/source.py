@@ -84,9 +84,11 @@ class SourceJira(YamlDeclarativeSource):
         issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
 
+        streams = [IssueComments(**incremental_args), IssueWorklogs(**incremental_args)]
+
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
             experimental_streams.append(
                 PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
             )
-        return experimental_streams
+        return streams + experimental_streams
