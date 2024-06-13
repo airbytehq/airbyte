@@ -1,7 +1,6 @@
 # Workramp source connector
 
-
-This is the repository for the Workramp source connector, written in Python.
+This is the repository for the Workramp configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/workramp).
 
 ## Local development
@@ -12,6 +11,7 @@ For information about how to use this connector within Airbyte, see [the documen
 
 
 ### Installing the connector
+
 From this connector directory, run:
 ```bash
 poetry install --with dev
@@ -19,13 +19,15 @@ poetry install --with dev
 
 
 ### Create credentials
+
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/workramp)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_workramp/spec.yaml` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_workramp/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
 
 ### Locally running the connector
+
 ```
 poetry run source-workramp spec
 poetry run source-workramp check --config secrets/config.json
@@ -48,9 +50,10 @@ airbyte-ci connectors --name=source-workramp build
 
 An image will be available on your host with the tag `airbyte/source-workramp:dev`.
 
-
 ### Running as a docker container
+
 Then run any of the connector commands as follows:
+
 ```
 docker run --rm airbyte/source-workramp:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-workramp:dev check --config /secrets/config.json
@@ -59,12 +62,15 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ```
 
 ### Running our CI test suite
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-workramp test
 ```
 
 ### Customizing acceptance Tests
+
 Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
