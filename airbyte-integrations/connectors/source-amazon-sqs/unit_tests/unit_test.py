@@ -10,12 +10,12 @@ import boto3
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
 
 # from airbyte_cdk.sources.source import Source
-from moto import mock_iam, mock_sqs
+from moto import mock_aws
 from moto.core import set_initial_no_auth_action_count
 from source_amazon_sqs import SourceAmazonSqs
 
 
-@mock_iam
+@mock_aws
 def create_user_with_all_permissions():
     client = boto3.client("iam", region_name="eu-west-1")
     client.create_user(UserName="test_user1")
@@ -52,8 +52,7 @@ def get_catalog() -> Mapping[str, Any]:
 
 
 @set_initial_no_auth_action_count(3)
-@mock_sqs
-@mock_iam
+@mock_aws
 def test_check():
     # Create User
     user = create_user_with_all_permissions()
@@ -67,7 +66,7 @@ def test_check():
     # Create config
     config = create_config(queue_url, user["AccessKeyId"], user["SecretAccessKey"], queue_region, False)
     # Create AirbyteLogger
-    logger = logging.Logger()
+    logger = logging.Logger(name="test")
     # Create Source
     source = SourceAmazonSqs()
     # Run check
@@ -75,7 +74,7 @@ def test_check():
     assert status.status == Status.SUCCEEDED
 
 
-@mock_sqs
+@mock_aws
 def test_discover():
     # Create Queue
     queue_name = "amazon-sqs-mock-queue"
@@ -85,7 +84,7 @@ def test_discover():
     # Create config
     config = create_config(queue_url, "xxx", "xxx", queue_region, False)
     # Create AirbyteLogger
-    logger = logging.Logger()
+    logger = logging.Logger(name="test_2")
     # Create Source
     source = SourceAmazonSqs()
     # Run discover
@@ -94,8 +93,7 @@ def test_discover():
 
 
 @set_initial_no_auth_action_count(3)
-@mock_sqs
-@mock_iam
+@mock_aws
 def test_read():
     # Create User
     user = create_user_with_all_permissions()
@@ -112,7 +110,7 @@ def test_read():
     # Create ConfiguredAirbyteCatalog
     catalog = ConfiguredAirbyteCatalog(streams=get_catalog()["streams"])
     # Create AirbyteLogger
-    logger = logging.Logger()
+    logger = logging.Logger(name="test_3")
     # Create State
     state = Dict[str, any]
     # Create Source

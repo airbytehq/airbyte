@@ -5,7 +5,7 @@
     "title": "Amazon SQS Source Spec",
     "type": "object",
     "required": ["queue_url", "region", "delete_messages"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "queue_url": {
         "title": "Queue URL",
