@@ -475,10 +475,10 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "entityId" ]
+          - path: ["entityId"]
             value_type: string
             value: "{{ record.id.entityId }}"
-          - path: [ "name" ]
+          - path: ["name"]
             value_type: string
             value: "{{ record.id.name }}"
 
