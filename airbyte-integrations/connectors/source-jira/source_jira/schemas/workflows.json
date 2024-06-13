@@ -16,11 +16,11 @@
       }
     },
     "entityId": {
-      "description": "The unique name of the workflow.",
+      "description": "The unique identifier of the workflow.",
       "type": ["null", "string"]
     },
     "name": {
-      "description": "The unique identifier the workflow.",
+      "description": "The unique name the workflow.",
       "type": ["null", "string"]
     },
     "description": {
