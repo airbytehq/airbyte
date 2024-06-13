@@ -30,12 +30,7 @@ jobs:
         continue-on-error: true
         with:
           context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "format check all"
 
       - name: Run airbyte-ci format check [PULL REQUEST]
@@ -45,12 +40,7 @@ jobs:
         continue-on-error: false
         with:
           context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "format check all"
 
       - name: Run airbyte-ci format check [WORKFLOW DISPATCH]
@@ -60,12 +50,7 @@ jobs:
         continue-on-error: false
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "format check all"
 
       - name: Match GitHub User to Slack User [MASTER]
@@ -77,7 +62,7 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Format Failure on Master Slack Channel [MASTER]
-        if: steps.airbyte_ci_format_check_all.outcome == 'failure' && github.ref == 'refs/heads/master'
+        if: steps.airbyte_ci_format_check_all_master.outcome == 'failure' && github.ref == 'refs/heads/master'
         uses: abinoda/slack-action@master
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
@@ -90,35 +75,3 @@ jobs:
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
-
-  # TODO alafanechere: move it to community_ci.yml and make it use the run-airbyte-ci action
-  format-check-from-forks:
-    # Same-named job as above, in order to ensure 'required checks' pass either way.
-    # This should run all the same checks as above, except not requiring any credentials.
-    name: "Check for formatting errors"
-    if: >
-      github.event.pull_request.head.repo.fork == true
-    runs-on: ubuntu-latest
-    steps:
-      # We have no creds. Ignore docker caching and just run the CLI.
-      - name: Checkout code (Unprivileged)
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          fetch-depth: 1
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install Airbyte CI from binary
-        id: install-airbyte-ci-binary
-        shell: bash
-        run: |
-          curl -sSL "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci" --output airbyte-ci-bin
-          sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
-          sudo chmod +x /usr/local/bin/airbyte-ci
-      - name: Run format checks
-        run: |
-          /usr/local/bin/airbyte-ci --disable-update-check format check all

@@ -63,7 +63,7 @@ jobs:
     # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
     # Forked PRs are handled by the community_ci.yml workflow
     # If the condition is not met the job will be skipped (it will not fail)
-    if: needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true
+    if: (github.event_name == 'pull_request' && needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
     name: Connectors CI
     runs-on: connector-test-large
     timeout-minutes: 360 # 6 hours

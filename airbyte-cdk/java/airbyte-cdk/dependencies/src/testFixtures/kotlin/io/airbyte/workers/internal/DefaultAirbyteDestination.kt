@@ -18,6 +18,7 @@ import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.WorkerConstants
 import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.process.IntegrationLauncher
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -31,15 +32,15 @@ import kotlin.collections.Map
 import kotlin.collections.Set
 import kotlin.collections.contains
 import kotlin.collections.setOf
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DefaultAirbyteDestination
 @JvmOverloads
 constructor(
     private val integrationLauncher: IntegrationLauncher,
     private val streamFactory: AirbyteStreamFactory =
-        DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
+        DefaultAirbyteStreamFactory(createContainerLogMdcBuilder()),
     private val messageWriterFactory: AirbyteMessageBufferedWriterFactory =
         DefaultAirbyteMessageBufferedWriterFactory(),
     private val protocolSerializer: ProtocolSerializer = DefaultProtocolSerializer()
@@ -48,7 +49,7 @@ constructor(
 
     private var destinationProcess: Process? = null
     private var writer: AirbyteMessageBufferedWriter? = null
-    private var messageIterator: Iterator<AirbyteMessage?>? = null
+    private var messageIterator: Iterator<AirbyteMessage>? = null
 
     private var exitValueIsSet = false
     override val exitValue: Int
@@ -85,9 +86,9 @@ constructor(
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             destinationProcess!!.errorStream,
-            { msg: String? -> LOGGER.error(msg) },
+            { msg: String -> LOGGER.error(msg) },
             "airbyte-destination",
-            CONTAINER_LOG_MDC_BUILDER
+            createContainerLogMdcBuilder()
         )
 
         writer =
@@ -178,8 +179,8 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultAirbyteDestination::class.java)
-        val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder =
+
+        fun createContainerLogMdcBuilder(): MdcScope.Builder =
             MdcScope.Builder()
                 .setLogPrefix("destination")
                 .setPrefixColor(LoggingHelper.Color.YELLOW_BACKGROUND)

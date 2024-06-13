@@ -1,17 +1,21 @@
 {
   "properties": {
     "date_created": {
+      "description": "The date and time when the key was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the key was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "The user-friendly name associated with the key.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier for the key (System ID).",
       "type": ["null", "string"]
     }
   },

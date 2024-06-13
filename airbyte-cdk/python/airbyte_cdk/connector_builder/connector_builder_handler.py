@@ -13,6 +13,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
@@ -54,7 +55,11 @@ def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> Manifest
 
 
 def read_stream(
-    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, state: List[AirbyteStateMessage], limits: TestReadLimits
+    source: DeclarativeSource,
+    config: Mapping[str, Any],
+    configured_catalog: ConfiguredAirbyteCatalog,
+    state: List[AirbyteStateMessage],
+    limits: TestReadLimits,
 ) -> AirbyteMessage:
     try:
         handler = MessageGrouper(limits.max_pages_per_slice, limits.max_slices, limits.max_records)
@@ -66,7 +71,7 @@ def read_stream(
         )
     except Exception as exc:
         error = AirbyteTracedException.from_exception(
-            exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}: {str(exc)}"
+            exc, message=filter_secrets(f"Error reading stream with config={config} and catalog={configured_catalog}: {str(exc)}")
         )
         return error.as_airbyte_message()
 

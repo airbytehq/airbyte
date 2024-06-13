@@ -18,16 +18,16 @@ import java.util.*
  * Largely based on
  * [io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator].
  */
-class JdbcV1V2Migrator(
-    private val namingConventionTransformer: NamingConventionTransformer,
-    private val database: JdbcDatabase,
-    private val databaseName: String
+open class JdbcV1V2Migrator(
+    protected val namingConventionTransformer: NamingConventionTransformer,
+    protected val database: JdbcDatabase,
+    protected val databaseName: String?
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
         val retrievedSchema =
-            database.executeMetadataQuery<String> { dbMetadata: DatabaseMetaData? ->
+            database.executeMetadataQuery<String> { dbMetadata: DatabaseMetaData ->
                 try {
-                    dbMetadata!!.getSchemas(databaseName, streamConfig!!.id.rawNamespace).use {
+                    dbMetadata.getSchemas(databaseName, streamConfig!!.id.rawNamespace).use {
                         columns ->
                         var schema = ""
                         while (columns.next()) {
@@ -67,9 +67,9 @@ class JdbcV1V2Migrator(
 
     override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {
         @Suppress("deprecation")
-        val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName!!)
+        val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName)
         return NamespacedTableName(
-            namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace!!),
+            namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace),
             tableName
         )
     }

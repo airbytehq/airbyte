@@ -7,29 +7,26 @@
 from typing import Optional
 
 import asyncclick as click
-from dagger import Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
-from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.utils import format_duration
+from pipelines.models.secrets import Secret
 
 
 class PublishConnectorContext(ConnectorContext):
-    docker_hub_username_secret: Secret
-    docker_hub_password_secret: Secret
-
     def __init__(
         self,
         connector: ConnectorWithModifiedFiles,
         pre_release: bool,
-        spec_cache_gcs_credentials: str,
+        spec_cache_gcs_credentials: Secret,
         spec_cache_bucket_name: str,
-        metadata_service_gcs_credentials: str,
+        metadata_service_gcs_credentials: Secret,
         metadata_bucket_name: str,
-        docker_hub_username: str,
-        docker_hub_password: str,
+        docker_hub_username: Secret,
+        docker_hub_password: Secret,
+        ci_gcp_credentials: Secret,
         slack_webhook: str,
         reporting_slack_channel: str,
         ci_report_bucket: str,
@@ -37,24 +34,25 @@ class PublishConnectorContext(ConnectorContext):
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
         python_registry_url: str,
         python_registry_check_url: str,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
-        ci_gcs_credentials: Optional[str] = None,
         pull_request: Optional[PullRequest.PullRequest] = None,
-        s3_build_cache_access_key_id: Optional[str] = None,
-        s3_build_cache_secret_key: Optional[str] = None,
+        s3_build_cache_access_key_id: Optional[Secret] = None,
+        s3_build_cache_secret_key: Optional[Secret] = None,
         use_local_cdk: bool = False,
-        python_registry_token: Optional[str] = None,
+        python_registry_token: Optional[Secret] = None,
     ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
-        self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
-        self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
+        self.spec_cache_gcs_credentials = spec_cache_gcs_credentials
+        self.metadata_service_gcs_credentials = metadata_service_gcs_credentials
         self.python_registry_token = python_registry_token
         self.python_registry_url = python_registry_url
         self.python_registry_check_url = python_registry_check_url
@@ -72,13 +70,15 @@ class PublishConnectorContext(ConnectorContext):
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
+            diffed_branch=diffed_branch,
+            git_repo_url=git_repo_url,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
-            ci_gcs_credentials=ci_gcs_credentials,
+            ci_gcp_credentials=ci_gcp_credentials,
             should_save_report=True,
             use_local_cdk=use_local_cdk,
             docker_hub_username=docker_hub_username,
@@ -87,13 +87,12 @@ class PublishConnectorContext(ConnectorContext):
             s3_build_cache_secret_key=s3_build_cache_secret_key,
         )
 
-    @property
-    def metadata_service_gcs_credentials_secret(self) -> Secret:
-        return self.dagger_client.set_secret("metadata_service_gcs_credentials", self.metadata_service_gcs_credentials)
-
-    @property
-    def spec_cache_gcs_credentials_secret(self) -> Secret:
-        return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
+        # Reassigning current class required instance attribute
+        # Which are optional in the super class
+        # for type checking
+        self.docker_hub_username: Secret = docker_hub_username
+        self.docker_hub_password: Secret = docker_hub_password
+        self.ci_gcp_credentials: Secret = ci_gcp_credentials
 
     @property
     def pre_release_suffix(self) -> str:

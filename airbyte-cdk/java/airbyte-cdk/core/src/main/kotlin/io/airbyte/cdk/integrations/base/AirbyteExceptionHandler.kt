@@ -5,13 +5,13 @@ package io.airbyte.cdk.integrations.base
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.regex.Pattern
 import javax.validation.constraints.NotNull
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(thread: Thread, throwable: Throwable) {
@@ -27,58 +27,58 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
         // the sync."
         // from the spec:
         // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
-        LOGGER.error(logMessage, throwable)
+        try {
+            LOGGER.error(throwable) { logMessage }
+            // Attempt to deinterpolate the error message before emitting a trace message
+            val mangledMessage: String?
+            // If any exception in the chain is of a deinterpolatable type, find it and
+            // deinterpolate
+            // its
+            // message.
+            // This assumes that any wrapping exceptions are just noise (e.g. runtime exception).
+            val deinterpolatableException =
+                ExceptionUtils.getThrowableList(throwable)
+                    .stream()
+                    .filter { t: Throwable ->
+                        THROWABLES_TO_DEINTERPOLATE.stream().anyMatch {
+                            deinterpolatableClass: Class<out Throwable> ->
+                            deinterpolatableClass.isAssignableFrom(t.javaClass)
+                        }
+                    }
+                    .findFirst()
+            val messageWasMangled: Boolean
+            if (deinterpolatableException.isPresent) {
+                val originalMessage = deinterpolatableException.get().message
+                mangledMessage =
+                    STRINGS_TO_DEINTERPOLATE
+                        .stream() // Sort the strings longest to shortest, in case any target string
+                        // is
+                        // a substring of another
+                        // e.g. "airbyte_internal" should be swapped out before "airbyte"
+                        .sorted(Comparator.comparing { obj: String -> obj.length }.reversed())
+                        .reduce(originalMessage) { message: String?, targetString: String? ->
+                            deinterpolate(message, targetString)
+                        }
+                messageWasMangled = mangledMessage != originalMessage
+            } else {
+                mangledMessage = throwable.message
+                messageWasMangled = false
+            }
 
-        val rootThrowable = ConnectorExceptionUtil.getRootConfigError(Exception(throwable))
-
-        if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
+            if (!messageWasMangled) {
+                // If we did not modify the message (either not a deinterpolatable class, or we
+                // tried to
+                // deinterpolate but made no changes) then emit our default trace message
+                AirbyteTraceMessageUtility.emitSystemErrorTrace(throwable, logMessage)
+            } else {
+                // If we did modify the message, then emit a custom trace message
+                AirbyteTraceMessageUtility.emitCustomErrorTrace(throwable.message, mangledMessage)
+            }
+        } catch (t: Throwable) {
+            LOGGER.error(t) { "exception in the exception handler" }
+        } finally {
             terminate()
         }
-
-        // Attempt to deinterpolate the error message before emitting a trace message
-        val mangledMessage: String?
-        // If any exception in the chain is of a deinterpolatable type, find it and deinterpolate
-        // its
-        // message.
-        // This assumes that any wrapping exceptions are just noise (e.g. runtime exception).
-        val deinterpolatableException =
-            ExceptionUtils.getThrowableList(throwable)
-                .stream()
-                .filter { t: Throwable ->
-                    THROWABLES_TO_DEINTERPOLATE.stream().anyMatch {
-                        deinterpolatableClass: Class<out Throwable> ->
-                        deinterpolatableClass.isAssignableFrom(t.javaClass)
-                    }
-                }
-                .findFirst()
-        val messageWasMangled: Boolean
-        if (deinterpolatableException.isPresent) {
-            val originalMessage = deinterpolatableException.get().message
-            mangledMessage =
-                STRINGS_TO_DEINTERPOLATE
-                    .stream() // Sort the strings longest to shortest, in case any target string is
-                    // a substring of another
-                    // e.g. "airbyte_internal" should be swapped out before "airbyte"
-                    .sorted(Comparator.comparing { obj: String -> obj.length }.reversed())
-                    .reduce(originalMessage) { message: String?, targetString: String? ->
-                        deinterpolate(message, targetString)
-                    }
-            messageWasMangled = mangledMessage != originalMessage
-        } else {
-            mangledMessage = throwable.message
-            messageWasMangled = false
-        }
-
-        if (!messageWasMangled) {
-            // If we did not modify the message (either not a deinterpolatable class, or we tried to
-            // deinterpolate but made no changes) then emit our default trace message
-            AirbyteTraceMessageUtility.emitSystemErrorTrace(throwable, logMessage)
-        } else {
-            // If we did modify the message, then emit a custom trace message
-            AirbyteTraceMessageUtility.emitCustomErrorTrace(throwable.message, mangledMessage)
-        }
-
-        terminate()
     }
 
     // by doing this in a separate method we can mock it to avoid closing the jvm and therefore test
@@ -88,7 +88,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AirbyteExceptionHandler::class.java)
+
         const val logMessage: String =
             "Something went wrong in the connector. See the logs for more details."
 
@@ -112,7 +112,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
          * 1. Contain the original exception message as the external message, and a mangled message
          * as the internal message.
          */
-        @VisibleForTesting val STRINGS_TO_DEINTERPOLATE: MutableSet<String?> = HashSet()
+        @VisibleForTesting val STRINGS_TO_DEINTERPOLATE: MutableSet<String> = HashSet()
 
         init {
             addCommonStringsToDeinterpolate()

@@ -8,11 +8,11 @@ data:
       - www.googleapis.com
       - analyticsdata.googleapis.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
-  dockerImageTag: 2.4.2
+  dockerImageTag: 2.4.5
   dockerRepository: airbyte/source-google-analytics-data-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
   githubIssueLabel: source-google-analytics-data-api
@@ -33,11 +33,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message:
-          Version 2.0.0 introduces changes to stream names for those syncing
-          more than one Google Analytics 4 property. It allows streams from all properties
-          to sync successfully. Please upgrade the connector to enable this additional
-          functionality.
+        message: Version 2.0.0 introduces changes to stream names for those syncing more than one Google Analytics 4 property. It allows streams from all properties to sync successfully. Please upgrade the connector to enable this additional functionality.
         upgradeDeadline: "2023-10-16"
   suggestedStreams:
     streams:
@@ -54,4 +50,13 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GOOGLE-ANALYTICS-DATA-API__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
