@@ -177,7 +177,7 @@ If you quit Docker Decktop and want to return to your local Airbyte workspace, j
 There are several channels for community support of local setup and deployment. 
 
 **GitHub Airbyte Forum's Getting Started FAQ:**
- - Search the questions others have asked or ask a new question of your own.
+ - Search the questions others have asked or ask a new question of your own in the [GitHub forum](https://github.com/airbytehq/airbyte/discussions/categories/questions).
 
 **Airbyte Knowledge Base:**
 - While support services are limited to Cloud and Enterprise customers, anyone may search the support team's [Help Center](https://support.airbyte.com/hc).
@@ -187,6 +187,10 @@ Helpful channels for troubleshooting include:
 - [#ask-community-for-troubleshooting](https://airbytehq.slack.com/archives/C021JANJ6TY)
 - [#ask-ai](https://airbytehq.slack.com/archives/C01AHCD885S)
 
+:::tip
+If you find an issue with the `abctl` command, please report it as a github
+issue [here](https://github.com/airbytehq/airbyte/issues) with the type of "🐛 [abctl] Report an issue with the abctl tool".
+:::
 
 ## Next Steps
 
@@ -201,3 +205,4 @@ In the Building Connections section, you'll learn how to start moving data. Gene
 **Introductory Course**
 
 For an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-in Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
+
