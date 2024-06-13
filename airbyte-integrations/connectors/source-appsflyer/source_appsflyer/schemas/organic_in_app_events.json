@@ -322,9 +322,6 @@
     "oaid": {
       "type": ["null", "string"]
     },
-    "is_lat": {
-      "type": ["null", "boolean"]
-    },
     "store_reinstall": {
       "type": ["null", "boolean"]
     },
