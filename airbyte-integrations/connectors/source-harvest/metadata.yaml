@@ -66,7 +66,7 @@ data:
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE_HARVEST_CREDS_OAUTH
-          fileName: config.json
+          fileName: config_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
