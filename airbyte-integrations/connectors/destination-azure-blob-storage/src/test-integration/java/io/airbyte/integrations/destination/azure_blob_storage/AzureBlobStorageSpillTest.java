@@ -71,28 +71,27 @@ public class AzureBlobStorageSpillTest {
   void testSpillBlobWithExceedingSize() throws Exception {
     // when
     String content = Files.readString(Paths.get("src/test-integration/resources/test_data"));
-  
+
     azureBlobStorageConsumer.startTracked();
-  
+
     Function<String, JsonNode> function =
-    data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
-  
+        data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
+
     // create blob exceeding 1mb in size
     for (int i = 1; i <= 512; i++) {
       azureBlobStorageConsumer.acceptTracked(
-      createAirbyteMessage(function.apply(content)));
+          createAirbyteMessage(function.apply(content)));
     }
-  
+
     azureBlobStorageConsumer.close(false);
-  
+
     // then
     assertThat(blobContainerClient.listBlobs())
-    .hasSize(2)
-    .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
-    .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
+        .hasSize(2)
+        .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
+        .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
 
   }
-
 
   private static AzureBlobStorageDestinationConfig createConfig(String host, Integer mappedPort) {
 
