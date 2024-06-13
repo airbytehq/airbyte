@@ -5,6 +5,7 @@
 import logging
 import os
 import urllib
+from functools import cached_property
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
@@ -147,6 +148,7 @@ class HttpClient:
 
         return prepared_request
 
+    @cached_property
     def _max_retries(self) -> int:
         max_retries = self._DEFAULT_MAX_RETRY
         if self._disable_retries:
@@ -160,6 +162,7 @@ class HttpClient:
                     break
         return max_retries
 
+    @cached_property
     def _max_time(self) -> int:
         max_time = self._DEFAULT_MAX_TIME
         if hasattr(self._error_handler, "max_time") and self._error_handler.max_time is not None:
@@ -171,6 +174,7 @@ class HttpClient:
                     break
         return max_time
 
+    @cached_property
     def _factor(self) -> float:
         factor = self._DEFAULT_RETRY_FACTOR
         for backoff_strategy in self._backoff_strategies:
@@ -208,10 +212,10 @@ class HttpClient:
             requests.Response: The HTTP response received from the server after retries.
         """
 
-        max_retries = self._max_retries()
+        max_retries = self._max_retries
         max_tries = max(0, max_retries) + 1
-        max_time = self._max_time()
-        factor = self._factor()
+        max_time = self._max_time
+        factor = self._factor
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
@@ -232,7 +236,7 @@ class HttpClient:
         else:
             self._request_attempt_count[request] += 1
 
-        self._logger.info(
+        self._logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
 
@@ -249,7 +253,7 @@ class HttpClient:
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
         if self._logger.isEnabledFor(logging.DEBUG) and response is not None:
-            self._logger.info(
+            self._logger.debug(
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
 
@@ -285,21 +289,21 @@ class HttpClient:
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = None
+            user_defined_backoff_time = None
             for backoff_strategy in self._backoff_strategies:
                 backoff_time = backoff_strategy.backoff_time(
                     response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request]
                 )
                 if backoff_time:
-                    custom_backoff_time = backoff_time
+                    user_defined_backoff_time = backoff_time
                     break
             error_message = (
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
-            if custom_backoff_time:
+            if user_defined_backoff_time:
                 raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time,
+                    backoff=user_defined_backoff_time,
                     request=request,
                     response=(response if response is not None else exc),
                     error_message=error_message,
