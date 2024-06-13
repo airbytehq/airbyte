@@ -8,7 +8,6 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
