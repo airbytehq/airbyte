@@ -8,7 +8,7 @@ from airbyte_cdk.sources.declarative.partition_routers.substream_partition_route
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
-class MultipleAdvertiserIdsPartitionRouter(SubstreamPartitionRouter):
+class MultipleAdvertiserIdsPerPartition(SubstreamPartitionRouter):
     """
     Custom AdvertiserIdsPartitionRouter and AdvertiserIdPartitionRouter partition routers are used to get advertiser_ids
     as slices for streams where it uses as request param.
@@ -19,10 +19,13 @@ class MultipleAdvertiserIdsPartitionRouter(SubstreamPartitionRouter):
 
     When advertiser_id not provided components get slices as usual.
     Main difference between AdvertiserIdsPartitionRouter and AdvertiserIdPartitionRouter is
-    that MultipleAdvertiserIdsPartitionRouter returns multiple advertiser_ids in a one slice when id is not provided,
+    that MultipleAdvertiserIdsPerPartition returns multiple advertiser_ids in a one slice when id is not provided,
     e.g. {"advertiser_ids": '["11111111", "22222222"]', "parent_slice": {}}.
-    And SingleAdvertiserIdPartitionRouter returns single slice for every advertiser_id as usual.
-    MultipleAdvertiserIdsPartitionRouter is used by advertisers, which is full refresh only, to make less amount of requests.
+    And SingleAdvertiserIdPerPartition returns single slice for every advertiser_id as usual.
+
+    MultipleAdvertiserIdsPerPartition is used by Advertisers stream, which is full refresh only, where advertiser_ids is required param,
+    this approach also helps make less amount of requests.
+    Advertisers docs: https://business-api.tiktok.com/portal/docs?id=1739593083610113.
 
     path_in_config: List[List[str]]: path to value in the config in priority order.
     partition_field: str: field to insert partition value.
@@ -52,9 +55,9 @@ class MultipleAdvertiserIdsPartitionRouter(SubstreamPartitionRouter):
             yield StreamSlice(partition={"advertiser_ids": json.dumps(slices[i : min(end, i + step)]), "parent_slice": {}}, cursor_slice={})
 
 
-class SingleAdvertiserIdPartitionRouter(MultipleAdvertiserIdsPartitionRouter):
+class SingleAdvertiserIdPerPartition(MultipleAdvertiserIdsPerPartition):
     """
-    SingleAdvertiserIdPartitionRouter returns single slice for every advertiser_id in the parent stream
+    SingleAdvertiserIdPerPartition returns single slice for every advertiser_id in the parent stream
     or takes value for advertiser_id from a config and skips reading slices.
 
     path_in_config: List[List[str]]: path to value in the config in priority order.
@@ -67,4 +70,4 @@ class SingleAdvertiserIdPartitionRouter(MultipleAdvertiserIdsPartitionRouter):
         if partition_value_in_config:
             yield StreamSlice(partition={self._partition_field: partition_value_in_config, "parent_slice": {}}, cursor_slice={})
         else:
-            yield from super(MultipleAdvertiserIdsPartitionRouter, self).stream_slices()
+            yield from super(MultipleAdvertiserIdsPerPartition, self).stream_slices()

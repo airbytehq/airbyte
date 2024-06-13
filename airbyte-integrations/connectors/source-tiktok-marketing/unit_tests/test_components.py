@@ -9,8 +9,8 @@ from airbyte_cdk.sources.declarative.partition_routers.substream_partition_route
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.components.advertiser_ids_partition_router import (
-    MultipleAdvertiserIdsPartitionRouter,
-    SingleAdvertiserIdPartitionRouter,
+    MultipleAdvertiserIdsPerPartition,
+    SingleAdvertiserIdPerPartition,
 )
 from source_tiktok_marketing.components.hourly_datetime_based_cursor import HourlyDatetimeBasedCursor
 from source_tiktok_marketing.components.semi_incremental_record_filter import PerPartitionRecordFilter
@@ -25,7 +25,7 @@ from source_tiktok_marketing.components.semi_incremental_record_filter import Pe
     ],
 )
 def test_get_partition_value_from_config(config, expected):
-    router = MultipleAdvertiserIdsPartitionRouter(
+    router = MultipleAdvertiserIdsPerPartition(
         parent_stream_configs=[MagicMock()],
         config=config,
         parameters={
@@ -56,7 +56,7 @@ def test_stream_slices_multiple(config, expected, requests_mock, json_data):
     advertiser_ids_stream = [s for s in SourceTiktokMarketing().streams(config=config) if s.name == "advertiser_ids"]
     advertiser_ids_stream = advertiser_ids_stream[0] if advertiser_ids_stream else MagicMock()
 
-    router = MultipleAdvertiserIdsPartitionRouter(
+    router = MultipleAdvertiserIdsPerPartition(
         parent_stream_configs=[ParentStreamConfig(
             partition_field="advertiser_ids",
             config=config,
@@ -100,7 +100,7 @@ def test_stream_slices_single(config, expected, requests_mock, json_data):
     advertiser_ids_stream = [s for s in SourceTiktokMarketing().streams(config=config) if s.name == "advertiser_ids"]
     advertiser_ids_stream = advertiser_ids_stream[0] if advertiser_ids_stream else MagicMock()
 
-    router = SingleAdvertiserIdPartitionRouter(
+    router = SingleAdvertiserIdPerPartition(
         parent_stream_configs=[ParentStreamConfig(
             partition_field="advertiser_id",
             config=config,
