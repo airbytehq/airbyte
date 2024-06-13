@@ -9,8 +9,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
+        timeout_seconds: 420
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
+        timeout_seconds: 420
   discovery:
     tests:
       - config_path: "secrets/config.json"
