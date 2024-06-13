@@ -427,11 +427,11 @@ spec:
         type: string
         enum:
           - eu
-          - us
+          - na
           - oc
         description:
           Base url region (For playground eu https://docs.klarna.com/klarna-payments/api/payments-api/#tag/API-URLs).
-          Supported 'eu', 'us', 'oc'
+          Supported 'eu', 'na', 'oc'
       playground:
         title: Playground
         type: boolean
