@@ -96,9 +96,18 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             next_page_token: Optional[Mapping[str, Any]] = None,
     ):
         # Doc: https://adv-new.mintegral.com/doc/en/guide/report/advancedPerformanceReport.html
+        end_date = datetime.now().strftime('%Y-%m-%d')
+        print(f"Current state: {str(self.state)}")
+        if not (self.state and self.state.get(self.cursor_field)):
+            raise Exception("State should be initialised before running Mintegral creative reporting")
+
+        state_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%d')
+
+        start_date = state_date - timedelta(days=self.backfill_days)
+
         request_params = {
-            "start_time": '2024-06-12',
-            "end_time": '2024-06-12',
+            "start_time": start_date.strftime('%Y-%m-%d'),
+            "end_time": end_date,
             "timezone": "+0",
             "dimension_option": "Creative",
             "type": self.type
@@ -119,32 +128,11 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             reader = csv.DictReader(io.StringIO(tsv_data), delimiter='\t')
             return reader
         return None
-    """
-
-    def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        end_date = datetime.now()
-        state_date = end_date
-        if sync_mode == SyncMode.incremental:
-            if self.state and self.state.get(self.cursor_field):
-                state_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%dT%H:%M:%S.%f')
-
-            self.state = {self.cursor_field: end_date}
-
-        start_date = state_date - timedelta(days=self.backfill_days)
-
-        num_days = (end_date - start_date).days
-        dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(num_days + 1)]
-
-        self.log(f"Slices: {str(dates)}")
-        for date in dates:
-            yield {self.cursor_field: date}
-            
-    """
 
     def read_records(self, sync_mode: SyncMode, cursor_field=None, stream_slice=None, stream_state=None):
         retries = 0
+        if not self.state:
+            return []
         while retries < self.async_retries:
             response = requests.get(self.url_base, params=self.request_params(), headers=self.authenticator.get_auth_header())
             if response.status_code == 200:
@@ -152,6 +140,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
                 if parsed_response:
                     for row in parsed_response:
                         yield row
+                    self.state = {self.cursor_field: datetime.now().strftime('%Y-%m-%d')}
                     break
                 else:
                     time.sleep(self.retry_delay)
