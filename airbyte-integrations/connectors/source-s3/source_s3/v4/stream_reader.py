@@ -12,7 +12,7 @@ import boto3.session
 import pendulum
 import pytz
 import smart_open
-from airbyte_cdk.models import FailureType
+from airbyte_cdk import FailureType
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -30,6 +30,7 @@ AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
+        self._s3_client = None
 
     @property
     def config(self) -> Config:
@@ -56,23 +57,24 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             # list or read files.
             raise ValueError("Source config is missing; cannot create the S3 client.")
 
-        client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
+        if self._s3_client is None:
+            client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
 
-        # Set the region_name if it's provided in the config
-        if self.config.region_name:
-            client_kv_args["region_name"] = self.config.region_name
+            # Set the region_name if it's provided in the config
+            if self.config.region_name:
+                client_kv_args["region_name"] = self.config.region_name
 
-        if self.config.role_arn:
-            _s3_client = self._get_iam_s3_client(client_kv_args)
-        else:
-            _s3_client = boto3.client(
-                "s3",
-                aws_access_key_id=self.config.aws_access_key_id,
-                aws_secret_access_key=self.config.aws_secret_access_key,
-                **client_kv_args,
-            )
+            if self.config.role_arn:
+                self._s3_client = self._get_iam_s3_client(client_kv_args)
+            else:
+                self._s3_client = boto3.client(
+                    "s3",
+                    aws_access_key_id=self.config.aws_access_key_id,
+                    aws_secret_access_key=self.config.aws_secret_access_key,
+                    **client_kv_args,
+                )
 
-        return _s3_client
+        return self._s3_client
 
     def _get_iam_s3_client(self, client_kv_args: dict) -> BaseClient:
         """

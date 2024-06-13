@@ -14,9 +14,7 @@ FB_API_VERSION = FacebookAdsApi.API_VERSION
 class TestMyFacebookAdsApi:
     @pytest.fixture
     def fb_api(self):
-        return source_facebook_marketing.api.MyFacebookAdsApi.init(
-            access_token="foo", crash_log=False
-        )
+        return source_facebook_marketing.api.MyFacebookAdsApi.init(access_token="foo", crash_log=False)
 
     @pytest.mark.parametrize(
         "max_rate,max_pause_interval,min_pause_interval,usage,pause_interval,expected_pause_interval",
@@ -120,9 +118,7 @@ class TestMyFacebookAdsApi:
         ]
 
         mock_parse_call_rate_header = mocker.Mock(side_effect=usages_pause_intervals)
-        mocker.patch.object(
-            fb_api, "_parse_call_rate_header", mock_parse_call_rate_header
-        )
+        mocker.patch.object(fb_api, "_parse_call_rate_header", mock_parse_call_rate_header)
         mocker.patch.object(fb_api, "MIN_PAUSE_INTERVAL", min_pause_interval)
 
         output = fb_api._get_max_usage_pause_interval_from_batch(records)
@@ -145,9 +141,7 @@ class TestMyFacebookAdsApi:
             (["not_batch"], 2, 1, False),
         ],
     )
-    def test__handle_call_rate_limit(
-        self, mocker, fb_api, params, min_rate, usage, expect_sleep
-    ):
+    def test__handle_call_rate_limit(self, mocker, fb_api, params, min_rate, usage, expect_sleep):
         pause_interval = 1
         mock_response = mocker.Mock()
 
@@ -167,20 +161,12 @@ class TestMyFacebookAdsApi:
         mocker.patch.object(source_facebook_marketing.api, "sleep")
         assert fb_api._handle_call_rate_limit(mock_response, params) is None
         if "batch" in params:
-            fb_api._get_max_usage_pause_interval_from_batch.assert_called_with(
-                mock_response.json.return_value
-            )
+            fb_api._get_max_usage_pause_interval_from_batch.assert_called_with(mock_response.json.return_value)
         else:
-            fb_api._parse_call_rate_header.assert_called_with(
-                mock_response.headers.return_value
-            )
+            fb_api._parse_call_rate_header.assert_called_with(mock_response.headers.return_value)
         if expect_sleep:
-            fb_api._compute_pause_interval.assert_called_with(
-                usage=usage, pause_interval=pause_interval
-            )
-            source_facebook_marketing.api.sleep.assert_called_with(
-                fb_api._compute_pause_interval.return_value.total_seconds()
-            )
+            fb_api._compute_pause_interval.assert_called_with(usage=usage, pause_interval=pause_interval)
+            source_facebook_marketing.api.sleep.assert_called_with(fb_api._compute_pause_interval.return_value.total_seconds())
             source_facebook_marketing.api.logger.warning.assert_called_with(
                 f"Utilization is too high ({usage})%, pausing for {fb_api._compute_pause_interval.return_value}"
             )

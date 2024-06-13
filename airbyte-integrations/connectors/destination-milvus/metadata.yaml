@@ -18,11 +18,11 @@ data:
           memory_limit: 2Gi
           memory_request: 2Gi
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 65de8962-48c9-11ee-be56-0242ac120002
-  dockerImageTag: 0.0.12
+  dockerImageTag: 0.0.15
   dockerRepository: airbyte/destination-milvus
   githubIssueLabel: destination-milvus
   icon: milvus.svg
@@ -33,8 +33,25 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/milvus
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 200
     ql: 300
   supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-MILVUS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION-MILVUS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -3,48 +3,63 @@
   "type": "object",
   "properties": {
     "active": {
+      "description": "Indicates if the greeting is currently active or not",
       "type": ["null", "boolean"]
     },
     "audio_name": {
+      "description": "Name of the audio file for the greeting",
       "type": ["null", "string"]
     },
     "audio_url": {
+      "description": "URL to access the audio file for the greeting",
       "type": ["null", "string"]
     },
     "category_id": {
+      "description": "ID of the category to which the greeting belongs",
       "type": ["null", "integer"]
     },
     "default": {
+      "description": "Indicates if the greeting is set as the default",
       "type": ["null", "boolean"]
     },
     "default_lang": {
+      "description": "Default language for the greeting",
       "type": ["null", "boolean"]
     },
     "has_sub_settings": {
+      "description": "Indicates if the greeting has sub settings or not",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "Unique identifier for the greeting",
       "type": ["null", "string"]
     },
     "ivr_ids": {
+      "description": "List of IVR IDs associated with the greeting",
       "type": ["null", "array"],
       "items": {
+        "description": "IVR ID",
         "type": ["string", "integer"]
       }
     },
     "name": {
+      "description": "Name of the greeting",
       "type": ["null", "string"]
     },
     "pending": {
+      "description": "Indicates if the greeting is pending for approval",
       "type": ["null", "boolean"]
     },
     "phone_number_ids": {
+      "description": "List of phone number IDs linked to the greeting",
       "type": ["null", "array"],
       "items": {
+        "description": "Phone number ID",
         "type": ["string", "integer"]
       }
     },
     "upload_id": {
+      "description": "ID of the uploaded audio file for the greeting",
       "type": ["null", "integer"]
     }
   }

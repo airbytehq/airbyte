@@ -30,11 +30,25 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          The `event` field in the `events` stream has been corrected to the proper data type.
-          To apply this change, refresh the schema for the `events` stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
+        message: The `event` field in the `events` stream has been corrected to the proper data type. To apply this change, refresh the schema for the `events` stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
         upgradeDeadline: "2024-01-15"
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-POSTHOG__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-POSTHOG__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -11,6 +11,7 @@ This page contains the setup guide and reference information for the [GitHub](ht
 - List of GitHub Repositories (and access for them in case they are private)
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 - OAuth
@@ -18,6 +19,7 @@ This page contains the setup guide and reference information for the [GitHub](ht
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
@@ -30,14 +32,17 @@ This page contains the setup guide and reference information for the [GitHub](ht
 Create a [GitHub Account](https://github.com).
 
 <!-- env:oss -->
+
 **Airbyte Open Source additional setup steps**
 
 Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+
 <!-- /env:oss -->
 
 ### Step 2: Set up the GitHub connector in Airbyte
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
@@ -47,11 +52,11 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 5. To authenticate:
 <!-- env:cloud -->
 
-  - **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
-<!-- /env:cloud -->
-<!-- env:oss -->
+- **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+  <!-- /env:cloud -->
+  <!-- env:oss -->
 
-   - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+- **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
@@ -64,10 +69,9 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
 
-- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`,  `tags`,  `teams`, `users`
+- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
-9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5,000 requests per hour (15,000 for Github Enterprise). You can specify a lower value to limit your use of the API quota. Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
 
 <HideInUI>
 
@@ -173,17 +177,18 @@ Expand to see details about GitHub connector limitations and troubleshooting.
 #### Rate limiting
 
 You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make API requests on your behalf.
-All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization ). 
+All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization ).
 
 :::info `REST API` and `GraphQL API` rate limits are counted separately
 :::
 
 :::tip
 In the event that limits are reached before all streams have been read, it is recommended to take the following actions:
+
 1. Utilize Incremental sync mode.
 2. Set a higher sync interval.
 3. Divide the sync into separate connections with a smaller number of streams.
-:::
+   :::
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
 
@@ -199,48 +204,60 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 ### Troubleshooting
 
-* Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
+- Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
 
 </details>
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.6.3   | 2024-02-15 | [35271](https://github.com/airbytehq/airbyte/pull/35271)                                                          | Update branches schema                                                                                                                                              |
-| 1.6.2   | 2024-02-12 | [34933](https://github.com/airbytehq/airbyte/pull/34933)                                                          | Update Airbyte CDK for integration tests                                                                                                                            |
-| 1.6.1   | 2024-02-09 | [35087](https://github.com/airbytehq/airbyte/pull/35087)                                                          | Manage dependencies with Poetry.                                                                                                                                    |
-| 1.6.0   | 2024-02-02 | [34700](https://github.com/airbytehq/airbyte/pull/34700)                                                          | Continue Sync on Stream failure                                                                                                                                     |
-| 1.5.7   | 2024-01-29 | [34598](https://github.com/airbytehq/airbyte/pull/34598)                                                          | Fix MultipleToken sleep time                                                                                                                                        |
-| 1.5.6   | 2024-01-26 | [34503](https://github.com/airbytehq/airbyte/pull/34503)                                                          | Fix MultipleToken rotation logic                                                                                                                                    |
-| 1.5.5   | 2023-12-26 | [33783](https://github.com/airbytehq/airbyte/pull/33783)                                                          | Fix retry for 504 error in GraphQL based streams                                                                                                                    |
-| 1.5.4   | 2023-11-20 | [32679](https://github.com/airbytehq/airbyte/pull/32679)                                                          | Return AirbyteMessage if max retry exeeded for 202 status code                                                                                                      |
-| 1.5.3   | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702)                                                          | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                     |
-| 1.5.2   | 2023-10-13 | [31386](https://github.com/airbytehq/airbyte/pull/31386)                                                          | Handle `ContributorActivity` continuous `ACCEPTED` response                                                                                                         |
-| 1.5.1   | 2023-10-12 | [31307](https://github.com/airbytehq/airbyte/pull/31307)                                                          | Increase backoff_time for stream `ContributorActivity`                                                                                                              |
-| 1.5.0   | 2023-10-11 | [31300](https://github.com/airbytehq/airbyte/pull/31300)                                                          | Update Schemas: Add date-time format to fields                                                                                                                      |
-| 1.4.6   | 2023-10-04 | [31056](https://github.com/airbytehq/airbyte/pull/31056)                                                          | Migrate spec properties' `repository` and `branch` type to \<array\>                                                                                                |
-| 1.4.5   | 2023-10-02 | [31023](https://github.com/airbytehq/airbyte/pull/31023)                                                          | Increase backoff for stream `Contributor Activity`                                                                                                                  |
-| 1.4.4   | 2023-10-02 | [30971](https://github.com/airbytehq/airbyte/pull/30971)                                                          | Mark `start_date` as optional.                                                                                                                                      |
-| 1.4.3   | 2023-10-02 | [30979](https://github.com/airbytehq/airbyte/pull/30979)                                                          | Fetch archived records in `Project Cards`                                                                                                                           |
-| 1.4.2   | 2023-09-30 | [30927](https://github.com/airbytehq/airbyte/pull/30927)                                                          | Provide actionable user error messages                                                                                                                              |
-| 1.4.1   | 2023-09-30 | [30839](https://github.com/airbytehq/airbyte/pull/30839)                                                          | Update CDK to Latest version                                                                                                                                        |
-| 1.4.0   | 2023-09-29 | [30823](https://github.com/airbytehq/airbyte/pull/30823)                                                          | Add new stream `issue Timeline Events`                                                                                                                              |
-| 1.3.1   | 2023-09-28 | [30824](https://github.com/airbytehq/airbyte/pull/30824)                                                          | Handle empty response in stream `ContributorActivity`                                                                                                               |
-| 1.3.0   | 2023-09-25 | [30731](https://github.com/airbytehq/airbyte/pull/30731)                                                          | Add new stream `ProjectsV2`                                                                                                                                         |
-| 1.2.1   | 2023-09-22 | [30693](https://github.com/airbytehq/airbyte/pull/30693)                                                          | Handle 404 error in `TeamMemberShips`                                                                                                                               |
-| 1.2.0   | 2023-09-22 | [30647](https://github.com/airbytehq/airbyte/pull/30647)                                                          | Add support for self-hosted GitHub instances                                                                                                                        |
-| 1.1.1   | 2023-09-21 | [30654](https://github.com/airbytehq/airbyte/pull/30654)                                                          | Rewrite source connection error messages                                                                                                                            |
-| 1.1.0   | 2023-08-03 | [30615](https://github.com/airbytehq/airbyte/pull/30615)                                                          | Add new stream `Contributor Activity`                                                                                                                               |
-| 1.0.4   | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031)                                                          | Reverted `advancedAuth` spec changes                                                                                                                                |
-| 1.0.3   | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910)                                                          | Updated `advancedAuth` broken references                                                                                                                            |
-| 1.0.2   | 2023-07-11 | [28144](https://github.com/airbytehq/airbyte/pull/28144)                                                          | Add `archived_at` property to `Organizations` schema parameter                                                                                                      |
-| 1.0.1   | 2023-05-22 | [25838](https://github.com/airbytehq/airbyte/pull/25838)                                                          | Deprecate "page size" input parameter                                                                                                                               |
-| 1.0.0   | 2023-05-19 | [25778](https://github.com/airbytehq/airbyte/pull/25778)                                                          | Improve repo(s) name validation on UI                                                                                                                               |
-| 0.5.0   | 2023-05-16 | [25793](https://github.com/airbytehq/airbyte/pull/25793)                                                          | Implement client-side throttling of requests                                                                                                                        |
-| 0.4.11  | 2023-05-12 | [26025](https://github.com/airbytehq/airbyte/pull/26025)                                                          | Added more transparent depiction of the personal access token expired                                                                                               |
-| 0.4.10  | 2023-05-15 | [26075](https://github.com/airbytehq/airbyte/pull/26075)                                                          | Add more specific error message description for no repos case.                                                                                                      |
-| 0.4.9   | 2023-05-01 | [24523](https://github.com/airbytehq/airbyte/pull/24523)                                                          | Add undeclared columns to spec                                                                                                                                      |
+| 1.7.6 | 2024-06-04 | [39078](https://github.com/airbytehq/airbyte/pull/39078) | [autopull] Upgrade base image to v1.2.1 |
+| 1.7.5 | 2024-05-29 | [38341](https://github.com/airbytehq/airbyte/pull/38341) | add `max_waiting_time` to configuration |
+| 1.7.4 | 2024-05-21 | [38341](https://github.com/airbytehq/airbyte/pull/38341) | Update CDK authenticator package |
+| 1.7.3 | 2024-05-20 | [38299](https://github.com/airbytehq/airbyte/pull/38299) | Fixed spec typo |
+| 1.7.2 | 2024-04-19 | [36636](https://github.com/airbytehq/airbyte/pull/36636) | Updating to 0.80.0 CDK |
+| 1.7.1 | 2024-04-12 | [36636](https://github.com/airbytehq/airbyte/pull/36636) | schema descriptions |
+| 1.7.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 1.6.5 | 2024-03-12 | [35986](https://github.com/airbytehq/airbyte/pull/35986) | Handle rate limit exception as config error |
+| 1.6.4 | 2024-03-08 | [35915](https://github.com/airbytehq/airbyte/pull/35915) | Fix per stream error handler; Make use the latest CDK version |
+| 1.6.3 | 2024-02-15 | [35271](https://github.com/airbytehq/airbyte/pull/35271) | Update branches schema |
+| 1.6.2 | 2024-02-12 | [34933](https://github.com/airbytehq/airbyte/pull/34933) | Update Airbyte CDK for integration tests |
+| 1.6.1 | 2024-02-09 | [35087](https://github.com/airbytehq/airbyte/pull/35087) | Manage dependencies with Poetry. |
+| 1.6.0 | 2024-02-02 | [34700](https://github.com/airbytehq/airbyte/pull/34700) | Continue Sync on Stream failure |
+| 1.5.7 | 2024-01-29 | [34598](https://github.com/airbytehq/airbyte/pull/34598) | Fix MultipleToken sleep time |
+| 1.5.6 | 2024-01-26 | [34503](https://github.com/airbytehq/airbyte/pull/34503) | Fix MultipleToken rotation logic |
+| 1.5.5 | 2023-12-26 | [33783](https://github.com/airbytehq/airbyte/pull/33783) | Fix retry for 504 error in GraphQL based streams |
+| 1.5.4 | 2023-11-20 | [32679](https://github.com/airbytehq/airbyte/pull/32679) | Return AirbyteMessage if max retry exeeded for 202 status code |
+| 1.5.3 | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.5.2 | 2023-10-13 | [31386](https://github.com/airbytehq/airbyte/pull/31386) | Handle `ContributorActivity` continuous `ACCEPTED` response |
+| 1.5.1 | 2023-10-12 | [31307](https://github.com/airbytehq/airbyte/pull/31307) | Increase backoff_time for stream `ContributorActivity` |
+| 1.5.0 | 2023-10-11 | [31300](https://github.com/airbytehq/airbyte/pull/31300) | Update Schemas: Add date-time format to fields |
+| 1.4.6 | 2023-10-04 | [31056](https://github.com/airbytehq/airbyte/pull/31056) | Migrate spec properties' `repository` and `branch` type to \<array\> |
+| 1.4.5 | 2023-10-02 | [31023](https://github.com/airbytehq/airbyte/pull/31023) | Increase backoff for stream `Contributor Activity` |
+| 1.4.4 | 2023-10-02 | [30971](https://github.com/airbytehq/airbyte/pull/30971) | Mark `start_date` as optional. |
+| 1.4.3 | 2023-10-02 | [30979](https://github.com/airbytehq/airbyte/pull/30979) | Fetch archived records in `Project Cards` |
+| 1.4.2 | 2023-09-30 | [30927](https://github.com/airbytehq/airbyte/pull/30927) | Provide actionable user error messages |
+| 1.4.1 | 2023-09-30 | [30839](https://github.com/airbytehq/airbyte/pull/30839) | Update CDK to Latest version |
+| 1.4.0 | 2023-09-29 | [30823](https://github.com/airbytehq/airbyte/pull/30823) | Add new stream `issue Timeline Events` |
+| 1.3.1 | 2023-09-28 | [30824](https://github.com/airbytehq/airbyte/pull/30824) | Handle empty response in stream `ContributorActivity` |
+| 1.3.0 | 2023-09-25 | [30731](https://github.com/airbytehq/airbyte/pull/30731) | Add new stream `ProjectsV2` |
+| 1.2.1 | 2023-09-22 | [30693](https://github.com/airbytehq/airbyte/pull/30693) | Handle 404 error in `TeamMemberShips` |
+| 1.2.0 | 2023-09-22 | [30647](https://github.com/airbytehq/airbyte/pull/30647) | Add support for self-hosted GitHub instances |
+| 1.1.1 | 2023-09-21 | [30654](https://github.com/airbytehq/airbyte/pull/30654) | Rewrite source connection error messages |
+| 1.1.0 | 2023-08-03 | [30615](https://github.com/airbytehq/airbyte/pull/30615) | Add new stream `Contributor Activity` |
+| 1.0.4 | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes |
+| 1.0.3 | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references |
+| 1.0.2 | 2023-07-11 | [28144](https://github.com/airbytehq/airbyte/pull/28144) | Add `archived_at` property to `Organizations` schema parameter |
+| 1.0.1 | 2023-05-22 | [25838](https://github.com/airbytehq/airbyte/pull/25838) | Deprecate "page size" input parameter |
+| 1.0.0 | 2023-05-19 | [25778](https://github.com/airbytehq/airbyte/pull/25778) | Improve repo(s) name validation on UI |
+| 0.5.0 | 2023-05-16 | [25793](https://github.com/airbytehq/airbyte/pull/25793) | Implement client-side throttling of requests |
+| 0.4.11 | 2023-05-12 | [26025](https://github.com/airbytehq/airbyte/pull/26025) | Added more transparent depiction of the personal access token expired |
+| 0.4.10 | 2023-05-15 | [26075](https://github.com/airbytehq/airbyte/pull/26075) | Add more specific error message description for no repos case. |
+| 0.4.9 | 2023-05-01 | [24523](https://github.com/airbytehq/airbyte/pull/24523) | Add undeclared columns to spec |
 | 0.4.8   | 2023-04-19 | [00000](https://github.com/airbytehq/airbyte/pull/25312)                                                          | Fix repo name validation                                                                                                                                            |
 | 0.4.7   | 2023-03-24 | [24457](https://github.com/airbytehq/airbyte/pull/24457)                                                          | Add validation and transformation for repositories config                                                                                                           |
 | 0.4.6   | 2023-03-24 | [24398](https://github.com/airbytehq/airbyte/pull/24398)                                                          | Fix caching for `get_starting_point` in stream "Commits"                                                                                                            |
@@ -321,5 +338,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708)                                                            | Fix bug with IssueEvents stream and add handling for rate limiting                                                                                                  |
 | 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590)                                                            | Fix schema in the `pull_request` stream                                                                                                                             |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)                                                            | New Source: GitHub                                                                                                                                                  |
+
+</details>
 
 </HideInUI>

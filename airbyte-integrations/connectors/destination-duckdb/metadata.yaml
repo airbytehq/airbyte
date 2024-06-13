@@ -1,10 +1,10 @@
 data:
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: database
   connectorType: destination
   definitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.4.1
   dockerRepository: airbyte/destination-duckdb
   githubIssueLabel: destination-duckdb
   icon: duckdb.svg
@@ -15,17 +15,53 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: beta
   releases:
     breakingChanges:
       0.3.0:
-        message: "This version uses the DuckDB 0.9.1 database driver, which is not backwards compatible with prior versions. MotherDuck users can upgrade their database by visiting https://app.motherduck.com/ and accepting the upgrade. For more information, see the connector migration guide."
+        message: >
+          This version uses the DuckDB 0.9.1 database driver, which is not
+          backwards compatible with prior versions. MotherDuck users can
+          upgrade their database by visiting https://app.motherduck.com/ and
+          accepting the upgrade. For more information, see the connector
+          migration guide.
         upgradeDeadline: "2023-10-31"
+      0.4.0:
+        message: >
+          This version uses the DuckDB 0.10.3 database driver, which in not backwards compatible with databases created using the 0.9.x versions of DuckDB. MotherDuck users can upgrade their database by visiting https://app.motherduck.com/ and accepting the upgrade. For more information, see the connector migration guide.
+        upgradeDeadline: "2024-06-30"
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   documentationUrl: https://docs.airbyte.com/integrations/destinations/duckdb
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from decimal import Decimal
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pendulum
@@ -19,6 +20,7 @@ from source_tiktok_marketing.streams import (
     BasicReports,
     CampaignsReports,
     Daily,
+    FullRefreshTiktokStream,
     Hourly,
     Lifetime,
     ReportGranularity,
@@ -254,6 +256,16 @@ def test_get_updated_state():
         assert state2_modify_time.dict() == "2020-01-08 00:00:00"
 
 
+def test_get_updated_state_no_cursor_field():
+    """
+    Some full_refresh streams (which don't define a cursor) inherit the get_updated_state() method from an incremental
+    stream. This test verifies that the stream does not attempt to extract the cursor value from the latest record
+    """
+    ads_reports = AdsReports(**CONFIG_SANDBOX)
+    state1 = ads_reports.get_updated_state(current_stream_state={}, latest_record={})
+    assert state1 == {}
+
+
 @pytest.mark.parametrize(
     "value, expected",
     [
@@ -273,3 +285,12 @@ def test_no_next_page_token(requests_mock):
     requests_mock.get(url, json={"data": {"page_info": {}}})
     test_response = requests.get(url)
     assert stream.next_page_token(test_response) is None
+
+
+@pytest.mark.parametrize(
+    ("original_value", "expected_value"),
+    (("-", None), (26.10, Decimal(26.10)), ("some_str", "some_str")),
+)
+def test_transform_function(original_value, expected_value):
+    field_schema = {}
+    assert FullRefreshTiktokStream.transform_function(original_value, field_schema) == expected_value

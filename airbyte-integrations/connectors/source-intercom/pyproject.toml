@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.6.0"
+version = "0.6.7"
 name = "source-intercom"
 description = "Source implementation for Intercom Yaml."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_intercom"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.62.0"
+airbyte-cdk = "0.86.3"
 
 [tool.poetry.scripts]
 source-intercom = "source_intercom.run:run"

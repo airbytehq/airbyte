@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CAPTURE_MODE_POST_IMAGE_OPTION;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.UPDATE_CAPTURE_MODE;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
@@ -31,11 +33,14 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   static final String COLLECTION_INCLUDE_LIST_KEY = "collection.include.list";
   static final String DATABASE_INCLUDE_LIST_KEY = "database.include.list";
+
+  static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
+  static final String MONGODB_POST_IMAGE_VALUE = "post_image";
   static final String CAPTURE_TARGET_KEY = "capture.target";
   static final String DOUBLE_QUOTES_PATTERN = "\"";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
   static final String MONGODB_CONNECTION_MODE_KEY = "mongodb.connection.mode";
-  static final String MONGODB_CONNECTION_MODE_VALUE = "replica_set";
+  static final String MONGODB_CONNECTION_MODE_VALUE = "sharded";
   static final String MONGODB_CONNECTION_STRING_KEY = "mongodb.connection.string";
   static final String MONGODB_PASSWORD_KEY = "mongodb.password";
   static final String MONGODB_SSL_ENABLED_KEY = "mongodb.ssl.enabled";
@@ -52,7 +57,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   protected Properties getConnectionConfiguration(final JsonNode config) {
     final Properties properties = new Properties();
 
-    properties.setProperty(MONGODB_CONNECTION_STRING_KEY, buildConnectionString(config, false));
+    properties.setProperty(MONGODB_CONNECTION_STRING_KEY, buildConnectionString(config));
     properties.setProperty(MONGODB_CONNECTION_MODE_KEY, MONGODB_CONNECTION_MODE_VALUE);
 
     if (config.has(USERNAME_CONFIGURATION_KEY)) {
@@ -65,6 +70,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
       properties.setProperty(MONGODB_AUTHSOURCE_KEY, config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText());
     }
     properties.setProperty(MONGODB_SSL_ENABLED_KEY, MONGODB_SSL_ENABLED_VALUE);
+    if (config.has(UPDATE_CAPTURE_MODE) && config.get(UPDATE_CAPTURE_MODE).asText().equals(CAPTURE_MODE_POST_IMAGE_OPTION)) {
+      properties.setProperty(MONGODB_POST_IMAGE_KEY, MONGODB_POST_IMAGE_VALUE);
+    }
     return properties;
   }
 
@@ -106,10 +114,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
    * removing any values accidentally copied and pasted from the MongoDB Atlas UI.
    *
    * @param config The connector configuration.
-   * @param useSecondary Whether to use the secondary for reads.
    * @return The connection string.
    */
-  public static String buildConnectionString(final JsonNode config, final boolean useSecondary) {
+  public static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
         .asText()
         .trim()
@@ -117,10 +124,6 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
         .replaceAll(CREDENTIALS_PLACEHOLDER, "");
     final StringBuilder builder = new StringBuilder();
     builder.append(connectionString);
-    builder.append("?retryWrites=false&provider=airbyte&tls=true");
-    if (useSecondary) {
-      builder.append("&readPreference=secondary");
-    }
     return builder.toString();
   }
 

@@ -5,13 +5,14 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 1.2.0
+  dockerImageTag: 2.0.2
   dockerRepository: airbyte/source-pinterest
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   githubIssueLabel: source-pinterest
   icon: pinterest.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: Pinterest
   remoteRegistries:
     pypi:
@@ -25,6 +26,19 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      2.0.0:
+        message: "This release introduces updated format of state for incremental streams. Users will need to reset affected streams after upgrading. Please see migration guide for more details."
+        upgradeDeadline: "2024-06-03"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - ad_account_analytics
+              - ad_analytics
+              - ad_group_analytics
+              - ad_groups
+              - ads
+              - campaign_analytics
+              - campaigns
       1.0.0:
         message: "This release updates the date-time fields to use the Airbyte format `timestamp_without_timezone`. This change affects all streams where date-time fields are present, ensuring more accurate and standardized time representations: BoardPins, BoardSectionPins, Boards, Catalogs, and CatalogFeeds. Additionally, the stream names AdvertizerReport and AdvertizerTargetingReport have been renamed to AdvertiserReport and AdvertiserTargetingReport, respectively. Users will need to refresh the source schema and reset affected streams after upgrading."
         upgradeDeadline: "2023-12-14"
@@ -42,8 +56,23 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   tags:
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 200
     ql: 400
   supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PINTEREST__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PINTEREST__OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

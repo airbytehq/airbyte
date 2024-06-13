@@ -92,11 +92,13 @@
     },
     "amount_details": {
       "type": "object",
+      "additionalProperties": true,
       "properties": {
         "graduated_ranges": {
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "units": {
                 "type": ["null", "string"]
@@ -126,6 +128,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "unit": {
                 "type": ["null", "string"]
@@ -189,8 +192,9 @@
         },
         "volume_ranges": {
           "type": ["null", "array"],
-          "items": { 
+          "items": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "per_unit_amount": {
                 "type": ["null", "string"]
@@ -208,6 +212,7 @@
     },
     "item": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -232,7 +237,8 @@
         },
         "grouped_by": {
           "type": ["null", "object"],
-          "additionalProperties": true
+          "additionalProperties": true,
+          "properties": {}
         }
       }
     },
@@ -240,6 +246,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "lago_id": {
             "type": ["null", "string"]

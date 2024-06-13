@@ -9,16 +9,17 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 4.0.3
+  dockerImageTag: 5.0.3
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Amazon Ads
   remoteRegistries:
     pypi:
@@ -32,6 +33,18 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      5.0.0:
+        message: "`SponsoredBrandCampaigns`, `SponsoredBrandsAdGroups`, `SponsoredProductCampaigns`, and `SponsoredProductAdGroupBidRecommendations` streams have updated schemas and must be reset."
+        upgradeDeadline: "2024-03-27"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              [
+                "sponsored_brands_campaigns",
+                "sponsored_brands_ad_groups",
+                "sponsored_product_campaigns",
+                "sponsored_product_ad_group_bid_recommendations",
+              ]
       4.0.0:
         message: "Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now have updated schemas."
         upgradeDeadline: "2024-01-17"
@@ -52,4 +65,19 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMAZON-ADS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AMAZON-ADS__TEST_ACCOUNT_CREDS
+          fileName: config_report.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

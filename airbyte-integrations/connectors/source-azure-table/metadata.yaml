@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 798ae795-5189-42b6-b64e-3cb91db93338
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/source-azure-table
   githubIssueLabel: source-azure-table
   icon: azureblobstorage.svg
@@ -21,8 +21,20 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-table
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_AZURE_TABLE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
 metadataSpecVersion: "1.0"

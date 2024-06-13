@@ -21,6 +21,7 @@ def test_query_status() -> None:
                             id
                             status
                             errorCode
+                            createdAt
                             objectCount
                             fileSize
                             url
@@ -44,6 +45,7 @@ def test_bulk_query_prepare() -> None:
                     bulkOperation {
                         id
                         status
+                        createdAt
                     }
                     userErrors {
                         field
@@ -54,6 +56,26 @@ def test_bulk_query_prepare() -> None:
     
     input_query_from_slice = "{some_query}"
     template = ShopifyBulkTemplates.prepare(input_query_from_slice)
+    assert repr(template) == repr(expected)
+    
+    
+def test_bulk_query_cancel() -> None:
+    expected = '''mutation {
+                bulkOperationCancel(id: "gid://shopify/BulkOperation/4047052112061") {
+                    bulkOperation {
+                        id
+                        status
+                        createdAt
+                    }
+                    userErrors {
+                        field
+                        message
+                    }
+                }
+            }'''
+    
+    input_job_id = "gid://shopify/BulkOperation/4047052112061"
+    template = ShopifyBulkTemplates.cancel(input_job_id)
     assert repr(template) == repr(expected)
     
 
@@ -179,9 +201,20 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                                                                 fields=[
                                                                   "__typename",
                                                                   "id",
-                                                                  Field(name="available"),
                                                                   Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
-                                                                  Field(name="updatedAt")
+                                                                  Field(name="updatedAt"),
+                                                                  Query(
+                                                                        name="quantities", 
+                                                                        arguments=[
+                                                                            Argument(name="names", value=['"available"', '"incoming"', '"committed"', '"damaged"', '"on_hand"', '"quality_control"', '"reserved"', '"safety_stock"'])
+                                                                        ], 
+                                                                        fields=[
+                                                                            "id",
+                                                                            "name",
+                                                                            "quantity",
+                                                                            "updatedAt",
+                                                                        ],
+                                                                    )
                                                                 ]
                                                             )
                                                         ]

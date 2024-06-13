@@ -1,29 +1,39 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 25d7535d-91e0-466a-aa7f-af81578be277
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-recreation
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
   githubIssueLabel: source-recreation
   icon: recreation.svg
   license: MIT
   name: Recreation
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-recreation
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-recreation
   supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-RECREATION__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

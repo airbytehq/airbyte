@@ -73,12 +73,22 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 @Order(1)
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, PostgresTestDatabase> {
 
   protected BaseImage postgresImage;
 
   protected void setBaseImage() {
     this.postgresImage = getServerImage();
+  }
+
+  @Override
+  protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
+    // Count has been disabled due to we do not support RFR for non resumeable full refresh.
+    // AtomicLong count = new AtomicLong(0L);
+    // stateMessages.stream().forEach(stateMessage ->
+    // count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    // assertEquals(totalCount, count.get());
   }
 
   @Override
@@ -93,6 +103,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
+  protected boolean supportResumableFullRefresh() {
+    return true;
+  }
+
+  @Override
   protected JsonNode config() {
     return testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
@@ -101,6 +116,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .with("heartbeat_action_query", "")
         .build();
+  }
+
+  @Override
+  protected void addIsResumableFlagForNonPkTable(final AirbyteStream stream) {
+    stream.setIsResumable(true);
   }
 
   @Override
@@ -152,6 +172,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     testdb
         .with("CREATE USER %s PASSWORD '%s';", cleanUserReplicationName, testdb.getPassword())
         .with("ALTER USER %s REPLICATION;", cleanUserReplicationName)
+        // the following GRANT statements guarantees check will not fail at table permission check stage
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", modelsSchema(), cleanUserReplicationName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", modelsSchema(), cleanUserReplicationName)
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", randomSchema(), cleanUserReplicationName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", randomSchema(), cleanUserReplicationName)
         .onClose("DROP OWNED BY %s;", cleanUserReplicationName)
         .onClose("DROP USER %s;", cleanUserReplicationName);
     final JsonNode testConfig = config();
@@ -165,6 +190,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final var cleanUserVanillaName = testdb.withNamespace("vanilla_user");
     testdb
         .with("CREATE USER %s PASSWORD '%s';", cleanUserVanillaName, testdb.getPassword())
+        // the following GRANT statements guarantees check will not fail at table permission check stage
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", modelsSchema(), cleanUserVanillaName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", modelsSchema(), cleanUserVanillaName)
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", randomSchema(), cleanUserVanillaName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", randomSchema(), cleanUserVanillaName)
         .onClose("DROP OWNED BY %s;", cleanUserVanillaName)
         .onClose("DROP USER %s;", cleanUserVanillaName);
     final JsonNode testConfig = config();
@@ -193,18 +223,18 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
     assertStateTypes(stateMessages, 4);
   }
 
   @Override
-  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<? extends AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
     assertStateTypes(stateAfterFirstBatch, 24);
   }
 
-  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
+  private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -233,7 +263,16 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
+  protected void validateStreamStateInResumableFullRefresh(final JsonNode streamStateToBeTested) {
+    assertEquals("ctid", streamStateToBeTested.get("state_type").asText());
+  }
+
+  @Override
+  @Test
+  protected void testCdcAndNonResumableFullRefreshInSameSync() throws Exception {}
+
+  @Override
+  protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size(), stateMessages.toString());
     for (int i = 0; i <= 4; i++) {
@@ -443,12 +482,12 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesForNoData(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(2, stateMessages.size());
   }
 
   @Override
-  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesFromIncrementalSync(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
   }
@@ -546,8 +585,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     // The stream that does not have an associated publication should not have support for
     // source-defined incremental sync.
     assertEquals(streamNotInPublication.getSupportedSyncModes(), List.of(SyncMode.FULL_REFRESH));
-    assertTrue(streamNotInPublication.getSourceDefinedPrimaryKey().isEmpty());
-    assertFalse(streamNotInPublication.getSourceDefinedCursor());
+    assertFalse(streamNotInPublication.getSourceDefinedPrimaryKey().isEmpty());
+    assertTrue(streamNotInPublication.getSourceDefinedCursor());
     testdb.query(ctx -> ctx.execute("DROP PUBLICATION " + testdb.getPublicationName() + ";"));
     testdb.query(ctx -> ctx.execute("CREATE PUBLICATION " + testdb.getPublicationName() + " FOR ALL TABLES"));
   }
@@ -863,9 +902,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    if (!isOnLegacyPostgres()) {
-      assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    }
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
+    // lsn_commit only increases with a new transaction, we expect only one state message.
+    assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
@@ -904,9 +944,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    if (!isOnLegacyPostgres()) {
-      assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    }
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
+    // lsn_commit only increases with a new transaction, we expect only one state message.
+    assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 

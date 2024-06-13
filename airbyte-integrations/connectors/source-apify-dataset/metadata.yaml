@@ -2,36 +2,47 @@ data:
   allowedHosts:
     hosts:
       - api.apify.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-apify-dataset
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
-  dockerImageTag: 2.1.1
+  dockerImageTag: 2.1.6
   dockerRepository: airbyte/source-apify-dataset
+  documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   githubIssueLabel: source-apify-dataset
   icon: apify.svg
   license: MIT
   name: Apify Dataset
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2023-08-25
   releaseStage: alpha
   releases:
     breakingChanges:
       1.0.0:
+        message: Update spec to use token and ingest all 3 streams correctly
         upgradeDeadline: 2023-08-30
-        message: "Update spec to use token and ingest all 3 streams correctly"
       2.0.0:
+        message: This version introduces a new Item Collection (WCC) stream as a substitute of the now-removed Item Collection stream in order to retain data for Web-Content-Crawler datasets.
         upgradeDeadline: 2023-09-18
-        message: "This version introduces a new Item Collection (WCC) stream as a substitute of the now-removed Item Collection stream in order to retain data for Web-Content-Crawler datasets."
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-apify-dataset
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-APIFY-DATASET__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

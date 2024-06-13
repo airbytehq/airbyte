@@ -6,7 +6,9 @@ acceptance_tests:
       - spec_path: "source_slack/spec.json"
         backward_compatibility_tests_config:
           # edited `min`/`max` > `minimum`/`maximum` for `lookback_window` field
-          disable_for_version: "0.1.26"
+          #disable_for_version: "0.1.26"
+          # slight changes: removed doc url, added new null oauth param
+          disable_for_version: "0.3.10"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -26,10 +28,6 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         timeout_seconds: 4800
-        ignored_fields:
-          channels:
-            - name: updated
-              bypass_reason: Value can change while interacting with data
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

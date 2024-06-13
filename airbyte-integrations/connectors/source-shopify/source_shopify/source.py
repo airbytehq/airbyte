@@ -3,12 +3,13 @@
 #
 
 
+import logging
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from requests.exceptions import ConnectionError, RequestException, SSLError
 
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
@@ -111,6 +112,11 @@ class ConnectionCheckTest:
         By the time this method is tiggered, we are sure we've passed the `Connection Checks` and have the `shop_id` value.
         """
         response = list(self.test_stream.read_records(sync_mode=SyncMode.full_refresh))
+        if len(response) == 0:
+            raise AirbyteTracedException(
+                message=f"Could not find a Shopify shop with the name {self.config.get('shop', '')}. Make sure it's valid.",
+                failure_type=FailureType.config_error,
+            )
         shop_id = response[0].get("id")
         if shop_id:
             return shop_id
@@ -137,7 +143,7 @@ class SourceShopify(AbstractSource):
     def format_stream_name(name) -> str:
         return "".join(x.capitalize() for x in name.split("_"))
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """

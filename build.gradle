@@ -1,10 +1,13 @@
 import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id 'base'
-    id 'com.github.spotbugs' version '6.0.7'
+    id 'com.github.spotbugs' version '6.0.7' apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23' apply false
 }
 
 allprojects {
@@ -12,6 +15,9 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'java-test-fixtures'
     apply plugin: 'com.github.spotbugs'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'idea'
+
 
     // By default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
@@ -42,6 +48,8 @@ allprojects {
     // Common java configurations
 
     java {
+        withSourcesJar()
+        withJavadocJar()
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
         compileJava {
@@ -58,9 +66,54 @@ allprojects {
         }
     }
 
+    tasks.named('sourcesJar').configure {
+        dependsOn tasks.matching { it.name == 'generate' }
+    }
+
+    compileKotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+            languageVersion = KotlinVersion.KOTLIN_1_9
+            allWarningsAsErrors = true
+            freeCompilerArgs = ["-Xjvm-default=all"]
+        }
+        dependsOn {
+            tasks.matching { it.name == 'generate' }
+        }
+    }
+    compileTestKotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+            languageVersion = KotlinVersion.KOTLIN_1_9
+            allWarningsAsErrors = true
+            freeCompilerArgs = ["-Xjvm-default=all"]
+        }
+        dependsOn {
+            tasks.matching { it.name == 'generate' }
+        }
+    }
+    compileTestFixturesKotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+            languageVersion = KotlinVersion.KOTLIN_1_9
+            allWarningsAsErrors = true
+            freeCompilerArgs = ["-Xjvm-default=all"]
+        }
+        dependsOn {
+            tasks.matching { it.name == 'generate' }
+        }
+    }
+
+    idea {
+        module {
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }
+
     spotbugs {
         ignoreFailures = false
-        effort = Effort.valueOf(System.getProperty('skipSlowTests', 'false') == 'false' ? 'MAX' : 'MIN')
+        effort = Effort.valueOf('MAX')
         excludeFilter.set rootProject.file('spotbugs-exclude-filter-file.xml')
         reportLevel = Confidence.valueOf('HIGH')
         showProgress = false
@@ -86,6 +139,8 @@ allprojects {
         // This is also required, to prevent stderr spam starting with
         //   "OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader cl..."
         jvmArgs "-Xshare:off"
+        // needed because we make ThreadLocal.get(Thread) accessible in IntegrationRunner.stopOrphanedThreads
+        jvmArgs "--add-opens=java.base/java.lang=ALL-UNNAMED"
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
         // which on a developer's laptop is more likely to be PST.
@@ -125,36 +180,35 @@ allprojects {
                 systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
             }
         }
+        String junitMethodExecutionTimeout
+        if (project.hasProperty('JunitMethodExecutionTimeout')) {
+            junitMethodExecutionTimeout = project.property('JunitMethodExecutionTimeout').toString()
+        } else {
+            junitMethodExecutionTimeout = '1 m'
+        }
+        systemProperty 'JunitMethodExecutionTimeout', junitMethodExecutionTimeout
     }
 
     dependencies {
-        // Lombok dependencies.
-        def lombok = "org.projectlombok:lombok:1.18.30"
-        compileOnly lombok
-        annotationProcessor lombok
-        testCompileOnly lombok
-        testAnnotationProcessor lombok
-        testFixturesCompileOnly lombok
-        testFixturesAnnotationProcessor lombok
-
         // JUnit dependencies.
-        def vAssertJ = "3.21.0"
-        def vJUnit = "5.9.1"
-        def vJUnitJupiter = "5.10.0"
-        def vJUnitPioneer = "1.7.1"
+        def vAssertJ = "3.25.3"
+        def vJUnit = "5.10.2"
+        def vJUnitJupiter = "5.11.0"
 
+        testFixturesImplementation platform("org.junit:junit-bom:${vJUnit}")
         testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
         testFixturesImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
         testFixturesImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
         testFixturesImplementation "org.assertj:assertj-core:${vAssertJ}"
-        testFixturesImplementation "org.junit-pioneer:junit-pioneer:${vJUnitPioneer}"
 
+        testImplementation platform("org.junit:junit-bom:${vJUnit}")
         testImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
         testImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
         testImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
         testImplementation "org.assertj:assertj-core:${vAssertJ}"
-        testImplementation  "org.junit-pioneer:junit-pioneer:${vJUnitPioneer}"
+        testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 
+        testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
 
         // Spotbugs dependencies.
@@ -170,5 +224,7 @@ allprojects {
         }
     }
 
-    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+    javadoc {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
 }

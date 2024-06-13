@@ -6,16 +6,17 @@ data:
     hosts:
       - api.typeform.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 1.2.5
+  dockerImageTag: 1.2.9
   dockerRepository: airbyte/source-typeform
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   githubIssueLabel: source-typeform
   icon: typeform.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Typeform
   remoteRegistries:
     pypi:
@@ -31,14 +32,34 @@ data:
   releases:
     breakingChanges:
       1.1.0:
-        message:
-          This version migrates the Typeform connector to the low-code framework
-          for greater maintainability. This introduces a breaking change to the state
-          format for the `responses` stream. If you are using the incremental sync
-          mode for this stream, you will need to reset affected connections after
-          upgrading to prevent sync failures.
+        message: This version migrates the Typeform connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `responses` stream. If you are using the incremental sync mode for this stream, you will need to reset affected connections after upgrading to prevent sync failures.
         upgradeDeadline: "2023-09-25"
   supportLevel: certified
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TYPEFORM_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS_INCREMENTAL
+          fileName: incremental_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS_TOKEN
+          fileName: config_token.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

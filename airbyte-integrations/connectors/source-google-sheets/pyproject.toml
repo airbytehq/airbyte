@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.16"
+version = "0.5.3"
 name = "source-google-sheets"
 description = "Source implementation for Google Sheets."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -12,18 +12,15 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/google-sheets"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_google_sheets"}]
+[[tool.poetry.packages]]
+include = "source_google_sheets"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-requests = "==2.31.0"
-backoff = "==2.2.1"
+airbyte-cdk = "^0"
 google-auth-httplib2 = "==0.2.0"
 Unidecode = "==1.3.8"
-pydantic = "==1.9.2"
-airbyte-cdk = "==0.51.8"
 google-api-python-client = "==2.114.0"
-PyYAML = "==6.0.1"
 
 [tool.poetry.scripts]
 source-google-sheets = "source_google_sheets.run:run"

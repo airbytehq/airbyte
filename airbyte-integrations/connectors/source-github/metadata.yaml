@@ -6,17 +6,17 @@ data:
     hosts:
       - ${api_url}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 1.6.3
+  dockerImageTag: 1.7.6
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   githubIssueLabel: source-github
   icon: github.svg
   license: MIT
-  maxSecondsBetweenMessages: 5400
+  maxSecondsBetweenMessages: 3600
   name: GitHub
   remoteRegistries:
     pypi:
@@ -24,7 +24,6 @@ data:
       packageName: airbyte-source-github
   registries:
     cloud:
-      dockerImageTag: 1.5.7
       enabled: true
     oss:
       enabled: true
@@ -44,4 +43,19 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GITHUB_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GITHUB_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

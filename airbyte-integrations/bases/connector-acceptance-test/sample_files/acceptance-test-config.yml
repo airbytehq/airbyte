@@ -15,9 +15,7 @@ tests:
       empty_streams: []
       expect_records:
         path: "integration_tests/expected_records.jsonl"
-        extra_fields: no
         exact_order: no
-        extra_records: yes
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"

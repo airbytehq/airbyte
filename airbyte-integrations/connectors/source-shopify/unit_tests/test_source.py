@@ -3,11 +3,13 @@
 #
 
 
-from unittest.mock import MagicMock
+import math
+from unittest.mock import MagicMock, patch
 
 import pytest
+from airbyte_cdk.utils import AirbyteTracedException
 from source_shopify.auth import ShopifyAuthenticator
-from source_shopify.source import SourceShopify
+from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import (
     AbandonedCheckouts,
     Articles,
@@ -47,6 +49,8 @@ from source_shopify.streams.streams import (
     TransactionsGraphql,
 )
 
+from .conftest import records_per_slice
+
 
 @pytest.fixture
 def config(basic_config) -> dict:
@@ -70,18 +74,18 @@ def config(basic_config) -> dict:
         (MetafieldProductVariants, None, "graphql.json"),
         (MetafieldLocations, None, "graphql.json"),
         (MetafieldCollections, None, "graphql.json"),
-        # 
+        (Products, None, "graphql.json"),
+        (ProductImages, None, "graphql.json"),
+        (ProductVariants, None, "graphql.json"),
+        # Nested Substreams
+        (OrderRefunds, None, ""),
+        # regular streams
         (MetafieldSmartCollections, {"id": 123}, "smart_collections/123/metafields.json"),
         (MetafieldPages, {"id": 123}, "pages/123/metafields.json"),
         (MetafieldShops, None, "metafields.json"),
-        # Nested Substreams
-        (ProductImages, None, ""),
-        (ProductVariants, None, ""),
-        # 
         (Customers, None, "customers.json"),
         (Orders, None, "orders.json"),
         (DraftOrders, None, "draft_orders.json"),
-        (Products, None, "products.json"),
         (AbandonedCheckouts, None, "checkouts.json"),
         (Collects, None, "collects.json"),
         (TenderTransactions, None, "tender_transactions.json"),
@@ -104,12 +108,12 @@ def test_path(stream, stream_slice, expected_path, config) -> None:
 @pytest.mark.parametrize(
     "stream,stream_slice,expected_path",
     [
-        (OrderRisks, {"order_id": 12345}, "orders/12345/risks.json"),
         (Transactions, {"order_id": 12345}, "orders/12345/transactions.json"),
         # Nested Substreams
         (OrderRefunds, None, ""),
         (Fulfillments, None, ""),
         # GQL BULK stream
+        (OrderRisks, None, "graphql.json"),
         (DiscountCodes, None, "graphql.json"),
         (FulfillmentOrders, None, "graphql.json"),
         (InventoryLevels, None, "graphql.json"),
@@ -122,6 +126,54 @@ def test_path_with_stream_slice_param(stream, stream_slice, expected_path, confi
     else:
         result = stream.path()
     assert result == expected_path
+    
+    
+@pytest.mark.parametrize(
+    "stream, parent_records, state_checkpoint_interval",
+    [
+        (
+            OrderRefunds, 
+            [
+                {"id": 1, "refunds": [{"created_at": "2021-01-01T00:00:00+00:00"}]},
+                {"id": 2, "refunds": [{"created_at": "2021-02-01T00:00:00+00:00"}]},
+                {"id": 3, "refunds": [{"created_at": "2021-03-01T00:00:00+00:00"}]},
+                {"id": 4, "refunds": [{"created_at": "2021-04-01T00:00:00+00:00"}]},
+                {"id": 5, "refunds": [{"created_at": "2021-05-01T00:00:00+00:00"}]},
+            ],
+            2,
+        ),
+    ],
+)
+def test_stream_slice_nested_substream_buffering(
+    mocker, 
+    config, 
+    stream, 
+    parent_records, 
+    state_checkpoint_interval,
+) -> None:
+    # making the stream instance
+    stream = stream(config)
+    stream.state_checkpoint_interval = state_checkpoint_interval
+    # simulating `read_records` for the `parent_stream`
+    mocker.patch(
+        "source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records", 
+        return_value=parent_records,
+    )
+    # count how many slices we expect, based on the number of parent_records
+    total_slices_expected = math.ceil(len(parent_records) / state_checkpoint_interval)
+    # define the how many records each individual slice should have, based on the number of parent_records
+    expected_records_per_slice = records_per_slice(parent_records, state_checkpoint_interval)
+    # slices counter
+    total_slices: int = 0
+    for slice in enumerate(stream.stream_slices()):
+        slice_index = slice[0]
+        nested_records = slice[1].get(stream.nested_entity)
+        # check the number of records / slice
+        assert len(nested_records) == expected_records_per_slice[slice_index]
+        # count total slices
+        total_slices += 1
+    # check we have emitted complete number of slices
+    assert total_slices ==  total_slices_expected    
 
 
 def test_check_connection(config, mocker) -> None:
@@ -160,17 +212,17 @@ def test_request_params(config, stream, expected) -> None:
     "last_record, current_state, expected",
     [
         # no init state
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # state is empty str
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # state is None
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # last rec cursor is None
-        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": None}),
+        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # last rec cursor is empty str
-        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": None}),
+        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # no values at all
-        ({}, {}, {"created_at": "", "orders": None}),
+        ({}, {}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
     ],
     ids=[
         "no init state",
@@ -226,3 +278,21 @@ def test_select_transactions_stream(config, expected_stream_class):
     actual = source.select_transactions_stream(config)
     assert type(actual) == expected_stream_class
 
+
+@pytest.mark.parametrize(
+    "read_records, expected_shop_id, expected_error",
+    [
+        pytest.param([{"id": "12345"}], "12345", None, id="test_shop_name_exists"),
+        pytest.param([], None, AirbyteTracedException, id="test_shop_name_does_not_exist"),
+     ],
+)
+def test_get_shop_id(config, read_records, expected_shop_id, expected_error):
+    check_test = ConnectionCheckTest(config)
+
+    with patch.object(Shop, "read_records", return_value=read_records):
+        if expected_error:
+            with pytest.raises(expected_error):
+                check_test.get_shop_id()
+        else:
+            actual_shop_id = check_test.get_shop_id()
+            assert actual_shop_id == expected_shop_id

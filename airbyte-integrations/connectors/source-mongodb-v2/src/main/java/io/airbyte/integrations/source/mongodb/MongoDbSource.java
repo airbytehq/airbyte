@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitialSnapshotUtils.validateStateSyncMode;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
@@ -19,9 +21,11 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,9 +126,11 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                     final JsonNode state) {
     final var emittedAt = Instant.now();
     final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
-    final var stateManager = MongoDbStateManager.createStateManager(state);
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
+    final var stateManager = MongoDbStateManager.createStateManager(state, sourceConfig);
+
     if (catalog != null) {
+      validateStateSyncMode(stateManager, catalog.getStreams());
       MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
           stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
     }
@@ -132,12 +138,23 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
       // WARNING: do not close the client here since it needs to be used by the iterator
       final MongoClient mongoClient = createMongoClient(sourceConfig);
-
       try {
-        final var iteratorList =
-            cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, catalog,
-                stateManager, emittedAt, sourceConfig);
-        return AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace);
+        final List<ConfiguredAirbyteStream> fullRefreshStreams =
+            catalog.getStreams().stream().filter(s -> s.getSyncMode() == SyncMode.FULL_REFRESH).toList();
+        final List<ConfiguredAirbyteStream> incrementalStreams = catalog.getStreams().stream().filter(s -> !fullRefreshStreams.contains(s)).toList();
+
+        List<AutoCloseableIterator<AirbyteMessage>> iterators = new ArrayList<>();
+        if (!fullRefreshStreams.isEmpty()) {
+          LOGGER.info("There are {} Full refresh streams", fullRefreshStreams.size());
+          iterators.addAll(createFullRefreshIterators(sourceConfig, mongoClient, fullRefreshStreams, stateManager, emittedAt));
+        }
+
+        if (!incrementalStreams.isEmpty()) {
+          LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
+          iterators
+              .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+        }
+        return AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
       } catch (final Exception e) {
         mongoClient.close();
         throw e;
@@ -150,6 +167,26 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   protected MongoClient createMongoClient(final MongoDbSourceConfig config) {
     return MongoConnectionUtils.createMongoClient(config);
+  }
+
+  List<AutoCloseableIterator<AirbyteMessage>> createFullRefreshIterators(final MongoDbSourceConfig sourceConfig,
+                                                                         final MongoClient mongoClient,
+                                                                         final List<ConfiguredAirbyteStream> streams,
+                                                                         final MongoDbStateManager stateManager,
+                                                                         final Instant emmitedAt) {
+    final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
+    if (stateManager.getCdcState() == null) {
+      stateManager.updateCdcState(new MongoDbCdcState(null, sourceConfig.getEnforceSchema()));
+    }
+    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators = initialSnapshotHandler.getIterators(
+        streams,
+        stateManager,
+        mongoClient.getDatabase(sourceConfig.getDatabaseName()),
+        sourceConfig,
+        true,
+        true);
+
+    return fullRefreshIterators;
   }
 
 }

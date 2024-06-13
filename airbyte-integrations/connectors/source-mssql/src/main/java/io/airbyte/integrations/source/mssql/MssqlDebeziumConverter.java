@@ -14,14 +14,9 @@ import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import microsoft.sql.DateTimeOffset;
+import java.util.*;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +33,11 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
   private static final String SMALLMONEY_TYPE = "SMALLMONEY";
   private static final String GEOMETRY = "GEOMETRY";
   private static final String GEOGRAPHY = "GEOGRAPHY";
-  private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss[.][SSSSSSS] XXX";
 
   private static final String DATETIME_FORMAT_MICROSECONDS = "yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]";
 
   @Override
-  public void configure(Properties props) {}
+  public void configure(final Properties props) {}
 
   @Override
   public void converterFor(final RelationalColumn field,
@@ -62,8 +56,6 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       registerGeography(field, registration);
     } else if (TIME_TYPE.equalsIgnoreCase(field.typeName())) {
       registerTime(field, registration);
-    } else if (DATETIMEOFFSET.equalsIgnoreCase(field.typeName())) {
-      registerDateTimeOffSet(field, registration);
     }
   }
 
@@ -77,7 +69,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       if (input instanceof byte[]) {
         try {
           return Geometry.deserialize((byte[]) input).toString();
-        } catch (SQLServerException e) {
+        } catch (final SQLServerException e) {
           LOGGER.error(e.getMessage());
         }
       }
@@ -98,7 +90,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       if (input instanceof byte[]) {
         try {
           return Geography.deserialize((byte[]) input).toString();
-        } catch (SQLServerException e) {
+        } catch (final SQLServerException e) {
           LOGGER.error(e.getMessage());
         }
       }
@@ -129,30 +121,23 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
           if (Objects.isNull(input)) {
             return DebeziumConverterUtils.convertDefaultValue(field);
           }
+          if (input instanceof final Timestamp d) {
+            final LocalDateTime localDateTime = d.toLocalDateTime();
+            return localDateTime.format(DateTimeFormatter.ofPattern(DATETIME_FORMAT_MICROSECONDS));
+          }
 
-          final LocalDateTime localDateTime = ((Timestamp) input).toLocalDateTime();
-          return localDateTime.format(DateTimeFormatter.ofPattern(DATETIME_FORMAT_MICROSECONDS));
+          if (input instanceof final Long d) {
+            // During schema history creation datetime input arrives in the form of epoch nanosecond
+            // This is needed for example for a column defined as:
+            // [TransactionDate] DATETIME2 (7) DEFAULT ('2024-01-01T00:00:00.0000000') NOT NULL
+            final Instant instant = Instant.ofEpochMilli(d / 1000 / 1000);
+            final LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
+            return localDateTime.format(DateTimeFormatter.ofPattern(DATETIME_FORMAT_MICROSECONDS));
+          }
+
+          return input.toString();
         });
 
-  }
-
-  private void registerDateTimeOffSet(final RelationalColumn field,
-                                      final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), input -> {
-      if (Objects.isNull(input)) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
-      }
-
-      if (input instanceof DateTimeOffset) {
-        return DataTypeUtils.toISO8601String(
-            OffsetDateTime.parse(input.toString(),
-                DateTimeFormatter.ofPattern(DEBEZIUM_DATETIMEOFFSET_FORMAT)));
-      }
-
-      LOGGER.warn("Uncovered DateTimeOffSet class type '{}'. Use default converter",
-          input.getClass().getName());
-      return input.toString();
-    });
   }
 
   private void registerTime(final RelationalColumn field,

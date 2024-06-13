@@ -6,16 +6,17 @@ data:
     hosts:
       - ${api_url}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 3.0.0
+  dockerImageTag: 4.0.2
   dockerRepository: airbyte/source-gitlab
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   githubIssueLabel: source-gitlab
   icon: gitlab.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Gitlab
   remoteRegistries:
     pypi:
@@ -29,19 +30,30 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      4.0.0:
+        message: In this release, several changes have been made to the Gitlab connector. The primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`. Users will need to refresh schemas and reset the affected streams after upgrading.
+        upgradeDeadline: "2024-04-15"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "commits"
+              - "issues"
+              - "merge_requests"
+              - "pipelines"
+              - "group_members"
+              - "group_labels"
+              - "project_members"
+              - "project_labels"
+              - "branches"
+              - "tags"
       3.0.0:
-        message:
-          In this release, merge_request_commits stream schema has been fixed so that it returns commits for each merge_request.
-          Users will need to refresh the source schema and reset merge_request_commits stream after upgrading.
+        message: In this release, merge_request_commits stream schema has been fixed so that it returns commits for each merge_request. Users will need to refresh the source schema and reset merge_request_commits stream after upgrading.
         upgradeDeadline: "2024-02-13"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["merge_request_commits"]
       2.0.0:
-        message:
-          In this release, several streams were updated to date-time field format, as declared in the Gitlab API.
-          These changes impact pipeline.created_at and pipeline.updated_at fields for stream Deployments and expires_at field for stream Group Members and stream Project Members.
-          Users will need to refresh the source schema and reset affected streams after upgrading.
+        message: In this release, several streams were updated to date-time field format, as declared in the Gitlab API. These changes impact pipeline.created_at and pipeline.updated_at fields for stream Deployments and expires_at field for stream Group Members and stream Project Members. Users will need to refresh the source schema and reset affected streams after upgrading.
         upgradeDeadline: "2023-11-09"
   suggestedStreams:
     streams:
@@ -53,4 +65,29 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GITLAB_CREDS_WITH_IDS
+          fileName: config_with_ids.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GITLAB_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GITLAB_WITH_IDS__CREDS
+          fileName: config_with_ids.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GITLAB__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

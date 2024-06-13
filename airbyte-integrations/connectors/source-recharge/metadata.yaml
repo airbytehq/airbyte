@@ -5,13 +5,14 @@ data:
   connectorSubtype: api
   connectorType: source
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   definitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
-  dockerImageTag: 1.1.5
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/source-recharge
   githubIssueLabel: source-recharge
   icon: recharge.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Recharge
   remoteRegistries:
     pypi:
@@ -26,8 +27,23 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/recharge
   tags:
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 200
     ql: 400
   supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-RECHARGE_ORDERS_MODERN_API__CREDS
+          fileName: config_order_modern_api.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-RECHARGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

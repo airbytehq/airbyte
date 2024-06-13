@@ -17,10 +17,12 @@ data:
         resourceRequirements:
           memory_limit: 2Gi
           memory_request: 2Gi
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
-  dockerImageTag: 0.0.10
+  dockerImageTag: 0.0.12
   dockerRepository: airbyte/destination-qdrant
   githubIssueLabel: destination-qdrant
   icon: qdrant.svg
@@ -31,8 +33,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/qdrant
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
 metadataSpecVersion: "1.0"

@@ -1,6 +1,7 @@
 {
   "properties": {
     "data": {
+      "description": "Contains the campaign metrics data",
       "type": ["null", "object"]
     }
   },

@@ -1,29 +1,54 @@
 const { catalog } = require("../connector_registry");
 
+// the migration guide and troubleshooting guide are not connectors, but also not in a sub-folder, e.g. /integrations/sources/mssql-migrations
+const connectorPageAlternativeEndings = ["-migrations", "-troubleshooting"];
+const connectorPageAlternativeEndingsRegExp = new RegExp(
+  connectorPageAlternativeEndings.join("|"),
+  "gi"
+);
+
 const isDocsPage = (vfile) => {
+  let response = { isDocsPage: false, isTrueDocsPage: false };
+
+  if (
+    (vfile.path.includes("integrations/sources") ||
+      vfile.path.includes("integrations/destinations")) &&
+    !vfile.path.toLowerCase().includes("readme.md")
+  ) {
+    response.isDocsPage = true;
+    response.isTrueDocsPage = true;
+  }
+
+  if (response.isDocsPage === true) {
+    for (const ending of connectorPageAlternativeEndings) {
+      if (vfile.path.includes(ending)) {
+        response.isTrueDocsPage = false;
+      }
+    }
+  }
+
+  return response;
+};
+
+const getRegistryEntry = async (vfile) => {
   if (
     !vfile.path.includes("integrations/sources") &&
     !vfile.path.includes("integrations/destinations")
   ) {
-    return false;
+    return;
   }
 
-  // skip the root files in integrations/source and integrations/destinations
-  if (vfile.path.includes("README.md")) {
-    return false;
-  }
-
-  if (vfile.path.includes("-migrations.md")) {
-    return false;
-  }
-
-  return true;
-};
-
-const getRegistryEntry = async (vfile) => {
+  // troubleshooting pages are sub-pages, but migration pages are not?
+  // ["sources", "mysql"] vs ["sources", "mysql", "troubleshooting"] vs ["sources", "mysql-migrations"]
   const pathParts = vfile.path.split("/");
-  const connectorName = pathParts.pop().split(".")[0];
-  const connectorType = pathParts.pop();
+  while (pathParts[0] !== "integrations") pathParts.shift();
+  pathParts.shift();
+  const connectorType = pathParts.shift();
+  const connectorName = pathParts
+    .shift()
+    .split(".")[0]
+    .replace(connectorPageAlternativeEndingsRegExp, "");
+
   const dockerRepository = `airbyte/${connectorType.replace(
     /s$/,
     ""

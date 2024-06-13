@@ -145,6 +145,17 @@ class TestTwilioStream:
         result = stream.request_params(stream_state=None, next_page_token=next_page_token)
         assert result == expected
 
+    @pytest.mark.parametrize(
+        "original_value, field_schema, expected_value",
+        [
+            ("Fri, 11 Dec 2020 04:28:40 +0000", {"format": "date-time"}, "2020-12-11T04:28:40Z"),
+            ("2020-12-11T04:28:40Z", {"format": "date-time"}, "2020-12-11T04:28:40Z"),
+            ("some_string", {}, "some_string"),
+        ]
+    )
+    def test_transform_function(self, original_value, field_schema, expected_value):
+        assert Accounts.custom_transform_function(original_value, field_schema) == expected_value
+
 
 class TestIncrementalTwilioStream:
 

@@ -2,6 +2,8 @@ data:
   allowedHosts:
     hosts:
       - api.persistiq.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   remoteRegistries:
     pypi:
       enabled: true
@@ -14,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-persistiq
   githubIssueLabel: source-persistiq
   icon: persistiq.svg
@@ -25,5 +27,14 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/persistiq
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PERSISTIQ__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

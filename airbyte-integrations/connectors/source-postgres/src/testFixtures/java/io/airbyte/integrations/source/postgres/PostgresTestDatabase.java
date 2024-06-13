@@ -57,6 +57,7 @@ public class PostgresTestDatabase extends
 
   }
 
+  @SuppressWarnings("deprecation")
   static public PostgresTestDatabase in(BaseImage baseImage, ContainerModifier... modifiers) {
     String[] methodNames = Stream.of(modifiers).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new PostgresContainerFactory().shared(baseImage.reference, methodNames);
@@ -185,8 +186,8 @@ public class PostgresTestDatabase extends
           .with("is_test", true)
           .with("replication_method", Jsons.jsonNode(ImmutableMap.builder()
               .put("method", "CDC")
-              .put("replication_slot", testDatabase.getReplicationSlotName())
-              .put("publication", testDatabase.getPublicationName())
+              .put("replication_slot", getTestDatabase().getReplicationSlotName())
+              .put("publication", getTestDatabase().getPublicationName())
               .put("initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
               .put("lsn_commit_behaviour", LsnCommitBehaviour)
               .put(INVALID_CDC_CURSOR_POSITION_PROPERTY, cdcCursorFailBehaviour)

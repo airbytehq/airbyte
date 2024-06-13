@@ -47,18 +47,20 @@ class CustomFieldTransformation(RecordTransformation):
                 ...
             }
         """
-        record["custom_fields"] = [{"name": k, "value": v} for k, v in record.items() if k.startswith("cf_")]
+        record["custom_fields"] = [{"name": k, "value": record.pop(k)} for k in record.copy() if k.startswith("cf_")]
         return record
 
 
 @dataclass
 class IncrementalSingleSliceCursor(Cursor):
+
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._state = {}
+        self._cursor = None
         self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
 
     def get_request_params(
@@ -113,15 +115,29 @@ class IncrementalSingleSliceCursor(Cursor):
         if cursor_value:
             self._state[cursor_field] = cursor_value
             self._state["prior_state"] = self._state.copy()
+            self._cursor = cursor_value
 
-    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
-        latest_record = self._state if self.is_greater_than_or_equal(self._state, most_recent_record) else most_recent_record
-        if latest_record:
-            cursor_field = self.cursor_field.eval(self.config)
-            self._state[cursor_field] = latest_record[cursor_field]
+    def observe(self, stream_slice: StreamSlice, record: Record) -> None:
+        """
+        Register a record with the cursor; the cursor instance can then use it to manage the state of the in-progress stream read.
+
+        :param stream_slice: The current slice, which may or may not contain the most recently observed record
+        :param record: the most recently-read record, which the cursor can use to update the stream state. Outwardly-visible changes to the
+          stream state may need to be deferred depending on whether the source reliably orders records by the cursor field.
+        """
+        record_cursor_value = record.get(self.cursor_field.eval(self.config))
+        if not record_cursor_value:
+            return
+
+        if self.is_greater_than_or_equal(record, self._state):
+            self._cursor = record_cursor_value
+
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
+        cursor_field = self.cursor_field.eval(self.config)
+        self._state[cursor_field] = self._cursor
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
-        yield {}
+        yield StreamSlice(partition={}, cursor_slice={})
 
     def should_be_synced(self, record: Record) -> bool:
         """

@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6babfc42-c734-4ef6-a817-6eca15f0f9b7
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-everhour
   githubIssueLabel: source-everhour
   icon: everhour.svg
@@ -24,8 +24,22 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/everhour
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  # Disabling acceptance tests for now
+  # They are not passing
+  # No/Low Airbyte Cloud usage
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE_EVERHOUR_CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
 metadataSpecVersion: "1.0"

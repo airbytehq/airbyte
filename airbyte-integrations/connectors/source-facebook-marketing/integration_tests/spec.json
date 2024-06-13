@@ -11,11 +11,11 @@
         "order": 0,
         "pattern_descriptor": "The Ad Account ID must be a number.",
         "examples": ["111111111111111"],
-        "type": "array",
         "minItems": 1,
+        "type": "array",
         "items": {
-          "pattern": "^[0-9]+$",
-          "type": "string"
+          "type": "string",
+          "pattern": "^[0-9]+$"
         },
         "uniqueItems": true
       },
@@ -25,6 +25,72 @@
         "order": 1,
         "airbyte_secret": true,
         "type": "string"
+      },
+      "credentials": {
+        "title": "Authentication",
+        "description": "Credentials for connecting to the Facebook Marketing API",
+        "type": "object",
+        "discriminator": {
+          "propertyName": "auth_type",
+          "mapping": {
+            "Client": "#/definitions/OAuthCredentials",
+            "Service": "#/definitions/ServiceAccountCredentials"
+          }
+        },
+        "oneOf": [
+          {
+            "title": "Authenticate via Facebook Marketing (Oauth)",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "Client",
+                "const": "Client",
+                "enum": ["Client"],
+                "type": "string"
+              },
+              "client_id": {
+                "title": "Client ID",
+                "description": "Client ID for the Facebook Marketing API",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "description": "Client Secret for the Facebook Marketing API",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "The value of the generated access token. From your App\u2019s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["client_id", "client_secret", "auth_type"]
+          },
+          {
+            "title": "Service Account Key Authentication",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "Service",
+                "const": "Service",
+                "enum": ["Service"],
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "The value of the generated access token. From your App\u2019s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["access_token", "auth_type"]
+          }
+        ]
       },
       "start_date": {
         "title": "Start Date",
@@ -229,6 +295,9 @@
                   "interactive_component_tap",
                   "labels",
                   "location",
+                  "marketing_messages_cost_per_delivered",
+                  "marketing_messages_cost_per_link_btn_click",
+                  "marketing_messages_spend",
                   "mobile_app_purchase_roas",
                   "objective",
                   "optimization_goal",
@@ -238,9 +307,6 @@
                   "purchase_roas",
                   "qualifying_question_qualify_answer_rate",
                   "quality_ranking",
-                  "quality_score_ectr",
-                  "quality_score_ecvr",
-                  "quality_score_organic",
                   "reach",
                   "social_spend",
                   "spend",
@@ -309,7 +375,16 @@
                   "image_asset",
                   "impression_device",
                   "is_conversion_id_modeled",
+                  "landing_destination",
                   "link_url_asset",
+                  "marketing_messages_btn_name",
+                  "mdsa_landing_destination",
+                  "media_asset_url",
+                  "media_creator",
+                  "media_destination_url",
+                  "media_format",
+                  "media_origin_url",
+                  "media_text_content",
                   "mmm",
                   "place_page_id",
                   "platform_position",
@@ -320,6 +395,8 @@
                   "region",
                   "skan_campaign_id",
                   "skan_conversion_id",
+                  "skan_version",
+                  "standard_event_content_type",
                   "title_asset",
                   "video_asset"
                 ]
@@ -343,7 +420,8 @@
                   "action_target_id",
                   "action_type",
                   "action_video_sound",
-                  "action_video_type"
+                  "action_video_type",
+                  "standard_event_content_type"
                 ]
               }
             },
@@ -450,19 +528,21 @@
         "type": "string"
       }
     },
-    "required": ["account_ids", "access_token"]
+    "required": ["account_ids"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "Client",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
         "properties": {
           "access_token": {
             "type": "string",
-            "path_in_connector_config": ["access_token"]
+            "path_in_connector_config": ["credentials", "access_token"]
           }
         }
       },
@@ -483,11 +563,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": ["client_id"]
+            "path_in_connector_config": ["credentials", "client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": ["client_secret"]
+            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       }

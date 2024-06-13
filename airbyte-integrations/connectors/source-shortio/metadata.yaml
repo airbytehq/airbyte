@@ -3,6 +3,8 @@ data:
     hosts:
       - https://api.short.io
       - https://api-v2.short.cm
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   remoteRegistries:
     pypi:
       enabled: true
@@ -15,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2fed2292-5586-480c-af92-9944e39fe12d
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-shortio
   githubIssueLabel: source-shortio
   icon: shortio.svg
@@ -27,8 +29,16 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/shortio
   tags:
     - language:python
-    - language:low-code
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SHORTIO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

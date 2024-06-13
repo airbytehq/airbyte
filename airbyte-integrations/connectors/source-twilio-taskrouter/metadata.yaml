@@ -1,29 +1,39 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 2446953b-b794-429b-a9b3-c821ba992a48
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-twilio-taskrouter
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
   githubIssueLabel: source-twilio-taskrouter
   icon: twilio.svg
   license: MIT
   name: Twilio Taskrouter
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-twilio-taskrouter
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-twilio-taskrouter
   supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TWILIO-TASKROUTER__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

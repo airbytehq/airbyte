@@ -15,6 +15,6 @@ application {
 dependencies {
     // random Json object generation from Json schema
     // https://github.com/airbytehq/jsongenerator
-    implementation 'net.jimblackler.jsonschemafriend:core:0.12.1'
+    implementation 'net.jimblackler.jsonschemafriend:core:0.12.4'
     implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.2'
 }

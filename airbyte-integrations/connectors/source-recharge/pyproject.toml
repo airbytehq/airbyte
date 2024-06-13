@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.1.5"
+version = "1.2.0"
 name = "source-recharge"
 description = "Source implementation for Recharge."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,8 @@ include = "source_recharge"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.60.1"
+airbyte-cdk = "^0"
+freezegun = "^1.4.0"
 
 [tool.poetry.scripts]
 source-recharge = "source_recharge.run:run"

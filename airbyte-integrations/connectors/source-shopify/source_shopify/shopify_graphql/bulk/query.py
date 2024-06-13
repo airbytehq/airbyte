@@ -25,6 +25,7 @@ class ShopifyBulkTemplates:
                             id
                             status
                             errorCode
+                            createdAt
                             objectCount
                             fileSize
                             url
@@ -32,6 +33,24 @@ class ShopifyBulkTemplates:
                         }
                     }
                 }"""
+        ).substitute(job_id=bulk_job_id)
+
+    @staticmethod
+    def cancel(bulk_job_id: str) -> str:
+        return Template(
+            """mutation {
+                bulkOperationCancel(id: "$job_id") {
+                    bulkOperation {
+                        id
+                        status
+                        createdAt
+                    }
+                    userErrors {
+                        field
+                        message
+                    }
+                }
+            }"""
         ).substitute(job_id=bulk_job_id)
 
     @staticmethod
@@ -46,6 +65,7 @@ class ShopifyBulkTemplates:
                     bulkOperation {
                         id
                         status
+                        createdAt
                     }
                     userErrors {
                         field
@@ -159,7 +179,7 @@ class ShopifyBulkQuery:
         # return the constructed query operation
         return Operation(type="", queries=[query]).render()
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components, default `as is`.
         """
@@ -261,7 +281,7 @@ class Metafield(ShopifyBulkQuery):
         elif isinstance(self.type.value, str):
             return ["__typename", "id", metafield_node]
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         # resolve parent id from `str` to `int`
         record["owner_id"] = self.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
         # add `owner_resource` field
@@ -650,7 +670,7 @@ class DiscountCode(ShopifyBulkQuery):
         "record_components": ["DiscountRedeemCode"],
     }
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
         Defines how to process collected components.
         """
@@ -722,7 +742,7 @@ class Collection(ShopifyBulkQuery):
         Field(name="publications", fields=publications_fields),
         Field(name="sortOrder"),
         Field(name="templateSuffix"),
-        Field(name="productsCount"),
+        Field(name="productsCount", fields=[Field(name="count", alias="products_count")]),
     ]
 
     record_composition = {
@@ -731,7 +751,7 @@ class Collection(ShopifyBulkQuery):
         "record_components": ["CollectionPublication"],
     }
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
         """
@@ -744,6 +764,8 @@ class Collection(ShopifyBulkQuery):
         # convert dates from ISO-8601 to RFC-3339
         record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "published_at")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        # unnest `product_count` to the root lvl
+        record["products_count"] = record.get("productsCount", {}).get("products_count")
         # remove leftovers
         record.pop(BULK_PARENT_KEY, None)
         yield record
@@ -814,7 +836,9 @@ class CustomerAddresses(ShopifyBulkQuery):
         "new_record": "Customer",
     }
 
-    def set_default_address(self, record: MutableMapping[str, Any], address_record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def set_default_address(
+        self, record: MutableMapping[str, Any], address_record: MutableMapping[str, Any]
+    ) -> Iterable[MutableMapping[str, Any]]:
         default_address = record.get("defaultAddress", {})
         # the default_address could be literal `None`, additional check is required
         if default_address:
@@ -904,7 +928,7 @@ class InventoryItem(ShopifyBulkQuery):
         "new_record": "InventoryItem",
     }
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
         """
@@ -966,17 +990,60 @@ class InventoryLevel(ShopifyBulkQuery):
         "new_record": "InventoryLevel",
     }
 
+    # quantity related fields and filtering options
+    quantities_names_filter: List[str] = [
+        '"available"',
+        '"incoming"',
+        '"committed"',
+        '"damaged"',
+        '"on_hand"',
+        '"quality_control"',
+        '"reserved"',
+        '"safety_stock"',
+    ]
+    # quantities fields
+    quantities_fields: List[str] = [
+        "id",
+        "name",
+        "quantity",
+        "updatedAt",
+    ]
+
     inventory_levels_fields: List[Field] = [
         "__typename",
         "id",
-        Field(name="available"),
         Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
         Field(name="updatedAt"),
     ]
 
+    def _quantities_query(self) -> Query:
+        """
+        Defines the `quantities` nested query.
+        """
+
+        return Query(
+            name="quantities",
+            arguments=[Argument(name="names", value=self.quantities_names_filter)],
+            fields=self.quantities_fields,
+        )
+
+    def _process_quantities(self, quantities: Iterable[MutableMapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        if quantities:
+            for quantity in quantities:
+                # save the original string id
+                quantity["admin_graphql_api_id"] = quantity.get("id")
+                # resolve the int id from str id
+                quantity["id"] = self.tools.resolve_str_id(quantity.get("id"))
+                # convert dates from ISO-8601 to RFC-3339
+                quantity["updatedAt"] = self.tools.from_iso8601_to_rfc3339(quantity, "updatedAt")
+            return quantities
+        return []
+
     def query(self, filter_query: Optional[str] = None) -> Query:
+        # construct the `quantities` query piece
+        quantities: List[Query] = [self._quantities_query()]
         # build the nested query first with `filter_query` to have the incremental syncs
-        inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields, filter_query)]
+        inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields + quantities, filter_query)]
         # build the main query around previous
         # return the constructed query operation
         return self.build(
@@ -986,11 +1053,13 @@ class InventoryLevel(ShopifyBulkQuery):
             additional_query_args=self.locations_query_args,
         )
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
         """
-
+        # process quantities
+        quantities = record.get("quantities", [])
+        record["quantities"] = self._process_quantities(quantities)
         # resolve `inventory_item_id` to root lvl +  resolve to int
         record["inventory_item_id"] = self.tools.resolve_str_id(record.get("item", {}).get("inventory_item_id"))
         # add `location_id` from `__parentId`
@@ -1290,7 +1359,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
         record = self.tools.fields_names_to_snake_case(record)
         return record
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
         """
@@ -1469,7 +1538,7 @@ class Transaction(ShopifyBulkQuery):
         record = self.tools.fields_names_to_snake_case(record)
         return record
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[MutableMapping[str, Any]]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
         Defines how to process collected components.
         """
@@ -1482,3 +1551,684 @@ class Transaction(ShopifyBulkQuery):
                     transaction["order_id"] = record.get("id")
                     transaction["currency"] = record.get("currency")
                     yield self.process_transaction(transaction)
+
+
+class Product(ShopifyBulkQuery):
+    """
+    {
+        products(query: "updated_at:>='2020-01-20T00:00:00+00:00' AND updated_at:<'2024-04-25T00:00:00+00:00'", sortKey:UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    id
+                    publishedAt
+                    createdAt
+                    status
+                    vendor
+                    updatedAt
+                    bodyHtml
+                    productType
+                    tags
+                    options {
+                        __typename
+                        id
+                        values
+                        position
+                    }
+                    handle
+                    images {
+                        edges {
+                            node {
+                                __typename
+                                id
+                            }
+                        }
+
+                    }
+                    templateSuffix
+                    title
+                    variants {
+                        edges {
+                            node {
+                                __typename
+                                id
+                            }
+                        }
+                    }
+                    description
+                    descriptionHtml
+                    isGiftCard
+                    legacyResourceId
+                    media_count: mediaCount {
+                        media_count: count
+                    }
+                    onlineStorePreviewUrl
+                    onlineStoreUrl
+                    totalInventory
+                    tracksInventory
+                    total_variants: variantsCount {
+                        total_variants: count
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "products"
+    sort_key = "UPDATED_AT"
+    # images property fields
+    images_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=["__typename", "id"])])]
+    # variants property fields, we re-use the same field names as for the `images` property
+    variants_fields: List[Field] = images_fields
+    # main query
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        "publishedAt",
+        "createdAt",
+        "status",
+        "vendor",
+        "updatedAt",
+        "bodyHtml",
+        "productType",
+        "tags",
+        "handle",
+        "templateSuffix",
+        "title",
+        "description",
+        "descriptionHtml",
+        "isGiftCard",
+        "legacyResourceId",
+        "onlineStorePreviewUrl",
+        "onlineStoreUrl",
+        "totalInventory",
+        "tracksInventory",
+        Field(name="variantsCount", alias="total_variants", fields=[Field(name="count", alias="total_variants")]),
+        Field(name="mediaCount", alias="media_count", fields=[Field(name="count", alias="media_count")]),
+        Field(name="options", fields=["id", "name", "values", "position"]),
+        Field(name="images", fields=images_fields),
+        Field(name="variants", fields=variants_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Product",
+        # each product could have `Image` and `ProductVariant` associated with the product
+        "record_components": ["Image", "ProductVariant"],
+    }
+
+    def _process_component(self, entity: List[dict]) -> List[dict]:
+        for item in entity:
+            # remove the `__parentId` from the object
+            if BULK_PARENT_KEY in item:
+                item.pop(BULK_PARENT_KEY)
+            # resolve the id from string
+            item["id"] = self.tools.resolve_str_id(item.get("id"))
+        return entity
+
+    def _process_options(self, options: List[dict], product_id: Optional[int] = None) -> List[dict]:
+        for option in options:
+            # add product_id to each option
+            option["product_id"] = product_id if product_id else None
+        return options
+
+    def _unnest_tags(self, record: MutableMapping[str, Any]) -> Optional[str]:
+        # we keep supporting 1 tag only, as it was for the REST stream,
+        # to avoid breaking change.
+        tags = record.get("tags", [])
+        return ", ".join(tags) if tags else None
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        """
+        Defines how to process collected components.
+        """
+        # get the joined record components collected for the record
+        record_components = record.get("record_components", {})
+
+        # process record components
+        if record_components:
+            record["images"] = self._process_component(record_components.get("Image", []))
+            record["variants"] = self._process_component(record_components.get("ProductVariant", []))
+            record["options"] = self._process_component(record.get("options", []))
+            # add the product_id to the `options`
+            product_id = record.get("id")
+            record["options"] = self._process_options(record.get("options", []), product_id)
+            record.pop("record_components")
+        # unnest the `tags` (the list of 1)
+        record["tags"] = self._unnest_tags(record)
+        # unnest `total_variants`
+        record["total_variants"] = record.get("total_variants", {}).get("total_variants")
+        # unnest `media_count`
+        record["media_count"] = record.get("media_count", {}).get("media_count")
+        # convert dates from ISO-8601 to RFC-3339
+        record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "publishedAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+
+        yield record
+
+
+class ProductImage(ShopifyBulkQuery):
+    """
+    {
+        products(
+            query: "updated_at:>='2019-04-13T00:00:00+00:00' AND updated_at:<='2024-04-30T12:16:17.273363+00:00'"
+            sortKey: UPDATED_AT
+        ) {
+            edges {
+                node {
+                    __typename
+                    id
+                    # THE MEDIA NODE IS NEEDED TO PROVIDE THE CURSORS
+                    media {
+                        edges {
+                            node {
+                            ... on MediaImage {
+                                    __typename
+                                    createdAt
+                                    updatedAt
+                                    image {
+                                        url
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    # THIS IS THE MAIN NODE WE WANT TO GET
+                    images {
+                        edges {
+                            node {
+                                __typename
+                                id
+                                height
+                                alt: altText
+                                src
+                                url
+                                width
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "products"
+    sort_key = "UPDATED_AT"
+
+    # images property fields
+    images_fields: List[Field] = [
+        Field(
+            name="edges",
+            fields=[
+                Field(
+                    name="node",
+                    fields=[
+                        "__typename",
+                        "id",
+                        "height",
+                        Field(name="altText", alias="alt"),
+                        "src",
+                        "url",
+                        "width",
+                    ],
+                )
+            ],
+        )
+    ]
+
+    # media fragment, contains the info about when the Image was created or updated.
+    media_fragment: List[InlineFragment] = [
+        InlineFragment(
+            type="MediaImage",
+            fields=[
+                "__typename",
+                "createdAt",
+                "updatedAt",
+                # fetch the `url` as the key for the later join
+                Field(name="image", fields=["url"]),
+            ],
+        ),
+    ]
+
+    # media property fields
+    media_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=media_fragment)])]
+
+    # main query
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        Field(name="media", fields=media_fields),
+        Field(name="images", fields=images_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Product",
+        # each product could have `MediaImage` associated with the product,
+        # each product could have `Image` assiciated with the product and the related `MediaImage`,
+        # there could be multiple `MediaImage` and `Image` assigned to the product.
+        "record_components": ["MediaImage", "Image"],
+    }
+
+    def _process_component(self, entity: List[dict]) -> List[dict]:
+        for item in entity:
+            # remove the `__parentId` from the object
+            if BULK_PARENT_KEY in item:
+                item.pop(BULK_PARENT_KEY)
+            # resolve the id from string
+            item["admin_graphql_api_id"] = item.get("id")
+            item["id"] = self.tools.resolve_str_id(item.get("id"))
+        return entity
+
+    def _add_product_id(self, options: List[dict], product_id: Optional[int] = None) -> List[dict]:
+        for option in options:
+            # add product_id to each option
+            option["product_id"] = product_id if product_id else None
+        return options
+
+    def _merge_with_media(self, record_components: List[dict]) -> Optional[Iterable[MutableMapping[str, Any]]]:
+        media = record_components.get("MediaImage", [])
+        images = record_components.get("Image", [])
+
+        # Create a dictionary to map the 'url' key in images
+        url_map = {item["url"]: item for item in images}
+
+        # Merge images with data from media when 'image.url' matches 'url'
+        for item in media:
+            # remove the `__parentId` from Media
+            if BULK_PARENT_KEY in item:
+                item.pop(BULK_PARENT_KEY)
+
+            image_url = item.get("image", {}).get("url")
+            if image_url in url_map:
+                # Merge images into media
+                item.update(url_map.get(image_url))
+                # remove lefovers
+                item.pop("image", None)
+                item.pop("url", None)
+                # make the `alt` None, if it's an empty str, since server sends the "" instead of Null
+                alt = item.get("alt")
+                item["alt"] = None if not alt else alt
+
+        # return merged list of images
+        return media
+
+    def _convert_datetime_to_rfc3339(self, images: List[dict]) -> MutableMapping[str, Any]:
+        for image in images:
+            image["createdAt"] = self.tools.from_iso8601_to_rfc3339(image, "createdAt")
+            image["updatedAt"] = self.tools.from_iso8601_to_rfc3339(image, "updatedAt")
+        return images
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        """
+        Defines how to process collected components.
+        """
+        # get the joined record components collected for the record
+        record_components = record.get("record_components", {})
+
+        # process record components
+        if record_components:
+            record["images"] = self._process_component(record_components.get("Image", []))
+            # add the product_id to each `Image`
+            record["images"] = self._add_product_id(record.get("images", []), record.get("id"))
+            record["images"] = self._merge_with_media(record_components)
+            record.pop("record_components")
+            # produce images records
+            if len(record.get("images", [])) > 0:
+                # convert dates from ISO-8601 to RFC-3339
+                record["images"] = self._convert_datetime_to_rfc3339(record.get("images", []))
+                yield from record.get("images", [])
+
+
+class ProductVariant(ShopifyBulkQuery):
+    """
+    {
+        productVariants(
+            query: "updated_at:>='2019-04-13T00:00:00+00:00' AND updated_at:<='2024-04-30T12:16:17.273363+00:00'"
+            sortKey: UPDATED_AT
+        ) {
+            edges {
+                node {
+                    __typename
+                    id
+                    product {
+                        product_id: id
+                    }
+                    title
+                    price
+                    sku
+                    position
+                    inventoryPolicy
+                    compareAtPrice
+                    fulfillmentService {
+                        fulfillment_service: handle
+                    }
+                    inventoryManagement
+                    createdAt
+                    updatedAt
+                    taxable
+                    barcode
+                    grams: weight
+                    weight
+                    weightUnit
+                    inventoryItem {
+                        inventory_item_id: id
+                    }
+                    inventoryQuantity
+                    old_inventory_quantity: inventoryQuantity
+                    presentmentPrices {
+                        edges {
+                            node {
+                                __typename
+                                price {
+                                    amount
+                                    currencyCode
+                                }
+                                compareAtPrice {
+                                    amount
+                                    currencyCode
+                                }
+                            }
+                        }
+                    }
+                    requiresShipping
+                    image {
+                        image_id: id
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "productVariants"
+    sort_key = "ID"
+
+    prices_fields: List[str] = ["amount", "currencyCode"]
+    presentment_prices_fields: List[Field] = [
+        Field(
+            name="edges",
+            fields=[
+                Field(
+                    name="node",
+                    fields=["__typename", Field(name="price", fields=prices_fields), Field(name="compareAtPrice", fields=prices_fields)],
+                )
+            ],
+        )
+    ]
+
+    # main query
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        "title",
+        "price",
+        "sku",
+        "position",
+        "inventoryPolicy",
+        "compareAtPrice",
+        "inventoryManagement",
+        "createdAt",
+        "updatedAt",
+        "taxable",
+        "barcode",
+        "weight",
+        "weightUnit",
+        "inventoryQuantity",
+        "requiresShipping",
+        Field(name="weight", alias="grams"),
+        Field(name="image", fields=[Field(name="id", alias="image_id")]),
+        Field(name="inventoryQuantity", alias="old_inventory_quantity"),
+        Field(name="product", fields=[Field(name="id", alias="product_id")]),
+        Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
+        Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
+        Field(name="presentmentPrices", fields=presentment_prices_fields),
+    ]
+
+    record_composition = {
+        "new_record": "ProductVariant",
+        # each `ProductVariant` could have `ProductVariantPricePair` associated with the product variant.
+        "record_components": ["ProductVariantPricePair"],
+    }
+
+    def _process_presentment_prices(self, entity: List[dict]) -> List[dict]:
+        for item in entity:
+            # remove the `__parentId` from the object
+            if BULK_PARENT_KEY in item:
+                item.pop(BULK_PARENT_KEY)
+
+            # these objects could be literally `Null/None` from the response,
+            # this is treated like a real value, so we need to assigne the correct values instead
+            price: Optional[Mapping[str, Any]] = item.get("price", {})
+            if not price:
+                price = {}
+            # get the amount values
+            price_amount = price.get("amount") if price else None
+            # make the nested object's values up to the schema, (cast the `str` > `float`)
+            item["price"]["amount"] = float(price_amount) if price_amount else None
+            # convert field names to snake case
+            item["price"] = self.tools.fields_names_to_snake_case(item.get("price"))
+
+            compare_at_price: Optional[Mapping[str, Any]] = item.get("compareAtPrice", {})
+            if not compare_at_price:
+                compare_at_price = {}
+                # assign the correct value, if there is no object from response
+                item["compareAtPrice"] = compare_at_price
+            compare_at_price_amount = compare_at_price.get("amount") if compare_at_price else None
+            item["compareAtPrice"]["amount"] = float(compare_at_price_amount) if compare_at_price_amount else None
+            item["compare_at_price"] = self.tools.fields_names_to_snake_case(item["compareAtPrice"])
+            # remove leftovers
+            item.pop("compareAtPrice", None)
+
+        return entity
+
+    def _unnest_and_resolve_id(self, record: MutableMapping[str, Any], from_property: str, id_field: str) -> int:
+        entity = record.get(from_property, {})
+        return self.tools.resolve_str_id(entity.get(id_field)) if entity else None
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        """
+        Defines how to process collected components.
+        """
+
+        # get the joined record components collected for the record
+        record_components = record.get("record_components", {})
+        # process record components
+        if record_components:
+            record["presentment_prices"] = self._process_presentment_prices(record_components.get("ProductVariantPricePair", []))
+            record.pop("record_components")
+
+        # unnest mandatory fields from their placeholders
+        record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")
+        record["inventory_item_id"] = self._unnest_and_resolve_id(record, "inventoryItem", "inventory_item_id")
+        record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
+        # unnest `fulfillment_service` from `fulfillmentService`
+        record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
+        # cast the `price` to number, could be literally `None`
+        price = record.get("price")
+        record["price"] = float(price) if price else None
+        # cast the `grams` to integer
+        record["grams"] = int(record.get("grams", 0))
+        # convert date-time cursors
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        # clean up the leftovers
+        record.pop("image", None)
+        record.pop("product", None)
+        record.pop("inventoryItem", None)
+
+        yield record
+
+
+class OrderRisk(ShopifyBulkQuery):
+    """
+    {
+        orders(query: "updated_at:>='2021-04-13T00:00:00+00:00' AND updated_at:<='2024-05-20T13:50:06.882235+00:00'" sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    updatedAt
+                    order_id: id
+                    risk {
+                        recommendation
+                        assessments {
+                            risk_level: riskLevel
+                            facts {
+                                description
+                                sentiment
+                            }
+                            provider {
+                                features
+                                description
+                                handle
+                                embedded
+                                title
+                                published
+                                developer_name: developerName
+                                developer_type: developerType
+                                app_store_app_url: appStoreAppUrl
+                                install_url: installUrl
+                                app_store_developer_url: appStoreDeveloperUrl
+                                is_post_purchase_app_in_use: isPostPurchaseAppInUse
+                                previously_installed: previouslyInstalled
+                                pricing_details_summary: pricingDetailsSummary
+                                pricing_details: pricingDetails
+                                privacy_policy_url: privacyPolicyUrl
+                                public_category: publicCategory
+                                uninstall_message: uninstallMessage
+                                webhook_api_version: webhookApiVersion
+                                shopify_developed: shopifyDeveloped
+                                provider_id: id
+                                failed_requirements: failedRequirements {
+                                    message
+                                    action {
+                                        title
+                                        url
+                                        action_id: id
+                                    }
+                                }
+                                feedback {
+                                    link {
+                                        label
+                                        url
+                                    }
+                                    messages {
+                                        field
+                                        message
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    action_fields: List[Field] = [
+        "title",
+        "url",
+        Field(name="id", alias="action_id"),
+    ]
+
+    failed_reqirements_fields: List[Field] = ["message", Field(name="action", fields=action_fields)]
+
+    feedback_fields: List[Field] = [
+        Field(name="link", fields=["label", "url"]),
+        Field(name="messages", fields=["field", "message"]),
+    ]
+
+    provider_fields: List[Field] = [
+        "features",
+        "description",
+        "handle",
+        "embedded",
+        "title",
+        "published",
+        Field(name="developerName", alias="developer_name"),
+        Field(name="developerType", alias="developer_type"),
+        Field(name="appStoreAppUrl", alias="app_store_app_url"),
+        Field(name="installUrl", alias="install_url"),
+        Field(name="appStoreDeveloperUrl", alias="app_store_developer_url"),
+        Field(name="isPostPurchaseAppInUse", alias="is_post_purchase_app_in_use"),
+        Field(name="previouslyInstalled", alias="previously_installed"),
+        Field(name="pricingDetailsSummary", alias="pricing_details_summary"),
+        Field(name="pricingDetails", alias="pricing_details"),
+        Field(name="privacyPolicyUrl", alias="privacy_policy_url"),
+        Field(name="publicCategory", alias="public_category"),
+        Field(name="uninstallMessage", alias="uninstall_message"),
+        Field(name="webhookApiVersion", alias="webhook_api_version"),
+        Field(name="shopifyDeveloped", alias="shopify_developed"),
+        Field(name="id", alias="provider_id"),
+        Field(name="failedRequirements", alias="failed_requirements", fields=failed_reqirements_fields),
+        Field(name="feedback", fields=feedback_fields),
+    ]
+
+    assessments_fields: List[Field] = [
+        Field(name="riskLevel", alias="risk_level"),
+        Field(name="facts", fields=["description", "sentiment"]),
+        Field(name="provider", fields=provider_fields),
+    ]
+
+    risk_fields: List[Field] = [
+        "recommendation",
+        Field(name="assessments", fields=assessments_fields),
+    ]
+
+    # main query
+    query_nodes: List[Field] = [
+        "__typename",
+        "updatedAt",
+        Field(name="id", alias="order_id"),
+        Field(name="risk", fields=risk_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+        # there are no record components provided for this stream.
+    }
+
+    def _process_assessments(self, assessments: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for assessment in assessments:
+            provider = assessment.get("provider", {})
+            if provider:
+                # save and resolve provider id
+                provider["admin_graphql_api_id"] = provider.get("provider_id")
+                provider["provider_id"] = self.tools.resolve_str_id(provider.get("provider_id"))
+        return assessments
+
+    def _has_risk_recommendation(self, recommendation: Optional[str]) -> bool:
+        # if there are no risk recommendation, the value is literally "NONE",
+        # we should skip such record, because there is no risk info for it.
+        no_risk_pattern = "NONE"
+        return recommendation != no_risk_pattern if recommendation else False
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
+        """
+        Defines how to process collected components.
+        """
+        # unnest mandatory fields from their placeholders
+        risk = record.get("risk", {})
+        recommendation = risk.get("recommendation") if risk else None
+        # process records which has some risk recommendation
+        if self._has_risk_recommendation(recommendation):
+            # save and resolve id
+            record["admin_graphql_api_id"] = record.get("order_id")
+            record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
+            # add old pk
+            record["id"] = record.get("order_id")
+            # add the `recommendation` field to the root lvl
+            record["recommendation"] = recommendation
+            assessments = risk.get("assessments", []) if risk else None
+            record["assessments"] = self._process_assessments(assessments) if assessments else None
+            # convert date-time cursors
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            # clean up the leftovers
+            record.pop("risk", None)
+
+            yield record

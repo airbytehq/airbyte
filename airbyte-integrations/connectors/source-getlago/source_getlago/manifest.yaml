@@ -113,7 +113,7 @@ definitions:
     $parameters:
       name: "fees"
       primary_key: "lago_id"
-      path: "/fees
+      path: "/fees"
 
 streams:
   - "#/definitions/billable_metrics_stream"

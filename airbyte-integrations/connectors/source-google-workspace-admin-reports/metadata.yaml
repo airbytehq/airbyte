@@ -16,15 +16,16 @@ data:
   registries:
     cloud:
       dockerImageTag: 0.1.4
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"

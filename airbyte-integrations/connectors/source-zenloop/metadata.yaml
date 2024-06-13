@@ -1,32 +1,42 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - api.zenloop.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.15
   dockerRepository: airbyte/source-zenloop
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
   githubIssueLabel: source-zenloop
   icon: zenloop.svg
   license: MIT
   name: Zenloop
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-zenloop
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 300
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zenloop
   supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZENLOOP__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

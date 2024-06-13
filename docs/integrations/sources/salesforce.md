@@ -14,7 +14,6 @@ This page contains the setup guide and reference information for the [Salesforce
 - (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
 <!-- /env:oss -->
 
-
 :::tip
 
 To use this connector, you'll need at least the Enterprise edition of Salesforce or the Professional Edition with API access purchased as an add-on. Reference the [Salesforce docs about API access](https://help.salesforce.com/s/articleView?id=000385436&type=1) for more information.
@@ -34,7 +33,7 @@ To create a dedicated read only Salesforce user:
 3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
 4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
 5. Click **Save**. The Profiles page is displayed. Click **Edit**.
-6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable the **Read** checkbox for objects that you want to replicate via Airbyte.
+6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and ensure the user has the **View All Data** permissions for objects that you want to replicate via Airbyte.
 7. Scroll to the top and click **Save**.
 8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
 9. Fill out the required fields:
@@ -120,7 +119,6 @@ Airbyte allows exporting all available Salesforce objects dynamically based on:
 - If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
 - If the salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
 
-
 ## Limitations & Troubleshooting
 
 <details>
@@ -135,6 +133,7 @@ Expand to see details about Salesforce connector limitations and troubleshooting
 The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) sync mode.
 
 #### A note on the BULK API vs REST API and their limitations
+
 ## Syncing Formula Fields
 
 The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field changes in Salesforce and no other field on the record is updated, you will need to reset the stream and sync a historical backfill to pull in all the updated values of the field.
@@ -149,26 +148,26 @@ Salesforce allows extracting data using either the [BULK API](https://developer.
 
 - The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
 - The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects:
-   - AcceptedEventRelation
-   - Attachment
-   - CaseStatus
-   - ContractStatus
-   - DeclinedEventRelation
-   - FieldSecurityClassification
-   - KnowledgeArticle
-   - KnowledgeArticleVersion
-   - KnowledgeArticleVersionHistory
-   - KnowledgeArticleViewStat
-   - KnowledgeArticleVoteStat
-   - OrderStatus
-   - PartnerRole
-   - RecentlyViewed
-   - ServiceAppointmentStatus
-   - ShiftStatus
-   - SolutionStatus
-   - TaskPriority
-   - TaskStatus
-   - UndecidedEventRelation
+  - AcceptedEventRelation
+  - Attachment
+  - CaseStatus
+  - ContractStatus
+  - DeclinedEventRelation
+  - FieldSecurityClassification
+  - KnowledgeArticle
+  - KnowledgeArticleVersion
+  - KnowledgeArticleVersionHistory
+  - KnowledgeArticleViewStat
+  - KnowledgeArticleVoteStat
+  - OrderStatus
+  - PartnerRole
+  - RecentlyViewed
+  - ServiceAppointmentStatus
+  - ShiftStatus
+  - SolutionStatus
+  - TaskPriority
+  - TaskStatus
+  - UndecidedEventRelation
 
 More information on the differences between various Salesforce APIs can be found [here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
 
@@ -191,8 +190,32 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.14 | 2024-06-06 | [39269](https://github.com/airbytehq/airbyte/pull/39269) | [autopull] Upgrade base image to v1.2.2 |
+| 2.5.13 | 2024-05-23 | [38563](https://github.com/airbytehq/airbyte/pull/38563) | Use HttpClient to perform HTTP requests for bulk, authentication and schema discovery |
+| 2.5.12 | 2024-05-16 | [38255](https://github.com/airbytehq/airbyte/pull/38255) | Replace AirbyteLogger with logging.Logger |
+| 2.5.11 | 2024-05-09 | [38205](https://github.com/airbytehq/airbyte/pull/38205) | Use new delete method of HttpMocker for test_bulk_stream |
+| 2.5.10 | 2024-05-09 | [38065](https://github.com/airbytehq/airbyte/pull/38065) | Replace deprecated authentication mechanism to up-to-date one |
+| 2.5.9 | 2024-05-02 | [37749](https://github.com/airbytehq/airbyte/pull/37749) | Adding mock server tests for bulk streams |
+| 2.5.8 | 2024-04-30 | [37340](https://github.com/airbytehq/airbyte/pull/37340) | Source Salesforce: reduce info logs |
+| 2.5.7 | 2024-04-24 | [36657](https://github.com/airbytehq/airbyte/pull/36657) | Schema descriptions |
+| 2.5.6 | 2024-04-19 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type |
+| 2.5.5   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                      |
+| 2.5.4   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37392) | Update CDK version to have partitioned state fix                                                                                     |
+| 2.5.3   | 2024-04-17 | [37376](https://github.com/airbytehq/airbyte/pull/37376) | Improve rate limit error message during check command                                                                                |
+| 2.5.2   | 2024-04-15 | [37105](https://github.com/airbytehq/airbyte/pull/37105) | Raise error when schema generation fails                                                                                             |
+| 2.5.1   | 2024-04-11 | [37001](https://github.com/airbytehq/airbyte/pull/37001) | Update airbyte-cdk to flush print buffer for every message                                                                           |
+| 2.5.0   | 2024-04-11 | [36942](https://github.com/airbytehq/airbyte/pull/36942) | Move Salesforce to partitioned state in order to avoid stuck syncs                                                                   |
+| 2.4.4   | 2024-04-08 | [36901](https://github.com/airbytehq/airbyte/pull/36901) | Upgrade CDK for empty internal_message empty when ExceptionWithDisplayMessage raised                                                 |
+| 2.4.3   | 2024-04-08 | [36885](https://github.com/airbytehq/airbyte/pull/36885) | Add missing retry on REST API                                                                                                        |
+| 2.4.2   | 2024-04-05 | [36862](https://github.com/airbytehq/airbyte/pull/36862) | Upgrade CDK for updated error messaging regarding missing streams                                                                    |
+| 2.4.1   | 2024-04-03 | [36385](https://github.com/airbytehq/airbyte/pull/36385) | Retry HTTP requests and jobs on various cases                                                                                        |
+| 2.4.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978) | Upgrade CDK to start emitting record counts with state and full refresh state                                                        |
+| 2.3.3   | 2024-03-04 | [35791](https://github.com/airbytehq/airbyte/pull/35791) | Fix memory leak (OOM)                                                                                                                |
 | 2.3.2   | 2024-02-19 | [35421](https://github.com/airbytehq/airbyte/pull/35421) | Add Stream Slice Step option to specification                                                                                        |
 | 2.3.1   | 2024-02-12 | [35147](https://github.com/airbytehq/airbyte/pull/35147) | Manage dependencies with Poetry.                                                                                                     |
 | 2.3.0   | 2023-12-15 | [33522](https://github.com/airbytehq/airbyte/pull/33522) | Sync streams concurrently in all sync modes                                                                                          |
@@ -276,5 +299,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 | 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification                                                            |
 | 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209)   | Fix bug with pagination for BULK API                                                                                                 |
 | 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619)   | Salesforce Aitbyte-Native Connector                                                                                                  |
+
+</details>
 
 </HideInUI>

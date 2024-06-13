@@ -1,32 +1,43 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   allowedHosts:
     hosts:
       - https://api.mailgun.net/
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-mailgun
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-mailgun
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailgun
   githubIssueLabel: source-mailgun
   icon: mailgun.svg
   license: MIT
   name: Mailgun
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2023-08-10
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/mailgun
-  tags:
-    - language:low-code
-  ab_internal:
-    sl: 100
-    ql: 200
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mailgun
   supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MAILGUN_CONFIG
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

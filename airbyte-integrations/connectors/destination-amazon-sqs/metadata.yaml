@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/destination-amazon-sqs
   githubIssueLabel: destination-amazon-sqs
   icon: awssqs.svg
@@ -10,15 +10,30 @@ data:
   name: Amazon SQS
   registries:
     cloud:
-      enabled: false # hide Amazon SQS Destination https://github.com/airbytehq/airbyte/issues/16316
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/amazon-sqs
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 200
   supportLevel: community
+  connectorTestSuitesOptions:
+    # Disable unit tests for now
+    # They are not passing
+    # No Airbyte Cloud usage
+    #- suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-AMAZON-SQS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
 metadataSpecVersion: "1.0"

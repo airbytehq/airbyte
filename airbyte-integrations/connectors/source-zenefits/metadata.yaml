@@ -1,32 +1,43 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - api.zenefits.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-zenefits
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8baba53d-2fe3-4e33-bc85-210d0eb62884
+  dockerImageTag: 0.2.5
+  dockerRepository: airbyte/source-zenefits
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zenefits
+  githubIssueLabel: source-zenefits
+  icon: icon.svg
+  license: MIT
+  name: Zenefits
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
-  connectorSubtype: api
-  connectorType: source
-  definitionId: 8baba53d-2fe3-4e33-bc85-210d0eb62884
-  dockerImageTag: 0.2.0
-  dockerRepository: airbyte/source-zenefits
-  githubIssueLabel: source-zenefits
-  icon: icon.svg
-  license: MIT
-  name: Zenefits
   releaseDate: 2022-08-24
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/zenefits
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zenefits
   supportLevel: community
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZENEFITS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

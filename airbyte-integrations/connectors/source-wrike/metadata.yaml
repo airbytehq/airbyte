@@ -4,6 +4,8 @@ data:
       - app-us*.wrike.com
       - app-eu*.wrike.com
       - www.wrike.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   remoteRegistries:
     pypi:
       enabled: true
@@ -16,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9c13f986-a13b-4988-b808-4705badf71c2
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-wrike
   githubIssueLabel: source-wrike
   icon: wrike.svg
@@ -27,5 +29,14 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/wrike
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-WRIKE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

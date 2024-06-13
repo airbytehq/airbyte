@@ -104,6 +104,14 @@ def test_bulk_stream_read_with_chunks_app_install_ad_labels(mocked_client, confi
 
 
 @patch.object(source_bing_ads.source, "Client")
+def test_bulk_stream_read_with_chunks_ioe_error(mocked_client, config, caplog):
+    app_install_ads = AppInstallAdLabels(mocked_client, config)
+    with pytest.raises(IOError):
+        list(app_install_ads.read_with_chunks(path=Path(__file__).parent / "non-existing-file.csv"))
+    assert "The IO/Error occurred while reading tmp data" in caplog.text
+
+
+@patch.object(source_bing_ads.source, "Client")
 @freeze_time("2023-11-01T12:00:00.000+00:00")
 @pytest.mark.parametrize(
     "stream_state, config_start_date, expected_start_date",

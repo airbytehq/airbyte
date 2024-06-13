@@ -1,4 +1,4 @@
-name: Connector Ops CI - Connectors Acceptance Tests
+name: Connectors Tests
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: changes
         uses: dorny/paths-filter@v2
         with:
@@ -41,7 +41,7 @@ jobs:
               - '*'
               - 'airbyte-ci/**/*'
               - 'airbyte-integrations/connectors/**/*'
-              - 'airbyte-cdk/**/*'
+              - 'airbyte-cdk/java/**/*'
               - 'buildSrc/**/*'
       # The Connector CI Tests is a status check emitted by airbyte-ci
       # We make it pass once we have determined that there are no changes to the connectors
@@ -60,13 +60,16 @@ jobs:
 
   connectors_ci:
     needs: changes
-    if: needs.changes.outputs.connectors == 'true'
+    # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
+    # Forked PRs are handled by the community_ci.yml workflow
+    # If the condition is not met the job will be skipped (it will not fail)
+    if: (github.event_name == 'pull_request' && needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
     name: Connectors CI
     runs-on: connector-test-large
-    timeout-minutes: 1440 # 24 hours
+    timeout-minutes: 360 # 6 hours
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \

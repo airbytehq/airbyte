@@ -12,10 +12,13 @@ jobs:
   format-check:
     # IMPORTANT: This name must match the require check name on the branch protection settings
     name: "Check for formatting errors"
-    runs-on: ubuntu-latest
+    # Do not run this job on forks
+    # Forked PRs are handled by the community_ci.yml workflow
+    if: github.event.pull_request.head.repo.fork != true
+    runs-on: tooling-test-small
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
+      - name: Checkout Airbyte (with credentials)
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
@@ -27,12 +30,7 @@ jobs:
         continue-on-error: true
         with:
           context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "format check all"
 
       - name: Run airbyte-ci format check [PULL REQUEST]
@@ -42,12 +40,7 @@ jobs:
         continue-on-error: false
         with:
           context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "format check all"
 
       - name: Run airbyte-ci format check [WORKFLOW DISPATCH]
@@ -57,12 +50,7 @@ jobs:
         continue-on-error: false
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "format check all"
 
       - name: Match GitHub User to Slack User [MASTER]
@@ -74,7 +62,7 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Format Failure on Master Slack Channel [MASTER]
-        if: steps.airbyte_ci_format_check_all.outcome == 'failure' && github.ref == 'refs/heads/master'
+        if: steps.airbyte_ci_format_check_all_master.outcome == 'failure' && github.ref == 'refs/heads/master'
         uses: abinoda/slack-action@master
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}

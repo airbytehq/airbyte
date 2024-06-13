@@ -2,12 +2,13 @@
 
 Airbyte's certified MongoDB connector offers the following features:
 
-* [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) via [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/)/[Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/).
-* Reliable replication of any collection size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of data reads.
+- [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) via [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/)/[Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/).
+- Reliable replication of any collection size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of data reads.
+- **_NEW_** Full refresh syncing of collections.
 
 ## Quick Start
 
-This section provides information about configuring the MongoDB V2 source connector.  If you are upgrading from a 
+This section provides information about configuring the MongoDB V2 source connector. If you are upgrading from a
 previous version of the MongoDB V2 source connector, please refer to the [upgrade](#upgrade-from-previous-version) instructions
 in this document.
 
@@ -23,7 +24,7 @@ Once this is complete, you will be able to select MongoDB as a source for replic
 
 #### Step 1: Create a dedicated read-only MongoDB user
 
-These steps create a dedicated, read-only user for replicating data.  Alternatively, you can use an existing MongoDB user with
+These steps create a dedicated, read-only user for replicating data. Alternatively, you can use an existing MongoDB user with
 access to the database.
 
 ##### MongoDB Atlas
@@ -59,19 +60,24 @@ access to the database.
 
 ##### Self Hosted
 
-These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/mongodb-shell/) is installed.  To 
+These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/mongodb-shell/) is installed. To
 install the MongoDB shell, please follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
 
 1. From a terminal window, launch the MongoDB shell:
+
 ```shell
 > mongosh <connection string to cluster> --username <user with admin permissions>;
-```  
+```
+
 2. Switch to the `admin` database:
+
 ```shell
 test> use admin
 switched to db admin
 ```
+
 3. Create the `READ_ONLY_USER` user with the `read` role:
+
 ```shell
 admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
 ```
@@ -80,7 +86,8 @@ admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: 
 Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated.
 :::
 
-4. Next, enable authentication, if not already enabled.  Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
+4. Next, enable authentication, if not already enabled. Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
+
 ```yaml
 net:
   bindIp: 0.0.0.0
@@ -89,8 +96,8 @@ security:
   authorization: enabled
 ```
 
-:::note 
-Setting the `bindIp` key to `0.0.0.0` will allow connections to database from any IP address.  Setting the `security.authorization` key to `enabled` will enable security and only allow authenticated users to access the database. 
+:::note
+Setting the `bindIp` key to `0.0.0.0` will allow connections to database from any IP address. Setting the `security.authorization` key to `enabled` will enable security and only allow authenticated users to access the database.
 :::
 
 #### Step 2: Discover the MongoDB cluster connection string
@@ -99,7 +106,7 @@ These steps outline how to discover the connection string of your MongoDB instan
 
 ##### MongoDB Atlas
 
-Atlas is MongoDB's [cloud-hosted offering](https://www.mongodb.com/atlas/database).  Below are the steps to discover
+Atlas is MongoDB's [cloud-hosted offering](https://www.mongodb.com/atlas/database). Below are the steps to discover
 the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
@@ -117,11 +124,11 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 
 ##### Self Hosted Cluster
 
-Self-hosted clusters are MongoDB instances that are hosted outside of [MongoDB Atlas](https://www.mongodb.com/atlas/database).  Below are the steps to discover
+Self-hosted clusters are MongoDB instances that are hosted outside of [MongoDB Atlas](https://www.mongodb.com/atlas/database). Below are the steps to discover
 the connection string for a MongoDB self-hosted replica set cluster.
 
 1.  Refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for instructions
-on discovering a self-hosted deployment connection string.
+    on discovering a self-hosted deployment connection string.
 
 #### Step 3: Configure the Airbyte MongoDB Source
 
@@ -131,10 +138,17 @@ The source will test the connection to the MongoDB instance upon creation.
 ## Replication Methods
 
 The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
+In addtion MongoDB source now allows for syncing in a full refresh mode.
 
 ### CDC
 
 Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
+
+### Full Refresh
+
+The Full refresh sync mode added in v4.0.0 allows for reading a the entire contents of a collection, repeatedly.
+The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for netwrok error for example,
+Rather than starting over it will continue its full refresh read from a last known point.
 
 ### Schema Enforcement
 
@@ -143,12 +157,14 @@ By default the MongoDB V2 source connector enforces a schema. This means that wh
 When the schema enforced option is disabled, MongoDB collections are read in schema-less mode which doesn't assume documents share the same structure.
 This allows for greater flexibility in reading data that is unstructured or vary a lot in between documents in a single collection.
 When schema is not enforced, each document will generate a record that only contains the following top-level fields:
+
 ```json
 {
   "_id": <document id>,
   "data": {<a JSON cotaining the entire set of fields found in document>}
 }
 ```
+
 The contents of `data` will vary according to the contents of each document read from MongoDB.
 Unlike in Schema enforced mode, the same field can vary in type between document. For example field `"xyz"` may be a String on one document and a Date on another.
 As a result no field will be omitted and no document will be rejected.
@@ -156,65 +172,54 @@ When Schema is not enforced there is not way to deselect fields as all fields ar
 
 ## Limitations & Troubleshooting
 
-### MongoDB Oplog and Change Streams
-
-[MongoDB's Change Streams](https://www.mongodb.com/docs/manual/changeStreams/) are based on the [Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/). This has retention limitations.  Syncs that run less frequently than the retention period of the Oplog may encounter issues with missing data.
-
-We recommend adjusting the Oplog size for your MongoDB cluster to ensure it holds at least 24 hours of changes. For optimal results, we suggest expanding it to maintain a week's worth of data. To adjust your Oplog size, see the corresponding tutorials for [MongoDB Atlas](https://www.mongodb.com/docs/atlas/cluster-additional-settings/#set-oplog-size) (fully-managed) and [MongoDB shell](https://www.mongodb.com/docs/manual/tutorial/change-oplog-size/) (self-hosted).
-
-If you are running into an issue similar to "invalid resume token", it may mean you need to:
-1. Increase the Oplog retention period.
-2. Increase the Oplog size.
-3. Increase the Airbyte sync frequency.
-
-You can run the commands outlined [in this tutorial](https://www.mongodb.com/docs/manual/tutorial/troubleshoot-replica-sets/#check-the-size-of-the-oplog) to verify the current of your Oplog. The expect output is:
-
-```yaml
-configured oplog size:   10.10546875MB
-log length start to end: 94400 (26.22hrs)
-oplog first event time:  Mon Mar 19 2012 13:50:38 GMT-0400 (EDT)
-oplog last event time:   Wed Oct 03 2012 14:59:10 GMT-0400 (EDT)
-now:                     Wed Oct 03 2012 15:00:21 GMT-0400 (EDT)
-```
-
-When importing a large MongoDB collection for the first time, the import duration might exceed the Oplog retention period. The Oplog is crucial for incremental updates, and an invalid resume token will require the MongoDB collection to be re-imported to ensure no source updates were missed.
-
-### Supported MongoDB Clusters
-
-* Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
-* TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable TSL/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
-* Views, capped collections and clustered collections are not supported.
-* Empty collections are excluded from schema discovery.
-* Collections with different data types for the values in the `_id` field among the documents in a collection are not supported.  All `_id` values within the collection must be the same data type.
-* Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
-
-### Schema Discovery & Enforcement
-
-* Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields.  This value is universally applied to all collections discovered in the target database.  The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency.  By default, 10,000 documents are sampled.  This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered.  However, the trade-off is time, as a higher value will take the process longer to sample the collection. 
-* When Running with Schema Enforced set to `false` there is no attempt to discover any schema. See more in [Schema Enforcement](#Schema-Enforcement).
+To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting).
 
 ## Configuration Parameters
 
-| Parameter Name                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-|:-------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                                                                                            |
-| Connection String                          | The connection string of the source MongoDB cluster.  For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string.  For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. |
-| Database Name                              | The name of the database that contains the source collection(s) to sync.                                                                                                                                                                                                                                                                                                                                                                     | 
-| Username                                   | The username which is used to access the database.  Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                     |
-| Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                             |
-| Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`.  See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                             |
-| Schema Enforced                            | Controls whether schema is discovered and enforced. See discussion in [Schema Enforcement](#Schema-Enforcement).                                                                                                                                                                                                                                                                                                                                     |
-| Initial Waiting Time in Seconds (Advanced) | The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.                                                                                                                                                                                                                                                             |
-| Size of the queue (Advanced)               | The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.                                                                                                                                                                                                                                                                                                               |
-| Discovery Sample Size (Advanced)           | The maximum number of documents to sample when attempting to discover the unique fields for a collection.  Default is 10,000 with a valid range of 1,000 to 100,000.  See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                            |
+| Parameter Name                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| :----------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                                                                                          |
+| Connection String                          | The connection string of the source MongoDB cluster. For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string. For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. |
+| Database Name                              | The name of the database that contains the source collection(s) to sync.                                                                                                                                                                                                                                                                                                                                                                   |
+| Username                                   | The username which is used to access the database. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                    |
+| Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                           |
+| Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                            |
+| Schema Enforced                            | Controls whether schema is discovered and enforced. See discussion in [Schema Enforcement](#Schema-Enforcement).                                                                                                                                                                                                                                                                                                                           |
+| Initial Waiting Time in Seconds (Advanced) | The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.                                                                                                                                                                                                                                                           |
+| Size of the queue (Advanced)               | The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.                                                                                                                                                                                                                                                                                                             |
+| Discovery Sample Size (Advanced)           | The maximum number of documents to sample when attempting to discover the unique fields for a collection. Default is 10,000 with a valid range of 1,000 to 100,000. See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                            |
+| Update Capture Mode (Advanced)             | Determines how Airbyte looks up the value of an updated document. Default is "Lookup". **IMPORTANT** : "Post image" is only supported in MongoDB version 6.0+. In addition, the collections of interest must be setup to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). Failure to do so will lead to data loss.                                       |
 
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.10/fundamentals/connection/).
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 1.2.13 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
+|:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------|
+| 1.4.0   | 2024-06-11 | [38238](https://github.com/airbytehq/airbyte/pull/38238) | Update mongodbv2 to use dbz 2.6.2                                                                         |
+| 1.3.15  | 2024-05-30 | [38781](https://github.com/airbytehq/airbyte/pull/38781) | Sync sending trace status messages indicating progress.                                                   |
+| 1.3.14  | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                        |
+| 1.3.13  | 2024-05-09 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Support reading collection with a binary \_id type.                                                       |
+| 1.3.12  | 2024-05-07 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Upgrade debezium to version 2.5.1.                                                                        |
+| 1.3.11  | 2024-05-02 | [37753](https://github.com/airbytehq/airbyte/pull/37753) | Chunk size(limit) should correspond to ~1GB of data.                                                      |
+| 1.3.10  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781) | Adopt latest CDK.                                                                                         |
+| 1.3.9   | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742) | Adopt latest CDK. Remove Debezium retries.                                                                |
+| 1.3.8   | 2024-04-24 | [37559](https://github.com/airbytehq/airbyte/pull/37559) | Implement fixed-size chunking while performing initial load.                                              |
+| 1.3.7   | 2024-04-24 | [37557](https://github.com/airbytehq/airbyte/pull/37557) | Change bug in resume token validity check.                                                                |
+| 1.3.6   | 2024-04-24 | [37525](https://github.com/airbytehq/airbyte/pull/37525) | Internal refactor.                                                                                        |
+| 1.3.5   | 2024-04-22 | [37348](https://github.com/airbytehq/airbyte/pull/37348) | Do not send estimate trace if we do not have data.                                                        |
+| 1.3.4   | 2024-04-16 | [37348](https://github.com/airbytehq/airbyte/pull/37348) | Populate null values in airbyte record messages.                                                          |
+| 1.3.3   | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872) | Update to connector's metadat definition.                                                                 |
+| 1.3.2   | 2024-04-04 | [36845](https://github.com/airbytehq/airbyte/pull/36845) | Adopt Kotlin CDK.                                                                                         |
+| 1.3.1   | 2024-04-04 | [36837](https://github.com/airbytehq/airbyte/pull/36837) | Adopt CDK 0.28.0.                                                                                         |
+| 1.3.0   | 2024-03-15 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | Full refresh read of collections.                                                                         |
+| 1.2.16  | 2024-03-06 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | State message will now include record count.                                                              |
+| 1.2.15  | 2024-02-27 | [35673](https://github.com/airbytehq/airbyte/pull/35673) | Consume user provided connection string.                                                                  |
+| 1.2.14  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message.                                                                            |
+| 1.2.13  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug.                                                                                          |
 | 1.2.12  | 2024-02-21 | [35526](https://github.com/airbytehq/airbyte/pull/35526) | Improve error handling.                                                                                   |
 | 1.2.11  | 2024-02-20 | [35375](https://github.com/airbytehq/airbyte/pull/35375) | Add config to throw an error on invalid CDC position and enable it by default.                            |
 | 1.2.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751) | Emit analytics message for invalid CDC cursor.                                                            |
@@ -237,7 +242,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 | 1.0.7   | 2023-11-07 | [32250](https://github.com/airbytehq/airbyte/pull/32250) | Add support to read UUIDs.                                                                                |
 | 1.0.6   | 2023-11-06 | [32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                             |
 | 1.0.5   | 2023-10-31 | [32028](https://github.com/airbytehq/airbyte/pull/32028) | url encode username and password.<br/>Handle a case of document update and delete in a single sync.       |
-| 1.0.3   | 2023-10-19 | [31629](https://github.com/airbytehq/airbyte/pull/31629) | Allow discover operation use of disk file when an operation goes over max allowed mem                     |    
+| 1.0.3   | 2023-10-19 | [31629](https://github.com/airbytehq/airbyte/pull/31629) | Allow discover operation use of disk file when an operation goes over max allowed mem                     |
 | 1.0.2   | 2023-10-19 | [31596](https://github.com/airbytehq/airbyte/pull/31596) | Allow use of temp disk file when an operation goes over max allowed mem                                   |
 | 1.0.1   | 2023-10-03 | [31034](https://github.com/airbytehq/airbyte/pull/31034) | Fix field filtering logic related to nested documents                                                     |
 | 1.0.0   | 2023-10-03 | [29969](https://github.com/airbytehq/airbyte/pull/29969) | General availability release using Change Data Capture (CDC)                                              |
@@ -266,3 +271,5 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 | 0.1.2   | 2021-10-07 | [6860](https://github.com/airbytehq/airbyte/pull/6860)   | Added filter to avoid MongoDb system collections                                                          |
 | 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364)   | Source MongoDb: added support via TLS/SSL                                                                 |
 | 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530)   | New source: MongoDb ported to java                                                                        |
+
+</details>

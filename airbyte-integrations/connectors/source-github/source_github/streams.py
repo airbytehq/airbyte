@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -15,6 +16,7 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from requests.exceptions import HTTPError
 
 from . import constants
@@ -40,7 +42,7 @@ class GithubStreamABC(HttpStream, ABC):
 
     def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
         if kwargs.get("authenticator"):
-            kwargs["authenticator"].max_time = self.max_time
+            kwargs["authenticator"].max_time = kwargs.pop("max_waiting_time", self.max_time)
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
@@ -216,8 +218,11 @@ class GithubStreamABC(HttpStream, ABC):
 
             self.logger.warning(error_msg)
         except GitHubAPILimitException as e:
-            message = f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
-            raise AirbyteTracedException(message) from e
+            internal_message = (
+                f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
+            )
+            message = "Rate Limits for all provided tokens are reached. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/github#limitations--troubleshooting"
+            raise AirbyteTracedException(internal_message=internal_message, message=message, failure_type=FailureType.config_error) from e
 
 
 class GithubStream(GithubStreamABC):
@@ -437,12 +442,18 @@ class Repositories(SemiIncrementalMixin, Organizations):
         "direction": "desc",
     }
 
+    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
+        self._pattern = re.compile(pattern) if pattern else pattern
+        super().__init__(*args, **kwargs)
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/repos"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record, stream_slice=stream_slice)
+            record = self.transform(record=record, stream_slice=stream_slice)
+            if not self._pattern or self._pattern.match(record["full_name"]):
+                yield record
 
 
 class Tags(GithubStream):
@@ -672,10 +683,13 @@ class Commits(IncrementalMixin, GithubStream):
     cursor_field = "created_at"
     slice_keys = ["repository", "branch"]
 
-    def __init__(self, branches_to_pull: Mapping[str, List[str]], default_branches: Mapping[str, str], **kwargs):
+    def __init__(self, branches_to_pull: List[str], **kwargs):
         super().__init__(**kwargs)
-        self.branches_to_pull = branches_to_pull
-        self.default_branches = default_branches
+        kwargs.pop("start_date")
+        self.branches_to_repos = {}
+        self.branches_to_pull = set(branches_to_pull)
+        self.branches_stream = Branches(**kwargs)
+        self.repositories_stream = RepositoryStats(**kwargs)
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -686,9 +700,10 @@ class Commits(IncrementalMixin, GithubStream):
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._validate_branches_to_pull()
         for stream_slice in super().stream_slices(**kwargs):
             repository = stream_slice["repository"]
-            for branch in self.branches_to_pull.get(repository, []):
+            for branch in self.branches_to_repos.get(repository, []):
                 yield {"branch": branch, "repository": repository}
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -713,6 +728,30 @@ class Commits(IncrementalMixin, GithubStream):
             updated_state = max(updated_state, stream_state_value)
         current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
         return current_stream_state
+
+    def _validate_branches_to_pull(self):
+        # Get the default branch for each repository
+        default_branches = {}
+        for stream_slice in self.repositories_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for repo_stats in self.repositories_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh):
+                default_branches[repo_stats["full_name"]] = repo_stats["default_branch"]
+
+        all_branches = []
+        for stream_slice in self.branches_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for branch in self.branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                all_branches.append(f"{branch['repository']}/{branch['name']}")
+
+        # Create mapping of repository to list of branches to pull commits for
+        # If no branches are specified for a repo, use its default branch
+        for repo in self.repositories:
+            repo_branches = []
+            for branch in self.branches_to_pull:
+                branch_parts = branch.split("/", 2)
+                if "/".join(branch_parts[:2]) == repo and branch in all_branches:
+                    repo_branches.append(branch_parts[-1])
+            if not repo_branches:
+                repo_branches = [default_branches[repo]]
+            self.branches_to_repos[repo] = repo_branches
 
 
 class Issues(IncrementalMixin, GithubStream):

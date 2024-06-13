@@ -2,10 +2,12 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: file
   connectorType: source
   definitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
-  dockerImageTag: 0.1.2
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-sftp-bulk
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
   githubIssueLabel: source-sftp-bulk
@@ -22,7 +24,29 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This upgrade migrates the SFTP Bulk source to the Airbyte file-based CDK. This is the first necessary step of transitioning a file connector from community to Airbyte maintained."
+        upgradeDeadline: "2024-04-30"
   supportLevel: community
   tags:
     - language:python
+    - cdk:python-file-based
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-SFTP-BULK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SFTP-BULK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

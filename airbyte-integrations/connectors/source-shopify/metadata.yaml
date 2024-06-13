@@ -7,16 +7,17 @@ data:
       - ${shop}.myshopify.com
       - shopify.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.2.3
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   githubIssueLabel: source-shopify
   icon: shopify.svg
   license: ELv2
+  maxSecondsBetweenMessages: 21600
   name: Shopify
   remoteRegistries:
     pypi:
@@ -31,9 +32,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          "This upgrade brings changes to certain streams after migration to
-          Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
+        message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
         upgradeDeadline: "2023-09-17"
       2.0.0:
         message: "This upgrade brings perfomance impovements and stream schema changes. Details are available here: https://github.com/airbytehq/airbyte/pull/32345#issue-1985556333."
@@ -61,6 +60,20 @@ data:
                 "product_variants",
                 "transactions",
               ]
+      2.1.0:
+        message:
+          "This upgrade changes the `Products`, `Product Images` and `Product Variants` streams to use `Shopify GraphQL BULK`.
+          More details here: https://github.com/airbytehq/airbyte/pull/37767."
+        upgradeDeadline: "2024-06-10"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["product_variants"]
+      2.2.0:
+        message: "The countries object from the admin REST API now always return a number"
+        upgradeDeadline: "2024-06-11"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["countries"]
   suggestedStreams:
     streams:
       - customers
@@ -97,4 +110,29 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SHOPIFY-TRANSACTIONS-WITH-USER-ID__CREDS
+          fileName: config_transactions_with_user_id.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SHOPIFY_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SHOPIFY_OLD_CREDS
+          fileName: config_old.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SHOPIFY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

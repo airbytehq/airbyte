@@ -7,16 +7,17 @@ data:
       - mixpanel.com
       - eu.mixpanel.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 2.1.0
+  dockerImageTag: 3.1.1
   dockerRepository: airbyte/source-mixpanel
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   githubIssueLabel: source-mixpanel
   icon: mixpanel.svg
   license: MIT
+  maxSecondsBetweenMessages: 3600
   name: Mixpanel
   remoteRegistries:
     pypi:
@@ -30,12 +31,17 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      3.0.0:
+        message:
+          In this release, CohortMembers stream has changed due to changes in primary key and an improper state format.
+          Please reset CohortMembers stream. For more information, see our migration documentation.
+        upgradeDeadline: "2024-06-03"
       2.0.0:
         message:
-          In this release, the default primary key for stream Export has been deleted,
-          allowing users to select the key that best fits their data.
-          Refreshing the source schema and resetting affected streams is necessary
-          only if new primary keys are to be applied following the upgrade.
+          In this release, the default primary key for stream Export has been
+          deleted, allowing users to select the key that best fits their data. Refreshing
+          the source schema and resetting affected streams is necessary only if new
+          primary keys are to be applied following the upgrade.
         upgradeDeadline: "2023-11-30"
       1.0.0:
         message:
@@ -57,4 +63,29 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MIXPANEL_CONFIG_INCREMENTAL
+          fileName: config_incremental.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MIXPANEL_PROJECT_SECRET
+          fileName: config_project_secret.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MIXPANEL_SERVICE_ACCOUNT
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MIXPANEL__CREDS
+          fileName: config_old.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

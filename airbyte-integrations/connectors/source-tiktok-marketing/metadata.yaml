@@ -7,30 +7,28 @@ data:
       - sandbox-ads.tiktok.com
       - business-api.tiktok.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 3.9.3
+  dockerImageTag: 3.9.8
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: TikTok Marketing
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-tiktok-marketing
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
-  supportLevel: certified
-  tags:
-    - language:python
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tiktok-marketing
   suggestedStreams:
     streams:
       - ads_reports_daily
@@ -40,4 +38,73 @@ data:
       - ad_groups
       - ad_groups_reports_daily
       - advertisers_reports_daily
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+      testSecrets:
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_SANDBOX_CREDS
+          fileName: sandbox_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS
+          fileName: prod_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_NEW_CREDS
+          fileName: new_config_sandbox.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_NEW_PROD_CREDS
+          fileName: new_config_prod.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS
+          fileName: prod_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS_WITH_DAY_GRANULARITY
+          fileName: prod_config_with_day_granularity.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS_WITH_LIFETIME_GRANULARITY
+          fileName: prod_config_with_lifetime_granularity.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_DAY_CREDS
+          fileName: prod_config_day.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_SANDBOX_CREDS
+          fileName: sandbox_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

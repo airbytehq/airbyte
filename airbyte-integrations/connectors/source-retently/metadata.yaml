@@ -1,31 +1,42 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
-      - "*" # Please change to the hostname of the source.
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-retently
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+      - "*"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: db04ecd1-42e7-4115-9cec-95812905c626
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-retently
+  documentationUrl: https://docs.airbyte.com/integrations/sources/retently
   githubIssueLabel: source-retently
   icon: retently.svg
   license: MIT
   name: Retently
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-retently
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/retently
   tags:
-    - language:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-RETENTLY_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

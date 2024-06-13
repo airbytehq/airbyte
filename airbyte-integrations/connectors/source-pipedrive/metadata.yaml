@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 2.2.2
+  dockerImageTag: 2.2.4
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -28,10 +28,34 @@ data:
     breakingChanges:
       2.0.0:
         upgradeDeadline: 2023-10-04
-        message: "This version removes the `pipeline_ids` field from the `deal_fields` stream. Config has changed to only use API key. Please update your config."
+        message:
+          "This version removes the `pipeline_ids` field from the `deal_fields`
+          stream. Config has changed to only use API key. Please update your config."
   releaseDate: 2021-07-19
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PIPEDRIVE_OAUTH__CREDS
+          fileName: oauth_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PIPEDRIVE_OLD__CREDS
+          fileName: old_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PIPEDRIVE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
 metadataSpecVersion: "1.0"

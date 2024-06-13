@@ -6,16 +6,17 @@ data:
     hosts:
       - "*.salesforce.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.3.2
+  dockerImageTag: 2.5.14
   dockerRepository: airbyte/source-salesforce
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   githubIssueLabel: source-salesforce
   icon: salesforce.svg
   license: ELv2
+  maxSecondsBetweenMessages: 86400
   name: Salesforce
   remoteRegistries:
     pypi:
@@ -30,4 +31,41 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-SALESFORCE_BULK_CREDS
+          fileName: config_bulk.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESFORCE_REST_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESFORCE_SANDBOX_CREDS
+          fileName: config_sandbox.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SALESFORCE_BULK_CREDS
+          fileName: config_bulk.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESFORCE_REST_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESFORCE_SANDBOX_CREDS
+          fileName: config_sandbox.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

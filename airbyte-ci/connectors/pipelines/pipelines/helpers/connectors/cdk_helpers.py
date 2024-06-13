@@ -3,7 +3,7 @@
 #
 import re
 
-import requests  # type: ignore
+import requests
 from dagger import Directory
 
 

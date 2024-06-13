@@ -4,12 +4,13 @@
 
 import os
 from pathlib import Path
-from typing import List, Optional, Set, Tuple
+from typing import List, Set, Tuple
 
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
 from pipelines import main_logger
-from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.airbyte_ci import wrap_in_secret
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
 from pipelines.helpers.git import get_modified_files
@@ -99,8 +100,6 @@ def validate_environment(is_local: bool) -> None:
             raise click.UsageError("You need to run this command from the repository root.")
     else:
         required_env_vars_for_ci = [
-            "GCP_GSM_CREDENTIALS",
-            "CI_REPORT_BUCKET_NAME",
             "CI_GITHUB_ACCESS_TOKEN",
             "DOCKER_HUB_USERNAME",
             "DOCKER_HUB_PASSWORD",
@@ -108,37 +107,6 @@ def validate_environment(is_local: bool) -> None:
         for required_env_var in required_env_vars_for_ci:
             if os.getenv(required_env_var) is None:
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
-
-
-def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
-    """Check if the connector secrets should be loaded from Airbyte GSM or from the local secrets directory.
-
-    Args:
-        use_remote_secrets (Optional[bool]): Whether to use remote connector secrets or local connector secrets according to user inputs.
-
-    Raises:
-        click.UsageError: If the --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.
-
-    Returns:
-        bool: Whether to use remote connector secrets (True) or local connector secrets (False).
-    """
-    gcp_gsm_credentials_is_set = bool(os.getenv("GCP_GSM_CREDENTIALS"))
-    if use_remote_secrets is None:
-        if gcp_gsm_credentials_is_set:
-            main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
-            return True
-        else:
-            main_logger.info("No GCP_GSM_CREDENTIALS environment variable found, using local connector secrets.")
-            return False
-    if use_remote_secrets:
-        if gcp_gsm_credentials_is_set:
-            main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
-            return True
-        else:
-            raise click.UsageError("The --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.")
-    else:
-        main_logger.info("Using local connector secrets as the --use-local-secrets flag was provided")
-        return False
 
 
 @click.group(
@@ -151,15 +119,14 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump_version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
         "migrate_to_base_image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
+        "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
+        "migrate_to_inline_schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
+        "migrate_to_logging_logger": "pipelines.airbyte_ci.connectors.migrate_to_logging_logger.commands.migrate_to_logging_logger",
         "upgrade_base_image": "pipelines.airbyte_ci.connectors.upgrade_base_image.commands.upgrade_base_image",
-        "upgrade_cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.bump_version",
+        "upgrade_cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
+        "up_to_date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
+        "pull_request": "pipelines.airbyte_ci.connectors.pull_request.commands.pull_request",
     },
-)
-@click.option(
-    "--use-remote-secrets/--use-local-secrets",
-    help="Use Airbyte GSM connector secrets or local connector secrets.",
-    type=bool,
-    default=None,
 )
 @click.option(
     "--name",
@@ -221,6 +188,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     type=click.STRING,
     required=False,
     envvar="DOCKER_HUB_USERNAME",
+    callback=wrap_in_secret,
 )
 @click.option(
     "--docker-hub-password",
@@ -228,9 +196,9 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     type=click.STRING,
     required=False,
     envvar="DOCKER_HUB_PASSWORD",
+    callback=wrap_in_secret,
 )
 @click_merge_args_into_context_obj
-@click_append_to_context_object("use_remote_secrets", lambda ctx: should_use_remote_secrets(ctx.obj["use_remote_secrets"]))
 @click.pass_context
 @click_ignore_unused_kwargs
 async def connectors(
@@ -248,6 +216,7 @@ async def connectors(
                 ctx.obj["diffed_branch"],
                 ctx.obj["is_local"],
                 ctx.obj["ci_context"],
+                ctx.obj["git_repo_url"],
             )
         )
 

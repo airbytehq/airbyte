@@ -4,10 +4,13 @@
 
 import json
 
+import pendulum
 import pytest
 import requests
 import responses
-from source_iterable.streams import Events
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from source_iterable.source import SourceIterable
 
 
 @responses.activate
@@ -185,18 +188,26 @@ from source_iterable.streams import Events
         ),
     ],
 )
-def test_events_parse_response(response_objects, expected_objects, jsonl_body):
+def test_events_parse_response(response_objects, expected_objects, jsonl_body, config):
     if jsonl_body:
         response_body = "\n".join([json.dumps(obj) for obj in response_objects])
     else:
         response_body = json.dumps(response_objects)
-    responses.add(responses.GET, "https://example.com", body=response_body)
-    response = requests.get("https://example.com")
-    stream = Events(authenticator=None)
+
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/export/userEvents?includeCustomEvents=true&email=user1",
+        body=response_body
+    )
+
+    response = requests.get("https://api.iterable.com/api/export/userEvents?includeCustomEvents=true&email=user1")
+
+    stream = next(filter(lambda x: x.name == "events", SourceIterable().streams(config=config)))
 
     if jsonl_body:
-        records = [record for record in stream.parse_response(response)]
+        stream_slice = StreamSlice(partition={'email': 'user1', 'parent_slice': {'list_id': 111111, 'parent_slice': {}}}, cursor_slice={})
+        records = list(map(lambda record: record.data, stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)))
         assert records == expected_objects
     else:
         with pytest.raises(TypeError):
-            [record for record in stream.parse_response(response)]
+            [record for record in stream.retriever._parse_response(response)]

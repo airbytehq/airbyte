@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 2.4.11
+  dockerImageTag: 2.6.3
   dockerRepository: airbyte/destination-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   githubIssueLabel: destination-bigquery
@@ -21,21 +21,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message:
-          "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
-
-          This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
-          which provides better error handling, incremental delivery of data for large
-          syncs, and improved final table structures. To review the breaking changes,
-          and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
-          These changes will likely require updates to downstream dbt / SQL models,
-          which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
-
-          Selecting `Upgrade` will upgrade **all** connections using this destination
-          at their next sync. You can manually sync existing connections prior to
-          the next scheduled sync to start the upgrade early.
-
-          "
+        message: "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.\nThis version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading). These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).\nSelecting `Upgrade` will upgrade **all** connections using this destination at their next sync. You can manually sync existing connections prior to the next scheduled sync to start the upgrade early.\n"
         upgradeDeadline: "2023-11-07"
   resourceRequirements:
     jobSpecific:
@@ -47,4 +33,68 @@ data:
   supportsDbt: true
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_DISABLETD_GCS_RAW_OVERRIDE
+          fileName: credentials-1s1t-disabletd-gcs-raw-override.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_DISABLETD_STANDARD_OVERRIDE
+          fileName: credentials-1s1t-disabletd-standard-raw-override.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS
+          fileName: credentials-1s1t-gcs.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS_RAW_OVERRIDE
+          fileName: credentials-1s1t-gcs-raw-override.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_STANDARD
+          fileName: credentials-1s1t-standard.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_STANDARD_RAW_OVERRIDE
+          fileName: credentials-1s1t-standard-raw-override.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_BAD_PROJECT_CREDS
+          fileName: credentials-badproject.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_GCS_STAGING
+          fileName: credentials-gcs-staging.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_NO_PUBLIC_SCHEMA_EDIT_ROLE
+          fileName: credentials-no-edit-public-schema-role.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_STANDARD
+          fileName: credentials-standard.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_STANDARD-NO-DATASET-CREATION__CREDS
+          fileName: credentials-standard-no-dataset-creation.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_STANDARD_NON_BILLABLE_PROJECT__CREDS
+          fileName: credentials-standard-non-billable-project.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

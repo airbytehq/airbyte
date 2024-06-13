@@ -21,7 +21,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
@@ -81,9 +81,10 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
                     self._cursor_field,
                     self._cursor_boundaries,
                     None,
+                    EpochValueConcurrentStreamStateConverter.get_end_provider()
                 )
                 if self._cursor_field
-                else NoopCursor(),
+                else FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository),
             )
             for stream, state in zip(self._streams, stream_states)
         ]

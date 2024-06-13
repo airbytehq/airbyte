@@ -2,27 +2,43 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  allowedHosts:
+    hosts:
+      - api.linkedin.com
+      - www.linkedin.com
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-linkedin-pages
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.7
   dockerRepository: airbyte/source-linkedin-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   githubIssueLabel: source-linkedin-pages
   icon: linkedin.svg
   license: MIT
-  name: LinkedIn Pages
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-linkedin-pages
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  name: Linkedin Pages
+  releaseDate: 2022-08-11
   releaseStage: alpha
   supportLevel: community
   tags:
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-LINKEDIN-PAGES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

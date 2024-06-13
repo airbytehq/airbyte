@@ -6,16 +6,17 @@ data:
     hosts:
       - "*.mktorest.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
-  dockerImageTag: 1.2.6
+  dockerImageTag: 1.4.2
   dockerRepository: airbyte/source-marketo
   documentationUrl: https://docs.airbyte.com/integrations/sources/marketo
   githubIssueLabel: source-marketo
   icon: marketo.svg
   license: ELv2
+  maxSecondsBetweenMessages: 86400
   name: Marketo
   remoteRegistries:
     pypi:
@@ -30,4 +31,14 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MARKETO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

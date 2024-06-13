@@ -267,9 +267,7 @@ class TestInsightAsyncJob:
         kwargs["failure"](response)
 
     def test_elapsed_time(self, job, api, adreport):
-        assert (
-            job.elapsed_time is None
-        ), "should be None for the job that is not started"
+        assert job.elapsed_time is None, "should be None for the job that is not started"
 
         job.start()
         adreport["async_status"] = Status.COMPLETED.value
@@ -317,10 +315,7 @@ class TestInsightAsyncJob:
             job_timeout=pendulum.duration(minutes=60),
         )
 
-        assert (
-            str(job)
-            == f"InsightAsyncJob(id=<None>, {account}, time_range=<Period [2010-01-01 -> 2011-01-01]>, breakdowns=[10, 20])"
-        )
+        assert str(job) == f"InsightAsyncJob(id=<None>, {account}, time_range=<Period [2010-01-01 -> 2011-01-01]>, breakdowns=[10, 20])"
 
     def test_get_result(self, job, adreport, api):
         job.start()
@@ -374,10 +369,8 @@ class TestInsightAsyncJob:
     @freezegun.freeze_time("2023-10-29")
     def test_split_job(self, mocker, api, edge_class, next_edge_class, id_field):
         """Test that split will correctly downsize edge_object"""
-        today = pendulum.today().date()
-        start, end = today - pendulum.duration(
-            days=365 * 3 + 20
-        ), today - pendulum.duration(days=365 * 3 + 10)
+        today = pendulum.today(tz=pendulum.tz.UTC).date()
+        start, end = today - pendulum.duration(days=365 * 3 + 20), today - pendulum.duration(days=365 * 3 + 10)
         params = {"time_increment": 1, "breakdowns": []}
         job = InsightAsyncJob(
             api=api,
@@ -404,9 +397,7 @@ class TestInsightAsyncJob:
                     # with the one 37 months ago, that's why current date is frozen.
                     # For a different date the since date would be also different.
                     # See facebook_marketing.utils.validate_start_date for reference
-                    "since": (
-                        today - pendulum.duration(months=37) + pendulum.duration(days=1)
-                    ).to_date_string(),
+                    "since": (today - pendulum.duration(months=37) + pendulum.duration(days=1)).to_date_string(),
                     "until": end.to_date_string(),
                 },
             }
@@ -415,16 +406,11 @@ class TestInsightAsyncJob:
         assert all(j.interval == job.interval for j in small_jobs)
         for i, small_job in enumerate(small_jobs, start=1):
             assert small_job._params["time_range"] == job._params["time_range"]
-            assert (
-                str(small_job)
-                == f"InsightAsyncJob(id=<None>, {next_edge_class(i)}, time_range={job.interval}, breakdowns={[]})"
-            )
+            assert str(small_job) == f"InsightAsyncJob(id=<None>, {next_edge_class(i)}, time_range={job.interval}, breakdowns={[]})"
 
     def test_split_job_smallest(self, mocker, api):
         """Test that split will correctly downsize edge_object"""
-        interval = pendulum.Period(
-            pendulum.Date(2010, 1, 1), pendulum.Date(2010, 1, 10)
-        )
+        interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2010, 1, 10))
         params = {"time_increment": 1, "breakdowns": []}
         job = InsightAsyncJob(
             api=api,
@@ -434,9 +420,7 @@ class TestInsightAsyncJob:
             job_timeout=pendulum.duration(minutes=60),
         )
 
-        with pytest.raises(
-            ValueError, match="The job is already splitted to the smallest size."
-        ):
+        with pytest.raises(ValueError, match="The job is already splitted to the smallest size."):
             job.split_job()
 
 
@@ -511,9 +495,7 @@ class TestParentAsyncJob:
 
         small_jobs = parent_job.split_job()
 
-        assert (
-            len(small_jobs) == len(grouped_jobs) + 5 - 2
-        ), "each failed job must be replaced with its split"
+        assert len(small_jobs) == len(grouped_jobs) + 5 - 2, "each failed job must be replaced with its split"
         for i, job in enumerate(grouped_jobs):
             if i in (0, 5):
                 job.split_job.assert_called_once()
@@ -535,7 +517,4 @@ class TestParentAsyncJob:
             count += 1
 
     def test_str(self, parent_job, grouped_jobs):
-        assert (
-            str(parent_job)
-            == f"ParentAsyncJob({grouped_jobs[0]} ... {len(grouped_jobs) - 1} jobs more)"
-        )
+        assert str(parent_job) == f"ParentAsyncJob({grouped_jobs[0]} ... {len(grouped_jobs) - 1} jobs more)"

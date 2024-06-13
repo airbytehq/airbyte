@@ -1,4 +1,4 @@
-# A list of URLs that should be redirected to new pathes
+# A list of URLs that should be redirected to new paths
 - from: /upgrading-airbyte
   to: /operator-guides/upgrading-airbyte
 - from: /catalog
@@ -7,6 +7,18 @@
   to: /integrations/sources/appstore
 - from: /connector-development/config-based/
   to: /connector-development/config-based/low-code-cdk-overview
+- from:
+    - /connector-development/tutorials/cdk-tutorial-python-http/
+    - /connector-development/tutorials/cdk-tutorial-python-http/connection-checking/
+    - /connector-development/tutorials/cdk-tutorial-python-http/creating-the-source/
+    - /connector-development/tutorials/cdk-tutorial-python-http/declare-schema/
+    - /connector-development/tutorials/cdk-tutorial-python-http/define-inputs/
+    - /connector-development/tutorials/cdk-tutorial-python-http/getting-started/
+    - /connector-development/tutorials/cdk-tutorial-python-http/install-dependencies/
+    - /connector-development/tutorials/cdk-tutorial-python-http/read-data/
+    - /connector-development/tutorials/cdk-tutorial-python-http/test-your-connector/
+    - /connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte/
+  to: /connector-development/tutorials/custom-python-connector/getting-started
 - from: /project-overview/changelog
   to: /category/release-notes
 - from: /connector-development/config-based/understanding-the-yaml-file/stream-slicers/
@@ -76,8 +88,6 @@
   to: /using-airbyte/core-concepts/sync-modes/incremental-append
 - from: /understanding-airbyte/connections/incremental-append-deduped
   to: /using-airbyte/core-concepts/sync-modes/incremental-append-deduped
-- from: /understanding-airbyte/basic-normalization
-  to: /using-airbyte/core-concepts/basic-normalization
 - from: /understanding-airbyte/typing-deduping
   to: /using-airbyte/core-concepts/typing-deduping
 - from:
@@ -88,6 +98,8 @@
   to: /using-airbyte/workspaces
 - from: /operator-guides/locating-files-local-destination
   to: /integrations/locating-files-local-destination
+- from: /operator-guides/reset
+  to: /operator-guides/clear
 # End November 2023 restructure
 - from:
     - /enterprise-setup/self-managed/sso
@@ -95,4 +107,7 @@
   to: /access-management/sso
 - from:
     - /pyairbyte
-  to: /using-airbyte/airbyte-lib/getting-started
+  to: /using-airbyte/pyairbyte/getting-started
+- from:
+    - /telemetry
+  to: /operator-guides/telemetry
