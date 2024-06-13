@@ -83,7 +83,7 @@ definitions:
     extensiveCalls:
       type: DeclarativeStream
       name: "extensiveCalls"
-      primary_key: [["metaData", "id"]]
+      primary_key: [["id"]]
       retriever:
         type: SimpleRetriever
         requester:
@@ -139,6 +139,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/extensiveCalls"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["id"]
+              value: "{{ record['metaData']['id'] }}"
     scorecards:
       type: DeclarativeStream
       name: scorecards
@@ -474,6 +479,11 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      id:
+        description: "Unique identifier for the call (from metaData.id)."
+        type:
+          - "null"
+          - string
       metaData:
         description: "call's metadata."
         type:
