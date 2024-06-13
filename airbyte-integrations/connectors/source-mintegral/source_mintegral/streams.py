@@ -1,4 +1,7 @@
 import logging
+import time
+import csv
+import io
 from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Iterable, Mapping, Optional, Union, List, Dict
@@ -59,10 +62,13 @@ class Campaigns(MintegralStream):
 class MintegralReportingStream(HttpStream, IncrementalMixin):
     page_size = 500
     backfill_days = 2
-    url_base = "https://ss-api.mintegral.com/api/v1/reports/data"
+    retry_delay = 10
+    async_retries = 20
+    url_base = "https://ss-api.mintegral.com/api/v2/reports/data"
 
     def __init__(self, authenticator: TokenAuthenticator, **kwargs):
         self._state = {}
+        self.type = 1
         super().__init__(authenticator=authenticator)
 
     def log(self, message):
@@ -81,36 +87,39 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
         self._state[self.cursor_field] = value[self.cursor_field]
 
     def next_page_token(self, response: requests.Response) -> Optional[Dict[str, Any]]:
-        response_json = response.json()
-        current_page = int(response_json["page"])
-        if current_page < int(response_json["page_count"]):
-            return {"page": current_page + 1}
         return None
 
     def request_params(
             self,
-            stream_state: Optional[Mapping[str, Any]],
+            stream_state: Optional[Mapping[str, Any]] = None,
             stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None,
     ):
+        # Doc: https://adv-new.mintegral.com/doc/en/guide/report/advancedPerformanceReport.html
         request_params = {
-            "start_date": stream_slice[self.cursor_field],
-            "end_date": stream_slice[self.cursor_field],
-            "per_page": self.page_size,
-            "utc": "+0",
-            "page": next_page_token["page"] if next_page_token else 1
+            "start_time": '2024-06-12',
+            "end_time": '2024-06-12',
+            "timezone": "+0",
+            "dimension_option": "Creative",
+            "type": self.type
         }
         self.log(f"Request params: {request_params}")
         return request_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Dict]:
-        if response.text:
-            response_json = response.json()
-            self.log(f"Page {response_json['page']}, per_page {response_json['per_page']}, "
-                     f"page_count {response_json['page_count']}, total_count {response_json['total_count']}")
-            yield from response_json["data"]
-        else:
-            yield {}
+        try:
+            json_response = response.json()
+            print(f"Received json: {str(json_response)}")
+            if json_response.get("code") in [200, 201, 202]:
+                self.type = 2
+                return None
+        except ValueError:
+            # Assume it's TSV data if not JSON
+            tsv_data = response.text
+            reader = csv.DictReader(io.StringIO(tsv_data), delimiter='\t')
+            return reader
+        return None
+    """
 
     def stream_slices(
             self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -131,6 +140,26 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
         self.log(f"Slices: {str(dates)}")
         for date in dates:
             yield {self.cursor_field: date}
+            
+    """
+
+    def read_records(self, sync_mode: SyncMode, cursor_field=None, stream_slice=None, stream_state=None):
+        retries = 0
+        while retries < self.async_retries:
+            response = requests.get(self.url_base, params=self.request_params(), headers=self.authenticator.get_auth_header())
+            if response.status_code == 200:
+                parsed_response = self.parse_response(response)
+                if parsed_response:
+                    for row in parsed_response:
+                        yield row
+                    break
+                else:
+                    time.sleep(self.retry_delay)
+                    retries += 1
+            else:
+                raise Exception(f"Failed to fetch TSV data. HTTP Status Code: {response.status_code}")
+        if retries == self.async_retries:
+            raise Exception("Max retries exceeded. Could not fetch TSV data.")
 
 
 class Reports(MintegralReportingStream):
