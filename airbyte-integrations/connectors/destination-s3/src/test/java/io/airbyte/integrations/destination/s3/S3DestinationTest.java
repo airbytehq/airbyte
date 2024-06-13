@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -27,9 +28,13 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfigFactory;
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
+import io.airbyte.cdk.integrations.destination.s3.constant.S3Constants;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,6 +96,25 @@ public class S3DestinationTest {
     final S3Destination destinationSuccess = new S3Destination(factoryConfig, Collections.emptyMap());
     final AirbyteConnectionStatus status = destinationSuccess.check(Jsons.emptyObject());
     assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
+  }
+
+  @Test
+  /**
+   * Test that check will succeed when IAM user has all required permissions
+   */
+  public void testCheckOnCloud() throws Exception {
+    final S3Destination s3Destination = new S3Destination(factoryConfig, Collections.emptyMap());
+    s3Destination.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new EnvVariableFeatureFlags(), "CLOUD"));
+    final ConnectorSpecification spec = s3Destination.spec();
+    assertTrue(spec.getConnectionSpecification().get("properties").has(S3Constants.ROLE_ARN));
+  }
+
+  @Test
+  public void testCheckOnOss() throws Exception {
+    final S3Destination s3Destination = new S3Destination(factoryConfig, Collections.emptyMap());
+    s3Destination.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new EnvVariableFeatureFlags(), "OSS"));
+    final ConnectorSpecification spec = s3Destination.spec();
+    assertFalse(spec.getConnectionSpecification().get("properties").has(S3Constants.ROLE_ARN));
   }
 
   @Test
