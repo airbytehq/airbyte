@@ -83,9 +83,10 @@ class SlackStream(HttpStream, ABC):
 class ChanneledStream(SlackStream, ABC):
     """Slack stream with channel filter"""
 
-    def __init__(self, channel_filter: List[str] = [], join_channels: bool = False, **kwargs):
+    def __init__(self, channel_filter: List[str] = [], join_channels: bool = False, include_private_channels: bool = False, **kwargs):
         self.channel_filter = channel_filter
         self.join_channels = join_channels
+        self.include_private_channels = include_private_channels
         self.kwargs = kwargs
         super().__init__(**kwargs)
 
@@ -119,7 +120,7 @@ class Channels(ChanneledStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["types"] = "public_channel"
+        params["types"] = "public_channel,private_channel" if self.include_private_channels == True else "public_channel"
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
@@ -261,7 +262,9 @@ class Threads(IncrementalMessageStream):
         """
 
         stream_state = stream_state or {}
-        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
+        channels_stream = Channels(
+            authenticator=self._session.auth, channel_filter=self.channel_filter, include_private_channels=self.include_private_channels
+        )
 
         if self.cursor_field in stream_state:
             # Since new messages can be posted to threads continuously after the parent message has been posted,
