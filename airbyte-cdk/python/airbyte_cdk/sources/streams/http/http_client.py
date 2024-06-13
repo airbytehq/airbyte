@@ -36,9 +36,9 @@ BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 class HttpClient:
 
-    _DEFAULT_MAX_RETRY = 5
-    _DEFAULT_RETRY_FACTOR = 5
-    _DEFAULT_MAX_TIME = 60 * 10
+    _DEFAULT_MAX_RETRY: int = 5
+    _DEFAULT_RETRY_FACTOR: float = 5
+    _DEFAULT_MAX_TIME: int = 60 * 10
 
     def __init__(
         self,
@@ -150,38 +150,25 @@ class HttpClient:
 
     @cached_property
     def _max_retries(self) -> int:
-        max_retries = self._DEFAULT_MAX_RETRY
+        max_retries = None
         if self._disable_retries:
             max_retries = 0
-        elif hasattr(self._error_handler, "max_retries") and self._error_handler.max_retries is not None:
-            max_retries = self._error_handler.max_retries
         else:
-            for backoff_strategy in self._backoff_strategies:
-                if hasattr(backoff_strategy, "max_retries") and backoff_strategy.max_retries is not None:
-                    max_retries = backoff_strategy.max_retries
-                    break
-        return max_retries
+            max_retries = self._error_handler.max_retries
+        return max_retries if max_retries is not None else self._DEFAULT_MAX_RETRY
 
     @cached_property
     def _max_time(self) -> int:
-        max_time = self._DEFAULT_MAX_TIME
-        if hasattr(self._error_handler, "max_time") and self._error_handler.max_time is not None:
-            max_time = self._error_handler.max_time
-        else:
-            for backoff_strategy in self._backoff_strategies:
-                if hasattr(backoff_strategy, "max_time") and backoff_strategy.max_time is not None:
-                    max_time = backoff_strategy.max_time
-                    break
-        return max_time
+        return self._error_handler.max_time if self._error_handler.max_time is not None else self._DEFAULT_MAX_TIME
 
     @cached_property
     def _factor(self) -> float:
-        factor = self._DEFAULT_RETRY_FACTOR
+        factor: Optional[float] = None
         for backoff_strategy in self._backoff_strategies:
             if hasattr(backoff_strategy, "retry_factor") and backoff_strategy.retry_factor is not None:
                 factor = backoff_strategy.retry_factor
                 break
-        return factor
+        return factor if factor is not None else self._DEFAULT_RETRY_FACTOR
 
     def _send_with_retry(
         self,
