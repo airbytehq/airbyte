@@ -9,8 +9,7 @@ import pytest
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from deepdiff import DeepDiff  # type: ignore
 from live_tests.commons.models import ExecutionResult
-
-from .utils import fail_test_on_failing_execution_results, get_and_write_diff, get_test_logger, write_string_to_test_artifact
+from live_tests.utils import fail_test_on_failing_execution_results, get_and_write_diff, get_test_logger, write_string_to_test_artifact
 
 if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
@@ -400,6 +399,7 @@ class TestDataIntegrity:
             read_target_execution_result,
         )
 
+    @pytest.mark.allow_diagnostic_mode
     @pytest.mark.with_state()
     async def test_all_records_are_the_same_with_state(
         self,
@@ -431,6 +431,7 @@ class TestDataIntegrity:
             read_with_state_target_execution_result,
         )
 
+    @pytest.mark.allow_diagnostic_mode
     @pytest.mark.without_state()
     async def test_all_records_are_the_same_without_state(
         self,

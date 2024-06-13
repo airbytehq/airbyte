@@ -66,6 +66,9 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2023-12-04 | [28593](https://github.com/airbytehq/airbyte/pull/28593) | Fix events.event type                                                                                              |
@@ -85,3 +88,5 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 | 0.1.2   | 2021-07-15 | [4692](https://github.com/airbytehq/airbyte/pull/4692)   | Use account information for checking the connection                                                                |
 | 0.1.1   | 2021-07-05 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                                                       |
 | 0.1.0   | 2021-06-08 | [3768](https://github.com/airbytehq/airbyte/pull/3768)   | Initial Release                                                                                                    |
+
+</details>
