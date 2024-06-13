@@ -10,13 +10,13 @@ chosen, or just top headlines.
 
 This source is capable of syncing the following streams:
 
-* `everything`
-* `top_headlines`
+- `everything`
+- `top_headlines`
 
 ### Features
 
 | Feature           | Supported? \(Yes/No\) | Notes |
-|:------------------|:----------------------|:------|
+| :---------------- | :-------------------- | :---- |
 | Full Refresh Sync | Yes                   |       |
 | Incremental Sync  | No                    |       |
 
@@ -56,7 +56,15 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                  |
+|:--------|:-----------| :------------------------------------------------------- | :--------------------------------------- |
+| 0.1.4   | 2024-06-12 | [38635](https://github.com/airbytehq/airbyte/pull/38635) | Use Poetry, remove $parameters, make Builder compatible |
+| 0.1.3   | 2024-06-04 | [39038](https://github.com/airbytehq/airbyte/pull/39038) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.2   | 2024-05-20 | [38418](https://github.com/airbytehq/airbyte/pull/38418) | [autopull] base image + poetry + up_to_date |
 | 0.1.1   | 2023-04-30 | [25554](https://github.com/airbytehq/airbyte/pull/25554) | Make manifest connector builder friendly |
 | 0.1.0   | 2022-10-21 | [18301](https://github.com/airbytehq/airbyte/pull/18301) | New source |
+
+</details>

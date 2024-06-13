@@ -1,0 +1,13 @@
+#
+# Copyright (c) {{currentYear}} Airbyte, Inc., all rights reserved.
+#
+
+
+import sys
+
+from airbyte_cdk.entrypoint import launch
+from .destination import Destination{{properCase name}}
+
+def run():
+    destination = Destination{{properCase name}}()
+    destination.run(sys.argv[1:])

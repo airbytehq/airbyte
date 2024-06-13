@@ -5,7 +5,8 @@ The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec)
 ## Demoing your specification
 
 While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions below.
-1. Open the `ConnectorForm` preview component in our deployed Storybook at: https://components.airbyte.dev/?path=/story/connector-connectorform--preview
+
+1. Open the `ConnectorForm` preview component in our deployed Storybook at: https://storybook.airbyte.dev/?path=/story/connector-connectorform--preview
 2. Press `raw` on the `connectionSpecification` property, so you will be able to paste a JSON structured string
 3. Set the string you want to preview the UI for
 4. When submitting the form you can see a preview of the values in the "Actions" tab
@@ -61,7 +62,7 @@ Additionally, `order` values cannot be duplicated within the same object or grou
 
 By default, all optional fields will be collapsed into an `Optional fields` section which can be expanded or collapsed by the user. This helps streamline the UI for setting up a connector by initially focusing attention on the required fields only. For existing connectors, if their configuration contains a non-empty and non-default value for a collapsed optional field, then that section will be automatically opened when the connector is opened in the UI.
 
-These `Optional fields` sections are placed at the bottom of a field group, meaning that all required fields in the same group will be placed above it. To interleave optional fields with required fields, set `always_show: true` on the optional field along with an `order`, which will cause the field to no longer be collapsed in an `Optional fields` section and be ordered as normal. 
+These `Optional fields` sections are placed at the bottom of a field group, meaning that all required fields in the same group will be placed above it. To interleave optional fields with required fields, set `always_show: true` on the optional field along with an `order`, which will cause the field to no longer be collapsed in an `Optional fields` section and be ordered as normal.
 
 **Note:** `always_show` also causes fields that are normally hidden by an OAuth button to still be shwon.
 
@@ -332,7 +333,9 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
 ```
 
 #### oneOf display type
+
 You can also configure the way that oneOf fields are displayed in the Airbyte UI through the `display_type` property. Valid values for this property are:
+
 - `dropdown`
   - Renders a dropdown menu containing the title of each option for the user to select
   - This is a compact look that works well in most cases
@@ -342,6 +345,7 @@ You can also configure the way that oneOf fields are displayed in the Airbyte UI
   - This choice draws more attention to the field and shows the descriptions of each option at all times, which can be useful for important or complicated fields
 
 Here is an example of setting the `display_type` of a oneOf field to `dropdown`, along with how it looks in the Airbyte UI:
+
 ```
 "update_method": {
   "type": "object",
@@ -381,6 +385,7 @@ Here is an example of setting the `display_type` of a oneOf field to `dropdown`,
   ]
 }
 ```
+
 ![dropdown oneOf](../assets/docs/oneOf-dropdown.png)
 
 And here is how it looks if the `display_type` property is set to `radio` instead:

@@ -52,7 +52,19 @@ definitions:
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      $ref: "#/definitions/paginator"
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
     requester:
       $ref: "#/definitions/base_requester"
 

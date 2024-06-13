@@ -42,7 +42,7 @@ interface MinimumDestinationState {
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : MinimumDestinationState> withSoftReset(needsSoftReset: Boolean): T {
-            return Impl(needsSoftReset = true) as T
+            return Impl(needsSoftReset = needsSoftReset) as T
         }
     }
 }

@@ -51,6 +51,10 @@ module.exports = function (plop) {
     return capitalCase.capitalCase(name);
   });
 
+  plop.setHelper("currentYear", function () {
+    return new Date().getFullYear();
+  });
+
   plop.setHelper("generateDefinitionId", function () {
     // if the env var CI is set then return a fixed FAKE uuid  so that the tests are deterministic
     if (process.env.CI) {

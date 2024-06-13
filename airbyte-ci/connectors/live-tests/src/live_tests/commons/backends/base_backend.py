@@ -1,7 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Iterable
+from collections.abc import Iterable
 
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 

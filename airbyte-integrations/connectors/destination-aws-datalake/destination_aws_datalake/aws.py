@@ -8,9 +8,11 @@ from typing import Any, Dict, Optional
 
 import awswrangler as wr
 import boto3
+import botocore
 import pandas as pd
 from airbyte_cdk.destinations import Destination
 from awswrangler import _data_types
+from botocore.credentials import AssumeRoleCredentialFetcher, CredentialResolver, DeferredRefreshableCredentials, JSONFileCache
 from botocore.exceptions import ClientError
 from retrying import retry
 
@@ -64,6 +66,32 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
 _data_types._cast_pandas_column = _cast_pandas_column
 
 
+# This class created to support refreshing sts role assumption credentials for long running syncs
+class AssumeRoleProvider(object):
+    METHOD = "assume-role"
+
+    def __init__(self, fetcher):
+        self._fetcher = fetcher
+
+    def load(self):
+        return DeferredRefreshableCredentials(self._fetcher.fetch_credentials, self.METHOD)
+
+    @staticmethod
+    def assume_role_refreshable(
+        session: botocore.session.Session, role_arn: str, duration: int = 3600, session_name: str = None
+    ) -> botocore.session.Session:
+        fetcher = AssumeRoleCredentialFetcher(
+            session.create_client,
+            session.get_credentials(),
+            role_arn,
+            extra_args={"DurationSeconds": duration, "RoleSessionName": session_name},
+            cache=JSONFileCache(),
+        )
+        role_session = botocore.session.Session()
+        role_session.register_component("credential_provider", CredentialResolver([AssumeRoleProvider(fetcher)]))
+        return role_session
+
+
 class AwsHandler:
     def __init__(self, connector_config: ConnectorConfig, destination: Destination) -> None:
         self._config: ConnectorConfig = connector_config
@@ -87,18 +115,10 @@ class AwsHandler:
             )
 
         elif self._config.credentials_type == CredentialsType.IAM_ROLE:
-            client = boto3.client("sts")
-            role = client.assume_role(
-                RoleArn=self._config.role_arn,
-                RoleSessionName="airbyte-destination-aws-datalake",
+            botocore_session = AssumeRoleProvider.assume_role_refreshable(
+                session=botocore.session.Session(), role_arn=self._config.role_arn, session_name="airbyte-destination-aws-datalake"
             )
-            creds = role.get("Credentials", {})
-            self._session = boto3.Session(
-                aws_access_key_id=creds.get("AccessKeyId"),
-                aws_secret_access_key=creds.get("SecretAccessKey"),
-                aws_session_token=creds.get("SessionToken"),
-                region_name=self._config.region,
-            )
+            self._session = boto3.session.Session(region_name=self._config.region, botocore_session=botocore_session)
 
     def _get_s3_path(self, database: str, table: str) -> str:
         bucket = f"s3://{self._config.bucket_name}"

@@ -3,11 +3,12 @@
   "type": "object",
   "properties": {
     "projectId": {
+      "description": "The unique identifier for the project.",
       "type": "string"
     },
     "emailAddress": {
-      "type": "string",
-      "description": "The email address."
+      "description": "The email address of the project.",
+      "type": "string"
     }
   },
   "additionalProperties": true,

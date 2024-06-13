@@ -49,11 +49,16 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
-| 0.3.0   | 2023-10-17 | [30994](https://github.com/airbytehq/airbyte/pull/30994) | Migrate to Low-code Framework  |
+| 0.3.0   | 2023-10-17 | [30994](https://github.com/airbytehq/airbyte/pull/30994) | Migrate to Low-code Framework                                         |
 | 0.2.0   | 2023-06-08 | [25103](https://github.com/airbytehq/airbyte/pull/25103) | Add fields to `conversation_export` stream                            |
 | 0.1.3   | 2022-07-07 | [14437](https://github.com/airbytehq/airbyte/pull/14437) | 🎉 Source Dixa: bump version 0.1.3                                    |
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                       |
 | 0.1.1   | 2021-08-12 | [5367](https://github.com/airbytehq/airbyte/pull/5367)   | Migrated to CI Sandbox, refactorred code structure for future support |
 | 0.1.0   | 2021-07-07 | [4358](https://github.com/airbytehq/airbyte/pull/4358)   | New source                                                            |
+
+</details>

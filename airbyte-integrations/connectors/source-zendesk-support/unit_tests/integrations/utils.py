@@ -14,11 +14,7 @@ from source_zendesk_support import SourceZendeskSupport
 
 
 def read_stream(
-    stream_name: str,
-    sync_mode: SyncMode,
-    config: Dict[str, Any],
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
+    stream_name: str, sync_mode: SyncMode, config: Dict[str, Any], state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
     return read(SourceZendeskSupport(), config, catalog, state, expecting_exception)

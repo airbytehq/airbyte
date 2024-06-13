@@ -2,36 +2,47 @@
   "type": "object",
   "properties": {
     "page_id": {
+      "description": "The unique identifier for the user's associated Instagram page.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the user's account.",
       "type": ["null", "string"]
     },
     "biography": {
+      "description": "The biography or description provided by the user in their profile.",
       "type": ["null", "string"]
     },
     "ig_id": {
+      "description": "The Instagram ID associated with the user's account.",
       "type": ["null", "integer"]
     },
     "followers_count": {
+      "description": "The number of followers the user has on Instagram.",
       "type": ["null", "integer"]
     },
     "follows_count": {
+      "description": "The number of accounts that the user follows on Instagram.",
       "type": ["null", "integer"]
     },
     "media_count": {
+      "description": "The total number of media items (posts) uploaded by the user.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name displayed on the user's Instagram account.",
       "type": ["null", "string"]
     },
     "profile_picture_url": {
+      "description": "The URL to the user's profile picture.",
       "type": ["null", "string"]
     },
     "username": {
+      "description": "The username used by the user to log in to their Instagram account.",
       "type": ["null", "string"]
     },
     "website": {
+      "description": "The website link provided by the user on their Instagram profile.",
       "type": ["null", "string"]
     }
   }

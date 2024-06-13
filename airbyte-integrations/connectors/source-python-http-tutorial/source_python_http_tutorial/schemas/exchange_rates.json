@@ -3,119 +3,157 @@
   "type": "object",
   "properties": {
     "access_key": {
+      "description": "Access key required to access the exchange rates data.",
       "type": "string"
     },
     "base": {
+      "description": "Base currency for the exchange rates.",
       "type": "string"
     },
     "rates": {
+      "description": "Object containing exchange rates for various currencies",
       "type": "object",
       "properties": {
         "GBP": {
+          "description": "British Pound exchange rate.",
           "type": "number"
         },
         "HKD": {
+          "description": "Hong Kong Dollar exchange rate.",
           "type": "number"
         },
         "IDR": {
+          "description": "Indonesian Rupiah exchange rate.",
           "type": "number"
         },
         "PHP": {
+          "description": "Philippine Peso exchange rate.",
           "type": "number"
         },
         "LVL": {
+          "description": "Latvian Lats exchange rate.",
           "type": "number"
         },
         "INR": {
+          "description": "Indian Rupee exchange rate.",
           "type": "number"
         },
         "CHF": {
+          "description": "Swiss Franc exchange rate.",
           "type": "number"
         },
         "MXN": {
+          "description": "Mexican Peso exchange rate.",
           "type": "number"
         },
         "SGD": {
+          "description": "Singapore Dollar exchange rate.",
           "type": "number"
         },
         "CZK": {
+          "description": "Czech Koruna exchange rate.",
           "type": "number"
         },
         "THB": {
+          "description": "Thai Baht exchange rate.",
           "type": "number"
         },
         "BGN": {
+          "description": "Bulgarian Lev exchange rate.",
           "type": "number"
         },
         "EUR": {
+          "description": "Euro exchange rate.",
           "type": "number"
         },
         "MYR": {
+          "description": "Malaysian Ringgit exchange rate.",
           "type": "number"
         },
         "NOK": {
+          "description": "Norwegian Krone exchange rate.",
           "type": "number"
         },
         "CNY": {
+          "description": "Chinese Yuan exchange rate.",
           "type": "number"
         },
         "HRK": {
+          "description": "Croatian Kuna exchange rate.",
           "type": "number"
         },
         "PLN": {
+          "description": "Polish Zloty exchange rate.",
           "type": "number"
         },
         "LTL": {
+          "description": "Lithuanian Litas exchange rate.",
           "type": "number"
         },
         "TRY": {
+          "description": "Turkish Lira exchange rate.",
           "type": "number"
         },
         "ZAR": {
+          "description": "South African Rand exchange rate.",
           "type": "number"
         },
         "CAD": {
+          "description": "Canadian Dollar exchange rate.",
           "type": "number"
         },
         "BRL": {
+          "description": "Brazilian Real exchange rate.",
           "type": "number"
         },
         "RON": {
+          "description": "Romanian Leu exchange rate.",
           "type": "number"
         },
         "DKK": {
+          "description": "Danish Krone exchange rate.",
           "type": "number"
         },
         "NZD": {
+          "description": "New Zealand Dollar exchange rate.",
           "type": "number"
         },
         "EEK": {
+          "description": "Estonian Kroon exchange rate.",
           "type": "number"
         },
         "JPY": {
+          "description": "Japanese Yen exchange rate.",
           "type": "number"
         },
         "RUB": {
+          "description": "Russian Ruble exchange rate.",
           "type": "number"
         },
         "KRW": {
+          "description": "South Korean Won exchange rate.",
           "type": "number"
         },
         "USD": {
+          "description": "US Dollar exchange rate.",
           "type": "number"
         },
         "AUD": {
+          "description": "Australian Dollar exchange rate.",
           "type": "number"
         },
         "HUF": {
+          "description": "Hungarian Forint exchange rate.",
           "type": "number"
         },
         "SEK": {
+          "description": "Swedish Krona exchange rate.",
           "type": "number"
         }
       }
     },
     "date": {
+      "description": "Date for which the exchange rates are applicable.",
       "type": "string"
     }
   }

@@ -1,4 +1,4 @@
-version: "0.44.0"
+version: "0.78.5"
 
 definitions:
   selector:
@@ -17,6 +17,8 @@ definitions:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
+      record_filter:
+        condition: "{{ record['published'] >= stream_interval['start_time'] }}"
     paginator:
       type: NoPagination
     requester:
@@ -36,6 +38,18 @@ definitions:
         $ref: "#/definitions/items_schema"
     $parameters:
       path: "/"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: published
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('PT23H')).strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
 
   items_schema:
     $schema: http://json-schema.org/draft-07/schema#

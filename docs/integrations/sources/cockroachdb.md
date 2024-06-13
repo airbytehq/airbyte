@@ -12,39 +12,39 @@ The CockroachDb source does not alter the schema present in your database. Depen
 
 CockroachDb data types are mapped to the following data types when synchronizing data:
 
-| CockroachDb Type | Resulting Type | Notes |
-| :--- | :--- | :--- |
-| `bigint` | integer |  |
-| `bit` | boolean |  |
-| `boolean` | boolean |  |
-| `character` | string |  |
-| `character varying` | string |  |
-| `date` | string |  |
-| `double precision` | string |  |
-| `enum` | number |  |
-| `inet` | string |  |
-| `int` | integer |  |
-| `json` | string |  |
-| `jsonb` | string |  |
-| `numeric` | number |  |
-| `smallint` | integer |  |
-| `text` | string |  |
-| `time with timezone` | string | may be written as a native date type depending on the destination |
-| `time without timezone` | string | may be written as a native date type depending on the destination |
-| `timestamp with timezone` | string | may be written as a native date type depending on the destination |
-| `timestamp without timezone` | string | may be written as a native date type depending on the destination |
-| `uuid` | string |  |
+| CockroachDb Type             | Resulting Type | Notes                                                             |
+| :--------------------------- | :------------- | :---------------------------------------------------------------- |
+| `bigint`                     | integer        |                                                                   |
+| `bit`                        | boolean        |                                                                   |
+| `boolean`                    | boolean        |                                                                   |
+| `character`                  | string         |                                                                   |
+| `character varying`          | string         |                                                                   |
+| `date`                       | string         |                                                                   |
+| `double precision`           | string         |                                                                   |
+| `enum`                       | number         |                                                                   |
+| `inet`                       | string         |                                                                   |
+| `int`                        | integer        |                                                                   |
+| `json`                       | string         |                                                                   |
+| `jsonb`                      | string         |                                                                   |
+| `numeric`                    | number         |                                                                   |
+| `smallint`                   | integer        |                                                                   |
+| `text`                       | string         |                                                                   |
+| `time with timezone`         | string         | may be written as a native date type depending on the destination |
+| `time without timezone`      | string         | may be written as a native date type depending on the destination |
+| `timestamp with timezone`    | string         | may be written as a native date type depending on the destination |
+| `timestamp without timezone` | string         | may be written as a native date type depending on the destination |
+| `uuid`                       | string         |                                                                   |
 
 **Note:** arrays for all the above types as well as custom types are supported, although they may be de-nested depending on the destination.
 
 ### Features
 
-| Feature | Supported | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
-| Change Data Capture | No |  |
-| SSL Support | Yes |  |
+| Feature             | Supported | Notes |
+| :------------------ | :-------- | :---- |
+| Full Refresh Sync   | Yes       |       |
+| Incremental Sync    | Yes       |       |
+| Change Data Capture | No        |       |
+| SSL Support         | Yes       |       |
 
 ## Getting started
 
@@ -93,15 +93,18 @@ Your database user should now be ready for use with Airbyte.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                                                                                   |
-|:--------|:-----------| :--- |:------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.2 | 2024-02-13 | [35234](https://github.com/airbytehq/airbyte/pull/35234) | Adopt CDK 0.20.4 |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.2   | 2024-02-13 | [35234](https://github.com/airbytehq/airbyte/pull/35234) | Adopt CDK 0.20.4                                                                                                                          |
 | 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
 | 0.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Removed LEGACY state                                                                                                                      |
 | 0.1.22  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting                                                                                          |
 | 0.1.21  | 2023-03-14 | [24000](https://github.com/airbytehq/airbyte/pull/24000) | Removed check method call on read.                                                                                                        |
 | 0.1.20  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect                                                  |
-| 0.1.19  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                                                                                     |
+| 0.1.19  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                                                                                     |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.1.18  | 2022-09-01 | [16394](https://github.com/airbytehq/airbyte/pull/16394) | Added custom jdbc properties field                                                                                                        |
 | 0.1.17  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently                                                                                                       |
@@ -113,8 +116,10 @@ Your database user should now be ready for use with Airbyte.
 | 0.1.9   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats                                    |
 | 0.1.8   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds                                                                                        |
 | 0.1.7   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                              |
-| 0.1.6   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table                                                       |
-| 0.1.5   | 2021-12-24 | [9004](https://github.com/airbytehq/airbyte/pull/9004) | User can see only permmited tables during discovery                                                                                       |
-| 0.1.4   | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY                                                                                                            |
-| 0.1.3   | 2021-10-10 | [7819](https://github.com/airbytehq/airbyte/pull/7819) | Fixed Datatype errors during Cockroach DB parsing                                                                                         |
-| 0.1.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator                                                                                                               |
+| 0.1.6   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved discovering tables in case if user does not have permissions to any table                                                        |
+| 0.1.5   | 2021-12-24 | [9004](https://github.com/airbytehq/airbyte/pull/9004)   | User can see only permmited tables during discovery                                                                                       |
+| 0.1.4   | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958)   | Add support for JdbcType.ARRAY                                                                                                            |
+| 0.1.3   | 2021-10-10 | [7819](https://github.com/airbytehq/airbyte/pull/7819)   | Fixed Datatype errors during Cockroach DB parsing                                                                                         |
+| 0.1.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699)   | Added json config validator                                                                                                               |
+
+</details>

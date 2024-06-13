@@ -5,106 +5,138 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "purchaseOrderNumber": {
+      "description": "Purchase order number",
       "type": ["null", "string"]
     },
     "purchaseOrderState": {
+      "description": "State of the purchase order",
       "type": ["null", "string"]
     },
     "orderDetails": {
+      "description": "Details of the vendor order.",
       "type": ["null", "object"],
       "properties": {
         "purchaseOrderDate": {
+          "description": "Purchase order creation date and time",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "purchaseOrderChangedDate": {
+          "description": "Date and time when the purchase order was last changed",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "purchaseOrderStateChangedDate": {
+          "description": "Date and time when the purchase order state changed",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "purchaseOrderType": {
+          "description": "Type of purchase order",
           "type": ["null", "string"]
         },
         "importDetails": {
+          "description": "Details related to import of the order",
           "type": ["null", "object"],
           "properties": {
             "methodOfPayment": {
+              "description": "Method of payment for import",
               "type": ["null", "string"]
             },
             "internationalCommercialTerms": {
+              "description": "International commercial terms",
               "type": ["null", "string"]
             },
             "portOfDelivery": {
+              "description": "Port of delivery",
               "type": ["null", "string"]
             },
             "importContainers": {
+              "description": "Information about import containers",
               "type": ["null", "string"]
             },
             "shippingInstructions": {
+              "description": "Instructions for shipping",
               "type": ["null", "string"]
             }
           }
         },
         "dealCode": {
+          "description": "Deal code associated with the order",
           "type": ["null", "string"]
         },
         "paymentMethod": {
+          "description": "Payment method for the order",
           "type": ["null", "string"]
         },
         "buyingParty": {
+          "description": "Information about the party making the purchase",
           "type": ["null", "object"],
           "properties": {
             "partyId": {
+              "description": "ID of the buying party",
               "type": ["null", "string"]
             },
             "address": {
+              "description": "The address details of the buying party",
               "type": ["null", "object"],
               "properties": {
                 "name": {
+                  "description": "Name of the party",
                   "type": ["null", "string"]
                 },
                 "addressLine1": {
+                  "description": "Address Line 1",
                   "type": ["null", "string"]
                 },
                 "addressLine2": {
+                  "description": "Address Line 2",
                   "type": ["null", "string"]
                 },
                 "addressLine3": {
+                  "description": "Address Line 3",
                   "type": ["null", "string"]
                 },
                 "city": {
+                  "description": "City name",
                   "type": ["null", "string"]
                 },
                 "county": {
+                  "description": "County name",
                   "type": ["null", "string"]
                 },
                 "district": {
+                  "description": "District name",
                   "type": ["null", "string"]
                 },
                 "stateOrRegion": {
+                  "description": "State or region",
                   "type": ["null", "string"]
                 },
                 "postalCode": {
+                  "description": "Postal code",
                   "type": ["null", "string"]
                 },
                 "countryCode": {
+                  "description": "Country code",
                   "type": ["null", "string"]
                 },
                 "phone": {
+                  "description": "Phone number",
                   "type": ["null", "string"]
                 }
               }
             },
             "taxInfo": {
+              "description": "Tax information of the buying party",
               "type": ["null", "object"],
               "properties": {
                 "taxType": {
+                  "description": "Type of tax",
                   "type": ["null", "string"]
                 },
                 "taxRegistrationNumber": {
+                  "description": "Tax registration number",
                   "type": ["null", "string"]
                 }
               }
@@ -112,56 +144,73 @@
           }
         },
         "sellingParty": {
+          "description": "Information about the party selling the products",
           "type": ["null", "object"],
           "properties": {
             "partyId": {
+              "description": "ID of the selling party",
               "type": ["null", "string"]
             },
             "address": {
+              "description": "The address details of the selling party",
               "type": ["null", "object"],
               "properties": {
                 "name": {
+                  "description": "Name of the party",
                   "type": ["null", "string"]
                 },
                 "addressLine1": {
+                  "description": "Address Line 1",
                   "type": ["null", "string"]
                 },
                 "addressLine2": {
+                  "description": "Address Line 2",
                   "type": ["null", "string"]
                 },
                 "addressLine3": {
+                  "description": "Address Line 3",
                   "type": ["null", "string"]
                 },
                 "city": {
+                  "description": "City name",
                   "type": ["null", "string"]
                 },
                 "county": {
+                  "description": "County name",
                   "type": ["null", "string"]
                 },
                 "district": {
+                  "description": "District name",
                   "type": ["null", "string"]
                 },
                 "stateOrRegion": {
+                  "description": "State or region",
                   "type": ["null", "string"]
                 },
                 "postalCode": {
+                  "description": "Postal code",
                   "type": ["null", "string"]
                 },
                 "countryCode": {
+                  "description": "Country code",
                   "type": ["null", "string"]
                 },
                 "phone": {
+                  "description": "Phone number",
                   "type": ["null", "string"]
                 }
               }
             },
             "taxInfo": {
+              "description": "Tax information of the selling party",
               "type": ["null", "object"],
               "properties": {
                 "taxType": {
+                  "description": "Type of tax",
                   "type": ["null", "string"]
                 },
                 "taxRegistrationNumber": {
+                  "description": "Tax registration number",
                   "type": ["null", "string"]
                 }
               }
@@ -169,56 +218,73 @@
           }
         },
         "shipToParty": {
+          "description": "Information about the party to which the order is shipped",
           "type": ["null", "object"],
           "properties": {
             "partyId": {
+              "description": "ID of the ship-to party",
               "type": ["null", "string"]
             },
             "address": {
+              "description": "The address details of the ship-to party",
               "type": ["null", "object"],
               "properties": {
                 "name": {
+                  "description": "Name of the party",
                   "type": ["null", "string"]
                 },
                 "addressLine1": {
+                  "description": "Address Line 1",
                   "type": ["null", "string"]
                 },
                 "addressLine2": {
+                  "description": "Address Line 2",
                   "type": ["null", "string"]
                 },
                 "addressLine3": {
+                  "description": "Address Line 3",
                   "type": ["null", "string"]
                 },
                 "city": {
+                  "description": "City name",
                   "type": ["null", "string"]
                 },
                 "county": {
+                  "description": "County name",
                   "type": ["null", "string"]
                 },
                 "district": {
+                  "description": "District name",
                   "type": ["null", "string"]
                 },
                 "stateOrRegion": {
+                  "description": "State or region",
                   "type": ["null", "string"]
                 },
                 "postalCode": {
+                  "description": "Postal code",
                   "type": ["null", "string"]
                 },
                 "countryCode": {
+                  "description": "Country code",
                   "type": ["null", "string"]
                 },
                 "phone": {
+                  "description": "Phone number",
                   "type": ["null", "string"]
                 }
               }
             },
             "taxInfo": {
+              "description": "Tax information of the ship-to party",
               "type": ["null", "object"],
               "properties": {
                 "taxType": {
+                  "description": "Type of tax",
                   "type": ["null", "string"]
                 },
                 "taxRegistrationNumber": {
+                  "description": "Tax registration number",
                   "type": ["null", "string"]
                 }
               }
@@ -226,56 +292,73 @@
           }
         },
         "billToParty": {
+          "description": "Information about the party to which the bill for the order is sent",
           "type": ["null", "object"],
           "properties": {
             "partyId": {
+              "description": "ID of the bill-to party",
               "type": ["null", "string"]
             },
             "address": {
+              "description": "The address details of the bill-to party",
               "type": ["null", "object"],
               "properties": {
                 "name": {
+                  "description": "Name of the party",
                   "type": ["null", "string"]
                 },
                 "addressLine1": {
+                  "description": "Address Line 1",
                   "type": ["null", "string"]
                 },
                 "addressLine2": {
+                  "description": "Address Line 2",
                   "type": ["null", "string"]
                 },
                 "addressLine3": {
+                  "description": "Address Line 3",
                   "type": ["null", "string"]
                 },
                 "city": {
+                  "description": "City name",
                   "type": ["null", "string"]
                 },
                 "county": {
+                  "description": "County name",
                   "type": ["null", "string"]
                 },
                 "district": {
+                  "description": "District name",
                   "type": ["null", "string"]
                 },
                 "stateOrRegion": {
+                  "description": "State or region",
                   "type": ["null", "string"]
                 },
                 "postalCode": {
+                  "description": "Postal code",
                   "type": ["null", "string"]
                 },
                 "countryCode": {
+                  "description": "Country code",
                   "type": ["null", "string"]
                 },
                 "phone": {
+                  "description": "Phone number",
                   "type": ["null", "string"]
                 }
               }
             },
             "taxInfo": {
+              "description": "Tax information of the bill-to party",
               "type": ["null", "object"],
               "properties": {
                 "taxType": {
+                  "description": "Type of tax",
                   "type": ["null", "string"]
                 },
                 "taxRegistrationNumber": {
+                  "description": "Tax registration number",
                   "type": ["null", "string"]
                 }
               }
@@ -283,60 +366,77 @@
           }
         },
         "shipWindow": {
+          "description": "Shipping window details",
           "type": ["null", "string"]
         },
         "deliveryWindow": {
+          "description": "Delivery window details",
           "type": ["null", "string"]
         },
         "items": {
+          "description": "List of items included in the order",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "itemSequenceNumber": {
+                "description": "Sequence number of the item",
                 "type": ["null", "string"]
               },
               "amazonProductIdentifier": {
+                "description": "Product identifier assigned by Amazon",
                 "type": ["null", "string"]
               },
               "vendorProductIdentifier": {
+                "description": "Product identifier assigned by the vendor",
                 "type": ["null", "string"]
               },
               "orderedQuantity": {
+                "description": "Quantity ordered for the item",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
+                    "description": "Quantity amount",
                     "type": ["null", "integer"]
                   },
                   "unitOfMeasure": {
+                    "description": "Unit of measurement",
                     "type": ["null", "string"]
                   },
                   "unitSize": {
+                    "description": "Size of the unit",
                     "type": ["null", "integer"]
                   }
                 }
               },
               "isBackOrderAllowed": {
+                "description": "Flag indicating if back orders are allowed for the item",
                 "type": ["null", "boolean"]
               },
               "netCost": {
+                "description": "Net cost of the item",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
+                    "description": "Cost amount",
                     "type": ["null", "string"]
                   },
                   "currencyCode": {
+                    "description": "Currency code",
                     "type": ["null", "string"]
                   }
                 }
               },
               "listPrice": {
+                "description": "List price of the item",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
+                    "description": "Price amount",
                     "type": ["null", "string"]
                   },
                   "currencyCode": {
+                    "description": "Currency code",
                     "type": ["null", "string"]
                   }
                 }
@@ -347,6 +447,7 @@
       }
     },
     "changedBefore": {
+      "description": "The date and time before which the order details were last changed",
       "type": ["null", "string"],
       "format": "date-time"
     }

@@ -40,6 +40,10 @@ on:
       comment-id:
         description: "Optional comment-id of the slash command. Ignore if not applicable."
         required: false
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
 
 concurrency:
   group: publish-java-cdk

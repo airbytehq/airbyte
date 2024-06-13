@@ -535,7 +535,8 @@ class PersonsTest(TestCase):
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
-        assert len(actual_messages.errors) == 1
+        # first error is the actual error, second is to break the Python app with code != 0
+        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
 
     @HttpMocker()
     def test_incremental_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
@@ -656,4 +657,5 @@ class PersonsTest(TestCase):
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
-        assert len(actual_messages.errors) == 1
+        # first error is the actual error, second is to break the Python app with code != 0
+        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]

@@ -15,11 +15,12 @@ class PartitionCompleteSentinel:
     Includes a pointer to the partition that was processed.
     """
 
-    def __init__(self, partition: Partition):
+    def __init__(self, partition: Partition, is_successful: bool = True):
         """
         :param partition: The partition that was processed
         """
         self.partition = partition
+        self.is_successful = is_successful
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, PartitionCompleteSentinel):
