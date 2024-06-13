@@ -1,5 +1,8 @@
 # Salesforce
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Salesforce](https://www.salesforce.com/) source connector.
@@ -22,27 +25,58 @@ To use this connector, you'll need at least the Enterprise edition of Salesforce
 
 ## Setup guide
 
-### Step 1: (Optional, Recommended) Create a read-only Salesforce user
+### Step 1: (Optional, Recommended) Create a dedicated Salesforce user
 
-While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
+:::info
+**Orgs created prior to Spring 2021:** Follow the instructions to create a Read Only standard profile. 
 
-To create a dedicated read only Salesforce user:
+**Orgs created after Spring 2021:** Follow the instructions to create a Minimum Access standard profile. Then, assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
+:::
 
-1. [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
-2. On the top right of the screen, click the gear icon and then click **Setup**.
-3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
-4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
-5. Click **Save**. The Profiles page is displayed. Click **Edit**.
-6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and ensure the user has the **View All Data** permissions for objects that you want to replicate via Airbyte.
-7. Scroll to the top and click **Save**.
-8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
-9. Fill out the required fields:
-   1. For License, select **Salesforce**.
-   2. For Profile, select **Airbyte Read Only User**.
-   3. For Email, make sure to use an email address that you can access.
-10. Click **Save**.
-11. Copy the Username and keep it accessible.
-12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
+<Tabs>
+  <TabItem value="read-only-user" label="Read Only User" default>
+    While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
+    
+    To create a dedicated read only Salesforce user:
+
+   1. [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
+   2. On the top right of the screen, click the gear icon and then click **Setup**.
+   3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
+   4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
+   5. Click **Save**. The Profiles page is displayed. Click **Edit**.
+   6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and ensure the user has the **View All Data** permissions for objects that you want to replicate via Airbyte.
+   7. Scroll to the top and click **Save**.
+   8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
+   9. Fill out the required fields:
+      1. For License, select **Salesforce**.
+      2. For Profile, select **Airbyte Read Only User**.
+      3. For Email, make sure to use an email address that you can access.
+   10. Click **Save**.
+   11. Copy the Username and keep it accessible.
+   12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
+  </TabItem>
+  <TabItem value="minimum-access" label="Minimum Access User">
+    While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read. You should grant this user read access to the data you want Airbyte to have access to.
+
+    1. [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
+   2. On the top right of the screen, click the gear icon and then click **Setup**.
+   3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
+   4. For Existing Profile, select **Minimum Access**. For Profile Name, enter **Airbyte Read Only User**.
+   5. Click **Save**. The Profiles page is displayed. Click **Edit**.
+   6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and ensure the user has the **View All Data** permissions for objects that you want to replicate via Airbyte.
+   7. Scroll to the top and click **Save**.
+   8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
+   9. Fill out the required fields:
+      1. For License, select **Salesforce**.
+      2. For Profile, select **Airbyte Read Only User**.
+      3. For Email, make sure to use an email address that you can access.
+   10. Click **Save**.
+   11. Copy the Username and keep it accessible.
+   12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
+  </TabItem>
+</Tabs>
+
+
 
 <!-- env:oss -->
 
