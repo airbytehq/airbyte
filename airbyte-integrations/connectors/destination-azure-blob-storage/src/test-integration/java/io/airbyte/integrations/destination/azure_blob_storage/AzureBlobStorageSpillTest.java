@@ -44,7 +44,7 @@ public class AzureBlobStorageSpillTest {
   void setup() {
     azureBlobStorageContainer = new AzureBlobStorageContainer().withExposedPorts(10000);
     azureBlobStorageContainer.start();
-    var azureBlobStorageDestinationConfig = createConfig(azureBlobStorageContainer.getMappedPort(10000));
+    var azureBlobStorageDestinationConfig = createConfig(azureBlobStorageContainer.getHost(), azureBlobStorageContainer.getMappedPort(10000));
     var configuredAirbyteCatalog = createConfiguredAirbyteCatalog();
     azureBlobStorageConsumer =
         new AzureBlobStorageConsumer(azureBlobStorageDestinationConfig, configuredAirbyteCatalog,
@@ -67,33 +67,34 @@ public class AzureBlobStorageSpillTest {
     azureBlobStorageContainer.close();
   }
 
-  // @Test
-  // void testSpillBlobWithExceedingSize() throws Exception {
-  // // when
-  // String content = Files.readString(Paths.get("src/test-integration/resources/test_data"));
+  @Test
+  void testSpillBlobWithExceedingSize() throws Exception {
+  // when
+  String content = Files.readString(Paths.get("src/test-integration/resources/test_data"));
 
-  // azureBlobStorageConsumer.startTracked();
+  azureBlobStorageConsumer.startTracked();
 
-  // Function<String, JsonNode> function =
-  // data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
+  Function<String, JsonNode> function =
+  data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
 
-  // // create blob exceeding 1mb in size
-  // for (int i = 1; i <= 512; i++) {
-  // azureBlobStorageConsumer.acceptTracked(
-  // createAirbyteMessage(function.apply(content)));
-  // }
+  // create blob exceeding 1mb in size
+  for (int i = 1; i <= 512; i++) {
+  azureBlobStorageConsumer.acceptTracked(
+  createAirbyteMessage(function.apply(content)));
+  }
 
-  // azureBlobStorageConsumer.close(false);
+  azureBlobStorageConsumer.close(false);
 
-  // // then
-  // assertThat(blobContainerClient.listBlobs())
-  // .hasSize(2)
-  // .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
-  // .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
+  // then
+  assertThat(blobContainerClient.listBlobs())
+  .hasSize(2)
+  .anyMatch(blobItem -> blobItem.getName().endsWith("_0"))
+  .anyMatch(blobItem -> blobItem.getName().endsWith("_1"));
 
-  // }
+  }
 
-  private static AzureBlobStorageDestinationConfig createConfig(Integer mappedPort) {
+
+  private static AzureBlobStorageDestinationConfig createConfig(String host, Integer mappedPort) {
 
     final ObjectNode stubFormatConfig = mapper.createObjectNode();
     stubFormatConfig.put("file_extension", Boolean.TRUE);
@@ -101,7 +102,7 @@ public class AzureBlobStorageSpillTest {
     stubConfig.set("format", stubFormatConfig);
 
     return new AzureBlobStorageDestinationConfig(
-        "http://127.0.0.1:" + mappedPort + "/devstoreaccount1",
+        "http://" + host + ":" + mappedPort + "/devstoreaccount1",
         "devstoreaccount1",
         "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
         "container-name",
