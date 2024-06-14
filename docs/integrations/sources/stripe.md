@@ -225,6 +225,9 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4.2   | 2024-06-11 | [39412](https://github.com/airbytehq/airbyte/pull/39412)  | Removed `invoice.upcomming` event type from (incremental sync) for `Invoices` stream              |
+| 5.4.1   | 2024-06-11 | [39393](https://github.com/airbytehq/airbyte/pull/39393)  | Added missing `event types` (incremental sync) for `Invoices` stream                                                              |
+| 5.4.0   | 2024-06-05 | [39138](https://github.com/airbytehq/airbyte/pull/39138)  | Fixed the `Refunds` stream missing data for the `incremental` sync                                                             |
 | 5.3.9   | 2024-05-22 | [38550](https://github.com/airbytehq/airbyte/pull/38550)  | Update authenticator package                                                             |
 | 5.3.8   | 2024-05-15 | [38248](https://github.com/airbytehq/airbyte/pull/38248)  | Replace AirbyteLogger with logging.Logger |
 | 5.3.7   | 2024-04-24 | [36663](https://github.com/airbytehq/airbyte/pull/36663)  | Schema descriptions |
