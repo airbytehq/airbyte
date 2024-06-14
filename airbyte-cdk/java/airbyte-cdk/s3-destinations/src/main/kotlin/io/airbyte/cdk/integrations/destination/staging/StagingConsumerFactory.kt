@@ -48,7 +48,7 @@ private constructor(
     private val purgeStagingData: Boolean,
     private val typerDeduper: TyperDeduper?,
     private val parsedCatalog: ParsedCatalog?,
-    private val defaultNamespace: String?,
+    private val defaultNamespace: String,
     private val destinationColumns: JavaBaseConstants.DestinationColumns,
     // Optional fields
     private val bufferMemoryLimit: Optional<Long>,
@@ -105,7 +105,9 @@ private constructor(
                 purgeStagingData,
                 typerDeduper,
                 parsedCatalog,
-                defaultNamespace,
+                // If we don't set a default namespace, throw. This is required for staging
+                // destinations.
+                defaultNamespace!!,
                 destinationColumns,
                 bufferMemoryLimit,
                 optimalBatchSizeBytes,
@@ -148,8 +150,7 @@ private constructor(
             ),
             flusher,
             catalog!!,
-            BufferManager(getMemoryLimit(bufferMemoryLimit)),
-            Optional.ofNullable(defaultNamespace),
+            BufferManager(defaultNamespace, getMemoryLimit(bufferMemoryLimit)),
             FlushFailure(),
             Executors.newFixedThreadPool(5),
             AirbyteMessageDeserializer(dataTransformer),
@@ -275,7 +276,8 @@ private constructor(
                 val tableName: String
                 when (destinationColumns) {
                     JavaBaseConstants.DestinationColumns.V2_WITH_META,
-                    JavaBaseConstants.DestinationColumns.V2_WITHOUT_META -> {
+                    JavaBaseConstants.DestinationColumns.V2_WITHOUT_META,
+                    JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION -> {
                         val streamId = parsedCatalog!!.getStream(abStream.namespace, streamName).id
                         outputSchema = streamId.rawNamespace
                         tableName = streamId.rawName

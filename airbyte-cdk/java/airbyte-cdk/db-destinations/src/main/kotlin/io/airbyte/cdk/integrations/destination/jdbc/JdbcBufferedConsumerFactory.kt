@@ -62,7 +62,7 @@ object JdbcBufferedConsumerFactory {
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        defaultNamespace: String?,
+        defaultNamespace: String,
         typerDeduper: TyperDeduper,
         dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
         optimalBatchSizeBytes: Long = DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
@@ -85,8 +85,7 @@ object JdbcBufferedConsumerFactory {
                 optimalBatchSizeBytes
             ),
             catalog,
-            BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
-            Optional.ofNullable(defaultNamespace),
+            BufferManager(defaultNamespace, (Runtime.getRuntime().maxMemory() * 0.2).toLong()),
             FlushFailure(),
             Executors.newFixedThreadPool(2),
             AirbyteMessageDeserializer(dataTransformer)

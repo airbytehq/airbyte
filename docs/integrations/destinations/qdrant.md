@@ -68,10 +68,13 @@ You should now have all the requirements needed to configure Qdrant as a destina
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------- |
 | 0.0.13 | 2024-05-22 | [38386](https://github.com/airbytehq/airbyte/pull/38386) | [autopull] base image + poetry + up_to_date |
-| 0.0.12 | 2024-05-20 | [38386](https://github.com/airbytehq/airbyte/pull/38386) | [autopull] base image + poetry + up_to_date |
+| 0.0.12 | 2024-06-06 | [39172](https://github.com/airbytehq/airbyte/pull/39172) | [autopull] Upgrade base image to v1.2.2 |
 | 0.0.11  | 2024-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Updated CDK and pytest versions to fix security vulnerabilities          |
 | 0.0.10  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                    |
 | 0.0.9   | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                                  |
@@ -83,3 +86,5 @@ You should now have all the requirements needed to configure Qdrant as a destina
 | 0.0.3   | 2023-09-29 | [#30820](https://github.com/airbytehq/airbyte/pull/30820) | Update CDK                                                               |
 | 0.0.2   | 2023-09-25 | [#30689](https://github.com/airbytehq/airbyte/pull/30689) | Update CDK to support Azure OpenAI embeddings and text splitting options |
 | 0.0.1   | 2023-09-22 | [#30332](https://github.com/airbytehq/airbyte/pull/30332) | 🎉 New Destination: Qdrant (Vector Database)                             |
+
+</details>

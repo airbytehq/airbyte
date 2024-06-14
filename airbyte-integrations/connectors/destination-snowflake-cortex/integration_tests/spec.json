@@ -313,7 +313,7 @@
         "type": "boolean"
       },
       "indexing": {
-        "title": "Indexing",
+        "title": "Snowflake Connection",
         "type": "object",
         "properties": {
           "host": {

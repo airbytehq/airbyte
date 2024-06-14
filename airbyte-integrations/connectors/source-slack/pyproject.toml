@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.1.2"
+version = "1.1.7"
 name = "source-slack"
 description = "Source implementation for Slack."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -18,7 +18,7 @@ include = "source_slack"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 pendulum = "==2.1.2"
-airbyte-cdk = "0.81.7"
+airbyte-cdk = "^1"
 freezegun = "^1.4.0"
 
 [tool.poetry.scripts]
