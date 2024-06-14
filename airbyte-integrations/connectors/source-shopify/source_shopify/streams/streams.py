@@ -209,6 +209,7 @@ class CustomCollections(IncrementalShopifyStreamWithDeletedEvents):
 
 class CustomerJourneySummary(IncrementalShopifyGraphQlBulkStream):
     bulk_query: CustomerJourney = CustomerJourney
+    primary_key = "order_id"
 
 
 class SmartCollections(IncrementalShopifyStream):
