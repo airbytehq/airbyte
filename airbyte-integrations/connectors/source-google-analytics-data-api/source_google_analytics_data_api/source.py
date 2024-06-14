@@ -47,7 +47,7 @@ from .utils import (
 # the initial values should be saved once and tracked for each stream, inclusively.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
-LOOKBACK_WINDOW = datetime.timedelta(days=2)
+DEFAULT_LOOKBACK_WINDOW = 2
 
 
 class ConfigurationError(Exception):
@@ -349,7 +349,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 serialize_to_date_string(start_date, DATE_FORMAT, self.cursor_field) if not self.cursor_field == "date" else start_date
             )
             start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
-            start_date -= LOOKBACK_WINDOW
+            start_date = start_date - datetime.timedelta(days=self.config.get("lookback_window", DEFAULT_LOOKBACK_WINDOW))
             start_date = max(start_date, self.config["date_ranges_start_date"])
         else:
             start_date = self.config["date_ranges_start_date"]
