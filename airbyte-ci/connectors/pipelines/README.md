@@ -792,6 +792,8 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.18.2  | [#39483](https://github.com/airbytehq/airbyte/pull/39483)      | Skip IncrementalAcceptanceTests when AcceptanceTests succeed.   |
+| 4.18.1  | [#39457](https://github.com/airbytehq/airbyte/pull/39457)      | Make slugify consistent with live-test   |
 | 4.18.0  | [#39366](https://github.com/airbytehq/airbyte/pull/39366)      | Implement IncrementalAcceptance tests to only fail CI on community connectors when there's an Acceptance tests regression.   |
 | 4.17.0  | [#39321](https://github.com/airbytehq/airbyte/pull/39321)  | Bust the java connector build cache flow to get fresh yum packages on a daily basis.                                         |
 | 4.16.0  | [#38772](https://github.com/airbytehq/airbyte/pull/38232)  | Add pipeline to replace usage of AirbyteLogger.                                                                              |
