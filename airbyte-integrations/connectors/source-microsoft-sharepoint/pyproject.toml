@@ -26,7 +26,7 @@ source-microsoft-sharepoint = "source_microsoft_sharepoint.run:run"
 
 [tool.poetry.dependencies.airbyte-cdk]
 extras = [ "file-based",]
-version = "0.2.5"
+version = "^1"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
