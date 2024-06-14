@@ -20,7 +20,6 @@ logger = logging.getLogger("airbyte")
 
 GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
 
-media_url = f"{GRAPH_URL}/instagram_business_account_id/media?fields=caption,comments_count,id,ig_id,is_comment_enabled,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username,children&limit=100"
 account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account"
 
 
@@ -43,7 +42,6 @@ account_url_response = {
 }
 
 def test_check_connection_ok(api, requests_mock, some_config):
-    requests_mock.register_uri("GET", media_url, [])
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
     ok, error_msg = SourceInstagram().check_connection(logger, config=some_config)
     assert ok
@@ -66,7 +64,6 @@ def test_check_connection_invalid_config_future_date(api, some_config_future_dat
 
 
 def test_check_connection_no_date_config(api, requests_mock, some_config):
-    requests_mock.register_uri("GET", media_url, [])
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
     some_config.pop("start_date")
     ok, error_msg = SourceInstagram().check_connection(logger, config=some_config)
