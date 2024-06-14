@@ -91,9 +91,7 @@ class CloseComStreamCustomFields(CloseComStream):
 
     def get_custom_field_schema(self) -> Mapping[str, Any]:
         """Get custom field schema if it exists."""
-        resp = requests.request(
-            "GET", url=f"{self.url_base}/custom_field/{self.path()}/", headers=self.config["authenticator"].get_auth_header()
-        )
+        resp = requests.request("GET", url=f"{self.url_base}/custom_field/{self.path()}/", headers=self.config["authenticator"].get_auth_header())
         resp.raise_for_status()
         resp_json: Mapping[str, Any] = resp.json()["data"]
         return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean"]} for data in resp_json}
