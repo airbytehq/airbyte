@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.3.2"
+name = "source-tempo"
+description = "Source implementation for Tempo."
+authors = [ "Thomas van Latum <thomas@gcompany.nl>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/tempo"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_tempo"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0"
+
+[tool.poetry.scripts]
+source-tempo = "source_tempo.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+pytest = "^6.1"
+pytest-mock = "^3.6.1"
