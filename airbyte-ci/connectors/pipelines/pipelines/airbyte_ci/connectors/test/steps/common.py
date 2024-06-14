@@ -5,13 +5,14 @@
 """This module groups steps made to run tests agnostic to a connector language."""
 
 import datetime
+import json
 import os
 import time
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import ClassVar, List, Optional
+from typing import ClassVar, List, Optional, Set
 
 import requests  # type: ignore
 import semver
@@ -24,10 +25,14 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
-from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result, slugify
+from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
+
+# This slugify lib has to be consistent with the slugify lib used in live_tests
+# live_test can't resolve the passed connector container otherwise.
+from slugify import slugify  # type: ignore
 
 
 class VersionCheck(Step, ABC):
@@ -344,10 +349,98 @@ class AcceptanceTests(Step):
             status=self.get_step_status_from_exit_code(exit_code),
             stderr=stderr,
             stdout=stdout,
-            output=container,
+            output={"report_log": report_log_artifact},
             artifacts=[report_log_artifact],
             consider_in_overall_status=is_hard_failure,
         )
+
+
+class IncrementalAcceptanceTests(Step):
+    """This step runs the acceptance tests on the released image of the connector and compares the results with the current acceptance tests report log.
+    It fails if there are new failing tests in the current acceptance tests report log.
+    """
+
+    title = "Incremental Acceptance Tests"
+    context: ConnectorContext
+
+    async def get_failed_pytest_node_ids(self, current_acceptance_tests_report_log: Artifact) -> Set[str]:
+        """Parse the report log of the acceptance tests and return the pytest node ids of the failed tests.
+
+        Args:
+            current_acceptance_tests_report_log (Artifact): The report log of the acceptance tests.
+
+        Returns:
+            List[str]: The pytest node ids of the failed tests.
+        """
+        current_report_lines = (await current_acceptance_tests_report_log.content.contents()).splitlines()
+        failed_nodes = set()
+        for line in current_report_lines:
+            single_test_report = json.loads(line)
+            if "nodeid" not in single_test_report or "outcome" not in single_test_report:
+                continue
+            if single_test_report["outcome"] == "failed":
+                failed_nodes.add(single_test_report["nodeid"])
+        return failed_nodes
+
+    async def get_result_log_on_master(self) -> Artifact:
+        """Runs acceptance test on the released image of the connector and returns the report log.
+        The released image version is fetched from the master metadata file of the connector.
+        We're not using the online connector registry here as some connectors might not be released to OSS nor Airbyte Cloud.
+        Thanks to Dagger caching subsequent runs of this step will be cached if the released image did not change.
+
+        Returns:
+            Artifact: The report log of the acceptance tests run on the released image.
+        """
+        raw_master_metadata = requests.get(
+            f"https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors/{self.context.connector.technical_name}/metadata.yaml"
+        )
+        master_metadata = yaml.safe_load(raw_master_metadata.text)
+        master_docker_image_tag = master_metadata["data"]["dockerImageTag"]
+        released_image = f'{master_metadata["data"]["dockerRepository"]}:{master_docker_image_tag}'
+        released_container = self.dagger_client.container().from_(released_image)
+        self.logger.info(f"Running acceptance tests on released image: {released_image}")
+        acceptance_tests_results_on_master = await AcceptanceTests(self.context, self.secrets).run(released_container)
+        return acceptance_tests_results_on_master.output["report_log"]
+
+    async def _run(self, current_acceptance_tests_result: StepResult) -> StepResult:
+        """Compare the acceptance tests report log of the current image with the one of the released image.
+        Fails if there are new failing tests in the current acceptance tests report log.
+        """
+        if current_acceptance_tests_result.consider_in_overall_status:
+            return StepResult(
+                step=self, status=StepStatus.SKIPPED, stdout="Skipping because the current acceptance tests are hard failures."
+            )
+
+        current_acceptance_tests_report_log = current_acceptance_tests_result.output["report_log"]
+        current_failing_nodes = await self.get_failed_pytest_node_ids(current_acceptance_tests_report_log)
+        if not current_failing_nodes:
+            return StepResult(
+                step=self, status=StepStatus.SKIPPED, stdout="No failing acceptance tests were detected on the current version."
+            )
+
+        master_failings = await self.get_failed_pytest_node_ids(await self.get_result_log_on_master())
+        new_failing_nodes = current_failing_nodes - master_failings
+        if not new_failing_nodes:
+            return StepResult(
+                step=self,
+                status=StepStatus.SUCCESS,
+                stdout=dedent(
+                    f"""
+                No new failing acceptance tests were detected. 
+                Acceptance tests are still failing with {len(current_failing_nodes)} failing tests but the AcceptanceTests step is not a hard failure for this connector.
+                Please checkout the original acceptance tests failures and assess how critical they are.
+                """
+                ),
+            )
+        else:
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stdout=f"{len(new_failing_nodes)} new failing acceptance tests detected:\n-"
+                + "\n-".join(current_failing_nodes)
+                + "\nPlease fix the new failing tests before merging this PR."
+                + f"\nPlease also check the original {len(current_failing_nodes)} acceptance tests failures and assess how critical they are.",
+            )
 
 
 class RegressionTests(Step):
