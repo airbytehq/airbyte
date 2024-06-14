@@ -67,11 +67,10 @@ open class SourceStateIterator<T>(
             hasEmittedFinalState = true
             val finalStateMessageForStream =
                 sourceStateMessageProducer.createFinalStateMessage(stream)
-            if (shouldAttachCountWithState()) {
-                finalStateMessageForStream!!.withSourceStats(
-                    AirbyteStateStats().withRecordCount(recordCount.toDouble())
-                )
-            }
+            finalStateMessageForStream!!.withSourceStats(
+                AirbyteStateStats().withRecordCount(recordCount.toDouble())
+            )
+
             recordCount = 0L
             return AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
@@ -79,14 +78,6 @@ open class SourceStateIterator<T>(
         } else {
             return endOfData()
         }
-    }
-
-    /**
-     * We are disabling counts for FULL_REFRESH streams cause there is are issues with it. We should
-     * re-enable it once we do the work for project Counts: Emit Counts in Full Refresh
-     */
-    private fun shouldAttachCountWithState(): Boolean {
-        return true
     }
 
     // This method is used to check if we should emit a state message. If the record count is set to
