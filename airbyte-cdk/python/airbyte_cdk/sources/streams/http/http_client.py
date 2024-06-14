@@ -205,7 +205,7 @@ class HttpClient:
         factor = self._factor
 
         if self._disable_retries:
-            self._send(request, request_kwargs, log_formatter=log_formatter)
+            response = self._send(request, request_kwargs, log_formatter=log_formatter)
         else:
             user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
             backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
