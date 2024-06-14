@@ -19,7 +19,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.api import API
-from source_facebook_marketing.spec import ConnectorConfig
+from source_facebook_marketing.spec import ConnectorConfig, ValidAdStatuses
 from source_facebook_marketing.streams import (
     Activities,
     AdAccount,
@@ -147,6 +147,7 @@ class SourceFacebookMarketing(AbstractSource):
             end_date=config.end_date,
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
+            filter_statuses=[status.value for status in [*ValidAdStatuses]],
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
