@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from dataclasses import dataclass
 from typing import Any, Dict, MutableMapping, Optional
 

@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import Dict
 
 from records import children_record, clear_url_record, clear_url_record_transformed, expected_children_transformed
