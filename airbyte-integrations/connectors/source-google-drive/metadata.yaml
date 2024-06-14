@@ -28,4 +28,18 @@ data:
     - language:python
     - cdk:python-file-based
   supportLevel: community
+  connectorTestSuitesOptions:
+  - suite: acceptanceTests
+    testSecrets:
+      - name: SECRET_SOURCE_GOOGLE_DRIVE_CREDS
+        fileName: connected_account_config.json
+        secretStore:
+          type: GSM
+          alias: airbyte-connector-testing-secret-store
+      - name: SECRET_SOURCE_GOOGLE_DRIVE_OAUTH_CREDS
+        fileName: oauth_config.json
+        secretStore:
+          type: GSM
+          alias: airbyte-connector-testing-secret-store
+
 metadataSpecVersion: "1.0"
