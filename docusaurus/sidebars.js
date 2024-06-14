@@ -585,6 +585,10 @@ module.exports = {
             },
           ],
         },
+        {
+          type: "doc",
+          id: "access-management/rbac",
+        }
       ],
     },
     {
