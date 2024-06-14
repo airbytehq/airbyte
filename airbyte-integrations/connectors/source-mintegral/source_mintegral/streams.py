@@ -141,7 +141,9 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
                 parsed_response = self.parse_response(response)
                 if parsed_response:
                     for row in parsed_response:
-                        yield self._transform_record(row)
+                        transformed_row = self._transform_keys(row)
+                        casted_row = self._cast_types(transformed_row)
+                        yield casted_row
                     self.state = {self.cursor_field: datetime.now().strftime('%Y-%m-%d')}
                     break
                 else:
@@ -153,8 +155,28 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             raise Exception("Max retries exceeded. Could not fetch TSV data.")
         self.type = 1
 
-    def _transform_record(self, record):
+    def _transform_keys(self, record):
         return {key.lower().replace(" ", "_"): value for key, value in record.items()}
+
+    def _cast_types(self, record):
+        """
+        I really don't know why this is not casted automatically during ingestion, but here we are
+        :param record:
+        :return:
+        """
+        for key, value in record.items():
+            if key in ["date"]:
+                pass
+            # Attempt to cast to integer
+            elif value.isdigit():
+                record[key] = int(value)
+            else:
+                try:
+                    record[key] = float(value)
+                except ValueError:
+                    # Keep the value as string if it cannot be casted to numeric
+                    pass
+        return record
 
 class Reports(MintegralReportingStream):
     primary_key = ["creative_id", "date"]

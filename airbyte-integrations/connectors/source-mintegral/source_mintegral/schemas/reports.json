@@ -8,10 +8,10 @@
     "creative_id": {
       "type": ["integer", "null"]
     },
-    "creative_name_id": {
+    "creative_name": {
       "type": ["string", "null"]
     },
-    "currency_name_id": {
+    "currency": {
       "type": ["string", "null"]
     },
     "impression": {

@@ -4,13 +4,13 @@
   "properties" : {
     "id" : {
       "type" : [
-        "number"
+        "integer"
       ]
     },
     "titleId" : {
       "type" : [
         "null",
-        "number"
+        "integer"
       ]
     },
     "name" : {
