@@ -109,7 +109,7 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
-| 0.5.2   | 2024-06-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Route to low code, update spec in manifest, format                                                     |
+| 0.5.2   | 2024-06-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Format source                                                                                          |
 | 0.5.1   | 2024-05-20 | [38391](https://github.com/airbytehq/airbyte/pull/38391) | [autopull] base image + poetry + up_to_date                                                            |
 | 0.5.0   | 2023-11-30 | [32984](https://github.com/airbytehq/airbyte/pull/32984) | Add support for custom fields                                                                          |
 | 0.4.3   | 2023-10-28 | [31534](https://github.com/airbytehq/airbyte/pull/31534) | Fixed Email Activities Stream Pagination                                                               |
