@@ -84,7 +84,8 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
                                   final JsonNode cdcState,
                                   final JsonNode config) {
     final var offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty());
-    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog);
+    final DebeziumPropertiesManager debeziumPropertiesManager =
+        new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog, Collections.emptyList());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     return parseSavedOffset(debeziumProperties);
   }

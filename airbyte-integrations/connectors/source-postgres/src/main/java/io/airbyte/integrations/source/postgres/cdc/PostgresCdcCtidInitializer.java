@@ -240,8 +240,11 @@ public class PostgresCdcCtidInitializer {
     final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
         targetPosition, false, firstRecordWaitTime, queueSize, false);
     final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
+    final var cdcStreamList = catalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
-        PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog);
+        PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog, cdcStreamList);
     final var eventConverter = new RelationalDbDebeziumEventConverter(new PostgresCdcConnectorMetadataInjector(), emittedAt);
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
