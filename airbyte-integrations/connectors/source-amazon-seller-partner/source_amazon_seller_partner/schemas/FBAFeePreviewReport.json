@@ -1,0 +1,89 @@
+{
+  "title": "FBA Fee Preview Report",
+  "description": "Contains the estimated Amazon Selling and Fulfillment Fees for the seller's FBA inventory with active offers. The content is updated at least once every 72 hours. To successfully generate a report, specify the StartDate parameter for a minimum 72 hours prior to NOW and EndDate to NOW.",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "source_name": {
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "type": ["null", "string"]
+    },
+    "amazon-store": {
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "type": ["null", "string"]
+    },
+    "product-group": {
+      "type": ["null", "string"]
+    },
+    "brand": {
+      "type": ["null", "string"]
+    },
+    "fulfilled-by": {
+      "type": ["null", "string"]
+    },
+    "your-price": {
+      "type": ["null", "string"]
+    },
+    "sales-price": {
+      "type": ["null", "string"]
+    },
+    "longest-side": {
+      "type": ["null", "string"]
+    },
+    "median-side": {
+      "type": ["null", "string"]
+    },
+    "shortest-side": {
+      "type": ["null", "string"]
+    },
+    "length-and-girth": {
+      "type": ["null", "string"]
+    },
+    "unit-of-dimension": {
+      "type": ["null", "string"]
+    },
+    "item-package-weight": {
+      "type": ["null", "string"]
+    },
+    "unit-of-weight": {
+      "type": ["null", "string"]
+    },
+    "product-size-tier": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "estimated-fee-total": {
+      "type": ["null", "string"]
+    },
+    "estimated-referral-fee-per-unit": {
+      "type": ["null", "string"]
+    },
+    "estimated-variable-closing-fee": {
+      "type": ["null", "string"]
+    },
+    "estimated-order-handling-fee-per-order": {
+      "type": ["null", "string"]
+    },
+    "estimated-pick-pack-fee-per-unit": {
+      "type": ["null", "string"]
+    },
+    "estimated-weight-handling-fee-per-unit": {
+      "type": ["null", "string"]
+    },
+    "expected-fulfillment-fee-per-unit": {
+      "type": ["null", "string"]
+    }
+  }
+}

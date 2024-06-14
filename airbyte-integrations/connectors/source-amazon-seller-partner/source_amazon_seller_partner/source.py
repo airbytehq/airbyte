@@ -66,7 +66,8 @@ from source_amazon_seller_partner.streams import (
     ActiveListingsReport,
     InactiveListingsReport,
     CanceledListingsReport,
-    ReferralFeePreviewReport
+    ReferralFeePreviewReport,
+    FBAFeePreviewReport
 )
 
 
@@ -190,7 +191,8 @@ class SourceAmazonSellerPartner(AbstractSource):
             ActiveListingsReport(**stream_kwargs),
             InactiveListingsReport(**stream_kwargs),
             CanceledListingsReport(**stream_kwargs),
-            ReferralFeePreviewReport(**stream_kwargs)
+            ReferralFeePreviewReport(**stream_kwargs),
+            FBAFeePreviewReport(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

@@ -1195,3 +1195,11 @@ class ReferralFeePreviewReport(ReportsAmazonSPStream):
 
     name = "ReferralFeePreviewReport"
     report_type = "GET_REFERRAL_FEE_PREVIEW_REPORT"
+
+class FBAFeePreviewReport(ReportsAmazonSPStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-fee-preview-report
+    """
+
+    name = "FBAFeePreviewReport"
+    report_type = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
