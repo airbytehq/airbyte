@@ -18,7 +18,7 @@ function main() {
     datamodel-codegen \
       --input "$ROOT_DIR/$YAML_DIR/$filename_wo_ext.yaml" \
       --output "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" \
-      --output-model-type 'pydantic_v2.BaseModel' \
+      --output-model-type 'pydantic.BaseModel' \
       --disable-timestamp \
       --enum-field-as-literal one \
       --set-default-enum-member
