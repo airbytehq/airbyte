@@ -230,7 +230,7 @@ public class MssqlInitialReadUtil {
         queueSize,
         false);
 
-    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(getDebeziumProperties(database, catalog, false), sourceConfig, catalog);
+    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(getDebeziumProperties(database, catalog, false), sourceConfig, catalog, new ArrayList<>());
     final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, new MssqlCdcSavedInfoFetcher(stateToBeUsed), new MssqlCdcStateHandler(stateManager));

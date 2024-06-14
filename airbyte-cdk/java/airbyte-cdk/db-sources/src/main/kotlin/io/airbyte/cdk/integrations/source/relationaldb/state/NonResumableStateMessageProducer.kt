@@ -27,10 +27,6 @@ class NonResumableStateMessageProducer<T>(
         return message
     }
 
-    /**
-     * @param stream
-     * @return
-     */
     override fun createFinalStateMessage(stream: ConfiguredAirbyteStream?): AirbyteStateMessage? {
         if (isCdc) {
             return sourceStateMessageProducer.createFinalStateMessage(stream)
