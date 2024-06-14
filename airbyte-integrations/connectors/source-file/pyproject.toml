@@ -39,7 +39,7 @@ source-file = "source_file.run:run"
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "all",]
-version = "0.5.2"
+version = "==6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
