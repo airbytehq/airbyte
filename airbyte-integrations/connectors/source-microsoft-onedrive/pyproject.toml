@@ -28,7 +28,7 @@ source-microsoft-onedrive = "source_microsoft_onedrive.run:run"
 
 [tool.poetry.dependencies.airbyte-cdk]
 extras = [ "file-based",]
-version = "0.2.2"
+version = "^1"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.11.0"
