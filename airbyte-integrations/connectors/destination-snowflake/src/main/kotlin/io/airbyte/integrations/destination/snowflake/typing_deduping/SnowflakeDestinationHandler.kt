@@ -23,16 +23,14 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.Instant
 import java.util.*
-import java.util.function.Function
-import java.util.function.Predicate
 import java.util.stream.Collectors
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.apache.commons.text.StringSubstitutor
@@ -58,23 +56,19 @@ class SnowflakeDestinationHandler(
     @Throws(SQLException::class)
     private fun getFinalTableRowCount(
         streamIds: List<StreamId>
-    ): java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, Int>> {
-        val tableRowCounts = java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, Int>>()
-        val paramHolder = java.lang.String.join(",", Collections.nCopies(streamIds.size, "?"))
+    ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
+        val tableRowCounts = LinkedHashMap<String, LinkedHashMap<String, Int>>()
         // convert list stream to array
         val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
         val names = streamIds.map { it.finalName }.toTypedArray()
         val query =
             """
-                         SELECT table_schema, table_name, row_count
-                         FROM information_schema.tables
-                         WHERE table_catalog = ?
-                           AND table_schema IN (%s)
-                           AND table_name IN (%s)
-                         
-                         """
-                .trimIndent()
-                .formatted(paramHolder, paramHolder)
+            |SELECT table_schema, table_name, row_count
+            |FROM information_schema.tables
+            |WHERE table_catalog = ? 
+            |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
+            |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+            |""".trimMargin()
         val bindValues = arrayOf(databaseName) + namespaces + names
         val results: List<JsonNode> = database.queryJsons(query, *bindValues)
         for (result in results) {
@@ -82,8 +76,8 @@ class SnowflakeDestinationHandler(
             val tableName = result["TABLE_NAME"].asText()
             val rowCount = result["ROW_COUNT"].asInt()
             tableRowCounts
-                .computeIfAbsent(tableSchema) { k: String? -> java.util.LinkedHashMap() }[
-                    tableName] = rowCount
+                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
+                rowCount
         }
         return tableRowCounts
     }
@@ -91,28 +85,36 @@ class SnowflakeDestinationHandler(
     @Throws(Exception::class)
     private fun getInitialRawTableState(
         id: StreamId,
-        destinationSyncMode: DestinationSyncMode
     ): InitialRawTableStatus {
         // Short-circuit for overwrite, table will be truncated anyway
-        if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-            return InitialRawTableStatus(false, false, Optional.empty())
-        }
         val tableExists =
             database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
                 LOGGER.info("Retrieving table from Db metadata: {} {}", id.rawNamespace, id.rawName)
                 try {
-                    databaseMetaData
-                        .getTables(databaseName, id.rawNamespace, id.rawName, null)
-                        .use { tables ->
-                            return@executeMetadataQuery tables.next()
-                        }
+                    val rs =
+                        databaseMetaData.getTables(databaseName, id.rawNamespace, id.rawName, null)
+                    // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
+                    // interpreted as uppercase
+                    // in db metadata calls. check for both
+                    val rsUppercase =
+                        databaseMetaData.getTables(
+                            databaseName,
+                            id.rawNamespace.uppercase(),
+                            id.rawName.uppercase(),
+                            null
+                        )
+                    rs.next() || rsUppercase.next()
                 } catch (e: SQLException) {
                     LOGGER.error("Failed to retrieve table metadata", e)
                     throw RuntimeException(e)
                 }
             }
         if (!tableExists) {
-            return InitialRawTableStatus(false, false, Optional.empty())
+            return InitialRawTableStatus(
+                rawTableExists = false,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            )
         }
         // Snowflake timestamps have nanosecond precision, so decrement by 1ns
         // And use two explicit queries because COALESCE doesn't short-circuit.
@@ -126,9 +128,9 @@ class SnowflakeDestinationHandler(
                                 .createStatement()
                                 .executeQuery(
                                     StringSubstitutor(
-                                            java.util.Map.of<String, String>(
+                                            java.util.Map.of(
                                                 "raw_table",
-                                                id.rawTableId(SnowflakeSqlGenerator.Companion.QUOTE)
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE)
                                             )
                                         )
                                         .replace(
@@ -158,9 +160,10 @@ class SnowflakeDestinationHandler(
             )
         if (minUnloadedTimestamp.isPresent) {
             return InitialRawTableStatus(
-                true,
-                true,
-                minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
+                rawTableExists = true,
+                hasUnprocessedRecords = true,
+                maxProcessedTimestamp =
+                    minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
             )
         }
 
@@ -181,9 +184,9 @@ class SnowflakeDestinationHandler(
                                 .createStatement()
                                 .executeQuery(
                                     StringSubstitutor(
-                                            java.util.Map.of<String, String>(
+                                            java.util.Map.of(
                                                 "raw_table",
-                                                id.rawTableId(SnowflakeSqlGenerator.Companion.QUOTE)
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE)
                                             )
                                         )
                                         .replace(
@@ -212,9 +215,9 @@ class SnowflakeDestinationHandler(
                     .first()
             )
         return InitialRawTableStatus(
-            true,
-            false,
-            maxTimestamp.map { text: String? -> Instant.parse(text) }
+            rawTableExists = true,
+            hasUnprocessedRecords = false,
+            maxProcessedTimestamp = maxTimestamp.map { text: String? -> Instant.parse(text) }
         )
     }
 
@@ -241,7 +244,9 @@ class SnowflakeDestinationHandler(
                     } else {
                         e.message
                     }
-                throw RuntimeException(trimmedMessage, e)
+                throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow {
+                    RuntimeException(trimmedMessage, e)
+                }
             }
 
             LOGGER.info(
@@ -254,7 +259,7 @@ class SnowflakeDestinationHandler(
     }
 
     private fun getPks(stream: StreamConfig?): Set<String> {
-        return if (stream!!.primaryKey != null) stream.primaryKey.map(ColumnId::name).toSet()
+        return if (stream?.primaryKey != null) stream.primaryKey.map { it.name }.toSet()
         else emptySet()
     }
 
@@ -281,6 +286,14 @@ class SnowflakeDestinationHandler(
             "VARIANT" == existingTable.columns[abMetaColumnName]!!.type
     }
 
+    fun isAirbyteGenerationIdColumnMatch(existingTable: TableDefinition): Boolean {
+        val abGenerationIdColumnName: String =
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase(Locale.getDefault())
+        return existingTable.columns.containsKey(abGenerationIdColumnName) &&
+            toJdbcTypeName(AirbyteProtocolType.INTEGER) ==
+                existingTable.columns[abGenerationIdColumnName]!!.type
+    }
+
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
@@ -293,7 +306,8 @@ class SnowflakeDestinationHandler(
         if (
             !isAirbyteRawIdColumnMatch(existingTable) ||
                 !isAirbyteExtractedAtColumnMatch(existingTable) ||
-                !isAirbyteMetaColumnMatch(existingTable)
+                !isAirbyteMetaColumnMatch(existingTable) ||
+                !isAirbyteGenerationIdColumnMatch(existingTable)
         ) {
             // Missing AB meta columns from final table, we need them to do proper T+D so trigger
             // soft-reset
@@ -306,14 +320,11 @@ class SnowflakeDestinationHandler(
                 .stream()
                 .collect(
                     { LinkedHashMap() },
-                    {
-                        map: java.util.LinkedHashMap<String, String>,
-                        column: Map.Entry<ColumnId, AirbyteType> ->
+                    { map: LinkedHashMap<String, String>, column: Map.Entry<ColumnId, AirbyteType>
+                        ->
                         map[column.key.name] = toJdbcTypeName(column.value)
                     },
-                    {
-                        obj: java.util.LinkedHashMap<String, String>,
-                        m: java.util.LinkedHashMap<String, String>? ->
+                    { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
                         obj.putAll(m!!)
                     }
                 )
@@ -324,27 +335,17 @@ class SnowflakeDestinationHandler(
                 .stream()
                 .filter { column: Map.Entry<String, ColumnDefinition?> ->
                     JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
-                        .map<String>(
-                            Function<String, String> { obj: String ->
-                                obj.uppercase(Locale.getDefault())
-                            }
-                        )
-                        .noneMatch(
-                            Predicate<String> { airbyteColumnName: String ->
-                                airbyteColumnName == column.key
-                            }
-                        )
+                        .map { obj: String -> obj.uppercase(Locale.getDefault()) }
+                        .noneMatch { airbyteColumnName: String -> airbyteColumnName == column.key }
                 }
                 .collect(
                     { LinkedHashMap() },
                     {
-                        map: java.util.LinkedHashMap<String, String>,
+                        map: LinkedHashMap<String, String>,
                         column: Map.Entry<String, ColumnDefinition> ->
                         map[column.key] = column.value.type
                     },
-                    {
-                        obj: java.util.LinkedHashMap<String, String>,
-                        m: java.util.LinkedHashMap<String, String>? ->
+                    { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
                         obj.putAll(m!!)
                     }
                 )
@@ -369,7 +370,7 @@ class SnowflakeDestinationHandler(
         val tableRowCounts = getFinalTableRowCount(streamIds)
         return streamConfigs
             .stream()
-            .map<DestinationInitialStatus<SnowflakeState>> { streamConfig: StreamConfig ->
+            .map { streamConfig: StreamConfig ->
                 try {
                     val namespace = streamConfig.id.finalNamespace.uppercase(Locale.getDefault())
                     val name = streamConfig.id.finalName.uppercase(Locale.getDefault())
@@ -387,8 +388,7 @@ class SnowflakeDestinationHandler(
                             !existingSchemaMatchesStreamConfig(streamConfig, existingTable!!)
                         isFinalTableEmpty = hasRowCount && tableRowCounts[namespace]!![name] == 0
                     }
-                    val initialRawTableState =
-                        getInitialRawTableState(streamConfig.id, streamConfig.destinationSyncMode)
+                    val initialRawTableState = getInitialRawTableState(streamConfig.id)
                     val destinationState =
                         destinationStates.getOrDefault(
                             streamConfig.id.asPair(),
@@ -406,7 +406,7 @@ class SnowflakeDestinationHandler(
                     throw RuntimeException(e)
                 }
             }
-            .collect(Collectors.toList<DestinationInitialStatus<SnowflakeState>>())
+            .collect(Collectors.toList())
     }
 
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
@@ -424,28 +424,46 @@ class SnowflakeDestinationHandler(
     }
 
     override fun toDestinationState(json: JsonNode): SnowflakeState {
+        // Note the field name is isAirbyteMetaPresentInRaw but jackson interprets it as
+        // airbyteMetaPresentInRaw when serializing so we map that to the correct field when
+        // deserializing
         return SnowflakeState(
-            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean()
+            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
+            json.hasNonNull("airbyteMetaPresentInRaw") &&
+                json["airbyteMetaPresentInRaw"].asBoolean()
         )
     }
 
     private fun toJdbcTypeName(airbyteProtocolType: AirbyteProtocolType): String {
-        return when (airbyteProtocolType) {
-            AirbyteProtocolType.STRING -> "TEXT"
-            AirbyteProtocolType.NUMBER -> "FLOAT"
-            AirbyteProtocolType.INTEGER -> "NUMBER"
-            AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
-            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ"
-            AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
-            AirbyteProtocolType.TIME_WITH_TIMEZONE -> "TEXT"
-            AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> "TIME"
-            AirbyteProtocolType.DATE -> "DATE"
-            AirbyteProtocolType.UNKNOWN -> "VARIANT"
-        }
+        return SnowflakeDatabaseUtils.toSqlTypeName(airbyteProtocolType)
     }
 
     override fun createNamespaces(schemas: Set<String>) {
-        // do nothing?
+        schemas.forEach {
+            try {
+                // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
+                // we quote for final schemas names too (earlier existed in
+                // SqlGenerator#createSchema).
+                if (!isSchemaExists(it)) {
+                    LOGGER.info("Schema $it does not exist, proceeding to create one")
+                    database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", it))
+                }
+            } catch (e: Exception) {
+                throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
+            }
+        }
+    }
+
+    private fun isSchemaExists(schema: String): Boolean {
+        try {
+            database.unsafeQuery(SHOW_SCHEMAS).use { results ->
+                return results
+                    .map { schemas: JsonNode -> schemas[NAME].asText() }
+                    .anyMatch { anObject: String -> schema == anObject }
+            }
+        } catch (e: Exception) {
+            throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
+        }
     }
 
     companion object {
@@ -453,31 +471,28 @@ class SnowflakeDestinationHandler(
             LoggerFactory.getLogger(SnowflakeDestinationHandler::class.java)
         const val EXCEPTION_COMMON_PREFIX: String =
             "JavaScript execution error: Uncaught Execution of multiple statements failed on statement"
+        const val SHOW_SCHEMAS: String = "show schemas;"
+        const val NAME: String = "name"
 
         @Throws(SQLException::class)
         fun findExistingTables(
             database: JdbcDatabase,
             databaseName: String,
             streamIds: List<StreamId>
-        ): java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, TableDefinition>> {
-            val existingTables =
-                java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, TableDefinition>>()
-            val paramHolder = java.lang.String.join(",", Collections.nCopies(streamIds.size, "?"))
+        ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
+            val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
             // convert list stream to array
             val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
             val names = streamIds.map { it.finalName }.toTypedArray()
             val query =
                 """
-                         SELECT table_schema, table_name, column_name, data_type, is_nullable
-                         FROM information_schema.columns
-                         WHERE table_catalog = ?
-                           AND table_schema IN (%s)
-                           AND table_name IN (%s)
-                         ORDER BY table_schema, table_name, ordinal_position;
-                         
-                         """
-                    .trimIndent()
-                    .formatted(paramHolder, paramHolder)
+                |SELECT table_schema, table_name, column_name, data_type, is_nullable 
+                |FROM information_schema.columns 
+                |WHERE table_catalog = ? 
+                |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
+                |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
+                |ORDER BY table_schema, table_name, ordinal_position; 
+                |""".trimMargin()
 
             val bindValues =
                 arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
@@ -490,9 +505,9 @@ class SnowflakeDestinationHandler(
                 val isNullable = result["IS_NULLABLE"].asText()
                 val tableDefinition =
                     existingTables
-                        .computeIfAbsent(tableSchema) { k: String? -> java.util.LinkedHashMap() }
-                        .computeIfAbsent(tableName) { k: String? ->
-                            TableDefinition(java.util.LinkedHashMap())
+                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
+                        .computeIfAbsent(tableName) { _: String? ->
+                            TableDefinition(LinkedHashMap())
                         }
                 tableDefinition.columns[columnName] =
                     ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
