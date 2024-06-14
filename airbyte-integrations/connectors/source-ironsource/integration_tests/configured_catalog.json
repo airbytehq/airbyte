@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "campaign_targetings",
+        "name": "assets",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

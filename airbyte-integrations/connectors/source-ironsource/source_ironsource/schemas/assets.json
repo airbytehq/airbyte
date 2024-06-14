@@ -4,7 +4,7 @@
   "properties" : {
     "id" : {
       "type" : [
-        "integer"
+        "number"
       ]
     },
     "type" : {
@@ -15,7 +15,7 @@
     },
     "titleId" : {
       "type" : [
-        "integer"
+        "number"
       ]
     },
     "orientation" : {

@@ -4,11 +4,11 @@
   "properties" : {
     "id" : {
       "type" : [
-        "integer"
+        "number"
       ]
     },
     "campaignId": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "name" : {
       "type" : [

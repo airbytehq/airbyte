@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "campaigns",
+        "name": "advertiser_reports",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "sync_mode": "incremental"

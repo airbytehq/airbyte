@@ -3,7 +3,7 @@
   "type" : "object",
   "properties" : {
     "campaignId": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "osVersions" : {
       "type" : "array",
