@@ -3,9 +3,9 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.5"
+version = "1.0.7"
 name = "source-linkedin-pages"
-description = "Source implementation for Linkedin Company Pages."
+description = "Source implementation for linkedin-pages."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"

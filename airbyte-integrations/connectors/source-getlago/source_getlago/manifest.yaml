@@ -108,6 +108,12 @@ definitions:
         type: NoPagination
       partition_router:
         $ref: "#/definitions/customer_partition_router"
+  fees_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "fees"
+      primary_key: "lago_id"
+      path: "/fees"
 
 streams:
   - "#/definitions/billable_metrics_stream"
@@ -119,6 +125,7 @@ streams:
   - "#/definitions/subscriptions_stream"
   - "#/definitions/wallets_stream"
   - "#/definitions/customer_usage_stream"
+  - "#/definitions/fees_stream"
 
 check:
   stream_names:

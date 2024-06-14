@@ -10,13 +10,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 3.1.1
+  dockerImageTag: 3.2.2
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
   icon: facebook.svg
   license: ELv2
-  maxSecondsBetweenMessages: 3600
+  maxSecondsBetweenMessages: 86400
   name: Facebook Marketing
   remoteRegistries:
     pypi:
