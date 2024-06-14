@@ -11,11 +11,11 @@ data:
     ql: 400
     sl: 200
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
-  dockerImageTag: 4.3.0
+  dockerImageTag: 4.3.2
   dockerRepository: airbyte/source-amazon-seller-partner
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   githubIssueLabel: source-amazon-seller-partner
