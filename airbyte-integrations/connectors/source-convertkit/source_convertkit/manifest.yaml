@@ -17,11 +17,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /forms
           http_method: GET
           request_parameters:
-            api_secret: '{{ config[''api_secret''] }}'
+            api_secret: "{{ config['api_secret'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -31,7 +31,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/forms'
+          $ref: "#/schemas/forms"
     sequences:
       type: DeclarativeStream
       name: sequences
@@ -40,11 +40,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /sequences
           http_method: GET
           request_parameters:
-            api_secret: '{{ config[''api_secret''] }}'
+            api_secret: "{{ config['api_secret'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -54,7 +54,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/sequences'
+          $ref: "#/schemas/sequences"
     tags:
       type: DeclarativeStream
       name: tags
@@ -63,11 +63,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tags
           http_method: GET
           request_parameters:
-            api_secret: '{{ config[''api_secret''] }}'
+            api_secret: "{{ config['api_secret'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -90,7 +90,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tags'
+          $ref: "#/schemas/tags"
     subscribers:
       type: DeclarativeStream
       name: subscribers
@@ -99,11 +99,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /subscribers
           http_method: GET
           request_parameters:
-            api_secret: '{{ config[''api_secret''] }}'
+            api_secret: "{{ config['api_secret'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -113,7 +113,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/subscribers'
+          $ref: "#/schemas/subscribers"
     broadcasts:
       type: DeclarativeStream
       name: broadcasts
@@ -122,11 +122,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /broadcasts
           http_method: GET
           request_parameters:
-            api_secret: '{{ config[''api_secret''] }}'
+            api_secret: "{{ config['api_secret'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -136,17 +136,17 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/broadcasts'
+          $ref: "#/schemas/broadcasts"
   base_requester:
     type: HttpRequester
     url_base: https://api.convertkit.com/v3
 
 streams:
-  - $ref: '#/definitions/streams/forms'
-  - $ref: '#/definitions/streams/sequences'
-  - $ref: '#/definitions/streams/tags'
-  - $ref: '#/definitions/streams/subscribers'
-  - $ref: '#/definitions/streams/broadcasts'
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/sequences"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/subscribers"
+  - $ref: "#/definitions/streams/broadcasts"
 
 spec:
   type: Spec
@@ -178,53 +178,53 @@ schemas:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       archived:
         type:
           - boolean
-          - 'null'
+          - "null"
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       description:
         type:
           - string
-          - 'null'
+          - "null"
       embed_js:
         type:
           - string
-          - 'null'
+          - "null"
       embed_url:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: integer
       name:
         type:
           - string
-          - 'null'
+          - "null"
       sign_up_button_text:
         type:
           - string
-          - 'null'
+          - "null"
       success_message:
         type:
           - string
-          - 'null'
+          - "null"
       title:
         type:
           - string
-          - 'null'
+          - "null"
       uid:
         type:
           - string
-          - 'null'
+          - "null"
       url:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
     additionalProperties: true
@@ -234,21 +234,21 @@ schemas:
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       hold:
         type:
           - boolean
-          - 'null'
+          - "null"
       id:
         type: integer
       name:
         type:
           - string
-          - 'null'
+          - "null"
       repeat:
         type:
           - boolean
-          - 'null'
+          - "null"
     required:
       - id
     additionalProperties: true
@@ -258,13 +258,13 @@ schemas:
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: integer
       name:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
     additionalProperties: true
@@ -274,30 +274,30 @@ schemas:
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       email_address:
         type:
           - string
-          - 'null'
+          - "null"
       fields:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           last_name:
             type:
               - string
-              - 'null'
+              - "null"
       first_name:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: integer
       state:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
     additionalProperties: true
@@ -307,13 +307,13 @@ schemas:
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: integer
       subject:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
     additionalProperties: true
