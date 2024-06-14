@@ -55,6 +55,7 @@ definitions:
           path: content?type=blogpost
           http_method: GET
           request_parameters:
+            spaceKey: "{{ config['space_key'] }}"
             expand: >-
               ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
         record_selector:
@@ -126,6 +127,7 @@ definitions:
           path: content?type=page
           http_method: GET
           request_parameters:
+            spaceKey: "{{ config['space_key'] }}"
             expand: >-
               ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
         record_selector:
@@ -189,11 +191,12 @@ definitions:
           $ref: "#/schemas/space"
   base_requester:
     type: HttpRequester
-    url_base: https://{{ config['domain_name'] }}/wiki/rest/api/
+    url_base: https://{{ config['domain_name'] + ('' if config.confluence_server else '/wiki') }}/rest/api
     authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config['email'] }}"
-      password: "{{ config['api_token'] }}"
+      type: CustomAuthenticator
+      class_name: source_confluence.components.CustomAuthenticator
+      email: "{{ config['email'] }}"
+      api_token: "{{ config['api_token'] }}"
 
 streams:
   - $ref: "#/definitions/streams/audit"
@@ -233,6 +236,16 @@ spec:
         title: Domain name
         description: Your Confluence domain name
         order: 2
+      confluence_server:
+        title: "Confluence Server"
+        type: boolean
+        description: "If you are using Confluence Server, please check this box."
+        order: 3
+      space_key:
+        title: "Space Key"
+        type: string
+        description: "Filters content results (pages & blog posts) by space"
+        order: 4
     additionalProperties: true
 
 metadata:

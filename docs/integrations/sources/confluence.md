@@ -13,18 +13,26 @@ This page contains the setup guide and reference information for the
 
 ### Step 1: Create an API Token
 
-For detailed instructions on creating an Atlassian API Token, please refer to the
+For detailed instructions on creating an Atlassian API Token for Confluence Cloud, please refer to the
 [official documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
+For detailed instructions on creating a PAT (Personal Access Token), which can be used as an API token for Confluence server, please refer to [this documentation](https://confluence.atlassian.com/bitbucketserver076/personal-access-tokens-1026534797.html). Please refer to [this document](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html) for instructions on using a PAT.
 
 ### Step 2: Set up the Confluence connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
 3. Enter a **Source name** of your choosing.
-4. In the **API Token** field, enter your Atlassian API Token.
-5. In the **Domain name** field, enter your Confluence domain name.
-6. In the **Email** field, enter your Confluence login email.
-7. Click **Set up source** and wait for the tests to complete.
+4. Fill out the required fields:
+   1. In the **API Token** field, enter your Atlassian API Token or PAT.
+   2. In the **Domain Name** field, enter your Confluence domain + path
+      1. Confluence Cloud example: my-confluence.atlassian.net
+      2. Confluence Server example: my.company.domain/confluence
+   3. In the **Email** field, enter your Confluence login email.
+5. Fill out the optional fields if desired:
+   1. Enable **Confluence Server** if you are self-hosting Confluence, otherwise leave disabled for Confluence Cloud
+   2. In the **Space Key** field, enter the key of a space for pages and blog_posts filtering
+6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -50,7 +58,7 @@ The `audit` stream requires a Standard or Premium plan.
 
 ## Data type mapping
 
-The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) and [Confluence Server REST API](https://docs.atlassian.com/ConfluenceServer/rest/8.8.1/) use the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
 ## Performance considerations
 
@@ -63,6 +71,7 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.0   | 2024-03-25 | [36450](https://github.com/airbytehq/airbyte/pull/36450) | Added Confluence Server support
 | 0.2.5 | 2024-06-06 | [39261](https://github.com/airbytehq/airbyte/pull/39261) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.4 | 2024-05-14 | [38137](https://github.com/airbytehq/airbyte/pull/38137) | Make connector compatible with the builder |
 | 0.2.3 | 2024-04-19 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
