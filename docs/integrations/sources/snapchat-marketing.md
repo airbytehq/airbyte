@@ -89,14 +89,14 @@ This page guides you through the process of setting up the Snapchat Marketing so
 ## Supported streams and sync modes
 
 | Stream                  | Incremental | Key                                 |
-| :---------------------- | :---------- | ----------------------------------- |
+|:------------------------|:------------|-------------------------------------|
 | Adaccounts              | Yes         | "id"                                |
 | Ads                     | Yes         | "id"                                |
 | Adsquads                | Yes         | "id"                                |
 | Campaigns               | Yes         | "id"                                |
 | Creatives               | Yes         | "id"                                |
 | Media                   | Yes         | "id"                                |
-| Organizations           | No          | "id"                                |
+| Organizations           | Yes         | "id"                                |
 | Segments                | Yes         | "id"                                |
 | AdaccountsStatsHourly   | Yes         | ["id", "granularity", "start_time"] |
 | AdaccountsStatsDaily    | Yes         | ["id", "granularity", "start_time"] |
@@ -123,8 +123,9 @@ Snapchat Marketing API has limitations to 1000 items per page.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
-| 0.6.2   | 2024-15-22 | [38574](https://github.com/airbytehq/airbyte/pull/38574) | Update authenticator package                                                   |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.0.0   | 2024-06-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate to low-code                                                            |
+| 0.6.2   | 2024-05-22 | [38574](https://github.com/airbytehq/airbyte/pull/38574) | Update authenticator package                                                   |
 | 0.6.1   | 2024-04-24 | [36662](https://github.com/airbytehq/airbyte/pull/36662) | Schema descriptions                                                            |
 | 0.6.0   | 2024-04-10 | [30586](https://github.com/airbytehq/airbyte/pull/30586) | Add `attribution_windows`,`action_report_time` as optional configurable params |
 | 0.5.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                |
