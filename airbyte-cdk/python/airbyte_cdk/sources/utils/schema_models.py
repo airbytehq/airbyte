@@ -5,7 +5,7 @@
 from typing import Any, Dict, Optional, Type
 
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
-from pydantic import BaseModel, Extra
+from pydantic.v1 import BaseModel, Extra
 from pydantic.main import ModelMetaclass
 from pydantic.typing import resolve_annotations
 

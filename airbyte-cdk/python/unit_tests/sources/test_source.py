@@ -27,7 +27,7 @@ from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pydantic import ValidationError
+from pydantic.v1.error_wrappers import ValidationError
 
 
 class MockSource(Source):

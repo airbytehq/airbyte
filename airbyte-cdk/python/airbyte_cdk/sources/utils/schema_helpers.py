@@ -14,7 +14,7 @@ from airbyte_cdk.models import ConnectorSpecification, FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class JsonFileLoader:

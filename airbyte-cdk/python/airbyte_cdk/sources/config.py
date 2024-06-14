@@ -5,7 +5,7 @@
 from typing import Any, Dict
 
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs, rename_key
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 
 
 class BaseConfig(BaseModel):

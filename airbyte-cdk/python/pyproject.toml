@@ -24,7 +24,7 @@ keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-airbyte-protocol-models = ">=0.9.0, <1.0"
+airbyte-protocol-models-pdv2 = {version = "^0.11.0.dev1718126410", source = "pypi-test"}
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
@@ -35,7 +35,7 @@ Jinja2 = "~3.1.2"
 jsonref = "~0.2"
 jsonschema = "~3.2.0"
 pendulum = "<3.0.0"
-pydantic = "^1.10.8"
+pydantic = "^2.7"
 pyrate-limiter = "~3.1.0"
 python-dateutil = "*"
 PyYAML = "^6.0.1"
@@ -64,6 +64,7 @@ cryptography = "^42.0.5"
 pytz = "2024.1"
 
 [tool.poetry.group.dev.dependencies]
+datamodel_code_generator = "^0.25"
 freezegun = "*"
 mypy = "*"
 pandas = "2.0.3"
@@ -80,9 +81,14 @@ file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfmi
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
+[[tool.poetry.source]]
+name = "pypi-test"
+url = "https://test.pypi.org/simple/"
+priority = 'explicit'
+
 [tool.poe.tasks]
 # Build tasks
-assemble = {cmd = "bin/generate-component-manifest-dagger.sh", help = "Generate component manifest files."}
+assemble = {cmd = "bin/generate-component-manifest-files.sh", help = "Generate component manifest files."}
 build-package = {cmd = "poetry build", help = "Build the python package: source and wheels archives."}
 build = {sequence = ["assemble", "build-package"], help = "Run all tasks to build the package."}
 
@@ -92,7 +98,7 @@ type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modi
 unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report."}
 # TODO: find a version of the modified mypy check that works both locally and in CI.
 check-local = {sequence = ["lint", "type-check", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
-check-ci = {sequence = ["build", "lint", "unit-test-with-cov"], help = "Build the package, lint and run unit tests. Does not include type-checking."}
+check-ci = {sequence = ["lint", "unit-test-with-cov"], help = "Lint and run unit tests. Does not include type-checking."}
 
 # Build and check
 pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
@@ -100,5 +106,5 @@ pre-push = {sequence = ["build", "check-local"], help = "Run all build and check
 [tool.airbyte_ci]
 optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
-poe_tasks = ["check-ci"]
+poe_tasks = ["build", "check-ci"]
 mount_docker_socket = true
