@@ -25,10 +25,14 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
-from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result, slugify
+from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
+
+# This slugify lib has to be consistent with the slugify lib used in live_tests
+# live_test can't resolve the passed connector container otherwise.
+from slugify import slugify  # type: ignore
 
 
 class VersionCheck(Step, ABC):
@@ -347,7 +351,7 @@ class AcceptanceTests(Step):
             stdout=stdout,
             output={"report_log": report_log_artifact},
             artifacts=[report_log_artifact],
-            consider_in_overall_status=is_hard_failure,
+            consider_in_overall_status=status is StepStatus.SUCCESS or is_hard_failure,
         )
 
 
