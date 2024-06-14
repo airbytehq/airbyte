@@ -19,9 +19,10 @@ include = "source_azure_blob_storage"
 python = "^3.9,<3.12"
 pytz = "==2024.1"
 airbyte-cdk = {extras = ["file-based"], version = "^1"}
+
 [tool.poetry.dependencies.smart-open]
 extras = [ "azure",]
-version = "0.4.4"
+version = "==6.4.0"
 
 [tool.poetry.scripts]
 source-azure-blob-storage = "source_azure_blob_storage.run:run"
