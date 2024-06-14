@@ -32,7 +32,7 @@ data:
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE_GOOGLE_DRIVE_CREDS
-          fileName: connected_account_config.json
+          fileName: config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
