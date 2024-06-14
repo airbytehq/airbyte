@@ -33,7 +33,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -90,7 +89,8 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
       final Instant engineStartTime = Instant.now();
       boolean schemaHistoryRead = false;
       SchemaHistory<String> schemaHistory = null;
-      final var debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog, new ArrayList<String>());
+      final var debeziumPropertiesManager =
+          new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog, Collections.emptyList());
       try {
         final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(debeziumPropertiesManager);
         publisher.start(queue, emptyOffsetManager, Optional.of(schemaHistoryStorage));
@@ -211,7 +211,8 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
     }
 
     final var offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcOffset, Optional.empty());
-    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog, new ArrayList<>());
+    final DebeziumPropertiesManager debeziumPropertiesManager =
+        new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog, Collections.emptyList());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     return parseSavedOffset(debeziumProperties);
   }
