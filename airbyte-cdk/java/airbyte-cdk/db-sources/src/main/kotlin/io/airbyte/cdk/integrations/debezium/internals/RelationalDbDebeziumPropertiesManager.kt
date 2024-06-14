@@ -18,8 +18,9 @@ import org.codehaus.plexus.util.StringUtils
 class RelationalDbDebeziumPropertiesManager(
     properties: Properties,
     config: JsonNode,
-    catalog: ConfiguredAirbyteCatalog
-) : DebeziumPropertiesManager(properties, config, catalog) {
+    catalog: ConfiguredAirbyteCatalog,
+    completedStreamNames: List<String>
+) : DebeziumPropertiesManager(properties, config, catalog, completedStreamNames) {
     override fun getConnectionConfiguration(config: JsonNode): Properties {
         val properties = Properties()
 
@@ -42,20 +43,24 @@ class RelationalDbDebeziumPropertiesManager(
 
     override fun getIncludeConfiguration(
         catalog: ConfiguredAirbyteCatalog,
-        config: JsonNode?
+        config: JsonNode?,
+        streamNames: List<String>
     ): Properties {
         val properties = Properties()
 
         // table selection
-        properties.setProperty("table.include.list", getTableIncludelist(catalog))
+        properties.setProperty("table.include.list", getTableIncludelist(catalog, streamNames))
         // column selection
-        properties.setProperty("column.include.list", getColumnIncludeList(catalog))
+        properties.setProperty("column.include.list", getColumnIncludeList(catalog, streamNames))
 
         return properties
     }
 
     companion object {
-        fun getTableIncludelist(catalog: ConfiguredAirbyteCatalog): String {
+        fun getTableIncludelist(
+            catalog: ConfiguredAirbyteCatalog,
+            completedStreamNames: List<String>
+        ): String {
             // Turn "stream": {
             // "namespace": "schema1"
             // "name": "table1
@@ -69,13 +74,17 @@ class RelationalDbDebeziumPropertiesManager(
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
                 .map { stream: AirbyteStream -> stream.namespace + "." + stream.name }
+                .filter { streamName: String -> completedStreamNames.contains(streamName) }
                 // debezium needs commas escaped to split properly
                 .joinToString(",") { x: String ->
                     StringUtils.escape(Pattern.quote(x), ",".toCharArray(), "\\,")
                 }
         }
 
-        fun getColumnIncludeList(catalog: ConfiguredAirbyteCatalog): String {
+        fun getColumnIncludeList(
+            catalog: ConfiguredAirbyteCatalog,
+            completedStreamNames: List<String>
+        ): String {
             // Turn "stream": {
             // "namespace": "schema1"
             // "name": "table1"
@@ -92,6 +101,9 @@ class RelationalDbDebeziumPropertiesManager(
             return catalog.streams
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
+                .filter { stream: AirbyteStream ->
+                    completedStreamNames.contains(stream.namespace + "." + stream.name)
+                }
                 .map { s: AirbyteStream ->
                     val fields = parseFields(s.jsonSchema["properties"].fieldNames())
                     Pattern.quote(s.namespace + "." + s.name) +
