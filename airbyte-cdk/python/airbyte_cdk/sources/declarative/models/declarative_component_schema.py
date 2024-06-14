@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra, Field
+from pydantic.v1 import BaseModel, Extra, Field
 from typing_extensions import Literal
 
 
@@ -29,7 +29,7 @@ class BasicHttpAuthenticator(BaseModel):
         examples=["{{ config['password'] }}", ''],
         title='Password',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class BearerAuthenticator(BaseModel):
@@ -40,7 +40,7 @@ class BearerAuthenticator(BaseModel):
         examples=["{{ config['api_key'] }}", "{{ config['token'] }}"],
         title='Bearer Token',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CheckStream(BaseModel):
@@ -58,7 +58,7 @@ class ConstantBackoffStrategy(BaseModel):
     backoff_time_in_seconds: Union[float, str] = Field(
         ..., description='Backoff time in seconds.', examples=[30, 30.5, "{{ config['backoff_time'] }}"], title='Backoff Time'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomAuthenticator(BaseModel):
@@ -72,7 +72,7 @@ class CustomAuthenticator(BaseModel):
         examples=['source_railz.components.ShortLivedTokenAuthenticator'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomBackoffStrategy(BaseModel):
@@ -86,7 +86,7 @@ class CustomBackoffStrategy(BaseModel):
         examples=['source_railz.components.MyCustomBackoffStrategy'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomErrorHandler(BaseModel):
@@ -100,7 +100,7 @@ class CustomErrorHandler(BaseModel):
         examples=['source_railz.components.MyCustomErrorHandler'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomIncrementalSync(BaseModel):
@@ -115,7 +115,7 @@ class CustomIncrementalSync(BaseModel):
         title='Class Name',
     )
     cursor_field: str = Field(..., description='The location of the value on a record that will be used as a bookmark during sync.')
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomPaginationStrategy(BaseModel):
@@ -129,7 +129,7 @@ class CustomPaginationStrategy(BaseModel):
         examples=['source_railz.components.MyCustomPaginationStrategy'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomRecordExtractor(BaseModel):
@@ -143,7 +143,7 @@ class CustomRecordExtractor(BaseModel):
         examples=['source_railz.components.MyCustomRecordExtractor'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomRecordFilter(BaseModel):
@@ -157,7 +157,7 @@ class CustomRecordFilter(BaseModel):
         examples=['source_railz.components.MyCustomCustomRecordFilter'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomRequester(BaseModel):
@@ -171,7 +171,7 @@ class CustomRequester(BaseModel):
         examples=['source_railz.components.MyCustomRecordExtractor'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomRetriever(BaseModel):
@@ -185,7 +185,7 @@ class CustomRetriever(BaseModel):
         examples=['source_railz.components.MyCustomRetriever'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomPartitionRouter(BaseModel):
@@ -199,7 +199,7 @@ class CustomPartitionRouter(BaseModel):
         examples=['source_railz.components.MyCustomPartitionRouter'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomSchemaLoader(BaseModel):
@@ -213,7 +213,7 @@ class CustomSchemaLoader(BaseModel):
         examples=['source_railz.components.MyCustomSchemaLoader'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomStateMigration(BaseModel):
@@ -227,7 +227,7 @@ class CustomStateMigration(BaseModel):
         examples=['source_railz.components.MyCustomStateMigration'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomTransformation(BaseModel):
@@ -241,7 +241,7 @@ class CustomTransformation(BaseModel):
         examples=['source_railz.components.MyCustomTransformation'],
         title='Class Name',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class LegacyToPerPartitionStateMigration(BaseModel):
@@ -325,7 +325,7 @@ class JwtAuthenticator(BaseModel):
     additional_jwt_payload: Optional[Dict[str, Any]] = Field(
         None, description='Additional properties to be added to the JWT payload.', title='Additional JWT Payload Properties'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class RefreshTokenUpdater(BaseModel):
@@ -452,7 +452,7 @@ class OAuthAuthenticator(BaseModel):
         description='When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.',
         title='Token Updater',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class ExponentialBackoffStrategy(BaseModel):
@@ -460,7 +460,7 @@ class ExponentialBackoffStrategy(BaseModel):
     factor: Optional[Union[float, str]] = Field(
         5, description='Multiplicative constant applied on each retry.', examples=[5, 5.5, '10'], title='Factor'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class SessionTokenRequestBearerAuthenticator(BaseModel):
@@ -497,11 +497,7 @@ class HttpResponseFilter(BaseModel):
         title='Error Message Substring',
     )
     http_codes: Optional[List[int]] = Field(
-        None,
-        description='Match the response if its HTTP code is included in this list.',
-        examples=[[420, 429], [500]],
-        title='HTTP Codes',
-        unique_items=True,
+        None, description='Match the response if its HTTP code is included in this list.', examples=[[420, 429], [500]], title='HTTP Codes'
     )
     predicate: Optional[str] = Field(
         None,
@@ -512,7 +508,7 @@ class HttpResponseFilter(BaseModel):
         ],
         title='Predicate',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class InlineSchemaLoader(BaseModel):
@@ -533,7 +529,7 @@ class JsonFileSchemaLoader(BaseModel):
         example=['./schemas/users.json'],
         title='File Path',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class JsonDecoder(BaseModel):
@@ -547,7 +543,7 @@ class MinMaxDatetime(BaseModel):
     )
     datetime_format: Optional[str] = Field(
         '',
-        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%s_as_float**: Epoch unix timestamp in seconds as float with microsecond precision - `1686218963.123456`\n  * **%ms**: Epoch unix timestamp - `1686218963123`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`, `000001`, ..., `999999`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (Sunday as first day) - `00`, `01`, ..., `53`\n  * **%W**: Week number of the year (Monday as first day) - `00`, `01`, ..., `53`\n  * **%c**: Date and time representation - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date representation - `08/16/1988`\n  * **%X**: Time representation - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
+        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%ms**: Epoch unix timestamp - `1686218963123`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`, `000001`, ..., `999999`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (Sunday as first day) - `00`, `01`, ..., `53`\n  * **%W**: Week number of the year (Monday as first day) - `00`, `01`, ..., `53`\n  * **%c**: Date and time representation - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date representation - `08/16/1988`\n  * **%X**: Time representation - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
         examples=['%Y-%m-%dT%H:%M:%S.%f%z', '%Y-%m-%d', '%s'],
         title='Datetime Format',
     )
@@ -563,12 +559,12 @@ class MinMaxDatetime(BaseModel):
         examples=['2010-01-01T00:00:00Z', '2010-01-01'],
         title='Min Datetime',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class NoAuth(BaseModel):
     type: Literal['NoAuth']
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class NoPagination(BaseModel):
@@ -621,7 +617,7 @@ class OffsetIncrement(BaseModel):
     inject_on_first_request: Optional[bool] = Field(
         False, description='Using the `offset` with value `0` during the first request', title='Inject Offset'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class PageIncrement(BaseModel):
@@ -638,7 +634,7 @@ class PageIncrement(BaseModel):
         description='Using the `page number` with value defined by `start_from_page` during the first request',
         title='Inject Page Number',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class PrimaryKey(BaseModel):
@@ -657,7 +653,7 @@ class RecordFilter(BaseModel):
         description='The predicate to filter a record. Records will be removed if evaluated to False.',
         examples=["{{ record['created_at'] >= stream_interval['start_time'] }}", "{{ record.status in ['active', 'expired'] }}"],
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class SchemaNormalization(Enum):
@@ -758,7 +754,7 @@ class LegacySessionTokenAuthenticator(BaseModel):
         examples=['user/current'],
         title='Validate Session Path',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class ValueType(Enum):
@@ -782,7 +778,7 @@ class WaitTimeFromHeader(BaseModel):
         examples=['([-+]?\\d+)'],
         title='Extraction Regex',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class WaitUntilTimeFromHeader(BaseModel):
@@ -802,7 +798,7 @@ class WaitUntilTimeFromHeader(BaseModel):
         examples=['([-+]?\\d+)'],
         title='Extraction Regex',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class AddedFieldDefinition(BaseModel):
@@ -822,7 +818,7 @@ class AddedFieldDefinition(BaseModel):
     value_type: Optional[ValueType] = Field(
         None, description='Type of the value. If not specified, the type will be inferred from the value.', title='Value Type'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class AddFields(BaseModel):
@@ -830,7 +826,7 @@ class AddFields(BaseModel):
     fields: List[AddedFieldDefinition] = Field(
         ..., description='List of transformations (path and corresponding value) that will be added to the record.', title='Fields'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class ApiKeyAuthenticator(BaseModel):
@@ -853,7 +849,7 @@ class ApiKeyAuthenticator(BaseModel):
         examples=[{'inject_into': 'header', 'field_name': 'Authorization'}, {'inject_into': 'request_parameter', 'field_name': 'authKey'}],
         title='Inject API Key Into Outgoing HTTP Request',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class AuthFlow(BaseModel):
@@ -891,7 +887,7 @@ class CursorPagination(BaseModel):
     decoder: Optional[JsonDecoder] = Field(
         None, description='Component decoding the response so records can be extracted.', title='Decoder'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class DatetimeBasedCursor(BaseModel):
@@ -904,8 +900,8 @@ class DatetimeBasedCursor(BaseModel):
     )
     datetime_format: str = Field(
         ...,
-        description='The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%s_as_float**: Epoch unix timestamp in seconds as float with microsecond precision - `1686218963.123456`\n  * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (starting Sunday) - `00`, ..., `53`\n  * **%W**: Week number of the year (starting Monday) - `00`, ..., `53`\n  * **%c**: Date and time - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date standard format - `08/16/1988`\n  * **%X**: Time standard format - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
-        examples=['%Y-%m-%dT%H:%M:%S.%f%z', '%Y-%m-%d', '%s', '%ms', '%s_as_float'],
+        description='The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (starting Sunday) - `00`, ..., `53`\n  * **%W**: Week number of the year (starting Monday) - `00`, ..., `53`\n  * **%c**: Date and time - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date standard format - `08/16/1988`\n  * **%X**: Time standard format - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
+        examples=['%Y-%m-%dT%H:%M:%S.%f%z', '%Y-%m-%d', '%s', '%ms'],
         title='Outgoing Datetime Format',
     )
     start_datetime: Union[str, MinMaxDatetime] = Field(
@@ -969,7 +965,7 @@ class DatetimeBasedCursor(BaseModel):
         examples=['P1W', "{{ config['step_increment'] }}"],
         title='Step',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class DefaultErrorHandler(BaseModel):
@@ -992,7 +988,7 @@ class DefaultErrorHandler(BaseModel):
         description="List of response filters to iterate on when deciding how to handle an error. When using an array of multiple filters, the filters will be applied sequentially and the response will be selected if it matches any of the filter's predicate.",
         title='Response Filters',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class DefaultPaginator(BaseModel):
@@ -1005,7 +1001,7 @@ class DefaultPaginator(BaseModel):
     )
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[Union[RequestOption, RequestPath]] = None
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class DpathExtractor(BaseModel):
@@ -1019,7 +1015,7 @@ class DpathExtractor(BaseModel):
     decoder: Optional[JsonDecoder] = Field(
         None, description='Component decoding the response so records can be extracted.', title='Decoder'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class SessionTokenRequestApiKeyAuthenticator(BaseModel):
@@ -1051,7 +1047,7 @@ class ListPartitionRouter(BaseModel):
         description='A request option describing where the list value should be injected into and under what field name if applicable.',
         title='Inject Partition Value Into Outgoing HTTP Request',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class RecordSelector(BaseModel):
@@ -1061,7 +1057,7 @@ class RecordSelector(BaseModel):
         None, description='Responsible for filtering records to be emitted by the Source.', title='Record Filter'
     )
     schema_normalization: Optional[SchemaNormalization] = SchemaNormalization.None_
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class Spec(BaseModel):
@@ -1085,7 +1081,7 @@ class CompositeErrorHandler(BaseModel):
     error_handlers: List[Union[CompositeErrorHandler, DefaultErrorHandler]] = Field(
         ..., description='List of error handlers to iterate on to determine how to handle a failed response.', title='Error Handlers'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class DeclarativeSource(BaseModel):
@@ -1095,7 +1091,7 @@ class DeclarativeSource(BaseModel):
     type: Literal['DeclarativeSource']
     check: CheckStream
     streams: List[DeclarativeStream]
-    version: str = Field(..., description='The version of the Airbyte CDK used to build and test the source.')
+    version: str = Field(..., description='The version of the CDK used to build and test the source.')
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None
@@ -1143,7 +1139,7 @@ class SelectiveAuthenticator(BaseModel):
         ],
         title='Authenticators',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class DeclarativeStream(BaseModel):
@@ -1168,7 +1164,7 @@ class DeclarativeStream(BaseModel):
     state_migrations: Optional[List[Union[LegacyToPerPartitionStateMigration, CustomStateMigration]]] = Field(
         [], description='Array of state migrations to be applied on the input state', title='State Migrations'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class SessionTokenAuthenticator(BaseModel):
@@ -1207,7 +1203,7 @@ class SessionTokenAuthenticator(BaseModel):
         description='Authentication method to use for requests sent to the API, specifying how to inject the session token.',
         title='Data Request Authentication',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class HttpRequester(BaseModel):
@@ -1287,7 +1283,7 @@ class HttpRequester(BaseModel):
     use_cache: Optional[bool] = Field(
         False, description='Enables stream requests caching. This field is automatically set by the CDK.', title='Use Cache'
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class ParentStreamConfig(BaseModel):
@@ -1310,7 +1306,7 @@ class ParentStreamConfig(BaseModel):
         description='A request option describing where the parent key value should be injected into and under what field name if applicable.',
         title='Request Option',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class SimpleRetriever(BaseModel):
@@ -1338,7 +1334,7 @@ class SimpleRetriever(BaseModel):
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class SubstreamPartitionRouter(BaseModel):
@@ -1348,7 +1344,7 @@ class SubstreamPartitionRouter(BaseModel):
         description='Specifies which parent streams are being iterated over and how parent records should be used to partition the child stream data set.',
         title='Parent Stream Configs',
     )
-    field_parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 CompositeErrorHandler.update_forward_refs()

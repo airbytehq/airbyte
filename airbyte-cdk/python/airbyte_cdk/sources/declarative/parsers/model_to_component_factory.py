@@ -137,7 +137,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMe
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
 
