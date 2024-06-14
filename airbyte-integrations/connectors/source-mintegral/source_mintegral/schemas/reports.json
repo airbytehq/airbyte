@@ -2,55 +2,44 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "date": {
-      "type": ["string", "null"],
-      "format": "date"
-    },
-    "click": {
-      "type": ["integer", "null"]
-    },
-    "uuid": {
+    "Date": {
       "type": ["string", "null"]
     },
-    "install": {
+    "Creative Id": {
       "type": ["integer", "null"]
     },
-    "geo": {
-      "type": ["array", "null"],
-      "items": {
-        "type": "string"
-      }
+    "Creative Name Id": {
+      "type": ["string", "null"]
     },
-    "impression": {
+    "Currency Name Id": {
+      "type": ["string", "null"]
+    },
+    "Impression": {
       "type": ["integer", "null"]
     },
-    "spend": {
+    "Click": {
+      "type": ["integer", "null"]
+    },
+    "Conversion": {
+      "type": ["integer", "null"]
+    },
+    "Ecpm": {
       "type": ["number", "null"]
     },
-    "offer_id": {
-      "type": ["integer", "null"]
+    "Cpc": {
+      "type": ["number", "null"]
     },
-    "offer_name": {
-      "type": ["string", "null"]
+    "Ctr": {
+      "type": ["number", "null"]
     },
-    "preview_link": {
-      "type": ["string", "null"],
-      "format": "uri"
+    "Cvr": {
+      "type": ["number", "null"]
     },
-    "platform": {
-      "type": ["string", "null"]
+    "Ivr": {
+      "type": ["number", "null"]
     },
-    "package_name": {
-      "type": ["string", "null"]
-    },
-    "utc": {
-      "type": ["string", "null"]
-    },
-    "currency": {
-      "type": ["string", "null"]
-    },
-    "location": {
-      "type": ["string", "null"]
+    "Spend": {
+      "type": ["number", "null"]
     }
   }
 }

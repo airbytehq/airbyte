@@ -97,13 +97,13 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
     ):
         # Doc: https://adv-new.mintegral.com/doc/en/guide/report/advancedPerformanceReport.html
         end_date = datetime.now().strftime('%Y-%m-%d')
-        print(f"Current state: {str(self.state)}")
+        self.log(f"Current state: {str(self.state)}")
+        start_date = datetime.now() - timedelta(days=self.backfill_days)
         if not (self.state and self.state.get(self.cursor_field)):
-            raise Exception("State should be initialised before running Mintegral creative reporting")
-
-        state_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%d')
-
-        start_date = state_date - timedelta(days=self.backfill_days)
+            self.log("WARNING: state is not initialized")
+            # raise Exception("State should be initialised before running Mintegral creative reporting")
+        else:
+            start_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%d')
 
         request_params = {
             "start_time": start_date.strftime('%Y-%m-%d'),
@@ -118,7 +118,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Dict]:
         try:
             json_response = response.json()
-            print(f"Received json: {str(json_response)}")
+            self.log(f"Received json: {str(json_response)}")
             if json_response.get("code") in [200, 201, 202]:
                 self.type = 2
                 return None
@@ -131,8 +131,8 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
 
     def read_records(self, sync_mode: SyncMode, cursor_field=None, stream_slice=None, stream_state=None):
         retries = 0
-        if not self.state:
-            return []
+        # if not self.state:
+        #     return []
         while retries < self.async_retries:
             response = requests.get(self.url_base, params=self.request_params(), headers=self.authenticator.get_auth_header())
             if response.status_code == 200:
@@ -152,7 +152,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
 
 
 class Reports(MintegralReportingStream):
-    primary_key = ["uuid", "date"]
+    primary_key = ["Creative Id", "date"]
 
     def path(self, **kwargs) -> str:
         return ""
