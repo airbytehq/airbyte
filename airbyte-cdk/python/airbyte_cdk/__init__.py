@@ -17,7 +17,6 @@ from .logger import AirbyteLogFormatter, init_logger
 from .sources import AbstractSource
 from .sources.concurrent_source.concurrent_source import ConcurrentSource
 from .sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
-from .sources.config import BaseConfig
 from .sources.types import Config, Record, StreamSlice
 from .sources.connector_state_manager import ConnectorStateManager
 from .sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -106,7 +105,6 @@ __all__ = [
 
     # Connector
     "AbstractSource",
-    "BaseConfig",
     "BaseConnector",
     "Connector",
     "Destination",
