@@ -470,7 +470,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
     final var emptyHistory = new AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>>(Optional.empty(), false);
     final var schemaHistoryManager = AirbyteSchemaHistoryStorage.initializeDBHistory(emptyHistory, cdcStateHandler.compressSchemaHistoryForState());
-    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(properties, config, catalog);
+    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(properties, config, catalog, Collections.emptyList());
     final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(propertiesManager);
     tableSnapshotPublisher.start(queue, offsetManager, Optional.of(schemaHistoryManager));
 
@@ -493,6 +493,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected int getStateEmissionFrequency() {
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
+
+  @Override
+  protected void checkUserHasPrivileges(JsonNode config, JdbcDatabase database) {}
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
     return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
