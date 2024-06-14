@@ -23,7 +23,6 @@ An API key is required as well as an API application key. See the [Datadog API a
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key` - Datadog API key.
-<<<<<<< dlecocq/source-datadog-slo-history
 4. Click **Set up source**.
 
 ### Configuration
@@ -32,27 +31,25 @@ An API key is required as well as an API application key. See the [Datadog API a
 2. Configure incremental parameters, including the `start_date` and `end_date`. The start date represents the earliest time for which data will be collected, and `end_date` represents the latest. If the `end_date` is left blank, it will use `now`.
 3. Configure optional `monitors` parameters if you intend to consume that stream. All parameters have the same meaning as in the DataDog [monitors endpoint](https://docs.datadoghq.com/api/latest/monitors/#get-all-monitor-details).
 4. Configure optional `logs` parameters if you intend to consume that stream. All parameters have the same meaning as in the DataDog [logs endpoint](https://docs.datadoghq.com/api/latest/logs/#get-a-list-of-logs).
-4. Configure optional `service level objectives` parameters if you intend to consume that stream _or_ if you intend to consume the `service level objectives history` stream. All parameters have the same meaning as in the DataDog [service level objectives endpoint](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-all-slos).
-5. Configure optional `service level objectives_history` parameters if you intend to consume that stream. The set of SLOs for which history is collected is determined by the `service level objectives` stream configuration. All parameters have the same meaning as in the DataDog [service level objectives history endpoint](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-an-slos-history).
-=======
-4. Enter your `application_key` - Datadog application key.
-5. Enter your `query` - Optional. Type your query to filter records when collecting data from Logs and AuditLogs stream.
-6. Enter your `limit` - Number of records to collect per request.
-7. Enter your `start_date` - Optional. Start date to filter records when collecting data from Logs and AuditLogs stream.
-8. Enter your `end_date` - Optional. End date to filter records when collecting data from Logs and AuditLogs stream.
-9. Enter your `queries` - Optional. Multiple queries resulting in multiple streams.
+5. Configure optional `service level objectives` parameters if you intend to consume that stream _or_ if you intend to consume the `service level objectives history` stream. All parameters have the same meaning as in the DataDog [service level objectives endpoint](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-all-slos).
+6. Configure optional `service level objectives_history` parameters if you intend to consume that stream. The set of SLOs for which history is collected is determined by the `service level objectives` stream configuration. All parameters have the same meaning as in the DataDog [service level objectives history endpoint](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-an-slos-history).
+7. Enter your `application_key` - Datadog application key.
+8. Enter your `query` - Optional. Type your query to filter records when collecting data from Logs and AuditLogs stream.
+9. Enter your `limit` - Number of records to collect per request.
+10. Enter your `start_date` - Optional. Start date to filter records when collecting data from Logs and AuditLogs stream.
+11. Enter your `end_date` - Optional. End date to filter records when collecting data from Logs and AuditLogs stream.
+12. Enter your `queries` - Optional. Multiple queries resulting in multiple streams.
    1. Enter the `name`- Required. Query Name.
    2. Select the `data_source` - Required. Supported data sources - metrics, cloud_cost, logs, rum.
    3. Enter the `query`- Required. A classic query string. Example - `"kubernetes_state.node.count{*}"`, `"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"`
-10. Click **Set up source**.
->>>>>>> master
+13. Click **Set up source**.
 
 ## Supported sync modes
 
 The Datadog source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
-| :---------------- | :--------- |
+|:------------------|:-----------|
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
 | SSL connection    | Yes        |
@@ -84,6 +81,7 @@ source-datadog-slo-history
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
 | 0.5.0 | 2024-06-12 | [35362](https://github.com/airbytehq/airbyte/pull/35362) | Refactor connector and add new stream service_level_objectives_history |
+| 0.4.3 | 2024-06-13 | [37590](https://github.com/airbytehq/airbyte/pull/37590) | Change `last_records` to `last_record`                                       |
 | 0.4.2 | 2024-06-04 | [39060](https://github.com/airbytehq/airbyte/pull/39060) | [autopull] Upgrade base image to v1.2.1 |
 | 0.4.1 | 2024-05-20 | [38424](https://github.com/airbytehq/airbyte/pull/38424) | [autopull] base image + poetry + up_to_date |
 | 0.4.0 | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999) | Add `monitors` and `service_level_objectives` Streams |
