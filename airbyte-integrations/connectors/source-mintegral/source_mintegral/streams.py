@@ -121,6 +121,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             json_response = response.json()
             self.log(f"Received json: {str(json_response)}")
             if json_response.get("code") in [200, 201, 202]:
+                self.type = 2
                 return None
         except ValueError:
             # Assume it's TSV data if not JSON
@@ -140,7 +141,6 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
                 if parsed_response:
                     for row in parsed_response:
                         yield self._transform_record(row)
-                    self.type = 2
                     self.state = {self.cursor_field: datetime.now().strftime('%Y-%m-%d')}
                     break
                 else:
@@ -150,6 +150,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
                 raise Exception(f"Failed to fetch TSV data. HTTP Status Code: {response.status_code}")
         if retries == self.async_retries:
             raise Exception("Max retries exceeded. Could not fetch TSV data.")
+        self.type = 1
 
     def _transform_record(self, record):
         return {key.lower().replace(" ", "_"): value for key, value in record.items()}
