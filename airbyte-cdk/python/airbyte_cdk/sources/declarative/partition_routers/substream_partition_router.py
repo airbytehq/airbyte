@@ -3,13 +3,13 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
 import dpath
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 if TYPE_CHECKING:
@@ -25,6 +25,7 @@ class ParentStreamConfig:
     parent_key: The key of the parent stream's records that will be the stream slice key
     partition_field: The partition key
     request_option: How to inject the slice value on an outgoing HTTP request
+    incremental_dependency (bool): Indicates if the parent stream should be read incrementally.
     """
 
     stream: "DeclarativeStream"  # Parent streams must be DeclarativeStream because we can't know which part of the stream slice is a partition for regular Stream
@@ -33,6 +34,7 @@ class ParentStreamConfig:
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
+    incremental_dependency: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.parent_key = InterpolatedString.create(self.parent_key, parameters=parameters)
@@ -40,7 +42,7 @@ class ParentStreamConfig:
 
 
 @dataclass
-class SubstreamPartitionRouter(StreamSlicer):
+class SubstreamPartitionRouter(PartitionRouter):
     """
     Partition router that iterates over the parent's stream records and emits slices
     Will populate the state with `partition_field` and `parent_slice` so they can be accessed by other components
@@ -57,6 +59,7 @@ class SubstreamPartitionRouter(StreamSlicer):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._parameters = parameters
+        self._parent_state: Dict[str, Any] = {}
 
     def get_request_params(
         self,
@@ -127,12 +130,16 @@ class SubstreamPartitionRouter(StreamSlicer):
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore # parent_key is always casted to an interpolated string
                 partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
+                incremental_dependency = parent_stream_config.incremental_dependency
                 for parent_stream_slice in parent_stream.stream_slices(
                     sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
                 ):
-                    empty_parent_slice = True
                     parent_partition = parent_stream_slice.partition if parent_stream_slice else {}
 
+                    # we need to read all records for slice to update the parent stream cursor
+                    stream_slices_for_parent = []
+
+                    # only stream_slice param is used in the declarative stream, stream state is set in PerPartitionCursor set_initial_state
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
@@ -149,10 +156,62 @@ class SubstreamPartitionRouter(StreamSlicer):
                         except KeyError:
                             pass
                         else:
-                            empty_parent_slice = False
-                            yield StreamSlice(
-                                partition={partition_field: partition_value, "parent_slice": parent_partition}, cursor_slice={}
+                            stream_slices_for_parent.append(
+                                StreamSlice(partition={partition_field: partition_value, "parent_slice": parent_partition}, cursor_slice={})
                             )
-                    # If the parent slice contains no records,
-                    if empty_parent_slice:
-                        yield from []
+
+                    # update the parent state, as parent stream read all record for current slice and state is already updated
+                    if incremental_dependency:
+                        self._parent_state[parent_stream.name] = parent_stream.state
+
+                    yield from stream_slices_for_parent
+
+    def set_initial_state(self, stream_state: StreamState) -> None:
+        """
+        Set the state of the parent streams.
+
+        Args:
+            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
+            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+
+        Example of state format:
+        {
+            "parent_state": {
+                "parent_stream_name1": {
+                    "last_updated": "2023-05-27T00:00:00Z"
+                },
+                "parent_stream_name2": {
+                    "last_updated": "2023-05-27T00:00:00Z"
+                }
+            }
+        }
+        """
+        if not stream_state:
+            return
+
+        parent_state = stream_state.get("parent_state")
+        if not parent_state:
+            return
+
+        for parent_config in self.parent_stream_configs:
+            if parent_config.incremental_dependency:
+                parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
+
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
+        """
+        Get the state of the parent streams.
+
+        Returns:
+            StreamState: The current state of the parent streams.
+
+        Example of state format:
+        {
+            "parent_stream_name1": {
+                "last_updated": "2023-05-27T00:00:00Z"
+            },
+            "parent_stream_name2": {
+                "last_updated": "2023-05-27T00:00:00Z"
+            }
+        }
+        """
+        return self._parent_state

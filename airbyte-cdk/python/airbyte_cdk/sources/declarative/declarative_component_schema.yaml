@@ -2012,6 +2012,11 @@ definitions:
         title: Request Option
         description: A request option describing where the parent key value should be injected into and under what field name if applicable.
         "$ref": "#/definitions/RequestOption"
+      incremental_dependency:
+        title: Incremental Dependency
+        description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true

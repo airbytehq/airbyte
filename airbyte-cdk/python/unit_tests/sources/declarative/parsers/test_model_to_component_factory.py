@@ -47,7 +47,12 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers import (
+    CartesianProductStreamSlicer,
+    ListPartitionRouter,
+    SinglePartitionRouter,
+    SubstreamPartitionRouter,
+)
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -72,7 +77,6 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRe
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource

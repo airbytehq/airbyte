@@ -37,7 +37,7 @@ from .sources.declarative.interpolation import InterpolatedString, InterpolatedB
 from .sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from .sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
 
-from .sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
+from .sources.declarative.partition_routers import CartesianProductStreamSlicer, SinglePartitionRouter, SubstreamPartitionRouter
 from .sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from .sources.declarative.requesters import Requester, HttpRequester
 
@@ -52,7 +52,6 @@ from .sources.declarative.requesters.request_options.interpolated_request_input_
 from .sources.declarative.requesters.requester import HttpMethod
 from .sources.declarative.retrievers import SimpleRetriever
 from .sources.declarative.schema import JsonFileSchemaLoader
-from .sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from .sources.declarative.transformations.add_fields import AddFields, AddedFieldDefinition
 from .sources.declarative.transformations.transformation import RecordTransformation
 from .sources.declarative.types import FieldPointer
