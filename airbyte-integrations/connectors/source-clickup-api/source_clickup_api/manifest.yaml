@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "0.80.0"
 
 definitions:
   schema_loader:
@@ -128,4 +128,4 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["user", "team", "space", "folder", "list", "task"]
+  stream_names: ["user", "team"]
