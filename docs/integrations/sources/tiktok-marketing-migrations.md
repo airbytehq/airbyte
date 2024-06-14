@@ -49,9 +49,9 @@ Refreshing `advertiser_ids` schema is required in order to continue syncing `adv
 
 1. Select **Connections** in the main navbar.
    1. Select the connection(s) affected by the update.
-2. Select the **Replication** tab.
+2. Select the **Schema** tab.
    1. Select **Refresh source schema**.
-   2. Select **OK**.
+   2. Select **OK** and **Save changes**.
 3. Select **Connections** in the main nav bar.
    1. Select the connection(s) affected by the update.
 4. Select the **Status** tab.
