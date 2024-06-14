@@ -133,6 +133,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
     def read_records(self, sync_mode: SyncMode, cursor_field=None, stream_slice=None, stream_state=None):
         retries = 0
         if not self.state:
+            self.type = 1
             return []
         while retries < self.async_retries:
             response = requests.get(self.url_base, params=self.request_params(), headers=self.authenticator.get_auth_header())
