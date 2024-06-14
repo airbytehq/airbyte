@@ -230,7 +230,11 @@ public class MssqlInitialReadUtil {
         queueSize,
         false);
 
-    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(getDebeziumProperties(database, catalog, false), sourceConfig, catalog);
+    final var cdcStreamList = catalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
+    final var propertiesManager =
+        new RelationalDbDebeziumPropertiesManager(getDebeziumProperties(database, catalog, false), sourceConfig, catalog, cdcStreamList);
     final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, new MssqlCdcSavedInfoFetcher(stateToBeUsed), new MssqlCdcStateHandler(stateManager));
