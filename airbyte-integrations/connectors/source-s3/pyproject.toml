@@ -30,11 +30,11 @@ source-s3 = "source_s3.run:run"
 
 [tool.poetry.dependencies.airbyte-cdk]
 extras = [ "file-based",]
-version = "4.5.17"
+version = "^1"
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
-version = "4.5.17"
+version = "==5.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1"
