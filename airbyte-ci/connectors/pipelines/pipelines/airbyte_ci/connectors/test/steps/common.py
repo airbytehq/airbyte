@@ -351,7 +351,7 @@ class AcceptanceTests(Step):
             stdout=stdout,
             output={"report_log": report_log_artifact},
             artifacts=[report_log_artifact],
-            consider_in_overall_status=is_hard_failure,
+            consider_in_overall_status=status is StepStatus.SUCCESS or is_hard_failure,
         )
 
 
