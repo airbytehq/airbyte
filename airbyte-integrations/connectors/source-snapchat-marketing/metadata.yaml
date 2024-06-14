@@ -33,26 +33,26 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - 'organizations'
-              - 'adaccounts'
-              - 'creatives'
-              - 'ads'
-              - 'adsquads'
-              - 'segments'
-              - 'media'
-              - 'campaigns'
-              - 'adaccounts_stats_hourly'
-              - 'adaccounts_stats_daily'
-              - 'adaccounts_stats_lifetime'
-              - 'ads_stats_hourly'
-              - 'ads_stats_daily'
-              - 'ads_stats_lifetime'
-              - 'adsquads_stats_hourly'
-              - 'adsquads_stats_daily'
-              - 'adsquads_stats_lifetime'
-              - 'campaigns_stats_hourly'
-              - 'campaigns_stats_daily'
-              - 'campaigns_stats_lifetime' 
+              - "organizations"
+              - "adaccounts"
+              - "creatives"
+              - "ads"
+              - "adsquads"
+              - "segments"
+              - "media"
+              - "campaigns"
+              - "adaccounts_stats_hourly"
+              - "adaccounts_stats_daily"
+              - "adaccounts_stats_lifetime"
+              - "ads_stats_hourly"
+              - "ads_stats_daily"
+              - "ads_stats_lifetime"
+              - "adsquads_stats_hourly"
+              - "adsquads_stats_daily"
+              - "adsquads_stats_lifetime"
+              - "campaigns_stats_hourly"
+              - "campaigns_stats_daily"
+              - "campaigns_stats_lifetime"
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   tags:
     - language:python

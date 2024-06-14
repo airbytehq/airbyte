@@ -1,23 +1,23 @@
 [
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "adaccounts_stats_daily",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "adaccounts_stats_daily",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "adaccount_id" : "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
-              "parent_slice" : {
-                "organization_id" : "7f064d90-52a1-42db-b25b-7539e663e926",
-                "parent_slice" : {}
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "start_time" : "2221-01-01T00:00:00"
+            "cursor": {
+              "start_time": "2221-01-01T00:00:00"
             }
           }
         ]
@@ -25,27 +25,27 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ads_stats_daily",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ads_stats_daily",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "ad_id" : "96e5549f-4065-490e-93dd-ffb9f7973b77",
-              "parent_slice" : {
-                "adaccount_id" : "04214c00-3aa5-4123-b5c8-363c32c40e42",
-                "parent_slice" : {
-                  "organization_id" : "7f064d90-52a1-42db-b25b-7539e663e926",
-                  "parent_slice" : {}
+            "partition": {
+              "ad_id": "96e5549f-4065-490e-93dd-ffb9f7973b77",
+              "parent_slice": {
+                "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+                "parent_slice": {
+                  "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                  "parent_slice": {}
                 }
               }
             },
-            "cursor" : {
-              "start_time" : "2221-01-01T00:00:00"
+            "cursor": {
+              "start_time": "2221-01-01T00:00:00"
             }
           }
         ]
@@ -53,27 +53,27 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "adsquads_stats_daily",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "adsquads_stats_daily",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "adsquad_id" : "ac6548b1-419e-4137-8320-e4e536766f72",
-              "parent_slice" : {
-                "adaccount_id" : "04214c00-3aa5-4123-b5c8-363c32c40e42",
-                "parent_slice" : {
-                  "organization_id" : "7f064d90-52a1-42db-b25b-7539e663e926",
-                  "parent_slice" : {}
+            "partition": {
+              "adsquad_id": "ac6548b1-419e-4137-8320-e4e536766f72",
+              "parent_slice": {
+                "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+                "parent_slice": {
+                  "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                  "parent_slice": {}
                 }
               }
             },
-            "cursor" : {
-              "start_time" : "2221-01-01T00:00:00"
+            "cursor": {
+              "start_time": "2221-01-01T00:00:00"
             }
           }
         ]
@@ -81,27 +81,27 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "campaigns_stats_daily",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaigns_stats_daily",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : "3369834f-5bc0-47bd-a4e9-ee48d424d90c",
-              "parent_slice" : {
-                "adaccount_id" : "04214c00-3aa5-4123-b5c8-363c32c40e42",
-                "parent_slice" : {
-                  "organization_id" : "7f064d90-52a1-42db-b25b-7539e663e926",
-                  "parent_slice" : {}
+            "partition": {
+              "campaign_id": "3369834f-5bc0-47bd-a4e9-ee48d424d90c",
+              "parent_slice": {
+                "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+                "parent_slice": {
+                  "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                  "parent_slice": {}
                 }
               }
             },
-            "cursor" : {
-              "start_time" : "2221-01-01T00:00:00"
+            "cursor": {
+              "start_time": "2221-01-01T00:00:00"
             }
           }
         ]

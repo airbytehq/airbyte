@@ -3,11 +3,12 @@
 #
 
 import datetime
-from typing import List, Union
 from dataclasses import dataclass
-from isodate import Duration, parse_duration
+from typing import List, Union
+
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from isodate import Duration, parse_duration
 
 
 @dataclass
@@ -17,9 +18,7 @@ class SnapchatMarketingDatetimeBasedCursor(DatetimeBasedCursor):
     It ensures that the start date is always less than the end date to prevent errors.
     """
 
-    def _partition_daterange(
-        self, start: datetime, end: datetime, step: Union[timedelta, Duration]
-    ) -> List[StreamSlice]:
+    def _partition_daterange(self, start: datetime, end: datetime, step: Union[timedelta, Duration]) -> List[StreamSlice]:
         start_field = self._partition_field_start.eval(self.config)
         end_field = self._partition_field_end.eval(self.config)
         dates = []
@@ -30,11 +29,7 @@ class SnapchatMarketingDatetimeBasedCursor(DatetimeBasedCursor):
 
             dates.append(
                 StreamSlice(
-                    partition={},
-                    cursor_slice={
-                        start_field: self._format_datetime(start),
-                        end_field: self._format_datetime(end_date)
-                    }
+                    partition={}, cursor_slice={start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)}
                 )
             )
 

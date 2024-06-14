@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: me/organizations
           http_method: GET
         record_selector:
@@ -26,7 +26,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - organizations
-              - '*'
+              - "*"
               - organization
           record_filter:
             type: RecordFilter
@@ -46,21 +46,21 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-          - '%Y-%m-%d'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organizations'
+          $ref: "#/schemas/organizations"
     adaccounts:
       type: DeclarativeStream
       name: adaccounts
@@ -69,7 +69,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organizations/{{ stream_slice["organization_id"] }}/adaccounts
           http_method: GET
         record_selector:
@@ -78,7 +78,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - adaccounts
-              - '*'
+              - "*"
               - adaccount
           record_filter:
             type: RecordFilter
@@ -101,25 +101,25 @@ definitions:
               parent_key: id
               partition_field: organization_id
               stream:
-                $ref: '#/definitions/streams/organizations'
+                $ref: "#/definitions/streams/organizations"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/adaccounts'
+          $ref: "#/schemas/adaccounts"
     creatives:
       type: DeclarativeStream
       name: creatives
@@ -128,7 +128,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/creatives
           http_method: GET
         record_selector:
@@ -137,7 +137,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - creatives
-              - '*'
+              - "*"
               - creative
           record_filter:
             type: RecordFilter
@@ -160,25 +160,25 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/creatives'
+          $ref: "#/schemas/creatives"
     ads:
       type: DeclarativeStream
       name: ads
@@ -187,7 +187,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/ads
           http_method: GET
         record_selector:
@@ -196,7 +196,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - ads
-              - '*'
+              - "*"
               - ad
           record_filter:
             type: RecordFilter
@@ -219,25 +219,25 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/ads'
+          $ref: "#/schemas/ads"
     adsquads:
       type: DeclarativeStream
       name: adsquads
@@ -246,7 +246,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/adsquads
           http_method: GET
         record_selector:
@@ -255,7 +255,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - adsquads
-              - '*'
+              - "*"
               - adsquad
           record_filter:
             type: RecordFilter
@@ -278,25 +278,25 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/adsquads'
+          $ref: "#/schemas/adsquads"
     segments:
       type: DeclarativeStream
       name: segments
@@ -305,7 +305,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/segments
           http_method: GET
         record_selector:
@@ -314,7 +314,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - segments
-              - '*'
+              - "*"
               - segment
           record_filter:
             type: RecordFilter
@@ -337,25 +337,25 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/segments'
+          $ref: "#/schemas/segments"
     media:
       type: DeclarativeStream
       name: media
@@ -364,7 +364,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/media
           http_method: GET
         record_selector:
@@ -373,7 +373,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - media
-              - '*'
+              - "*"
               - media
           record_filter:
             type: RecordFilter
@@ -396,25 +396,25 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/media'
+          $ref: "#/schemas/media"
     campaigns:
       type: DeclarativeStream
       name: campaigns
@@ -423,7 +423,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/campaigns
           http_method: GET
         record_selector:
@@ -432,7 +432,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - campaigns
-              - '*'
+              - "*"
               - campaign
           record_filter:
             type: RecordFilter
@@ -455,25 +455,25 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaigns'
+          $ref: "#/schemas/campaigns"
     adaccounts_stats_hourly:
       type: DeclarativeStream
       name: adaccounts_stats_hourly
@@ -484,12 +484,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: HOUR
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: spend
@@ -499,10 +499,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - timeseries_stats
-              - '*'
+              - "*"
               - timeseries_stat
               - timeseries
-              - '*'
+              - "*"
               - stats
         paginator:
           type: DefaultPaginator
@@ -519,18 +519,18 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -541,27 +541,27 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: PT0S
       transformations:
         - type: AddFields
           fields:
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ stream_slice['adaccount_id'] }}"
-            - path: [ "type" ]
+            - path: ["type"]
               value: "AD_ACCOUNT"
-            - path: [ "granularity" ]
+            - path: ["granularity"]
               value: "HOUR"
-            - path: [ "start_time" ]
+            - path: ["start_time"]
               value: "{{ stream_slice['start_time'] }}"
-            - path: [ "end_time" ]
+            - path: ["end_time"]
               value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     adaccounts_stats_daily:
       type: DeclarativeStream
       name: adaccounts_stats_daily
@@ -572,12 +572,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: DAY
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: spend
@@ -587,10 +587,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - timeseries_stats
-              - '*'
+              - "*"
               - timeseries_stat
               - timeseries
-              - '*'
+              - "*"
               - stats
         paginator:
           type: DefaultPaginator
@@ -607,18 +607,18 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -629,27 +629,27 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0S
       transformations:
         - type: AddFields
           fields:
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ stream_slice['adaccount_id'] }}"
-            - path: [ "type" ]
+            - path: ["type"]
               value: "AD_ACCOUNT"
-            - path: [ "granularity" ]
+            - path: ["granularity"]
               value: "DAY"
-            - path: [ "start_time" ]
+            - path: ["start_time"]
               value: "{{ stream_slice['start_time'] }}"
-            - path: [ "end_time" ]
+            - path: ["end_time"]
               value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     adaccounts_stats_lifetime:
       type: DeclarativeStream
       name: adaccounts_stats_lifetime
@@ -659,12 +659,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: LIFETIME
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: spend
@@ -674,7 +674,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - lifetime_stats
-              - '*'
+              - "*"
               - lifetime_stat
         paginator:
           type: DefaultPaginator
@@ -691,11 +691,11 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: '#/definitions/streams/adaccounts'
+                $ref: "#/definitions/streams/adaccounts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     ads_stats_hourly:
       type: DeclarativeStream
       name: ads_stats_hourly
@@ -706,12 +706,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: ads/{{ stream_slice['ad_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: HOUR
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -722,10 +722,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - timeseries_stats
-              - '*'
+              - "*"
               - timeseries_stat
               - timeseries
-              - '*'
+              - "*"
               - stats
         paginator:
           type: DefaultPaginator
@@ -742,18 +742,18 @@ definitions:
               parent_key: id
               partition_field: ad_id
               stream:
-                $ref: '#/definitions/streams/ads'
+                $ref: "#/definitions/streams/ads"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -764,27 +764,27 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: PT0S
       transformations:
         - type: AddFields
           fields:
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ stream_slice['ad_id'] }}"
-            - path: [ "type" ]
+            - path: ["type"]
               value: "AD"
-            - path: [ "granularity" ]
+            - path: ["granularity"]
               value: "HOUR"
-            - path: [ "start_time" ]
+            - path: ["start_time"]
               value: "{{ stream_slice['start_time'] }}"
-            - path: [ "end_time" ]
+            - path: ["end_time"]
               value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     ads_stats_daily:
       type: DeclarativeStream
       name: ads_stats_daily
@@ -795,12 +795,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: ads/{{ stream_slice['ad_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: DAY
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -811,10 +811,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - timeseries_stats
-              - '*'
+              - "*"
               - timeseries_stat
               - timeseries
-              - '*'
+              - "*"
               - stats
         paginator:
           type: DefaultPaginator
@@ -831,18 +831,18 @@ definitions:
               parent_key: id
               partition_field: ad_id
               stream:
-                $ref: '#/definitions/streams/ads'
+                $ref: "#/definitions/streams/ads"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -853,27 +853,27 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0S
       transformations:
         - type: AddFields
           fields:
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ stream_slice['ad_id'] }}"
-            - path: [ "type" ]
+            - path: ["type"]
               value: "AD"
-            - path: [ "granularity" ]
+            - path: ["granularity"]
               value: "DAY"
-            - path: [ "start_time" ]
+            - path: ["start_time"]
               value: "{{ stream_slice['start_time'] }}"
-            - path: [ "end_time" ]
+            - path: ["end_time"]
               value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     ads_stats_lifetime:
       type: DeclarativeStream
       name: ads_stats_lifetime
@@ -883,12 +883,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: ads/{{ stream_slice['ad_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: LIFETIME
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -899,7 +899,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - lifetime_stats
-              - '*'
+              - "*"
               - lifetime_stat
         paginator:
           type: DefaultPaginator
@@ -916,11 +916,11 @@ definitions:
               parent_key: id
               partition_field: ad_id
               stream:
-                $ref: '#/definitions/streams/ads'
+                $ref: "#/definitions/streams/ads"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     adsquads_stats_hourly:
       type: DeclarativeStream
       name: adsquads_stats_hourly
@@ -931,12 +931,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adsquads/{{ stream_slice['adsquad_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: HOUR
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -947,10 +947,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - timeseries_stats
-              - '*'
+              - "*"
               - timeseries_stat
               - timeseries
-              - '*'
+              - "*"
               - stats
         paginator:
           type: DefaultPaginator
@@ -967,18 +967,18 @@ definitions:
               parent_key: id
               partition_field: adsquad_id
               stream:
-                $ref: '#/definitions/streams/adsquads'
+                $ref: "#/definitions/streams/adsquads"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -989,27 +989,27 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: PT0S
       transformations:
         - type: AddFields
           fields:
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ stream_slice['adsquad_id'] }}"
-            - path: [ "type" ]
+            - path: ["type"]
               value: "AD_SQUAD"
-            - path: [ "granularity" ]
+            - path: ["granularity"]
               value: "HOUR"
-            - path: [ "start_time" ]
+            - path: ["start_time"]
               value: "{{ stream_slice['start_time'] }}"
-            - path: [ "end_time" ]
+            - path: ["end_time"]
               value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     adsquads_stats_daily:
       type: DeclarativeStream
       name: adsquads_stats_daily
@@ -1020,12 +1020,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adsquads/{{ stream_slice['adsquad_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: DAY
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -1036,10 +1036,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - timeseries_stats
-              - '*'
+              - "*"
               - timeseries_stat
               - timeseries
-              - '*'
+              - "*"
               - stats
         paginator:
           type: DefaultPaginator
@@ -1056,18 +1056,18 @@ definitions:
               parent_key: id
               partition_field: adsquad_id
               stream:
-                $ref: '#/definitions/streams/adsquads'
+                $ref: "#/definitions/streams/adsquads"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -1078,27 +1078,27 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0S
       transformations:
         - type: AddFields
           fields:
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ stream_slice['adsquad_id'] }}"
-            - path: [ "type" ]
+            - path: ["type"]
               value: "AD_SQUAD"
-            - path: [ "granularity" ]
+            - path: ["granularity"]
               value: "DAY"
-            - path: [ "start_time" ]
+            - path: ["start_time"]
               value: "{{ stream_slice['start_time'] }}"
-            - path: [ "end_time" ]
+            - path: ["end_time"]
               value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     adsquads_stats_lifetime:
       type: DeclarativeStream
       name: adsquads_stats_lifetime
@@ -1108,12 +1108,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adsquads/{{ stream_slice['adsquad_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: LIFETIME
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -1124,7 +1124,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - lifetime_stats
-              - '*'
+              - "*"
               - lifetime_stat
         paginator:
           type: DefaultPaginator
@@ -1141,11 +1141,11 @@ definitions:
               parent_key: id
               partition_field: adsquad_id
               stream:
-                $ref: '#/definitions/streams/adsquads'
+                $ref: "#/definitions/streams/adsquads"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     campaigns_stats_hourly:
       type: DeclarativeStream
       name: campaigns_stats_hourly
@@ -1156,12 +1156,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: campaigns/{{ stream_slice['campaign_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: HOUR
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -1172,10 +1172,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - timeseries_stats
-              - '*'
+              - "*"
               - timeseries_stat
               - timeseries
-              - '*'
+              - "*"
               - stats
         paginator:
           type: DefaultPaginator
@@ -1192,18 +1192,18 @@ definitions:
               parent_key: id
               partition_field: campaign_id
               stream:
-                $ref: '#/definitions/streams/campaigns'
+                $ref: "#/definitions/streams/campaigns"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -1214,27 +1214,27 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: PT0S
       transformations:
         - type: AddFields
           fields:
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ stream_slice['campaign_id'] }}"
-            - path: [ "type" ]
+            - path: ["type"]
               value: "CAMPAIGN"
-            - path: [ "granularity" ]
+            - path: ["granularity"]
               value: "HOUR"
-            - path: [ "start_time" ]
+            - path: ["start_time"]
               value: "{{ stream_slice['start_time'] }}"
-            - path: [ "end_time" ]
+            - path: ["end_time"]
               value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     campaigns_stats_daily:
       type: DeclarativeStream
       name: campaigns_stats_daily
@@ -1245,12 +1245,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: campaigns/{{ stream_slice['campaign_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: DAY
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -1261,10 +1261,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - timeseries_stats
-              - '*'
+              - "*"
               - timeseries_stat
               - timeseries
-              - '*'
+              - "*"
               - stats
         paginator:
           type: DefaultPaginator
@@ -1281,18 +1281,18 @@ definitions:
               parent_key: id
               partition_field: campaign_id
               stream:
-                $ref: '#/definitions/streams/campaigns'
+                $ref: "#/definitions/streams/campaigns"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config.get("start_date", "2011-09-01") }}'
-          datetime_format: '%Y-%m-%d'
+          datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -1303,27 +1303,27 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config.get(''end_date'', now_utc().strftime(''%Y-%m-%d'')) }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0S
       transformations:
         - type: AddFields
           fields:
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ stream_slice['campaign_id'] }}"
-            - path: [ "type" ]
+            - path: ["type"]
               value: "CAMPAIGN"
-            - path: [ "granularity" ]
+            - path: ["granularity"]
               value: "DAY"
-            - path: [ "start_time" ]
+            - path: ["start_time"]
               value: "{{ stream_slice['start_time'] }}"
-            - path: [ "end_time" ]
+            - path: ["end_time"]
               value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
     campaigns_stats_lifetime:
       type: DeclarativeStream
       name: campaigns_stats_lifetime
@@ -1333,12 +1333,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: campaigns/{{ stream_slice['campaign_id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: LIFETIME
-            action_report_time: '{{ config[''action_report_time''] }}'
+            action_report_time: "{{ config['action_report_time'] }}"
             swipe_up_attribution_window: '{{ config["swipe_up_attribution_window"] }}'
             view_attribution_window: '{{ config["view_attribution_window"] }}'
             fields: >-
@@ -1349,7 +1349,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - lifetime_stats
-              - '*'
+              - "*"
               - lifetime_stat
         paginator:
           type: DefaultPaginator
@@ -1366,11 +1366,11 @@ definitions:
               parent_key: id
               partition_field: campaign_id
               stream:
-                $ref: '#/definitions/streams/campaigns'
+                $ref: "#/definitions/streams/campaigns"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/basic_stats'
+          $ref: "#/schemas/basic_stats"
   base_requester:
     type: HttpRequester
     url_base: https://adsapi.snapchat.com/v1/
@@ -1382,28 +1382,39 @@ definitions:
       client_id: '{{ config["client_id"] }}'
       client_secret: '{{ config["client_secret"] }}'
       refresh_token: '{{ config["refresh_token"] }}'
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 403
+              error_message: >-
+                Got permission error when accessing URL. Skipping {{self.name}} stream.
 
 streams:
-  - $ref: '#/definitions/streams/organizations'
-  - $ref: '#/definitions/streams/adaccounts'
-  - $ref: '#/definitions/streams/creatives'
-  - $ref: '#/definitions/streams/ads'
-  - $ref: '#/definitions/streams/adsquads'
-  - $ref: '#/definitions/streams/segments'
-  - $ref: '#/definitions/streams/media'
-  - $ref: '#/definitions/streams/campaigns'
-  - $ref: '#/definitions/streams/adaccounts_stats_hourly'
-  - $ref: '#/definitions/streams/adaccounts_stats_daily'
-  - $ref: '#/definitions/streams/adaccounts_stats_lifetime'
-  - $ref: '#/definitions/streams/ads_stats_hourly'
-  - $ref: '#/definitions/streams/ads_stats_daily'
-  - $ref: '#/definitions/streams/ads_stats_lifetime'
-  - $ref: '#/definitions/streams/adsquads_stats_hourly'
-  - $ref: '#/definitions/streams/adsquads_stats_daily'
-  - $ref: '#/definitions/streams/adsquads_stats_lifetime'
-  - $ref: '#/definitions/streams/campaigns_stats_hourly'
-  - $ref: '#/definitions/streams/campaigns_stats_daily'
-  - $ref: '#/definitions/streams/campaigns_stats_lifetime'
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/adaccounts"
+  - $ref: "#/definitions/streams/creatives"
+  - $ref: "#/definitions/streams/ads"
+  - $ref: "#/definitions/streams/adsquads"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/media"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/adaccounts_stats_hourly"
+  - $ref: "#/definitions/streams/adaccounts_stats_daily"
+  - $ref: "#/definitions/streams/adaccounts_stats_lifetime"
+  - $ref: "#/definitions/streams/ads_stats_hourly"
+  - $ref: "#/definitions/streams/ads_stats_daily"
+  - $ref: "#/definitions/streams/ads_stats_lifetime"
+  - $ref: "#/definitions/streams/adsquads_stats_hourly"
+  - $ref: "#/definitions/streams/adsquads_stats_daily"
+  - $ref: "#/definitions/streams/adsquads_stats_lifetime"
+  - $ref: "#/definitions/streams/campaigns_stats_hourly"
+  - $ref: "#/definitions/streams/campaigns_stats_daily"
+  - $ref: "#/definitions/streams/campaigns_stats_lifetime"
 
 spec:
   type: Spec
@@ -1439,8 +1450,8 @@ spec:
         type: string
         description: Date in the format 2022-01-01. Any data before this date will not be replicated.
         examples:
-          - '2022-01-01'
-        default: '2022-01-01'
+          - "2022-01-01"
+        default: "2022-01-01"
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         order: 3
         format: date
@@ -1450,7 +1461,7 @@ spec:
         description: Date in the format 2017-01-25. Any data after this date will not be replicated.
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
-          - '2022-01-30'
+          - "2022-01-30"
         order: 4
         format: date
       action_report_time:
@@ -2429,7 +2440,6 @@ schemas:
         type:
           - "null"
           - number
-        multipleOf: 1e-10
       image_metadata:
         description: Additional metadata related to the image media.
         type:
