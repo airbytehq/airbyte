@@ -1015,7 +1015,7 @@ class ModelToComponentFactory:
         if client_side_incremental_sync:
             record_filter = ClientSideIncrementalRecordFilterDecorator(
                 config=config,
-                parameters=model.parameters,
+                parameters=model.field_parameters,
                 condition=model.record_filter.condition if model.record_filter else None,
                 **client_side_incremental_sync,
             )
