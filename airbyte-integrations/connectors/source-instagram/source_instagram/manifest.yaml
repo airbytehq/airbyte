@@ -247,7 +247,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              caption,id,id_id,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username
+              caption,id,ig_id,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
