@@ -227,8 +227,13 @@ FQL [`Select`](https://docs.fauna.com/fauna/current/api/fql/functions/select) is
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                         |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------- |
 | 0.1.2 | 2024-05-20 | [38380](https://github.com/airbytehq/airbyte/pull/38380) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2022-12-12 | [20275](https://github.com/airbytehq/airbyte/pull/20275) | Fix index lookup with no values |
 | 0.1.0 | 2022-11-17 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source |
+
+</details>
