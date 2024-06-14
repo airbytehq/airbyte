@@ -4,14 +4,15 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.jackson.MoreMappers;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.ProductionWriterFactory;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -21,10 +22,14 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AzureBlobStorageSpillTest {
 
@@ -37,8 +42,6 @@ public class AzureBlobStorageSpillTest {
   private AzureBlobStorageConsumer azureBlobStorageConsumer;
 
   private BlobContainerClient blobContainerClient;
-
-  private static final ObjectMapper mapper = MoreMappers.initMapper();
 
   @BeforeEach
   void setup() {
@@ -94,7 +97,6 @@ public class AzureBlobStorageSpillTest {
   }
 
   private static AzureBlobStorageDestinationConfig createConfig(String host, Integer mappedPort) {
-
     final ObjectNode stubFormatConfig = mapper.createObjectNode();
     stubFormatConfig.put("file_extension", Boolean.TRUE);
     final ObjectNode stubConfig = mapper.createObjectNode();
