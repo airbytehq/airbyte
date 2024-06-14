@@ -1,4 +1,4 @@
-# `[shop, store]` Migration Guide
+# Recharge Migration Guide
 
 ## Upgrading to 2.0.0
 
