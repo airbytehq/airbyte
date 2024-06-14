@@ -47,7 +47,8 @@ class AirbyteFileOffsetBackingStore(
                 Jsons.`object`(cdcState, MutableMap::class.java) as Map<String, String>
             else emptyMap()
 
-        val updatedMap = updateStateForDebezium2_1(mapAsString)
+        var updatedMap = updateStateForDebezium2_1(mapAsString)
+        updatedMap = updateStateForDebezium2_6(updatedMap)
 
         val mappedAsStrings: Map<ByteBuffer?, ByteBuffer?> =
             updatedMap.entries.associate {
@@ -71,11 +72,33 @@ class AirbyteFileOffsetBackingStore(
                 return mapAsString
             }
 
-            LOGGER.info { "Mutating sate to make it Debezium 2.1 compatible" }
+            LOGGER.info { "Mutating state to make it Debezium 2.1 compatible" }
             val newKey =
                 if (dbName.isPresent)
                     SQL_SERVER_STATE_MUTATION.apply(key.substring(i, i1 + 1), dbName.get())
                 else key.substring(i, i1 + 1)
+            val value = mapAsString.getValue(key)
+            updatedMap[newKey] = value
+        }
+        return updatedMap
+    }
+
+    // Previously:
+    // {"["ci-test-database",{"rs":"atlas-pexnnq-shard-0","server_id":"ci-test-database"}]":"{"sec":1715722523,"ord":2,"transaction_id":null,"resume_token":"826643D91B000000022B0429296E1404"}"}
+    // Now:
+    // {["ci-test-database",{"server_id":"ci-test-database"}]={"sec":0,"ord":-1,"resume_token":"826643FA09000000022B0429296E1404"}}
+    private fun updateStateForDebezium2_6(mapAsString: Map<String, String>): Map<String, String> {
+        val updatedMap: MutableMap<String, String> = LinkedHashMap()
+        if (mapAsString.size > 0) {
+            val key = mapAsString.keys.stream().toList()[0]
+
+            if (!key.contains("\"rs\":")) {
+                // The state is Debezium 2.6 compatible. No need to change anything.
+                return mapAsString
+            }
+
+            LOGGER.info { "Mutating state to make it Debezium 2.6 compatible" }
+            val newKey = mongoShardMutation(key)
             val value = mapAsString.getValue(key)
             updatedMap[newKey] = value
         }
@@ -163,6 +186,22 @@ class AirbyteFileOffsetBackingStore(
                 databaseName +
                 "\"" +
                 key.substring(key.length - 2))
+        }
+        private fun mongoShardMutation(input: String): String {
+            val jsonObjectStart = input.indexOf("{", input.indexOf("["))
+            val jsonObjectEnd = input.lastIndexOf("}")
+
+            // Extract the JSON object as a substring
+            val jsonObjectString = input.substring(jsonObjectStart, jsonObjectEnd + 1)
+
+            // Remove the "rs" key-value pair using a regex
+            val modifiedJsonObjectString =
+                jsonObjectString.replace(Regex("""("rs":\s*".+?",\s*)"""), "")
+
+            // Replace the old JSON object with the modified one in the input string
+            val finalString = input.replace(jsonObjectString, modifiedJsonObjectString)
+
+            return finalString
         }
 
         private fun byteBufferToString(byteBuffer: ByteBuffer?): String {
