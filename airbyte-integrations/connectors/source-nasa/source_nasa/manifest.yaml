@@ -15,11 +15,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: planetary/apod
           http_method: GET
           request_parameters:
-            api_key: '{{ config[''api_key''] }}'
+            api_key: "{{ config['api_key'] }}"
             start_date: >-
               {{ stream_interval.start_time if stream_interval else
               config['start_date'] }}
@@ -35,28 +35,28 @@ definitions:
         incremental_cursor: date
         path: planetary/apod
         cursor_datetime_formats:
-          - '%Y-%m-%d'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/nasa_apod'
+          $ref: "#/schemas/nasa_apod"
   base_requester:
     type: HttpRequester
     url_base: https://api.nasa.gov/
 
 streams:
-  - $ref: '#/definitions/streams/nasa_apod'
+  - $ref: "#/definitions/streams/nasa_apod"
 
 spec:
   type: Spec
@@ -98,7 +98,7 @@ spec:
           without an `end_date` then `end_date` defaults to the current date.
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
-          - '2022-10-20'
+          - "2022-10-20"
         format: date
         order: 3
       start_date:
@@ -110,7 +110,7 @@ spec:
           no images for tomorrow available through this API.
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
-          - '2022-10-20'
+          - "2022-10-20"
         format: date
         order: 4
       thumbs:
@@ -135,72 +135,72 @@ schemas:
     properties:
       concept_tags:
         type:
-          - 'null'
+          - "null"
           - boolean
       concepts:
         type:
-          - 'null'
+          - "null"
           - object
           - string
         patternProperties:
           ^[0-9]+$:
             type:
-              - 'null'
+              - "null"
               - string
       copyright:
         type:
-          - 'null'
+          - "null"
           - string
       date:
         type:
-          - 'null'
+          - "null"
           - string
-        format: '%Y-%m-%d'
+        format: "%Y-%m-%d"
       explanation:
         type:
-          - 'null'
+          - "null"
           - string
       hdurl:
         type:
-          - 'null'
+          - "null"
           - string
         format: uri
       media_type:
         type:
-          - 'null'
+          - "null"
           - string
         enum:
           - image
           - video
       resource:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           image_set:
             type:
-              - 'null'
+              - "null"
               - string
           planet:
             type:
-              - 'null'
+              - "null"
               - string
       service_version:
         type:
-          - 'null'
+          - "null"
           - string
         pattern: ^v[0-9]$
       thumbnail_url:
         type:
-          - 'null'
+          - "null"
           - string
         format: uri
       title:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
         format: uri
