@@ -1,20 +1,19 @@
-import requests
-
 from dataclasses import dataclass
-from typing import Any, MutableMapping, Optional, Dict
+from typing import Any, Dict, MutableMapping, Optional
 
+import requests
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config
+from source_instagram import SourceInstagram
 
 from .common import remove_params_from_url
-from source_instagram import SourceInstagram
 
 GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
 
 
 def get_http_response(path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
-    url = f'{GRAPH_URL}/{path}'
+    url = f"{GRAPH_URL}/{path}"
     token = config["access_token"]
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     params = {
@@ -47,15 +46,15 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
         """
         Fetch children data if such field is present, it will update each element on the response
         """
-        children = record.get('children')
+        children = record.get("children")
         children_fetched = []
-        fields = 'id,ig_id,media_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username'
+        fields = "id,ig_id,media_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username"
         if children:
             children_ids = [child.get("id") for child in children.get("data")]
             for children_id in children_ids:
-                    media_data = get_http_response(children_id, {"fields": fields}, config=config)
-                    media_data = InstagramClearUrlTransformation().transform(media_data)
-                    children_fetched.append(media_data)
+                media_data = get_http_response(children_id, {"fields": fields}, config=config)
+                media_data = InstagramClearUrlTransformation().transform(media_data)
+                children_fetched.append(media_data)
 
             record["children"] = children_fetched
         return record
@@ -66,6 +65,7 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
     """
     Converts an array of breakdowns into an object.
     """
+
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["value"] = {res.get("dimension_values")[0]: res.get("value") for res in record["value"]}
         return record

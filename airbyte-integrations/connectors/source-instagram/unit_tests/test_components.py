@@ -1,7 +1,7 @@
 from typing import Dict
 
-from source_instagram.components import (InstagramMediaChildrenTransformation, InstagramClearUrlTransformation, GRAPH_URL)
-from records import children_record, expected_children_transformed, clear_url_record, clear_url_record_transformed
+from records import children_record, clear_url_record, clear_url_record_transformed, expected_children_transformed
+from source_instagram.components import GRAPH_URL, InstagramClearUrlTransformation, InstagramMediaChildrenTransformation
 
 
 def mock_path(requests_mock, path: str, method: str = "GET", response: Dict = None):

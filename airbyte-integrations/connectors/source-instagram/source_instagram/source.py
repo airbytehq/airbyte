@@ -8,6 +8,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.sources.streams.core import Stream
 from source_instagram.api import InstagramAPI
 from source_instagram.streams import MediaInsights, StoryInsights, UserInsights
+
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
 source connector.
@@ -56,5 +57,5 @@ class SourceInstagram(YamlDeclarativeSource):
             MediaInsights(api=api),
             StoryInsights(api=api),
             UserInsights(api=api, start_date=config["start_date"]),
-            ]
+        ]
         return streams
