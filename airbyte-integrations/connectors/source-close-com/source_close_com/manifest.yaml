@@ -510,4 +510,3 @@ streams:
 check:
   stream_names:
     - "users"
-
