@@ -10,8 +10,11 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.ProductionWriterFactory;
@@ -42,6 +45,8 @@ public class AzureBlobStorageSpillTest {
   private AzureBlobStorageConsumer azureBlobStorageConsumer;
 
   private BlobContainerClient blobContainerClient;
+
+  private static final ObjectMapper mapper = MoreMappers.initMapper();
 
   @BeforeEach
   void setup() {
