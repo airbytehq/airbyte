@@ -372,9 +372,11 @@ class BulkSalesforceStream(SalesforceStream):
         This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
         the response buffer (which is either by calling `json` or `iter_content`)
         """
-        headers = (
-            self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
-        )  # FIXME can we remove this?
+
+        # headers = (
+        #     self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
+        # )  # FIXME can we remove this?
+        headers = {}
         return self._http_client.send_request(method, url, headers=headers, json=json, request_kwargs={})[1]
 
     @default_backoff_handler(max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS)
