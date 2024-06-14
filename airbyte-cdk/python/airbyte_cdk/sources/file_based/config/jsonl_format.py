@@ -2,12 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Literal
-
-from airbyte_cdk.utils.oneof_option_config import one_of_model_config
-from pydantic import BaseModel
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+from pydantic.v1 import BaseModel, Field
 
 
 class JsonlFormat(BaseModel):
-    model_config = one_of_model_config(title="Jsonl Format", description="Read data from JSONL files.", discriminator="filetype")
-    filetype: Literal["jsonl"] = "jsonl"
+    class Config(OneOfOptionConfig):
+        title = "Jsonl Format"
+        discriminator = "filetype"
+
+    filetype: str = Field(
+        "jsonl",
+        const=True,
+    )

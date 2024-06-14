@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 import dpath
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic.v1 import AnyUrl, BaseModel, Field
 
 
 class AbstractFileBasedSpec(BaseModel):
@@ -19,7 +19,6 @@ class AbstractFileBasedSpec(BaseModel):
     """
 
     start_date: Optional[str] = Field(
-        None,
         title="Start Date",
         description="UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified before this date will not be replicated.",
         examples=["2021-01-01T00:00:00.000000Z"],
@@ -43,11 +42,11 @@ class AbstractFileBasedSpec(BaseModel):
         """
 
     @classmethod
-    def model_json_schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         Generates the mapping comprised of the config fields
         """
-        schema = super().model_json_schema(*args, **kwargs)
+        schema = super().schema(*args, **kwargs)
         transformed_schema: Dict[str, Any] = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
         cls.replace_enum_allOf_and_anyOf(transformed_schema)

@@ -9,7 +9,7 @@ from unittest.mock import Mock, PropertyMock
 from airbyte_cdk.sources.file_based.availability_strategy.default_file_based_availability_strategy import (
     DefaultFileBasedAvailabilityStrategy,
 )
-from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -21,7 +21,7 @@ _FILE_WITH_UNKNOWN_EXTENSION = RemoteFile(uri="a.unknown_extension", last_modifi
 _ANY_CONFIG = FileBasedStreamConfig(
     name="config.name",
     file_type="parquet",
-    format=CsvFormat(),
+    format=JsonlFormat(),
 )
 _ANY_SCHEMA = {"key": "value"}
 

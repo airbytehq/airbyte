@@ -4,17 +4,17 @@
 
 from typing import List, Literal, Optional, Union
 
-from airbyte_cdk.utils.oneof_option_config import one_of_model_config
-from pydantic import BaseModel, Field
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+from pydantic.v1 import BaseModel, Field
 
 
 class LocalProcessingConfigModel(BaseModel):
-    mode: Literal["local"] = "local"
-    model_config = one_of_model_config(
-        title="Local",
-        description="Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
-        discriminator="mode",
-    )
+    mode: Literal["local"] = Field("local", const=True)
+
+    class Config(OneOfOptionConfig):
+        title = "Local"
+        description = "Process files locally, supporting `fast` and `ocr` modes. This is the default option."
+        discriminator = "mode"
 
 
 class APIParameterConfigModel(BaseModel):
@@ -27,12 +27,7 @@ class APIParameterConfigModel(BaseModel):
 
 
 class APIProcessingConfigModel(BaseModel):
-    mode: Literal["api"] = "api"
-    model_config = one_of_model_config(
-        title="API",
-        description="Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured.",
-        discriminator="mode",
-    )
+    mode: Literal["api"] = Field("api", const=True)
 
     api_key: str = Field(
         default="",
@@ -57,15 +52,22 @@ class APIProcessingConfigModel(BaseModel):
         description="List of parameters send to the API",
     )
 
+    class Config(OneOfOptionConfig):
+        title = "via API"
+        description = "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured."
+        discriminator = "mode"
+
 
 class UnstructuredFormat(BaseModel):
-    model_config = one_of_model_config(
-        title="Unstructured Document Format",
-        description="Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
-        discriminator="filetype",
-    )
+    class Config(OneOfOptionConfig):
+        title = "Unstructured Document Format"
+        description = "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file."
+        discriminator = "filetype"
 
-    filetype: Literal["unstructured"] = "unstructured"
+    filetype: str = Field(
+        "unstructured",
+        const=True,
+    )
 
     skip_unprocessable_files: bool = Field(
         default=True,
@@ -83,7 +85,7 @@ class UnstructuredFormat(BaseModel):
         description="The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf",
     )
 
-    processing: Union[LocalProcessingConfigModel, APIProcessingConfigModel] = Field(
+    processing: Union[LocalProcessingConfigModel, APIProcessingConfigModel,] = Field(
         default=LocalProcessingConfigModel(mode="local"),
         title="Processing",
         description="Processing configuration",

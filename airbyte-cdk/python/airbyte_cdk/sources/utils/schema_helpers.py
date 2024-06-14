@@ -85,12 +85,13 @@ def _expand_refs(schema: Any, ref_resolver: Optional[RefResolver] = None) -> Non
 
 
 def expand_refs(schema: Any) -> None:
-    """Iterate over schema and replace all occurrences of $ref with their definitions.
+    """Iterate over schema and replace all occurrences of $ref with their definitions, under the `definitions` key in
+    Pydantic v1 generated schemas.
 
     :param schema: schema that will be patched
     """
     _expand_refs(schema)
-    schema.pop("$defs", None)  # remove definitions created by $ref
+    schema.pop("definitions", None)  # remove definitions created by $ref
 
 
 class ResourceSchemaLoader:
