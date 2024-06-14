@@ -1,0 +1,732 @@
+version: 1.3.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - media
+
+definitions:
+  streams:
+    Media:
+      type: DeclarativeStream
+      name: media
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: '{{ stream_partition.account.business_account_id }}/media'
+          http_method: GET
+          request_parameters:
+            fields: >-
+              caption,comments_count,id,ig_id,is_comment_enabled,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username,children
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get("paging", {}).get("cursors", {}).get("after", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("paging", {}).get("cursors", {}).get("after",
+              {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: account
+              partition_field: account
+              stream:
+                $ref: '#/definitions/streams/Api'
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - page_id
+              value: '{{ stream_partition.account.page_id }}'
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - business_account_id
+              value: '{{ stream_partition.account.business_account_id }}'
+              value_type: string
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramMediaChildrenTransformation
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramClearUrlTransformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Media'
+    Users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: '{{ stream_partition.account.business_account_id }}'
+          http_method: GET
+          request_parameters:
+            fields: >-
+              id,biography,ig_id,followers_count,follows_count,media_count,name,profile_picture_url,username,website
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: account
+              partition_field: account
+              stream:
+                $ref: '#/definitions/streams/Api'
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - page_id
+              value: '{{ stream_partition.account.page_id }}'
+              value_type: string
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramClearUrlTransformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Users'
+    UserLifetimeInsights:
+      type: DeclarativeStream
+      name: user_lifetime_insights
+      primary_key:
+        - business_account_id
+        - breakdown
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: '{{ stream_partition.account.business_account_id }}/insights'
+          http_method: GET
+          request_parameters:
+            limit: '100'
+            metric: follower_demographics
+            period: lifetime
+            breakdown: '{{ stream_partition.breakdown }}'
+            metric_type: total_value
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          - type: ListPartitionRouter
+            values:
+              - city
+              - country
+              - age,gender
+            cursor_field: breakdown
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: account
+                partition_field: account
+                stream:
+                  $ref: '#/definitions/streams/Api'
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - breakdown
+              value: '{{ stream_partition[''breakdown''] }}'
+        - type: AddFields
+          fields:
+            - path:
+                - business_account_id
+              value: '{{ stream_partition.account.business_account_id|string }}'
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - page_id
+              value: '{{ stream_partition.account.page_id }}'
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - metric
+              value: '{{ record[''name''] }}'
+        - type: AddFields
+          fields:
+            - path:
+                - value
+              value: '{{ record[''total_value''][''breakdowns''][0][''results''] }}'
+        - type: RemoveFields
+          field_pointers:
+            - - name
+        - type: RemoveFields
+          field_pointers:
+            - - period
+        - type: RemoveFields
+          field_pointers:
+            - - title
+        - type: RemoveFields
+          field_pointers:
+            - - description
+        - type: RemoveFields
+          field_pointers:
+            - - total_value
+        - type: RemoveFields
+          field_pointers:
+            - - id
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramBreakDownResultsTransformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/UserLifetimeInsights'
+    Stories:
+      type: DeclarativeStream
+      name: stories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: '{{ stream_partition.account.business_account_id}}/stories'
+          http_method: GET
+          request_parameters:
+            fields: >-
+              caption,id,id_id,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: account
+              partition_field: account
+              stream:
+                $ref: '#/definitions/streams/Api'
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - page_id
+              value: '{{ stream_partition.account.page_id }}'
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - business_account_id
+              value: '{{ stream_partition.account.business_account_id }}'
+              value_type: string
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramClearUrlTransformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Stories'
+    Api:
+      type: DeclarativeStream
+      name: Api
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: me/accounts
+          http_method: GET
+          request_parameters:
+            fields: id,instagram_business_account
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - account
+              value: >-
+                {{ { "business_account_id":
+                record["instagram_business_account"]["id"], "page_id":
+                record["id"] } }}
+        - type: RemoveFields
+          field_pointers:
+            - - instagram_business_account
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Api'
+  base_requester:
+    type: HttpRequester
+    url_base: https://graph.facebook.com/v19.0
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["access_token"] }}'
+
+streams:
+  - $ref: '#/definitions/streams/Media'
+  - $ref: '#/definitions/streams/Users'
+  - $ref: '#/definitions/streams/UserLifetimeInsights'
+  - $ref: '#/definitions/streams/Stories'
+  - $ref: '#/definitions/streams/Api'
+
+metadata:
+  autoImportSchema:
+    Media: true
+    Users: true
+    UserLifetimeInsights: true
+    Stories: true
+    Api: true
+  yamlComponents:
+    streams:
+      Media:
+        - transformations
+      Users:
+        - transformations
+      UserLifetimeInsights:
+        - transformations
+      Stories:
+        - transformations
+
+schemas:
+  Media:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      business_account_id:
+        description: The unique identifier for the business account associated with the media.
+        type:
+          - string
+          - 'null'
+      caption:
+        description: The caption or description provided for the media.
+        type:
+          - string
+          - 'null'
+      children:
+        description: Contains an array of media items that are part of the post.
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            id:
+              description: The unique identifier for the child media item.
+              type:
+                - string
+                - 'null'
+            ig_id:
+              description: The Instagram-specific identifier for the child media item.
+              type:
+                - string
+                - 'null'
+            media_type:
+              description: The type of media of the child item (e.g., image, video).
+              type:
+                - string
+                - 'null'
+            media_url:
+              description: The URL for accessing the media content of the child item.
+              type:
+                - string
+                - 'null'
+            owner:
+              description: Contains information about the owner of the media item.
+              type:
+                - object
+                - 'null'
+              properties:
+                id:
+                  description: The unique identifier of the owner of the child media item.
+                  type:
+                    - string
+                    - 'null'
+            permalink:
+              description: The permanent link to the child media item on Instagram.
+              type:
+                - string
+                - 'null'
+            shortcode:
+              description: The unique shortcode assigned to the child media item.
+              type:
+                - string
+                - 'null'
+            thumbnail_url:
+              description: The URL for accessing the thumbnail image of the child media item.
+              type:
+                - string
+                - 'null'
+            timestamp:
+              format: date-time
+              description: The date and time when the child media item was created.
+              type:
+                - string
+                - 'null'
+              airbyte_type: timestamp_with_timezone
+            username:
+              description: The username of the owner of the child media item.
+              type:
+                - string
+                - 'null'
+      comments_count:
+        description: The total number of comments received on the media.
+        type:
+          - number
+          - 'null'
+      id:
+        description: The unique identifier for the media item.
+        type:
+          - string
+          - 'null'
+      ig_id:
+        description: The Instagram-specific identifier for the media item.
+        type:
+          - string
+          - 'null'
+      is_comment_enabled:
+        description: A flag indicating whether comments are enabled for the media.
+        type:
+          - boolean
+          - 'null'
+      like_count:
+        description: The total number of likes received on the media.
+        type:
+          - number
+          - 'null'
+      media_product_type:
+        description: The product type associated with the media (e.g., shopping product).
+        type:
+          - string
+          - 'null'
+      media_type:
+        description: The type of media (e.g., image, video) of the media item.
+        type:
+          - string
+          - 'null'
+      media_url:
+        description: The URL for accessing the media content of the media item.
+        type:
+          - string
+          - 'null'
+      owner:
+        description: Contains information about the owner of the post.
+        type:
+          - object
+          - 'null'
+        properties:
+          id:
+            description: The unique identifier of the owner of the media item.
+            type:
+              - string
+              - 'null'
+      page_id:
+        description: The unique identifier for the Instagram page associated with the media.
+        type:
+          - string
+          - 'null'
+      permalink:
+        description: The permanent link to the media item on Instagram.
+        type:
+          - string
+          - 'null'
+      shortcode:
+        description: The unique shortcode assigned to the media item.
+        type:
+          - string
+          - 'null'
+      thumbnail_url:
+        description: The URL for accessing the thumbnail image of the media item.
+        type:
+          - string
+          - 'null'
+      timestamp:
+        format: date-time
+        description: The date and time when the media item was created.
+        airbyte_type: timestamp_with_timezone
+        type:
+          - string
+          - 'null'
+      username:
+        description: The username of the owner of the media item.
+        type:
+          - string
+          - 'null'
+    required:
+      - id
+  Users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      biography:
+        description: The biography or description provided by the user in their profile.
+        type:
+          - string
+          - 'null'
+      followers_count:
+        description: The number of followers the user has on Instagram.
+        type:
+          - integer
+          - 'null'
+      follows_count:
+        description: The number of accounts that the user follows on Instagram.
+        type:
+          - integer
+          - 'null'
+      id:
+        description: The unique identifier for the user's account.
+        type:
+          - string
+          - 'null'
+      ig_id:
+        description: The Instagram ID associated with the user's account.
+        type:
+          - integer
+          - 'null'
+      media_count:
+        description: The total number of media items (posts) uploaded by the user.
+        type:
+          - integer
+          - 'null'
+      name:
+        description: The name displayed on the user's Instagram account.
+        type:
+          - string
+          - 'null'
+      page_id:
+        description: The unique identifier for the user's associated Instagram page.
+        type:
+          - string
+          - 'null'
+      profile_picture_url:
+        description: The URL to the user's profile picture.
+        type:
+          - string
+          - 'null'
+      username:
+        description: The username used by the user to log in to their Instagram account.
+        type:
+          - string
+          - 'null'
+      website:
+        description: The website link provided by the user on their Instagram profile.
+        type:
+          - string
+          - 'null'
+    required:
+      - id
+  UserLifetimeInsights:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      breakdown:
+        description: The breakdown of the insights data, such as age, gender, location, etc.
+        type:
+          - string
+          - 'null'
+      business_account_id:
+        description: The identifier of the business account to which the insights belong
+        type:
+          - string
+          - 'null'
+      metric:
+        description: The specific metric or measure tracked in the insights data
+        type:
+          - string
+          - 'null'
+      page_id:
+        description: The identifier of the Instagram page associated with the insights
+        type:
+          - string
+          - 'null'
+      value:
+        description: The actual value of the metric for the given breakdown and page
+        type:
+          - object
+          - 'null'
+    required:
+      - business_account_id
+      - breakdown
+  Stories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      business_account_id:
+        description: The ID of the business account associated with the story.
+        type:
+          - string
+          - 'null'
+      id:
+        description: Unique ID of the story.
+        type:
+          - string
+          - 'null'
+      like_count:
+        description: Number of likes on the story.
+        type:
+          - integer
+          - 'null'
+      media_product_type:
+        description: Product type associated with the media in the story.
+        type:
+          - string
+          - 'null'
+      media_type:
+        description: Type of media in the story (image, video, etc.).
+        type:
+          - string
+          - 'null'
+      media_url:
+        description: URL of the media in the story.
+        type:
+          - string
+          - 'null'
+      owner:
+        description: The user who owns the story.
+        type:
+          - object
+          - 'null'
+        properties:
+          id:
+            type:
+              - string
+              - 'null'
+      page_id:
+        description: ID of the page associated with the story.
+        type:
+          - string
+          - 'null'
+      permalink:
+        description: Permanent link to the story.
+        type:
+          - string
+          - 'null'
+      thumbnail_url:
+        description: URL of the thumbnail of the media in the story.
+        type:
+          - string
+          - 'null'
+      shortcode:
+        description: Shortcode identifier of the story.
+        type:
+          - string
+          - 'null'
+      timestamp:
+        description: Timestamp when the story was posted.
+        airbyte_type: timestamp_with_timezone
+        type:
+          - string
+          - 'null'
+      username:
+        description: Username associated with the story.
+        type:
+          - string
+          - 'null'
+    required:
+      - id
+  Api:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - object
+          - 'null'
+        properties:
+          business_account_id:
+            type:
+              - string
+              - 'null'
+          page_id:
+            type:
+              - string
+              - 'null'
+      id:
+        type: string
+    required:
+      - id
