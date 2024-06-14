@@ -115,12 +115,12 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
         self.log(f"Request params: {request_params}")
         return request_params
 
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Dict]:
         try:
             json_response = response.json()
             self.log(f"Received json: {str(json_response)}")
             if json_response.get("code") in [200, 201, 202]:
-                self.type = 2
                 return None
         except ValueError:
             # Assume it's TSV data if not JSON
@@ -139,7 +139,8 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
                 parsed_response = self.parse_response(response)
                 if parsed_response:
                     for row in parsed_response:
-                        yield row
+                        yield self._transform_record(row)
+                    self.type = 2
                     self.state = {self.cursor_field: datetime.now().strftime('%Y-%m-%d')}
                     break
                 else:
@@ -150,9 +151,11 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
         if retries == self.async_retries:
             raise Exception("Max retries exceeded. Could not fetch TSV data.")
 
+    def _transform_record(self, record):
+        return {key.lower().replace(" ", "_"): value for key, value in record.items()}
 
 class Reports(MintegralReportingStream):
-    primary_key = ["Creative Id", "date"]
+    primary_key = ["creative_id", "date"]
 
     def path(self, **kwargs) -> str:
         return ""

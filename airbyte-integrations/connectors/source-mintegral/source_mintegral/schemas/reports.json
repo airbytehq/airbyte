@@ -2,43 +2,43 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "Date": {
+    "date": {
       "type": ["string", "null"]
     },
-    "Creative Id": {
+    "creative_id": {
       "type": ["integer", "null"]
     },
-    "Creative Name Id": {
+    "creative_name_id": {
       "type": ["string", "null"]
     },
-    "Currency Name Id": {
+    "currency_name_id": {
       "type": ["string", "null"]
     },
-    "Impression": {
+    "impression": {
       "type": ["integer", "null"]
     },
-    "Click": {
+    "click": {
       "type": ["integer", "null"]
     },
-    "Conversion": {
+    "conversion": {
       "type": ["integer", "null"]
     },
-    "Ecpm": {
+    "ecpm": {
       "type": ["number", "null"]
     },
-    "Cpc": {
+    "cpc": {
       "type": ["number", "null"]
     },
-    "Ctr": {
+    "ctr": {
       "type": ["number", "null"]
     },
-    "Cvr": {
+    "cvr": {
       "type": ["number", "null"]
     },
-    "Ivr": {
+    "ivr": {
       "type": ["number", "null"]
     },
-    "Spend": {
+    "spend": {
       "type": ["number", "null"]
     }
   }
