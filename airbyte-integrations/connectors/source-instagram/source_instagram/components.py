@@ -1,4 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+from datetime import datetime
 
 from dataclasses import dataclass
 from typing import Any, Dict, MutableMapping, Optional
@@ -56,6 +57,11 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
             for children_id in children_ids:
                 media_data = get_http_response(children_id, {"fields": fields}, config=config)
                 media_data = InstagramClearUrlTransformation().transform(media_data)
+                if media_data.get("timestamp"):
+                    dt = datetime.strptime(media_data["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
+                    formatted_str = dt.strftime("%Y-%m-%dT%H:%M:%S%z")
+                    formatted_str_with_colon = formatted_str[:-2] + ":" + formatted_str[-2:]
+                    media_data["timestamp"] = formatted_str_with_colon
                 children_fetched.append(media_data)
 
             record["children"] = children_fetched
