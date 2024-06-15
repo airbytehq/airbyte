@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-from datetime import datetime
-
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Dict, MutableMapping, Optional
 
 import requests
