@@ -76,6 +76,12 @@ definitions:
           fields:
             - type: AddedFieldDefinition
               path:
+                - timestamp
+              value: '{% set datetime_str = format_datetime(record["timestamp"], "%Y-%m-%dT%H:%M:%S%z") %}{% set formatted_datetime = datetime_str[:-2] + ":" + datetime_str[-2:] %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
                 - business_account_id
               value: "{{ stream_partition.account.business_account_id }}"
               value_type: string
@@ -285,6 +291,12 @@ definitions:
                 - business_account_id
               value: "{{ stream_partition.account.business_account_id }}"
               value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - timestamp
+              value: '{% set datetime_str = format_datetime(record["timestamp"], "%Y-%m-%dT%H:%M:%S%z") %}{% set formatted_datetime = datetime_str[:-2] + ":" + datetime_str[-2:] %}{{ formatted_datetime }}'
         - type: CustomTransformation
           class_name: source_instagram.components.InstagramClearUrlTransformation
       schema_loader:
