@@ -438,6 +438,7 @@
               "default": 1,
               "maximum": 89,
               "minimum": 1,
+              "exclusiveMinimum": 0,
               "type": "integer"
             },
             "start_date": {
