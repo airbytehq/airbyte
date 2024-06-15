@@ -41,13 +41,11 @@ open class SourceStateIterator<T>(
                     sourceStateMessageProducer.shouldEmitStateMessage(stream)
             ) {
                 val stateMessage =
-                    sourceStateMessageProducer.generateStateMessageAtCheckpoint(stream)
-                if (shouldAttachCountWithState()) {
-                    stateMessage!!.withSourceStats(
-                        AirbyteStateStats().withRecordCount(recordCount.toDouble())
-                    )
-                }
-
+                sourceStateMessageProducer.generateStateMessageAtCheckpoint(stream)
+                stateMessage!!.withSourceStats(
+                    AirbyteStateStats().withRecordCount(recordCount.toDouble())
+                )
+                
                 recordCount = 0L
                 lastCheckpoint = Instant.now()
                 return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
