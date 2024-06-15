@@ -316,7 +316,6 @@ class SemiIncrementalMixin(CheckpointMixin):
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
         current_stream_state.setdefault(slice_value, {})[self.cursor_field] = updated_state
-        print(f"updated state: {current_stream_state}")
         return current_stream_state
 
     def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
