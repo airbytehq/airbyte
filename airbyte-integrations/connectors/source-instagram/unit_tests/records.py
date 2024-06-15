@@ -31,7 +31,7 @@ expected_children_transformed = {
               "id": "id"
             },
             "shortcode": "shortcode",
-            "timestamp": "2021-03-03T22:48:39+0000",
+            "timestamp": "2021-03-03T22:48:39+00:00",
             "username": "username"
           },
           {
@@ -43,7 +43,7 @@ expected_children_transformed = {
               "id": "id"
             },
             "shortcode": "shortcode",
-            "timestamp": "2021-03-03T22:48:39+0000",
+            "timestamp": "2021-03-03T22:48:39+00:00",
             "username": "username"
           },
           {
@@ -55,7 +55,7 @@ expected_children_transformed = {
               "id": "id"
             },
             "shortcode": "shortcode",
-            "timestamp": "2021-03-03T22:48:39+0000",
+            "timestamp": "2021-03-03T22:48:39+00:00",
             "username": "username"
           },
           {
@@ -68,7 +68,7 @@ expected_children_transformed = {
             },
             "shortcode": "shortcode",
             "thumbnail_url": "https://fake_url?_nc_cat=108&ccb=1-7&_nc_sid=18de74&_nc_ohc=pJkRskDC80UQ7kNvgFn3i4H&_nc_ht=fakecontent&edm=AEQ6tj4EAAAA&oh=00_AYBKK27CU9dvjiqPi9a4JKUIICp26HZ074-vgz0OVKFkbw&oe=66702104",
-            "timestamp": "2021-03-03T22:48:39+0000",
+            "timestamp": "2021-03-03T22:48:39+00:00",
             "username": "username"
           }
         ]
