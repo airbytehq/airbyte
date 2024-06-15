@@ -48,6 +48,7 @@ class GithubStreamABC(HttpStream, ABC):
 
         self.access_token_type = access_token_type
         self.api_url = api_url
+        self.state = {}
 
     @property
     def url_base(self) -> str:
@@ -1340,6 +1341,7 @@ class ProjectColumns(GithubStream):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
+                self.state = self._get_updated_state(self.state, record)
                 yield record
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -1353,7 +1355,7 @@ class ProjectColumns(GithubStream):
                 return stream_state_value
         return self._start_date
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
         project_id = str(latest_record["project_id"])
         updated_state = latest_record[self.cursor_field]
@@ -1410,6 +1412,7 @@ class ProjectCards(GithubStream):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
+                self.state = self._get_updated_state(self.state, record)
                 yield record
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -1424,7 +1427,7 @@ class ProjectCards(GithubStream):
                 return stream_state_value
         return self._start_date
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
         project_id = str(latest_record["project_id"])
         column_id = str(latest_record["column_id"])
