@@ -17,18 +17,19 @@ def get_numeric_value_from_header(response: requests.Response, header: str, rege
     :param regex: optional regex to apply on the header to obtain the value
     :return: header value as float if it's a number. None otherwise
     """
-    header_value = response.headers.get(header, None)
-    if not header_value:
+    header_value = response.headers.get(header)
+    if header_value is None:
         return None
+
     if isinstance(header_value, str):
         if regex:
             match = regex.match(header_value)
-            if match:
-                header_value = match.group()
-        return _as_float(header_value)
-    elif isinstance(header_value, numbers.Number):
-        return float(header_value)  # type: ignore[arg-type]
-    else:
+            header_value = match.group() if match else None
+        return _as_float(header_value) if header_value is not None else None
+
+    try:
+        return float(header_value)
+    except (TypeError, ValueError):
         return None
 
 
