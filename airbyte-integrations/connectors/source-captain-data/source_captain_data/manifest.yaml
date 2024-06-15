@@ -17,11 +17,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /workspace
           http_method: GET
           request_headers:
-            x-project-id: '{{ config[''project_uid''] }}'
+            x-project-id: "{{ config['project_uid'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -32,11 +32,11 @@ definitions:
           fields:
             - path:
                 - project_uid
-              value: '{{ config[''project_uid''] }}'
+              value: "{{ config['project_uid'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspace'
+          $ref: "#/schemas/workspace"
     workflows:
       type: DeclarativeStream
       name: workflows
@@ -45,11 +45,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /workflows
           http_method: GET
           request_headers:
-            x-project-id: '{{ config[''project_uid''] }}'
+            x-project-id: "{{ config['project_uid'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -58,7 +58,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workflows'
+          $ref: "#/schemas/workflows"
     jobs:
       type: DeclarativeStream
       name: jobs
@@ -67,11 +67,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /workflows/{{ stream_partition.parent_id }}/jobs
           http_method: GET
           request_headers:
-            x-project-id: '{{ config[''project_uid''] }}'
+            x-project-id: "{{ config['project_uid'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -84,11 +84,11 @@ definitions:
                 parent_key: uid
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/workflows'
+                  $ref: "#/definitions/streams/workflows"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/jobs'
+          $ref: "#/schemas/jobs"
     successful_jobs:
       type: DeclarativeStream
       name: successful_jobs
@@ -97,11 +97,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /workflows/{{ stream_partition.parent_id }}/jobs
           http_method: GET
           request_headers:
-            x-project-id: '{{ config[''project_uid''] }}'
+            x-project-id: "{{ config['project_uid'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -119,11 +119,11 @@ definitions:
                 parent_key: uid
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/workflows'
+                  $ref: "#/definitions/streams/workflows"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/successful_jobs'
+          $ref: "#/schemas/successful_jobs"
     job_results:
       type: DeclarativeStream
       name: job_results
@@ -132,11 +132,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /jobs/{{ stream_partition.parent_id }}/results
           http_method: GET
           request_headers:
-            x-project-id: '{{ config[''project_uid''] }}'
+            x-project-id: "{{ config['project_uid'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -149,8 +149,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response[''paging''][''next''] }}'
-            stop_condition: '{{ response[''paging''][''have_next_page''] is false }}'
+            cursor_value: "{{ response['paging']['next'] }}"
+            stop_condition: "{{ response['paging']['have_next_page'] is false }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -158,49 +158,49 @@ definitions:
                 parent_key: uid
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/successful_jobs'
+                  $ref: "#/definitions/streams/successful_jobs"
       transformations:
         - type: AddFields
           fields:
             - path:
                 - results
-              value: '{{ record }}'
+              value: "{{ record }}"
         - type: AddFields
           fields:
             - path:
                 - job_result_id
-              value: '{{ record|hash(''md5'') }}'
+              value: "{{ record|hash('md5') }}"
         - type: AddFields
           fields:
             - path:
                 - job_uid
-              value: '{{ stream_partition.parent_id }}'
+              value: "{{ stream_partition.parent_id }}"
         - type: AddFields
           fields:
             - path:
                 - extracted_at
-              value: '{{ now_utc() }}'
+              value: "{{ now_utc() }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/job_results'
+          $ref: "#/schemas/job_results"
   base_requester:
     type: HttpRequester
     url_base: https://api.captaindata.co/v3/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         inject_into: header
         field_name: x-api-key
 
 streams:
-  - $ref: '#/definitions/streams/workspace'
-  - $ref: '#/definitions/streams/workflows'
-  - $ref: '#/definitions/streams/jobs'
-  - $ref: '#/definitions/streams/successful_jobs'
-  - $ref: '#/definitions/streams/job_results'
+  - $ref: "#/definitions/streams/workspace"
+  - $ref: "#/definitions/streams/workflows"
+  - $ref: "#/definitions/streams/jobs"
+  - $ref: "#/definitions/streams/successful_jobs"
+  - $ref: "#/definitions/streams/job_results"
 
 spec:
   type: Spec
@@ -240,39 +240,39 @@ schemas:
     properties:
       current_month_end:
         type:
-          - 'null'
+          - "null"
           - string
       current_month_start:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       plan_name:
         type:
-          - 'null'
+          - "null"
           - string
       project_uid:
         type:
-          - 'null'
+          - "null"
           - string
       tasks_left:
         type:
-          - 'null'
+          - "null"
           - integer
       tasks_max:
         type:
-          - 'null'
+          - "null"
           - integer
       tasks_used:
         type:
-          - 'null'
+          - "null"
           - integer
   workflows:
     type: object
@@ -281,15 +281,15 @@ schemas:
     properties:
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       project_id:
         type:
-          - 'null'
+          - "null"
           - integer
       steps:
         type: array
@@ -298,23 +298,23 @@ schemas:
           properties:
             name:
               type:
-                - 'null'
+                - "null"
                 - string
             step_uid:
               type:
-                - 'null'
+                - "null"
                 - string
             uid:
               type:
-                - 'null'
+                - "null"
                 - string
       template_uid:
         type:
-          - 'null'
+          - "null"
           - string
       uid:
         type:
-          - 'null'
+          - "null"
           - string
   jobs:
     type: object
@@ -325,71 +325,71 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       configuration:
         type:
-          - 'null'
+          - "null"
           - object
       error_message:
         type:
-          - 'null'
+          - "null"
           - string
       finish_time:
         type:
-          - 'null'
+          - "null"
           - string
       main_job_name:
         type:
-          - 'null'
+          - "null"
           - string
       main_job_uid:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       number_inputs:
         type:
-          - 'null'
+          - "null"
           - integer
       row_count:
         type:
-          - 'null'
+          - "null"
           - integer
       scheduled_time:
         type:
-          - 'null'
+          - "null"
           - string
       start_time:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       step_uid:
         type:
-          - 'null'
+          - "null"
           - string
       total_row_count:
         type:
-          - 'null'
+          - "null"
           - integer
       uid:
         type:
-          - 'null'
+          - "null"
           - string
       workflow_name:
         type:
-          - 'null'
+          - "null"
           - string
       workflow_uid:
         type:
-          - 'null'
+          - "null"
           - string
   successful_jobs:
     type: object
@@ -400,71 +400,71 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       configuration:
         type:
-          - 'null'
+          - "null"
           - object
       error_message:
         type:
-          - 'null'
+          - "null"
           - string
       finish_time:
         type:
-          - 'null'
+          - "null"
           - string
       main_job_name:
         type:
-          - 'null'
+          - "null"
           - string
       main_job_uid:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       number_inputs:
         type:
-          - 'null'
+          - "null"
           - integer
       row_count:
         type:
-          - 'null'
+          - "null"
           - integer
       scheduled_time:
         type:
-          - 'null'
+          - "null"
           - string
       start_time:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       step_uid:
         type:
-          - 'null'
+          - "null"
           - string
       total_row_count:
         type:
-          - 'null'
+          - "null"
           - integer
       uid:
         type:
-          - 'null'
+          - "null"
           - string
       workflow_name:
         type:
-          - 'null'
+          - "null"
           - string
       workflow_uid:
         type:
-          - 'null'
+          - "null"
           - string
   job_results:
     type: object
@@ -473,18 +473,18 @@ schemas:
     properties:
       extracted_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: datetime
       job_result_id:
         type:
-          - 'null'
+          - "null"
           - string
       job_uid:
         type:
-          - 'null'
+          - "null"
           - string
       results:
         type:
-          - 'null'
+          - "null"
           - object
