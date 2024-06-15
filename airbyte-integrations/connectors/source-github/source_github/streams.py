@@ -284,7 +284,7 @@ class SemiIncrementalMixin(CheckpointMixin):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
@@ -1037,7 +1037,7 @@ class ReactionStream(GithubStream, CheckpointMixin, ABC):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
