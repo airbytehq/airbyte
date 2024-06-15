@@ -15,17 +15,17 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /books
           http_method: GET
           request_parameters:
-            author_year_start: '{{ config[''author_year_start''] }}'
-            author_year_end: '{{ config[''author_year_end''] }}'
-            copyright: '{{ config[''copyright''] }}'
-            languages: '{{ config[''languages''] }}'
-            search: '{{ config[''search''] }}'
-            sort: '{{ config[''sort''] }}'
-            topic: '{{ config[''topic''] }}'
+            author_year_start: "{{ config['author_year_start'] }}"
+            author_year_end: "{{ config['author_year_end'] }}"
+            copyright: "{{ config['copyright'] }}"
+            languages: "{{ config['languages'] }}"
+            search: "{{ config['search'] }}"
+            sort: "{{ config['sort'] }}"
+            topic: "{{ config['topic'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -48,13 +48,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/books'
+          $ref: "#/schemas/books"
   base_requester:
     type: HttpRequester
     url_base: https://gutendex.com/
 
 streams:
-  - $ref: '#/definitions/streams/books'
+  - $ref: "#/definitions/streams/books"
 
 spec:
   type: Spec
@@ -163,11 +163,11 @@ schemas:
             birth_year:
               type:
                 - integer
-                - 'null'
+                - "null"
             death_year:
               type:
                 - integer
-                - 'null'
+                - "null"
             name:
               type: string
           required:
@@ -181,7 +181,7 @@ schemas:
       copyright:
         type:
           - boolean
-          - 'null'
+          - "null"
       download_count:
         type: integer
       formats:
@@ -223,11 +223,11 @@ schemas:
             birth_year:
               type:
                 - integer
-                - 'null'
+                - "null"
             death_year:
               type:
                 - integer
-                - 'null'
+                - "null"
             name:
               type: string
           required:
