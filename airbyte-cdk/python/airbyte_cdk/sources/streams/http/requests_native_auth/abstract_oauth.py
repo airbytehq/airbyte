@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Tuple
+
+import requests
 import logging
 from abc import abstractmethod
 from json import JSONDecodeError
@@ -93,17 +96,16 @@ class AbstractOauth2Authenticator(AuthBase):
         return payload
 
     def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
-        try:
-            if exception.response is not None:
-                exception_content = exception.response.json()
-            else:
-                return False
-        except JSONDecodeError:
+        response = exception.response
+        if not response:
             return False
-        return (
-            exception.response.status_code in self._refresh_token_error_status_codes
-            and exception_content.get(self._refresh_token_error_key) in self._refresh_token_error_values
-        )
+        try:
+            exception_content = response.json()
+        except ValueError:  # JSONDecodeError falls under ValueError
+            return False
+        status_code = response.status_code
+        error_key_value = exception_content.get(self._refresh_token_error_key)
+        return status_code in self._refresh_token_error_status_codes and error_key_value in self._refresh_token_error_values
 
     @backoff.on_exception(
         backoff.expo,
