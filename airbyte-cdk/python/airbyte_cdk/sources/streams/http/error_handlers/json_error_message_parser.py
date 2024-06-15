@@ -4,6 +4,14 @@
 
 from typing import Optional
 
+from airbyte_cdk.sources.streams.http.error_handlers.error_message_parser import ErrorMessageParser
+from airbyte_cdk.sources.utils.types import JsonType
+from typing import Optional
+
+from airbyte_cdk.sources.streams.http.error_handlers.error_message_parser import ErrorMessageParser
+from airbyte_cdk.sources.utils.types import JsonType
+from typing import Optional
+
 import requests
 from airbyte_cdk.sources.utils.types import JsonType
 
@@ -15,19 +23,11 @@ class JsonErrorMessageParser(ErrorMessageParser):
         if isinstance(value, str):
             return value
         elif isinstance(value, list):
-            errors_in_value = [self._try_get_error(v) for v in value]
-            return ", ".join(v for v in errors_in_value if v is not None)
+            return ", ".join(filter(None, map(self._try_get_error, value)))
         elif isinstance(value, dict):
-            new_value = (
-                value.get("message")
-                or value.get("messages")
-                or value.get("error")
-                or value.get("errors")
-                or value.get("failures")
-                or value.get("failure")
-                or value.get("detail")
-            )
-            return self._try_get_error(new_value)
+            for key in ["message", "messages", "error", "errors", "failures", "failure", "detail"]:
+                if new_value := value.get(key):
+                    return self._try_get_error(new_value)
         return None
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
