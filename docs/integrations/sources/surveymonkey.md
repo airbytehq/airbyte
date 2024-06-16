@@ -29,10 +29,7 @@ You have an [Airbyte Cloud](https://docs.airbyte.com/using-airbyte/getting-start
 
 <!-- env:oss -->
 
-You have:
-
-- Installed [Airbyte](https://docs.airbyte.com/deploying-airbyte/quickstart).
-- A SurveyMonkey [access token](https://api.surveymonkey.com/v3/docs#authentication).
+You have installed [Airbyte](https://docs.airbyte.com/deploying-airbyte/quickstart).
 
 <!-- /env:oss -->
 
