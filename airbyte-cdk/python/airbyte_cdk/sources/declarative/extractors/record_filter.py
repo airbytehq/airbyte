@@ -64,7 +64,7 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
 
     @property
     def _end_datetime(self) -> datetime.datetime:
-        return self._date_time_based_cursor._select_best_end_datetime()
+        return self._date_time_based_cursor.select_best_end_datetime()
 
     def filter_records(
         self,
