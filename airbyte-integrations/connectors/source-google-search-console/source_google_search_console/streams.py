@@ -146,11 +146,11 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
     @property
     def http_method(self) -> str:
         return "POST"
-    
+
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
-    
+
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
@@ -318,7 +318,7 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
         current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
 
         return current_stream_state
-    
+
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(**kwargs):
             self.state = self._get_updated_state(self.state, record)
