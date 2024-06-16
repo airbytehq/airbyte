@@ -6,7 +6,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: ["data"]
-      
+
   reader_stream:
     type: DeclarativeStream
     retriever:
