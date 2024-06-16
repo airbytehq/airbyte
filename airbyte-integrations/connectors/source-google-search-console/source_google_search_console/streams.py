@@ -303,7 +303,7 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
         }
         """
 
-        latest_benchmark = latest_record[self.cursor_field]
+        latest_benchmark = latest_record.get(self.cursor_field)
 
         site_url = latest_record.get("site_url")
         search_type = latest_record.get("search_type")
