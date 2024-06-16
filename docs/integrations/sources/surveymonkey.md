@@ -18,8 +18,7 @@ OAuth for Survey Monkey is officially supported only for the US. Airbyte is test
 
 <!-- env:cloud -->
 
-You have:
-- An [Airbyte Cloud](https://docs.airbyte.com/using-airbyte/getting-started/#sign-up-for-airbyte-clouds) account.
+You have an [Airbyte Cloud](https://docs.airbyte.com/using-airbyte/getting-started/#sign-up-for-airbyte-clouds) account.
 
 
 <!-- /env:cloud -->
