@@ -1,12 +1,13 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_dixa import SourceDixa
+
+from .source import SourceDixa
 
 
 def run():
