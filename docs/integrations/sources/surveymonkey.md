@@ -40,7 +40,7 @@ You have installed [Airbyte](https://docs.airbyte.com/deploying-airbyte/quicksta
 
 ### Step 1: Set up SurveyMonkey
 
-Read SurveyMonkey's [Getting started](https://developer.surveymonkey.com/api/v3/#getting-started). Register your app [at SurveyMonkey](https://developer.surveymonkey.com/apps/). Go to [My Apps](https://developer.surveymonkey.com/apps/) and click **Settings**. Copy your access token.
+Read SurveyMonkey's [Getting started](https://developer.surveymonkey.com/api/v3/#getting-started). Register your app [at SurveyMonkey](https://developer.surveymonkey.com/apps/). Click **Settings** to find the access token you need to set up the connector.
 
 ### Step 2: Set up the source connector in Airbyte
 
