@@ -1,72 +1,104 @@
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # SurveyMonkey
 
-This page guides you through the process of setting up the SurveyMonkey source connector.
+This guide contains instructions for setting up an Airbyte Cloud or Open Source connector for SurveyMonkey.
 
 :::note
 
-OAuth for Survey Monkey is officially supported only for the US. We are testing how to enable it in the EU at the moment. If you run into any issues, please [reach out to us](mailto:product@airbyte.io) so we can promptly assist you.
+OAuth for Survey Monkey is officially supported only for the US. Airbyte is testing how to enable it in the EU. If you run into issues, [reach out to support](mailto:product@airbyte.io).
 
 :::
 
-<!-- env:oss -->
-
 ## Prerequisites
 
-**For Airbyte Open Source:**
+<Tabs groupId="platform">
+<TabItem value="oauth" label="Airbyte Cloud" default>
 
-- Access Token
+<!-- env:cloud -->
+
+You have:
+- An [Airbyte Cloud](https://docs.airbyte.com/using-airbyte/getting-started/#sign-up-for-airbyte-clouds) account.
+
+
+<!-- /env:cloud -->
+
+</TabItem>
+
+<TabItem value="http-basic" label="Airbyte Open Source">
+
+<!-- env:oss -->
+
+You have:
+
+- Installed [Airbyte](https://docs.airbyte.com/deploying-airbyte/quickstart).
+- A SurveyMonkey [access token](https://api.surveymonkey.com/v3/docs#authentication).
+
 <!-- /env:oss -->
+
+</TabItem>
+</Tabs>
 
 ## Setup guide
 
 ### Step 1: Set up SurveyMonkey
 
-Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
+Read SurveyMonkey's [Getting started](https://developer.surveymonkey.com/api/v3/#getting-started). Register your app [at SurveyMonkey](https://developer.surveymonkey.com/apps/). Go to [My Apps](https://developer.surveymonkey.com/apps/) and click **Settings**. Copy your access token.
 
 ### Step 2: Set up the source connector in Airbyte
 
+<Tabs groupId="platform">
+<TabItem value="oauth" label="Airbyte Cloud" default>
+
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+1. Log into your [Airbyte Cloud account](https://cloud.airbyte.com/workspaces).
+1. Click **+ New workspace** to create a new workspace. In the `Workspace name` field, enter a name, then click **Save changes**.
+1. In the left navigation bar, click **Sources**. Click **SurveyMonkey**, which takes you to the `Create a source` page.
+1. Click **Authenticate your account**.
+1. Log in to the SurveyMonkey account to authorize your app.
+1. In the `Start Date` field, set the required start date.
+1. Click **Set up source**.
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. lick `Authenticate your account`.
-5. Log in and Authorize to the SurveyMonkey account
-6. Choose required Start date
-7. click `Set up source`.
+</TabItem>
+
 <!-- /env:cloud -->
+
+<TabItem value="http-basic" label="Airbyte Open Source">
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+1. Go to your [local Airbyte](http://localhost:8000/) page.
+1. In the left navigation bar, click **Sources**. Click **SurveyMonkey**, which takes you to the `Create a source` page.
+1. In the `Access Token` field, enter your SurveyMonkey access token from Step 1.
+1. In the `Start Date` field, set the required start date.
+1. Click **Set up source**.
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. Add **Access Token**
-5. Choose required Start date
-6. Click `Set up source`.
 <!-- /env:oss -->
 
+</TabItem>
+</Tabs>
+
 ## Supported streams and sync modes
+
+Airbyte supports the following SurveyMonkey streams and sync modes. `Incremental` denotes partial support:
 
 - [Surveys](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys) \(Incremental\)
 - [SurveyPages](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-pages)
 - [SurveyQuestions](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-pages-page_id-questions)
-- [SurveyResponses](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-id-responses-bulk) \(Incremental\)
+- [SurveyResponses](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-responses-bulk) \(Incremental\)
 - [SurveyCollectors](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-collectors)
 - [Collectors](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-collectors-collector_id-)
 
 ### Performance considerations
 
-The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
+The SurveyMonkey API applies API quotas for private apps. The following are the default limits:
 
 - 125 requests per minute
 - 500 requests per day
 
-To cover more data from this source we use caching.
+To cover more data from this source, Airbyte uses caching.
 
 ## Changelog
 
