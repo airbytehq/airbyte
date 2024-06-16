@@ -387,164 +387,163 @@ schemas:
       business_account_id:
         description: The unique identifier for the business account associated with the media.
         type:
-          - string
           - "null"
+          - string
+      page_id:
+        description: The unique identifier for the Instagram page associated with the media.
+        type:
+          - "null"
+          - string
       caption:
         description: The caption or description provided for the media.
         type:
+          - "null"
           - string
-          - "null"
-      children:
-        description: Contains an array of media items that are part of the post.
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              description: The unique identifier for the child media item.
-              type:
-                - string
-                - "null"
-            ig_id:
-              description: The Instagram-specific identifier for the child media item.
-              type:
-                - string
-                - "null"
-            media_type:
-              description: The type of media of the child item (e.g., image, video).
-              type:
-                - string
-                - "null"
-            media_url:
-              description: The URL for accessing the media content of the child item.
-              type:
-                - string
-                - "null"
-            owner:
-              description: Contains information about the owner of the media item.
-              type:
-                - object
-                - "null"
-              properties:
-                id:
-                  description: The unique identifier of the owner of the child media item.
-                  type:
-                    - string
-                    - "null"
-            permalink:
-              description: The permanent link to the child media item on Instagram.
-              type:
-                - string
-                - "null"
-            shortcode:
-              description: The unique shortcode assigned to the child media item.
-              type:
-                - string
-                - "null"
-            thumbnail_url:
-              description: The URL for accessing the thumbnail image of the child media item.
-              type:
-                - string
-                - "null"
-            timestamp:
-              format: date-time
-              description: The date and time when the child media item was created.
-              type:
-                - string
-                - "null"
-              airbyte_type: timestamp_with_timezone
-            username:
-              description: The username of the owner of the child media item.
-              type:
-                - string
-                - "null"
       comments_count:
         description: The total number of comments received on the media.
         type:
-          - number
           - "null"
+          - integer
       id:
         description: The unique identifier for the media item.
         type:
-          - string
           - "null"
+          - string
       ig_id:
         description: The Instagram-specific identifier for the media item.
         type:
-          - string
           - "null"
+          - string
       is_comment_enabled:
         description: A flag indicating whether comments are enabled for the media.
         type:
-          - boolean
           - "null"
+          - boolean
       like_count:
         description: The total number of likes received on the media.
         type:
-          - number
           - "null"
-      media_product_type:
-        description: The product type associated with the media (e.g., shopping product).
-        type:
-          - string
-          - "null"
+          - integer
       media_type:
         description: The type of media (e.g., image, video) of the media item.
         type:
-          - string
           - "null"
+          - string
+      media_product_type:
+        description: The product type associated with the media (e.g., shopping product).
+        type:
+          - "null"
+          - string
       media_url:
         description: The URL for accessing the media content of the media item.
         type:
-          - string
           - "null"
+          - string
       owner:
         description: Contains information about the owner of the post.
         type:
-          - object
           - "null"
+          - object
         properties:
           id:
             description: The unique identifier of the owner of the media item.
             type:
-              - string
               - "null"
-      page_id:
-        description: The unique identifier for the Instagram page associated with the media.
-        type:
-          - string
-          - "null"
+              - string
       permalink:
         description: The permanent link to the media item on Instagram.
         type:
-          - string
           - "null"
+          - string
       shortcode:
         description: The unique shortcode assigned to the media item.
         type:
-          - string
           - "null"
+          - string
       thumbnail_url:
         description: The URL for accessing the thumbnail image of the media item.
         type:
-          - string
           - "null"
+          - string
       timestamp:
-        format: date-time
         description: The date and time when the media item was created.
-        airbyte_type: timestamp_with_timezone
         type:
-          - string
           - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       username:
         description: The username of the owner of the media item.
         type:
-          - string
           - "null"
+          - string
+      children:
+        description: Contains an array of media items that are part of the post.
+        type:
+          - "null"
+          - array
+        items:
+          description: Properties of each media item like image, caption, etc.
+          type: object
+          properties:
+            id:
+              description: The unique identifier for the child media item.
+              type:
+                - "null"
+                - string
+            ig_id:
+              description: The Instagram-specific identifier for the child media item.
+              type:
+                - "null"
+                - string
+            media_type:
+              description: The type of media of the child item (e.g., image, video).
+              type:
+                - "null"
+                - string
+            media_url:
+              description: The URL for accessing the media content of the child item.
+              type:
+                - "null"
+                - string
+            owner:
+              description: Contains information about the owner of the media item.
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the owner of the child media item.
+                  type:
+                    - "null"
+                    - string
+            permalink:
+              description: The permanent link to the child media item on Instagram.
+              type:
+                - "null"
+                - string
+            shortcode:
+              description: The unique shortcode assigned to the child media item.
+              type:
+                - "null"
+                - string
+            thumbnail_url:
+              description: The URL for accessing the thumbnail image of the child media item.
+              type:
+                - "null"
+                - string
+            timestamp:
+              description: The date and time when the child media item was created.
+              type:
+                - "null"
+                - string
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+            username:
+              description: The username of the owner of the child media item.
+              type:
+                - "null"
+                - string
     required:
       - id
   Users:
