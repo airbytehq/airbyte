@@ -18,7 +18,7 @@ class SnapchatMarketingDatetimeBasedCursor(DatetimeBasedCursor):
     It ensures that the start date is always less than the end date to prevent errors.
     """
 
-    def _partition_daterange(self, start: datetime, end: datetime, step: Union[timedelta, Duration]) -> List[StreamSlice]:
+    def _partition_daterange(self, start: datetime, end: datetime, step: Union[datetime.timedelta, Duration]) -> List[StreamSlice]:
         start_field = self._partition_field_start.eval(self.config)
         end_field = self._partition_field_end.eval(self.config)
         dates = []
