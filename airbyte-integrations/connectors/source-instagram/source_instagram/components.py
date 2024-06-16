@@ -46,7 +46,38 @@ class InstagramClearUrlTransformation(RecordTransformation):
 class InstagramMediaChildrenTransformation(RecordTransformation):
     def transform(self, record: MutableMapping[str, Any], config: Optional[Config] = None, **kwargs) -> MutableMapping[str, Any]:
         """
-        Fetch children data if such field is present, it will update each element on the response
+        Children field is an array of Media ids which with common Media parent, this transformation is intent to fetch information
+        from the /media endpoint for each one of such ids and then update the array.
+        e.g.
+            "children": {
+                  "data": [
+                    {
+                      "id": "7608776690540"
+                    },
+                    {
+                      "id": "2896800415362"
+                    }
+                  ]
+                }
+
+        after fetch 7608776690540/ and 2896800415362/media:
+            children:
+                [
+                  {
+                    "id": "7608776690540",
+                    "ig_id": "2521545917836833225",
+                    "media_type": "IMAGE",
+                    "media_url": "https://fake_url?_nc_cat=...",
+                    // more fields
+                  },
+                  {
+                    "id": "2896800415362",
+                    "ig_id": "2521545917736276706",
+                    "media_type": "IMAGE",
+                    "media_url": "https://fake_url?_nc_cat=...",
+                    // more fields
+                  }
+                }
         """
         children = record.get("children")
         children_fetched = []
@@ -70,9 +101,49 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
 @dataclass
 class InstagramBreakDownResultsTransformation(RecordTransformation):
     """
-    Converts an array of breakdowns into an object.
+    The transformation flattens a nested array of breakdown results located at total_value.breakdowns[0].results into a single object
+    (dictionary). In this transformation, each key-value pair in the resulting object represents a dimension and its corresponding value.
+    e.g.
+        {
+        "name": "follower_demographics",
+        "period": "lifetime",
+        "title": "Follower demographics",
+        "description": "The demographic characteristics of followers, including countries, cities and gender distribution.",
+        "total_value": {
+          "breakdowns": [
+            {
+              "dimension_keys": [
+                "city"
+              ],
+              "results": [
+                {
+                  "dimension_values": [
+                    "London, England"
+                  ],
+                  "value": 263
+                },
+                {
+                  "dimension_values": [
+                    "Sydney, New South Wales"
+                  ],
+                  "value": 467
+                }
+              ]
+            }
+          ]
+        },
+        "id": "17841457631192237/insights/follower_demographics/lifetime"
+      }
+    to:
+        {
+        "value": {
+          "London, England": 263,
+          "Sydney, New South Wales": 467,
+        }
+      }
     """
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["value"] = {res.get("dimension_values")[0]: res.get("value") for res in record["value"]}
+        record_total_value = record.pop("total_value")
+        record["value"] = {res.get("dimension_values", [""])[0]: res.get("value") for res in record_total_value["breakdowns"][0]["results"]}
         return record

@@ -2,8 +2,20 @@
 
 from typing import Dict
 
-from records import children_record, clear_url_record, clear_url_record_transformed, expected_children_transformed
-from source_instagram.components import GRAPH_URL, InstagramClearUrlTransformation, InstagramMediaChildrenTransformation
+from records import (
+    breakdowns_record,
+    children_record,
+    clear_url_record,
+    clear_url_record_transformed,
+    expected_breakdown_record_transformed,
+    expected_children_transformed,
+)
+from source_instagram.components import (
+    GRAPH_URL,
+    InstagramBreakDownResultsTransformation,
+    InstagramClearUrlTransformation,
+    InstagramMediaChildrenTransformation,
+)
 
 
 def mock_path(requests_mock, path: str, method: str = "GET", response: Dict = None):
@@ -23,6 +35,11 @@ def test_instagram_media_children_transformation(requests_mock, config):
     assert transformation_result == expected_children_transformed
 
 
-def test_instagram_clear_url_transformation(config):
+def test_instagram_clear_url_transformation():
     record_transformation = InstagramClearUrlTransformation().transform(clear_url_record)
     assert record_transformation == clear_url_record_transformed
+
+
+def test_break_down_results_transformation():
+    record_transformation_result = InstagramBreakDownResultsTransformation().transform(breakdowns_record)
+    assert record_transformation_result == expected_breakdown_record_transformed

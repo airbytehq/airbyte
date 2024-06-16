@@ -211,11 +211,8 @@ definitions:
             - path:
                 - metric
               value: "{{ record['name'] }}"
-        - type: AddFields
-          fields:
-            - path:
-                - value
-              value: "{{ record['total_value']['breakdowns'][0]['results'] }}"
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramBreakDownResultsTransformation
         - type: RemoveFields
           field_pointers:
             - - name
@@ -230,12 +227,7 @@ definitions:
             - - description
         - type: RemoveFields
           field_pointers:
-            - - total_value
-        - type: RemoveFields
-          field_pointers:
             - - id
-        - type: CustomTransformation
-          class_name: source_instagram.components.InstagramBreakDownResultsTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
