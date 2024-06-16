@@ -204,13 +204,10 @@ class HttpClient:
         max_time = self._max_time
         factor = self._factor
 
-        if self._disable_retries:
-            response = self._send(request, request_kwargs, log_formatter=log_formatter)
-        else:
-            user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-            backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
-            # backoff handlers wrap _send, so it will always return a response
-            response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
+        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
+        # backoff handlers wrap _send, so it will always return a response
+        response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
 
         return response
 

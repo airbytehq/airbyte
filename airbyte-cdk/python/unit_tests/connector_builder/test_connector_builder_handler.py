@@ -45,10 +45,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.streams.http import HttpClient
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, update_secrets
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -565,22 +562,19 @@ def test_read_returns_error_response(mock_from_exception):
     assert response == expected_message
 
 
-def test_read_returns_429_does_not_retry():
+def test_handle_429_response():
+    response = _create_429_page_response({"result": [{"error": "too many requests"}], "_metadata": {"next": "next"}})
+
     config = TEST_READ_CONFIG
-    source = create_source(config, TestReadLimits())
-
     limits = TestReadLimits()
+    source = create_source(config, limits)
 
-    mocked_response = requests.Response()
-    mocked_response.status_code = 429
-    mocked_response.headers = {}
-    mocked_response.request = requests.Request("GET", "https://example.com").prepare()
-
-    with patch.object(requests.Session, "send", return_value=mocked_response) as patched_send:
-        handle_connector_builder_request(
+    with patch("requests.Session.send", return_value=response) as mock_send:
+        response = handle_connector_builder_request(
             source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits
         )
-        assert patched_send.call_count == 1
+
+        mock_send.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -706,9 +700,23 @@ def _create_response(body, request):
     return response
 
 
+def _create_429_response(body, request):
+    response = requests.Response()
+    response.status_code = 429
+    response._content = bytes(json.dumps(body), "utf-8")
+    response.headers["Content-Type"] = "application/json"
+    response.request = request
+    return response
+
+
 def _create_page_response(response_body):
     request = _create_request()
     return _create_response(response_body, request)
+
+
+def _create_429_page_response(response_body):
+    request = _create_request()
+    return _create_429_response(response_body, request)
 
 
 @patch.object(
