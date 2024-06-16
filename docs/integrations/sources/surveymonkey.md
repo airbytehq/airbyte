@@ -7,14 +7,14 @@ This guide contains instructions for setting up an Airbyte Cloud or Open Source 
 
 :::note
 
-OAuth for Survey Monkey is officially supported only for the US. Airbyte is testing how to enable it in the EU. If you run into issues, [reach out to support](mailto:product@airbyte.io).
+OAuth for Survey Monkey is supported only for the US. Airbyte is testing how to enable it in the EU. If you run into issues, [reach out to support](mailto:product@airbyte.io).
 
 :::
 
 ## Prerequisites
 
 <Tabs groupId="platform">
-<TabItem value="oauth" label="Airbyte Cloud" default>
+<TabItem value="cloud" label="Airbyte Cloud" default>
 
 <!-- env:cloud -->
 
@@ -25,7 +25,7 @@ You have an [Airbyte Cloud](https://docs.airbyte.com/using-airbyte/getting-start
 
 </TabItem>
 
-<TabItem value="http-basic" label="Airbyte Open Source">
+<TabItem value="oss" label="Airbyte Open Source">
 
 <!-- env:oss -->
 
@@ -45,7 +45,7 @@ Read SurveyMonkey's [Getting started](https://developer.surveymonkey.com/api/v3/
 ### Step 2: Set up the source connector in Airbyte
 
 <Tabs groupId="platform">
-<TabItem value="oauth" label="Airbyte Cloud" default>
+<TabItem value="cloud" label="Airbyte Cloud" default>
 
 <!-- env:cloud -->
 
@@ -61,7 +61,7 @@ Read SurveyMonkey's [Getting started](https://developer.surveymonkey.com/api/v3/
 
 <!-- /env:cloud -->
 
-<TabItem value="http-basic" label="Airbyte Open Source">
+<TabItem value="oss" label="Airbyte Open Source">
 
 <!-- env:oss -->
 
