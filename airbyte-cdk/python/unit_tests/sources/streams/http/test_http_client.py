@@ -7,14 +7,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
-    ExponentialBackoffStrategy,
-)
 from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import (
     BackoffStrategy,
-    DefaultBackoffStrategy,
     ErrorResolution,
     HttpStatusErrorHandler,
     ResponseAction,
@@ -428,7 +424,6 @@ def test_default_max_retries():
     class BackoffStrategy:
         def backoff_time(self, *args, **kwargs):
             return 0.001
-
 
     http_client = HttpClient(name="test", logger=MagicMock(), error_handler=HttpStatusErrorHandler(logger=MagicMock()), backoff_strategy=BackoffStrategy())
 
