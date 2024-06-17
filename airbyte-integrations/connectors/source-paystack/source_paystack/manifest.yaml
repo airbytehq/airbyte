@@ -1146,7 +1146,7 @@ schemas:
       fully_deducted:
         type:
           - "null"
-          - boolean
+          - integer
       id:
         type:
           - "null"

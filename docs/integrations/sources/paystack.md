@@ -68,7 +68,7 @@ The Paystack connector should not run into Paystack API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
-| 0.2.0 | 2024-06-17 | [39395](https://github.com/airbytehq/airbyte/pull/39395) | Migrate python cdk to low code                                 |
+| 1.0.0 | 2024-06-17 | [39395](https://github.com/airbytehq/airbyte/pull/39395) | Migrate python cdk to low code                                 |
 | 0.1.4 | 2024-05-20 | [38430](https://github.com/airbytehq/airbyte/pull/38430) | [autopull] base image + poetry + up_to_date |
 | 0.1.3 | 2023-03-21 | [24247](https://github.com/airbytehq/airbyte/pull/24247) | Specified date formatting in specification |
 | 0.1.2 | 2023-03-15 | [24085](https://github.com/airbytehq/airbyte/pull/24085) | Set additionalProperties: true, add TypeTransformer to Refunds |

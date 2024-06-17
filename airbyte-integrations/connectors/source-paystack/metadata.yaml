@@ -5,13 +5,19 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
-  dockerImageTag: 0.2.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-paystack
   githubIssueLabel: source-paystack
   icon: paystack.svg
   license: MIT
   name: Paystack
   releaseDate: 2021-10-20
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-07-30"
+        message:
+          The refunds schema has been changed it's 'type' in schema['properties']['fully_deducted'] to integer
   remoteRegistries:
     pypi:
       enabled: true
