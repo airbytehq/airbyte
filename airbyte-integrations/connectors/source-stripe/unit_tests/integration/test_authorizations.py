@@ -123,7 +123,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _authorizations_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _authorizations_response().with_record(_an_authorization()).with_record(_an_authorization()).build(),
@@ -135,7 +134,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_many_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _authorizations_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _authorizations_response().with_pagination().with_record(_an_authorization().with_id("last_record_id_from_first_page")).build(),
@@ -151,7 +149,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_no_state_when_read_then_return_ignore_lookback(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _authorizations_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _authorizations_response().with_record(_an_authorization()).build(),
@@ -163,7 +160,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_when_read_then_add_cursor_field(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _authorizations_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _authorizations_response().with_record(_an_authorization()).build(),
@@ -179,7 +175,6 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
 
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _authorizations_request().with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
             _authorizations_response().build(),
@@ -213,7 +208,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _authorizations_request().with_any_query_params().build(),
             [
@@ -226,7 +220,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_http_status_500_once_before_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _authorizations_request().with_any_query_params().build(),
             [a_response_with_status(500), _authorizations_response().with_record(_an_authorization()).build()],
@@ -243,23 +236,6 @@ class FullRefreshTest(TestCase):
         output = self._read(_config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.system_error
 
-    @HttpMocker()
-    def test_given_small_slice_range_when_read_then_availability_check_performs_too_many_queries(self, http_mocker: HttpMocker) -> None:
-        # see https://github.com/airbytehq/airbyte/issues/33499
-        events_requests = StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build()
-        http_mocker.get(
-            events_requests,
-            _events_response().build()  # it is important that the event response does not have a record. This is not far fetched as this is what would happend 30 days before now
-        )
-        http_mocker.get(
-            _authorizations_request().with_any_query_params().build(),
-            _authorizations_response().build(),
-        )
-
-        self._read(_config().with_start_date(_NOW - timedelta(days=60)).with_slice_range_in_days(1))
-
-        http_mocker.assert_number_of_calls(events_requests, 30)
-
     def _read(self, config: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
@@ -269,7 +245,6 @@ class IncrementalTest(TestCase):
 
     @HttpMocker()
     def test_given_no_state_when_read_then_use_authorizations_endpoint(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         cursor_value = int(_A_START_DATE.timestamp()) + 1
         http_mocker.get(
             _authorizations_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
@@ -278,7 +253,7 @@ class IncrementalTest(TestCase):
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=cursor_value)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(_NOW.timestamp()))
 
     @HttpMocker()
     def test_given_state_when_read_then_query_events_using_types_and_state_value_plus_1(self, http_mocker: HttpMocker) -> None:

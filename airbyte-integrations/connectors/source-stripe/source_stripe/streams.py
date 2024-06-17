@@ -211,7 +211,7 @@ class IStreamSelector(ABC):
         pass
 
 
-class CreatedCursorIncrementalStripeStream(StripeStream, CheckpointMixin):
+class CreatedCursorIncrementalStripeStream(StripeStream):
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
 
@@ -231,44 +231,6 @@ class CreatedCursorIncrementalStripeStream(StripeStream, CheckpointMixin):
         self.lookback_window_days = lookback_window_days
         self.start_date_max_days_from_now = start_date_max_days_from_now
         self._cursor_field = cursor_field
-        self._state: MutableMapping[str, Any] = {}
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return self._state
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        self._state = value
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=self._state):
-            self._state = self._get_updated_state(record)
-            yield record
-
-    def _get_updated_state(self, latest_record: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        This method is not used anymore when running the stream as part of the catalog as we now run the stream concurrently and hence, it
-        relies on the ConcurrentCursor. However, other streams like `IncrementalStripeStream` rely on this stream to read the records and
-        update the state. When doing so, they don't rely on the ConcurrentCursor. Hence, until we have a solution for that, we need to
-        maintain both ways to manage the state.
-
-        Possible solution: Remove IncrementalStripeStream and instantiate either by the CreatedCursorIncrementalStripeStream or the
-        UpdatedCursorIncrementalStripeStream depending on the state provided to the connector.
-        * Benefits: The first incremental sync will be concurrent
-        * Drawbacks: As ConcurrentCursor does not support setting the state using the cursor value of the most recent records, the state will be set to now. We haven't seen any issue for stripe with this as the API is quite reliable
-        """
-        state_cursor_value = self._state.get(self.cursor_field, 0)
-        latest_record_value = latest_record.get(self.cursor_field)
-        if state_cursor_value:
-            return {self.cursor_field: max(latest_record_value, state_cursor_value)}
-        return {self.cursor_field: latest_record_value}
 
     def request_params(
         self,
@@ -291,6 +253,9 @@ class CreatedCursorIncrementalStripeStream(StripeStream, CheckpointMixin):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Note that we can't use `self._state` here as it will be updated during the availability check
+        """
         stream_state = stream_state or {}
         start_ts = self.get_start_timestamp(stream_state)
         if start_ts >= pendulum.now().int_timestamp:
@@ -458,8 +423,8 @@ class IncrementalStripeStreamSelector(IStreamSelector):
 
 class IncrementalStripeStream(StripeStream):
     """
-    This class combines both normal incremental sync and event based sync. It uses common endpoints for sliced data syncs in
-    the full refresh sync mode and initial incremental sync. For incremental syncs with a state, event based sync comes into action.
+    This class is meant to be deprecated. Instead, instantiate either the CreatedCursorIncrementalStripeStream or the
+    UpdatedCursorIncrementalStripeStream depending on if there is a state for the stream or not.
     """
 
     def __init__(
@@ -509,10 +474,6 @@ class IncrementalStripeStream(StripeStream):
         yield from self.parent_stream.stream_slices(sync_mode, cursor_field, stream_state)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        if isinstance(self.parent_stream, CheckpointMixin):
-            # The state is managed internally by the stream hence there is no need to update the state. This is a temporary transition until
-            # the method `get_updated_state` from this class (IncrementalStripeStream) is migrated to the `CheckpointMixin` too
-            return self.parent_stream.state
         return self.parent_stream.get_updated_state(current_stream_state, latest_record)
 
     def read_records(

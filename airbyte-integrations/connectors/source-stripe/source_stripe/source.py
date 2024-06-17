@@ -28,7 +28,6 @@ from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
     Events,
-    IncrementalStripeStream,
     ParentIncrementalStipeSubStream,
     Persons,
     SetupAttempts,
@@ -118,14 +117,12 @@ class SourceStripe(ConcurrentSourceAdapter):
             return False, str(e)
         return True, None
 
-    @staticmethod
-    def customers(**args):
+    def customers(self, **args):
         # The Customers stream is instantiated in a dedicated method to allow parametrization and avoid duplicated code.
         # It can be used with and without expanded items (as an independent stream or as a parent stream for other streams).
-        return IncrementalStripeStream(
+        return self._instantiate_incremental_stripe_stream(
             name="customers",
             path="customers",
-            use_cache=USE_CACHE,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
@@ -189,10 +186,9 @@ class SourceStripe(ConcurrentSourceAdapter):
             "api_budget": self.get_api_call_budget(config),
         }
         incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
-        subscriptions = IncrementalStripeStream(
+        subscriptions = self._instantiate_incremental_stripe_stream(
             name="subscriptions",
             path="subscriptions",
-            use_cache=USE_CACHE,
             extra_request_params={"status": "all"},
             event_types=[
                 "customer.subscription.created",
@@ -215,10 +211,9 @@ class SourceStripe(ConcurrentSourceAdapter):
             sub_items_attr="items",
             **args,
         )
-        transfers = IncrementalStripeStream(
+        transfers = self._instantiate_incremental_stripe_stream(
             name="transfers",
             path="transfers",
-            use_cache=USE_CACHE,
             event_types=["transfer.created", "transfer.reversed", "transfer.updated"],
             **args,
         )
@@ -227,12 +222,11 @@ class SourceStripe(ConcurrentSourceAdapter):
             name="application_fees",
             path="application_fees",
             event_types=["application_fee.created", "application_fee.refunded"],
-            args=args,
+            **args,
         )
-        invoices = IncrementalStripeStream(
+        invoices = self._instantiate_incremental_stripe_stream(
             name="invoices",
             path="invoices",
-            use_cache=USE_CACHE,
             event_types=[
                 "invoice.created",
                 "invoice.deleted",
@@ -297,7 +291,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="refunds",
                 path="refunds",
                 event_types=[
@@ -331,20 +325,20 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="authorizations",
                 path="issuing/authorizations",
                 event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
                 **args,
             ),
             self.customers(**args),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="cardholders",
                 path="issuing/cardholders",
                 event_types=["issuing_cardholder.created", "issuing_cardholder.updated"],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="charges",
                 path="charges",
                 expand_items=["data.refunds"],
@@ -360,10 +354,10 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **args
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="disputes",
                 path="disputes",
                 event_types=[
@@ -377,7 +371,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
             application_fees,
             invoices,
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="invoice_items",
                 path="invoiceitems",
                 legacy_cursor_field="date",
@@ -388,7 +382,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="payouts",
                 path="payouts",
                 event_types=[
@@ -401,20 +395,20 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="plans",
                 path="plans",
                 expand_items=["data.tiers"],
                 event_types=["plan.created", "plan.updated", "plan.deleted"],
                 **args,
             ),
-            IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
+            self._instantiate_incremental_stripe_stream(
                 name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args
             ),
-            IncrementalStripeStream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args),
+            self._instantiate_incremental_stripe_stream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args),
             subscriptions,
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="subscription_schedule",
                 path="subscription_schedules",
                 event_types=[
@@ -429,7 +423,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             transfers,
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="payment_intents",
                 path="payment_intents",
                 event_types=[
@@ -444,13 +438,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="promotion_codes",
                 path="promotion_codes",
                 event_types=["promotion_code.created", "promotion_code.updated"],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="setup_intents",
                 path="setup_intents",
                 event_types=[
@@ -462,16 +456,16 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="transactions",
                 path="issuing/transactions",
                 event_types=["issuing_transaction.created", "issuing_transaction.updated"],
                 **args,
             ),
-            IncrementalStripeStream(
+            self._instantiate_incremental_stripe_stream(
                 name="top_ups",
                 path="topups",
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
@@ -551,22 +545,23 @@ class SourceStripe(ConcurrentSourceAdapter):
         name: str,
         path: str,
         event_types: List[str],
-        args,
         cursor_field: str = "updated",
         legacy_cursor_field: Optional[str] = "created",
+        *args,
+        **kwargs,
     ):
         if self._state_manager and self._state_manager.get_stream_state(name, None):
             return UpdatedCursorIncrementalStripeStream(
-                **args,
                 name=name,
                 path=path,
                 event_types=event_types,
                 cursor_field=cursor_field,
                 legacy_cursor_field=legacy_cursor_field,
                 use_cache=USE_CACHE,
+                *args,
+                **kwargs,
             )
         return CreatedCursorIncrementalStripeStream(
-            **args,
             name=name,
             path=path,
             cursor_field=cursor_field,
@@ -574,6 +569,8 @@ class SourceStripe(ConcurrentSourceAdapter):
             lookback_window_days=0,
             record_extractor=UpdatedCursorIncrementalRecordExtractor(cursor_field, legacy_cursor_field),
             use_cache=USE_CACHE,
+            *args,
+            **kwargs,
         )
 
     def _to_concurrent(

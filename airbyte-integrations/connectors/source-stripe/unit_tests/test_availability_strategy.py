@@ -8,7 +8,7 @@ import urllib.parse
 import pytest
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from source_stripe.availability_strategy import STRIPE_ERROR_CODES, StripeSubStreamAvailabilityStrategy
-from source_stripe.streams import IncrementalStripeStream, StripeLazySubStream
+from source_stripe.streams import CreatedCursorIncrementalStripeStream, StripeLazySubStream
 
 
 @pytest.fixture()
@@ -108,7 +108,7 @@ def test_substream_availability(mocker, stream_by_name):
     assert is_available and reason is None
 
     assert check_availability_mock.call_count == 2
-    assert isinstance(check_availability_mock.call_args_list[0].args[0], IncrementalStripeStream)
+    assert isinstance(check_availability_mock.call_args_list[0].args[0], CreatedCursorIncrementalStripeStream)
     assert isinstance(check_availability_mock.call_args_list[1].args[0], StripeLazySubStream)
 
 

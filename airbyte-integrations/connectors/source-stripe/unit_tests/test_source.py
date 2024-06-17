@@ -99,8 +99,8 @@ def test_when_streams_return_full_refresh_and_application_fees_sync_as_concurren
 
     # bank_accounts (as it is defined as full_refresh)
     # balance_transactions, events, files, file_links and shipping_rates (as it is always concurrent now)
-    # application fees has been moved away from IncrementalStripeStream and hence will be concurrent on any sync without a state
-    assert len(list(filter(lambda stream: isinstance(stream, StreamFacade), streams))) == 7
+    # IncrementalStripeStream has been removed in favor of CreatedCursorIncrementalStripeStream and hence will be concurrent on any sync without a state
+    assert len(list(filter(lambda stream: isinstance(stream, StreamFacade), streams))) == 30
 
 
 @pytest.mark.parametrize(

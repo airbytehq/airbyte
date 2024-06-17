@@ -348,51 +348,6 @@ refunds_api_objects = [
             "full_refresh",
             {},
         ),
-        (
-            {
-                "/v1/events":
-                [
-                    {
-                        "json": {
-                            "data": [refunds_api_objects[2]],
-                            "has_more": False,
-                        }
-                    },
-                ],
-            },
-            [
-                {
-                    "id": "re_3NRL2GEcXtiJtvvh0ahgD9V8",
-                    "object": "refund",
-                    "amount": 15,
-                    "balance_transaction": "txn_3NRL2GEcXtiJtvvh0uhS7L1l",
-                    "charge": "ch_3NRL2GEcXtiJtvvh0XOSc8NL",
-                    "created": 1666518588,
-                    "currency": "usd",
-                    "destination_details": {
-                        "card": {
-                            "reference": "7901352802291512",
-                            "reference_status": "available",
-                            "reference_type": "acquirer_reference_number",
-                            "type": "refund"
-                        },
-                        "type": "card"
-                    },
-                    "metadata": {},
-                    "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
-                    "reason": None,
-                    "receipt_number": None,
-                    "source_transfer_reversal": None,
-                    "status": "succeeded",
-                    "transfer_reversal": None,
-                    "updated": 1666518588
-                }
-            ],
-            [{}],
-            "refunds",
-            "incremental",
-            {"created": 1666518588},
-        ),
     ),
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
