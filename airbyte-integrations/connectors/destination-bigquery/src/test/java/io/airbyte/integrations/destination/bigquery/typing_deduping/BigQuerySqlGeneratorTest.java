@@ -49,10 +49,16 @@ public class BigQuerySqlGeneratorTest {
                 put(new ColumnId("current_date_1", "current_date", "current_date_1"), AirbyteProtocolType.INTEGER);
               }
 
-            }, 0, 0, 0),
+            },
+            1,
+            1,
+            2),
         parser.toStreamConfig(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withGenerationId(1L)
+            .withMinimumGenerationId(1L)
+            .withSyncId(2L)
             .withStream(new AirbyteStream()
                 .withName("foo")
                 .withNamespace("bar")
