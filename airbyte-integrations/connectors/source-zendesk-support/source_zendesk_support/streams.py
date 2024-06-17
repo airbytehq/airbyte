@@ -14,7 +14,7 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
+from airbyte_cdk.sources.streams.core import CheckpointMixin, StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -153,7 +153,7 @@ class BaseZendeskSupportStream(HttpStream, ABC):
             )
 
 
-class SourceZendeskSupportStream(BaseZendeskSupportStream):
+class SourceZendeskSupportStream(BaseZendeskSupportStream, CheckpointMixin):
     """Basic Zendesk class"""
 
     primary_key = "id"
@@ -165,6 +165,10 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = None
+
     @property
     def url_base(self) -> str:
         return f"https://{self._subdomain}.zendesk.com/api/v2/"
@@ -175,7 +179,15 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
     def next_page_token(self, *args, **kwargs):
         return None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = latest_record[self.cursor_field]
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
@@ -241,7 +253,7 @@ class FullRefreshZendeskSupportStream(BaseZendeskSupportStream):
         return params
 
 
-class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
+class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream, CheckpointMixin):
     """
     Endpoints provide a cursor pagination and sorting mechanism
     """
@@ -250,7 +262,19 @@ class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
     next_page_field = "next_page"
     prev_start_time = None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = None
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # try to save maximum value of a cursor field
         old_value = str((current_stream_state or {}).get(self.cursor_field, ""))
         new_value = str((latest_record or {}).get(self.cursor_field, ""))
@@ -462,7 +486,7 @@ class Posts(CursorPaginationZendeskSupportStream):
         return "community/posts"
 
 
-class Tickets(SourceZendeskIncrementalExportStream):
+class Tickets(SourceZendeskIncrementalExportStream, CheckpointMixin):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
     response_list_name: str = "tickets"
@@ -474,7 +498,19 @@ class Tickets(SourceZendeskIncrementalExportStream):
     def path(self, **kwargs) -> str:
         return "incremental/tickets/cursor.json"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = None
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         old_value = (current_stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
         new_value = (latest_record or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
         return {self.cursor_field: max(new_value, old_value)}

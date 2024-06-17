@@ -420,7 +420,7 @@ class TestSourceZendeskSupportStream:
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
-        result = stream.get_updated_state(current_state, last_record)
+        result = stream._get_updated_state(current_state, last_record)
         assert expected == result
 
     @pytest.mark.parametrize(
@@ -570,7 +570,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
-        result = stream.get_updated_state(current_state, last_record)
+        result = stream._get_updated_state(current_state, last_record)
         assert expected == result
 
     @pytest.mark.parametrize(
