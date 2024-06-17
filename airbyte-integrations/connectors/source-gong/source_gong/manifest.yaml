@@ -83,7 +83,8 @@ definitions:
     extensiveCalls:
       type: DeclarativeStream
       name: "extensiveCalls"
-      primary_key: [["id"]]
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
