@@ -35,7 +35,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
-1. Create a new User: 
+#### 1. Create a new User: 
 -  On the top right of the screen, click the gear icon and then click **Setup**.
 -  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname. 
       - Leave `role` unspecified
@@ -43,7 +43,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
       - Select `Standard Platform User` for Profile. 
       - Decide whether to generate a new password and notify the user. 
       - Select `save`
-2. Create a new Permission Set: 
+#### 2. Create a new Permission Set: 
 -  Using the left navigation bar, select **Users** > **Permission Sets** 
 - Click `New` to create a new Permission Set. 
 - Give your permission set a descriptive label name (e.g., "Airbyte Read Only Access"). The API name will autopopulate based on the label you give the permission set. 
@@ -54,7 +54,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
    - Select “Edit” and check the "Read" permission and uncheck all other permissions (Create, Edit, Delete, etc.).
    - Click `Save`
    - Continue to add read permissions for any objects you want Airbyte to have access to. 
-3. Assign the Permission Set to the new User
+#### 3. Assign the Permission Set to the new User
 - From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 - Click "Add Assignments."
 - Find and select the user you created in Step 1.
