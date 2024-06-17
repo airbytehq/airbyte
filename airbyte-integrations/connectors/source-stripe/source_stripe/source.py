@@ -402,11 +402,15 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["plan.created", "plan.updated", "plan.deleted"],
                 **args,
             ),
-            self._instantiate_incremental_stripe_stream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
+            self._instantiate_incremental_stripe_stream(
+                name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args
+            ),
             self._instantiate_incremental_stripe_stream(
                 name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args
             ),
-            self._instantiate_incremental_stripe_stream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args),
+            self._instantiate_incremental_stripe_stream(
+                name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args
+            ),
             subscriptions,
             self._instantiate_incremental_stripe_stream(
                 name="subscription_schedule",

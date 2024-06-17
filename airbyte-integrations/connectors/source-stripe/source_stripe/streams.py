@@ -13,7 +13,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.core import StreamData, CheckpointMixin
+from airbyte_cdk.sources.streams.core import CheckpointMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -472,9 +472,6 @@ class IncrementalStripeStream(StripeStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.parent_stream = self.stream_selector.get_parent_stream(stream_state)
         yield from self.parent_stream.stream_slices(sync_mode, cursor_field, stream_state)
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return self.parent_stream.get_updated_state(current_stream_state, latest_record)
 
     def read_records(
         self,
