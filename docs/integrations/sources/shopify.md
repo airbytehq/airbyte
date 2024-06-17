@@ -114,7 +114,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 - [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2024-04/resources/abandoned-checkouts#top)
 - [Articles](https://shopify.dev/api/admin-rest/2024-04/resources/article)
-- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2023-10/resources/transactions)
+- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2024-04/resources/transactions)
 - [Blogs](https://shopify.dev/api/admin-rest/2024-04/resources/blog)
 - [Collects](https://shopify.dev/api/admin-rest/2024-04/resources/collect#top)
 - [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Collection)

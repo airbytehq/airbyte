@@ -77,6 +77,8 @@ data:
   suggestedStreams:
     streams:
       - customers
+      - customer_journey_summary
+      - order_agreements
       - order_refunds
       - transactions_graphql
       - product_variants
