@@ -144,9 +144,9 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         try:
-            yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
+            for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+                self.state = self._get_updated_state(stream_state, record)
+                yield record
         except requests.exceptions.JSONDecodeError:
             self.logger.error(
                 f"Skipping stream {self.name}: Non-JSON response received. Please ensure that you have enough permissions for this stream."
@@ -741,9 +741,9 @@ class TicketAudits(IncrementalZendeskSupportStream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         try:
-            yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
+            for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+                self.state = self._get_updated_state(stream_state, record)
+                yield record
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == requests.codes.GATEWAY_TIMEOUT:
                 self.logger.error(f"Skipping stream `{self.name}`. Timed out waiting for response: {e.response.text}...")
