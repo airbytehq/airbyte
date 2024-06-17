@@ -7,7 +7,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class PendoPythonStream(HttpStream, ABC):
     url_base = "https://app.pendo.io/api/v1/"
-    primary_key = "id"
+    primary_key = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
