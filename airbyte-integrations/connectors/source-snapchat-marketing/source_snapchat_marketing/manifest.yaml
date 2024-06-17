@@ -485,7 +485,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: adaccounts/{{ stream_slice['adaccount_id'] }}/stats
+          path: adaccounts/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: HOUR
@@ -503,7 +503,6 @@ definitions:
               - timeseries_stat
               - timeseries
               - "*"
-              - stats
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -517,7 +516,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: adaccount_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
@@ -553,11 +552,9 @@ definitions:
             - path: ["type"]
               value: "AD_ACCOUNT"
             - path: ["granularity"]
-              value: "HOUR"
-            - path: ["start_time"]
-              value: "{{ stream_slice['start_time'] }}"
-            - path: ["end_time"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "DAY"
+            - path: [ "spend" ]
+              value: "{{ record['stats']['spend'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -573,7 +570,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: adaccounts/{{ stream_slice['adaccount_id'] }}/stats
+          path: adaccounts/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: DAY
@@ -591,7 +588,6 @@ definitions:
               - timeseries_stat
               - timeseries
               - "*"
-              - stats
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -605,7 +601,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: adaccount_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
@@ -642,10 +638,11 @@ definitions:
               value: "AD_ACCOUNT"
             - path: ["granularity"]
               value: "DAY"
-            - path: ["start_time"]
-              value: "{{ stream_slice['start_time'] }}"
-            - path: ["end_time"]
-              value: "{{ stream_slice['end_time'] }}"
+            - path: [ "spend" ]
+              value: "{{ record['stats']['spend'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - stats
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -660,7 +657,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: adaccounts/{{ stream_slice['adaccount_id'] }}/stats
+          path: adaccounts/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: LIFETIME
@@ -689,7 +686,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: adaccount_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/adaccounts"
       schema_loader:
@@ -707,7 +704,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: ads/{{ stream_slice['ad_id'] }}/stats
+          path: ads/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: HOUR
@@ -726,7 +723,6 @@ definitions:
               - timeseries_stat
               - timeseries
               - "*"
-              - stats
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -740,7 +736,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: ad_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/ads"
       incremental_sync:
@@ -772,15 +768,140 @@ definitions:
         - type: AddFields
           fields:
             - path: ["id"]
-              value: "{{ stream_slice['ad_id'] }}"
+              value: "{{ stream_slice['id'] }}"
             - path: ["type"]
-              value: "AD"
+              value: "AD_ACCOUNT"
             - path: ["granularity"]
-              value: "HOUR"
-            - path: ["start_time"]
-              value: "{{ stream_slice['start_time'] }}"
-            - path: ["end_time"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "DAY"
+            - path: [ "android_installs" ]
+              value: "{{ record['stats']['android_installs'] }}"
+            - path: [ "attachment_avg_view_time_millis" ]
+              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+            - path: [ "attachment_impressions" ]
+              value: "{{ record['stats']['attachment_impressions'] }}"
+            - path: [ "attachment_quartile_1" ]
+              value: "{{ record['stats']['attachment_quartile_1'] }}"
+            - path: [ "attachment_quartile_2" ]
+              value: "{{ record['stats']['attachment_quartile_2'] }}"
+            - path: [ "attachment_quartile_3" ]
+              value: "{{ record['stats']['attachment_quartile_3'] }}"
+            - path: [ "attachment_total_view_time_millis" ]
+              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+            - path: [ "attachment_view_completion" ]
+              value: "{{ record['stats']['attachment_view_completion'] }}"
+            - path: [ "avg_screen_time_millis" ]
+              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+            - path: [ "avg_view_time_millis" ]
+              value: "{{ record['stats']['avg_view_time_millis'] }}"
+            - path: [ "impressions" ]
+              value: "{{ record['stats']['impressions'] }}"
+            - path: [ "ios_installs" ]
+              value: "{{ record['stats']['ios_installs'] }}"
+            - path: [ "quartile_1" ]
+              value: "{{ record['stats']['quartile_1'] }}"
+            - path: [ "quartile_2" ]
+              value: "{{ record['stats']['quartile_2'] }}"
+            - path: [ "quartile_3" ]
+              value: "{{ record['stats']['quartile_3'] }}"
+            - path: [ "screen_time_millis" ]
+              value: "{{ record['stats']['screen_time_millis'] }}"
+            - path: [ "swipe_up_percent" ]
+              value: "{{ record['stats']['swipe_up_percent'] }}"
+            - path: [ "swipes" ]
+              value: "{{ record['stats']['swipes'] }}"
+            - path: [ "total_installs" ]
+              value: "{{ record['stats']['total_installs'] }}"
+            - path: [ "video_views" ]
+              value: "{{ record['stats']['video_views'] }}"
+            - path: [ "video_views_time_based" ]
+              value: "{{ record['stats']['video_views_time_based'] }}"
+            - path: [ "video_views_15s" ]
+              value: "{{ record['stats']['video_views_15s'] }}"
+            - path: [ "view_completion" ]
+              value: "{{ record['stats']['view_completion'] }}"
+            - path: [ "view_time_millis" ]
+              value: "{{ record['stats']['view_time_millis'] }}"
+            - path: [ "paid_impressions" ]
+              value: "{{ record['stats']['paid_impressions'] }}"
+            - path: [ "earned_impressions" ]
+              value: "{{ record['stats']['earned_impressions'] }}"
+            - path: [ "total_impressions" ]
+              value: "{{ record['stats']['total_impressions'] }}"
+            - path: [ "play_time_millis" ]
+              value: "{{ record['stats']['play_time_millis'] }}"
+            - path: [ "shares" ]
+              value: "{{ record['stats']['shares'] }}"
+            - path: [ "saves" ]
+              value: "{{ record['stats']['saves'] }}"
+            - path: [ "native_leads" ]
+              value: "{{ record['stats']['native_leads'] }}"
+            - path: [ "conversion_purchases" ]
+              value: "{{ record['stats']['conversion_purchases'] }}"
+            - path: [ "conversion_purchases_value" ]
+              value: "{{ record['stats']['conversion_purchases_value'] }}"
+            - path: [ "conversion_save" ]
+              value: "{{ record['stats']['conversion_save'] }}"
+            - path: [ "conversion_start_checkout" ]
+              value: "{{ record['stats']['conversion_start_checkout'] }}"
+            - path: [ "conversion_add_cart" ]
+              value: "{{ record['stats']['conversion_add_cart'] }}"
+            - path: [ "conversion_view_content" ]
+              value: "{{ record['stats']['conversion_view_content'] }}"
+            - path: [ "conversion_add_billing" ]
+              value: "{{ record['stats']['conversion_add_billing'] }}"
+            - path: [ "conversion_searches" ]
+              value: "{{ record['stats']['conversion_searches'] }}"
+            - path: [ "conversion_level_completes" ]
+              value: "{{ record['stats']['conversion_level_completes'] }}"
+            - path: [ "conversion_app_opens" ]
+              value: "{{ record['stats']['conversion_app_opens'] }}"
+            - path: [ "conversion_page_views" ]
+              value: "{{ record['stats']['conversion_page_views'] }}"
+            - path: [ "conversion_subscribe" ]
+              value: "{{ record['stats']['conversion_subscribe'] }}"
+            - path: [ "conversion_ad_click" ]
+              value: "{{ record['stats']['conversion_ad_click'] }}"
+            - path: [ "conversion_ad_view" ]
+              value: "{{ record['stats']['conversion_ad_view'] }}"
+            - path: [ "conversion_complete_tutorial" ]
+              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+            - path: [ "conversion_invite" ]
+              value: "{{ record['stats']['conversion_invite'] }}"
+            - path: [ "conversion_login" ]
+              value: "{{ record['stats']['conversion_login'] }}"
+            - path: [ "conversion_share" ]
+              value: "{{ record['stats']['conversion_share'] }}"
+            - path: [ "conversion_reserve" ]
+              value: "{{ record['stats']['conversion_reserve'] }}"
+            - path: [ "conversion_achievement_unlocked" ]
+              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+            - path: [ "conversion_add_to_wishlist" ]
+              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+            - path: [ "conversion_spend_credits" ]
+              value: "{{ record['stats']['conversion_spend_credits'] }}"
+            - path: [ "conversion_rate" ]
+              value: "{{ record['stats']['conversion_rate'] }}"
+            - path: [ "conversion_start_trial" ]
+              value: "{{ record['stats']['conversion_start_trial'] }}"
+            - path: [ "conversion_list_view" ]
+              value: "{{ record['stats']['conversion_list_view'] }}"
+            - path: [ "custom_event_1" ]
+              value: "{{ record['stats']['custom_event_1'] }}"
+            - path: [ "custom_event_2" ]
+              value: "{{ record['stats']['custom_event_2'] }}"
+            - path: [ "custom_event_3" ]
+              value: "{{ record['stats']['custom_event_3'] }}"
+            - path: [ "custom_event_4" ]
+              value: "{{ record['stats']['custom_event_4'] }}"
+            - path: [ "custom_event_5" ]
+              value: "{{ record['stats']['custom_event_5'] }}"
+            - path: [ "story_opens" ]
+              value: "{{ record['stats']['story_opens'] }}"
+            - path: [ "story_completes" ]
+              value: "{{ record['stats']['story_completes'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - stats
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -796,7 +917,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: ads/{{ stream_slice['ad_id'] }}/stats
+          path: ads/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: DAY
@@ -815,7 +936,6 @@ definitions:
               - timeseries_stat
               - timeseries
               - "*"
-              - stats
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -829,7 +949,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: ad_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/ads"
       incremental_sync:
@@ -861,15 +981,152 @@ definitions:
         - type: AddFields
           fields:
             - path: ["id"]
-              value: "{{ stream_slice['ad_id'] }}"
+              value: "{{ stream_slice['id'] }}"
             - path: ["type"]
-              value: "AD"
+              value: "AD_ACCOUNT"
             - path: ["granularity"]
               value: "DAY"
-            - path: ["start_time"]
-              value: "{{ stream_slice['start_time'] }}"
-            - path: ["end_time"]
-              value: "{{ stream_slice['end_time'] }}"
+            - path: [ "android_installs" ]
+              value: "{{ record['stats']['android_installs'] }}"
+            - path: [ "attachment_avg_view_time_millis" ]
+              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+            - path: [ "attachment_impressions" ]
+              value: "{{ record['stats']['attachment_impressions'] }}"
+            - path: [ "attachment_quartile_1" ]
+              value: "{{ record['stats']['attachment_quartile_1'] }}"
+            - path: [ "attachment_quartile_2" ]
+              value: "{{ record['stats']['attachment_quartile_2'] }}"
+            - path: [ "attachment_quartile_3" ]
+              value: "{{ record['stats']['attachment_quartile_3'] }}"
+            - path: [ "attachment_total_view_time_millis" ]
+              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+            - path: [ "attachment_view_completion" ]
+              value: "{{ record['stats']['attachment_view_completion'] }}"
+            - path: [ "avg_screen_time_millis" ]
+              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+            - path: [ "avg_view_time_millis" ]
+              value: "{{ record['stats']['avg_view_time_millis'] }}"
+            - path: [ "impressions" ]
+              value: "{{ record['stats']['impressions'] }}"
+            - path: [ "ios_installs" ]
+              value: "{{ record['stats']['ios_installs'] }}"
+            - path: [ "quartile_1" ]
+              value: "{{ record['stats']['quartile_1'] }}"
+            - path: [ "quartile_2" ]
+              value: "{{ record['stats']['quartile_2'] }}"
+            - path: [ "quartile_3" ]
+              value: "{{ record['stats']['quartile_3'] }}"
+            - path: [ "screen_time_millis" ]
+              value: "{{ record['stats']['screen_time_millis'] }}"
+            - path: [ "swipe_up_percent" ]
+              value: "{{ record['stats']['swipe_up_percent'] }}"
+            - path: [ "swipes" ]
+              value: "{{ record['stats']['swipes'] }}"
+            - path: [ "total_installs" ]
+              value: "{{ record['stats']['total_installs'] }}"
+            - path: [ "video_views" ]
+              value: "{{ record['stats']['video_views'] }}"
+            - path: [ "video_views_time_based" ]
+              value: "{{ record['stats']['video_views_time_based'] }}"
+            - path: [ "video_views_15s" ]
+              value: "{{ record['stats']['video_views_15s'] }}"
+            - path: [ "view_completion" ]
+              value: "{{ record['stats']['view_completion'] }}"
+            - path: [ "view_time_millis" ]
+              value: "{{ record['stats']['view_time_millis'] }}"
+            - path: [ "paid_impressions" ]
+              value: "{{ record['stats']['paid_impressions'] }}"
+            - path: [ "earned_impressions" ]
+              value: "{{ record['stats']['earned_impressions'] }}"
+            - path: [ "total_impressions" ]
+              value: "{{ record['stats']['total_impressions'] }}"
+            - path: [ "play_time_millis" ]
+              value: "{{ record['stats']['play_time_millis'] }}"
+            - path: [ "shares" ]
+              value: "{{ record['stats']['shares'] }}"
+            - path: [ "saves" ]
+              value: "{{ record['stats']['saves'] }}"
+            - path: [ "native_leads" ]
+              value: "{{ record['stats']['native_leads'] }}"
+            - path: [ "conversion_purchases" ]
+              value: "{{ record['stats']['conversion_purchases'] }}"
+            - path: [ "conversion_purchases_value" ]
+              value: "{{ record['stats']['conversion_purchases_value'] }}"
+            - path: [ "conversion_save" ]
+              value: "{{ record['stats']['conversion_save'] }}"
+            - path: [ "conversion_start_checkout" ]
+              value: "{{ record['stats']['conversion_start_checkout'] }}"
+            - path: [ "conversion_add_cart" ]
+              value: "{{ record['stats']['conversion_add_cart'] }}"
+            - path: [ "conversion_view_content" ]
+              value: "{{ record['stats']['conversion_view_content'] }}"
+            - path: [ "conversion_add_billing" ]
+              value: "{{ record['stats']['conversion_add_billing'] }}"
+            - path: [ "conversion_searches" ]
+              value: "{{ record['stats']['conversion_searches'] }}"
+            - path: [ "conversion_level_completes" ]
+              value: "{{ record['stats']['conversion_level_completes'] }}"
+            - path: [ "conversion_app_opens" ]
+              value: "{{ record['stats']['conversion_app_opens'] }}"
+            - path: [ "conversion_page_views" ]
+              value: "{{ record['stats']['conversion_page_views'] }}"
+            - path: [ "conversion_subscribe" ]
+              value: "{{ record['stats']['conversion_subscribe'] }}"
+            - path: [ "conversion_ad_click" ]
+              value: "{{ record['stats']['conversion_ad_click'] }}"
+            - path: [ "conversion_ad_view" ]
+              value: "{{ record['stats']['conversion_ad_view'] }}"
+            - path: [ "conversion_complete_tutorial" ]
+              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+            - path: [ "conversion_invite" ]
+              value: "{{ record['stats']['conversion_invite'] }}"
+            - path: [ "conversion_login" ]
+              value: "{{ record['stats']['conversion_login'] }}"
+            - path: [ "conversion_share" ]
+              value: "{{ record['stats']['conversion_share'] }}"
+            - path: [ "conversion_reserve" ]
+              value: "{{ record['stats']['conversion_reserve'] }}"
+            - path: [ "conversion_achievement_unlocked" ]
+              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+            - path: [ "conversion_add_to_wishlist" ]
+              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+            - path: [ "conversion_spend_credits" ]
+              value: "{{ record['stats']['conversion_spend_credits'] }}"
+            - path: [ "conversion_rate" ]
+              value: "{{ record['stats']['conversion_rate'] }}"
+            - path: [ "conversion_start_trial" ]
+              value: "{{ record['stats']['conversion_start_trial'] }}"
+            - path: [ "conversion_list_view" ]
+              value: "{{ record['stats']['conversion_list_view'] }}"
+            - path: [ "custom_event_1" ]
+              value: "{{ record['stats']['custom_event_1'] }}"
+            - path: [ "custom_event_2" ]
+              value: "{{ record['stats']['custom_event_2'] }}"
+            - path: [ "custom_event_3" ]
+              value: "{{ record['stats']['custom_event_3'] }}"
+            - path: [ "custom_event_4" ]
+              value: "{{ record['stats']['custom_event_4'] }}"
+            - path: [ "custom_event_5" ]
+              value: "{{ record['stats']['custom_event_5'] }}"
+            - path: [ "story_opens" ]
+              value: "{{ record['stats']['story_opens'] }}"
+            - path: [ "story_completes" ]
+              value: "{{ record['stats']['story_completes'] }}"
+            - path: [ "attachment_frequency" ]
+              value: "{{ record['stats']['attachment_frequency'] }}"
+            - path: [ "attachment_uniques" ]
+              value: "{{ record['stats']['attachment_uniques'] }}"
+            - path: [ "frequency" ]
+              value: "{{ record['stats']['frequency'] }}"
+            - path: [ "uniques" ]
+              value: "{{ record['stats']['uniques'] }}"
+            - path: [ "total_reach" ]
+              value: "{{ record['stats']['total_reach'] }}"
+            - path: [ "earned_reach" ]
+              value: "{{ record['stats']['earned_reach'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - stats
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -884,7 +1141,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: ads/{{ stream_slice['ad_id'] }}/stats
+          path: ads/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: LIFETIME
@@ -914,7 +1171,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: ad_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/ads"
       schema_loader:
@@ -932,7 +1189,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: adsquads/{{ stream_slice['adsquad_id'] }}/stats
+          path: adsquads/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: HOUR
@@ -951,7 +1208,6 @@ definitions:
               - timeseries_stat
               - timeseries
               - "*"
-              - stats
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -965,7 +1221,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: adsquad_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/adsquads"
       incremental_sync:
@@ -997,15 +1253,140 @@ definitions:
         - type: AddFields
           fields:
             - path: ["id"]
-              value: "{{ stream_slice['adsquad_id'] }}"
+              value: "{{ stream_slice['id'] }}"
             - path: ["type"]
-              value: "AD_SQUAD"
+              value: "AD_ACCOUNT"
             - path: ["granularity"]
-              value: "HOUR"
-            - path: ["start_time"]
-              value: "{{ stream_slice['start_time'] }}"
-            - path: ["end_time"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "DAY"
+            - path: [ "android_installs" ]
+              value: "{{ record['stats']['android_installs'] }}"
+            - path: [ "attachment_avg_view_time_millis" ]
+              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+            - path: [ "attachment_impressions" ]
+              value: "{{ record['stats']['attachment_impressions'] }}"
+            - path: [ "attachment_quartile_1" ]
+              value: "{{ record['stats']['attachment_quartile_1'] }}"
+            - path: [ "attachment_quartile_2" ]
+              value: "{{ record['stats']['attachment_quartile_2'] }}"
+            - path: [ "attachment_quartile_3" ]
+              value: "{{ record['stats']['attachment_quartile_3'] }}"
+            - path: [ "attachment_total_view_time_millis" ]
+              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+            - path: [ "attachment_view_completion" ]
+              value: "{{ record['stats']['attachment_view_completion'] }}"
+            - path: [ "avg_screen_time_millis" ]
+              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+            - path: [ "avg_view_time_millis" ]
+              value: "{{ record['stats']['avg_view_time_millis'] }}"
+            - path: [ "impressions" ]
+              value: "{{ record['stats']['impressions'] }}"
+            - path: [ "ios_installs" ]
+              value: "{{ record['stats']['ios_installs'] }}"
+            - path: [ "quartile_1" ]
+              value: "{{ record['stats']['quartile_1'] }}"
+            - path: [ "quartile_2" ]
+              value: "{{ record['stats']['quartile_2'] }}"
+            - path: [ "quartile_3" ]
+              value: "{{ record['stats']['quartile_3'] }}"
+            - path: [ "screen_time_millis" ]
+              value: "{{ record['stats']['screen_time_millis'] }}"
+            - path: [ "swipe_up_percent" ]
+              value: "{{ record['stats']['swipe_up_percent'] }}"
+            - path: [ "swipes" ]
+              value: "{{ record['stats']['swipes'] }}"
+            - path: [ "total_installs" ]
+              value: "{{ record['stats']['total_installs'] }}"
+            - path: [ "video_views" ]
+              value: "{{ record['stats']['video_views'] }}"
+            - path: [ "video_views_time_based" ]
+              value: "{{ record['stats']['video_views_time_based'] }}"
+            - path: [ "video_views_15s" ]
+              value: "{{ record['stats']['video_views_15s'] }}"
+            - path: [ "view_completion" ]
+              value: "{{ record['stats']['view_completion'] }}"
+            - path: [ "view_time_millis" ]
+              value: "{{ record['stats']['view_time_millis'] }}"
+            - path: [ "paid_impressions" ]
+              value: "{{ record['stats']['paid_impressions'] }}"
+            - path: [ "earned_impressions" ]
+              value: "{{ record['stats']['earned_impressions'] }}"
+            - path: [ "total_impressions" ]
+              value: "{{ record['stats']['total_impressions'] }}"
+            - path: [ "play_time_millis" ]
+              value: "{{ record['stats']['play_time_millis'] }}"
+            - path: [ "shares" ]
+              value: "{{ record['stats']['shares'] }}"
+            - path: [ "saves" ]
+              value: "{{ record['stats']['saves'] }}"
+            - path: [ "native_leads" ]
+              value: "{{ record['stats']['native_leads'] }}"
+            - path: [ "conversion_purchases" ]
+              value: "{{ record['stats']['conversion_purchases'] }}"
+            - path: [ "conversion_purchases_value" ]
+              value: "{{ record['stats']['conversion_purchases_value'] }}"
+            - path: [ "conversion_save" ]
+              value: "{{ record['stats']['conversion_save'] }}"
+            - path: [ "conversion_start_checkout" ]
+              value: "{{ record['stats']['conversion_start_checkout'] }}"
+            - path: [ "conversion_add_cart" ]
+              value: "{{ record['stats']['conversion_add_cart'] }}"
+            - path: [ "conversion_view_content" ]
+              value: "{{ record['stats']['conversion_view_content'] }}"
+            - path: [ "conversion_add_billing" ]
+              value: "{{ record['stats']['conversion_add_billing'] }}"
+            - path: [ "conversion_searches" ]
+              value: "{{ record['stats']['conversion_searches'] }}"
+            - path: [ "conversion_level_completes" ]
+              value: "{{ record['stats']['conversion_level_completes'] }}"
+            - path: [ "conversion_app_opens" ]
+              value: "{{ record['stats']['conversion_app_opens'] }}"
+            - path: [ "conversion_page_views" ]
+              value: "{{ record['stats']['conversion_page_views'] }}"
+            - path: [ "conversion_subscribe" ]
+              value: "{{ record['stats']['conversion_subscribe'] }}"
+            - path: [ "conversion_ad_click" ]
+              value: "{{ record['stats']['conversion_ad_click'] }}"
+            - path: [ "conversion_ad_view" ]
+              value: "{{ record['stats']['conversion_ad_view'] }}"
+            - path: [ "conversion_complete_tutorial" ]
+              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+            - path: [ "conversion_invite" ]
+              value: "{{ record['stats']['conversion_invite'] }}"
+            - path: [ "conversion_login" ]
+              value: "{{ record['stats']['conversion_login'] }}"
+            - path: [ "conversion_share" ]
+              value: "{{ record['stats']['conversion_share'] }}"
+            - path: [ "conversion_reserve" ]
+              value: "{{ record['stats']['conversion_reserve'] }}"
+            - path: [ "conversion_achievement_unlocked" ]
+              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+            - path: [ "conversion_add_to_wishlist" ]
+              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+            - path: [ "conversion_spend_credits" ]
+              value: "{{ record['stats']['conversion_spend_credits'] }}"
+            - path: [ "conversion_rate" ]
+              value: "{{ record['stats']['conversion_rate'] }}"
+            - path: [ "conversion_start_trial" ]
+              value: "{{ record['stats']['conversion_start_trial'] }}"
+            - path: [ "conversion_list_view" ]
+              value: "{{ record['stats']['conversion_list_view'] }}"
+            - path: [ "custom_event_1" ]
+              value: "{{ record['stats']['custom_event_1'] }}"
+            - path: [ "custom_event_2" ]
+              value: "{{ record['stats']['custom_event_2'] }}"
+            - path: [ "custom_event_3" ]
+              value: "{{ record['stats']['custom_event_3'] }}"
+            - path: [ "custom_event_4" ]
+              value: "{{ record['stats']['custom_event_4'] }}"
+            - path: [ "custom_event_5" ]
+              value: "{{ record['stats']['custom_event_5'] }}"
+            - path: [ "story_opens" ]
+              value: "{{ record['stats']['story_opens'] }}"
+            - path: [ "story_completes" ]
+              value: "{{ record['stats']['story_completes'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - stats
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1021,7 +1402,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: adsquads/{{ stream_slice['adsquad_id'] }}/stats
+          path: adsquads/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: DAY
@@ -1040,7 +1421,6 @@ definitions:
               - timeseries_stat
               - timeseries
               - "*"
-              - stats
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1054,7 +1434,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: adsquad_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/adsquads"
       incremental_sync:
@@ -1086,15 +1466,152 @@ definitions:
         - type: AddFields
           fields:
             - path: ["id"]
-              value: "{{ stream_slice['adsquad_id'] }}"
+              value: "{{ stream_slice['id'] }}"
             - path: ["type"]
-              value: "AD_SQUAD"
+              value: "AD_ACCOUNT"
             - path: ["granularity"]
               value: "DAY"
-            - path: ["start_time"]
-              value: "{{ stream_slice['start_time'] }}"
-            - path: ["end_time"]
-              value: "{{ stream_slice['end_time'] }}"
+            - path: [ "android_installs" ]
+              value: "{{ record['stats']['android_installs'] }}"
+            - path: [ "attachment_avg_view_time_millis" ]
+              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+            - path: [ "attachment_impressions" ]
+              value: "{{ record['stats']['attachment_impressions'] }}"
+            - path: [ "attachment_quartile_1" ]
+              value: "{{ record['stats']['attachment_quartile_1'] }}"
+            - path: [ "attachment_quartile_2" ]
+              value: "{{ record['stats']['attachment_quartile_2'] }}"
+            - path: [ "attachment_quartile_3" ]
+              value: "{{ record['stats']['attachment_quartile_3'] }}"
+            - path: [ "attachment_total_view_time_millis" ]
+              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+            - path: [ "attachment_view_completion" ]
+              value: "{{ record['stats']['attachment_view_completion'] }}"
+            - path: [ "avg_screen_time_millis" ]
+              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+            - path: [ "avg_view_time_millis" ]
+              value: "{{ record['stats']['avg_view_time_millis'] }}"
+            - path: [ "impressions" ]
+              value: "{{ record['stats']['impressions'] }}"
+            - path: [ "ios_installs" ]
+              value: "{{ record['stats']['ios_installs'] }}"
+            - path: [ "quartile_1" ]
+              value: "{{ record['stats']['quartile_1'] }}"
+            - path: [ "quartile_2" ]
+              value: "{{ record['stats']['quartile_2'] }}"
+            - path: [ "quartile_3" ]
+              value: "{{ record['stats']['quartile_3'] }}"
+            - path: [ "screen_time_millis" ]
+              value: "{{ record['stats']['screen_time_millis'] }}"
+            - path: [ "swipe_up_percent" ]
+              value: "{{ record['stats']['swipe_up_percent'] }}"
+            - path: [ "swipes" ]
+              value: "{{ record['stats']['swipes'] }}"
+            - path: [ "total_installs" ]
+              value: "{{ record['stats']['total_installs'] }}"
+            - path: [ "video_views" ]
+              value: "{{ record['stats']['video_views'] }}"
+            - path: [ "video_views_time_based" ]
+              value: "{{ record['stats']['video_views_time_based'] }}"
+            - path: [ "video_views_15s" ]
+              value: "{{ record['stats']['video_views_15s'] }}"
+            - path: [ "view_completion" ]
+              value: "{{ record['stats']['view_completion'] }}"
+            - path: [ "view_time_millis" ]
+              value: "{{ record['stats']['view_time_millis'] }}"
+            - path: [ "paid_impressions" ]
+              value: "{{ record['stats']['paid_impressions'] }}"
+            - path: [ "earned_impressions" ]
+              value: "{{ record['stats']['earned_impressions'] }}"
+            - path: [ "total_impressions" ]
+              value: "{{ record['stats']['total_impressions'] }}"
+            - path: [ "play_time_millis" ]
+              value: "{{ record['stats']['play_time_millis'] }}"
+            - path: [ "shares" ]
+              value: "{{ record['stats']['shares'] }}"
+            - path: [ "saves" ]
+              value: "{{ record['stats']['saves'] }}"
+            - path: [ "native_leads" ]
+              value: "{{ record['stats']['native_leads'] }}"
+            - path: [ "conversion_purchases" ]
+              value: "{{ record['stats']['conversion_purchases'] }}"
+            - path: [ "conversion_purchases_value" ]
+              value: "{{ record['stats']['conversion_purchases_value'] }}"
+            - path: [ "conversion_save" ]
+              value: "{{ record['stats']['conversion_save'] }}"
+            - path: [ "conversion_start_checkout" ]
+              value: "{{ record['stats']['conversion_start_checkout'] }}"
+            - path: [ "conversion_add_cart" ]
+              value: "{{ record['stats']['conversion_add_cart'] }}"
+            - path: [ "conversion_view_content" ]
+              value: "{{ record['stats']['conversion_view_content'] }}"
+            - path: [ "conversion_add_billing" ]
+              value: "{{ record['stats']['conversion_add_billing'] }}"
+            - path: [ "conversion_searches" ]
+              value: "{{ record['stats']['conversion_searches'] }}"
+            - path: [ "conversion_level_completes" ]
+              value: "{{ record['stats']['conversion_level_completes'] }}"
+            - path: [ "conversion_app_opens" ]
+              value: "{{ record['stats']['conversion_app_opens'] }}"
+            - path: [ "conversion_page_views" ]
+              value: "{{ record['stats']['conversion_page_views'] }}"
+            - path: [ "conversion_subscribe" ]
+              value: "{{ record['stats']['conversion_subscribe'] }}"
+            - path: [ "conversion_ad_click" ]
+              value: "{{ record['stats']['conversion_ad_click'] }}"
+            - path: [ "conversion_ad_view" ]
+              value: "{{ record['stats']['conversion_ad_view'] }}"
+            - path: [ "conversion_complete_tutorial" ]
+              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+            - path: [ "conversion_invite" ]
+              value: "{{ record['stats']['conversion_invite'] }}"
+            - path: [ "conversion_login" ]
+              value: "{{ record['stats']['conversion_login'] }}"
+            - path: [ "conversion_share" ]
+              value: "{{ record['stats']['conversion_share'] }}"
+            - path: [ "conversion_reserve" ]
+              value: "{{ record['stats']['conversion_reserve'] }}"
+            - path: [ "conversion_achievement_unlocked" ]
+              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+            - path: [ "conversion_add_to_wishlist" ]
+              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+            - path: [ "conversion_spend_credits" ]
+              value: "{{ record['stats']['conversion_spend_credits'] }}"
+            - path: [ "conversion_rate" ]
+              value: "{{ record['stats']['conversion_rate'] }}"
+            - path: [ "conversion_start_trial" ]
+              value: "{{ record['stats']['conversion_start_trial'] }}"
+            - path: [ "conversion_list_view" ]
+              value: "{{ record['stats']['conversion_list_view'] }}"
+            - path: [ "custom_event_1" ]
+              value: "{{ record['stats']['custom_event_1'] }}"
+            - path: [ "custom_event_2" ]
+              value: "{{ record['stats']['custom_event_2'] }}"
+            - path: [ "custom_event_3" ]
+              value: "{{ record['stats']['custom_event_3'] }}"
+            - path: [ "custom_event_4" ]
+              value: "{{ record['stats']['custom_event_4'] }}"
+            - path: [ "custom_event_5" ]
+              value: "{{ record['stats']['custom_event_5'] }}"
+            - path: [ "story_opens" ]
+              value: "{{ record['stats']['story_opens'] }}"
+            - path: [ "story_completes" ]
+              value: "{{ record['stats']['story_completes'] }}"
+            - path: [ "attachment_frequency" ]
+              value: "{{ record['stats']['attachment_frequency'] }}"
+            - path: [ "attachment_uniques" ]
+              value: "{{ record['stats']['attachment_uniques'] }}"
+            - path: [ "frequency" ]
+              value: "{{ record['stats']['frequency'] }}"
+            - path: [ "uniques" ]
+              value: "{{ record['stats']['uniques'] }}"
+            - path: [ "total_reach" ]
+              value: "{{ record['stats']['total_reach'] }}"
+            - path: [ "earned_reach" ]
+              value: "{{ record['stats']['earned_reach'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - stats
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1109,7 +1626,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: adsquads/{{ stream_slice['adsquad_id'] }}/stats
+          path: adsquads/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: LIFETIME
@@ -1139,7 +1656,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: adsquad_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/adsquads"
       schema_loader:
@@ -1157,7 +1674,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: campaigns/{{ stream_slice['campaign_id'] }}/stats
+          path: campaigns/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: HOUR
@@ -1176,7 +1693,6 @@ definitions:
               - timeseries_stat
               - timeseries
               - "*"
-              - stats
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1190,7 +1706,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: campaign_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
@@ -1221,16 +1737,141 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path: ["id"]
-              value: "{{ stream_slice['campaign_id'] }}"
-            - path: ["type"]
-              value: "CAMPAIGN"
-            - path: ["granularity"]
-              value: "HOUR"
-            - path: ["start_time"]
-              value: "{{ stream_slice['start_time'] }}"
-            - path: ["end_time"]
-              value: "{{ stream_slice['end_time'] }}"
+            - path: [ "id" ]
+              value: "{{ stream_slice['id'] }}"
+            - path: [ "type" ]
+              value: "AD_ACCOUNT"
+            - path: [ "granularity" ]
+              value: "DAY"
+            - path: [ "android_installs" ]
+              value: "{{ record['stats']['android_installs'] }}"
+            - path: [ "attachment_avg_view_time_millis" ]
+              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+            - path: [ "attachment_impressions" ]
+              value: "{{ record['stats']['attachment_impressions'] }}"
+            - path: [ "attachment_quartile_1" ]
+              value: "{{ record['stats']['attachment_quartile_1'] }}"
+            - path: [ "attachment_quartile_2" ]
+              value: "{{ record['stats']['attachment_quartile_2'] }}"
+            - path: [ "attachment_quartile_3" ]
+              value: "{{ record['stats']['attachment_quartile_3'] }}"
+            - path: [ "attachment_total_view_time_millis" ]
+              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+            - path: [ "attachment_view_completion" ]
+              value: "{{ record['stats']['attachment_view_completion'] }}"
+            - path: [ "avg_screen_time_millis" ]
+              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+            - path: [ "avg_view_time_millis" ]
+              value: "{{ record['stats']['avg_view_time_millis'] }}"
+            - path: [ "impressions" ]
+              value: "{{ record['stats']['impressions'] }}"
+            - path: [ "ios_installs" ]
+              value: "{{ record['stats']['ios_installs'] }}"
+            - path: [ "quartile_1" ]
+              value: "{{ record['stats']['quartile_1'] }}"
+            - path: [ "quartile_2" ]
+              value: "{{ record['stats']['quartile_2'] }}"
+            - path: [ "quartile_3" ]
+              value: "{{ record['stats']['quartile_3'] }}"
+            - path: [ "screen_time_millis" ]
+              value: "{{ record['stats']['screen_time_millis'] }}"
+            - path: [ "swipe_up_percent" ]
+              value: "{{ record['stats']['swipe_up_percent'] }}"
+            - path: [ "swipes" ]
+              value: "{{ record['stats']['swipes'] }}"
+            - path: [ "total_installs" ]
+              value: "{{ record['stats']['total_installs'] }}"
+            - path: [ "video_views" ]
+              value: "{{ record['stats']['video_views'] }}"
+            - path: [ "video_views_time_based" ]
+              value: "{{ record['stats']['video_views_time_based'] }}"
+            - path: [ "video_views_15s" ]
+              value: "{{ record['stats']['video_views_15s'] }}"
+            - path: [ "view_completion" ]
+              value: "{{ record['stats']['view_completion'] }}"
+            - path: [ "view_time_millis" ]
+              value: "{{ record['stats']['view_time_millis'] }}"
+            - path: [ "paid_impressions" ]
+              value: "{{ record['stats']['paid_impressions'] }}"
+            - path: [ "earned_impressions" ]
+              value: "{{ record['stats']['earned_impressions'] }}"
+            - path: [ "total_impressions" ]
+              value: "{{ record['stats']['total_impressions'] }}"
+            - path: [ "play_time_millis" ]
+              value: "{{ record['stats']['play_time_millis'] }}"
+            - path: [ "shares" ]
+              value: "{{ record['stats']['shares'] }}"
+            - path: [ "saves" ]
+              value: "{{ record['stats']['saves'] }}"
+            - path: [ "native_leads" ]
+              value: "{{ record['stats']['native_leads'] }}"
+            - path: [ "conversion_purchases" ]
+              value: "{{ record['stats']['conversion_purchases'] }}"
+            - path: [ "conversion_purchases_value" ]
+              value: "{{ record['stats']['conversion_purchases_value'] }}"
+            - path: [ "conversion_save" ]
+              value: "{{ record['stats']['conversion_save'] }}"
+            - path: [ "conversion_start_checkout" ]
+              value: "{{ record['stats']['conversion_start_checkout'] }}"
+            - path: [ "conversion_add_cart" ]
+              value: "{{ record['stats']['conversion_add_cart'] }}"
+            - path: [ "conversion_view_content" ]
+              value: "{{ record['stats']['conversion_view_content'] }}"
+            - path: [ "conversion_add_billing" ]
+              value: "{{ record['stats']['conversion_add_billing'] }}"
+            - path: [ "conversion_searches" ]
+              value: "{{ record['stats']['conversion_searches'] }}"
+            - path: [ "conversion_level_completes" ]
+              value: "{{ record['stats']['conversion_level_completes'] }}"
+            - path: [ "conversion_app_opens" ]
+              value: "{{ record['stats']['conversion_app_opens'] }}"
+            - path: [ "conversion_page_views" ]
+              value: "{{ record['stats']['conversion_page_views'] }}"
+            - path: [ "conversion_subscribe" ]
+              value: "{{ record['stats']['conversion_subscribe'] }}"
+            - path: [ "conversion_ad_click" ]
+              value: "{{ record['stats']['conversion_ad_click'] }}"
+            - path: [ "conversion_ad_view" ]
+              value: "{{ record['stats']['conversion_ad_view'] }}"
+            - path: [ "conversion_complete_tutorial" ]
+              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+            - path: [ "conversion_invite" ]
+              value: "{{ record['stats']['conversion_invite'] }}"
+            - path: [ "conversion_login" ]
+              value: "{{ record['stats']['conversion_login'] }}"
+            - path: [ "conversion_share" ]
+              value: "{{ record['stats']['conversion_share'] }}"
+            - path: [ "conversion_reserve" ]
+              value: "{{ record['stats']['conversion_reserve'] }}"
+            - path: [ "conversion_achievement_unlocked" ]
+              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+            - path: [ "conversion_add_to_wishlist" ]
+              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+            - path: [ "conversion_spend_credits" ]
+              value: "{{ record['stats']['conversion_spend_credits'] }}"
+            - path: [ "conversion_rate" ]
+              value: "{{ record['stats']['conversion_rate'] }}"
+            - path: [ "conversion_start_trial" ]
+              value: "{{ record['stats']['conversion_start_trial'] }}"
+            - path: [ "conversion_list_view" ]
+              value: "{{ record['stats']['conversion_list_view'] }}"
+            - path: [ "custom_event_1" ]
+              value: "{{ record['stats']['custom_event_1'] }}"
+            - path: [ "custom_event_2" ]
+              value: "{{ record['stats']['custom_event_2'] }}"
+            - path: [ "custom_event_3" ]
+              value: "{{ record['stats']['custom_event_3'] }}"
+            - path: [ "custom_event_4" ]
+              value: "{{ record['stats']['custom_event_4'] }}"
+            - path: [ "custom_event_5" ]
+              value: "{{ record['stats']['custom_event_5'] }}"
+            - path: [ "story_opens" ]
+              value: "{{ record['stats']['story_opens'] }}"
+            - path: [ "story_completes" ]
+              value: "{{ record['stats']['story_completes'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - stats
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1246,7 +1887,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: campaigns/{{ stream_slice['campaign_id'] }}/stats
+          path: campaigns/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: DAY
@@ -1265,7 +1906,6 @@ definitions:
               - timeseries_stat
               - timeseries
               - "*"
-              - stats
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1279,7 +1919,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: campaign_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
@@ -1311,15 +1951,152 @@ definitions:
         - type: AddFields
           fields:
             - path: ["id"]
-              value: "{{ stream_slice['campaign_id'] }}"
+              value: "{{ stream_slice['id'] }}"
             - path: ["type"]
-              value: "CAMPAIGN"
+              value: "AD_ACCOUNT"
             - path: ["granularity"]
               value: "DAY"
-            - path: ["start_time"]
-              value: "{{ stream_slice['start_time'] }}"
-            - path: ["end_time"]
-              value: "{{ stream_slice['end_time'] }}"
+            - path: [ "android_installs" ]
+              value: "{{ record['stats']['android_installs'] }}"
+            - path: [ "attachment_avg_view_time_millis" ]
+              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+            - path: [ "attachment_impressions" ]
+              value: "{{ record['stats']['attachment_impressions'] }}"
+            - path: [ "attachment_quartile_1" ]
+              value: "{{ record['stats']['attachment_quartile_1'] }}"
+            - path: [ "attachment_quartile_2" ]
+              value: "{{ record['stats']['attachment_quartile_2'] }}"
+            - path: [ "attachment_quartile_3" ]
+              value: "{{ record['stats']['attachment_quartile_3'] }}"
+            - path: [ "attachment_total_view_time_millis" ]
+              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+            - path: [ "attachment_view_completion" ]
+              value: "{{ record['stats']['attachment_view_completion'] }}"
+            - path: [ "avg_screen_time_millis" ]
+              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+            - path: [ "avg_view_time_millis" ]
+              value: "{{ record['stats']['avg_view_time_millis'] }}"
+            - path: [ "impressions" ]
+              value: "{{ record['stats']['impressions'] }}"
+            - path: [ "ios_installs" ]
+              value: "{{ record['stats']['ios_installs'] }}"
+            - path: [ "quartile_1" ]
+              value: "{{ record['stats']['quartile_1'] }}"
+            - path: [ "quartile_2" ]
+              value: "{{ record['stats']['quartile_2'] }}"
+            - path: [ "quartile_3" ]
+              value: "{{ record['stats']['quartile_3'] }}"
+            - path: [ "screen_time_millis" ]
+              value: "{{ record['stats']['screen_time_millis'] }}"
+            - path: [ "swipe_up_percent" ]
+              value: "{{ record['stats']['swipe_up_percent'] }}"
+            - path: [ "swipes" ]
+              value: "{{ record['stats']['swipes'] }}"
+            - path: [ "total_installs" ]
+              value: "{{ record['stats']['total_installs'] }}"
+            - path: [ "video_views" ]
+              value: "{{ record['stats']['video_views'] }}"
+            - path: [ "video_views_time_based" ]
+              value: "{{ record['stats']['video_views_time_based'] }}"
+            - path: [ "video_views_15s" ]
+              value: "{{ record['stats']['video_views_15s'] }}"
+            - path: [ "view_completion" ]
+              value: "{{ record['stats']['view_completion'] }}"
+            - path: [ "view_time_millis" ]
+              value: "{{ record['stats']['view_time_millis'] }}"
+            - path: [ "paid_impressions" ]
+              value: "{{ record['stats']['paid_impressions'] }}"
+            - path: [ "earned_impressions" ]
+              value: "{{ record['stats']['earned_impressions'] }}"
+            - path: [ "total_impressions" ]
+              value: "{{ record['stats']['total_impressions'] }}"
+            - path: [ "play_time_millis" ]
+              value: "{{ record['stats']['play_time_millis'] }}"
+            - path: [ "shares" ]
+              value: "{{ record['stats']['shares'] }}"
+            - path: [ "saves" ]
+              value: "{{ record['stats']['saves'] }}"
+            - path: [ "native_leads" ]
+              value: "{{ record['stats']['native_leads'] }}"
+            - path: [ "conversion_purchases" ]
+              value: "{{ record['stats']['conversion_purchases'] }}"
+            - path: [ "conversion_purchases_value" ]
+              value: "{{ record['stats']['conversion_purchases_value'] }}"
+            - path: [ "conversion_save" ]
+              value: "{{ record['stats']['conversion_save'] }}"
+            - path: [ "conversion_start_checkout" ]
+              value: "{{ record['stats']['conversion_start_checkout'] }}"
+            - path: [ "conversion_add_cart" ]
+              value: "{{ record['stats']['conversion_add_cart'] }}"
+            - path: [ "conversion_view_content" ]
+              value: "{{ record['stats']['conversion_view_content'] }}"
+            - path: [ "conversion_add_billing" ]
+              value: "{{ record['stats']['conversion_add_billing'] }}"
+            - path: [ "conversion_searches" ]
+              value: "{{ record['stats']['conversion_searches'] }}"
+            - path: [ "conversion_level_completes" ]
+              value: "{{ record['stats']['conversion_level_completes'] }}"
+            - path: [ "conversion_app_opens" ]
+              value: "{{ record['stats']['conversion_app_opens'] }}"
+            - path: [ "conversion_page_views" ]
+              value: "{{ record['stats']['conversion_page_views'] }}"
+            - path: [ "conversion_subscribe" ]
+              value: "{{ record['stats']['conversion_subscribe'] }}"
+            - path: [ "conversion_ad_click" ]
+              value: "{{ record['stats']['conversion_ad_click'] }}"
+            - path: [ "conversion_ad_view" ]
+              value: "{{ record['stats']['conversion_ad_view'] }}"
+            - path: [ "conversion_complete_tutorial" ]
+              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+            - path: [ "conversion_invite" ]
+              value: "{{ record['stats']['conversion_invite'] }}"
+            - path: [ "conversion_login" ]
+              value: "{{ record['stats']['conversion_login'] }}"
+            - path: [ "conversion_share" ]
+              value: "{{ record['stats']['conversion_share'] }}"
+            - path: [ "conversion_reserve" ]
+              value: "{{ record['stats']['conversion_reserve'] }}"
+            - path: [ "conversion_achievement_unlocked" ]
+              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+            - path: [ "conversion_add_to_wishlist" ]
+              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+            - path: [ "conversion_spend_credits" ]
+              value: "{{ record['stats']['conversion_spend_credits'] }}"
+            - path: [ "conversion_rate" ]
+              value: "{{ record['stats']['conversion_rate'] }}"
+            - path: [ "conversion_start_trial" ]
+              value: "{{ record['stats']['conversion_start_trial'] }}"
+            - path: [ "conversion_list_view" ]
+              value: "{{ record['stats']['conversion_list_view'] }}"
+            - path: [ "custom_event_1" ]
+              value: "{{ record['stats']['custom_event_1'] }}"
+            - path: [ "custom_event_2" ]
+              value: "{{ record['stats']['custom_event_2'] }}"
+            - path: [ "custom_event_3" ]
+              value: "{{ record['stats']['custom_event_3'] }}"
+            - path: [ "custom_event_4" ]
+              value: "{{ record['stats']['custom_event_4'] }}"
+            - path: [ "custom_event_5" ]
+              value: "{{ record['stats']['custom_event_5'] }}"
+            - path: [ "story_opens" ]
+              value: "{{ record['stats']['story_opens'] }}"
+            - path: [ "story_completes" ]
+              value: "{{ record['stats']['story_completes'] }}"
+            - path: [ "attachment_frequency" ]
+              value: "{{ record['stats']['attachment_frequency'] }}"
+            - path: [ "attachment_uniques" ]
+              value: "{{ record['stats']['attachment_uniques'] }}"
+            - path: [ "frequency" ]
+              value: "{{ record['stats']['frequency'] }}"
+            - path: [ "uniques" ]
+              value: "{{ record['stats']['uniques'] }}"
+            - path: [ "total_reach" ]
+              value: "{{ record['stats']['total_reach'] }}"
+            - path: [ "earned_reach" ]
+              value: "{{ record['stats']['earned_reach'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - stats
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1334,7 +2111,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: campaigns/{{ stream_slice['campaign_id'] }}/stats
+          path: campaigns/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
             granularity: LIFETIME
@@ -1364,7 +2141,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: campaign_id
+              partition_field: id
               stream:
                 $ref: "#/definitions/streams/campaigns"
       schema_loader:
