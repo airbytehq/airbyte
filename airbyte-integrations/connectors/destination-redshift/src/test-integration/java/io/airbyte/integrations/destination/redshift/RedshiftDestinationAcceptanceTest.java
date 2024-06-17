@@ -15,10 +15,12 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.TestingNamespaces;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.ZoneOffset;
@@ -37,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 // these tests are not yet thread-safe, unlike the DV2 tests.
 @Execution(ExecutionMode.SAME_THREAD)
-public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public class RedshiftDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestinationAcceptanceTest.class);
 
@@ -62,7 +64,9 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
     return config;
   }
 
-  public abstract JsonNode getStaticConfig() throws IOException;
+  public JsonNode getStaticConfig() {
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
+  }
 
   @Override
   protected JsonNode getFailCheckConfig() {
