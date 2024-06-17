@@ -90,7 +90,7 @@ def test_given_stripe_error_when_check_connection_then_connection_not_available(
     assert not is_available
 
 
-def test_when_streams_return_full_refresh_as_concurrent():
+def test_when_streams_return_full_refresh_and_application_fees_sync_as_concurrent():
     streams = SourceStripe(
         CatalogBuilder().with_stream("bank_accounts", SyncMode.full_refresh).with_stream("customers", SyncMode.incremental).build(),
         _a_valid_config(),
@@ -99,7 +99,8 @@ def test_when_streams_return_full_refresh_as_concurrent():
 
     # bank_accounts (as it is defined as full_refresh)
     # balance_transactions, events, files, file_links and shipping_rates (as it is always concurrent now)
-    assert len(list(filter(lambda stream: isinstance(stream, StreamFacade), streams))) == 6
+    # application fees has been moved away from IncrementalStripeStream and hence will be concurrent on any sync without a state
+    assert len(list(filter(lambda stream: isinstance(stream, StreamFacade), streams))) == 7
 
 
 @pytest.mark.parametrize(

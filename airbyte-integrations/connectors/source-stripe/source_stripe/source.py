@@ -35,6 +35,7 @@ from source_stripe.streams import (
     StripeLazySubStream,
     StripeStream,
     StripeSubStream,
+    UpdatedCursorIncrementalRecordExtractor,
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
 )
@@ -67,12 +68,14 @@ class SourceStripe(ConcurrentSourceAdapter):
         )
         super().__init__(concurrent_source)
         self._state = state
+        self._state_manager = None
         if catalog:
             self._streams_configured_as_full_refresh = {
                 configured_stream.stream.name
                 for configured_stream in catalog.streams
                 if configured_stream.sync_mode == SyncMode.full_refresh
             }
+            self._state_manager = ConnectorStateManager(stream_instance_map={s.stream.name: s for s in catalog.streams}, state=self._state)
         else:
             # things will NOT be executed concurrently
             self._streams_configured_as_full_refresh = set()
@@ -219,12 +222,12 @@ class SourceStripe(ConcurrentSourceAdapter):
             event_types=["transfer.created", "transfer.reversed", "transfer.updated"],
             **args,
         )
-        application_fees = IncrementalStripeStream(
+
+        application_fees = self._instantiate_incremental_stripe_stream(
             name="application_fees",
             path="application_fees",
-            use_cache=USE_CACHE,
             event_types=["application_fee.created", "application_fee.refunded"],
-            **args,
+            args=args,
         )
         invoices = IncrementalStripeStream(
             name="invoices",
@@ -531,16 +534,47 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
         ]
 
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+        if not self._state_manager:
+            self._state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
         return [
             self._to_concurrent(
                 stream,
                 datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc),
                 timedelta(days=config["slice_range"]),
-                state_manager,
+                self._state_manager,
             )
             for stream in streams
         ]
+
+    def _instantiate_incremental_stripe_stream(
+        self,
+        name: str,
+        path: str,
+        event_types: List[str],
+        args,
+        cursor_field: str = "updated",
+        legacy_cursor_field: Optional[str] = "created",
+    ):
+        if self._state_manager and self._state_manager.get_stream_state(name, None):
+            return UpdatedCursorIncrementalStripeStream(
+                **args,
+                name=name,
+                path=path,
+                event_types=event_types,
+                cursor_field=cursor_field,
+                legacy_cursor_field=legacy_cursor_field,
+                use_cache=USE_CACHE,
+            )
+        return CreatedCursorIncrementalStripeStream(
+            **args,
+            name=name,
+            path=path,
+            cursor_field=cursor_field,
+            # `lookback_window_days` set to 0 because this particular instance is in charge of full_refresh/initial incremental syncs only
+            lookback_window_days=0,
+            record_extractor=UpdatedCursorIncrementalRecordExtractor(cursor_field, legacy_cursor_field),
+            use_cache=USE_CACHE,
+        )
 
     def _to_concurrent(
         self, stream: Stream, fallback_start: datetime, slice_range: timedelta, state_manager: ConnectorStateManager
