@@ -29,30 +29,6 @@ A user can have at most one role of this kind per organization. Permissions are 
 | **Create Workspace**<br />- Create new workspace within a specified organization<br />- Delete a workspace | | | X | X |
 | **Update Organization**<br />- Modify organization settings, including billing, PbA, SSO<br />- Modify user roles within the organization | |  |  | X |
 
-## Instance Resource Roles
+## Instance Resource Admin
 
-At the instance level, a user may have InstanceAdmin role. Permissions are valid for all workspaces and all organizations. This user, therefore would have the following permissions as `InstanceAdmin`: 
-
-**ReadWorkspace**
-- List the connections in a workspace
-- Read individual connections
-- Read workspace settings (data residency, users, connector versions, notification settings)
-**Update Connection**
-- Start/cancel syncs
-- Modify a connection, including name, replication settings, normalization, DBT
-- Delete a connection 
-
-**UpdateWorkspace**
-- Update workspace settings (data residency, users, connector versions, notification settings)
-- Modify workspace connector versions
-
-**ReadOrganization**
-- Read individual organizations 
-
-**CreateWorkspace**
-- Create new workspace within a specified organization
-- Delete a workspace 
-
-**UpdateOrganization**
-- Modify organization settings, including billing, PbA, SSO
-- Modify user roles within the organization
+Enterprise customers also have a user assigned the `Instance Admin` role. This user would have all permissions listed above for all workspaces and all organizations associated with their Enterptise instance. To update this assigment, enterprise customers should contact Airbyte support. 
