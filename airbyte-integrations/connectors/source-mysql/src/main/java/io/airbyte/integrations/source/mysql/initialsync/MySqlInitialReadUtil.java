@@ -245,6 +245,7 @@ public class MySqlInitialReadUtil {
         false);
     final var cdcStreamList = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
         .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
         MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, cdcStreamList);
