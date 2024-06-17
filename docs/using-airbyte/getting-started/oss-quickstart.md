@@ -172,10 +172,6 @@ In the Building Connections section, you'll learn how to start moving data. Gene
 
 3: [Set up a Connection](./set-up-a-connection.md)
 
-**Introductory Course**
-
-For an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-in Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
-
 ## Troubleshooting
 
 There are several channels for community support of local setup and deployment. 
@@ -187,6 +183,9 @@ There are several channels for community support of local setup and deployment.
 **Community Slack:**<br/>Helpful channels for troubleshooting include:<br/>
 - [#ask-community-for-troubleshooting](https://airbytehq.slack.com/archives/C021JANJ6TY)
 - [#ask-ai](https://airbytehq.slack.com/archives/C01AHCD885S)
+
+**Introductory Course:**<br/>
+For an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-in Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
 
 **Bug Reports:**<br/>If you find an issue with the `abctl` command, please report it as a github
 issue [here](https://github.com/airbytehq/airbyte/issues) with the type of `🐛 [abctl] Report an issue with the abctl tool`.
