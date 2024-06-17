@@ -38,9 +38,9 @@ You have installed [Airbyte](https://docs.airbyte.com/deploying-airbyte/quicksta
 
 ## Setup guide
 
-### Step 1: Set up SurveyMonkey
+### Step 1: Set up SurveyMonkey {#surveymonkey-access-token}
 
-Read SurveyMonkey's [Getting started](https://developer.surveymonkey.com/api/v3/#getting-started). Register your app [at SurveyMonkey](https://developer.surveymonkey.com/apps/). Click **Settings** to find the access token you need to set up the connector.
+Read SurveyMonkey's [Getting started](https://developer.surveymonkey.com/api/v3/#getting-started). Register your app [at SurveyMonkey](https://developer.surveymonkey.com/apps/). For Airbyte Open Source, click **Settings** to find the access token you need to set up the connector.
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -67,7 +67,7 @@ Read SurveyMonkey's [Getting started](https://developer.surveymonkey.com/api/v3/
 
 1. Go to your [local Airbyte](http://localhost:8000/) page.
 1. In the left navigation bar, click **Sources**. Click **SurveyMonkey**, which takes you to the `Create a source` page.
-1. In the `Access Token` field, enter your SurveyMonkey access token from Step 1.
+1. In the `Access Token` field, enter your SurveyMonkey access token from [Step 1](#surveymonkey-access-token).
 1. In the `Start Date` field, set the required start date.
 1. Click **Set up source**.
 
