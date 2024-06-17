@@ -185,7 +185,7 @@ There are several channels for community support of local setup and deployment.
 - [#ask-ai](https://airbytehq.slack.com/archives/C01AHCD885S)
 
 **Introductory Course:**<br/>
-For an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-in Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
+For an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
 
 **Bug Reports:**<br/>If you find an issue with the `abctl` command, please report it as a github
 issue [here](https://github.com/airbytehq/airbyte/issues) with the type of `🐛 [abctl] Report an issue with the abctl tool`.
