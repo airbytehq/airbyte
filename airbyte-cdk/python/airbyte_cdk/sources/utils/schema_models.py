@@ -6,8 +6,8 @@ from typing import Any, Dict, Optional, Type
 
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic.v1 import BaseModel, Extra
-from pydantic.main import ModelMetaclass
-from pydantic.typing import resolve_annotations
+from pydantic.v1.main import ModelMetaclass
+from pydantic.v1.typing import resolve_annotations
 
 
 class AllOptional(ModelMetaclass):
