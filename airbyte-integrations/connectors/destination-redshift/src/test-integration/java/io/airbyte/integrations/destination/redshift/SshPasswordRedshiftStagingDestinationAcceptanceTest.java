@@ -24,12 +24,4 @@ public class SshPasswordRedshiftStagingDestinationAcceptanceTest extends SshReds
   public TunnelMethod getTunnelMethod() {
     return TunnelMethod.SSH_PASSWORD_AUTH;
   }
-
-  @Override
-  public JsonNode getStaticConfig() throws IOException {
-    final Path configPath = Path.of("secrets/config_staging.json");
-    final String configAsString = IOs.readFile(configPath);
-    return Jsons.deserialize(configAsString);
-  }
-
 }
