@@ -16,7 +16,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams import Stream
-from pydantic import ConfigDict
+from pydantic import ConfigDict as V2ConfigDict
 
 
 class HashableStreamDescriptor(StreamDescriptor):
@@ -24,7 +24,7 @@ class HashableStreamDescriptor(StreamDescriptor):
     Helper class that overrides the existing StreamDescriptor class that is auto generated from the Airbyte Protocol and
     freezes its fields so that it be used as a hash key. This is only marked public because we use it outside for unit tests.
     """
-    model_config = ConfigDict(extra="allow", frozen=True)
+    model_config = V2ConfigDict(extra="allow", frozen=True)
 
 
 class ConnectorStateManager:
