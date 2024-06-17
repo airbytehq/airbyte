@@ -19,7 +19,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -227,7 +226,7 @@ public class RedshiftDestinationAcceptanceTest extends JdbcDestinationAcceptance
   protected Database createDatabase() {
     connection = ConnectionFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
-        RedshiftStagingS3Destination.SSL_JDBC_PARAMETERS,
+        RedshiftDestination.SSL_JDBC_PARAMETERS,
         String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             baseConfig.get(JdbcUtils.HOST_KEY).asText(),
             baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
