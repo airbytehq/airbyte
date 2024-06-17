@@ -325,6 +325,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     streamConfig,
                     finalTableDefinition.isPresent,
                     initialRawTableState,
+                    // TODO fix this
+                    // for now, no JDBC destinations actually do refreshes
+                    // so this is just to make our code compile
+                    InitialRawTableStatus(false, false, Optional.empty()),
                     isSchemaMismatch,
                     isFinalTableEmpty,
                     destinationState
