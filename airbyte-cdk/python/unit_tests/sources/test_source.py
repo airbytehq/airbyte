@@ -27,7 +27,7 @@ from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pydantic.v1.error_wrappers import ValidationError
+from pydantic import ValidationError
 
 
 class MockSource(Source):
@@ -77,7 +77,7 @@ def catalog():
             },
         ]
     }
-    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    return ConfiguredAirbyteCatalog.model_validate(configured_catalog)
 
 
 @pytest.fixture
@@ -151,7 +151,7 @@ def abstract_source(mocker):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                        stream_state=AirbyteStateBlob.model_validate({"created_at": "2009-07-19"}),
                     ),
                 )
             ],
@@ -187,21 +187,21 @@ def abstract_source(mocker):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                        stream_state=AirbyteStateBlob.model_validate({"created_at": "2009-07-19"}),
                     ),
                 ),
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="directors", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"id": "villeneuve_denis"}),
+                        stream_state=AirbyteStateBlob.model_validate({"id": "villeneuve_denis"}),
                     ),
                 ),
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="actors", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "1995-12-27"}),
+                        stream_state=AirbyteStateBlob.model_validate({"created_at": "1995-12-27"}),
                     ),
                 ),
             ],
@@ -221,15 +221,15 @@ def abstract_source(mocker):
                 }
             ],
             [
-                AirbyteStateMessage.parse_obj(
+                AirbyteStateMessage.model_validate(
                     {
                         "type": AirbyteStateType.GLOBAL,
                         "global": AirbyteGlobalState(
-                            shared_state=AirbyteStateBlob.parse_obj({"shared_key": "shared_val"}),
+                            shared_state=AirbyteStateBlob.model_validate({"shared_key": "shared_val"}),
                             stream_states=[
                                 AirbyteStreamState(
                                     stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                                    stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                                    stream_state=AirbyteStateBlob.model_validate({"created_at": "2009-07-19"}),
                                 )
                             ],
                         ),
@@ -355,7 +355,7 @@ def test_read_catalog(source):
             }
         ]
     }
-    expected = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    expected = ConfiguredAirbyteCatalog.model_validate(configured_catalog)
     with tempfile.NamedTemporaryFile("w") as catalog_file:
         catalog_file.write(expected.json(exclude_unset=True))
         catalog_file.flush()
@@ -687,7 +687,7 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
             }
         ]
     }
-    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    catalog = ConfiguredAirbyteCatalog.model_validate(configured_catalog)
     with caplog.at_level(logging.WARNING):
         records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
 
