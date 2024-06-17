@@ -347,8 +347,8 @@ class SemiIncrementalMixin(CheckpointMixin):
         ):
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
             if not start_point or cursor_value > start_point:
-                self.state = self._get_updated_state(self.state, record)
                 yield record
+                self.state = self._get_updated_state(self.state, record)
             elif self.is_sorted == "desc" and cursor_value < start_point:
                 break
 
@@ -1084,8 +1084,8 @@ class ReactionStream(GithubStream, CheckpointMixin, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
-                self.state = self._get_updated_state(self.state, record)
                 yield record
+                self.state = self._get_updated_state(self.state, record)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record, stream_slice)
@@ -1340,8 +1340,8 @@ class ProjectColumns(GithubStream):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
-                self.state = self._get_updated_state(self.state, record)
                 yield record
+                self.state = self._get_updated_state(self.state, record)
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
@@ -1411,8 +1411,8 @@ class ProjectCards(GithubStream):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
-                self.state = self._get_updated_state(self.state, record)
                 yield record
+                self.state = self._get_updated_state(self.state, record)
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
