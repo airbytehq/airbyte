@@ -12,7 +12,7 @@ import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
+import io.airbyte.integrations.destination.redshift.RedshiftStagingS3Destination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGeneratorIntegrationTest.RedshiftSourceOperations;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -41,7 +41,7 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   @Override
   protected DataSource getDataSource(final JsonNode config) {
-    return new RedshiftInsertDestination().getDataSource(config);
+    return new RedshiftStagingS3Destination().getDataSource(config);
   }
 
   @Override
