@@ -243,14 +243,11 @@ public class MySqlInitialReadUtil {
         firstRecordWaitTime,
         AirbyteDebeziumHandler.QUEUE_CAPACITY,
         false);
-    final var partiallyOrFullyCompletedCdcStreamList = catalog.getStreams().stream()
+    final var cdcStreamList = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
         .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
-
-    LOGGER.info("Partially or fully completed streams passed into db props manager: {}", partiallyOrFullyCompletedCdcStreamList.toString());
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
-        MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, partiallyOrFullyCompletedCdcStreamList);
+        MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, cdcStreamList);
     final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(

@@ -44,21 +44,14 @@ class RelationalDbDebeziumPropertiesManager(
     override fun getIncludeConfiguration(
         catalog: ConfiguredAirbyteCatalog,
         config: JsonNode?,
-        completedStreamNames: List<String>
+        streamNames: List<String>
     ): Properties {
         val properties = Properties()
 
         // table selection
-        // TODO : Change this to only include tables that have completed a snapshot
-        properties.setProperty(
-            "table.include.list",
-            getTableIncludelist(catalog, completedStreamNames)
-        )
+        properties.setProperty("table.include.list", getTableIncludelist(catalog, streamNames))
         // column selection
-        properties.setProperty(
-            "column.include.list",
-            getColumnIncludeList(catalog, completedStreamNames)
-        )
+        properties.setProperty("column.include.list", getColumnIncludeList(catalog, streamNames))
 
         return properties
     }
