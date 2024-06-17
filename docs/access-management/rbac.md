@@ -6,6 +6,8 @@ products: oss-enterprise, cloud-teams
 
 Role Based Access Control allows a user with Administrative access to apply roles to users, granting different levels of permission within an organization or workspace. 
 
+RBAC roles don’t require a customer to use SSO and can be enabled on any organization.
+
 ## Workspace Resource Roles
 A user can have at most one role of this kind per workspace. Permissions are scoped to the specific workspace in which the user has this role.
 
@@ -14,6 +16,7 @@ A user can have at most one role of this kind per workspace. Permissions are sco
 | **ReadWorkspace**<br />-List the connections in a workspace<br />-Read individual connections<br />-Read workspace settings (data residency, users, connector versions, notification settings) | X | X | X |
 | **Update Connection**<br />-Start/cancel syncs<br />- Modify a connection, including name, replication settings, normalization, DBT<br />- Delete a connection<br />- Create/Update/Delete connector builder connectors |  | X | X |
 | **UpdateWorkspace**<br />- Update workspace settings (data residency, users, connector versions, notification settings)<br />- Modify workspace connector versions | |  | X |
+
 
 ## Organization Resource Roles
 
