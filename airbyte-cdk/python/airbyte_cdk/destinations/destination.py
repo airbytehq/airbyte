@@ -14,7 +14,7 @@ from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic.v1.error_wrappers import ValidationError
+from pydantic import ValidationError as V2ValidationError
 
 logger = logging.getLogger("airbyte")
 
@@ -37,7 +37,7 @@ class Destination(Connector, ABC):
         for line in input_stream:
             try:
                 yield AirbyteMessage.parse_raw(line)
-            except ValidationError:
+            except V2ValidationError:
                 logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
     def _run_write(
