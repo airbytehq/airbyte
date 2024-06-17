@@ -103,12 +103,8 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
     """
     The transformation flattens a nested array of breakdown results located at total_value.breakdowns[0].results into a single object
     (dictionary). In this transformation, each key-value pair in the resulting object represents a dimension and its corresponding value.
-    e.g.
+    e.g. it changes:
         {
-        "name": "follower_demographics",
-        "period": "lifetime",
-        "title": "Follower demographics",
-        "description": "The demographic characteristics of followers, including countries, cities and gender distribution.",
         "total_value": {
           "breakdowns": [
             {
@@ -140,7 +136,6 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
           "London, England": 263,
           "Sydney, New South Wales": 467,
         }
-      }
     """
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
