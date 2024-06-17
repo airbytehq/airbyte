@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "id": "id",
+      "ig_id": "ig_id",
+      "like_count": 0,
+      "media_type": "VIDEO",
+      "media_product_type": "STORY",
+      "media_url": "https://fakecontent.cdninstagram.com/path1/path2/some_value",
+      "owner": {
+        "id": "owner_id"
+      },
+      "permalink": "https://placeholder.com/stories/username/some_id_value",
+      "shortcode": "ERUY34867_3",
+      "thumbnail_url": "https://content.cdnfaker.com/path1/path2/some_value",
+      "timestamp": "2024-06-17T19:39:18+0000",
+      "username": "username"
+    }
+  ],
+  "paging": {
+    "cursors": {
+      "before": "QVFIUjNIWl9ISTNCN3V"
+    }
+  }
+}

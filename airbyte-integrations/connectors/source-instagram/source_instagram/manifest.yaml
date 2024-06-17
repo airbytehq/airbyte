@@ -260,6 +260,25 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get("paging", {}).get("cursors", {}).get("after", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("paging", {}).get("cursors", {}).get("after",
+              {}) }}
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
