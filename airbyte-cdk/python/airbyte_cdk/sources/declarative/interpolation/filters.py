@@ -101,8 +101,7 @@ def string(value: Any) -> str:
     """
     if isinstance(value, str):
         return value
-    ret = f'"""{json.dumps(value)}"""'
-    return ret
+    return f'"""{json.dumps(value)}"""'
 
 
 _filters_list = [hash, base64encode, base64decode, string]
