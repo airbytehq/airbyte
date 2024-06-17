@@ -14,8 +14,12 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations
 import io.airbyte.cdk.db.jdbc.JdbcUtils
-import io.airbyte.cdk.integrations.base.*
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility.emitConfigErrorTrace
+import io.airbyte.cdk.integrations.base.Destination
+import io.airbyte.cdk.integrations.base.IntegrationRunner
+import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.getRawNamespaceOverride
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
@@ -34,8 +38,9 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory.Companion.builder
 import io.airbyte.commons.exceptions.ConnectionErrorException
-import io.airbyte.commons.json.Jsons
+import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.json.Jsons.emptyObject
+import io.airbyte.commons.json.Jsons.jsonNode
 import io.airbyte.commons.resources.MoreResources.readResource
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper
@@ -55,20 +60,18 @@ import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlG
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil
-import io.airbyte.protocol.models.Jsons.deserialize
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.time.Duration
+import java.util.Optional
 import java.util.function.Consumer
 import javax.sql.DataSource
 import org.apache.commons.lang3.NotImplementedException
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
-import kotlin.collections.HashMap
 
 class RedshiftDestination :
     AbstractJdbcDestination<RedshiftState>(
@@ -164,6 +167,8 @@ class RedshiftDestination :
         }
     }
 
+    override val isV2Destination: Boolean = true
+
     override fun getDataSource(config: JsonNode): DataSource {
         val jdbcConfig: JsonNode = getJdbcConfig(config)
         return create(
@@ -189,9 +194,6 @@ class RedshiftDestination :
         get() = RedshiftSQLNameTransformer()
 
     override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
-        // TODO: Pull common code from RedshiftInsertDestination and RedshiftStagingS3Destination
-        // into a
-        // base class.
         // The following properties can be overriden through jdbcUrlParameters in the config.
         val connectionOptions: MutableMap<String, String> = HashMap()
         // Redshift properties
@@ -228,13 +230,13 @@ class RedshiftDestination :
         return RedshiftDestinationHandler(databaseName, database, rawTableSchema)
     }
 
-    protected override fun getMigrations(
+    override fun getMigrations(
         database: JdbcDatabase,
         databaseName: String,
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<RedshiftState>
     ): List<Migration<RedshiftState>> {
-        return java.util.List.of<Migration<RedshiftState>>(
+        return listOf<Migration<RedshiftState>>(
             RedshiftRawTableAirbyteMetaMigration(database, databaseName)
         )
     }
@@ -264,7 +266,7 @@ class RedshiftDestination :
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
-    ): SerializedAirbyteMessageConsumer? {
+    ): SerializedAirbyteMessageConsumer {
         val encryptionConfig =
             if (config.has(RedshiftDestinationConstants.UPLOADING_METHOD))
                 fromJson(
@@ -353,11 +355,9 @@ class RedshiftDestination :
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(RedshiftDestination::class.java)
+        private val LOGGER: Logger = LoggerFactory.getLogger(RedshiftDestination::class.java)
 
         val DRIVER_CLASS: String = DatabaseDriver.REDSHIFT.driverClassName
-        @JvmField
         val SSL_JDBC_PARAMETERS: Map<String, String> =
             ImmutableMap.of(
                 JdbcUtils.SSL_KEY,
@@ -366,7 +366,7 @@ class RedshiftDestination :
                 "com.amazon.redshift.ssl.NonValidatingFactory"
             )
 
-        fun sshWrappedDestination(): Destination {
+        private fun sshWrappedDestination(): Destination {
             return SshWrappedDestination(
                 RedshiftDestination(),
                 JdbcUtils.HOST_LIST_KEY,
@@ -401,16 +401,16 @@ class RedshiftDestination :
                 )
             }
 
-            return Jsons.jsonNode(configBuilder.build())
+            return jsonNode(configBuilder.build())
         }
 
         @Throws(Exception::class)
         @JvmStatic
         fun main(args: Array<String>) {
-            val destination: Destination = RedshiftDestination()
-            RedshiftDestination.LOGGER.info("starting destination: {}", RedshiftDestination::class.java)
+            val destination: Destination = sshWrappedDestination()
+            LOGGER.info("starting destination: {}", RedshiftDestination::class.java)
             IntegrationRunner(destination).run(args)
-            RedshiftDestination.LOGGER.info("completed destination: {}", RedshiftDestination::class.java)
+            LOGGER.info("completed destination: {}", RedshiftDestination::class.java)
         }
     }
 }
