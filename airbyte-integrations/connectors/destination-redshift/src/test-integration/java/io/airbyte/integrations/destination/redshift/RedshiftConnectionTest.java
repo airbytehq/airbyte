@@ -16,8 +16,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 public class RedshiftConnectionTest {
-
-  private final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  private final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
   private final RedshiftDestination destination = new RedshiftDestination();
   private AirbyteConnectionStatus status;
 

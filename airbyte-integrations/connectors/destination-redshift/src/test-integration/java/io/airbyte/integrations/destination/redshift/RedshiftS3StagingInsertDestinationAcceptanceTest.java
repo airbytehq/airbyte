@@ -31,16 +31,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Integration test testing {@link RedshiftDestination}. The default Redshift integration test
+ * credentials contain S3 credentials - this automatically causes COPY to be selected.
+ */
 // these tests are not yet thread-safe, unlike the DV2 tests.
 @Execution(ExecutionMode.SAME_THREAD)
-public class RedshiftDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+@Disabled
+public class RedshiftS3StagingInsertDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftS3StagingInsertDestinationAcceptanceTest.class);
 
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
@@ -226,7 +232,7 @@ public class RedshiftDestinationAcceptanceTest extends JdbcDestinationAcceptance
   protected Database createDatabase() {
     connection = ConnectionFactory.create(baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
-        RedshiftDestination.SSL_JDBC_PARAMETERS,
+        RedshiftDestination.Companion.getSSL_JDBC_PARAMETERS(),
         String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             baseConfig.get(JdbcUtils.HOST_KEY).asText(),
             baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
