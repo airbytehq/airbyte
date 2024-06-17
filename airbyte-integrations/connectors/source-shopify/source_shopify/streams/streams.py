@@ -24,6 +24,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProduct,
     MetafieldProductImage,
     MetafieldProductVariant,
+    OrderAgreement,
     OrderRisk,
     Product,
     ProductImage,
@@ -254,6 +255,10 @@ class BalanceTransactions(IncrementalShopifyStream):
         return f"shopify_payments/balance/{self.data_field}.json"
 
 
+class OrderAgreements(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: OrderAgreement = OrderAgreement
+
+
 class OrderRefunds(IncrementalShopifyNestedStream):
     parent_stream_class = Orders
     # override default cursor field
@@ -263,7 +268,7 @@ class OrderRefunds(IncrementalShopifyNestedStream):
 
 class OrderRisks(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderRisk = OrderRisk
-    # the updated stream work only with >= `2024-04` shopify api version
+    # the updated stream works only with >= `2024-04` shopify api version
 
 
 class Transactions(IncrementalShopifySubstream):
