@@ -11,17 +11,17 @@ import TabItem from "@theme/TabItem";
 
 Airbyte Open Source is a reliable and extensible open source data pipeline.
 
-This quickstart will help you to get started with a locally deployed instance of Airbyte in just minutes using abctl (Airbyte Command Line Tool). 
+If you're getting started with Airbyte Cloud, you can skip ahead to [adding a source](add-a-source.md). This quickstart guides you through creating a locally deployed instance of Airbyte in just minutes using `abctl` (Airbyte Command Line Tool). 
 
 :::tip
-You can learn more about abctl on the associated [GitHub repository](https://github.com/airbytehq/abctl). 
+Learn more about `abctl` by exploring its [GitHub repository](https://github.com/airbytehq/abctl). 
 :::
 
 ## Prerequisites
 
 - To use `abctl`, you'll need to have **Docker Desktop** installed. See Docker's instructions for installation: [Mac](https://docs.docker.com/desktop/install/mac-install/), [Windows](https://docs.docker.com/desktop/install/windows-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/)
 
-## Install abctl
+## 1: Install `abctl`
 
 Follow the instructions for your operating system:
 
@@ -31,13 +31,13 @@ defaultValue="abctl-mac">
 
 We recommend that Mac users use Brew to install the `abctl` command. 
 
-```
+```bash
 brew tap airbytehq/tap
 brew install abctl
 ```
 
 With Brew, you can keep abctl up to date easily, by running:
-```
+```bash
 brew upgrade abctl
 ``` 
 
@@ -57,7 +57,7 @@ Be sure to download the file that is compatible with your machine's processor ar
 You'll see two options: `linux-amd64` and `linux-arm64`
 If you're unsure which one you need, running the following command will help:
 
-```
+```bash
 uname -m
 ```
 
@@ -68,9 +68,7 @@ uname -m
 
 This will create a directory named abctl which contains the executable along with other needed files. 
 
-```
-Bash
-
+```bash
 tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
 ```
 
@@ -78,9 +76,7 @@ tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
 
 This will allow you to run `abctl` as a command
 
-```
-Bash
-
+```bash
 chmod +x abctl/abctl
 ```
 
@@ -88,16 +84,12 @@ chmod +x abctl/abctl
 
 This will allow you to run `abctl` from any directory in your terminal. 
 
-```
-Bash
-
+```bash
 sudo mv abctl /usr/local/bin
 ```
 **5: Verify the installation**
 
-```
-Bash
-
+```bash
 abctl --version
 ```
 
@@ -110,7 +102,7 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 **1: Download the latest release of `abctl` [here](https://github.com/airbytehq/abctl/releases)**
 
 **2: Extract the archive**
-- Right click the zip file you've downloaded and select "Extract All...", then choose a destination folder. 
+- Right click the zip file you've downloaded and select `Extract All...`, then choose a destination folder. 
 
 This creates a folder called abctl containing the abctl executable and other reqired files. 
 
@@ -126,9 +118,7 @@ This is important because changes to your PATH will only take effect in a newly 
 
 **5. Verify the installation**
 
-```
-Bash
-
+```bash
 abctl --version
 ```
 
@@ -139,7 +129,7 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 
 </Tabs>
 
-## Run Airbyte
+## 2: Run Airbyte
 
 Ensure that Docker Desktop is up and running. Then, with abctl installed, the following command gets Airbyte running:
 
@@ -147,7 +137,7 @@ Ensure that Docker Desktop is up and running. Then, with abctl installed, the fo
 abctl local install
 ```
 
-Your browser may open automatically to the Airbyte Application. If not, access it by visiting [http://localhost8000](http://localhost8000).
+Your browser may open automatically to the Airbyte Application. If not, access it by visiting [http://localhost:8000](http://localhost:8000).
 
 When prompted for a username and password, enter the following default values: 
 - username: `airbyte`
@@ -155,7 +145,7 @@ When prompted for a username and password, enter the following default values:
 
 To set your own username and password, use command line flags or variables. For example, to set the username and password to foo and bar respectively, you can run the following command:
 
-```
+```bash
 abctl local install --username foo --password bar
 ```
 
@@ -172,27 +162,7 @@ As long as your Docker Desktop daemon is running in the background, you can use 
 
 If you quit Docker Decktop and want to return to your local Airbyte workspace, just start Docker Desktop again. After a short period of time, you'll be able to access Airbyte's local installation normally. 
 
-## Troubleshooting
-
-There are several channels for community support of local setup and deployment. 
-
-**GitHub Airbyte Forum's Getting Started FAQ:**
- - Search the questions others have asked or ask a new question of your own in the [GitHub forum](https://github.com/airbytehq/airbyte/discussions/categories/questions).
-
-**Airbyte Knowledge Base:**
-- While support services are limited to Cloud and Enterprise customers, anyone may search the support team's [Help Center](https://support.airbyte.com/hc).
-
-**Community Slack** 
-Helpful channels for troubleshooting include:
-- [#ask-community-for-troubleshooting](https://airbytehq.slack.com/archives/C021JANJ6TY)
-- [#ask-ai](https://airbytehq.slack.com/archives/C01AHCD885S)
-
-:::tip
-If you find an issue with the `abctl` command, please report it as a github
-issue [here](https://github.com/airbytehq/airbyte/issues) with the type of "🐛 [abctl] Report an issue with the abctl tool".
-:::
-
-## Next Steps
+## 3: Move Data
 
 In the Building Connections section, you'll learn how to start moving data. Generally, there are three steps:
 
@@ -206,3 +176,17 @@ In the Building Connections section, you'll learn how to start moving data. Gene
 
 For an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-in Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
 
+## Troubleshooting
+
+There are several channels for community support of local setup and deployment. 
+
+**GitHub Airbyte Forum's Getting Started FAQ:**<br/>Search the questions others have asked or ask a new question of your own in the [GitHub forum](https://github.com/airbytehq/airbyte/discussions/categories/questions).
+
+**Airbyte Knowledge Base:**<br/>While support services are limited to Cloud and Enterprise customers, anyone may search the support team's [Help Center](https://support.airbyte.com/hc).
+
+**Community Slack:**<br/>Helpful channels for troubleshooting include:<br/>
+- [#ask-community-for-troubleshooting](https://airbytehq.slack.com/archives/C021JANJ6TY)
+- [#ask-ai](https://airbytehq.slack.com/archives/C01AHCD885S)
+
+**Bug Reports:**<br/>If you find an issue with the `abctl` command, please report it as a github
+issue [here](https://github.com/airbytehq/airbyte/issues) with the type of `🐛 [abctl] Report an issue with the abctl tool`.
