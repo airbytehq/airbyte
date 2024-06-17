@@ -233,6 +233,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.9   | 2024-06-11 | [39405](https://github.com/airbytehq/airbyte/pull/39405) | Adopt latest CDK.                                                                                                                               |
 | 3.4.8   | 2024-06-05 | [39144](https://github.com/airbytehq/airbyte/pull/39144) | Upgrade Debezium to 2.5.4 |
 | 3.4.7   | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                                                              |
 | 3.4.6   | 2024-05-29 | [38538](https://github.com/airbytehq/airbyte/pull/38538) | Exit connector when encountering a config error.                                                                                                |
