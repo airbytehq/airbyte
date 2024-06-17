@@ -10,11 +10,8 @@ import io.airbyte.cdk.db.factory.DataSourceFactory.create
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
-import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
+import io.airbyte.cdk.integrations.base.*
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility.emitConfigErrorTrace
-import io.airbyte.cdk.integrations.base.Destination
-import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.getRawNamespaceOverride
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
@@ -338,6 +335,15 @@ class RedshiftStagingS3Destination :
                 JdbcUtils.HOST_LIST_KEY,
                 JdbcUtils.PORT_LIST_KEY
             )
+        }
+
+        @Throws(Exception::class)
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val destination: Destination = RedshiftStagingS3Destination()
+            RedshiftStagingS3Destination.LOGGER.info("starting destination: {}", RedshiftStagingS3Destination::class.java)
+            IntegrationRunner(destination).run(args)
+            RedshiftStagingS3Destination.LOGGER.info("completed destination: {}", RedshiftStagingS3Destination::class.java)
         }
     }
 }
