@@ -871,6 +871,149 @@ class CustomerAddresses(ShopifyBulkQuery):
                     yield customer_address
 
 
+class CustomerJourney(ShopifyBulkQuery):
+    """
+    Output example to BULK query `customer_journey_summary` from `orders` with `filter query` by `updated_at` sorted `ASC`:
+        {
+            orders(query: "updated_at:>='2020-01-20T00:00:00+00:00' AND updated_at:<'2024-04-25T00:00:00+00:00'", sortKey:UPDATED_AT) {
+                edges {
+                    node {
+                        __typename
+                        order_id: id
+                        createdAt
+                        updatedAt
+                        customerJourneySummary {
+                            ready
+                            momentsCount {
+                                count
+                                precision
+                            }
+                            customerOrderIndex
+                            daysToConversion
+                            firstVisit {
+                                id
+                                landingPage
+                                landingPageHtml
+                                occurredAt
+                                referralCode
+                                referrerUrl
+                                source
+                                sourceType
+                                sourceDescription
+                                utmParameters {
+                                    campaign
+                                    content
+                                    medium
+                                    source
+                                    term
+                                }
+                            }
+                            lastVisit {
+                                id
+                                landingPage
+                                landingPageHtml
+                                occurredAt
+                                referralCode
+                                referrerUrl
+                                source
+                                sourceType
+                                sourceDescription
+                                utmParameters {
+                                    campaign
+                                    content
+                                    medium
+                                    source
+                                    term
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """
+
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    visit_fields: List[Field] = [
+        "id",
+        "landingPage",
+        "landingPageHtml",
+        "occurredAt",
+        "referralCode",
+        "referrerUrl",
+        "source",
+        "sourceType",
+        "sourceDescription",
+        Field(name="utmParameters", fields=["campaign", "content", "medium", "source", "term"]),
+    ]
+    customer_journey_summary_fields: List[Field] = [
+        "ready",
+        Field(name="momentsCount", fields=["count", "precision"]),
+        "customerOrderIndex",
+        "daysToConversion",
+        Field(name="firstVisit", fields=visit_fields),
+        Field(name="lastVisit", fields=visit_fields),
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        Field(name="id", alias="order_id"),
+        "createdAt",
+        "updatedAt",
+        Field(name="customerJourneySummary", fields=customer_journey_summary_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+    }
+
+    def process_visit(
+        self,
+        visit_data: Mapping[str, Any],
+    ) -> MutableMapping[str, Any]:
+        # save the id before it's resolved
+        visit_data["admin_graphql_api_id"] = visit_data.get("id")
+        # resolve the order_id to str
+        visit_data["id"] = self.tools.resolve_str_id(visit_data.get("id"))
+        # convert dates from ISO-8601 to RFC-3339
+        visit_data["occurredAt"] = self.tools.from_iso8601_to_rfc3339(visit_data, "occurredAt")
+        # cast field names to snake_case
+        visit_data = self.tools.fields_names_to_snake_case(visit_data)
+        return visit_data
+
+    def process_customer_journey(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        customer_journey_summary = record.get("customerJourneySummary", {})
+        if customer_journey_summary:
+            # process first, last visit data
+            first_visit = customer_journey_summary.get("firstVisit", {})
+            last_visit = customer_journey_summary.get("lastVisit", {})
+            customer_journey_summary["firstVisit"] = self.process_visit(first_visit) if first_visit else {}
+            customer_journey_summary["lastVisit"] = self.process_visit(last_visit) if last_visit else {}
+        # cast field names to snake_case
+        customer_journey_summary = self.tools.fields_names_to_snake_case(customer_journey_summary)
+        return customer_journey_summary
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
+        """
+        Defines how to process collected components.
+        """
+
+        # save the id before it's resolved
+        record["admin_graphql_api_id"] = record.get("order_id")
+        # resolve the order_id to str
+        record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
+        # convert dates from ISO-8601 to RFC-3339
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        # process customerJourneySummary property
+        record["customerJourneySummary"] = self.process_customer_journey(record)
+        # cast field names to snake_case
+        record = self.tools.fields_names_to_snake_case(record)
+        yield record
+
+
 class InventoryItem(ShopifyBulkQuery):
     """
     {

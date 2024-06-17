@@ -2,6 +2,9 @@
   "customers": {
     "updated_at": "2023-07-11T13:07:45-07:00"
   },
+  "customer_journey_summary": {
+    "updated_at": "2023-04-24T18:00:10+00:00"
+  },
   "orders": {
     "deleted": {
       "deleted_at": ""

@@ -12,6 +12,7 @@ from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     CustomerAddresses,
+    CustomerJourney,
     DiscountCode,
     FulfillmentOrder,
     InventoryItem,
@@ -204,6 +205,11 @@ class AbandonedCheckouts(IncrementalShopifyStream):
 class CustomCollections(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "custom_collections"
     deleted_events_api_name = "Collection"
+
+
+class CustomerJourneySummary(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: CustomerJourney = CustomerJourney
+    primary_key = "order_id"
 
 
 class SmartCollections(IncrementalShopifyStream):
