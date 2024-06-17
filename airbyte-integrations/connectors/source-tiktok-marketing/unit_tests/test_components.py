@@ -1,8 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-import datetime
+
 from unittest.mock import MagicMock
 
-import pendulum
 import pytest
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
@@ -14,6 +13,7 @@ from source_tiktok_marketing.components.advertiser_ids_partition_router import (
 )
 from source_tiktok_marketing.components.hourly_datetime_based_cursor import HourlyDatetimeBasedCursor
 from source_tiktok_marketing.components.semi_incremental_record_filter import PerPartitionRecordFilter
+from source_tiktok_marketing.components.transformations import TransformEmptyMetrics
 
 
 @pytest.mark.parametrize(
@@ -187,3 +187,30 @@ def test_hourly_datetime_based_cursor():
         {"start_time": "2022-01-01", "end_time": "2022-01-01"},
         {"start_time": "2022-01-02", "end_time": "2022-01-02"}
     ]
+
+
+@pytest.mark.parametrize(
+    "record, expected",
+    [
+        (
+                {"metrics": {"metric_1": "not empty", "metric_2": "-"}},
+                {"metrics": {"metric_1": "not empty", "metric_2": None}}
+        ),
+        (
+                {"metrics": {"metric_1": "not empty", "metric_2": "not empty"}},
+                {"metrics": {"metric_1": "not empty", "metric_2": "not empty"}}
+        ),
+        (
+                {"dimensions": {"dimension_1": "not empty", "dimension_2": "not empty"}},
+                {"dimensions": {"dimension_1": "not empty", "dimension_2": "not empty"}}
+        ),
+        (
+                {},
+                {}
+        ),
+    ],
+)
+def test_transform_empty_metrics(record, expected):
+    transformer = TransformEmptyMetrics()
+    actual_record = transformer.transform(record)
+    assert actual_record == expected
