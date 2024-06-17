@@ -72,7 +72,6 @@ class RelationalDbDebeziumPropertiesManager(
 
             return catalog.streams
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
-                // TODO : add a filter for completed snapshot streams.
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
                 .map { stream: AirbyteStream -> stream.namespace + "." + stream.name }
                 .filter { streamName: String -> completedStreamNames.contains(streamName) }
@@ -101,7 +100,6 @@ class RelationalDbDebeziumPropertiesManager(
 
             return catalog.streams
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
-                // TODO : add a filter for completed snapshot streams.
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
                 .filter { stream: AirbyteStream ->
                     completedStreamNames.contains(stream.namespace + "." + stream.name)
