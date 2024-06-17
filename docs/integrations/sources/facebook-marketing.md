@@ -192,7 +192,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
-| :--------------: | :----------: |
+|:----------------:|:------------:|
 |      string      |    string    |
 |      number      |    number    |
 |      array       |    array     |
@@ -205,7 +205,8 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.2.1   | 2024-06-13 | [39439](https://github.com/airbytehq/airbyte/pull/39439) | Ensuring all ads are returning when splitting a job for densely populated data                                                                                                                                                                                                                    |
+| 3.3.1   | 2024-06-15 | [39511](https://github.com/airbytehq/airbyte/pull/39511) | Fix validation of the spec `custom_insights.time_increment` field                                                                                                                                                                                                                                 |
+| 3.3.0   | 2024-06-30 | [33648](https://github.com/airbytehq/airbyte/pull/33648) | Add support to field `source_instagram_media_id` to `ad_creatives` report                                                                                                                                                                                                                         |
 | 3.2.0   | 2024-06-05 | [37625](https://github.com/airbytehq/airbyte/pull/37625) | Source Facebook-Marketing: Add Selectable Auth                                                                                                                                                                                                                                                    |
 | 3.1.0   | 2024-06-01 | [38845](https://github.com/airbytehq/airbyte/pull/38845) | Update AdsInsights fields - removed   `cost_per_conversion_lead` and `conversion_lead_rate`                                                                                                                                                                                                       |
 | 3.0.0   | 2024-04-30 | [36608](https://github.com/airbytehq/airbyte/pull/36608) | Update `body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset, video_asset` breakdowns schema.                                                                                                                                                            |
