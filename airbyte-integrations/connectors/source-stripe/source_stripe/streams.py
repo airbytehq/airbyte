@@ -795,7 +795,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, CheckpointMixin,
             self.state = self.updated_cursor_incremental_stream.extract_updated_state(record)
 
 
-class ParentIncrementalStipeSubStream(StripeSubStream):
+class ParentIncrementalStipeSubStream(StripeSubStream, CheckpointMixin):
     """
     This stream differs from others in that it runs parent stream in exactly same sync mode it is run itself to generate stream slices.
     It also uses regular /v1 API endpoints to sync data no matter what the sync mode is. This means that the event-based API can only
@@ -808,6 +808,7 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
 
     def __init__(self, cursor_field: str, *args, **kwargs):
         self._cursor_field = cursor_field
+        self._state: MutableMapping[str, Any] = {}
         super().__init__(*args, **kwargs)
 
     def stream_slices(
@@ -825,8 +826,28 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
             for record in parent_records:
                 yield {"parent": record}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(current_stream_state.get(self.cursor_field, 0), latest_record[self.cursor_field])}
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        """State setter, accept state serialized by state getter."""
+        self._state = value if value else {}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+            yield record
+            self.state = self._get_updated_state(record)
+
+    def _get_updated_state(self, latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(self.state.get(self.cursor_field, 0), latest_record[self.cursor_field])}
 
     @property
     def raise_on_http_errors(self) -> bool:
