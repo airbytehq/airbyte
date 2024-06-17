@@ -21,7 +21,7 @@ class JsonDecoder(Decoder):
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         try:
             body_json = response.json()
-            if isinstance(body_json, dict):
+            if not isinstance(body_json, list):
                 body_json = [body_json]
             yield from body_json
         except requests.exceptions.JSONDecodeError:
