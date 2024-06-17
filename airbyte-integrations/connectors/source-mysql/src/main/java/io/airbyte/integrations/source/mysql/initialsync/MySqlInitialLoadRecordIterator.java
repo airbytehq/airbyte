@@ -4,11 +4,14 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
+
 import com.google.common.collect.AbstractIterator;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -86,8 +89,9 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   @CheckForNull
   @Override
   protected AirbyteRecordData computeNext() {
-    if (Duration.between(startInstant, Instant.now()).compareTo(Duration.ofHours(8)) > 0) {
+    if (isCdcSync() && Duration.between(startInstant, Instant.now()).compareTo(Duration.ofHours(8)) > 0) {
       LOGGER.info("Sync ran for too long - sending a transient error");
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
       throw new TransientErrorException("Cancelling sync because initial load taking too long");
     }
     if (shouldBuildNextSubquery()) {
@@ -195,6 +199,16 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   public void close() throws Exception {
     if (currentIterator != null) {
       currentIterator.close();
+    }
+  }
+
+  private boolean isCdcSync() {
+    if (initialLoadStateManager instanceof MySqlInitialLoadGlobalStateManager) {
+      LOGGER.info("Running a cdc sync");
+      return true;
+    } else {
+      LOGGER.info("Not running a cdc sync");
+      return false;
     }
   }
 

@@ -265,7 +265,7 @@ public class MySqlInitialReadUtil {
     // from the current cdc syncs.
     // We finish the current CDC once the initial snapshot is complete and the next sync starts
     // processing the binlogs
-    if (partiallyOrFullyCompletedCdcStreamList.isEmpty()) {
+    if (cdcStreamList.isEmpty()) {
       LOGGER.info("Skipping the CDC read altogether because no cdc streams have been completed or started");
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
@@ -495,7 +495,8 @@ public class MySqlInitialReadUtil {
   private static boolean isStreamPartiallyOrFullyCompleted(ConfiguredAirbyteStream stream, InitialLoadStreams initialLoadStreams) {
     boolean isStreamCompleted = !initialLoadStreams.streamsForInitialLoad.contains(stream);
     // A stream has been partially completed if an initial load status exists.
-    boolean isStreamPartiallyCompleted = (initialLoadStreams.pairToInitialLoadStatus.get(new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()))) != null;
+    boolean isStreamPartiallyCompleted = (initialLoadStreams.pairToInitialLoadStatus
+        .get(new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()))) != null;
     return isStreamCompleted || isStreamPartiallyCompleted;
   }
 
