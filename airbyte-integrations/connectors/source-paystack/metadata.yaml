@@ -16,8 +16,7 @@ data:
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2024-07-30"
-        message:
-          The refunds schema has been changed it's 'type' in schema['properties']['fully_deducted'] to integer
+        message: The refunds schema has been changed it's 'type' in schema['properties']['fully_deducted'] to integer
   remoteRegistries:
     pypi:
       enabled: true
