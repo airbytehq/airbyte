@@ -1656,8 +1656,8 @@ definitions:
         type: string
         enum: [JsonDecoder]
   JsonlDecoder:
-    title: Jsonl Decoder
-    description: Use this if the response consists of JSON objects separated by new lines (`\n`)
+    title: JSONL Decoder
+    description: Use this if the response consists of JSON objects separated by new lines (`\n`) in JSONL format.
     type: object
     required:
       - type
@@ -1667,7 +1667,7 @@ definitions:
         enum: [JsonlDecoder]
   IterableDecoder:
     title: Iterable Decoder
-    description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap it into a JSON object with the `record` key.
+    description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap each row into a JSON object with the `record` key.
     type: object
     required:
       - type
