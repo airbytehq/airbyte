@@ -5,7 +5,7 @@ test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_linkedin_pages/spec.json"
+      - spec_path: "source_linkedin_pages/spec.yaml"
         backward_compatibility_tests_config:
           disable_for_version: "0.1.0"
   connection:
@@ -20,6 +20,12 @@ acceptance_tests:
         backward_compatibility_tests_config:
           disable_for_version: "0.1.0"
   basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+  incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
