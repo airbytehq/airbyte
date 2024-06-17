@@ -24,7 +24,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: transaction
           http_method: GET
         record_selector:
@@ -35,7 +35,7 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ record[''createdAt''] >= stream_interval[''start_time''] }}'
+            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -56,12 +56,12 @@ definitions:
         cursor_field: createdAt
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -72,14 +72,14 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/transactions'
+          $ref: "#/schemas/transactions"
     customers:
       type: DeclarativeStream
       name: customers
@@ -88,7 +88,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: customer
           http_method: GET
         record_selector:
@@ -99,7 +99,7 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ record[''createdAt''] >= stream_interval[''start_time''] }}'
+            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -120,12 +120,12 @@ definitions:
         cursor_field: createdAt
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -136,14 +136,14 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customers'
+          $ref: "#/schemas/customers"
     invoices:
       type: DeclarativeStream
       name: invoices
@@ -152,7 +152,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: paymentrequest
           http_method: GET
         record_selector:
@@ -163,7 +163,7 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ record[''created_at''] >= stream_interval[''start_time''] }}'
+            condition: "{{ record['created_at'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -184,12 +184,12 @@ definitions:
         cursor_field: created_at
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -200,14 +200,14 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/invoices'
+          $ref: "#/schemas/invoices"
     disputes:
       type: DeclarativeStream
       name: disputes
@@ -216,7 +216,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: dispute
           http_method: GET
         record_selector:
@@ -227,7 +227,7 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ record[''createdAt''] >= stream_interval[''start_time''] }}'
+            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -248,12 +248,12 @@ definitions:
         cursor_field: createdAt
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -264,14 +264,14 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/disputes'
+          $ref: "#/schemas/disputes"
     refunds:
       type: DeclarativeStream
       name: refunds
@@ -280,7 +280,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: refund
           http_method: GET
         record_selector:
@@ -291,7 +291,7 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ record[''createdAt''] >= stream_interval[''start_time''] }}'
+            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -312,12 +312,12 @@ definitions:
         cursor_field: createdAt
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -328,14 +328,14 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/refunds'
+          $ref: "#/schemas/refunds"
     settlements:
       type: DeclarativeStream
       name: settlements
@@ -344,7 +344,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: settlement
           http_method: GET
         record_selector:
@@ -355,7 +355,7 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ record[''createdAt''] >= stream_interval[''start_time''] }}'
+            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -376,12 +376,12 @@ definitions:
         cursor_field: createdAt
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -392,14 +392,14 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/settlements'
+          $ref: "#/schemas/settlements"
     subscriptions:
       type: DeclarativeStream
       name: subscriptions
@@ -408,7 +408,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: subscription
           http_method: GET
         record_selector:
@@ -419,7 +419,7 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ record[''createdAt''] >= stream_interval[''start_time''] }}'
+            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -440,12 +440,12 @@ definitions:
         cursor_field: createdAt
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -456,14 +456,14 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/subscriptions'
+          $ref: "#/schemas/subscriptions"
     transfers:
       type: DeclarativeStream
       name: transfers
@@ -472,7 +472,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: transfer
           http_method: GET
         record_selector:
@@ -483,7 +483,7 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ record[''createdAt''] >= stream_interval[''start_time''] }}'
+            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -504,12 +504,12 @@ definitions:
         cursor_field: createdAt
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -520,30 +520,30 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/transfers'
+          $ref: "#/schemas/transfers"
   base_requester:
     type: HttpRequester
     url_base: https://api.paystack.co/
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''secret_key''] }}'
+      api_token: "{{ config['secret_key'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/transactions'
-  - $ref: '#/definitions/streams/customers'
-  - $ref: '#/definitions/streams/invoices'
-  - $ref: '#/definitions/streams/disputes'
-  - $ref: '#/definitions/streams/refunds'
-  - $ref: '#/definitions/streams/settlements'
-  - $ref: '#/definitions/streams/subscriptions'
-  - $ref: '#/definitions/streams/transfers'
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/disputes"
+  - $ref: "#/definitions/streams/refunds"
+  - $ref: "#/definitions/streams/settlements"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/transfers"
 
 spec:
   type: Spec
@@ -563,7 +563,7 @@ spec:
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated.
         examples:
-          - '2017-01-25T00:00:00Z'
+          - "2017-01-25T00:00:00Z"
         order: 0
       lookback_window_days:
         type: integer
@@ -604,188 +604,188 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           referrer:
             type:
-              - 'null'
+              - "null"
               - string
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       authorization:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       channel:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       customer:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       domain:
         type:
-          - 'null'
+          - "null"
           - string
       fees:
         type:
-          - 'null'
+          - "null"
           - integer
       fees_split:
         type:
-          - 'null'
+          - "null"
           - string
       gateway_response:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       ip_address:
         type:
-          - 'null'
+          - "null"
           - string
       log:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           attempts:
             type:
-              - 'null'
+              - "null"
               - integer
           errors:
             type:
-              - 'null'
+              - "null"
               - integer
           history:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 message:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 time:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
           input:
             type:
-              - 'null'
+              - "null"
               - array
             items: {}
           mobile:
             type:
-              - 'null'
+              - "null"
               - boolean
           start_time:
             type:
-              - 'null'
+              - "null"
               - integer
           success:
             type:
-              - 'null'
+              - "null"
               - boolean
           time_spent:
             type:
-              - 'null'
+              - "null"
               - integer
       message:
         type:
-          - 'null'
+          - "null"
           - string
       order_id:
         type:
-          - 'null'
+          - "null"
           - integer
       paidAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       paid_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       plan:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       requested_amount:
         type:
-          - 'null'
+          - "null"
           - integer
       source:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           entry_point:
             type:
-              - 'null'
+              - "null"
               - string
           identifier:
             type:
-              - 'null'
+              - "null"
               - string
           source:
             type:
-              - 'null'
+              - "null"
               - string
       split:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       status:
         type:
-          - 'null'
+          - "null"
           - string
       subaccount:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
   customers:
@@ -794,53 +794,53 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       customer_code:
         type:
-          - 'null'
+          - "null"
           - string
       domain:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       integration:
         type:
-          - 'null'
+          - "null"
           - integer
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
       phone:
         type:
-          - 'null'
+          - "null"
           - string
       risk_action:
         type:
-          - 'null'
+          - "null"
           - string
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   invoices:
@@ -849,135 +849,135 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       customer:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       description:
         type:
-          - 'null'
+          - "null"
           - string
       domain:
         type:
-          - 'null'
+          - "null"
           - string
       due_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       has_invoice:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       integration:
         type:
-          - 'null'
+          - "null"
           - integer
       invoice_number:
         type:
-          - 'null'
+          - "null"
           - integer
       line_items:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             amount:
               type:
-                - 'null'
+                - "null"
                 - integer
             name:
               type:
-                - 'null'
+                - "null"
                 - string
             quantity:
               type:
-                - 'null'
+                - "null"
                 - integer
       notifications:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             channel:
               type:
-                - 'null'
+                - "null"
                 - string
             sent_at:
               type:
-                - 'null'
+                - "null"
                 - string
       offline_reference:
         type:
-          - 'null'
+          - "null"
           - string
       paid:
         type:
-          - 'null'
+          - "null"
           - boolean
       paid_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       pdf_url:
         type:
-          - 'null'
+          - "null"
           - string
       request_code:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       tax:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             amount:
               type:
-                - 'null'
+                - "null"
                 - integer
             name:
               type:
-                - 'null'
+                - "null"
                 - string
   disputes:
     type: object
@@ -985,128 +985,128 @@ schemas:
     properties:
       attachments:
         type:
-          - 'null'
+          - "null"
           - string
       bin:
         type:
-          - 'null'
+          - "null"
           - string
       category:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       customer:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       domain:
         type:
-          - 'null'
+          - "null"
           - string
       dueAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       evidence:
         type:
-          - 'null'
+          - "null"
           - string
       history:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             by:
               type:
-                - 'null'
+                - "null"
                 - string
             createdAt:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             status:
               type:
-                - 'null'
+                - "null"
                 - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       last4:
         type:
-          - 'null'
+          - "null"
           - string
       messages:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             body:
               type:
-                - 'null'
+                - "null"
                 - string
             createdAt:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             sender:
               type:
-                - 'null'
+                - "null"
                 - string
       note:
         type:
-          - 'null'
+          - "null"
           - string
       refund_amount:
         type:
-          - 'null'
+          - "null"
           - integer
       resolution:
         type:
-          - 'null'
+          - "null"
           - string
       resolvedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       status:
         type:
-          - 'null'
+          - "null"
           - string
       transaction:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       transaction_reference:
         type:
-          - 'null'
+          - "null"
           - string
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   refunds:
@@ -1115,71 +1115,71 @@ schemas:
     properties:
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       customer_note:
         type:
-          - 'null'
+          - "null"
           - string
       deducted_amount:
         type:
-          - 'null'
+          - "null"
           - integer
       dispute:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       domain:
         type:
-          - 'null'
+          - "null"
           - string
       fully_deducted:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       integration:
         type:
-          - 'null'
+          - "null"
           - integer
       merchant_note:
         type:
-          - 'null'
+          - "null"
           - string
       refunded_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       refunded_by:
         type:
-          - 'null'
+          - "null"
           - string
       settlement:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       status:
         type:
-          - 'null'
+          - "null"
           - string
       transaction:
         type:
-          - 'null'
+          - "null"
           - integer
   settlements:
     type: object
@@ -1187,62 +1187,62 @@ schemas:
     properties:
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       deductions:
         type:
-          - 'null'
+          - "null"
           - integer
       domain:
         type:
-          - 'null'
+          - "null"
           - string
       effective_amount:
         type:
-          - 'null'
+          - "null"
           - integer
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       integration:
         type:
-          - 'null'
+          - "null"
           - integer
       settled_by:
         type:
-          - 'null'
+          - "null"
           - string
       settlement_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       status:
         type:
-          - 'null'
+          - "null"
           - string
       subaccount:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       total_amount:
         type:
-          - 'null'
+          - "null"
           - integer
       total_fees:
         type:
-          - 'null'
+          - "null"
           - integer
       total_processed:
         type:
-          - 'null'
+          - "null"
           - integer
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   subscriptions:
@@ -1251,89 +1251,89 @@ schemas:
     properties:
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       authorization:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       cron_expression:
         type:
-          - 'null'
+          - "null"
           - string
       customer:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       domain:
         type:
-          - 'null'
+          - "null"
           - string
       email_token:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       integration:
         type:
-          - 'null'
+          - "null"
           - integer
       invoice_limit:
         type:
-          - 'null'
+          - "null"
           - integer
       most_recent_invoice:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       next_payment_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       open_invoice:
         type:
-          - 'null'
+          - "null"
           - string
       payments_count:
         type:
-          - 'null'
+          - "null"
           - integer
       plan:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       quantity:
         type:
-          - 'null'
+          - "null"
           - integer
       split_code:
         type:
-          - 'null'
+          - "null"
           - string
       start:
         type:
-          - 'null'
+          - "null"
           - integer
       status:
         type:
-          - 'null'
+          - "null"
           - string
       subscription_code:
         type:
-          - 'null'
+          - "null"
           - string
   transfers:
     type: object
@@ -1341,124 +1341,124 @@ schemas:
     properties:
       amount:
         type:
-          - 'null'
+          - "null"
           - integer
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       domain:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       integration:
         type:
-          - 'null'
+          - "null"
           - integer
       reason:
         type:
-          - 'null'
+          - "null"
           - string
       recipient:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           metadata:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           currency:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           details:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               account_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               account_number:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               bank_code:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               bank_name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           domain:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           integration:
             type:
-              - 'null'
+              - "null"
               - integer
           name:
             type:
-              - 'null'
+              - "null"
               - string
           recipient_code:
             type:
-              - 'null'
+              - "null"
               - string
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
       source:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       transfer_code:
         type:
-          - 'null'
+          - "null"
           - string
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
