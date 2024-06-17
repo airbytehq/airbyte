@@ -9,6 +9,7 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConver
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.*;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
+import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.isCdc;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.*;
@@ -37,6 +38,8 @@ import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
@@ -639,7 +642,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       return;
     }
     var sourceConfig = database.getSourceConfig();
-    if (MssqlCdcHelper.isCdc(sourceConfig)) {
+    if (isCdc(sourceConfig)) {
       initialLoadStateManager = getMssqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString());
     } else {
       final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
@@ -656,7 +659,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                             final ConfiguredAirbyteCatalog catalog,
                                                             final StateManager stateManager) {
     var sourceConfig = database.getSourceConfig();
-    if (MssqlCdcHelper.isCdc(sourceConfig)) {
+    if (isCdc(sourceConfig)) {
       return getMssqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, airbyteStream, Instant.now(),
           getQuoteString())
               .get();
@@ -675,6 +678,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
 
     return false;
+  }
+
+  @Override
+  protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), initialLoadStateManager);
   }
 
   @NotNull
