@@ -781,7 +781,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 modelsSchema(),
             )
         } else {
-            assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
+            // We are expecting count match for all streams, including non RFR streams.
+            assertExpectedStateMessageCountMatches(
+                stateMessages1,
+                MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong()
+            )
 
             // Expect state and record message from MODEL_RECORDS_2.
             assertStreamStatusTraceMessageIndex(
@@ -923,8 +927,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, 1)
 
         // assertExpectedStateMessages(stateMessages1)
-        // Non resumeable full refresh does not get any state messages.
-        assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
+        // Non resumeable full refresh will also get state messages with count.
+        assertExpectedStateMessageCountMatches(
+            stateMessages1,
+            MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong()
+        )
         assertExpectedRecords(
             (MODEL_RECORDS_2 + MODEL_RECORDS).toSet(),
             recordMessages1,
@@ -933,15 +940,18 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             modelsSchema(),
         )
 
+        // Platform will remove non RFR streams before each new sync.
         val state = Jsons.jsonNode(listOf(stateMessages1[stateMessages1.size - 1]))
+        val streamStates = state.get(0).get("global").get("stream_states") as ArrayNode
+        removeStreamState(MODELS_STREAM_NAME_2, streamStates)
+
         val read2 = source().read(config()!!, configuredCatalog, state)
         val actualRecords2 = AutoCloseableIterators.toListAndClose(read2)
 
         val recordMessages2 = extractRecordMessages(actualRecords2)
         val stateMessages2 = extractStateMessages(actualRecords2)
 
-        assertExpectedStateMessagesFromIncrementalSync(stateMessages2)
-        assertExpectedStateMessageCountMatches(stateMessages2, 1)
+        assertExpectedStateMessageCountMatches(stateMessages2, 1 + MODEL_RECORDS_2.size.toLong())
         assertExpectedRecords(
             (MODEL_RECORDS_2 + listOf(puntoRecord)).toSet(),
             recordMessages2,

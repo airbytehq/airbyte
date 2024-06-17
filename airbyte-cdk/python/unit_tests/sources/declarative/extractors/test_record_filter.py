@@ -8,7 +8,8 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.models import CustomRetriever, DeclarativeStream, ParentStreamConfig, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.models import CustomRetriever, DeclarativeStream, ParentStreamConfig
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
@@ -130,7 +131,8 @@ def test_client_side_record_filter_decorator_with_parent_stream(stream_state: Op
         cursor_factory=CursorFactory(
             lambda: date_time_based_cursor),
         partition_router=SubstreamPartitionRouter(
-            type="SubstreamPartitionRouter",
+            config={},
+            parameters={},
             parent_stream_configs=[
                 ParentStreamConfig(
                     type="ParentStreamConfig",
