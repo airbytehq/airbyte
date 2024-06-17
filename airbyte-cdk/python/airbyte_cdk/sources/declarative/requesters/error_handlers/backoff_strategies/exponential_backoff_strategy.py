@@ -33,7 +33,7 @@ class ExponentialBackoffStrategy(BackoffStrategy):
             self._factor = InterpolatedString.create(self.factor, parameters=parameters)
 
     @property
-    def retry_factor(self) -> float:
+    def _retry_factor(self) -> float:
         return self._factor.eval(self.config)  # type: ignore # factor is always cast to an interpolated string
 
     def backoff_time(
@@ -44,4 +44,4 @@ class ExponentialBackoffStrategy(BackoffStrategy):
             raise ValueError("ExponentialBackoffStrategy requires an attempt_count")
         if not isinstance(attempt_count, int):
             raise ValueError("ExponentialBackoffStrategy requires an attempt_count that is an integer")
-        return self.retry_factor * 2**attempt_count  # type: ignore # factor is always cast to an interpolated string
+        return self._retry_factor * 2**attempt_count  # type: ignore # factor is always cast to an interpolated string

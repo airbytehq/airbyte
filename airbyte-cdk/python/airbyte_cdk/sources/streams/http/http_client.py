@@ -37,7 +37,6 @@ BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 class HttpClient:
 
     _DEFAULT_MAX_RETRY: int = 5
-    _DEFAULT_RETRY_FACTOR: float = 5
     _DEFAULT_MAX_TIME: int = 60 * 10
 
     def __init__(
@@ -150,6 +149,9 @@ class HttpClient:
 
     @cached_property
     def _max_retries(self) -> int:
+        """
+        Determines the max retries based on the provided error handler.
+        """
         max_retries = None
         if self._disable_retries:
             max_retries = 0
@@ -159,16 +161,10 @@ class HttpClient:
 
     @cached_property
     def _max_time(self) -> int:
+        """
+        Determines the max time based on the provided error handler.
+        """
         return self._error_handler.max_time if self._error_handler.max_time is not None else self._DEFAULT_MAX_TIME
-
-    @cached_property
-    def _factor(self) -> float:
-        factor: Optional[float] = None
-        for backoff_strategy in self._backoff_strategies:
-            if hasattr(backoff_strategy, "retry_factor") and backoff_strategy.retry_factor is not None:
-                factor = backoff_strategy.retry_factor
-                break
-        return factor if factor is not None else self._DEFAULT_RETRY_FACTOR
 
     def _send_with_retry(
         self,
@@ -178,18 +174,6 @@ class HttpClient:
     ) -> requests.Response:
         """
         Sends a request with retry logic.
-
-        This method uses the retry logic to send the request. It determines the maximum number of retries
-        by checking if the error handler or any backoff strategy has a defined max_retries property.
-        If not, it falls back to the default value.
-
-        The `backoff` package uses the `max_tries` parameter, which indicates the total number of
-        attempts before giving up. If this number is 0, no calls are expected to be made. However,
-        this method uses `max_retries` assuming there would be at least one initial attempt and some
-        retry attempts, so it adds 1 to the expected retry attempts.
-
-        The method also determines the maximum time for retries and the factor for exponential backoff
-        based on the error handler and backoff strategies.
 
         Args:
             request (requests.PreparedRequest): The prepared HTTP request to send.
@@ -202,10 +186,9 @@ class HttpClient:
         max_retries = self._max_retries
         max_tries = max(0, max_retries) + 1
         max_time = self._max_time
-        factor = self._factor
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=factor)
+        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time)
         # backoff handlers wrap _send, so it will always return a response
         response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
 
