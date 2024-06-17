@@ -146,7 +146,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   private Database createDatabaseFromConfig(final JsonNode config) {
     connection = ConnectionFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
+        RedshiftStagingS3Destination.SSL_JDBC_PARAMETERS,
         String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
