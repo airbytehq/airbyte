@@ -3,13 +3,16 @@
 #
 
 import json
-
+import logging
 import pytest
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from conftest import find_stream
 from source_snapchat_marketing.source import SourceSnapchatMarketing
+
+logger = logging.getLogger("airbyte_logger")
 
 config_mock = {
     "client_id": "client_id",
@@ -307,5 +310,5 @@ def test_source_check_connection(requests_mock):
     requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json={})
 
-    results = SourceSnapchatMarketing().check_connection(logger=None, config=source_config)
+    results = SourceSnapchatMarketing().check_connection(logger=logger, config=source_config)
     assert results == (True, None)
