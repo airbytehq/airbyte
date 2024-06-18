@@ -481,8 +481,8 @@ class Action(Enum):
 
 class HttpResponseFilter(BaseModel):
     type: Literal['HttpResponseFilter']
-    action: Action = Field(
-        ...,
+    action: Optional[Action] = Field(
+        None,
         description='Action to execute if a response matches the filter.',
         examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE'],
         title='Action',
