@@ -42,6 +42,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -104,6 +109,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -183,6 +193,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -260,6 +275,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -332,6 +352,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -407,6 +432,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -508,6 +538,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -628,6 +663,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -748,6 +788,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -868,6 +913,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -988,6 +1038,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1108,6 +1163,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1228,6 +1288,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1348,6 +1413,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1468,6 +1538,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1588,6 +1663,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1708,6 +1788,11 @@ definitions:
                       https://docs.airbyte.com/integrations/sources/linkedin-ads.
                       Also quotas and usage are here:
                       https://www.linkedin.com/developers/apps.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
