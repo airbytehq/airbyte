@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
+from source_facebook_marketing.spec import TimeIncrement
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
@@ -70,7 +71,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         action_breakdowns: List[str] = None,
         action_breakdowns_allow_empty: bool = False,
         action_report_time: str = "mixed",
-        time_increment: Optional[int] = None,
+        time_increment: Optional[TimeIncrement] = None,
         insights_lookback_window: int = None,
         insights_job_timeout: int = 60,
         level: str = "ad",
@@ -226,11 +227,15 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._next_cursor_values = self._get_start_date()
 
     def _date_intervals(self, account_id: str) -> Iterator[pendulum.Date]:
-        """Get date period to sync"""
+        """Get date periods to sync"""
         if self._end_date < self._next_cursor_values[account_id]:
             return
         date_range = self._end_date - self._next_cursor_values[account_id]
-        yield from date_range.range("days", self.time_increment)
+
+        if self._is_monthly_time_increment():
+            yield from date_range.range("months", 1)
+        else:
+            yield from date_range.range("days", self.time_increment)
 
     def _advance_cursor(self, account_id: str):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
@@ -258,7 +263,11 @@ class AdsInsights(FBMarketingIncrementalStream):
                 and ts_start < self._next_cursor_values.get(account_id, self._start_date) - self.insights_lookback_period
             ):
                 continue
-            ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
+
+            if self._is_monthly_time_increment():
+                ts_end = ts_start.end_of("month")
+            else:
+                ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(
                 api=self._api.api,
@@ -355,7 +364,13 @@ class AdsInsights(FBMarketingIncrementalStream):
                 logger.warning(
                     f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}."
                 )
-            start_dates_for_account[account_id] = max(oldest_date, start_date)
+            start_date = max(start_date, oldest_date)
+
+            if self._is_monthly_time_increment() and start_date.day != 1:
+                logger.warning("Monthly time increment is used, start sync from the beginning of the month.")
+                start_date = start_date.start_of("month")
+
+            start_dates_for_account[account_id] = start_date
         return start_dates_for_account
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
@@ -413,3 +428,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             pass
 
         return self._fields
+
+    def _is_monthly_time_increment(self) -> bool:
+        return self.time_increment == "monthly"
