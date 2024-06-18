@@ -55,8 +55,7 @@ definitions:
           path: content?type=blogpost
           http_method: GET
           request_parameters:
-            expand: >-
-              ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
+            expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
         record_selector:
           type: RecordSelector
           extractor:
@@ -126,8 +125,7 @@ definitions:
           path: content?type=page
           http_method: GET
           request_parameters:
-            expand: >-
-              ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
+            expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
         record_selector:
           type: RecordSelector
           extractor:
@@ -163,7 +161,7 @@ definitions:
           path: space
           http_method: GET
           request_parameters:
-            expand: '["permissions","icon","description.plain","description.view"]'
+            expand: "permissions,icon,description.plain,description.view"
         record_selector:
           type: RecordSelector
           extractor:

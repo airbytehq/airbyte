@@ -3,17 +3,16 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.1"
+version = "0.1.3"
 name = "source-reply-io"
-description = "Source implementation for Reply Io."
-authors = [ "Elliot Trabac <elliot.trabac1@gmail.com>",]
+description = "Source implementation for reply-io."
+authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/reply-io"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-[[tool.poetry.packages]]
-include = "source_reply_io"
+packages = [ { include = "source_reply_io" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
