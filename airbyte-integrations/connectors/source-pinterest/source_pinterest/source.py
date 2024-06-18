@@ -8,6 +8,7 @@ from base64 import standard_b64encode
 from typing import Any, List, Mapping
 
 import pendulum
+from .python_stream_auth import PinterestOauthAuthenticator
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
@@ -75,7 +76,7 @@ class SourcePinterest(YamlDeclarativeSource):
         ).decode("ascii")
         auth = f"Basic {credentials_base64_encoded}"
 
-        return Oauth2Authenticator(
+        return PinterestOauthAuthenticator(
             token_refresh_endpoint=f"{PinterestStream.url_base}oauth/token",
             client_secret=config.get("client_secret"),
             client_id=config.get("client_id"),
