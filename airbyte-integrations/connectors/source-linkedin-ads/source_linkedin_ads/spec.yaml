@@ -1,4 +1,4 @@
-connection_specification:
+connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: "Linkedin Ads Spec"
   type: object

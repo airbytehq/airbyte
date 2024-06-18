@@ -48,7 +48,7 @@ definitions:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
           record_filter:
-            condition: "{{ record['id'] in config['account_ids'] if 'account_ids' in config else True }}"
+            condition: "{{ record['id'] in config['account_ids'] if config.get('account_ids') else True }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
