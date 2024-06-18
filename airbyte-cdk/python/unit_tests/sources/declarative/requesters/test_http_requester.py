@@ -649,20 +649,6 @@ def test_join_url(test_name, base_url, path, expected_full_url):
     assert sent_request.url == expected_full_url
 
 
-def get_max_retries(http_requester):
-    max_retries = http_requester._http_client._DEFAULT_MAX_RETRY
-    if http_requester.disable_retries:
-        max_retries = 0
-    elif hasattr(http_requester._http_client._error_handler, "max_retries") and http_requester._http_client._error_handler.max_retries is not None:
-        max_retries = http_requester._http_client._error_handler.max_retries
-    else:
-        for backoff_strategy in http_requester._http_client._backoff_strategies:
-            if hasattr(backoff_strategy, "max_retries") and backoff_strategy.max_retries is not None:
-                max_retries = backoff_strategy.max_retries
-                break
-    return max_retries
-
-
 def test_request_attempt_count_is_tracked_across_retries(http_requester_factory):
     request_mock = MagicMock(spec=requests.PreparedRequest)
     request_mock.headers = {}
@@ -680,7 +666,7 @@ def test_request_attempt_count_is_tracked_across_retries(http_requester_factory)
     with pytest.raises(UserDefinedBackoffException):
         http_requester._http_client._send_with_retry(request=request_mock, request_kwargs={})
 
-    assert http_requester._http_client._request_attempt_count.get(request_mock) == get_max_retries(http_requester) + 1
+    assert http_requester._http_client._request_attempt_count.get(request_mock) == http_requester._http_client._max_retries + 1
 
 
 def test_request_attempt_count_with_exponential_backoff_strategy(http_requester_factory):
@@ -700,4 +686,4 @@ def test_request_attempt_count_with_exponential_backoff_strategy(http_requester_
     with pytest.raises(UserDefinedBackoffException):
         http_requester._http_client._send_with_retry(request=request_mock, request_kwargs={})
 
-    assert http_requester._http_client._request_attempt_count.get(request_mock) == get_max_retries(http_requester) + 1
+    assert http_requester._http_client._request_attempt_count.get(request_mock) == http_requester._http_client._max_retries + 1
