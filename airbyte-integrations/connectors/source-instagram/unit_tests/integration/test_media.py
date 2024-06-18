@@ -109,3 +109,21 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 3
+
+    @HttpMocker()
+    def test_when_read_then_datetime_fields_transformed(self, http_mocker: HttpMocker) -> None:
+        created_time_field = "timestamp"
+        input_datetime_value = "2024-01-01T00:00:00+0000"
+        expected_datetime_value = "2024-01-01T00:00:00+00:00"
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+        http_mocker.get(
+            _get_request().build(),
+            _get_response().with_record(_record().with_field(FieldPath(created_time_field), input_datetime_value)).build(),
+        )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 1
+        assert output.records[0].record.data[created_time_field] == expected_datetime_value
