@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import argparse
 import json
+import os
 import pkgutil
 import sys
 from typing import List
@@ -11,9 +11,47 @@ from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Type
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
+
+class SourceLocalYaml(YamlDeclarativeSource):
+    """
+    Declarative source defined by a yaml file in the local filesystem
+    """
+
+    def __init__(self):
+        """
+        HACK!
+            Problem: YamlDeclarativeSource relies on the calling module name/path to find the yaml file.
+            Implication: If you call YamlDeclarativeSource directly it will look for the yaml file in the wrong place. (e.g. the airbyte-cdk package)
+            Solution: Subclass YamlDeclarativeSource from the same location as the manifest to load.
+
+            When can we remove this?
+                When the airbyte-cdk is updated to not rely on the calling module name/path to find the yaml file.
+                When all manifest connectors are updated to use the new airbyte-cdk.
+                When all manifest connectors are updated to use the source-declarative-manifest as the base image.
+        """
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
+
+def _is_local_manifest_command(args: List[str]) -> bool:
+    # Check for a local manifest.yaml file
+    return os.path.isfile("source_declarative_manifest/manifest.yaml")
 
 
 def handle_command(args: List[str]) -> None:
+    if _is_local_manifest_command(args):
+        handle_local_manifest_command(args)
+    else:
+        handle_remote_manifest_command(args)
+
+
+def handle_local_manifest_command(args: List[str]) -> None:
+    source = SourceLocalYaml()
+    launch(source, args)
+
+
+def handle_remote_manifest_command(args: List[str]) -> None:
     """Overrides the spec command to return the generalized spec for the declarative manifest source.
 
     This is different from a typical low-code, but built and published separately source built as a ManifestDeclarativeSource,
@@ -29,7 +67,7 @@ def handle_command(args: List[str]) -> None:
         print(AirbyteEntrypoint.airbyte_message_to_string(message))
     else:
         source = create_manifest(args)
-        launch(source, sys.argv[1:])
+        launch(source, args)
 
 
 def create_manifest(args: List[str]) -> ManifestDeclarativeSource:
