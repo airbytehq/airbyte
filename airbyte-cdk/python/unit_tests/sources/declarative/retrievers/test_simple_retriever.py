@@ -11,7 +11,6 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMod
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, DeclarativeCursor, ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
@@ -64,8 +63,7 @@ def test_simple_retriever_full(mock_http_stream):
     requester.get_path.return_value = path
     http_method = HttpMethod.GET
     requester.get_method.return_value = http_method
-    backoff_time = 60
-    should_retry = ResponseStatus.retry(backoff_time)
+    should_retry = True
     requester.interpret_response_status.return_value = should_retry
     request_body_json = {"body": "json"}
     requester.request_body_json.return_value = request_body_json
