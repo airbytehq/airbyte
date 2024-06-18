@@ -12,6 +12,7 @@ from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     CustomerAddresses,
+    CustomerJourney,
     DiscountCode,
     FulfillmentOrder,
     InventoryItem,
@@ -115,7 +116,6 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
 class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
     # pin the api version
-    api_version = "2024-04"
 
 
 class ProductsGraphQl(IncrementalShopifyStream):
@@ -123,6 +123,8 @@ class ProductsGraphQl(IncrementalShopifyStream):
     cursor_field = "updatedAt"
     data_field = "graphql"
     http_method = "POST"
+    # pin the old api_version before this stream is deprecated
+    api_version = "2023-07"
 
     def request_params(
         self,
@@ -205,6 +207,11 @@ class CustomCollections(IncrementalShopifyStreamWithDeletedEvents):
     deleted_events_api_name = "Collection"
 
 
+class CustomerJourneySummary(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: CustomerJourney = CustomerJourney
+    primary_key = "order_id"
+
+
 class SmartCollections(IncrementalShopifyStream):
     data_field = "smart_collections"
 
@@ -263,7 +270,6 @@ class OrderRefunds(IncrementalShopifyNestedStream):
 class OrderRisks(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderRisk = OrderRisk
     # the updated stream work only with >= `2024-04` shopify api version
-    api_version = "2024-04"
 
 
 class Transactions(IncrementalShopifySubstream):

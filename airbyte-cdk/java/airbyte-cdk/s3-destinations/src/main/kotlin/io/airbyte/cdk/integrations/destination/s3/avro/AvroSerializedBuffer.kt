@@ -58,7 +58,12 @@ class AvroSerializedBuffer(
 
     @Throws(IOException::class)
     @Suppress("DEPRECATION")
-    override fun writeRecord(recordString: String, airbyteMetaString: String, emittedAt: Long) {
+    override fun writeRecord(
+        recordString: String,
+        airbyteMetaString: String,
+        generationId: Long,
+        emittedAt: Long
+    ) {
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(
             Jsons.deserialize(

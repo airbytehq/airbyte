@@ -46,7 +46,11 @@ import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons
@@ -55,16 +59,21 @@ import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.CommonField
 import io.airbyte.protocol.models.JsonSchemaType
+import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.airbyte.protocol.models.v0.SyncMode.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -105,6 +114,21 @@ abstract class AbstractJdbcSource<Datatype>(
         return false
     }
 
+    override fun discover(config: JsonNode): AirbyteCatalog {
+        var catalog = super.discover(config)
+        var database = createDatabase(config)
+        catalog.streams.forEach(
+            Consumer { stream: AirbyteStream ->
+                stream.isResumable =
+                    supportResumableFullRefresh(
+                        database,
+                        CatalogHelpers.toDefaultConfiguredStream(stream)
+                    )
+            }
+        )
+        return catalog
+    }
+
     open fun getInitialLoadHandler(
         database: JdbcDatabase,
         airbyteStream: ConfiguredAirbyteStream,
@@ -126,31 +150,73 @@ abstract class AbstractJdbcSource<Datatype>(
         syncMode: SyncMode,
         cursorField: Optional<String>
     ): AutoCloseableIterator<AirbyteMessage> {
-        if (
-            supportResumableFullRefresh(database, airbyteStream) &&
-                syncMode == SyncMode.FULL_REFRESH
-        ) {
+        if (supportResumableFullRefresh(database, airbyteStream) && syncMode == FULL_REFRESH) {
             val initialLoadHandler =
                 getInitialLoadHandler(database, airbyteStream, catalog, stateManager)
                     ?: throw IllegalStateException(
                         "Must provide initialLoadHandler for resumable full refresh."
                     )
-            return initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
+            return augmentWithStreamStatus(
+                airbyteStream,
+                initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
+            )
         }
 
         // If flag is off, fall back to legacy non-resumable refresh
-        return super.getFullRefreshStream(
-            database,
-            airbyteStream,
-            catalog,
-            stateManager,
-            namespace,
-            selectedDatabaseFields,
-            table,
-            emittedAt,
-            syncMode,
-            cursorField,
-        )
+        var iterator =
+            super.getFullRefreshStream(
+                database,
+                airbyteStream,
+                catalog,
+                stateManager,
+                namespace,
+                selectedDatabaseFields,
+                table,
+                emittedAt,
+                syncMode,
+                cursorField,
+            )
+
+        if (airbyteStream.syncMode == FULL_REFRESH) {
+            var defaultProducer = getSourceStateProducerForNonResumableFullRefreshStream(database)
+            if (defaultProducer != null) {
+                iterator =
+                    AutoCloseableIterators.transform(
+                        { autoCloseableIterator: AutoCloseableIterator<AirbyteMessage> ->
+                            SourceStateIterator(
+                                autoCloseableIterator,
+                                airbyteStream,
+                                defaultProducer,
+                                StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO)
+                            )
+                        },
+                        iterator,
+                        AirbyteStreamUtils.convertFromNameAndNamespace(
+                            airbyteStream.stream.name,
+                            airbyteStream.stream.namespace
+                        )
+                    )
+            }
+        }
+
+        return when (airbyteStream.syncMode) {
+            FULL_REFRESH -> augmentWithStreamStatus(airbyteStream, iterator)
+            else -> iterator
+        }
+    }
+
+    protected open fun getSourceStateProducerForNonResumableFullRefreshStream(
+        database: JdbcDatabase
+    ): SourceStateMessageProducer<AirbyteMessage>? {
+        return null
+    }
+
+    open fun augmentWithStreamStatus(
+        airbyteStream: ConfiguredAirbyteStream,
+        streamItrator: AutoCloseableIterator<AirbyteMessage>
+    ): AutoCloseableIterator<AirbyteMessage> {
+        // no-op
+        return streamItrator
     }
 
     override fun queryTableFullRefresh(
@@ -192,9 +258,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
                                 // field
-                                if (
-                                    syncMode == SyncMode.INCREMENTAL && stateEmissionFrequency > 0
-                                ) {
+                                if (syncMode == INCREMENTAL && stateEmissionFrequency > 0) {
                                     val quotedCursorField: String =
                                         enquoteIdentifier(cursorField.get(), quoteString)
                                     sql.append(" ORDER BY $quotedCursorField ASC")
@@ -221,6 +285,45 @@ abstract class AbstractJdbcSource<Datatype>(
     }
 
     /**
+     * Checks that current user can SELECT from the tables in the schemas. We can override this
+     * function if it takes too long to finish for a particular database source connector.
+     */
+    @Throws(Exception::class)
+    protected open fun checkUserHasPrivileges(config: JsonNode?, database: JdbcDatabase) {
+        var schemas = ArrayList<String>()
+        if (config!!.has(JdbcUtils.SCHEMAS_KEY) && config[JdbcUtils.SCHEMAS_KEY].isArray) {
+            for (schema in config[JdbcUtils.SCHEMAS_KEY]) {
+                schemas.add(schema.asText())
+            }
+        }
+        // if UI has schemas specified, check if the user has select access to any table
+        if (schemas.isNotEmpty()) {
+            for (schema in schemas) {
+                LOGGER.info {
+                    "Checking if the user can perform select to any table in schema: $schema"
+                }
+                val tablesOfSchema = database.metaData.getTables(null, schema, "%", null)
+                if (tablesOfSchema.next()) {
+                    var privileges =
+                        getPrivilegesTableForCurrentUser<JdbcPrivilegeDto>(database, schema)
+                    if (privileges.isEmpty()) {
+                        LOGGER.info { "No table from schema $schema is accessible for the user." }
+                        throw ConfigErrorException(
+                            "User lacks privileges to SELECT from any of the tables in schema $schema"
+                        )
+                    }
+                } else {
+                    LOGGER.info { "Schema $schema does not contain any table." }
+                }
+            }
+        } else {
+            LOGGER.info {
+                "No schema has been provided at the moment, skip table permission check."
+            }
+        }
+    }
+
+    /**
      * Configures a list of operations that can be used to check the connection to the source.
      *
      * @return list of consumers that run queries for the check command.
@@ -239,9 +342,10 @@ abstract class AbstractJdbcSource<Datatype>(
                     CheckedFunction { connection: Connection -> connection.metaData.catalogs },
                     CheckedFunction { queryResult: ResultSet ->
                         sourceOperations.rowToJson(queryResult)
-                    }
+                    },
                 )
-            }
+            },
+            CheckedConsumer { database: JdbcDatabase -> checkUserHasPrivileges(config, database) },
         )
     }
 
@@ -704,7 +808,7 @@ abstract class AbstractJdbcSource<Datatype>(
             HashSet(Sets.difference(allStreams, alreadySyncedStreams))
 
         return catalog.streams
-            .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
+            .filter { c: ConfiguredAirbyteStream -> c.syncMode == INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 newlyAddedStreams.contains(
                     AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
@@ -735,6 +839,29 @@ abstract class AbstractJdbcSource<Datatype>(
                     result[entry.streamName]!!.add(entry.primaryKey)
                 }
             return result
+        }
+    }
+
+    override fun createReadIterator(
+        database: JdbcDatabase,
+        airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        table: TableInfo<CommonField<Datatype>>,
+        stateManager: StateManager?,
+        emittedAt: Instant
+    ): AutoCloseableIterator<AirbyteMessage> {
+        val iterator =
+            super.createReadIterator(
+                database,
+                airbyteStream,
+                catalog,
+                table,
+                stateManager,
+                emittedAt
+            )
+        return when (airbyteStream.syncMode) {
+            INCREMENTAL -> augmentWithStreamStatus(airbyteStream, iterator)
+            else -> iterator
         }
     }
 }

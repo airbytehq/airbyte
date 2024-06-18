@@ -13,6 +13,13 @@ from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, Configur
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
+
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 def records_per_slice(parent_records: List[Mapping[str, Any]], state_checkpoint_interval) -> List[int]:
     num_batches = len(parent_records) // state_checkpoint_interval
     if len(parent_records) % state_checkpoint_interval != 0:
@@ -557,8 +564,8 @@ def customer_address_jsonl_content_example():
 @pytest.fixture
 def inventory_levels_jsonl_content_example():
     return """{"__typename":"Location","id":"gid:\/\/shopify\/Location\/63590301885"}
-{"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185200631997","available":15,"item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185200631997"},"updatedAt":"2023-04-13T12:00:55Z","__parentId":"gid:\/\/shopify\/Location\/63590301885"}
-{"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185218719933","available":8,"item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185218719933"},"updatedAt":"2023-04-13T12:09:45Z","__parentId":"gid:\/\/shopify\/Location\/63590301885"}\n"""
+{"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185200631997","item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185200631997"},"updatedAt":"2023-04-13T12:00:55Z","quantities":[{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=available","name":"available","quantity":15,"updatedAt":"2023-04-13T12:00:55Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=incoming","name":"incoming","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=committed","name":"committed","quantity":0,"updatedAt":"2022-03-17T10:05:08Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=damaged","name":"damaged","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=on_hand","name":"on_hand","quantity":15,"updatedAt":"2023-04-13T12:00:52Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=quality_control","name":"quality_control","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=reserved","name":"reserved","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185200631997\u0026name=safety_stock","name":"safety_stock","quantity":0,"updatedAt":null}],"__parentId":"gid:\/\/shopify\/Location\/63590301885"}
+{"__typename":"InventoryLevel","id":"gid:\/\/shopify\/InventoryLevel\/97912455357?inventory_item_id=42185218719933","item":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42185218719933"},"updatedAt":"2023-04-13T12:09:45Z","quantities":[{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=available","name":"available","quantity":8,"updatedAt":"2023-04-13T12:09:45Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=incoming","name":"incoming","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=committed","name":"committed","quantity":2,"updatedAt":"2023-04-13T12:09:45Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=damaged","name":"damaged","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=on_hand","name":"on_hand","quantity":10,"updatedAt":"2023-04-13T12:09:45Z"},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=quality_control","name":"quality_control","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=reserved","name":"reserved","quantity":0,"updatedAt":null},{"id":"gid:\/\/shopify\/InventoryQuantity\/97912455357?inventory_item_id=42185218719933\u0026name=safety_stock","name":"safety_stock","quantity":0,"updatedAt":null}],"__parentId":"gid:\/\/shopify\/Location\/63590301885"}\n"""
 
 
 @pytest.fixture
@@ -570,11 +577,11 @@ def discount_codes_jsonl_content_example():
 
 @pytest.fixture
 def collections_jsonl_content_example():
-    return """{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/270889287869","handle":"frontpage","title":"Home page","updatedAt":"2023-09-05T14:06:59Z","bodyHtml":"updated_mon_24.04.2023","sortOrder":"BEST_SELLING","templateSuffix":"","productsCount":1}
+    return """{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/270889287869","handle":"frontpage","title":"Home page","updatedAt":"2023-09-05T14:06:59Z","bodyHtml":"updated_mon_24.04.2023","sortOrder":"BEST_SELLING","templateSuffix":"","productsCount":{"products_count": 1}}
 {"__typename":"CollectionPublication","publishedAt":"2021-06-23T01:00:25Z","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
 {"__typename":"CollectionPublication","publishedAt":"2021-08-18T09:39:34Z","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
 {"__typename":"CollectionPublication","publishedAt":"2023-04-20T11:12:24Z","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
-{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/273278566589","handle":"test-collection","title":"Test Collection","updatedAt":"2023-09-05T14:12:04Z","bodyHtml":"updated_mon_24.04.2023","sortOrder":"BEST_SELLING","templateSuffix":"","productsCount":26}
+{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/273278566589","handle":"test-collection","title":"Test Collection","updatedAt":"2023-09-05T14:12:04Z","bodyHtml":"updated_mon_24.04.2023","sortOrder":"BEST_SELLING","templateSuffix":"","productsCount":{"products_count": 26}}
 {"__typename":"CollectionPublication","publishedAt":"2021-07-19T14:02:54Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}
 {"__typename":"CollectionPublication","publishedAt":"2021-08-18T09:39:34Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}
 {"__typename":"CollectionPublication","publishedAt":"2023-04-20T11:12:24Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}\n"""
@@ -1041,22 +1048,136 @@ def inventory_levels_response_expected_result():
     return [
         {
             "id": "63590301885|42185200631997",
-            "available": 15,
             "updated_at": "2023-04-13T12:00:55+00:00",
+            "quantities": [
+                {
+                    "id": 97912455357,
+                    "name": "available",
+                    "quantity": 15,
+                    "updatedAt": "2023-04-13T12:00:55+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=available"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "incoming",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=incoming"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "committed",
+                    "quantity": 0,
+                    "updatedAt": "2022-03-17T10:05:08+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=committed"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "damaged",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=damaged"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "on_hand",
+                    "quantity": 15,
+                    "updatedAt": "2023-04-13T12:00:52+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=on_hand"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "quality_control",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=quality_control"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "reserved",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=reserved"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "safety_stock",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185200631997&name=safety_stock"
+                }
+            ],
             "admin_graphql_api_id": "gid://shopify/InventoryLevel/97912455357?inventory_item_id=42185200631997",
             "inventory_item_id": 42185200631997,
             "location_id": 63590301885,
-            "shop_url": "test_shop",
+            "shop_url": "test_shop"
         },
         {
             "id": "63590301885|42185218719933",
-            "available": 8,
             "updated_at": "2023-04-13T12:09:45+00:00",
+            "quantities": [
+                {
+                    "id": 97912455357,
+                    "name": "available",
+                    "quantity": 8,
+                    "updatedAt": "2023-04-13T12:09:45+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=available"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "incoming",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=incoming"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "committed",
+                    "quantity": 2,
+                    "updatedAt": "2023-04-13T12:09:45+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=committed"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "damaged",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=damaged"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "on_hand",
+                    "quantity": 10,
+                    "updatedAt": "2023-04-13T12:09:45+00:00",
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=on_hand"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "quality_control",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=quality_control"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "reserved",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=reserved"
+                },
+                {
+                    "id": 97912455357,
+                    "name": "safety_stock",
+                    "quantity": 0,
+                    "updatedAt": None,
+                    "admin_graphql_api_id": "gid://shopify/InventoryQuantity/97912455357?inventory_item_id=42185218719933&name=safety_stock"
+                }
+            ],
             "admin_graphql_api_id": "gid://shopify/InventoryLevel/97912455357?inventory_item_id=42185218719933",
             "inventory_item_id": 42185218719933,
             "location_id": 63590301885,
-            "shop_url": "test_shop",
-        },
+            "shop_url": "test_shop"
+        }
     ]
 
 

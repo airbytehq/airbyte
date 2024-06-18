@@ -18,9 +18,21 @@ import io.airbyte.cdk.integrations.util.HostPortResolver.resolveHost
 import io.airbyte.cdk.integrations.util.HostPortResolver.resolvePort
 import io.airbyte.cdk.testutils.TestDatabase
 import io.airbyte.commons.json.Jsons
+import io.airbyte.commons.util.MoreIterators
+import io.airbyte.protocol.models.Field
+import io.airbyte.protocol.models.JsonSchemaType
+import io.airbyte.protocol.models.v0.AirbyteCatalog
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.v0.CatalogHelpers
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.JDBCType
+import java.util.function.Consumer
 import java.util.function.Supplier
 import java.util.stream.Stream
 import org.jooq.SQLDialect
@@ -54,6 +66,60 @@ internal class DefaultJdbcSourceAcceptanceTest :
 
     public override fun supportsSchemas(): Boolean {
         return true
+    }
+
+    // Default test source does not support RFR.
+    public override fun supportResumeableFullRefreshWithoutPk(): Boolean? {
+        return false
+    }
+
+    override fun getCatalog(defaultNamespace: String?): AirbyteCatalog {
+        return AirbyteCatalog()
+            .withStreams(
+                mutableListOf(
+                    CatalogHelpers.createAirbyteStream(
+                            TABLE_NAME,
+                            defaultNamespace,
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
+                        .withSupportedSyncModes(
+                            java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                        )
+                        .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID)))
+                        .withIsResumable(false),
+                    CatalogHelpers.createAirbyteStream(
+                            TABLE_NAME_WITHOUT_PK,
+                            defaultNamespace,
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
+                        .withSupportedSyncModes(
+                            java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                        )
+                        .withSourceDefinedPrimaryKey(emptyList())
+                        .withIsResumable(false),
+                    CatalogHelpers.createAirbyteStream(
+                            TABLE_NAME_COMPOSITE_PK,
+                            defaultNamespace,
+                            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
+                        .withSupportedSyncModes(
+                            java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                        )
+                        .withSourceDefinedPrimaryKey(
+                            java.util.List.of(
+                                java.util.List.of(COL_FIRST_NAME),
+                                java.util.List.of(COL_LAST_NAME),
+                            ),
+                        )
+                        .withIsResumable(false),
+                ),
+            )
     }
 
     fun getConfigWithConnectionProperties(
@@ -194,6 +260,134 @@ internal class DefaultJdbcSourceAcceptanceTest :
                 defaultParameters
             )
         }
+    }
+
+    @Throws(Exception::class)
+    override fun incrementalCursorCheck(
+        initialCursorField: String?,
+        cursorField: String,
+        initialCursorValue: String?,
+        endCursorValue: String?,
+        expectedRecordMessages: List<AirbyteMessage>,
+        airbyteStream: ConfiguredAirbyteStream
+    ) {
+        airbyteStream.syncMode = SyncMode.INCREMENTAL
+        airbyteStream.cursorField = java.util.List.of(cursorField)
+        airbyteStream.destinationSyncMode = DestinationSyncMode.APPEND
+
+        val configuredCatalog =
+            ConfiguredAirbyteCatalog().withStreams(java.util.List.of(airbyteStream))
+
+        val dbStreamState = buildStreamState(airbyteStream, initialCursorField, initialCursorValue)
+
+        val actualMessages =
+            MoreIterators.toList(
+                source()!!.read(
+                    config(),
+                    configuredCatalog,
+                    Jsons.jsonNode(createState(java.util.List.of(dbStreamState))),
+                ),
+            )
+
+        setEmittedAtToNull(actualMessages)
+
+        val expectedStreams =
+            java.util.List.of(buildStreamState(airbyteStream, cursorField, endCursorValue))
+
+        val expectedMessages: MutableList<AirbyteMessage> = ArrayList(expectedRecordMessages)
+        expectedMessages.addAll(
+            createExpectedTestMessages(expectedStreams, expectedRecordMessages.size.toLong()),
+        )
+
+        setTraceEmittedAtToNull(actualMessages)
+        setTraceEmittedAtToNull(expectedMessages)
+        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
+        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+    }
+
+    override open fun assertStreamStatusTraceMessageIndex(
+        idx: Int,
+        allMessages: List<AirbyteMessage>,
+        expectedStreamStatus: AirbyteStreamStatusTraceMessage
+    ) {
+        // no-op
+    }
+
+    @Test
+    @Throws(Exception::class)
+    override fun testReadOneColumn() {
+        val catalog =
+            CatalogHelpers.createConfiguredAirbyteCatalog(
+                streamName(),
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.NUMBER),
+            )
+        val actualMessages = MoreIterators.toList(source().read(config(), catalog, null))
+
+        setEmittedAtToNull(actualMessages)
+
+        val expectedMessages: MutableList<AirbyteMessage> = airbyteMessagesReadOneColumn
+
+        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
+        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    override fun testReadOneTableIncrementallyTwice() {
+        val config = config()
+        val namespace = defaultNamespace
+        val configuredCatalog = getConfiguredCatalogWithOneStream(namespace)
+        configuredCatalog.streams.forEach(
+            Consumer { airbyteStream: ConfiguredAirbyteStream ->
+                airbyteStream.syncMode = SyncMode.INCREMENTAL
+                airbyteStream.cursorField = java.util.List.of(COL_ID)
+                airbyteStream.destinationSyncMode = DestinationSyncMode.APPEND
+            },
+        )
+
+        val actualMessagesFirstSync =
+            MoreIterators.toList(
+                source()!!.read(
+                    config,
+                    configuredCatalog,
+                    createEmptyState(streamName(), namespace),
+                ),
+            )
+
+        val stateAfterFirstSyncOptional =
+            actualMessagesFirstSync
+                .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
+                .first()
+
+        executeStatementReadIncrementallyTwice()
+
+        val actualMessagesSecondSync =
+            MoreIterators.toList(
+                source()!!.read(
+                    config,
+                    configuredCatalog,
+                    extractState(stateAfterFirstSyncOptional),
+                ),
+            )
+
+        Assertions.assertEquals(
+            2,
+            actualMessagesSecondSync
+                .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
+                .count()
+                .toInt(),
+        )
+        val expectedMessages: MutableList<AirbyteMessage> =
+            getExpectedAirbyteMessagesSecondSync(namespace)
+
+        setEmittedAtToNull(actualMessagesSecondSync)
+
+        Assertions.assertEquals(expectedMessages.size, actualMessagesSecondSync.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualMessagesSecondSync))
+        Assertions.assertTrue(actualMessagesSecondSync.containsAll(expectedMessages))
     }
 
     companion object {

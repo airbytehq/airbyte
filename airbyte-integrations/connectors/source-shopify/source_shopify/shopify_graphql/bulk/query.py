@@ -742,7 +742,7 @@ class Collection(ShopifyBulkQuery):
         Field(name="publications", fields=publications_fields),
         Field(name="sortOrder"),
         Field(name="templateSuffix"),
-        Field(name="productsCount"),
+        Field(name="productsCount", fields=[Field(name="count", alias="products_count")]),
     ]
 
     record_composition = {
@@ -764,6 +764,8 @@ class Collection(ShopifyBulkQuery):
         # convert dates from ISO-8601 to RFC-3339
         record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "published_at")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        # unnest `product_count` to the root lvl
+        record["products_count"] = record.get("productsCount", {}).get("products_count")
         # remove leftovers
         record.pop(BULK_PARENT_KEY, None)
         yield record
@@ -867,6 +869,149 @@ class CustomerAddresses(ShopifyBulkQuery):
                     # names to snake
                     customer_address = self.tools.fields_names_to_snake_case(customer_address)
                     yield customer_address
+
+
+class CustomerJourney(ShopifyBulkQuery):
+    """
+    Output example to BULK query `customer_journey_summary` from `orders` with `filter query` by `updated_at` sorted `ASC`:
+        {
+            orders(query: "updated_at:>='2020-01-20T00:00:00+00:00' AND updated_at:<'2024-04-25T00:00:00+00:00'", sortKey:UPDATED_AT) {
+                edges {
+                    node {
+                        __typename
+                        order_id: id
+                        createdAt
+                        updatedAt
+                        customerJourneySummary {
+                            ready
+                            momentsCount {
+                                count
+                                precision
+                            }
+                            customerOrderIndex
+                            daysToConversion
+                            firstVisit {
+                                id
+                                landingPage
+                                landingPageHtml
+                                occurredAt
+                                referralCode
+                                referrerUrl
+                                source
+                                sourceType
+                                sourceDescription
+                                utmParameters {
+                                    campaign
+                                    content
+                                    medium
+                                    source
+                                    term
+                                }
+                            }
+                            lastVisit {
+                                id
+                                landingPage
+                                landingPageHtml
+                                occurredAt
+                                referralCode
+                                referrerUrl
+                                source
+                                sourceType
+                                sourceDescription
+                                utmParameters {
+                                    campaign
+                                    content
+                                    medium
+                                    source
+                                    term
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """
+
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    visit_fields: List[Field] = [
+        "id",
+        "landingPage",
+        "landingPageHtml",
+        "occurredAt",
+        "referralCode",
+        "referrerUrl",
+        "source",
+        "sourceType",
+        "sourceDescription",
+        Field(name="utmParameters", fields=["campaign", "content", "medium", "source", "term"]),
+    ]
+    customer_journey_summary_fields: List[Field] = [
+        "ready",
+        Field(name="momentsCount", fields=["count", "precision"]),
+        "customerOrderIndex",
+        "daysToConversion",
+        Field(name="firstVisit", fields=visit_fields),
+        Field(name="lastVisit", fields=visit_fields),
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        Field(name="id", alias="order_id"),
+        "createdAt",
+        "updatedAt",
+        Field(name="customerJourneySummary", fields=customer_journey_summary_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+    }
+
+    def process_visit(
+        self,
+        visit_data: Mapping[str, Any],
+    ) -> MutableMapping[str, Any]:
+        # save the id before it's resolved
+        visit_data["admin_graphql_api_id"] = visit_data.get("id")
+        # resolve the order_id to str
+        visit_data["id"] = self.tools.resolve_str_id(visit_data.get("id"))
+        # convert dates from ISO-8601 to RFC-3339
+        visit_data["occurredAt"] = self.tools.from_iso8601_to_rfc3339(visit_data, "occurredAt")
+        # cast field names to snake_case
+        visit_data = self.tools.fields_names_to_snake_case(visit_data)
+        return visit_data
+
+    def process_customer_journey(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        customer_journey_summary = record.get("customerJourneySummary", {})
+        if customer_journey_summary:
+            # process first, last visit data
+            first_visit = customer_journey_summary.get("firstVisit", {})
+            last_visit = customer_journey_summary.get("lastVisit", {})
+            customer_journey_summary["firstVisit"] = self.process_visit(first_visit) if first_visit else {}
+            customer_journey_summary["lastVisit"] = self.process_visit(last_visit) if last_visit else {}
+        # cast field names to snake_case
+        customer_journey_summary = self.tools.fields_names_to_snake_case(customer_journey_summary)
+        return customer_journey_summary
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
+        """
+        Defines how to process collected components.
+        """
+
+        # save the id before it's resolved
+        record["admin_graphql_api_id"] = record.get("order_id")
+        # resolve the order_id to str
+        record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
+        # convert dates from ISO-8601 to RFC-3339
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        # process customerJourneySummary property
+        record["customerJourneySummary"] = self.process_customer_journey(record)
+        # cast field names to snake_case
+        record = self.tools.fields_names_to_snake_case(record)
+        yield record
 
 
 class InventoryItem(ShopifyBulkQuery):
@@ -988,17 +1133,60 @@ class InventoryLevel(ShopifyBulkQuery):
         "new_record": "InventoryLevel",
     }
 
+    # quantity related fields and filtering options
+    quantities_names_filter: List[str] = [
+        '"available"',
+        '"incoming"',
+        '"committed"',
+        '"damaged"',
+        '"on_hand"',
+        '"quality_control"',
+        '"reserved"',
+        '"safety_stock"',
+    ]
+    # quantities fields
+    quantities_fields: List[str] = [
+        "id",
+        "name",
+        "quantity",
+        "updatedAt",
+    ]
+
     inventory_levels_fields: List[Field] = [
         "__typename",
         "id",
-        Field(name="available"),
         Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
         Field(name="updatedAt"),
     ]
 
+    def _quantities_query(self) -> Query:
+        """
+        Defines the `quantities` nested query.
+        """
+
+        return Query(
+            name="quantities",
+            arguments=[Argument(name="names", value=self.quantities_names_filter)],
+            fields=self.quantities_fields,
+        )
+
+    def _process_quantities(self, quantities: Iterable[MutableMapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        if quantities:
+            for quantity in quantities:
+                # save the original string id
+                quantity["admin_graphql_api_id"] = quantity.get("id")
+                # resolve the int id from str id
+                quantity["id"] = self.tools.resolve_str_id(quantity.get("id"))
+                # convert dates from ISO-8601 to RFC-3339
+                quantity["updatedAt"] = self.tools.from_iso8601_to_rfc3339(quantity, "updatedAt")
+            return quantities
+        return []
+
     def query(self, filter_query: Optional[str] = None) -> Query:
+        # construct the `quantities` query piece
+        quantities: List[Query] = [self._quantities_query()]
         # build the nested query first with `filter_query` to have the incremental syncs
-        inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields, filter_query)]
+        inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields + quantities, filter_query)]
         # build the main query around previous
         # return the constructed query operation
         return self.build(
@@ -1012,7 +1200,9 @@ class InventoryLevel(ShopifyBulkQuery):
         """
         Defines how to process collected components.
         """
-
+        # process quantities
+        quantities = record.get("quantities", [])
+        record["quantities"] = self._process_quantities(quantities)
         # resolve `inventory_item_id` to root lvl +  resolve to int
         record["inventory_item_id"] = self.tools.resolve_str_id(record.get("item", {}).get("inventory_item_id"))
         # add `location_id` from `__parentId`
@@ -1625,11 +1815,11 @@ class Product(ShopifyBulkQuery):
             option["product_id"] = product_id if product_id else None
         return options
 
-    def _unnest_tags(self, record: MutableMapping[str, Any]) -> str:
+    def _unnest_tags(self, record: MutableMapping[str, Any]) -> Optional[str]:
         # we keep supporting 1 tag only, as it was for the REST stream,
         # to avoid breaking change.
         tags = record.get("tags", [])
-        return tags[0] if len(tags) > 0 else None
+        return ", ".join(tags) if tags else None
 
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """

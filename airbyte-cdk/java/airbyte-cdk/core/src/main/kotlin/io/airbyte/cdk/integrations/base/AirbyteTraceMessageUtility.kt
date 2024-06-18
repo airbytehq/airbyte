@@ -96,7 +96,7 @@ object AirbyteTraceMessageUtility {
         outputRecordCollector.accept(message)
     }
 
-    private fun makeErrorTraceAirbyteMessage(
+    fun makeErrorTraceAirbyteMessage(
         e: Throwable,
         displayMessage: String?,
         failureType: AirbyteErrorTraceMessage.FailureType
@@ -126,7 +126,7 @@ object AirbyteTraceMessageUtility {
             )
     }
 
-    private fun makeStreamStatusTraceAirbyteMessage(
+    fun makeStreamStatusTraceAirbyteMessage(
         airbyteStreamStatusHolder: AirbyteStreamStatusHolder
     ): AirbyteMessage {
         return makeAirbyteMessageFromTraceMessage(airbyteStreamStatusHolder.toTraceMessage())
