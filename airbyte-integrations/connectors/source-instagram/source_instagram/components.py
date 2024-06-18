@@ -30,9 +30,15 @@ def get_http_response(path: str, request_params: Dict, config: Config) -> Option
 class InstagramClearUrlTransformation(RecordTransformation):
     def transform(self, record: MutableMapping[str, Any], config: Optional[Config] = None, **kwargs) -> MutableMapping[str, Any]:
         """
-        This function removes the _nc_rid parameter from the video url and ccb from profile_picture_url for users.
-        _nc_rid is generated every time a new one and ccb can change its value, and tests fail when checking for identity.
-        This does not spoil the link, it remains correct and by clicking on it you can view the video or see picture.
+        Transforms the given record by removing specific query parameters from certain URLs to ensure consistency
+        and prevent test failures due to dynamic parameters.
+
+        Specifically, this function removes the `_nc_rid` parameter from the `media_url` and the `ccb` parameter
+        from the `profile_picture_url`. The `_nc_rid` parameter is generated anew each time and the `ccb` parameter
+        can change its value, which can cause tests to fail when checking for identity.
+
+        Removing these parameters does not invalidate the URLs. The links remain correct and functional, allowing
+        users to view the video or see the picture.
         """
         if record.get("media_url"):
             record["media_url"] = remove_params_from_url(record["media_url"], params=["_nc_rid"])
@@ -46,9 +52,11 @@ class InstagramClearUrlTransformation(RecordTransformation):
 class InstagramMediaChildrenTransformation(RecordTransformation):
     def transform(self, record: MutableMapping[str, Any], config: Optional[Config] = None, **kwargs) -> MutableMapping[str, Any]:
         """
-        Children field is an array of Media ids which with common Media parent, this transformation is intent to fetch information
-        from the /media endpoint for each one of such ids and then update the array.
-        e.g.
+        Transforms the 'children' field in the record, which is an array of Media IDs with a common Media parent.
+        This transformation fetches detailed information for each Media ID from the /media endpoint and updates the 'children' array
+        with this information.
+
+        Example input:
             "children": {
                   "data": [
                     {
@@ -60,7 +68,7 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
                   ]
                 }
 
-        after fetch 7608776690540/ and 2896800415362/media:
+        After fetching information for each Media ID:
             children:
                 [
                   {
@@ -103,7 +111,8 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
     """
     The transformation flattens a nested array of breakdown results located at total_value.breakdowns[0].results into a single object
     (dictionary). In this transformation, each key-value pair in the resulting object represents a dimension and its corresponding value.
-    e.g. it changes:
+
+    Example input:
         {
         "total_value": {
           "breakdowns": [
@@ -128,14 +137,16 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
             }
           ]
         },
-        "id": "17841457631192237/insights/follower_demographics/lifetime"
+        "id": "id/insights/follower_demographics/lifetime"
       }
-    to:
+
+    Example output:
         {
         "value": {
           "London, England": 263,
           "Sydney, New South Wales": 467,
         }
+    The nested 'results' array is transformed into a 'value' dictionary where each key is a dimension and each value is the corresponding value.
     """
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
