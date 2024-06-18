@@ -3,27 +3,30 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.0.5"
-name = "source-mailchimp"
-description = "Source implementation for Mailchimp."
+version = "0.2.2"
+name = "source-google-directory"
+description = "Source implementation for Google Directory."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/mailchimp"
+documentation = "https://docs.airbyte.com/integrations/sources/google-directory"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
 [[tool.poetry.packages]]
-include = "source_mailchimp"
+include = "source_google_directory"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "*"
-pytest = "==6.2.5"
+google-auth-oauthlib = "==0.4.2"
+google-auth-httplib2 = "==0.0.4"
+google-api-python-client = "==1.12.8"
+airbyte-cdk = "0.80.0"
+backoff = "==1.10.0"
 
 [tool.poetry.scripts]
-source-mailchimp = "source_mailchimp.run:run"
+source-google-directory = "source_google_directory.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-freezegun = "^1.4.0"
+pytest = "^6.1"
