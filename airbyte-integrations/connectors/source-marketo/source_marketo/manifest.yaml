@@ -76,7 +76,6 @@ definitions:
 
   base_semi_incremental_stream:
     $ref: "#/definitions/base_full_refresh_stream"
-    retriever: "#/definitions/semi_incremental_retriever"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "createdAt"
