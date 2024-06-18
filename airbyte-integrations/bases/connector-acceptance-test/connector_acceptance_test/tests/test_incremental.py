@@ -337,7 +337,7 @@ class TestIncremental(BaseTest):
                 else:
                     assert self._check_cursor_by_char_types(
                         actual_cursor_value, future_state_cursor_value
-                    ), "Actual and future state formats do not match. Actual cursor value: {actual_cursor_value}, future cursor value: {future_state_cursor_value}"
+                    ), f"Actual and future state formats do not match. Actual cursor value: {actual_cursor_value}, future cursor value: {future_state_cursor_value}"
 
     def get_next_state_input(
         self, state_message: AirbyteStateMessage, stream_name_to_per_stream_state: MutableMapping
