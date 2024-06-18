@@ -508,6 +508,11 @@ class Stream(ABC):
 
     @property
     def configured_json_schema(self) -> Optional[Dict[str, Any]]:
+        """
+        This property is set from the read method.
+
+        :return Optional[Dict]: JSON schema from configured catalog if provided, otherwise None.
+        """
         return self._configured_json_schema
 
     @configured_json_schema.setter
