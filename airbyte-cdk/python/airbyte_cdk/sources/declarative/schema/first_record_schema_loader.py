@@ -64,7 +64,7 @@ def map_value_to_schema_dtype(value: Any) -> Dict[str, Union[Dict[str, Any], str
     elif isinstance(value, str):
         return {"type": ["string", "null"]}
     elif isinstance(value, dict):
-        nested_schema: Dict[str, Union[Dict[str, Any], str, List[Any]]] = {"properties": {}, "type": ["object", "null"]}
+        nested_schema: Dict[str, Any] = {"properties": {}, "type": ["object", "null"]}
         for k, v in value.items():
             nested_schema["properties"][k] = map_value_to_schema_dtype(v)
         return nested_schema
