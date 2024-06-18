@@ -6,17 +6,17 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 3.1.0
+  dockerImageTag: 3.3.2
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
   icon: facebook.svg
   license: ELv2
-  maxSecondsBetweenMessages: 3600
+  maxSecondsBetweenMessages: 86400
   name: Facebook Marketing
   remoteRegistries:
     pypi:

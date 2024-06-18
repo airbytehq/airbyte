@@ -6,11 +6,11 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.3.9
+  dockerImageTag: 5.4.3
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   githubIssueLabel: source-stripe
@@ -36,6 +36,12 @@ data:
       5.0.0:
         message: Version 5.0.0 introduces fixes for the `CheckoutSessions`, `CheckoutSessionsLineItems` and `Refunds` streams. The cursor field is changed for the `CheckoutSessionsLineItems` and `Refunds` streams. This will prevent data loss during incremental syncs. Also, the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream schemas have been updated.
         upgradeDeadline: "2023-12-11"
+      5.4.0:
+        message: Version 5.4.0 introduces fixes for the `Refunds` streams. The `Refunds`, which previously was `incremental` on the `creation date`, now tracks updates as well. In order to do that, the cursor field needs to be updated and a `resetting` is required to get the updates.
+        upgradeDeadline: "2024-07-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["refunds"]
   suggestedStreams:
     streams:
       - customers
