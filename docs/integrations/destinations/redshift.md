@@ -15,7 +15,7 @@ This Redshift destination connector has two replication strategies:
    [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). **Not recommended
    for production workloads as this does not scale well**.
 
-For INSERT strategy:
+### For INSERT strategy:
 
 - **Host**
 - **Port**
@@ -35,7 +35,7 @@ For INSERT strategy:
 Airbyte automatically picks an approach depending on the given configuration - if S3 configuration
 is present, Airbyte will use the COPY strategy and vice versa.
 
-For COPY strategy:
+### For COPY strategy:
 
 - **S3 Bucket Name**
   - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to
@@ -244,6 +244,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.0   | 2024-06-04 | [38886](https://github.com/airbytehq/airbyte/pull/38886)   | Remove standard inserts mode                                                                                                                                                                                     |
 | 2.6.4   | 2024-05-31 | [38825](https://github.com/airbytehq/airbyte/pull/38825)   | Adopt CDK 0.35.15                                                                                                                                                                                                |
 | 2.6.3   | 2024-05-31 | [38803](https://github.com/airbytehq/airbyte/pull/38803)   | Source auto-conversion to Kotlin                                                                                                                                                                                 |
 | 2.6.2   | 2024-05-14 | [38189](https://github.com/airbytehq/airbyte/pull/38189)   | adding an option to DROP CASCADE on resets                                                                                                                                                                       |

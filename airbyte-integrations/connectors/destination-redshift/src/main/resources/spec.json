@@ -225,17 +225,6 @@
                 "order": 7
               }
             }
-          },
-          {
-            "title": "Standard",
-            "required": ["method"],
-            "description": "<i>(not recommended)</i> Direct loading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In all other cases, you should use S3 uploading.",
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Standard"
-              }
-            }
           }
         ]
       },
