@@ -70,6 +70,8 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -860,6 +862,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         ctidStateManager.setFileNodeHandler(fileNodeHandler);
       }
     }
+  }
+
+  @Override
+  protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), ctidStateManager);
   }
 
   @Override
