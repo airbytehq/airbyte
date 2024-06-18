@@ -148,11 +148,12 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def _http_get(self, url, params=None, headers=None):
         """Make a GET request to the given URL and return the response as a JSON."""
+
         response = self._session.get(url, params=params, headers=headers)
         response.raise_for_status()
         return response.json()
 
-    def _verify_report_status(self, report: dict, stream_slice: Mapping[str, Any]) -> tuple:
+    def _verify_report_status(self, report: ReportInfo, stream_slice: Mapping[str, Any]) -> tuple:
         """Verify the report status and return it along with the report URL."""
         api_path = self._build_api_path(stream_slice["parent"]["id"])
         response_data = self._http_get(
@@ -165,8 +166,13 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         return report_status.report_status, report_status.url
 
     def _fetch_report_data(self, url: str) -> dict:
-        """Fetch the report data from the given URL."""
-        return self._http_get(url)
+        """
+        Fetch the report data from the given URL.
+        Session is not used here because we need to ignore Bearer Authenticator.
+        """
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
