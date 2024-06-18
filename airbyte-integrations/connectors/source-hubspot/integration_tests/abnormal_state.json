@@ -189,21 +189,21 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "contacts_property_history" },
-      "stream_state": { "timestamp": 7945393076000 }
+      "stream_state": { "timestamp": "7945393076000" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "companies_property_history" },
-      "stream_state": { "timestamp": 7945393076000 }
+      "stream_state": { "timestamp": "7945393076000" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "deals_property_history" },
-      "stream_state": { "timestamp": 7945393076000 }
+      "stream_state": { "timestamp": "7945393076000" }
     }
   }
 ]
