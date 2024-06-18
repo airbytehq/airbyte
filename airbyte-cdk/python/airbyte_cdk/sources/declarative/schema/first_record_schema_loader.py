@@ -46,7 +46,7 @@ def is_date(string: str) -> bool:
         return False
 
 
-def map_value_to_schema_dtype(value: Any) -> Dict[str, Union[Dict[str, Any], str, List]]:
+def map_value_to_schema_dtype(value: Any) -> Dict[str, Union[Dict[str, Any], str, List[Any]]]:
     if isinstance(value, bool):
         return {"type": ["boolean", "null"]}
     elif isinstance(value, int) or isinstance(value, float):
@@ -64,14 +64,16 @@ def map_value_to_schema_dtype(value: Any) -> Dict[str, Union[Dict[str, Any], str
     elif isinstance(value, str):
         return {"type": ["string", "null"]}
     elif isinstance(value, dict):
-        nested_schema = {"properties": {}, "type": ["object", "null"]}
+        nested_schema: Dict[str, Union[Dict[str, Any], str, List[Any]]] = {"properties": {}, "type": ["object", "null"]}
         for k, v in value.items():
             nested_schema["properties"][k] = map_value_to_schema_dtype(v)
         return nested_schema
+    else:
+        raise TypeError(f"Unsupported value type: {type(value)}")
 
 
 def convert_record_to_schema(record: Dict[str, Any]) -> Dict[str, Any]:
-    generated_schema = {
+    generated_schema: Dict[str, Any] = {
         "$schema": "http://json-schema.org/schema#",
         "additionalProperties": True,
         "properties": {},
