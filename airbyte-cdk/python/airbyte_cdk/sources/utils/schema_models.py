@@ -81,4 +81,4 @@ class BaseSchemaModel(BaseModel):
         """We're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
         expand_refs(schema)
-        return schema
+        return schema  # type: ignore[no-any-return]

@@ -23,4 +23,4 @@ class BaseConfig(BaseModel):
         rename_key(schema, old_key="anyOf", new_key="oneOf")  # UI supports only oneOf
         expand_refs(schema)
         schema.pop("description", None)  # description added from the docstring
-        return schema
+        return schema  # type: ignore[no-any-return]
