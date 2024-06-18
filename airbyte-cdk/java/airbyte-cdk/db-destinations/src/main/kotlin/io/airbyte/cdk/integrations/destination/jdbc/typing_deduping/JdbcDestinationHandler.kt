@@ -9,10 +9,10 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
-import io.airbyte.commons.concurrency.CompletableFutures
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrThrow
 import io.airbyte.commons.exceptions.SQLRuntimeException
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
@@ -22,17 +22,33 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
+import kotlin.collections.HashMap
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.associate
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.emptyMap
+import kotlin.collections.filter
+import kotlin.collections.forEach
+import kotlin.collections.getValue
+import kotlin.collections.iterator
+import kotlin.collections.joinToString
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.none
+import kotlin.collections.reduce
+import kotlin.collections.set
+import kotlin.collections.sortedBy
+import kotlinx.coroutines.*
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.DataType
 import org.jooq.SQLDialect
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
-import org.jooq.impl.DSL.field
-import org.jooq.impl.DSL.quotedName
-import org.jooq.impl.DSL.table
+import org.jooq.impl.DSL.*
 import org.jooq.impl.SQLDataType
 
 private val LOGGER = KotlinLogging.logger {}
@@ -81,11 +97,12 @@ abstract class JdbcDestinationHandler<DestinationState>(
     }
 
     @Throws(Exception::class)
-    private fun getInitialRawTableState(id: StreamId): InitialRawTableStatus {
+    private fun getInitialRawTableState(id: StreamId, suffix: String = ""): InitialRawTableStatus {
+        val tableRawName = id.rawName + suffix
         val tableExists =
             jdbcDatabase.executeMetadataQuery { dbmetadata: DatabaseMetaData ->
                 LOGGER.info {
-                    "Retrieving table from Db metadata: $catalogName ${id.rawNamespace} ${id.rawName}"
+                    "Retrieving table from Db metadata: $catalogName ${id.rawNamespace} $tableRawName"
                 }
                 try {
                     getTableFromMetadata(dbmetadata, id).use { table ->
@@ -108,7 +125,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     conn.prepareStatement(
                         dslContext
                             .select(field("MIN(_airbyte_extracted_at)").`as`("min_timestamp"))
-                            .from(DSL.name(id.rawNamespace, id.rawName))
+                            .from(DSL.name(id.rawNamespace, tableRawName))
                             .where(DSL.condition("_airbyte_loaded_at IS NULL"))
                             .sql
                     )
@@ -135,7 +152,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     conn.prepareStatement(
                         dslContext
                             .select(field("MAX(_airbyte_extracted_at)").`as`("min_timestamp"))
-                            .from(DSL.name(id.rawNamespace, id.rawName))
+                            .from(DSL.name(id.rawNamespace, tableRawName))
                             .sql
                     )
                 },
@@ -183,22 +200,11 @@ abstract class JdbcDestinationHandler<DestinationState>(
         streamConfigs: List<StreamConfig>
     ): List<DestinationInitialStatus<DestinationState>> {
         // Use stream n/ns pair because we don't want to build the full StreamId here
-        val destinationStatesFuture =
-            CompletableFuture.supplyAsync {
-                try {
-                    return@supplyAsync getAllDestinationStates()
-                } catch (e: SQLException) {
-                    throw RuntimeException(e)
-                }
-            }
+        val destinationStates = getAllDestinationStates()
+        val states: List<Result<DestinationInitialStatus<DestinationState>>> =
+            streamConfigs.map { runCatching { retrieveState(destinationStates, it) } }
 
-        val initialStates =
-            streamConfigs.map { streamConfig: StreamConfig ->
-                retrieveState(destinationStatesFuture, streamConfig)
-            }
-
-        val states = CompletableFutures.allOf(initialStates).toCompletableFuture().join()
-        return getResultsOrLogAndThrowFirst("Failed to retrieve initial state", states)
+        return getResultsOrThrow("Failed to retrieve initial state", states)
     }
 
     @Throws(SQLException::class)
@@ -294,49 +300,43 @@ abstract class JdbcDestinationHandler<DestinationState>(
     }
 
     private fun retrieveState(
-        destinationStatesFuture:
-            CompletableFuture<Map<AirbyteStreamNameNamespacePair, DestinationState>>,
+        destinationStates: Map<AirbyteStreamNameNamespacePair, DestinationState>,
         streamConfig: StreamConfig?
-    ): CompletionStage<DestinationInitialStatus<DestinationState>> {
-        return destinationStatesFuture.thenApply {
-            destinationStates: Map<AirbyteStreamNameNamespacePair, DestinationState> ->
-            try {
-                val finalTableDefinition = findExistingTable(streamConfig!!.id)
-                val isSchemaMismatch: Boolean
-                val isFinalTableEmpty: Boolean
-                if (finalTableDefinition.isPresent) {
-                    isSchemaMismatch =
-                        !existingSchemaMatchesStreamConfig(streamConfig, finalTableDefinition.get())
-                    isFinalTableEmpty = isFinalTableEmpty(streamConfig.id)
-                } else {
-                    // If the final table doesn't exist, then by definition it doesn't have a schema
-                    // mismatch and has no
-                    // records.
-                    isSchemaMismatch = false
-                    isFinalTableEmpty = true
-                }
-                val initialRawTableState = getInitialRawTableState(streamConfig.id)
-                val destinationState =
-                    destinationStates.getOrDefault(
-                        streamConfig.id.asPair(),
-                        toDestinationState(Jsons.emptyObject())
-                    )
-                return@thenApply DestinationInitialStatus<DestinationState>(
-                    streamConfig,
-                    finalTableDefinition.isPresent,
-                    initialRawTableState,
-                    // TODO fix this
-                    // for now, no JDBC destinations actually do refreshes
-                    // so this is just to make our code compile
-                    InitialRawTableStatus(false, false, Optional.empty()),
-                    isSchemaMismatch,
-                    isFinalTableEmpty,
-                    destinationState
-                )
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            }
+    ): DestinationInitialStatus<DestinationState> {
+        val finalTableDefinition = findExistingTable(streamConfig!!.id)
+        val isSchemaMismatch: Boolean
+        val isFinalTableEmpty: Boolean
+        if (finalTableDefinition.isPresent) {
+            isSchemaMismatch =
+                !existingSchemaMatchesStreamConfig(streamConfig, finalTableDefinition.get())
+            isFinalTableEmpty = isFinalTableEmpty(streamConfig.id)
+        } else {
+            // If the final table doesn't exist, then by definition it doesn't have a schema
+            // mismatch and has no
+            // records.
+            isSchemaMismatch = false
+            isFinalTableEmpty = true
         }
+        val initialRawTableState = getInitialRawTableState(streamConfig.id)
+        val tempRawTableState =
+            getInitialRawTableState(streamConfig.id, AbstractStreamOperation.TMP_TABLE_SUFFIX)
+        val destinationState =
+            destinationStates.getOrDefault(
+                streamConfig.id.asPair(),
+                toDestinationState(Jsons.emptyObject())
+            )
+        return DestinationInitialStatus<DestinationState>(
+            streamConfig,
+            finalTableDefinition.isPresent,
+            initialRawTableState,
+            // TODO fix this
+            // for now, no JDBC destinations actually do refreshes
+            // so this is just to make our code compile
+            tempRawTableState,
+            isSchemaMismatch,
+            isFinalTableEmpty,
+            destinationState
+        )
     }
 
     protected open fun isAirbyteRawIdColumnMatch(existingTable: TableDefinition): Boolean {

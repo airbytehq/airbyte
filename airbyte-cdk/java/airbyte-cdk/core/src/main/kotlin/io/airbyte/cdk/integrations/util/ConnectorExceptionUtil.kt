@@ -117,6 +117,11 @@ object ConnectorExceptionUtil {
         }
     }
 
+    fun <T> getResultsOrThrow(initialMessage: String, results: List<Result<T>>): List<T> {
+        logAllAndThrowFirst(initialMessage, results.mapNotNull { it.exceptionOrNull() })
+        return results.mapNotNull { it.getOrNull() }
+    }
+
     @JvmStatic
     fun <T : Throwable, Result> getResultsOrLogAndThrowFirst(
         initialMessage: String,
