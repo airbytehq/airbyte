@@ -6,9 +6,11 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addStringForDeinterpolation
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
 import java.util.function.Consumer
@@ -31,6 +33,12 @@ constructor(
             // Overwrite null namespaces
             if (it.stream.namespace.isNullOrEmpty()) {
                 it.stream.namespace = defaultNamespace
+            }
+            // The refreshes project is the beginning of the end for OVERWRITE syncs.
+            // The sync mode still exists, but we are fully dependent on min_generation to trigger
+            // overwrite logic.
+            if (it.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+                it.destinationSyncMode = DestinationSyncMode.APPEND
             }
         }
 
@@ -122,9 +130,9 @@ constructor(
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
         if (stream.generationId == null) {
-            stream.generationId = 0
-            stream.minimumGenerationId = 0
-            stream.syncId = 0
+            throw ConfigErrorException(
+                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.0"
+            )
         }
         if (
             stream.minimumGenerationId != 0.toLong() &&
