@@ -6,12 +6,11 @@ import re
 
 import pendulum
 import pytest
-from airbyte_protocol.models import SyncMode
-
 import responses
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import SyncMode
 from conftest import find_stream
 from source_jira.source import SourceJira
 from source_jira.streams import IssueFields, Issues, PullRequests
