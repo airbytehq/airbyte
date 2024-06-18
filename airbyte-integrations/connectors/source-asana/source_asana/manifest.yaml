@@ -75,8 +75,10 @@ definitions:
         field_name: limit
         inject_into: request_parameter
       pagination_strategy:
-        type: OffsetIncrement
+        type: CursorPagination
         page_size: 100
+        cursor_value: '{{ response.get("next_page", {}).get("offset", "") }}'
+        stop_condition: '{{ not response.get("next_page", {}) }}'
     requester:
       $ref: "#/definitions/requester"
 
