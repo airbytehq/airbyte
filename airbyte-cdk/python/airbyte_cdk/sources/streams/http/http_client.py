@@ -33,6 +33,23 @@ from requests.auth import AuthBase
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
+class MessageRepresentationAirbyteTracedErrors(AirbyteTracedException):
+    """
+    Before the migration to the HttpClient in low-code, the exception raised was
+    [ReadException](https://github.com/airbytehq/airbyte/blob/8fdd9818ec16e653ba3dd2b167a74b7c07459861/airbyte-cdk/python/airbyte_cdk/sources/declarative/requesters/http_requester.py#L566).
+    This has been moved to a AirbyteTracedException. The printing on this is questionable (AirbyteTracedException string representation
+    shows the internal_message and not the message). We have already discussed moving the AirbyteTracedException string representation to
+    `message` but the impact is unclear and hard to quantify so we will do it here only for now.
+    """
+
+    def __str__(self) -> str:
+        if self.message:
+            return self.message
+        elif self.internal_message:
+            return self.internal_message
+        return ""
+
+
 class HttpClient:
 
     _DEFAULT_MAX_RETRY: int = 5
@@ -240,7 +257,7 @@ class HttpClient:
             else:
                 error_message = f"'{request.method}' request to '{request.url}' failed with exception: '{exc}'"
 
-            raise AirbyteTracedException(
+            raise MessageRepresentationAirbyteTracedErrors(
                 internal_message=error_message,
                 message=error_resolution.error_message or error_message,
                 failure_type=error_resolution.failure_type,
