@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-kafka
   githubIssueLabel: source-kafka
   icon: kafka.svg
