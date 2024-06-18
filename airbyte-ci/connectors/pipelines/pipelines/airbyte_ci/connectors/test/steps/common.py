@@ -475,7 +475,7 @@ class LiveTests(Step):
                 "poetry",
                 "run",
                 "pytest",
-                "src/live_tests/regression_tests",
+                "src/live_tests",
                 "--connector-image",
                 self.connector_image,
                 "--connection-id",
