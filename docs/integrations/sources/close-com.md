@@ -109,6 +109,8 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.5.2   | 2024-06-15 | [39477](https://github.com/airbytehq/airbyte/pull/39477) | Format source, delete requirements.txt                                                                                          |
+| 0.5.1   | 2024-05-20 | [38391](https://github.com/airbytehq/airbyte/pull/38391) | [autopull] base image + poetry + up_to_date                                                            |
 | 0.5.0   | 2023-11-30 | [32984](https://github.com/airbytehq/airbyte/pull/32984) | Add support for custom fields                                                                          |
 | 0.4.3   | 2023-10-28 | [31534](https://github.com/airbytehq/airbyte/pull/31534) | Fixed Email Activities Stream Pagination                                                               |
 | 0.4.2   | 2023-08-08 | [29206](https://github.com/airbytehq/airbyte/pull/29206) | Fixed the issue with `DatePicker` format for `start date`                                              |
