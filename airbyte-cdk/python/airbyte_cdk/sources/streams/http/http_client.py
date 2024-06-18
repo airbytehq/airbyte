@@ -147,7 +147,7 @@ class HttpClient:
 
         return prepared_request
 
-    @cached_property
+    @property
     def _max_retries(self) -> int:
         """
         Determines the max retries based on the provided error handler.
@@ -159,7 +159,7 @@ class HttpClient:
             max_retries = self._error_handler.max_retries
         return max_retries if max_retries is not None else self._DEFAULT_MAX_RETRY
 
-    @cached_property
+    @property
     def _max_time(self) -> int:
         """
         Determines the max time based on the provided error handler.
