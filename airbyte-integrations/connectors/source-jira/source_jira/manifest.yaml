@@ -468,10 +468,19 @@ definitions:
   workflows_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: workflows
-    primary_key: "id"
+    primary_key: [["entityId"], ["name"]]
     $parameters:
       path: "workflow/search"
       extract_field: "values"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["entityId"]
+            value_type: string
+            value: "{{ record.id.entityId }}"
+          - path: ["name"]
+            value_type: string
+            value: "{{ record.id.name }}"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get
   workflow_schemes_stream:
