@@ -1,12 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
+import logging
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-import pytest
-import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -34,7 +32,7 @@ class SourceTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self._source = SourceHarvest()
-        self._logger = Mock(spec=AirbyteLogger)
+        self._logger = Mock(spec=logging.Logger)
         self._config = ConfigBuilder().build()
 
     def test_given_config_with_client_id_without_account_id_when_check_connection_then_not_available(self) -> None:
@@ -43,7 +41,7 @@ class SourceTest(unittest.TestCase):
 
         is_available, error = self._source.check_connection(self._logger, config)
         assert not is_available
-        assert error == "Unable to connect to stream company - Request to https://api.harvestapp.com/v2/company failed with status code 401 and error message invalid_token"
+        assert "Unable to connect to stream company - 'GET' request to 'https://api.harvestapp.com/v2/company' failed" in error
 
     def test_given_config_no_authentication_in_config_when_check_connection_then_not_available(self) -> None:
         config = ConfigBuilder().build()
