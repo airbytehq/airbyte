@@ -65,7 +65,7 @@ connectionSpecification:
         type: integer
       examples:
         - 123456789
-      default: [ ]
+      default: []
       ad_analytics_reports:
         title: Custom Ad Analytics Reports
         type: array
@@ -117,7 +117,7 @@ connectionSpecification:
                 - DAILY
                 - MONTHLY
                 - YEARLY
-        default: [ ]
+        default: []
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
