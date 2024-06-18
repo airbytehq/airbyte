@@ -7,7 +7,9 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from pytest import fixture
 from source_pinterest.streams import IncrementalPinterestSubStream
 
@@ -60,24 +62,23 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "response_action"),
     (
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, True),
-        (HTTPStatus.TOO_MANY_REQUESTS, False),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.OK, ResponseAction.SUCCESS),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.RETRY),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RETRY),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
     ),
 )
-def test_should_retry(test_config, http_status, should_retry):
-    response_mock = MagicMock()
+def test_should_retry(test_config, http_status, response_action):
+    response_mock = requests.Response()
     response_mock.status_code = http_status
-    response_mock.ok = http_status == HTTPStatus.OK
     stream = get_stream_by_name("ad_account_analytics", test_config)
-    assert stream.retriever.requester._should_retry(response_mock) == should_retry
+    assert stream.retriever.requester._http_client._error_handler.interpret_response(response_mock).response_action is response_action
 
 
 @pytest.mark.parametrize(
-    ("start_date", "stream_state", "expected_records"),
+    "start_date, stream_state, expected_records",
     (
         (
             None,
@@ -135,7 +136,8 @@ def test_semi_incremental_read(requests_mock, test_config, start_date, stream_st
 
     stream.state = stream_state
     actual_records = [
-        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental)
+        dict(record)
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental)
         for record in stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
     ]
     assert actual_records == expected_records

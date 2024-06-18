@@ -127,6 +127,8 @@ definitions:
 
   base_semi_incremental_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/ad_account_based_retriever"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updated_time"
