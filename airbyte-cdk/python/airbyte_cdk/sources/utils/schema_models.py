@@ -28,7 +28,7 @@ class AllOptional(ModelMetaclass):
     It would make code more clear and eliminate a lot of manual work.
     """
 
-    def __new__(mcs, name, bases, namespaces, **kwargs):
+    def __new__(mcs, name, bases, namespaces, **kwargs):  # type: ignore[no-untyped-def] # super().__new__ is also untyped
         """
         Iterate through fields and wrap then with typing.Optional type.
         """
@@ -37,7 +37,7 @@ class AllOptional(ModelMetaclass):
             annotations = {**annotations, **getattr(base, "__annotations__", {})}
         for field in annotations:
             if not field.startswith("__"):
-                annotations[field] = Optional[annotations[field]]
+                annotations[field] = Optional[annotations[field]]  # type: ignore[assignment]
         namespaces["__annotations__"] = annotations
         return super().__new__(mcs, name, bases, namespaces, **kwargs)
 
@@ -77,7 +77,7 @@ class BaseSchemaModel(BaseModel):
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
     @classmethod
-    def schema(cls, *args, **kwargs) -> Dict[str, Any]:
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """We're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
         expand_refs(schema)

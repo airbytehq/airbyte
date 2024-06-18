@@ -17,7 +17,7 @@ class BaseConfig(BaseModel):
     """
 
     @classmethod
-    def schema(cls, *args, **kwargs) -> Dict[str, Any]:
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """We're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
         rename_key(schema, old_key="anyOf", new_key="oneOf")  # UI supports only oneOf
