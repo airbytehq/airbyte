@@ -555,6 +555,11 @@ module.exports = {
     },
     "operator-guides/upgrading-airbyte",
     {
+      type: "doc",
+      label: "Managing Connector Updates",
+      id: "managing-airbyte/connector-updates",
+    },
+    {
       type: "category",
       label: "Configuring Airbyte",
       link: {
@@ -567,11 +572,7 @@ module.exports = {
         "operator-guides/telemetry",
       ],
     },
-    {
-      type: "doc",
-      label: "Managing Connector Updates",
-      id: "managing-airbyte/connector-updates",
-    },
+    
     {
       type: "category",
       label: "Access Management",
