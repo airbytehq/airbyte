@@ -1,88 +1,369 @@
-version: "0.29.0"
+version: 0.78.1
 
-definitions:
-  selector:
-    extractor:
-      field_path: []
-  requester:
-    url_base: "https://api.reply.io/v1/"
-    http_method: "GET"
-    request_headers:
-      x-api-key: "{{ config['api_key'] }}"
-    error_handler:
-      type: "CompositeErrorHandler"
-      error_handlers:
-        - response_filters:
-            - predicate: "{{ 'Too much requests' in response }}"
-              action: RETRY
-          backoff_strategies:
-            - type: "ConstantBackoffStrategy"
-              backoff_time_in_seconds: 15
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-
-  base_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-  paginated_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        extractor:
-          field_path: ["{{ parameters.name }}"]
-      paginator:
-        type: "DefaultPaginator"
-        page_size_option:
-          inject_into: "request_parameter"
-          field_name: "limit"
-        pagination_strategy:
-          type: "PageIncrement"
-          page_size: 1000
-        page_token_option:
-          type: RequestOption
-          inject_into: "request_parameter"
-          field_name: "page"
-
-  campaigns_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "campaigns"
-      primary_key: "id"
-      path: "/campaigns"
-  email_accounts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "email_accounts"
-      primary_key: "id"
-      path: "/emailAccounts"
-  people_stream:
-    $ref: "#/definitions/paginated_stream"
-    $parameters:
-      name: "people"
-      primary_key: "id"
-      path: "/people"
-  templates_stream:
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        extractor:
-          field_path: ["userTemplates"]
-    $parameters:
-      name: "templates"
-      primary_key: "id"
-      path: "/templates"
-
-streams:
-  - "#/definitions/campaigns_stream"
-  - "#/definitions/email_accounts_stream"
-  - "#/definitions/people_stream"
-  - "#/definitions/templates_stream"
+type: DeclarativeSource
 
 check:
+  type: CheckStream
   stream_names:
-    - "campaigns"
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 15
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    predicate: "{{ 'Too much requests' in response }}"
+                    http_codes: []
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    email_accounts:
+      type: DeclarativeStream
+      name: email_accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /emailAccounts
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 15
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    predicate: "{{ 'Too much requests' in response }}"
+                    http_codes: []
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_accounts"
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /people
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 15
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    predicate: "{{ 'Too much requests' in response }}"
+                    http_codes: []
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - people
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /templates
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 15
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    predicate: "{{ 'Too much requests' in response }}"
+                    http_codes: []
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - userTemplates
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.reply.io/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: x-api-key
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/email_accounts"
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/templates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Token
+        airbyte_secret: true
+        description: The API Token for Reply
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: false
+    email_accounts: false
+    people: false
+    templates: false
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      bouncesCount:
+        type:
+          - "null"
+          - integer
+      created:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deliveriesCount:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      opensCount:
+        type:
+          - "null"
+          - integer
+      optOutsCount:
+        type:
+          - "null"
+          - integer
+      outOfOfficeCount:
+        type:
+          - "null"
+          - integer
+      ownerEmail:
+        type:
+          - "null"
+          - string
+      peopleActive:
+        type:
+          - "null"
+          - integer
+      peopleCount:
+        type:
+          - "null"
+          - integer
+      peopleFinished:
+        type:
+          - "null"
+          - integer
+      peoplePaused:
+        type:
+          - "null"
+          - integer
+      repliesCount:
+        type:
+          - "null"
+          - integer
+  email_accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      emailAddress:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      senderName:
+        type:
+          - "null"
+          - string
+      signature:
+        type:
+          - "null"
+          - string
+  people:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      addingDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      city:
+        type:
+          - "null"
+          - string
+      company:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      customFields:
+        type:
+          - "null"
+          - array
+      email:
+        type:
+          - "null"
+          - string
+      firstName:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      lastName:
+        type:
+          - "null"
+          - string
+      linkedInProfile:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      phoneStatus:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      timeZoneId:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+  templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      body:
+        type:
+          - "null"
+          - string
+      categoryId:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
