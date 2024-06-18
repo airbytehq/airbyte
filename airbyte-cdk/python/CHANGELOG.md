@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.0
+Python/Low Code: Updates ErroHandler, BackoffStrategy, HttpClient. Integrates HttpClient into low-code CDK.
+
 ## 1.4.0
 low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter 
 
