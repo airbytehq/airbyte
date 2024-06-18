@@ -24,7 +24,7 @@ compileKotlin {
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.redshift.RedshiftDestination'
+    mainClass = 'io.airbyte.integrations.destination.redshift.RedshiftStagingS3Destination'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
                                  '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
                                  '-XX:GCLockerRetryAllocationCount=100',]
