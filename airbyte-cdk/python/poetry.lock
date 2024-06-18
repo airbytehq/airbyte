@@ -112,22 +112,17 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "airbyte-protocol-models-pdv2"
-version = "0.11.0.dev1718126410"
+version = "0.12.2"
 description = "Declares the Airbyte Protocol."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models_pdv2-0.11.0.dev1718126410-py3-none-any.whl", hash = "sha256:397e48be92ccf692579c61dd0c9c098e616a389bbbd095b64149280b7714970d"},
-    {file = "airbyte_protocol_models_pdv2-0.11.0.dev1718126410.tar.gz", hash = "sha256:e6f6921807c4cd37d5bd7341166398ef4755e3fe329fa96bdf1aa06480c6d53e"},
+    {file = "airbyte_protocol_models_pdv2-0.12.2-py3-none-any.whl", hash = "sha256:8b3f9d0388928547cdf2e9134c0d589e4bcaa6f63bf71a21299f6824bfb7ad0e"},
+    {file = "airbyte_protocol_models_pdv2-0.12.2.tar.gz", hash = "sha256:130c9ab289f3f53749ce63ff1abbfb67a44b7e5bd2794865315a2976138b672b"},
 ]
 
 [package.dependencies]
 pydantic = ">=2.7.2,<3.0.0"
-
-[package.source]
-type = "legacy"
-url = "https://test.pypi.org/simple"
-reference = "pypi-test"
 
 [[package]]
 name = "alabaster"
@@ -4254,4 +4249,4 @@ vector-db-based = ["cohere", "langchain", "openai", "tiktoken"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4fa9818302c0d119e4eb7fd2046576c5e2d4e96cfcfc734d4abcea37134e86e5"
+content-hash = "133b50b40c740542bcec7474fef6a3785c183d1984f443e889a00854ed51ccb9"

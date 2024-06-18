@@ -24,7 +24,7 @@ keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-airbyte-protocol-models-pdv2 = {version = "^0.11.0.dev1718126410", source = "pypi-test"}
+airbyte-protocol-models-pdv2 = "^0.12.2"
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
@@ -79,11 +79,6 @@ requests-mock = "*"
 file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown"]
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
-
-[[tool.poetry.source]]
-name = "pypi-test"
-url = "https://test.pypi.org/simple/"
-priority = 'explicit'
 
 [tool.poe.tasks]
 # Build tasks
