@@ -1336,140 +1336,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Usage Triggers"
-    Conversations:
-      type: DeclarativeStream
-      name: Conversations
-      primary_key:
-        - sid
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: https://conversations.twilio.com/v1/Conversations
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - conversations
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Conversations"
-    Conversation Participants:
-      type: DeclarativeStream
-      name: Conversation Participants
-      primary_key:
-        - sid
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            https://conversations.twilio.com/v1/Conversations/{{
-            stream_partition.conversation_sid }}/Participants
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - participants
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: sid
-              partition_field: conversation_sid
-              stream:
-                $ref: "#/definitions/streams/Conversations"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Conversation Participants"
-    Conversation Messages:
-      type: DeclarativeStream
-      name: Conversation Messages
-      primary_key:
-        - sid
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            https://conversations.twilio.com/v1/Conversations/{{
-            stream_partition.conversation_sid }}/Messages
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - messages
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: sid
-              partition_field: conversation_sid
-              stream:
-                $ref: "#/definitions/streams/Conversations"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Conversation Messages"
-    Users:
-      type: DeclarativeStream
-      name: Users
-      primary_key:
-        - sid
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: https://conversations.twilio.com/v1/Users
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - users
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Users"
-    User Conversation:
-      type: DeclarativeStream
-      name: User Conversation
-      primary_key:
-        - conversations
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            https://conversations.twilio.com/v1/Users/{{
-            stream_partition.user_sid }}/Conversations
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: sid
-              partition_field: user_sid
-              stream:
-                $ref: "#/definitions/streams/Users"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/User Conversation"
   base_requester:
     type: HttpRequester
     url_base: https://
@@ -1508,11 +1374,6 @@ streams:
   - $ref: "#/definitions/streams/Message Media"
   - $ref: "#/definitions/streams/Usage Records"
   - $ref: "#/definitions/streams/Usage Triggers"
-  - $ref: "#/definitions/streams/Conversations"
-  - $ref: "#/definitions/streams/Conversation Participants"
-  - $ref: "#/definitions/streams/Conversation Messages"
-  - $ref: "#/definitions/streams/Users"
-  - $ref: "#/definitions/streams/User Conversation"
 
 spec:
   type: Spec
@@ -1585,11 +1446,6 @@ metadata:
     Message Media: true
     Usage Records: true
     Usage Triggers: true
-    Conversations: true
-    Conversation Participants: true
-    Conversation Messages: true
-    Users: true
-    User Conversation: true
 
 schemas:
   Accounts:
@@ -2344,76 +2200,6 @@ schemas:
     additionalProperties: true
     properties: {}
   Usage Triggers:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  Conversations:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  Conversation Participants:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  Conversation Messages:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  Users:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      account_sid:
-        type:
-          - string
-          - "null"
-      attributes:
-        type:
-          - string
-          - "null"
-      chat_service_sid:
-        type:
-          - string
-          - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-      date_updated:
-        type:
-          - string
-          - "null"
-      identity:
-        type:
-          - string
-          - "null"
-      links:
-        type:
-          - object
-          - "null"
-        properties:
-          user_conversations:
-            type:
-              - string
-              - "null"
-      role_sid:
-        type:
-          - string
-          - "null"
-      sid:
-        type: string
-      url:
-        type:
-          - string
-          - "null"
-    required:
-      - sid
-  User Conversation:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
