@@ -4,7 +4,7 @@
 
 from enum import Enum
 
-from pydantic.v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 
 
 class UnexpectedFieldBehaviorEnum(str, Enum):
