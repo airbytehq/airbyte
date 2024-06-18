@@ -92,7 +92,7 @@ type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modi
 unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report."}
 # TODO: find a version of the modified mypy check that works both locally and in CI.
 check-local = {sequence = ["lint", "type-check", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
-check-ci = {sequence = ["lint", "unit-test-with-cov"], help = "Lint and run unit tests. Does not include type-checking."}
+check-ci = {sequence = ["build", "lint", "unit-test-with-cov"], help = "Build the package, lint and run unit tests. Does not include type-checking."}
 
 # Build and check
 pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
@@ -100,5 +100,5 @@ pre-push = {sequence = ["build", "check-local"], help = "Run all build and check
 [tool.airbyte_ci]
 optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
-poe_tasks = ["build", "check-ci"]
+poe_tasks = ["check-ci"]
 mount_docker_socket = true

@@ -4,8 +4,7 @@
 
 from unittest.mock import patch
 
-from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
