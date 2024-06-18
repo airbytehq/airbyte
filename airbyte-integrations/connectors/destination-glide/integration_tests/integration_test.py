@@ -1,27 +1,30 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+    Type
+)
 from datetime import datetime
+from destination_glide import DestinationGlide
+# for mock:
+from destination_glide.glide import GlideBigTable
+
 import json
 import logging
 import pytest
 import random
 import string
 from typing import Any, Mapping
-
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteStream, 
-    ConfiguredAirbyteCatalog, 
-    ConfiguredAirbyteStream, 
-    DestinationSyncMode, 
-    Status, 
-    SyncMode,
-    Type
-)
-from destination_glide import DestinationGlide
+from unittest.mock import create_autospec
 
 
 @pytest.fixture(name="config")
@@ -39,21 +42,26 @@ def test_table_name() -> str:
 
 @pytest.fixture
 def table_schema() -> str:
-    schema = {"type": "object", "properties": {"column1": {"type": ["null", "string"]}}}
+    schema = {"type": "object", "properties": {
+        "column1": {"type": ["null", "string"]}}}
     return schema
+
 
 def AirbyteLogger() -> logging.Logger:
     return logging.getLogger('airbyte')
+
 
 @pytest.fixture
 def configured_catalog(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
     overwrite_stream = ConfiguredAirbyteStream(
         # TODO: I'm not sure if we should expect incoming streams SyncMode.incremental and only the destination to be full_refresh or they should
-        stream=AirbyteStream(name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.incremental]),
+        stream=AirbyteStream(name=test_table_name, json_schema=table_schema,
+                             supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
     return ConfiguredAirbyteCatalog(streams=[overwrite_stream])
+
 
 @pytest.fixture
 def airbyte_message_record1(test_table_name: str):
@@ -74,6 +82,7 @@ def airbyte_message_record2(test_table_name: str):
         ),
     )
 
+
 @pytest.fixture
 def airbyte_message_state(test_table_name: str):
     return AirbyteMessage(
@@ -83,11 +92,13 @@ def airbyte_message_state(test_table_name: str):
         )
     )
 
-
 ##### Tests Begin Here #####
+
+
 def test_check_valid_config(config: Mapping):
     outcome = DestinationGlide().check(AirbyteLogger(), config)
     assert outcome.status == Status.SUCCEEDED
+
 
 def test_write(
     config: Mapping,
@@ -98,13 +109,20 @@ def test_write(
     airbyte_message_state: AirbyteMessage,
     test_table_name: str,
 ):
-    destination = DestinationGlide()
+    mock_gbt = create_autospec(GlideBigTable)
+
+    destination = DestinationGlide(mock_gbt)
     generator = destination.write(
-        config=config, configured_catalog=configured_catalog, input_messages=[airbyte_message_record1, airbyte_message_record1, airbyte_message_state]
+        config=config, configured_catalog=configured_catalog, input_messages=[
+            airbyte_message_record1, airbyte_message_record1, airbyte_message_state]
     )
 
     # expecting only to return the state message:
     result = list(generator)
     assert len(result) == 1
-    assert False, "Validate that the data was written to mock API?"
 
+    # expect the API was called:
+    # todo: validate args on these calls
+    
+    mock_gbt.delete_all.assert_called_once()
+    mock_gbt.add_rows.assert_called_once()
