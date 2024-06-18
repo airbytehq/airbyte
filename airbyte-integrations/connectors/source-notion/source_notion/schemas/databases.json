@@ -25,23 +25,337 @@
       "description": "Title or name of the database.",
       "type": "array",
       "items": {
-        "$ref": "rich_text.json"
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "text": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "content": {
+                "type": ["null", "string"]
+              },
+              "link": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": {
+                    "enum": ["url"]
+                  },
+                  "url": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "mention": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "info": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "equation": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "expression": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "annotations": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "bold": {
+                "type": ["null", "boolean"]
+              },
+              "italic": {
+                "type": ["null", "boolean"]
+              },
+              "strikethrough": {
+                "type": ["null", "boolean"]
+              },
+              "underline": {
+                "type": ["null", "boolean"]
+              },
+              "code": {
+                "type": ["null", "boolean"]
+              },
+              "color": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "plain_text": {
+            "type": ["null", "string"]
+          },
+          "href": {
+            "type": ["null", "string"]
+          }
+        }
       }
     },
     "description": {
       "description": "Description text associated with the database.",
       "type": "array",
       "items": {
-        "$ref": "rich_text.json"
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "text": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "content": {
+                "type": ["null", "string"]
+              },
+              "link": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": {
+                    "enum": ["url"]
+                  },
+                  "url": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "mention": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "info": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "equation": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "expression": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "annotations": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "bold": {
+                "type": ["null", "boolean"]
+              },
+              "italic": {
+                "type": ["null", "boolean"]
+              },
+              "strikethrough": {
+                "type": ["null", "boolean"]
+              },
+              "underline": {
+                "type": ["null", "boolean"]
+              },
+              "code": {
+                "type": ["null", "boolean"]
+              },
+              "color": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "plain_text": {
+            "type": ["null", "string"]
+          },
+          "href": {
+            "type": ["null", "string"]
+          }
+        }
       }
     },
     "last_edited_by": {
       "description": "The user who last edited the database.",
-      "$ref": "user.json"
+
+      "type": "object",
+      "properties": {
+        "object": {
+          "enum": ["user"]
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "enum": ["person", "bot"]
+        },
+        "person": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "email": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "bot": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "owner": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "info": {
+                  "avatar_url": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  },
+                  "person": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "email": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                "workspace": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "workspace_name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "created_by": {
       "description": "The user who created the database.",
-      "$ref": "user.json"
+
+      "type": "object",
+      "properties": {
+        "object": {
+          "enum": ["user"]
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "enum": ["person", "bot"]
+        },
+        "person": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "email": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "bot": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "owner": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "info": {
+                  "avatar_url": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  },
+                  "person": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "email": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                "workspace": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "workspace_name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "archived": {
       "description": "Indicates if the data is archived or not.",
@@ -49,15 +363,283 @@
     },
     "icon": {
       "description": "URL or reference to the icon of the database.",
-      "$ref": "icon.json"
+      "anyOf": [
+        {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "enum": ["file", "external"]
+            },
+            "caption": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "text": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "content": {
+                        "type": ["null", "string"]
+                      },
+                      "link": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "type": {
+                            "enum": ["url"]
+                          },
+                          "url": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "mention": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "info": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "id": {
+                            "type": ["null", "string"]
+                          },
+                          "object": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "equation": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "expression": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "annotations": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "bold": {
+                        "type": ["null", "boolean"]
+                      },
+                      "italic": {
+                        "type": ["null", "boolean"]
+                      },
+                      "strikethrough": {
+                        "type": ["null", "boolean"]
+                      },
+                      "underline": {
+                        "type": ["null", "boolean"]
+                      },
+                      "code": {
+                        "type": ["null", "boolean"]
+                      },
+                      "color": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "plain_text": {
+                    "type": ["null", "string"]
+                  },
+                  "href": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "external": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              }
+            },
+            "file": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "expiry_time": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "emoji": {
+              "type": "string"
+            }
+          }
+        }
+      ]
     },
     "cover": {
       "description": "URL or reference to the cover image of the database.",
-      "$ref": "file.json"
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "enum": ["file", "external"]
+        },
+        "caption": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "text": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "content": {
+                    "type": ["null", "string"]
+                  },
+                  "link": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "type": {
+                        "enum": ["url"]
+                      },
+                      "url": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "mention": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "info": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "object": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "equation": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "expression": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "annotations": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "bold": {
+                    "type": ["null", "boolean"]
+                  },
+                  "italic": {
+                    "type": ["null", "boolean"]
+                  },
+                  "strikethrough": {
+                    "type": ["null", "boolean"]
+                  },
+                  "underline": {
+                    "type": ["null", "boolean"]
+                  },
+                  "code": {
+                    "type": ["null", "boolean"]
+                  },
+                  "color": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "plain_text": {
+                "type": ["null", "string"]
+              },
+              "href": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "external": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "file": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "expiry_time": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
     },
     "parent": {
       "description": "Indicates the parent database if it exists.",
-      "$ref": "parent.json"
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": ["block_id", "database_id", "page_id", "workspace"]
+        },
+        "block_id": {
+          "type": "string"
+        },
+        "database_id": {
+          "type": "string"
+        },
+        "page_id": {
+          "type": "string"
+        },
+        "workspace": {
+          "type": "boolean"
+        }
+      }
     },
     "url": {
       "description": "URL or reference to access the database.",
@@ -349,7 +931,18 @@
                   "options": {
                     "type": "array",
                     "items": {
-                      "$ref": "options.json"
+                      "type": ["null", "object"],
+                      "properties": {
+                        "id": {
+                          "type": ["null", "string"]
+                        },
+                        "name": {
+                          "type": ["null", "string"]
+                        },
+                        "color": {
+                          "type": ["null", "string"]
+                        }
+                      }
                     }
                   }
                 }
@@ -500,7 +1093,18 @@
                       "options": {
                         "type": "array",
                         "items": {
-                          "$ref": "options.json"
+                          "type": ["null", "object"],
+                          "properties": {
+                            "id": {
+                              "type": ["null", "string"]
+                            },
+                            "name": {
+                              "type": ["null", "string"]
+                            },
+                            "color": {
+                              "type": ["null", "string"]
+                            }
+                          }
                         }
                       },
                       "groups": {
