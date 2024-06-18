@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.2
+PerPartitionState - setting invalid initial state should trigger a config error
+
+## 1.5.1
+Fix client_side_incremental end_datetime comparison
+
+## 1.5.0
+Python/Low Code: Updates ErroHandler, BackoffStrategy, HttpClient. Integrates HttpClient into low-code CDK.
+
 ## 1.4.0
 low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter 
 
