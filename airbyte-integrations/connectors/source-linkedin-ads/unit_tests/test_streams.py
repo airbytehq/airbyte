@@ -9,7 +9,6 @@ from typing import Any, Mapping
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from conftest import find_stream
 
@@ -37,17 +36,6 @@ TEST_CONFIG: dict = {
 def load_json_file(file_name: str) -> Mapping[str, Any]:
     with open(f"{os.path.dirname(__file__)}/{file_name}", "r") as data:
         return json.load(data)
-
-
-@pytest.mark.parametrize("error_code", [429, 500, 503])
-def test_should_retry_on_error(error_code, requests_mock):
-    stream = find_stream("accounts", TEST_CONFIG)
-    requests_mock.register_uri(
-        "GET", "https://api.linkedin.com/rest/adAccounts", [{"status_code": error_code, "json": {"elements": []}}]
-    )
-
-    with pytest.raises(UserDefinedBackoffException):
-        list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
 
 def test_analytics_stream_slices(requests_mock):

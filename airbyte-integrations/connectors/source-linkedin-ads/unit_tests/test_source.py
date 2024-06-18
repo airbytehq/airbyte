@@ -6,7 +6,9 @@ import logging
 
 import pytest
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from conftest import find_stream
 from source_linkedin_ads.source import SourceLinkedinAds
@@ -54,6 +56,16 @@ TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
 
 class TestAllStreams:
     _instance: SourceLinkedinAds = SourceLinkedinAds()
+
+    @pytest.mark.parametrize("error_code", [429, 500, 503])
+    def test_should_retry_on_error(self, error_code, requests_mock):
+        stream = find_stream("accounts", TEST_CONFIG)
+        requests_mock.register_uri(
+            "GET", "https://api.linkedin.com/rest/adAccounts", [{"status_code": error_code, "json": {"elements": []}}]
+        )
+
+        with pytest.raises(UserDefinedBackoffException):
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     def test_custom_streams(self):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
