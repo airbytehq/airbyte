@@ -8,6 +8,8 @@ from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, U
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 
 class PerPartitionKeySerializer:
@@ -111,6 +113,14 @@ class PerPartitionCursor(DeclarativeCursor):
         """
         if not stream_state:
             return
+
+        if "states" not in stream_state:
+            raise AirbyteTracedException(
+                internal_message=f"Could not sync parse the following state: {stream_state}",
+                message="The state for is format invalid. Validate that the migration steps included a reset and that it was performed "
+                "properly. Otherwise, please contact Airbyte support.",
+                failure_type=FailureType.config_error,
+            )
 
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
