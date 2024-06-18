@@ -28,12 +28,6 @@ definitions:
               - organizations
               - "*"
               - organization
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('updated_at',
-              config.get("start_date", "2011-09-01")) and record['updated_at']
-              <  config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -57,6 +51,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -80,12 +75,6 @@ definitions:
               - adaccounts
               - "*"
               - adaccount
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('updated_at',
-              config.get("start_date", "2011-09-01")) and record['updated_at']
-              <  config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -116,6 +105,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -139,12 +129,6 @@ definitions:
               - creatives
               - "*"
               - creative
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('updated_at',
-              config.get("start_date", "2011-09-01")) and record['updated_at']
-              <  config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -175,6 +159,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -198,12 +183,6 @@ definitions:
               - ads
               - "*"
               - ad
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('updated_at',
-              config.get("start_date", "2011-09-01")) and record['updated_at']
-              <  config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -234,6 +213,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -257,12 +237,6 @@ definitions:
               - adsquads
               - "*"
               - adsquad
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('updated_at',
-              config.get("start_date", "2011-09-01")) and record['updated_at']
-              <  config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -293,6 +267,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -316,12 +291,6 @@ definitions:
               - segments
               - "*"
               - segment
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('updated_at',
-              config.get("start_date", "2011-09-01")) and record['updated_at']
-              <  config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -352,6 +321,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -375,12 +345,6 @@ definitions:
               - media
               - "*"
               - media
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('updated_at',
-              config.get("start_date", "2011-09-01")) and record['updated_at']
-              <  config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -411,6 +375,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -434,12 +399,6 @@ definitions:
               - campaigns
               - "*"
               - campaign
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('updated_at',
-              config.get("start_date", "2011-09-01")) and record['updated_at']
-              <  config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -470,6 +429,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
