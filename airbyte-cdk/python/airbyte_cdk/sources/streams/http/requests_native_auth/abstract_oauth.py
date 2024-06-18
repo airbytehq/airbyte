@@ -2,12 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Tuple
-
-import requests
 import logging
 from abc import abstractmethod
-from json import JSONDecodeError
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
