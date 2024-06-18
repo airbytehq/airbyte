@@ -118,7 +118,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
+        generationId: Long,
     )
 
     /**
@@ -582,14 +583,22 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     fun minTimestampBehavesCorrectly() {
         // When the raw table doesn't exist, there are no unprocessed records and no timestamp
         Assertions.assertEquals(
-            InitialRawTableStatus(false, false, Optional.empty()),
+            InitialRawTableStatus(
+                rawTableExists = false,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            ),
             getInitialRawTableState(incrementalAppendStream)
         )
 
         // When the raw table is empty, there are still no unprocessed records and no timestamp
         createRawTable(streamId)
         Assertions.assertEquals(
-            InitialRawTableStatus(true, false, Optional.empty()),
+            InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            ),
             getInitialRawTableState(incrementalAppendStream)
         )
 
@@ -642,7 +651,11 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         Assertions.assertEquals(
             getInitialRawTableState(incrementalAppendStream),
-            InitialRawTableStatus(true, false, Optional.of(Instant.parse("2023-01-02T00:00:00Z"))),
+            InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.of(Instant.parse("2023-01-02T00:00:00Z"))
+            ),
             "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, and the min timestamp should be equal to the latest extracted_at"
         )
 
@@ -1079,7 +1092,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         """.trimIndent()
                 )
             )
-        insertFinalTableRecords(false, streamId, "_tmp", records)
+        insertFinalTableRecords(false, streamId, "_tmp", records, 0)
 
         val sql = generator.overwriteFinalTable(streamId, "_tmp")
         destinationHandler.execute(sql)
@@ -1196,7 +1209,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "",
             BaseTypingDedupingTest.Companion.readRecords(
                 "sqlgenerator/cdcupdate_inputrecords_final.jsonl"
-            )
+            ),
+            0
         )
 
         executeTypeAndDedupe(
@@ -1281,7 +1295,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "",
             BaseTypingDedupingTest.Companion.readRecords(
                 "sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"
-            )
+            ),
+            0
         )
 
         val tableState = getInitialRawTableState(cdcIncrementalAppendStream)
@@ -1342,7 +1357,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
             """.trimIndent()
                 )
-            )
+            ),
+            0
         )
 
         executeSoftReset(generator, destinationHandler, incrementalAppendStream)
@@ -1769,7 +1785,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val columnName1 = baseColumnName + "1"
         val columnName2 = baseColumnName + "2"
 
-        val catalogParser = CatalogParser(generator, rawNamespace)
+        // We're always setting a nonnull namespace, so the default namespace is never used.
+        // We just need to pass a value b/c it's nonnullable
+        val catalogParser = CatalogParser(generator, "unused", rawNamespace)
         val stream =
             catalogParser
                 .parseCatalog(
@@ -1931,6 +1949,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "_airbyte_raw_id",
                 "_airbyte_extracted_at",
                 "_airbyte_meta",
+                "_airbyte_generation_id",
                 "id1",
                 "id2",
                 "updated_at",

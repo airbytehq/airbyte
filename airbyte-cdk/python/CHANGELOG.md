@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.5.1
+Fix client_side_incremental end_datetime comparison
+
+## 1.5.0
+Python/Low Code: Updates ErroHandler, BackoffStrategy, HttpClient. Integrates HttpClient into low-code CDK.
+
+## 1.4.0
+low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter 
+
+## 1.3.3
+Mock server tests: adding 'discover' as part of the entrypoint_wrapper
+
+## 1.3.2
+low-code: Added retriever type filter to stream slicer merge
+
+## 1.3.1
+Use  for Jinja interpolations
+
+## 1.3.0
+Added new datetime format: %s_as_float
+
+## 1.2.1
+Python 3.11 compatibility bugfixes
+
+## 1.2.0
+add client side incremental sync
+
+## 1.1.3
+Removed experimental suffix for unstructured file type
+
+## 1.1.2
+CDK: upgrade dpath
+
 ## 1.1.1
 Fix bug so that RFR streams don't resync successful streams on subsequent attempts
 
