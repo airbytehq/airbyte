@@ -568,6 +568,11 @@ module.exports = {
       ],
     },
     {
+      type: "doc",
+      label: "Managing Connector Updates",
+      id: "managing-airbyte/connector-updates",
+    },
+    {
       type: "category",
       label: "Access Management",
       items: [
