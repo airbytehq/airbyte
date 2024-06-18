@@ -177,19 +177,19 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
         final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
         jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats);
-        if(syncStats.getRecordsCommitted() != 0 || syncStats.getBytesEmitted() != 0){
-            // 插入Daspire RPC调用
-            String workspaceId = jobNotifier.getWorkspaceForJobId(jobId);
-          final UUID connectionId = UUID.fromString(job.getScope());
-          String connectionName = jobPersistence.getConnectionName(connectionId);
-            Map<String, Object> param = Map.of("workspaceId", workspaceId,
-                "connectionId", job.getScope(),
-                "attemptId", attemptId,
-                "recordsCommitted", syncStats.getRecordsCommitted(),
-                "bytesCommitted", syncStats.getBytesEmitted(),
-                "connectionName", connectionName);
-            HttpUtil.daspireConnectionCount(param);
-        }
+        
+        // 插入Daspire RPC调用
+        String workspaceId = jobNotifier.getWorkspaceForJobId(jobId);
+        final UUID connectionId = UUID.fromString(job.getScope());
+        String connectionName = jobPersistence.getConnectionName(connectionId);
+        Map<String, Object> param = Map.of("workspaceId", workspaceId,
+            "connectionId", job.getScope(),
+            "attemptId", attemptId,
+            "recordsCommitted", syncStats.getRecordsCommitted(),
+            "bytesCommitted", syncStats.getBytesEmitted(),
+            "connectionName", connectionName);
+        HttpUtil.daspireConnectionCount(param);
+        
       } else {
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
