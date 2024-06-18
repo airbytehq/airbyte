@@ -6,7 +6,7 @@ import logging
 import os
 import urllib
 from pathlib import Path
-from typing import Any, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
@@ -66,6 +66,7 @@ class HttpClient:
         self._error_handler = error_handler or HttpStatusErrorHandler(self._logger)
         self._backoff_strategy = backoff_strategy or DefaultBackoffStrategy()
         self._error_message_parser = error_message_parser or JsonErrorMessageParser()
+        self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
 
     @property
     def cache_filename(self) -> str:
@@ -157,6 +158,11 @@ class HttpClient:
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
 
+        if request not in self._request_attempt_count:
+            self._request_attempt_count[request] = 1
+        else:
+            self._request_attempt_count[request] += 1
+
         self._logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
@@ -202,7 +208,9 @@ class HttpClient:
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self._backoff_strategy.backoff_time(response if response is not None else exc)
+            custom_backoff_time = self._backoff_strategy.backoff_time(
+                response_or_exception=response if response is not None else exc, attempt_count=self._request_attempt_count[request]
+            )
             error_message = (
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."

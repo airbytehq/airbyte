@@ -6,9 +6,8 @@ import logging
 import os
 import urllib
 from dataclasses import InitVar, dataclass
-from functools import lru_cache
 from pathlib import Path
-from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Dict, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 import requests
@@ -16,23 +15,22 @@ import requests_cache
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
 
@@ -92,6 +90,8 @@ class HttpRequester(Requester):
         if isinstance(self._authenticator, AuthBase):
             self._session.auth = self._authenticator
 
+        self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
+
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
     # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
     # but this has a cascading effect where all dataclass fields must also be set to frozen.
@@ -141,7 +141,7 @@ class HttpRequester(Requester):
     def get_method(self) -> HttpMethod:
         return self._http_method
 
-    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response_status(self, response: requests.Response) -> ErrorResolution:
         if self.error_handler is None:
             raise ValueError("Cannot interpret response status without an error handler")
 
@@ -207,7 +207,7 @@ class HttpRequester(Requester):
             return 0
         if self.error_handler is None:
             return self._DEFAULT_MAX_RETRY
-        return self.error_handler.max_retries
+        return self.error_handler.max_retries  # type: ignore # parent class does not have max_retries
 
     @property
     def max_time(self) -> Union[int, None]:
@@ -216,61 +216,11 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return self._DEFAULT_MAX_TIME
-        return self.error_handler.max_time
+        return self.error_handler.max_time  # type: ignore # parent class does not have max_time
 
     @property
     def logger(self) -> logging.Logger:
         return logging.getLogger(f"airbyte.HttpRequester.{self.name}")
-
-    def _should_retry(self, response: requests.Response) -> bool:
-        """
-        Specifies conditions for backoff based on the response from the server.
-
-        By default, back off on the following HTTP response statuses:
-         - 429 (Too Many Requests) indicating rate limiting
-         - 500s to handle transient server errors
-
-        Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
-        """
-        if self.error_handler is None:
-            return response.status_code == 429 or 500 <= response.status_code < 600
-
-        if self.use_cache:
-            interpret_response_status = self.interpret_response_status
-        else:
-            # Use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
-            # only care about the status of the last response received
-            # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
-            interpret_response_status = lru_cache(maxsize=10)(self.interpret_response_status)
-
-        return bool(interpret_response_status(response).action == ResponseAction.RETRY)
-
-    def _backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Specifies backoff time.
-
-         This method is called only if should_backoff() returns True for the input request.
-
-         :param response:
-         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-         to the default backoff behavior (e.g using an exponential algorithm).
-        """
-        if self.error_handler is None:
-            return None
-        should_retry = self.interpret_response_status(response)
-        if should_retry.action != ResponseAction.RETRY:
-            raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
-        assert should_retry.action == ResponseAction.RETRY
-        return should_retry.retry_in
-
-    def _error_message(self, response: requests.Response) -> str:
-        """
-        Constructs an error message which can incorporate the HTTP response received from the partner API.
-
-        :param response: The incoming HTTP response from the partner API
-        :return The error message string to be emitted
-        """
-        return self.interpret_response_status(response).error_message
 
     def _get_request_options(
         self,
@@ -458,7 +408,7 @@ class HttpRequester(Requester):
         )
 
         response = self._send_with_retry(request, log_formatter=log_formatter)
-        return self._validate_response(response)
+        return response
 
     def _send_with_retry(
         self,
@@ -501,7 +451,7 @@ class HttpRequester(Requester):
             max_tries = max(0, max_tries) + 1
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
+        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
         return backoff_handler(user_backoff_handler)(request, log_formatter=log_formatter)  # type: ignore
 
@@ -528,46 +478,64 @@ class HttpRequester(Requester):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
+        if self._request_attempt_count.get(request) is None:
+            self._request_attempt_count[request] = 1
+        else:
+            self._request_attempt_count[request] += 1
+
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
+
         response: requests.Response = self._session.send(request)
+
+        if self.error_handler is None:
+            return response
+
+        error_resolution: ErrorResolution = self.interpret_response_status(response)
+
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
+
         if log_formatter:
             formatter = log_formatter
             self.message_repository.log_message(
                 Level.DEBUG,
                 lambda: formatter(response),
             )
-        if self._should_retry(response):
-            custom_backoff_time = self._backoff_time(response)
+
+        if error_resolution.response_action == ResponseAction.FAIL:
+            error_message = f"'{request.method}' request to '{request.url}' failed with status code '{response.status_code}' and error message '{self.parse_response_error_message(response)}'"
+
+            raise AirbyteTracedException(
+                internal_message=error_message,
+                message=error_message,
+                failure_type=error_resolution.failure_type,
+            )
+
+        elif error_resolution.response_action == ResponseAction.IGNORE:
+            log_message = f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
+
+            self.logger.info(error_resolution.error_message or log_message)
+
+        elif error_resolution.response_action == ResponseAction.RETRY:
+            custom_backoff_time = self.error_handler.backoff_time(response, attempt_count=self._request_attempt_count[request]) if self.error_handler is not None else None  # type: ignore # parent class does not have backoff_time
+            error_message = f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action} with message: {error_resolution.error_message if error_resolution.error_message else None}"
             if custom_backoff_time:
-                raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
+                raise UserDefinedBackoffException(
+                    backoff=custom_backoff_time,
+                    request=request,
+                    response=response,
+                    error_message=error_message,
+                )
             else:
-                raise DefaultBackoffException(request=request, response=response)
-        return response
+                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
 
-    def _validate_response(
-        self,
-        response: requests.Response,
-    ) -> Optional[requests.Response]:
-        # if fail -> raise exception
-        # if ignore -> ignore response and return None
-        # else -> delegate to caller
-        if self.error_handler is None:
-            return response
-
-        response_status = self.interpret_response_status(response)
-        if response_status.action == ResponseAction.FAIL:
-            error_message = (
-                response_status.error_message
-                or f"Request to {response.request.url} failed with status code {response.status_code} and error message {HttpRequester.parse_response_error_message(response)}"
-            )
-            raise ReadException(error_message)
-        elif response_status.action == ResponseAction.IGNORE:
-            self.logger.info(
-                f"Ignoring response for failed request with error message {HttpRequester.parse_response_error_message(response)}"
-            )
+        elif response:
+            try:
+                response.raise_for_status()
+            except requests.HTTPError as e:
+                self.logger.error(response.text)
+                raise e
 
         return response
 
