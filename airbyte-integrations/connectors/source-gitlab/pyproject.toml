@@ -17,7 +17,7 @@ include = "source_gitlab"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "^1"
 vcrpy = "==4.1.1"
 
 [tool.poetry.scripts]
