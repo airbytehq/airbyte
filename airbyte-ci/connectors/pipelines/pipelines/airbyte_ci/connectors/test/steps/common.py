@@ -443,14 +443,13 @@ class IncrementalAcceptanceTests(Step):
             )
 
 
-class LiveTests(Step):
+class AbstractLiveTests(Step):
     """A step to run live tests for a connector."""
 
     context: ConnectorContext
-    title = "Live tests (regression + validation)"
     skipped_exit_code = 5
     accept_extra_params = True
-    tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
+    tests_artifacts_dir = Path("/tmp/live_tests_artifacts")
     working_directory = "/app"
     github_user = "octavia-squidington-iii"
     platform_repo_url = "airbytehq/airbyte-platform-internal"
@@ -468,33 +467,20 @@ class LiveTests(Step):
             "--durations": ["3"],  # Show the 3 slowest tests in the report
         }
 
-    def _test_command(self) -> str:
-        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
-        return " ".join(
-            [
-                "poetry",
-                "run",
-                "pytest",
-                "src/live_tests",
-                "--connector-image",
-                self.connector_image,
-                "--connection-id",
-                self.connection_id or "",
-                "--control-version",
-                self.control_version or "",
-                "--target-version",
-                self.target_version or "",
-                "--pr-url",
-                self.pr_url or "",
-                "--run-id",
-                self.run_id or "",
-                "--should-read-with-state",
-                str(self.should_read_with_state),
-                "--test-evaluation-mode",
-                str(self.test_evaluation_mode),
-            ]
-            + selected_streams
-        )
+    @property
+    @abstractmethod
+    def title(self):
+        """
+        The title of the tests, for report display purposes.
+        """
+        ...
+
+    @abstractmethod
+    def _test_command(self):
+        """
+        The command used to run the tests
+        """
+        ...
 
     def _run_command_with_proxy(self, command: str) -> List[str]:
         """
@@ -526,20 +512,20 @@ class LiveTests(Step):
         return ["bash", "-c", f"'{run_pytest_with_proxy}'"]
 
     def __init__(self, context: ConnectorContext) -> None:
-        """Create a step to run regression tests for a connector.
+        """Create a step to run live tests for a connector.
 
         Args:
             context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
         """
         super().__init__(context)
         self.connector_image = context.docker_image.split(":")[0]
-        options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS, {})
+        options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS, {})
 
         self.connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
         self.pr_url = self.context.run_step_options.get_item_or_default(options, "pr-url", None)
 
         if not self.connection_id and self.pr_url:
-            raise ValueError("`connection-id` and `pr-url` are required to run regression tests.")
+            raise ValueError("`connection-id` and `pr-url` are required to run live tests.")
 
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
@@ -676,10 +662,42 @@ class LiveTests(Step):
         return container
 
 
-class RegressionTests(LiveTests):
-    """A step to run live tests for a connector."""
+class LiveTests(AbstractLiveTests):
 
-    context: ConnectorContext
+    title = "Live tests (regression + validation)"
+
+    def _test_command(self) -> str:
+        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
+        return " ".join(
+            [
+                "poetry",
+                "run",
+                "pytest",
+                "src/live_tests",
+                "--connector-image",
+                self.connector_image,
+                "--connection-id",
+                self.connection_id or "",
+                "--control-version",
+                self.control_version or "",
+                "--target-version",
+                self.target_version or "",
+                "--pr-url",
+                self.pr_url or "",
+                "--run-id",
+                self.run_id or "",
+                "--should-read-with-state",
+                str(self.should_read_with_state),
+                "--test-evaluation-mode",
+                str(self.test_evaluation_mode),
+            ]
+            + selected_streams
+        )
+
+
+class RegressionTests(AbstractLiveTests):
+    """A step to run regression tests for a connector."""
+
     title = "Regression tests"
 
     def _test_command(self) -> str:
@@ -696,6 +714,38 @@ class RegressionTests(LiveTests):
                 self.connection_id or "",
                 "--control-version",
                 self.control_version or "",
+                "--target-version",
+                self.target_version or "",
+                "--pr-url",
+                self.pr_url or "",
+                "--run-id",
+                self.run_id or "",
+                "--should-read-with-state",
+                str(self.should_read_with_state),
+                "--test-evaluation-mode",
+                str(self.test_evaluation_mode),
+            ]
+            + selected_streams
+        )
+
+
+class ValidationTests(AbstractLiveTests):
+    """A step to run validation tests for a connector."""
+
+    title = "Validation tests"
+
+    def _test_command(self) -> str:
+        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
+        return " ".join(
+            [
+                "poetry",
+                "run",
+                "pytest",
+                "src/live_tests/validation_tests",
+                "--connector-image",
+                self.connector_image,
+                "--connection-id",
+                self.connection_id or "",
                 "--target-version",
                 self.target_version or "",
                 "--pr-url",
