@@ -112,7 +112,7 @@ class Destination(Connector, ABC):
             wrapped_stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
             yield from self._run_write(config=config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin)
 
-    def run(self, args: List[str]):
+    def run(self, args: List[str]) -> None:
         init_uncaught_exception_handler(logger)
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
