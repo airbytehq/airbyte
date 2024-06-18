@@ -2,21 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
+from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 
 
 class CsvFormat(BaseModel):
     'This connector utilises <a href="https: // arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html" target="_blank">PyArrow (Apache Arrow)</a> for CSV parsing.'
+    model_config = ConfigDict(title="CSV")
 
-    class Config:
-        title = "CSV"
-
-    filetype: str = Field(
-        "csv",
-        const=True,
-    )
+    filetype: Literal["csv"] = "csv"
 
     delimiter: str = Field(
         default=",",

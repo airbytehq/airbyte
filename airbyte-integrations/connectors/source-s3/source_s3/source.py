@@ -4,20 +4,16 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 
 from .source_files_abstract.spec import SourceFilesAbstractSpec
 
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
-    class Config:
-        title = "S3 Source Spec"
+    model_config = ConfigDict()
 
     class S3Provider(BaseModel):
-        class Config:
-            title = "S3: Amazon Web Services"
-            # SourceFilesAbstractSpec field are ordered 10 apart to allow subclasses to insert their own spec's fields interspersed
-            schema_extra = {"order": 11, "description": "Use this to load files from S3 or S3-compatible services"}
+        model_config = ConfigDict(title="S3 Source Spec", title="S3: Amazon Web Services", json_schema_extra={"order": 11, "description": "Use this to load files from S3 or S3-compatible services"})
 
         bucket: str = Field(description="Name of the S3 bucket where the file(s) exist.", order=0)
         aws_access_key_id: Optional[str] = Field(

@@ -2,18 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from typing import Literal, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 
 
 class ParquetFormat(BaseModel):
     'This connector utilises <a href="https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html" target="_blank">PyArrow (Apache Arrow)</a> for Parquet parsing.'
+    model_config = ConfigDict(title="Parquet")
 
-    class Config:
-        title = "Parquet"
-
-    filetype: str = Field("parquet", const=True)
+    filetype: Literal["parquet"] = "parquet"
 
     columns: Optional[List[str]] = Field(
         default=None,

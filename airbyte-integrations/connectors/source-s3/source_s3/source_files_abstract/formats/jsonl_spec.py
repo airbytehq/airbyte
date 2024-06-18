@@ -4,7 +4,8 @@
 
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
+from typing import Literal
 
 
 class UnexpectedFieldBehaviorEnum(str, Enum):
@@ -15,14 +16,9 @@ class UnexpectedFieldBehaviorEnum(str, Enum):
 
 class JsonlFormat(BaseModel):
     'This connector uses <a href="https://arrow.apache.org/docs/python/json.html" target="_blank">PyArrow</a> for JSON Lines (jsonl) file parsing.'
+    model_config = ConfigDict(title="Jsonl")
 
-    class Config:
-        title = "Jsonl"
-
-    filetype: str = Field(
-        "jsonl",
-        const=True,
-    )
+    filetype: Literal["jsonl"] = "jsonl"
 
     newlines_in_values: bool = Field(
         title="Allow newlines in values",
