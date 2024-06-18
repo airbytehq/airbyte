@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.3
+Ensure error message is the same after migration to HttpClient
+
+## 1.5.2
+PerPartitionState - setting invalid initial state should trigger a config error
+
 ## 1.5.1
 Fix client_side_incremental end_datetime comparison
 
