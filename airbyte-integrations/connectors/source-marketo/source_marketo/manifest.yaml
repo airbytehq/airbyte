@@ -68,14 +68,6 @@ definitions:
     requester: "#/definitions/requester"
     paginator: "#/definitions/cursor_paginator"
 
-  semi_incremental_retriever:
-    $ref: "#/definitions/base_retriever"
-    record_selector:
-      $ref: "#/definitions/selector"
-      record_filter:
-        type: RecordFilter
-        condition: "{{ record['createdAt'] >= stream_state.get('createdAt', config['start_date']) }}"
-
   # Base streams
   base_full_refresh_stream:
     type: DeclarativeStream
@@ -90,6 +82,7 @@ definitions:
       cursor_field: "createdAt"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime: "{{ config['start_date'] }}"
+      is_client_side_incremental: true
 
   base_incremental_stream:
     $ref: "#/definitions/base_full_refresh_stream"
@@ -98,7 +91,9 @@ definitions:
       cursor_field: "updatedAt"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime: "{{ config['start_date'] }}"
-      end_datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+      end_datetime:
+        "{{ config.get('end_date', now_utc().strftime('%Y-%m-%dT%H:%M:%SZ'))
+        }}"
       cursor_granularity: "PT1S"
       step: "P{{ config.get('window_in_days', 30) }}D"
       start_time_option:
@@ -118,6 +113,70 @@ definitions:
     $parameters:
       path: "rest/v1/activities/types.json"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the activity type.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the activity type.
+            type:
+              - "null"
+              - string
+          description:
+            description: A description of the activity type.
+            type:
+              - "null"
+              - string
+          primaryAttribute:
+            description:
+              The primary attribute of the activity, which could be the
+              most essential or relevant data point.
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: The name of the primary attribute.
+                type:
+                  - "null"
+                  - string
+              dataType:
+                description: The data type of the primary attribute.
+                type:
+                  - "null"
+                  - string
+          attributes:
+            description:
+              An array containing the activity attributes including details
+              like type, value, timestamp, etc.
+            type:
+              - "null"
+              - array
+            items:
+              description: Properties related to a specific activity attribute.
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  description: The name of the attribute.
+                  type:
+                    - "null"
+                    - string
+                dataType:
+                  description: The data type of the attribute.
+                  type:
+                    - "null"
+                    - string
   segmentations_stream:
     # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET
     name: "segmentations"
@@ -128,7 +187,74 @@ definitions:
     $parameters:
       path: "rest/asset/v1/segmentation.json"
 
-  # Semi-Incremental streams
+    # Semi-Incremental streams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          createdAt:
+            description: The date and time when the segmentation was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          updatedAt:
+            description: The date and time when the segmentation was last updated.
+            type:
+              - string
+              - "null"
+            format: date-time
+          id:
+            description: The unique identifier for the segmentation.
+            type:
+              - integer
+              - "null"
+          description:
+            description: A brief description of the segmentation.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the segmentation.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL for accessing the segmentation data.
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the segmentation.
+            type:
+              - "null"
+              - string
+          folder:
+            description: Information about the folder where the segmentation is stored.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of folder.
+                type:
+                  - "null"
+                  - string
+              value:
+                description: The value associated with the folder.
+                type:
+                  - "null"
+                  - integer
+              folderName:
+                description: The name of the folder.
+                type:
+                  - "null"
+                  - string
   campaigns_stream:
     # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
     name: "campaigns"
@@ -136,6 +262,68 @@ definitions:
     $parameters:
       path: "rest/v1/campaigns.json"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the campaign.
+            type:
+              - "null"
+              - integer
+          createdAt:
+            description: The date and time when the campaign was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            description: The date and time when the campaign was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          active:
+            description: Indicates whether the campaign is currently active or not.
+            type:
+              - "null"
+              - boolean
+          description:
+            description: A brief description of the campaign.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the campaign.
+            type:
+              - "null"
+              - string
+          programId:
+            description:
+              The unique identifier of the program to which the campaign
+              belongs.
+            type:
+              - "null"
+              - integer
+          programName:
+            description: The name of the program to which the campaign belongs.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of the campaign (e.g., email, social media, event).
+            type:
+              - "null"
+              - string
+          workspaceName:
+            description: The name of the workspace where the campaign is stored.
+            type:
+              - "null"
+              - string
   lists_stream:
     # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
     name: "lists"
@@ -143,7 +331,59 @@ definitions:
     $parameters:
       path: "rest/v1/lists.json"
 
-  # Incremental streams
+    # Incremental streams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the list.
+            type:
+              - integer
+              - "null"
+          name:
+            description: The name of the list.
+            type:
+              - string
+              - "null"
+          createdAt:
+            description: The date and time this list was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          updatedAt:
+            description: The date and time this list was last updated.
+            type:
+              - string
+              - "null"
+            format: date-time
+          description:
+            description: A brief description of the list.
+            type:
+              - string
+              - "null"
+          programName:
+            description: The name of the program associated with this list.
+            type:
+              - string
+              - "null"
+          workspaceName:
+            description: The name of the workspace to which this list belongs.
+            type:
+              - string
+              - "null"
+          workspaceId:
+            description:
+              The unique identifier of the workspace to which this list
+              belongs.
+            type:
+              - integer
+              - "null"
   programs_stream:
     # API Docs: https://developers.marketo.com/rest-api/assets/programs/#by_date_range
     name: "programs"
@@ -161,23 +401,118 @@ definitions:
         fields:
           - type: AddedFieldDefinition
             path: ["createdAt"]
-            value: "{{ format_datetime(record['createdAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
+            value:
+              "{{ format_datetime(record['createdAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ')
+              }}"
           - type: AddedFieldDefinition
             path: ["updatedAt"]
-            value: "{{ format_datetime(record['updatedAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
+            value:
+              "{{ format_datetime(record['updatedAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ')
+              }}"
     $parameters:
       path: "rest/asset/v1/programs.json"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the program.
+            type:
+              - integer
+              - "null"
+          createdAt:
+            description: The date and time when the program was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          updatedAt:
+            description: The date and time when the program was last updated.
+            type:
+              - string
+              - "null"
+            format: date-time
+          name:
+            description: The name or title of the program.
+            type:
+              - string
+              - "null"
+          description:
+            description: The detailed information or overview of the program.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL associated with the program.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type or category of the program.
+            type:
+              - "null"
+              - string
+          channel:
+            description: The marketing channel associated with the program.
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the program.
+            type:
+              - "null"
+              - string
+          workspace:
+            description: The workspace or environment where the program is located.
+            type:
+              - "null"
+              - string
+          headStart:
+            description: The time duration for the program to start.
+            type:
+              - "null"
+              - boolean
+          isHeadStart:
+            description: Indicates if the program has a head start feature enabled.
+            type:
+              - "null"
+              - boolean
+          folder:
+            description: Details about the folder associated with the program
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                description: The type or category of the folder.
+                type:
+                  - "null"
+                  - string
+              value:
+                description: The unique value associated with the folder.
+                type:
+                  - "null"
+                  - integer
+              folderName:
+                description: The name of the folder where the program is stored.
+                type:
+                  - "null"
+                  - string
 streams:
   # Full refresh streams
   - "#/definitions/activity_types_stream"
   - "#/definitions/segmentations_stream"
 
-  # Semi-Incremental streams
+    # Semi-Incremental streams
   - "#/definitions/campaigns_stream"
   - "#/definitions/lists_stream"
 
-  # Incremental streams
+    # Incremental streams
   - "#/definitions/programs_stream"
 
 check:
