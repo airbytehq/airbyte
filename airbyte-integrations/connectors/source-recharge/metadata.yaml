@@ -27,7 +27,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "Primary key for Shop stream has been changed from [`shop`, `store`] to [`id`]. This change of pk makes the stream compatible with more types of destinations."
+        message: "Primary key for Shop stream has been changed from [`shop`, `store`] to [`id`]. This change of primary key makes the stream compatible with more types of destinations."
         upgradeDeadline: "2024-07-01"
         scopedImpact:
           - scopeType: stream

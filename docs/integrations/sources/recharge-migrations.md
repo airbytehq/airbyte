@@ -2,8 +2,8 @@
 
 ## Upgrading to 2.0.0
 
-This is a breaking change for **Shop** stream, which used `[shop, store]` fields as pk.
-This version introduces changing of pk from `[shop, store]`(type: object, object) to pk `id`(type: integer), as it makes stream compatible with destinations that do not support complex primary keys(e.g. BigQuery).
+This is a breaking change for **Shop** stream, which used `[shop, store]` fields as a primary key.
+This version introduces changing of primary key from `[shop, store]`(type: object, object) to primary key `id`(type: integer), as it makes stream compatible with destinations that do not support complex primary keys(e.g. BigQuery).
 
 To gracefully handle these changes for your existing connections, we highly recommend resetting your data before resuming your data syncs with the new version. The **Shop** stream can be manually reset in the following way:
 

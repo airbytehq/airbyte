@@ -79,7 +79,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.0   | 2024-06-14 | [39491](https://github.com/airbytehq/airbyte/pull/39491) | Update pk for Shop stream from shop, store(object, object) to id(integer)                                                      |
+| 2.0.0   | 2024-06-14 | [39491](https://github.com/airbytehq/airbyte/pull/39491) | Update primary key for Shop stream from shop, store(object, object) to id(integer)                                                      |
 | 1.2.0   | 2024-03-13 | [35450](https://github.com/airbytehq/airbyte/pull/35450) | Migrated to low-code                                                                                                           |
 | 1.1.6   | 2024-03-12 | [35982](https://github.com/airbytehq/airbyte/pull/35982) | Added additional `query param` to guarantee the records are in `asc` order                                                     |
 | 1.1.5   | 2024-02-12 | [35182](https://github.com/airbytehq/airbyte/pull/35182) | Manage dependencies with Poetry.                                                                                               |
