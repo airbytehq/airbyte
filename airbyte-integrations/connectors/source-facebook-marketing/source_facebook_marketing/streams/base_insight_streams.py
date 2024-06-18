@@ -60,6 +60,8 @@ class AdsInsights(FBMarketingIncrementalStream):
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
+    status_field = "effective_status"
+
     def __init__(
         self,
         name: str = None,
@@ -92,6 +94,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._insights_lookback_window = insights_lookback_window
         self._insights_job_timeout = insights_job_timeout
         self.level = level
+        self.entity_prefix = level
 
         # state
         self._cursor_values: Optional[Mapping[str, pendulum.Date]] = None  # latest period that was read for each account
@@ -365,6 +368,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             "time_increment": self.time_increment,
             "action_attribution_windows": self.action_attribution_windows,
         }
+        req_params.update(self._filter_all_statuses())
         return req_params
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
