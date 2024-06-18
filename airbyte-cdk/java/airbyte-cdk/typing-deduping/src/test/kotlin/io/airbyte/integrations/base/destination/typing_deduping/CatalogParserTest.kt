@@ -52,9 +52,9 @@ internal class CatalogParserTest {
 
     @Test
     fun throwOnEmptyCatalog() {
-        assertThrows(
-            ConfigErrorException::class.java
-        ) { parser.parseCatalog(ConfiguredAirbyteCatalog().withStreams(emptyList())) }
+        assertThrows(ConfigErrorException::class.java) {
+            parser.parseCatalog(ConfiguredAirbyteCatalog().withStreams(emptyList()))
+        }
     }
 
     /**

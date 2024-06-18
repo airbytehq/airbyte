@@ -27,7 +27,9 @@ constructor(
 ) {
     fun parseCatalog(originalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
         if (originalCatalog.streams.isEmpty()) {
-            throw ConfigErrorException("The catalog contained no streams. This likely indicates a platform/configuration error.")
+            throw ConfigErrorException(
+                "The catalog contained no streams. This likely indicates a platform/configuration error."
+            )
         }
 
         // Don't mutate the original catalog, just operate on a copy of it
