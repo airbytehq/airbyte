@@ -4,14 +4,6 @@
 
 from typing import Optional
 
-from airbyte_cdk.sources.streams.http.error_handlers.error_message_parser import ErrorMessageParser
-from airbyte_cdk.sources.utils.types import JsonType
-from typing import Optional
-
-from airbyte_cdk.sources.streams.http.error_handlers.error_message_parser import ErrorMessageParser
-from airbyte_cdk.sources.utils.types import JsonType
-from typing import Optional
-
 import requests
 from airbyte_cdk.sources.utils.types import JsonType
 
