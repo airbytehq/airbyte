@@ -56,10 +56,14 @@ class BigQueryDirectLoadingStorageOperation(
             |More details:
             |""".trimMargin()
     }
-    override fun writeToStage(streamConfig: StreamConfig, data: Stream<PartialAirbyteMessage>) {
+    override fun writeToStage(
+        streamConfig: StreamConfig,
+        suffix: String,
+        data: Stream<PartialAirbyteMessage>
+    ) {
         // TODO: why do we need ratelimiter, and using unstable API from Google's guava
         rateLimiter.acquire()
-        val tableId = TableId.of(streamConfig.id.rawNamespace, streamConfig.id.rawName)
+        val tableId = tableId(streamConfig.id, suffix)
         log.info { "Writing data to table $tableId with schema $SCHEMA_V2" }
         val writeChannel = initWriteChannel(tableId)
         writeChannel.use {
