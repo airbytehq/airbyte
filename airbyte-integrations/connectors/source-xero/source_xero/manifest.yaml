@@ -8,13 +8,45 @@ definitions:
       class_name: source_xero.components.CustomExtractor
       field_path: ["{{ parameters.extractor_path }}"]
 
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://identity.xero.com/connect/token
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    grant_type: client_credentials
+    refresh_request_body: {}
+    scopes:
+      - offline_access
+      - accounting.transactions.read
+      - accounting.reports.read
+      - accounting.budgets.read
+      - accounting.reports.tenninetynine.read
+      - accounting.journals.read
+      - accounting.settings.read
+      - accounting.contacts.read
+      - accounting.attachments.read
+      - assets.read files.read projects.read
+      - openid
+    expires_in_name: expires_in
+    access_token_name: access_token
+
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2_access_token: "#/definitions/bearer_authenticator"
+      oauth2_confidential_application: "#/definitions/oauth_authenticator"
+
   requester:
     type: HttpRequester
     url_base: "https://api.xero.com/api.xro/2.0/"
     http_method: "GET"
     authenticator:
-      type: "BearerAuthenticator"
-      api_token: "{{ config['access_token'] }}"
+      $ref: "#/definitions/authenticator"
     request_headers:
       "Xero-Tenant-Id": "{{ config['tenant_id'] }}"
       "Accept": "application/json"
@@ -2752,17 +2784,61 @@ spec:
     title: Xero Spec
     type: object
     required:
-      - access_token
+      - credentials
       - tenant_id
       - start_date
     additionalProperties: true
     properties:
-      access_token:
-        type: string
-        title: Access Token
-        description: "Enter your Xero application's access token"
-        airbyte_secret: true
-        order: 0
+      credentials:
+        title: Authentication Method
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth Custom Connection
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                title: Authentication Method
+                const: oauth2_confidential_application
+                order: 0
+              client_id:
+                title: Client ID
+                description: >-
+                  Your Xero application's Client ID.
+                type: string
+                examples:
+                  - "Client_ID"
+              client_secret:
+                title: Client Secret
+                description: >-
+                  Your Xero application's Client Secret.
+                type: string
+                examples:
+                  - "Client_Secret"
+                airbyte_secret: true
+          - type: object
+            title: Bearer Access Token
+            required:
+              - access_token
+              - auth_type
+            properties:
+              auth_type:
+                type: string
+                title: Authentication Method
+                const: oauth2_access_token
+                examples:
+                  - "access_token"
+                order: 0
+              access_token:
+                title: Access Token
+                description: >-
+                  The access token used to call the Xero API.
+                type: string
+                airbyte_secret: true
       tenant_id:
         title: Tenant ID
         type: string
@@ -2771,9 +2847,9 @@ spec:
         order: 1
       start_date:
         type: string
-        title: "Start Date"
+        title: Start Date
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-        description: "UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any data with created_at before this data will not be synced."
+        description: "UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any data with created_at before this date will not be synced."
         examples:
           - "2022-03-01T00:00:00Z"
         format: "date-time"

@@ -104,7 +104,12 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
-from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers import (
+    CartesianProductStreamSlicer,
+    ListPartitionRouter,
+    SinglePartitionRouter,
+    SubstreamPartitionRouter,
+)
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
@@ -130,7 +135,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
@@ -671,7 +676,11 @@ class ModelToComponentFactory:
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
         stream_slicer = None
-        if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
+        if (
+            hasattr(model.retriever, "partition_router")
+            and isinstance(model.retriever, SimpleRetrieverModel)
+            and model.retriever.partition_router
+        ):
             stream_slicer_model = model.retriever.partition_router
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
@@ -976,6 +985,7 @@ class ModelToComponentFactory:
             stream=declarative_stream,
             partition_field=model.partition_field,
             config=config,
+            incremental_dependency=model.incremental_dependency or False,
             parameters=model.parameters or {},
         )
 

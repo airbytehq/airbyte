@@ -549,6 +549,7 @@ module.exports = {
       items: [
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
+        "enterprise-setup/scaling-airbyte",
         "enterprise-setup/upgrading-from-community",
       ],
     },
@@ -663,6 +664,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/may_2024",
         "release_notes/april_2024",
         "release_notes/march_2024",
         "release_notes/february_2024",

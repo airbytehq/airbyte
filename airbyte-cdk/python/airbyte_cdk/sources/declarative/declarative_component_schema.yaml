@@ -719,6 +719,7 @@ definitions:
         description: |
           The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%s_as_float**: Epoch unix timestamp in seconds as float with microsecond precision - `1686218963.123456`
             * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
@@ -752,6 +753,7 @@ definitions:
           - "%Y-%m-%d"
           - "%s"
           - "%ms"
+          - "%s_as_float"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -1717,6 +1719,7 @@ definitions:
         description: |
           Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%s_as_float**: Epoch unix timestamp in seconds as float with microsecond precision - `1686218963.123456`
             * **%ms**: Epoch unix timestamp - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
@@ -2009,6 +2012,11 @@ definitions:
         title: Request Option
         description: A request option describing where the parent key value should be injected into and under what field name if applicable.
         "$ref": "#/definitions/RequestOption"
+      incremental_dependency:
+        title: Incremental Dependency
+        description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true

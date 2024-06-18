@@ -17,7 +17,7 @@ include = "source_declarative_manifest"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.2.1"
+airbyte-cdk = "1.4.0"
 
 [tool.poetry.scripts]
 source-declarative-manifest = "source_declarative_manifest.run:run"
