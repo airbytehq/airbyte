@@ -46,6 +46,9 @@ import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.functional.CheckedConsumer
@@ -70,6 +73,7 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -173,10 +177,38 @@ abstract class AbstractJdbcSource<Datatype>(
                 cursorField,
             )
 
+        if (airbyteStream.syncMode == FULL_REFRESH) {
+            var defaultProducer = getSourceStateProducerForNonResumableFullRefreshStream(database)
+            if (defaultProducer != null) {
+                iterator =
+                    AutoCloseableIterators.transform(
+                        { autoCloseableIterator: AutoCloseableIterator<AirbyteMessage> ->
+                            SourceStateIterator(
+                                autoCloseableIterator,
+                                airbyteStream,
+                                defaultProducer,
+                                StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO)
+                            )
+                        },
+                        iterator,
+                        AirbyteStreamUtils.convertFromNameAndNamespace(
+                            airbyteStream.stream.name,
+                            airbyteStream.stream.namespace
+                        )
+                    )
+            }
+        }
+
         return when (airbyteStream.syncMode) {
             FULL_REFRESH -> augmentWithStreamStatus(airbyteStream, iterator)
             else -> iterator
         }
+    }
+
+    protected open fun getSourceStateProducerForNonResumableFullRefreshStream(
+        database: JdbcDatabase
+    ): SourceStateMessageProducer<AirbyteMessage>? {
+        return null
     }
 
     open fun augmentWithStreamStatus(
