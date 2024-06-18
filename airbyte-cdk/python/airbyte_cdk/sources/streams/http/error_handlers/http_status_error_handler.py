@@ -3,6 +3,7 @@
 #
 
 import logging
+from datetime import timedelta
 from typing import Mapping, Optional, Union
 
 import requests
@@ -17,6 +18,8 @@ class HttpStatusErrorHandler(ErrorHandler):
         self,
         logger: logging.Logger,
         error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
+        max_retries: int = 5,
+        max_time: timedelta = timedelta(seconds=600),
     ) -> None:
         """
         Initialize the HttpStatusErrorHandler.
@@ -25,6 +28,16 @@ class HttpStatusErrorHandler(ErrorHandler):
         """
         self._logger = logger
         self._error_mapping = error_mapping or DEFAULT_ERROR_MAPPING
+        self._max_retries = max_retries
+        self._max_time = int(max_time.total_seconds())
+
+    @property
+    def max_retries(self) -> Optional[int]:
+        return self._max_retries
+
+    @property
+    def max_time(self) -> Optional[int]:
+        return self._max_time
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         """

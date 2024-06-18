@@ -6,13 +6,23 @@ from typing import Mapping, Type, Union
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-from requests import RequestException
+from requests.exceptions import InvalidSchema, InvalidURL, RequestException
 
 DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Type[Exception]], ErrorResolution] = {
+    InvalidSchema: ErrorResolution(
+        response_action=ResponseAction.FAIL,
+        failure_type=FailureType.config_error,
+        error_message="Invalid Protocol Schema: The endpoint that data is being requested from is using an invalid or insecure. Exception: requests.exceptions.InvalidSchema",
+    ),
+    InvalidURL: ErrorResolution(
+        response_action=ResponseAction.FAIL,
+        failure_type=FailureType.config_error,
+        error_message="Invalid URL specified: The endpoint that data is being requested from is not a valid URL. Exception: requests.exceptions.InvalidURL",
+    ),
     RequestException: ErrorResolution(
         response_action=ResponseAction.RETRY,
         failure_type=FailureType.transient_error,
-        error_message="An exception occurred when making the request.",
+        error_message="An exception occurred when making the request. Exception: requests.exceptions.RequestException",
     ),
     400: ErrorResolution(
         response_action=ResponseAction.FAIL,
