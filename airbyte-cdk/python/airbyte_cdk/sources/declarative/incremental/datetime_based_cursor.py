@@ -180,6 +180,14 @@ class DatetimeBasedCursor(DeclarativeCursor):
         return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
 
     def select_best_end_datetime(self) -> datetime.datetime:
+        """
+        Returns the optimal end datetime.
+        This method compares the current datetime with a pre-configured end datetime
+        and returns the earlier of the two. If no pre-configured end datetime is set,
+        the current datetime is returned.
+
+        :return datetime.datetime: The best end datetime, which is either the current datetime or the pre-configured end datetime, whichever is earlier.
+        """
         now = datetime.datetime.now(tz=self._timezone)
         if not self._end_datetime:
             return now
