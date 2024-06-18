@@ -90,6 +90,6 @@ class FirstRecordSchemaLoader(SchemaLoader):
     parameters: InitVar[Mapping[str, Any]]
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        first_record = next(self.retriever.read_records(record_schema={}))
-        generated_schema = convert_record_to_schema(first_record)
+        first_record = next(iter(self.retriever.read_records(records_schema={})))
+        generated_schema = convert_record_to_schema(dict(first_record))
         return generated_schema
