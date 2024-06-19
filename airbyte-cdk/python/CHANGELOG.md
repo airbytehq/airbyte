@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.5.1
+Fix client_side_incremental end_datetime comparison
+
+## 1.5.0
+Python/Low Code: Updates ErroHandler, BackoffStrategy, HttpClient. Integrates HttpClient into low-code CDK.
+
+## 1.4.0
+low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter 
+
+## 1.3.3
+Mock server tests: adding 'discover' as part of the entrypoint_wrapper
+
+## 1.3.2
+low-code: Added retriever type filter to stream slicer merge
+
 ## 1.3.1
 Use  for Jinja interpolations
 

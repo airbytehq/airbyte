@@ -583,14 +583,22 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     fun minTimestampBehavesCorrectly() {
         // When the raw table doesn't exist, there are no unprocessed records and no timestamp
         Assertions.assertEquals(
-            InitialRawTableStatus(false, false, Optional.empty()),
+            InitialRawTableStatus(
+                rawTableExists = false,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            ),
             getInitialRawTableState(incrementalAppendStream)
         )
 
         // When the raw table is empty, there are still no unprocessed records and no timestamp
         createRawTable(streamId)
         Assertions.assertEquals(
-            InitialRawTableStatus(true, false, Optional.empty()),
+            InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            ),
             getInitialRawTableState(incrementalAppendStream)
         )
 
@@ -643,7 +651,11 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         Assertions.assertEquals(
             getInitialRawTableState(incrementalAppendStream),
-            InitialRawTableStatus(true, false, Optional.of(Instant.parse("2023-01-02T00:00:00Z"))),
+            InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.of(Instant.parse("2023-01-02T00:00:00Z"))
+            ),
             "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, and the min timestamp should be equal to the latest extracted_at"
         )
 
@@ -1773,7 +1785,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val columnName1 = baseColumnName + "1"
         val columnName2 = baseColumnName + "2"
 
-        val catalogParser = CatalogParser(generator, rawNamespace)
+        // We're always setting a nonnull namespace, so the default namespace is never used.
+        // We just need to pass a value b/c it's nonnullable
+        val catalogParser = CatalogParser(generator, "unused", rawNamespace)
         val stream =
             catalogParser
                 .parseCatalog(
