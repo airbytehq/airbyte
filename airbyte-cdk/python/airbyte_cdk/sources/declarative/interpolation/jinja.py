@@ -24,7 +24,7 @@ class StreamPartitionAccessEnvironment(SandboxedEnvironment):
     def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
         if attr in ["_partition"]:
             return True
-        return super().is_safe_attribute(obj, attr, value)
+        return super().is_safe_attribute(obj, attr, value)  # type: ignore  # for some reason, mypy says 'Returning Any from function declared to return "bool"'
 
 
 class JinjaInterpolation(Interpolation):
