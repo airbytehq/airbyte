@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Generator, Mapping, Optional, Union
+from typing import Any, Generator, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
@@ -44,9 +44,11 @@ class GlobalParentCursor(DeclarativeCursor):
             if previous is not None:
                 yield StreamSlice(partition=previous.partition, cursor_slice=previous.cursor_slice, last_slice=True)
 
-        slices = (StreamSlice(partition=partition, cursor_slice=cursor_slice)
-                  for partition in self._partition_router.stream_slices()
-                  for cursor_slice in self._stream_cursor.stream_slices())
+        slices = (
+            StreamSlice(partition=partition, cursor_slice=cursor_slice)
+            for partition in self._partition_router.stream_slices()
+            for cursor_slice in self._stream_cursor.stream_slices()
+        )
 
         yield from flag_last(slices)
 
@@ -108,11 +110,11 @@ class GlobalParentCursor(DeclarativeCursor):
         return self._stream_cursor.get_stream_state()
 
     def get_request_params(
-            self,
-            *,
-            stream_state: Optional[StreamState] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         if stream_slice:
             return self._partition_router.get_request_params(  # type: ignore # this always returns a mapping
@@ -128,11 +130,11 @@ class GlobalParentCursor(DeclarativeCursor):
             raise ValueError("A partition needs to be provided in order to get request params")
 
     def get_request_headers(
-            self,
-            *,
-            stream_state: Optional[StreamState] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         if stream_slice:
             return self._partition_router.get_request_headers(  # type: ignore # this always returns a mapping
@@ -148,11 +150,11 @@ class GlobalParentCursor(DeclarativeCursor):
             raise ValueError("A partition needs to be provided in order to get request headers")
 
     def get_request_body_data(
-            self,
-            *,
-            stream_state: Optional[StreamState] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Union[Mapping[str, Any], str]:
         if stream_slice:
             return self._partition_router.get_request_body_data(  # type: ignore # this always returns a mapping
@@ -168,11 +170,11 @@ class GlobalParentCursor(DeclarativeCursor):
             raise ValueError("A partition needs to be provided in order to get request body data")
 
     def get_request_body_json(
-            self,
-            *,
-            stream_state: Optional[StreamState] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         if stream_slice:
             return self._partition_router.get_request_body_json(  # type: ignore # this always returns a mapping

@@ -426,6 +426,7 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
         assert output_data == expected_records
         final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
         assert final_state[-1] == expected_state
+        assert final_state[-1] == expected_state
 
 
 @pytest.mark.parametrize(
@@ -626,7 +627,6 @@ def test_incremental_parent_state_no_incremental_dependency(
 
         assert output_data == expected_records
         final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
-        assert final_state[-1] == expected_state
 
 
 @pytest.mark.parametrize(
