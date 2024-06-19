@@ -1,5 +1,7 @@
-- [ ] choose a strategy based on config
-- [ ] unify test framework across unit/integration tests (remove pytest?)
-- [ ] clean up todos
-- [ ] update readme
-- [ ] figure out why the dev-write script stopped working (freezes)
+- [ ] feat: choose a strategy based on config
+- [+] chore: stop writing any record data to logs
+- [+] chore: cleanup logs generally
+- [ ] chore: unify test framework across unit/integration tests (remove pytest?)
+- [ ] chore: clean up todos
+- [ ] chore: update readme
+- [ ] chore: figure out why the dev-write script stopped working (freezes)

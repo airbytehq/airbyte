@@ -114,8 +114,7 @@ class DestinationGlide(Destination):
                     stream_buffer = buffer[stream]
                     stream_buffer.append(
                         (record_id, datetime.datetime.now().isoformat(), data))
-
-                    logger.debug(f"buffering record complete: {stream_buffer[len(stream_buffer)-1]}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
+                    logger.debug(f"buffering record complete.")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
 
                 elif message.type == Type.STATE:
                     # This is a queue from the source that we should save the buffer of records from message.type == Type.RECORD messages. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#state--the-whole-sync

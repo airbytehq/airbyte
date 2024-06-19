@@ -21,12 +21,14 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         mock_put.return_value.status_code = 200
         mock_put.return_value.json.return_value = {'data': 'test'}
 
-        self.gbt.prepare_table([
+        test_columns = [
             Column('test-str', 'string'),
             Column('test-num', 'number')
-        ])
+        ]
+        self.gbt.prepare_table(test_columns)
 
         mock_put.assert_called_once()
+        self.assertListEqual(mock_put.call_args[1]['json']['schema']['columns'], test_columns)
 
     @patch.object(requests, 'put')
     def test_prepare_table_invalid_col_type(self, mock_put):
