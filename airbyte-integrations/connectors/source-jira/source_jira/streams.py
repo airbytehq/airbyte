@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 import re
 import urllib.parse as urlparse
 from abc import ABC
@@ -10,7 +10,6 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -29,7 +28,9 @@ class JiraAvailabilityStrategy(HttpAvailabilityStrategy):
     Inherit from HttpAvailabilityStrategy with slight modification to 403 and 401 error messages.
     """
 
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError
+    ) -> Dict[int, str]:
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
             requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
@@ -223,8 +224,8 @@ class Issues(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._project_ids = []
-        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self.issue_fields_stream = IssueFields(authenticator=self._session.auth, domain=self._domain, projects=self._projects)
+        self.projects_stream = Projects(authenticator=self._session.auth, domain=self._domain, projects=self._projects)
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -340,7 +341,7 @@ class IssueWorklogs(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_stream = Issues(
-            authenticator=self.authenticator,
+            authenticator=self._session.auth,
             domain=self._domain,
             projects=self._projects,
             start_date=self._start_date,
@@ -370,7 +371,7 @@ class IssueComments(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_stream = Issues(
-            authenticator=self.authenticator,
+            authenticator=self._session.auth,
             domain=self._domain,
             projects=self._projects,
             start_date=self._start_date,

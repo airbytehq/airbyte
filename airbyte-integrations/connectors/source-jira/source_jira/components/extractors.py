@@ -1,10 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Iterable
+from typing import Any, Iterable, List, Mapping
 
 import requests
-
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from requests_cache import Response
 
