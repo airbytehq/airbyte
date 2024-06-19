@@ -8,7 +8,7 @@ from airbyte_cdk import ConnectorStateManager, InternalConfig, Record
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
-from airbyte_protocol.models import ConfiguredAirbyteStream, AirbyteMessage, Type
+from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteStream, Type
 
 _NO_STATE: MutableMapping[str, Any] = {}
 
@@ -30,17 +30,26 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
 
 
 def _read(stream_instance: Stream, sync_mode: SyncMode, stream_state: MutableMapping[str, Any]):
-    configured_stream = ConfiguredAirbyteStream.parse_obj({
-        "stream": {
-            "name": stream_instance.name,
-            "json_schema": {},
-            "supported_sync_modes": ["full_refresh"] if sync_mode else ["full_refresh", "incremental"],
-        },
-        "sync_mode": sync_mode.value,
-        "destination_sync_mode": "overwrite",
-    })
+    configured_stream = ConfiguredAirbyteStream.parse_obj(
+        {
+            "stream": {
+                "name": stream_instance.name,
+                "json_schema": {},
+                "supported_sync_modes": ["full_refresh"] if sync_mode else ["full_refresh", "incremental"],
+            },
+            "sync_mode": sync_mode.value,
+            "destination_sync_mode": "overwrite",
+        }
+    )
     stream_instance.state = stream_state
-    for record in stream_instance.read(configured_stream, logging.getLogger("airbyte"), DebugSliceLogger(), stream_state, ConnectorStateManager(stream_instance_map={}), InternalConfig.parse_obj({})):
+    for record in stream_instance.read(
+        configured_stream,
+        logging.getLogger("airbyte"),
+        DebugSliceLogger(),
+        stream_state,
+        ConnectorStateManager(stream_instance_map={}),
+        InternalConfig.parse_obj({}),
+    ):
         if isinstance(record, dict):
             yield record
         elif isinstance(record, Record):
