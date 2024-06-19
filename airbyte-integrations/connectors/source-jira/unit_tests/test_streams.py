@@ -8,6 +8,7 @@ import pendulum
 import pytest
 import responses
 from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from conftest import find_stream
 from source_jira.source import SourceJira
 from source_jira.streams import IssueFields, Issues, PullRequests
@@ -23,10 +24,7 @@ def test_application_roles_stream_401_error(config, caplog):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = find_stream("application_roles", config)
 
-    with pytest.raises(
-        ReadException,
-        match="Request to https://test_application_domain/rest/api/3/applicationrole failed with status code 401 and error message None",
-    ):
+    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
         list(read_full_refresh(stream))
 
 
@@ -51,7 +49,7 @@ def test_application_roles_stream_http_error(config, application_roles_response)
 
     stream = find_stream("application_roles", config)
     with pytest.raises(
-        ReadException, match="Request to https://domain/rest/api/3/applicationrole failed with status code 404 and error message not found"
+        MessageRepresentationAirbyteTracedErrors
     ):
         list(read_full_refresh(stream))
 
@@ -86,10 +84,7 @@ def test_board_stream_forbidden(config, boards_response, caplog):
     escaped_url = re.escape(expected_url)
 
     with pytest.raises(
-        ReadException,
-        match=(
-            f"Request to {escaped_url} failed with status code 403 and error message 403 Client Error: " f"Forbidden for url: {escaped_url}"
-        ),
+        MessageRepresentationAirbyteTracedErrors,
     ):
         list(read_full_refresh(stream))
 
@@ -434,15 +429,12 @@ def test_board_does_not_support_sprints(config, mock_board_response, sprints_res
     records = list(read_full_refresh(stream))
     assert len(records) == 2
 
-    # No matter what the error_message value is, it is displayed as 'Ignoring response for failed request with error message None'
-    # Feature request is added to fix this problem.
-    # assert (
-    #     "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
-    #     "does it have sprints enabled under project settings? If it's a company-managed one,"
-    #     " check that it has at least one Scrum board associated with it."
-    # ) in caplog.text
+    assert (
+        "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+        "does it have sprints enabled under project settings? If it's a company-managed one,"
+        " check that it has at least one Scrum board associated with it."
+    ) in caplog.text
 
-    assert "Ignoring response for failed request" in caplog.text
 
 
 @responses.activate
@@ -603,7 +595,7 @@ def test_avatars_stream_should_retry(config, caplog):
     records = list(read_full_refresh(stream))
 
     assert len(records) == 0
-    assert "Ignoring response for failed request" in caplog.text
+    assert "Bad request. Please check your request parameters." in caplog.text
 
 
 @responses.activate
@@ -617,8 +609,8 @@ def test_declarative_issues_stream(config, mock_projects_responses_additional_pr
     assert "non_empty_field" in records[0]["fields"]
 
     assert len(responses.calls) == 3
-    # error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"]. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
-    assert "Ignoring response for failed request with error message None" in caplog.messages
+
+    assert "The user doesn't have permission to the project. Please grant the user to the project." in caplog.messages
 
 
 @responses.activate
