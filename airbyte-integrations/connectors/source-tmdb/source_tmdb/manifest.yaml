@@ -9883,7 +9883,7 @@ schemas:
                     default: 0
                     title: Popularity
                   poster_path:
-                    type: string
+                    type: ["string", "null"]
                     $id: "#root/results/items/known_for/items/poster_path"
                     pattern: ^.*$
                     title: Poster_path
