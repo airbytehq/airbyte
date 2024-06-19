@@ -9798,7 +9798,6 @@ schemas:
     definitions: {}
     $id: https://example.com/object1667210990.json
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties:
       page:
         type: integer
