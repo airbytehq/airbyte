@@ -154,6 +154,7 @@ class AbstractSource(Source, ABC):
                         )
                         break
                 except Exception as e:
+                    print(e)
                     yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")

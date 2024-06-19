@@ -35,6 +35,7 @@ class ParentStreamConfig:
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
     incremental_dependency: bool = False
+    global_parent_cursor: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.parent_key = InterpolatedString.create(self.parent_key, parameters=parameters)
