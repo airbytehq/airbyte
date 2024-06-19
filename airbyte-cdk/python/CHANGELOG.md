@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.6
+Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout take 2)
+
 ## 1.5.5
 Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout)
 
