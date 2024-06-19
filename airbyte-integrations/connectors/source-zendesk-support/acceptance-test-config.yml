@@ -45,7 +45,7 @@ acceptance_tests:
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
         timeout_seconds: 3600
-#      testing ticket metrics with a different start date
+      #      testing ticket metrics with a different start date
       - config_path: "secrets/config_ticket_metrics.json"
         configured_catalog_path: "integration_tests/incremental_catalog_ticket_metrics.json"
         future_state:
