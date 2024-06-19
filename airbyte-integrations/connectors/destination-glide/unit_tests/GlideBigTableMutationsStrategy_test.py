@@ -31,4 +31,29 @@ class TestGlideBigTableMutationsStrategy(unittest.TestCase):
             Column('this column wont be found', 'string')
         ]
         self.gbt.prepare_table(test_columns)
+    
+    @patch.object(requests, 'post')
+    def test_add_rows(self, mock_post):
+      test_columns = [
+            Column('id', 'string'),
+            Column('this column wont be found', 'string')
+        ]
+      
+      mock_post.return_value.status_code = 200
+      
+      self.gbt.prepare_table(test_columns)
+
+      mock_post.reset_mock()
+      test_data = [
+          {
+              'id': '1',
+              'col2': 'test name'
+          },
+          {
+              'id': '2',
+              'col2': 'test name2'
+          }
+      ]
+      self.gbt.add_rows(test_data)
+      self.assertEqual(1, mock_post.call_count)
 
