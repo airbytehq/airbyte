@@ -209,8 +209,7 @@ class DatetimeBasedCursor(DeclarativeCursor):
         end_field = self._partition_field_end.eval(self.config)
         dates = []
 
-        is_within_interval = start < end if self.is_compare_strictly else start <= end
-        while is_within_interval:
+        while self._is_within_date_range(start, end):
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
             dates.append(
@@ -220,6 +219,11 @@ class DatetimeBasedCursor(DeclarativeCursor):
             )
             start = next_start
         return dates
+
+    def _is_within_date_range(self, start: datetime.datetime, end: datetime.datetime) -> bool:
+        if self.is_compare_strictly:
+            return start < end
+        return start <= end
 
     def _evaluate_next_start_date_safely(self, start: datetime.datetime, step: datetime.timedelta) -> datetime.datetime:
         """
