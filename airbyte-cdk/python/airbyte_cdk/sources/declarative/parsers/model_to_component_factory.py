@@ -603,6 +603,7 @@ class ModelToComponentFactory:
             partition_field_end=model.partition_field_end,
             partition_field_start=model.partition_field_start,
             message_repository=self._message_repository,
+            is_compare_strictly=model.is_compare_strictly,
             config=config,
             parameters=model.parameters or {},
         )

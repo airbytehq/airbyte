@@ -120,7 +120,7 @@ __all__ = [
     "BearerAuthenticator",
     "CartesianProductStreamSlicer",
     "CursorPaginationStrategy",
-    "DatetimeBasedCursor"
+    "DatetimeBasedCursor",
     "DeclarativeAuthenticator",
     "DeclarativeOauth2Authenticator",
     "DeclarativeSingleUseRefreshTokenOauth2Authenticator",
@@ -178,7 +178,7 @@ __all__ = [
     "HttpSubStream",
     "LimiterSession",
     "MovingWindowCallRatePolicy",
-    "MultipleTokenAuthenticator"
+    "MultipleTokenAuthenticator",
     "Oauth2Authenticator",
     "Rate",
     "SingleUseRefreshTokenOauth2Authenticator",
@@ -191,7 +191,11 @@ __all__ = [
 
     # Protocol classes
     "AirbyteStream",
-    "AirbyteConnectionStatus", "AirbyteMessage", "ConfiguredAirbyteCatalog", "Status", "Type",
+    "AirbyteConnectionStatus",
+    "AirbyteMessage",
+    "ConfiguredAirbyteCatalog",
+    "Status",
+    "Type",
     "OrchestratorType",
     "ConfiguredAirbyteStream",
     "DestinationSyncMode",
