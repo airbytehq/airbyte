@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.4
+Jinja interpolation - Allow access to _partition for source-jira
+
 ## 1.5.3
 Ensure error message is the same after migration to HttpClient
 
