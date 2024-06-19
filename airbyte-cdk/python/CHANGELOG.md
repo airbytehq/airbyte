@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.7.1
+Exclude airbyte-cdk modules from schema discovery
+
 ## 1.7.0
 add  from  to 
 
