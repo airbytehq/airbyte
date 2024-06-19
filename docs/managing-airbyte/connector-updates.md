@@ -1,28 +1,33 @@
 # Managing Connector Updates in Airbyte
 
-A Guide for Administrators
-When maintaining an Airbyte instance, you'll likely encounter connector updates. These are essential for improved functionality and reliability over time. Our team and community contributors are dedicated to maintaining and improving the functionality of connectors. 
+While maintaining an Airbyte instance, you'll need to manage connector updates. These are essential for improved functionality and reliability over time. Our team and community contributors are dedicated to maintaining and improving the functionality of connectors. Reasons for updates can be broadly categorized into bug fixes, new features, and changes that impact the user experience or the functionality of the connector.
 
-This guide helps you understand the different update types, their impact on your Airbyte environment, and the actions you may need to take in response to certain types of updates.
+This guide helps you understand the types of updates you may see, their impact on your Airbyte environment, and the actions you may need to take in response to certain types of updates.
 
 ## Understanding Connector Versions 
-To effectively manage changes to the connectors you use, it's important that you understand versioning and how to interpret the changelog. 
+To manage connection updates effectively, it's important to understand versioning and how to interpret the changelog entries. 
 
 Every connector in Airbyte's catalog follows semantic versioning (semver)
 Major.Minor.Patch (e.g., 1.2.5)
 A connector reaching version 1.0 is considered mature and comes with semver guarantees. 
 
-**Minor updates (1.2.x):** These typically contain bug fixes and small improvements that won't affect your existing configurations.<br/>
-**Patch updates (1.x.x):** These might introduce new features like streams or properties, but they are designed to be fully backward compatible with your existing setup.<br/>
+**Minor updates (1.2.x):** These might introduce new features like streams or properties, but they are designed to be fully backward compatible with your existing setup.<br/>
+**Patch updates (1.x.x):** These typically contain bug fixes and small improvements that won't affect your existing configurations.<br/>
 **Major updates (x.0.0):** These are significant changes that may require you to adjust your configurations. We'll discuss this in more detail below.<br/>
 
+:::info
+When a connector version is 1.0 or higher, this means it's mature and now has semver guarantees.
+:::
+
 Each connector's changelog details its update history. You can find it in the [connector catalog](../integrations/) at the end of each individual connector's entry.
-<!-- insert video navigating to changelog and toggling it open for revew -->
+
+<!-- maybe insert Arcade clip navigating to changelog and toggling it open for revew -->
 
 ## How Airbyte Handles Connector Updates
 
 ### Airbyte Cloud
 **Minor and Patch Updates:** These are applied automatically and immediately to your instance. You don't need to take any action.
+
 **Major Updates:** These are opt-in. You'll receive notifications about major updates and have a deadline to decide whether to apply them. If you choose not to opt-in by the deadline, any syncs using the affected connector will be paused to prevent compatibility issues.
 
 <!-- Can I find a screenshot for something in cloud requiring attention and showing a deadline? -->
@@ -30,12 +35,15 @@ Each connector's changelog details its update history. You can find it in the [c
 
 ## Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
 **All Updates (Major, Minor, Patch):** These are opt-in via the settings page. You'll see a badge in the sidebar indicating available updates.
-**Minor and Patch Updates:** Once you opt-in, these are applied immediately and globally to all connectors of that type in your instance.
-**Major Updates:** These require a two-step opt-in process:
-Opt-in to the update on the settings page.
 
-Accept the update for each individual connection using the affected connector. This allows you to review and potentially adjust the connection settings before applying the update.
-**Syncs are Not Automatically Paused:** Unlike Airbyte Cloud, syncs will not be paused if you miss the deadline for a major update. However, it's strongly recommended to update promptly to avoid potential compatibility issues.
+**Minor and Patch Updates:** Once you opt-in, these are applied immediately and globally to all connectors of that type in your instance.
+
+**Major Updates:** These require a two-step opt-in process:
+1. Opt-in to the update on the settings page.
+
+2. Accept the update for each individual connection using the affected connector. This allows you to review and potentially adjust the connection settings before applying the update.
+
+Note that in an Airbyte Open Source or Self-Managed Enterprise instance, syncs are not automatically paused. This differs from what you would see in Airbyte Cloud. Syncs will not be paused if you miss the deadline for a major update. However, it's strongly recommended to update promptly to avoid potential compatibility issues.
 
 <!-- Maybe a short clip from arcade showing opt-in and updating -->
 
@@ -44,11 +52,7 @@ Accept the update for each individual connection using the affected connector. T
 ### Review the Changelog: 
 Before applying any update, carefully review the changelog to understand the changes and their potential impact on your existing connections.
 
-### Test in a Staging Environment (if possible): 
-If you have a staging environment, it's always a good practice to test connector updates there before applying them to your production instance.
-
 ### Plan for Major Updates: 
-
 Major updates may require you to adjust connection settings or even make changes to your data pipelines. Be sure to allocate time and resources for this.
 
 :::info
