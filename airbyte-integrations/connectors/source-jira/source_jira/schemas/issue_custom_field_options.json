@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Details of the custom field options for a context.",
+  "properties": {
+    "id": {
+      "description": "The ID of the custom field option.",
+      "type": ["null", "string"]
+    },
+    "value": {
+      "description": "The value of the custom field option.",
+      "type": ["null", "string"]
+    },
+    "optionId": {
+      "description": "For cascading options, the ID of the custom field option containing the cascading option.",
+      "type": ["null", "string"]
+    },
+    "disabled": {
+      "description": "Whether the option is disabled.",
+      "type": ["null", "boolean"]
+    },
+    "fieldId": {
+      "description": "The ID of the custom field to which the option belongs.",
+      "type": ["null", "string"]
+    },
+    "contextId": {
+      "description": "The ID of the context to which the custom field option belongs.",
+      "type": ["null", "string"]
+    }
+  }
+}

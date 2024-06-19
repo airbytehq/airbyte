@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The unique identifier and name of the workflow.",
+      "type": "object",
+      "properties": {
+        "entityId": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name of the workflow.",
+          "type": "string"
+        }
+      }
+    },
+    "entityId": {
+      "description": "The unique identifier of the workflow.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The unique name the workflow.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The detailed description of the workflow.",
+      "type": "string"
+    },
+    "transitions": {
+      "description": "The transitions available within the workflow.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The unique identifier of the transition.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the transition.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The detailed description of the transition.",
+            "type": "string"
+          },
+          "from": {
+            "description": "The statuses the transition can start from.",
+            "type": "array",
+            "items": {
+              "description": "The statuses the transition can start from.",
+              "type": "string"
+            }
+          },
+          "to": {
+            "description": "The status that the transition moves the issue to.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the transition.",
+            "type": "string",
+            "enum": ["global", "initial", "directed"]
+          },
+          "screen": {
+            "description": "The screen associated with the transition.",
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "The unique identifier of the screen.",
+                "type": "string"
+              }
+            }
+          },
+          "rules": {
+            "type": "object",
+            "properties": {
+              "conditions": {
+                "description": "The conditions that must be met for the transition to occur.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "description": "The type of the transition rule.",
+                      "type": "string"
+                    },
+                    "configuration": {
+                      "description": "The configuration of the transition rule (availability may vary)."
+                    }
+                  }
+                }
+              },
+              "validators": {
+                "description": "Validation checks performed during the transition.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "description": "The type of the validator.",
+                      "type": "string"
+                    },
+                    "configuration": {
+                      "description": "The configuration of the validator (availability may vary)."
+                    }
+                  }
+                }
+              },
+              "postFunctions": {
+                "description": "Actions that occur after a transition.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "description": "The type of the post function.",
+                      "type": "string"
+                    },
+                    "configuration": {
+                      "description": "The configuration of the post function (availability may vary)."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "statuses": {
+      "description": "The various statuses that the workflow can have.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The unique identifier of the issue status.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the status in the workflow.",
+            "type": "string"
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "issueEditable": {
+                "description": "Indicates whether issues are editable in this status.",
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "created": {
+      "description": "The date and time when the workflow was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated": {
+      "description": "The date and time when the workflow was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  },
+  "readOnly": true
+}

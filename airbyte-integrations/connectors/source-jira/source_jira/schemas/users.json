@@ -1,0 +1,232 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "self": {
+      "description": "The URL of the user.",
+      "type": "string",
+      "readOnly": true
+    },
+    "key": {
+      "description": "Deprecated property. See the deprecation notice for details.",
+      "type": "string"
+    },
+    "accountId": {
+      "description": "The account ID of the user, uniquely identifying the user across all Atlassian products. Required in requests.",
+      "maxLength": 128,
+      "type": "string"
+    },
+    "accountType": {
+      "description": "The user account type. Can be one of: \n- `atlassian`: regular Atlassian user account \n- `app`: system account used for Connect applications and OAuth \n- `customer`: Jira Service Desk account representing an external service desk",
+      "type": "string",
+      "readOnly": true,
+      "enum": ["atlassian", "app", "customer", "unknown"]
+    },
+    "name": {
+      "description": "Deprecated property. See the deprecation notice for details.",
+      "type": "string"
+    },
+    "emailAddress": {
+      "description": "The email address of the user. May be null based on privacy settings.",
+      "type": "string",
+      "readOnly": true
+    },
+    "avatarUrls": {
+      "description": "The avatars of the user.",
+      "readOnly": true,
+      "type": "object",
+      "properties": {
+        "16x16": {
+          "description": "The URL of the 16x16 pixel avatar.",
+          "type": "string"
+        },
+        "24x24": {
+          "description": "The URL of the 24x24 pixel avatar.",
+          "type": "string"
+        },
+        "32x32": {
+          "description": "The URL of the 32x32 pixel avatar.",
+          "type": "string"
+        },
+        "48x48": {
+          "description": "The URL of the 48x48 pixel avatar.",
+          "type": "string"
+        }
+      }
+    },
+    "displayName": {
+      "description": "The display name of the user. May return an alternative value based on privacy settings.",
+      "type": "string",
+      "readOnly": true
+    },
+    "active": {
+      "description": "Indicates whether the user is active.",
+      "type": "boolean",
+      "readOnly": true
+    },
+    "timeZone": {
+      "description": "The time zone specified in the user's profile. May be null based on privacy settings.",
+      "type": "string",
+      "readOnly": true
+    },
+    "locale": {
+      "description": "The locale of the user. May be null based on privacy settings.",
+      "type": "string",
+      "readOnly": true
+    },
+    "groups": {
+      "description": "The groups to which the user belongs.",
+      "readOnly": true,
+      "type": "object",
+      "properties": {
+        "size": {
+          "description": "The size of the groups.",
+          "type": "integer",
+          "xml": {
+            "attribute": true
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "The name of the group.",
+                "type": "string"
+              },
+              "self": {
+                "description": "The URL for group details.",
+                "type": "string",
+                "readOnly": true
+              }
+            }
+          }
+        },
+        "pagingCallback": {
+          "description": "The callback for pagination.",
+          "type": "object"
+        },
+        "callback": {
+          "description": "The callback for fetching more groups.",
+          "type": "object"
+        },
+        "max-results": {
+          "description": "The maximum number of results to be returned.",
+          "type": "integer",
+          "xml": {
+            "name": "max-results",
+            "attribute": true
+          }
+        }
+      }
+    },
+    "applicationRoles": {
+      "description": "The application roles assigned to the user.",
+      "readOnly": true,
+      "type": "object",
+      "properties": {
+        "size": {
+          "description": "The size of the application roles.",
+          "type": "integer",
+          "xml": {
+            "attribute": true
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "description": "The key of the application role.",
+                "type": "string"
+              },
+              "groups": {
+                "description": "The groups associated with the application role.",
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "name": {
+                "description": "The display name of the application role.",
+                "type": "string"
+              },
+              "defaultGroups": {
+                "description": "The groups granted default access for this application role.",
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "selectedByDefault": {
+                "description": "Specifies if this application role should be selected by default on user creation.",
+                "type": "boolean"
+              },
+              "defined": {
+                "description": "Deprecated field.",
+                "type": "boolean"
+              },
+              "numberOfSeats": {
+                "description": "The maximum user count on the license.",
+                "type": "integer"
+              },
+              "remainingSeats": {
+                "description": "The remaining user count on the license.",
+                "type": "integer"
+              },
+              "userCount": {
+                "description": "The number of users counting against the license.",
+                "type": "integer"
+              },
+              "userCountDescription": {
+                "description": "The type of users being counted against the license.",
+                "type": "string"
+              },
+              "hasUnlimitedSeats": {
+                "description": "Indicates if the application role has unlimited seats.",
+                "type": "boolean"
+              },
+              "platform": {
+                "description": "Indicates if the application role belongs to Jira platform (`jira-core`).",
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "pagingCallback": {
+          "description": "The callback for pagination.",
+          "type": "object"
+        },
+        "callback": {
+          "description": "The callback for fetching more application roles.",
+          "type": "object"
+        },
+        "max-results": {
+          "description": "The maximum number of results to be returned.",
+          "type": "integer",
+          "xml": {
+            "name": "max-results",
+            "attribute": true
+          }
+        }
+      }
+    },
+    "expand": {
+      "description": "Options to include additional user details in the response.",
+      "type": "string",
+      "readOnly": true,
+      "xml": {
+        "attribute": true
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values.",
+  "xml": {
+    "name": "user"
+  }
+}

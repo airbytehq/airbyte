@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "self": {
+      "description": "The URL of these issue watcher details.",
+      "type": "string",
+      "readOnly": true
+    },
+    "issueId": {
+      "description": "Id of the related issue.",
+      "type": ["null", "string"]
+    },
+    "isWatching": {
+      "description": "Whether the calling user is watching this issue.",
+      "type": "boolean",
+      "readOnly": true
+    },
+    "watchCount": {
+      "description": "The number of users watching this issue.",
+      "type": "integer",
+      "readOnly": true
+    },
+    "watchers": {
+      "description": "Details of the users watching this issue.",
+      "type": "array",
+      "readOnly": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "description": "The URL of the user.",
+            "type": "string",
+            "readOnly": true
+          },
+          "name": {
+            "description": "This property is no longer available and will be removed from the documentation soon. See the deprecation notice for details.",
+            "type": "string",
+            "readOnly": true
+          },
+          "key": {
+            "description": "This property is no longer available and will be removed from the documentation soon. See the deprecation notice for details.",
+            "type": "string",
+            "readOnly": true
+          },
+          "accountId": {
+            "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.",
+            "maxLength": 128,
+            "type": "string"
+          },
+          "emailAddress": {
+            "description": "The email address of the user. Depending on the user's privacy settings, this may be returned as null.",
+            "type": "string",
+            "readOnly": true
+          },
+          "avatarUrls": {
+            "description": "The avatars of the user.",
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "16x16": {
+                "description": "The URL of the item's 16x16 pixel avatar.",
+                "type": "string"
+              },
+              "24x24": {
+                "description": "The URL of the item's 24x24 pixel avatar.",
+                "type": "string"
+              },
+              "32x32": {
+                "description": "The URL of the item's 32x32 pixel avatar.",
+                "type": "string"
+              },
+              "48x48": {
+                "description": "The URL of the item's 48x48 pixel avatar.",
+                "type": "string"
+              }
+            }
+          },
+          "displayName": {
+            "description": "The display name of the user. Depending on the user's privacy settings, this may return an alternative value.",
+            "type": "string",
+            "readOnly": true
+          },
+          "active": {
+            "description": "Whether the user is active.",
+            "type": "boolean",
+            "readOnly": true
+          },
+          "timeZone": {
+            "description": "The time zone specified in the user's profile. Depending on the user's privacy settings, this may be returned as null.",
+            "type": "string",
+            "readOnly": true
+          },
+          "accountType": {
+            "description": "The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)",
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "The details of watchers on an issue."
+}

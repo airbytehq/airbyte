@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The ID of the field.",
+      "type": "string"
+    },
+    "key": {
+      "description": "The key of the field.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name of the field.",
+      "type": "string"
+    },
+    "custom": {
+      "description": "Whether the field is a custom field.",
+      "type": "boolean"
+    },
+    "orderable": {
+      "description": "Whether the content of the field can be used to order lists.",
+      "type": "boolean"
+    },
+    "navigable": {
+      "description": "Whether the field can be used as a column on the issue navigator.",
+      "type": "boolean"
+    },
+    "searchable": {
+      "description": "Whether the content of the field can be searched.",
+      "type": "boolean"
+    },
+    "clauseNames": {
+      "description": "The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).",
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scope": {
+      "description": "The scope of the field.",
+      "type": ["object", "null"],
+      "properties": {
+        "type": {
+          "description": "The type of scope.",
+          "type": "string",
+          "readOnly": true,
+          "enum": ["PROJECT", "TEMPLATE"]
+        },
+        "project": {
+          "description": "The project the item has scope in.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "self": {
+              "description": "The URL of the project details.",
+              "type": "string",
+              "readOnly": true
+            },
+            "id": {
+              "description": "The ID of the project.",
+              "type": "string"
+            },
+            "key": {
+              "description": "The key of the project.",
+              "type": "string",
+              "readOnly": true
+            },
+            "name": {
+              "description": "The name of the project.",
+              "type": "string",
+              "readOnly": true
+            },
+            "projectTypeKey": {
+              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
+              "type": "string",
+              "readOnly": true,
+              "enum": ["software", "service_desk", "business"]
+            },
+            "simplified": {
+              "description": "Whether or not the project is simplified.",
+              "type": "boolean",
+              "readOnly": true
+            },
+            "avatarUrls": {
+              "description": "The URLs of the project's avatars.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "16x16": {
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": "string"
+                },
+                "24x24": {
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": "string"
+                },
+                "32x32": {
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": "string"
+                },
+                "48x48": {
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": "string"
+                }
+              }
+            },
+            "projectCategory": {
+              "description": "The category the project belongs to.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "self": {
+                  "description": "The URL of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "id": {
+                  "description": "The ID of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "description": {
+                  "description": "The name of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "name": {
+                  "description": "The description of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schema": {
+      "description": "The data schema for the field.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "The data type of the field.",
+          "type": "string",
+          "readOnly": true
+        },
+        "items": {
+          "description": "When the data type is an array, the name of the field items within the array.",
+          "type": "string",
+          "readOnly": true
+        },
+        "system": {
+          "description": "If the field is a system field, the name of the field.",
+          "type": "string",
+          "readOnly": true
+        },
+        "custom": {
+          "description": "If the field is a custom field, the URI of the field.",
+          "type": "string",
+          "readOnly": true
+        },
+        "customId": {
+          "description": "If the field is a custom field, the custom ID of the field.",
+          "type": "integer",
+          "readOnly": true
+        },
+        "configuration": {
+          "description": "If the field is a custom field, the configuration of the field.",
+          "type": "object",
+          "additionalProperties": true,
+          "readOnly": true
+        }
+      }
+    },
+    "untranslatedName": {
+      "description": "The untranslated name of the field.",
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details about a field."
+}

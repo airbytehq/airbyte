@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The ID of the screen.",
+      "type": "integer",
+      "readOnly": true
+    },
+    "name": {
+      "description": "The name of the screen.",
+      "type": "string",
+      "readOnly": true
+    },
+    "description": {
+      "description": "The description of the screen.",
+      "type": "string",
+      "readOnly": true
+    },
+    "scope": {
+      "description": "The scope of the screen.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "The type of scope.",
+          "type": "string",
+          "readOnly": true,
+          "enum": ["PROJECT", "TEMPLATE"]
+        },
+        "project": {
+          "description": "The project the item has scope in.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "self": {
+              "description": "The URL of the project details.",
+              "type": "string",
+              "readOnly": true
+            },
+            "id": {
+              "description": "The ID of the project.",
+              "type": "string"
+            },
+            "key": {
+              "description": "The key of the project.",
+              "type": "string",
+              "readOnly": true
+            },
+            "name": {
+              "description": "The name of the project.",
+              "type": "string",
+              "readOnly": true
+            },
+            "projectTypeKey": {
+              "description": "The project type of the project.",
+              "type": "string",
+              "readOnly": true,
+              "enum": ["software", "service_desk", "business"]
+            },
+            "simplified": {
+              "description": "Whether or not the project is simplified.",
+              "type": "boolean",
+              "readOnly": true
+            },
+            "avatarUrls": {
+              "description": "The URLs of the project's avatars.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "16x16": {
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": "string"
+                },
+                "24x24": {
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": "string"
+                },
+                "32x32": {
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": "string"
+                },
+                "48x48": {
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": "string"
+                }
+              }
+            },
+            "projectCategory": {
+              "description": "The category the project belongs to.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "self": {
+                  "description": "The URL of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "id": {
+                  "description": "The ID of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "description": {
+                  "description": "The name of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "name": {
+                  "description": "The description of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

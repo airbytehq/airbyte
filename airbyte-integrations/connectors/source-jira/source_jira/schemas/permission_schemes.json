@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "expand": {
+      "description": "The expand options available for the permission scheme.",
+      "type": "string",
+      "readOnly": true
+    },
+    "id": {
+      "description": "The ID of the permission scheme.",
+      "type": "integer",
+      "readOnly": true
+    },
+    "self": {
+      "description": "The URL of the permission scheme.",
+      "type": "string",
+      "readOnly": true
+    },
+    "name": {
+      "description": "The name of the permission scheme. Must be unique.",
+      "type": "string"
+    },
+    "description": {
+      "description": "A description for the permission scheme.",
+      "type": "string"
+    },
+    "scope": {
+      "description": "The scope of the permission scheme.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "The type of scope.",
+          "type": "string",
+          "readOnly": true,
+          "enum": ["PROJECT", "TEMPLATE"]
+        },
+        "project": {
+          "description": "The project the item has scope in.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "self": {
+              "description": "The URL of the project details.",
+              "type": "string",
+              "readOnly": true
+            },
+            "id": {
+              "description": "The ID of the project.",
+              "type": "string"
+            },
+            "key": {
+              "description": "The key of the project.",
+              "type": "string",
+              "readOnly": true
+            },
+            "name": {
+              "description": "The name of the project.",
+              "type": "string",
+              "readOnly": true
+            },
+            "projectTypeKey": {
+              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
+              "type": "string",
+              "readOnly": true,
+              "enum": ["software", "service_desk", "business"]
+            },
+            "simplified": {
+              "description": "Whether or not the project is simplified.",
+              "type": "boolean",
+              "readOnly": true
+            },
+            "avatarUrls": {
+              "description": "The URLs of the project's avatars.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "16x16": {
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": "string"
+                },
+                "24x24": {
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": "string"
+                },
+                "32x32": {
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": "string"
+                },
+                "48x48": {
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": "string"
+                }
+              }
+            },
+            "projectCategory": {
+              "description": "The category the project belongs to.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "self": {
+                  "description": "The URL of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "id": {
+                  "description": "The ID of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "description": {
+                  "description": "The name of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "name": {
+                  "description": "The description of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "permissions": {
+      "description": "The permission scheme to create or update. See [About permission schemes and grants](#about-permission-schemes-and-grants) for more information.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The ID of the permission granted details.",
+            "type": "integer",
+            "readOnly": true
+          },
+          "self": {
+            "description": "The URL of the permission granted details.",
+            "type": "string",
+            "readOnly": true
+          },
+          "holder": {
+            "description": "The user or group being granted the permission. It consists of a `type` and a type-dependent `parameter`. See [Holder object](#holder-object) in *Get all permission schemes* for more information.",
+            "type": "object",
+            "properties": {
+              "type": {
+                "description": "The type of permission holder.",
+                "type": "string"
+              },
+              "parameter": {
+                "description": "The identifier of permission holder.",
+                "type": "string"
+              },
+              "expand": {
+                "description": "Expand options that include additional permission holder details in the response.",
+                "type": "string",
+                "readOnly": true
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "permission": {
+            "description": "The permission to grant. This permission can be one of the built-in permissions or a custom permission added by an app. See [Built-in permissions](#built-in-permissions) in *Get all permission schemes* for more information about the built-in permissions. See the [project permission](https://developer.atlassian.com/cloud/jira/platform/modules/project-permission/) and [global permission](https://developer.atlassian.com/cloud/jira/platform/modules/global-permission/) module documentation for more information about custom permissions.",
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "List of all permission schemes."
+}

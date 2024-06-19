@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "expand": {
+      "description": "Expand options that include additional project details in the response.",
+      "type": "string",
+      "readOnly": true,
+      "xml": {
+        "description": "Data in XML format for expanded project details.",
+        "attribute": true
+      }
+    },
+    "self": {
+      "description": "The URL of the project details.",
+      "type": "string",
+      "readOnly": true
+    },
+    "id": {
+      "description": "The ID of the project.",
+      "type": "string"
+    },
+    "key": {
+      "description": "The key of the project.",
+      "type": "string",
+      "readOnly": true
+    },
+    "description": {
+      "description": "A brief description of the project.",
+      "type": "string",
+      "readOnly": true
+    },
+    "lead": {
+      "description": "The username of the project lead.",
+      "readOnly": true
+    },
+    "components": {
+      "description": "List of the components contained in the project.",
+      "type": "array",
+      "readOnly": true
+    },
+    "issueTypes": {
+      "description": "List of the issue types available in the project.",
+      "type": "array",
+      "readOnly": true
+    },
+    "url": {
+      "description": "A link to information about this project, such as project documentation.",
+      "type": "string",
+      "readOnly": true
+    },
+    "email": {
+      "description": "An email address associated with the project.",
+      "type": "string"
+    },
+    "assigneeType": {
+      "description": "The default assignee when creating issues for this project.",
+      "type": "string",
+      "readOnly": true,
+      "enum": ["PROJECT_LEAD", "UNASSIGNED"]
+    },
+    "versions": {
+      "description": "The versions defined in the project. For more information, see [Create version](#api-rest-api-3-version-post).",
+      "type": "array",
+      "readOnly": true
+    },
+    "name": {
+      "description": "The name of the project.",
+      "type": "string",
+      "readOnly": true
+    },
+    "roles": {
+      "description": "The name and self URL for each role defined in the project. For more information, see [Create project role](#api-rest-api-3-role-post).",
+      "type": "object",
+      "additionalProperties": true,
+      "readOnly": true
+    },
+    "avatarUrls": {
+      "description": "The URLs of the project's avatars.",
+      "readOnly": true
+    },
+    "projectCategory": {
+      "description": "The category the project belongs to.",
+      "readOnly": true
+    },
+    "projectTypeKey": {
+      "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
+      "type": "string",
+      "readOnly": true,
+      "enum": ["software", "service_desk", "business"]
+    },
+    "simplified": {
+      "description": "Whether the project is simplified.",
+      "type": "boolean",
+      "readOnly": true
+    },
+    "style": {
+      "description": "The type of the project.",
+      "type": "string",
+      "readOnly": true,
+      "enum": ["classic", "next-gen"]
+    },
+    "favourite": {
+      "description": "Whether the project is selected as a favorite.",
+      "type": "boolean"
+    },
+    "isPrivate": {
+      "description": "Whether the project is private.",
+      "type": "boolean",
+      "readOnly": true
+    },
+    "issueTypeHierarchy": {
+      "description": "The issue type hierarchy for the project",
+      "readOnly": true
+    },
+    "permissions": {
+      "description": "User permissions on the project",
+      "readOnly": true
+    },
+    "properties": {
+      "description": "Map of project properties",
+      "type": "object",
+      "additionalProperties": true,
+      "readOnly": true
+    },
+    "uuid": {
+      "description": "Unique ID for next-gen projects.",
+      "type": "string",
+      "readOnly": true
+    },
+    "insight": {
+      "description": "Insights about the project.",
+      "readOnly": true
+    },
+    "deleted": {
+      "description": "Whether the project is marked as deleted.",
+      "type": "boolean",
+      "readOnly": true
+    },
+    "retentionTillDate": {
+      "description": "The date when the project is deleted permanently.",
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true
+    },
+    "deletedDate": {
+      "description": "The date when the project was marked as deleted.",
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true
+    },
+    "deletedBy": {
+      "description": "The user who marked the project as deleted.",
+      "readOnly": true
+    },
+    "archived": {
+      "description": "Whether the project is archived.",
+      "type": "boolean",
+      "readOnly": true
+    },
+    "archivedDate": {
+      "description": "The date when the project was archived.",
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true
+    },
+    "archivedBy": {
+      "description": "The user who archived the project.",
+      "readOnly": true
+    },
+    "entityId": {
+      "description": "The unique identifier of the project entity.",
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details about a project."
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "The details of a custom field context.",
+  "properties": {
+    "id": {
+      "description": "The ID of the context.",
+      "type": ["null", "string"]
+    },
+    "fieldId": {
+      "description": "Id of the related field",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name of the context.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The description of the context.",
+      "type": ["null", "string"]
+    },
+    "isGlobalContext": {
+      "description": "Whether the context is global.",
+      "type": ["null", "boolean"]
+    },
+    "isAnyIssueType": {
+      "description": "Whether the context applies to all issue types.",
+      "type": ["null", "boolean"]
+    },
+    "fieldType": {
+      "description": "The type of the related field",
+      "type": ["null", "string"]
+    }
+  }
+}

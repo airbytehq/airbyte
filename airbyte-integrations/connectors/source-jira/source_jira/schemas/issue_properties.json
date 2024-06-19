@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "key": {
+      "description": "The key of the property. Required on create and update.",
+      "type": "string"
+    },
+    "issueId": {
+      "description": "Id of the related issue.",
+      "type": ["null", "string"],
+      "readOnly": true
+    },
+    "value": {
+      "description": "The value of the property. Required on create and update."
+    },
+    "isdefault": {
+      "description": "Indicates if the property is the default property.",
+      "type": ["null", "boolean"]
+    }
+  },
+  "description": "An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/)."
+}
