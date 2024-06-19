@@ -6,12 +6,16 @@ import os
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
+from unittest.mock import patch
 import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_pinterest.streams import PinterestAnalyticsStream, PinterestStream, PinterestSubStream, RateLimitExceeded
 from source_pinterest.utils import get_analytics_columns
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 from .conftest import get_stream_by_name
 
@@ -112,17 +116,35 @@ def test_backoff_time(patch_base_class):
 @pytest.mark.parametrize(
     ("test_response", "status_code", "expected"),
     (
-        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, False),
-        ({"code": 7, "message": "Some other error message"}, 429, False),
+        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, True),
+        ({"message": "You got data!"}, 200, False),
     ),
 )
-def test_should_retry_on_max_rate_limit_error(requests_mock, test_config, test_response, status_code, expected):
-    stream = get_stream_by_name("boards", test_config)
+@patch("time.sleep", return_value=None)
+def test_declarative_stream_should_retry_on_max_rate_limit_error(mock_sleep, requests_mock, test_response, status_code, expected):
     url = "https://api.pinterest.com/v5/boards"
-    requests_mock.get("https://api.pinterest.com/v5/boards", json=test_response, status_code=status_code)
-    response = requests.get(url)
-    result = stream.retriever.requester._should_retry(response)
-    assert result is expected
+    requests_mock.get(url, json=test_response, status_code=status_code)
+
+    logger = MagicMock()
+    error_handler = HttpStatusErrorHandler(logger)
+    http_client = HttpClient(
+        name="test_client",
+        logger=logger,
+        error_handler=error_handler,
+    )
+
+    request_kwargs = {}
+    try:
+        request, response = http_client.send_request(
+            http_method="GET",
+            url=url,
+            request_kwargs=request_kwargs
+        )
+        should_retry = False
+    except DefaultBackoffException:
+        should_retry = True
+
+    assert should_retry is expected
 
 
 def test_non_json_response(requests_mock, patch_base_class):

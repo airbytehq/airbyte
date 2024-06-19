@@ -72,8 +72,8 @@ def test_should_retry(test_config, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
     response_mock.ok = http_status == HTTPStatus.OK
-    stream = get_stream_by_name("ad_account_analytics", test_config)
-    assert stream.retriever.requester._should_retry(response_mock) == should_retry
+    stream = get_stream_by_name("campaign_analytics_report", test_config)
+    assert stream.should_retry(response_mock) == should_retry
 
 
 @pytest.mark.parametrize(
