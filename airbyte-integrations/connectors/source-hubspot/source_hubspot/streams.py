@@ -1004,9 +1004,6 @@ class IncrementalStream(Stream, ABC):
             is_last_slice = stream_slice == self.last_slice
         self._update_state(latest_cursor=latest_cursor, is_last_record=is_last_slice)
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        return self.state
-
     @property
     def state(self) -> MutableMapping[str, Any]:
         if self._sync_mode is None:
@@ -2318,15 +2315,6 @@ class WebAnalyticsStream(CheckpointMixin, HttpSubStream, Stream):
             "$ref": "default_event_properties.json",
         }
         return ResourceSchemaLoader("source_hubspot")._resolve_schema_references(raw_schema=raw_schema)
-
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> MutableMapping[str, Any]:
-        """
-        Returns current state. At the moment when this method is called by sources we already have updated state stored in self._state,
-        because it is calculated each time we produce new record
-        """
-        return self.state
 
     def get_latest_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
