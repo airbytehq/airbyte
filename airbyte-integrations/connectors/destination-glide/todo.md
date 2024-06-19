@@ -1,0 +1,3 @@
+- [ ] unify test framework across unit/integration tests (remove pytest?)
+- [ ] clean up todos
+- [ ] figure out why the dev-write script stopped working (freezes)
