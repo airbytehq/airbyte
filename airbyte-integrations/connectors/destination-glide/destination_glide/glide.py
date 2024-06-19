@@ -32,8 +32,7 @@ class Column:
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            'name': self._name,
-            'displayName': self._name,
+            'id': self._name,
             'type': self._type,
         }
 
@@ -191,6 +190,8 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         return f"https://{self.api_host}/{self.api_path_root}/{path}"
 
     def prepare_table(self, columns: List[Column]) -> None:
+        self.delete_all()
+
         for col in columns:
             if col.name not in self.hardcoded_column_lookup:
                 logger.warning(

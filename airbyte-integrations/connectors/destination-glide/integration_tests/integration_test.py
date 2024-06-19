@@ -130,5 +130,5 @@ def test_write(
     # expect the API was called:
     # todo: validate args on these calls
     
-    mock_gbt.delete_all.assert_called_once()
+    mock_gbt.prepare_table.assert_called_once()
     mock_gbt.add_rows.assert_called_once()

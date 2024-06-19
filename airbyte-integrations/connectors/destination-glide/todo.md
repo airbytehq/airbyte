@@ -1,3 +1,5 @@
+- [ ] choose a strategy based on config
 - [ ] unify test framework across unit/integration tests (remove pytest?)
 - [ ] clean up todos
+- [ ] update readme
 - [ ] figure out why the dev-write script stopped working (freezes)
