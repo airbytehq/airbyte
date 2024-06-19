@@ -35,15 +35,14 @@ class GlobalParentCursor(DeclarativeCursor):
         self._partition_router = partition_router
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        def flag_last(generator: Generator) -> Generator:
+        def flag_last(generator: Generator[StreamSlice, None, None]) -> Generator[StreamSlice, None, None]:
             previous = None
             for item in generator:
                 if previous is not None:
                     yield previous
                 previous = item
             if previous is not None:
-                previous.partition["last_slice"] = True
-                yield previous
+                yield StreamSlice(partition=previous.partition, cursor_slice=previous.cursor_slice, last_slice=True)
 
         slices = (StreamSlice(partition=partition, cursor_slice=cursor_slice)
                   for partition in self._partition_router.stream_slices()
@@ -93,17 +92,8 @@ class GlobalParentCursor(DeclarativeCursor):
         self._stream_cursor.observe(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), record)
 
     def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
-        if stream_slice.partition.get("last_slice"):
+        if stream_slice.last_slice:
             self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
-        # try:
-        #     self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(
-        #         StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args
-        #     )
-        # except KeyError as exception:
-        #     raise ValueError(
-        #         f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
-        #         f"we should only update state for partitions that were emitted during `stream_slices`"
-        #     )
 
     def get_stream_state(self) -> StreamState:
         state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
