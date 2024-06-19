@@ -4,6 +4,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -12,6 +13,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.SyncMode
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -46,6 +48,13 @@ internal class CatalogParserTest {
         }
 
         parser = CatalogParser(sqlGenerator, "default_namespace")
+    }
+
+    @Test
+    fun throwOnEmptyCatalog() {
+        assertThrows(ConfigErrorException::class.java) {
+            parser.parseCatalog(ConfiguredAirbyteCatalog().withStreams(emptyList()))
+        }
     }
 
     /**
