@@ -18,24 +18,32 @@ ALLOWED_COLUMN_TYPES = [
 ]
 
 class Column:
-    def __init__(self, name: str, type: str):
+    def __init__(self, id: str, type: str):
         if type not in ALLOWED_COLUMN_TYPES:
             raise ValueError(f"Column type {type} not allowed. Must be one of {ALLOWED_COLUMN_TYPES}")  # nopep8
-        self._name = name
+        self._id = id
         self._type = type
 
-    def name() -> str:
-        return self._name
+    def id() -> str:
+        return self._id
 
     def type() -> str:
         return self._type
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            'id': self._name,
+            'id': self._id,
             'type': self._type,
+            'displayName': self._id
         }
 
+    def __eq__(self, other):
+        if isinstance(other, Column):
+            return self._id == other._id and self._type == other._type
+        return False
+
+    def __repr__(self):
+        return f"Column(id='{self._id}', type='{self._type}')"
 
 class GlideBigTableBase(ABC):
     def headers(self) -> Dict[str, str]:
@@ -106,12 +114,7 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
             json={
                 "name": self.table_id,
                 "schema": {
-                    "columns": [
-                        {
-                            "name": col.name,
-                            "type": col.type
-                        } for col in columns
-                    ],
+                    "columns": columns,
                 },
                 "rows": []
             }
@@ -190,12 +193,13 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         return f"https://{self.api_host}/{self.api_path_root}/{path}"
 
     def prepare_table(self, columns: List[Column]) -> None:
+        logger.debug(f"prepare_table for table '{self.table_id}. Expecting columns: '{[c.id for c in columns]}'.")
         self.delete_all()
 
         for col in columns:
             if col.name not in self.hardcoded_column_lookup:
                 logger.warning(
-                    f"Column '{col.name}' not found in hardcoded column lookup. Will be ignored.")
+                    f"Column '{col.id}' not found in hardcoded column lookup. Will be ignored.")
 
     def rows(self) -> Iterator[BigTableRow]:
         """
@@ -248,15 +252,15 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
             )
             if r.status_code != 200:
                 logger.error(f"delete request failed with status {r.status_code}: {r.text} trying to delete row id {row['$rowID']} with row: {row}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-                r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
+                r.raise_for_status() # This will raise an HTTPError if the status is 4xx or 5xx
+            else:
+                logger.debug(f"Deleted row successfully (rowID:'{row['$rowID']}'")
 
     def add_rows(self, rows: Iterator[BigTableRow]) -> None:
         # TODO: lame. need to batch mutations/requests
         mutations = []
         for row in rows:
             # row is columnLabel -> value, but glide's mutate uses a column "name". We hard-code the lookup for our table here:
-
-            logger.debug(f"Mutating row: {row}")
             mutated_row = dict()
             for k, v in row.items():
                 if k in self.hardcoded_column_lookup:
