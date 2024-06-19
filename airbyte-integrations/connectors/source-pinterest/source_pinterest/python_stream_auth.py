@@ -2,15 +2,16 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import requests
-import pendulum
+from typing import Any, List, Mapping, Optional, Tuple
 
-from typing import Any, List, Optional, Mapping, Tuple
+import pendulum
+import requests
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
+
 
 class PinterestOauthAuthenticator(Oauth2Authenticator):
     """
@@ -84,4 +85,4 @@ class PinterestOauthAuthenticator(Oauth2Authenticator):
                 raise AirbyteTracedException(internal_message=message, message=message, failure_type=FailureType.config_error)
             raise
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e    
+            raise Exception(f"Error while refreshing access token: {e}") from e

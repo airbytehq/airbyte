@@ -8,7 +8,6 @@ from base64 import standard_b64encode
 from typing import Any, List, Mapping
 
 import pendulum
-from .python_stream_auth import PinterestOauthAuthenticator
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
@@ -16,6 +15,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from airbyte_cdk.utils import AirbyteTracedException
 from source_pinterest.reports import CampaignAnalyticsReport
 
+from .python_stream_auth import PinterestOauthAuthenticator
 from .reports.reports import (
     AdGroupReport,
     AdGroupTargetingReport,
