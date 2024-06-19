@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.7.2
+Exclude airbyte-cdk modules from schema discovery (retry after pypi read error)
+
 ## 1.7.1
 Exclude airbyte-cdk modules from schema discovery
 
