@@ -40,6 +40,6 @@ In the UI, navigate to `Settings` > `General` to see a list of your Organization
 
 Note that it is not possible to assign a Workspace member to a role that is more restricted than the role they've been assigned at the Organizational level. 
 
-For example, a person who is assigned to be an Organization `Admin` would automatically have Admin-level permissions in all Workspaces within the Organization and can not be demoted within a workspace. On the other hand, a person assigned to the `Reader` role in an Organization could be assigned the `Reader`, `Editor`, or `Admin` role in an individual Workspace.
+For example, a person who is assigned to be an Organization `Admin` would automatically have Admin-level permissions in all Workspaces within the Organization and can not be demoted within a Workspace. On the other hand, a person assigned to the `Reader` role in an Organization could be assigned the `Reader`, `Editor`, or `Admin` role in an individual Workspace.
 
 
