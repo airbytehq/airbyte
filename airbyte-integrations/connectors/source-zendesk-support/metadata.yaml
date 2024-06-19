@@ -75,4 +75,9 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_ZENDESK_SUPPORT_TICKET_METRICS_CREDS
+          fileName: config_ticket_metrics.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
