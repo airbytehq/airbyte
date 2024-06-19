@@ -53,12 +53,13 @@ class Record(Mapping[str, Any]):
 
 
 class StreamSlice(Mapping[str, Any]):
-    def __init__(self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]) -> None:
+    def __init__(self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any], last_slice: bool = False) -> None:
         self._partition = partition
         self._cursor_slice = cursor_slice
         if partition.keys() & cursor_slice.keys():
             raise ValueError("Keys for partition and incremental sync cursor should not overlap")
         self._stream_slice = dict(partition) | dict(cursor_slice)
+        self.last_slice = last_slice
 
     @property
     def partition(self) -> Mapping[str, Any]:
