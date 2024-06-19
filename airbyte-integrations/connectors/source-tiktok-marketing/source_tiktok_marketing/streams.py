@@ -7,7 +7,10 @@ import json
 from abc import ABC, abstractmethod
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+    from enum import Enum
 from functools import total_ordering
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
@@ -141,21 +144,39 @@ class JsonUpdatedState(pydantic.BaseModel):
         return self.current_stream_state < other
 
 
-class ReportLevel(str, Enum):
-    ADVERTISER = "ADVERTISER"
-    CAMPAIGN = "CAMPAIGN"
-    ADGROUP = "ADGROUP"
-    AD = "AD"
+if sys.version_info >= (3, 11):
 
+    class ReportLevel(StrEnum):
+        ADVERTISER = "ADVERTISER"
+        CAMPAIGN = "CAMPAIGN"
+        ADGROUP = "ADGROUP"
+        AD = "AD"
 
-class ReportGranularity(str, Enum):
-    LIFETIME = "LIFETIME"
-    DAY = "DAY"
-    HOUR = "HOUR"
+    class ReportGranularity(StrEnum):
+        LIFETIME = "LIFETIME"
+        DAY = "DAY"
+        HOUR = "HOUR"
 
-    @classmethod
-    def default(cls):
-        return cls.DAY
+        @classmethod
+        def default(cls):
+            return cls.DAY
+
+else:
+
+    class ReportLevel(str, Enum):
+        ADVERTISER = "ADVERTISER"
+        CAMPAIGN = "CAMPAIGN"
+        ADGROUP = "ADGROUP"
+        AD = "AD"
+
+    class ReportGranularity(str, Enum):
+        LIFETIME = "LIFETIME"
+        DAY = "DAY"
+        HOUR = "HOUR"
+
+        @classmethod
+        def default(cls):
+            return cls.DAY
 
 
 class Hourly:
