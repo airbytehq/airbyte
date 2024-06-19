@@ -25,7 +25,7 @@ def test_labels_record_extractor(json_response, expected_output):
     response_mock.json.return_value = json_response  # Parameterized JSON response
 
     # Call the extract_records to process the mocked response
-    extracted = extractor.extract_records(response_mock)
+    extracted = list(extractor.extract_records(response_mock))
 
     # Assert to check if the output matches the expected result
     assert extracted == expected_output, "The extracted records do not match the expected output"

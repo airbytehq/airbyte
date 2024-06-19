@@ -1,7 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Iterable
+
+import requests
 
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from requests_cache import Response
@@ -16,6 +18,5 @@ class LabelsRecordExtractor(DpathExtractor):
         <- [{"label": "label 1"}, {"label": "label 2"}, ..., {"label": "label n"}]
     """
 
-    def extract_records(self, response: Response) -> List[Mapping[str, Any]]:
-        records = super().extract_records(response)
-        return [{"label": record} for record in records]
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        yield from ({"label": record} for record in super().extract_records(response))
