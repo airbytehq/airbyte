@@ -13,7 +13,7 @@ from airbyte_cdk.models import (
 from collections import defaultdict
 import datetime
 
-from .glide import GlideBigTable
+from .glide import GlideBigTableBase, CreateBigTableDefaultImpl, Column
 import json
 from .log import getLogger
 import logging
@@ -25,9 +25,9 @@ logger = getLogger()
 
 class DestinationGlide(Destination):
     # GlideBigTable optional for tests to inject mock
-    def __init__(self, glide: GlideBigTable = None):
+    def __init__(self, glide: GlideBigTableBase = None):
         if glide is None:
-            glide = GlideBigTable()
+            glide = CreateBigTableDefaultImpl()
         self.glide = glide
 
     def write(
@@ -52,18 +52,46 @@ class DestinationGlide(Destination):
         api_path_root = config['api_path_root']
         api_key = config['api_key']
         table_id = config['table_id']
-        # TODO: hardcoded for now using old api
-        app_id = "Ix9CEuP6DiFugfjhSG5t"
 
-        self.glide.init(api_host, api_key, api_path_root, app_id, table_id)
+        self.glide.init(api_host, api_key, api_path_root, table_id)
 
         # go through each stream and add it as needed:
         stream_names = {s.stream.name for s in configured_catalog.streams}
         for configured_stream in configured_catalog.streams:
             if configured_stream.destination_sync_mode != DestinationSyncMode.overwrite:
                 raise Exception(f'Only destination sync mode overwrite it supported, but received "{configured_stream.destination_sync_mode}".') # nopep8 because https://github.com/hhatto/autopep8/issues/712
+            
+            # TODO: upsert the GBT with schema to prepare for dumping the data into it
+            def mapJsonSchemaTypeToGlideType(json_type: str) -> str:
+                jsonSchemaTypeToGlideType = {
+                    "string":"string",
+                    "number": "number",
+                    "integer": "number",
+                    "boolean":"boolean",
+                }
+                if isinstance(json_type, list):
+                    logger.debug(f"Found list type '{json_type}' in stream {configured_stream.stream.name}. Attempting to map to a primitive type.") # nopep8 because
+                    # find the first type that is not 'null' and use that instead:
+                    for t in json_type:
+                        if t != "null" and t in jsonSchemaTypeToGlideType:
+                            logger.debug(f"Mapped json schema list type of '{json_type}' to '{t}' in stream {configured_stream.stream.name}.") # nopep8 because
+                            json_type = t
 
-            # TODO: create a new GBT to prepare for dumping the data into it
+                if json_type in jsonSchemaTypeToGlideType:
+                    return jsonSchemaTypeToGlideType[json_type]
+                raise ValueError(f"Unsupported JSON schema type for glide '{json_type}'")
+
+            columns = []
+            properties = configured_stream.stream.json_schema["properties"]
+            for prop_name in properties.keys():
+                prop = properties[prop_name]
+                prop_type = prop["type"]
+                prop_format = prop["format"] if "format" in prop else ""
+                logger.debug(f"Found column/property '{prop_name}' with type '{prop_type}' and format '{prop_format}' in stream {configured_stream.stream.name}.")
+                columns.append(Column(prop_name, mapJsonSchemaTypeToGlideType(prop_type)))
+            
+            self.glide.prepare_table(columns)
+            
             # NOTE: for now using an existing GBT in old API
             logger.debug("deleting all rows...")
             self.glide.delete_all()
@@ -71,7 +99,7 @@ class DestinationGlide(Destination):
 
             # stream the records into the GBT:
             buffer = defaultdict(list)
-            logger.debug(f"buffer created.")
+            logger.debug("Processing messages...")
             for message in input_messages:
                 logger.debug(f"processing message {message.type}...")
                 if message.type == Type.RECORD:
@@ -87,15 +115,21 @@ class DestinationGlide(Destination):
 
                     # add to buffer
                     record_id = str(uuid.uuid4())
-                    buffer[stream].append(
-                        (record_id, datetime.datetime.now().isoformat(), json.dumps(data)))
-                    logger.debug(f"buffering record complete: {buffer[stream][len(buffer[stream])-1]}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
+                    stream_buffer = buffer[stream]
+                    stream_buffer.append(
+                        (record_id, datetime.datetime.now().isoformat(), data))
+
+                    logger.debug(f"buffering record complete: {stream_buffer[len(stream_buffer)-1]}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
 
                 elif message.type == Type.STATE:
-                    # TODO: This is a queue from the source that we should save the buffer of records from message.type == Type.RECORD messages. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#state--the-whole-sync
-                    logger.debug(f"Writing '{len(buffer.items())}' buffered records to GBT...") # nopep8 because https://github.com/hhatto/autopep8/issues/712
-                    self.glide.add_rows(buffer.items())
-                    logger.debug(f"Writing '{len(buffer.items())}' buffered records to GBT complete.") # nopep8 because https://github.com/hhatto/autopep8/issues/712
+                    # This is a queue from the source that we should save the buffer of records from message.type == Type.RECORD messages. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#state--the-whole-sync
+                    for stream_name in buffer.keys():
+                        stream_records = buffer[stream_name]
+                        logger.debug(f"Saving buffered records to Glide API (stream: '{stream_name}' count: '{len(stream_records)}')...") # nopep8 because https://github.com/hhatto/autopep8/issues/712
+                        DATA_INDEX = 2
+                        data_rows = [row_tuple[DATA_INDEX] for row_tuple in stream_records]
+                        self.glide.add_rows(data_rows)
+                        logger.debug(f"Saving buffered records to Glide API complete.") # nopep8 because https://github.com/hhatto/autopep8/issues/712
 
                     yield message
                 else:
