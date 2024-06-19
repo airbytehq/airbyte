@@ -75,7 +75,8 @@ Stream `Events Detailed` contains field `name` for `metric` relationship - addit
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
-| `2.7.0`  | 2024-06-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000)   | Add `events_detailed` stream                                                                                                  |
+| `2.7.1`  | 2024-06-19 | [39350](https://github.com/airbytehq/airbyte/pull/39350)   | Refactor: use `client_side_incremental` feature                                                                               |
+| `2.7.0`  | 2024-06-08 | [39350](https://github.com/airbytehq/airbyte/pull/39350)   | Add `events_detailed` stream                                                                                                  |
 | `2.6.4`  | 2024-06-06 | [38879](https://github.com/airbytehq/airbyte/pull/38879)   | Implement `CheckpointMixin` for handling state in Python streams                                                              |
 | `2.6.3`  | 2024-06-04 | [38935](https://github.com/airbytehq/airbyte/pull/38935)   | [autopull] Upgrade base image to v1.2.1                                                                                       |
 | `2.6.2`  | 2024-05-08 | [37789](https://github.com/airbytehq/airbyte/pull/37789)   | Move stream schemas and spec to manifest                                                                                      |
