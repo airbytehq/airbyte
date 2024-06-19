@@ -37,7 +37,7 @@
           "type": ["null", "integer"]
         }
       }
-    }, 
+    },
     "deactivation_alert": {
       "description": "Describes either the impact of deactivating the inventory level, or why the inventory level can't be deactivated.",
       "type": ["null", "string"]

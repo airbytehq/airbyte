@@ -572,7 +572,7 @@ class DiscountCode(ShopifyBulkQuery):
                                 totalSales {
                                     amount
                                     currencyCode
-                                }  
+                                }
                                 codes {
                                     edges {
                                         node {
@@ -1174,7 +1174,7 @@ class InventoryItem(ShopifyBulkQuery):
             record["currency_code"] = None
         # clean up
         record.pop("unitCost", None)
-        
+
         return record
 
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
@@ -1747,7 +1747,7 @@ class Transaction(ShopifyBulkQuery):
     sort_key = "UPDATED_AT"
 
     amount_fields: List[Field] = [
-        "amount", 
+        "amount",
         Field(name="currencyCode", alias="currency"),
     ]
 
@@ -1826,23 +1826,23 @@ class Transaction(ShopifyBulkQuery):
             # save the id before it's resolved
             fee["admin_graphql_api_id"] = fee.get("id")
             fee["id"] = self.tools.resolve_str_id(fee.get("id"))
-            # cast `rate` to number 
+            # cast `rate` to number
             fee["rate"] = float(fee.get("rate", 0.0))
-            # cast `amount.amount` to number 
+            # cast `amount.amount` to number
             amount = fee.get("amount", {})
             if amount:
                 fee["amount"]["amount"] = self._cast_amount_to_float(amount)
-            # cast `flat_fee.amount` to number 
+            # cast `flat_fee.amount` to number
             flat_fee = fee.get("flat_fee", {})
             if flat_fee:
                 fee["flat_fee"]["amount"] = self._cast_amount_to_float(flat_fee)
-            # cast `flat_fee.amount` to number 
+            # cast `flat_fee.amount` to number
             tax_amount = fee.get("tax_amount", {})
             if tax_amount:
                 fee["tax_amount"]["amount"] = self._cast_amount_to_float(tax_amount)
-        
+
         return fees
-                
+
     def process_transaction(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         # save the id before it's resolved
         record["admin_graphql_api_id"] = record.get("id")
@@ -2030,17 +2030,17 @@ class Product(ShopifyBulkQuery):
     images_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=["__typename", "id"])])]
     # variants property fields, we re-use the same field names as for the `images` property
     variants_fields: List[Field] = images_fields
-    
+
     amount_fields: List[Field] = [
-        "amount", 
+        "amount",
         Field(name="currencyCode", alias="currency_code"),
     ]
-    
+
     price_range_v2_fields: List[Field] = [
         Field(name="maxVariantPrice", alias="max_variant_price", fields=amount_fields),
         Field(name="minVariantPrice", alias="min_variant_price", fields=amount_fields),
     ]
-    
+
     featured_image_fields: List[Field] = [
         "height",
         "id",
@@ -2048,7 +2048,7 @@ class Product(ShopifyBulkQuery):
         "width",
         Field(name="altText", alias="alt_text"),
     ]
-    
+
     featured_media_fields: List[Field] = [
         "alt",
         "id",
@@ -2058,7 +2058,7 @@ class Product(ShopifyBulkQuery):
         Field(name="mediaErrors", alias="media_errors", fields=["code", "details", "message"]),
         Field(name="mediaWarnings", alias="media_warnings", fields=["code", "message"]),
     ]
-    
+
     feedback_details_fields: List[Field] = [
         Field(name="app", fields=["id"]),
         Field(name="link", fields=["url"]),
@@ -2068,7 +2068,7 @@ class Product(ShopifyBulkQuery):
         "summary",
         Field(name="details", fields=feedback_details_fields),
     ]
-    
+
     # main query
     query_nodes: List[Field] = [
         "__typename",
@@ -2142,7 +2142,7 @@ class Product(ShopifyBulkQuery):
             price_range_v2["max_variant_price"]["amount"] = float(max_variant_price.get("amount"))
         if min_variant_price:
             price_range_v2["min_variant_price"]["amount"] = float(min_variant_price.get("amount"))
-        
+
         return price_range_v2
 
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
@@ -2175,7 +2175,7 @@ class Product(ShopifyBulkQuery):
         price_range_v2 = record.get("priceRangeV2", {})
         if price_range_v2:
             record["priceRangeV2"] = self._process_price_range_v2(price_range_v2)
-        
+
         yield record
 
 
