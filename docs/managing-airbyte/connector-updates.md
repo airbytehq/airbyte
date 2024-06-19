@@ -28,7 +28,7 @@ Each connector's changelog details its update history. You can find it in the [c
 ### Airbyte Cloud
 **Minor and Patch Updates:** These are applied automatically and immediately to your instance. You don't need to take any action.
 
-**Major Updates:** These are opt-in. You'll receive notifications about major updates and have a deadline to decide whether to apply them. If you choose not to opt-in by the deadline, any syncs using the affected connector will be paused to prevent compatibility issues.
+**Major Updates:** These are opt-in. You'll receive notifications about major updates and have a deadline to apply them. If you choose not to opt-in by the deadline, any syncs using the affected connector will be paused to prevent compatibility issues.
 
 <!-- Can I find a screenshot for something in cloud requiring attention and showing a deadline? -->
 
