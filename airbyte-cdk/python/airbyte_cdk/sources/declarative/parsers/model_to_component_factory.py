@@ -35,6 +35,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
+    GlobalParentCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
 )
@@ -695,12 +696,18 @@ class ModelToComponentFactory:
 
         if model.incremental_sync and stream_slicer:
             incremental_sync_model = model.incremental_sync
-            return PerPartitionCursor(
-                cursor_factory=CursorFactory(
-                    lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
-                ),
-                partition_router=stream_slicer,
-            )
+            if stream_slicer.parent_stream_configs[0].global_parent_cursor:
+                return GlobalParentCursor(
+                    stream_cursor=self._create_component_from_model(model=model.incremental_sync, config=config),
+                    partition_router=stream_slicer,
+                )
+            else:
+                return PerPartitionCursor(
+                    cursor_factory=CursorFactory(
+                        lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
+                    ),
+                    partition_router=stream_slicer,
+                )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
@@ -1015,6 +1022,7 @@ class ModelToComponentFactory:
             partition_field=model.partition_field,
             config=config,
             incremental_dependency=model.incremental_dependency or False,
+            global_parent_cursor=model.global_parent_cursor or False,
             parameters=model.parameters or {},
         )
 

@@ -1562,6 +1562,9 @@ class ParentStreamConfig(BaseModel):
         description='Indicates whether the parent stream should be read incrementally based on updates in the child stream.',
         title='Incremental Dependency',
     )
+    global_parent_cursor: Optional[bool] = Field(
+        False, description='Indicates whether the parent stream state as one cursor instead of partitions.', title='Global Parent Cursor'
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
