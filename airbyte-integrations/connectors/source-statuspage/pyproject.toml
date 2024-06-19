@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.1"
+version = "0.1.3"
 name = "source-statuspage"
 description = "Source implementation for statuspage."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,12 +16,12 @@ packages = [ { include = "source_statuspage" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "1.0.0"
 
 [tool.poetry.scripts]
 source-statuspage = "source_statuspage.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "*"
-pytest-mock = "*"
-pytest = "*"
+requests-mock = "^1.9.3"
+pytest = "^6.1"
+pytest-mock = "^3.6.1"

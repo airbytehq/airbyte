@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.35.0'
+    cdkVersionRequired = '0.35.15'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -12,6 +12,12 @@ airbyteJavaConnector {
 java {
     compileJava {
         options.compilerArgs.remove("-Werror")
+    }
+}
+
+compileKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
     }
 }
 

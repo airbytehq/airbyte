@@ -36,6 +36,14 @@ This Source is capable of syncing the following core Streams:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                       |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+|:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
+| 0.1.3   | 2024-06-17 | [38661](https://github.com/airbytehq/airbyte/pull/38661) | Make connector compatible with Builder |
+| 0.1.2   | 2024-06-04 | [39012](https://github.com/airbytehq/airbyte/pull/39012) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.1   | 2024-05-20 | [38409](https://github.com/airbytehq/airbyte/pull/38409) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-22 | [18844](https://github.com/airbytehq/airbyte/pull/18844) | Add Reply.io Source Connector |
+
+</details>

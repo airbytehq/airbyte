@@ -15,6 +15,14 @@
         }
       }
     },
+    "entityId": {
+      "description": "The unique identifier of the workflow.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The unique name the workflow.",
+      "type": ["null", "string"]
+    },
     "description": {
       "description": "The detailed description of the workflow.",
       "type": "string"

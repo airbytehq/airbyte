@@ -10,8 +10,9 @@ from urllib.parse import quote_plus, unquote_plus
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from requests.auth import AuthBase
 
 BASE_URL = "https://www.googleapis.com/webmasters/v3/"
 ROW_LIMIT = 25000
@@ -30,7 +31,7 @@ class GoogleSearchConsole(HttpStream, ABC):
 
     def __init__(
         self,
-        authenticator: Union[HttpAuthenticator, requests.auth.AuthBase],
+        authenticator: AuthBase,
         site_urls: list,
         start_date: str,
         end_date: str,
@@ -114,7 +115,7 @@ class Sitemaps(GoogleSearchConsole):
         return f"sites/{stream_slice.get('site_url')}/sitemaps"
 
 
-class SearchAnalytics(GoogleSearchConsole, ABC):
+class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
     """
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics
     """
@@ -125,6 +126,10 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     dimensions = []
     search_types = ["web", "news", "image", "video"]
     range_of_days = 3
+
+    def __init__(self, authenticator: AuthBase, site_urls: list, start_date: str, end_date: str, data_state: str = "final", **kwargs):
+        super().__init__(authenticator=authenticator, site_urls=site_urls, start_date=start_date, end_date=end_date, data_state=data_state)
+        self._state = {}
 
     def path(
         self,
@@ -141,6 +146,14 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     @property
     def http_method(self) -> str:
         return "POST"
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -262,7 +275,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
             yield record
 
-    def get_updated_state(
+    def _get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
@@ -290,7 +303,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         }
         """
 
-        latest_benchmark = latest_record[self.cursor_field]
+        latest_benchmark = latest_record.get(self.cursor_field)
 
         site_url = latest_record.get("site_url")
         search_type = latest_record.get("search_type")
@@ -305,6 +318,11 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
 
         return current_stream_state
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(**kwargs):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
 
 
 class SearchAnalyticsByDate(SearchAnalytics):
@@ -366,7 +384,7 @@ class SearchByKeyword(SearchAnalytics):
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
 
-        stream = SearchAppearance(self.authenticator, self._site_urls, self._start_date, self._end_date)
+        stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
         keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
         keywords = {record["searchAppearance"] for record in keywords_records}
         filters = []

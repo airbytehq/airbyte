@@ -29,7 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
-import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
+import io.airbyte.integrations.destination.redshift.RedshiftDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -138,7 +138,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
     // TODO: Its sad to instantiate unneeded dependency to construct database and datsources. pull it to
     // static methods.
-    final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination();
+    final RedshiftDestination insertDestination = new RedshiftDestination();
     dataSource = insertDestination.getDataSource(config);
     database = insertDestination.getDatabase(dataSource, new RedshiftSourceOperations());
   }
