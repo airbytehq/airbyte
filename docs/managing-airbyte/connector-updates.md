@@ -43,7 +43,7 @@ Each connector's changelog details its update history. You can find it in the [c
 
 2. Accept the update for each individual connection using the affected connector. This allows you to review and potentially adjust the connection settings before applying the update.
 
-Note that in an Airbyte Open Source or Self-Managed Enterprise instance, syncs are not automatically paused. This differs from what you would see in Airbyte Cloud. Syncs will not be paused if you miss the deadline for a major update. However, it's strongly recommended to update promptly to avoid potential compatibility issues.
+Note that in an Airbyte Open Source or Self-Managed Enterprise instance, syncs are not automatically paused. This differs from what you would see in Airbyte Cloud. Although syncs will not be paused if you miss the deadline for a major update, we recommended you update promptly to avoid potential compatibility issues.
 
 <!-- Maybe a short clip from arcade showing opt-in and updating -->
 
