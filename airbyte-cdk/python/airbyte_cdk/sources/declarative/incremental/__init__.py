@@ -8,4 +8,11 @@ from airbyte_cdk.sources.declarative.incremental.global_parent_cursor import Glo
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import CursorFactory, PerPartitionCursor
 from airbyte_cdk.sources.declarative.incremental.resumable_full_refresh_cursor import ResumableFullRefreshCursor
 
-__all__ = ["CursorFactory", "DatetimeBasedCursor", "DeclarativeCursor", "GlobalParentCursor", "PerPartitionCursor", "ResumableFullRefreshCursor"]
+__all__ = [
+    "CursorFactory",
+    "DatetimeBasedCursor",
+    "DeclarativeCursor",
+    "GlobalParentCursor",
+    "PerPartitionCursor",
+    "ResumableFullRefreshCursor",
+]
