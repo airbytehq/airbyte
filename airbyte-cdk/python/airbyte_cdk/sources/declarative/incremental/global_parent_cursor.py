@@ -30,11 +30,6 @@ class GlobalParentCursor(DeclarativeCursor):
     Therefore, we need to manage state per partition.
     """
 
-    _NO_STATE: Mapping[str, Any] = {}
-    _NO_CURSOR_STATE: Mapping[str, Any] = {}
-    _KEY = 0
-    _VALUE = 1
-
     def __init__(self, stream_cursor: DeclarativeCursor, partition_router: PartitionRouter):
         self._stream_cursor = stream_cursor
         self._partition_router = partition_router
@@ -89,16 +84,13 @@ class GlobalParentCursor(DeclarativeCursor):
         if not stream_state:
             return
 
-        self._stream_cursor.set_initial_state(stream_state)
+        self._stream_cursor.set_initial_state(stream_state["state"])
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         self._stream_cursor.observe(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), record)
-        # self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].observe(
-        #     StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), record
-        # )
 
     def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         if stream_slice.partition.get("last_slice"):
@@ -114,39 +106,16 @@ class GlobalParentCursor(DeclarativeCursor):
         #     )
 
     def get_stream_state(self) -> StreamState:
-        state = self._stream_cursor.get_stream_state()
+        state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
+
         parent_state = self._partition_router.get_stream_state()
         if parent_state:
             state["parent_state"] = parent_state
 
         return state
 
-        # states = []
-        # for partition_tuple, cursor in self._cursor_per_partition.items():
-        #     cursor_state = cursor.get_stream_state()
-        #     if cursor_state:
-        #         states.append(
-        #             {
-        #                 "partition": self._to_dict(partition_tuple),
-        #                 "cursor": cursor_state,
-        #             }
-        #         )
-        # state: dict[str, Any] = {"states": states}
-        #
-        # parent_state = self._partition_router.get_stream_state()
-        # if parent_state:
-        #     state["parent_state"] = parent_state
-        # return state
-
     def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
         return self._stream_cursor.get_stream_state()
-        # if not stream_slice:
-        #     raise ValueError("A partition needs to be provided in order to extract a state")
-        #
-        # if not stream_slice:
-        #     return None
-        #
-        # return self._get_state_for_partition(stream_slice.partition)
 
     def get_request_params(
             self,
@@ -232,12 +201,12 @@ class GlobalParentCursor(DeclarativeCursor):
         return self._stream_cursor.should_be_synced(self._convert_record_to_cursor_record(record))
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        if not first.associated_slice or not second.associated_slice:
-            raise ValueError(f"Both records should have an associated slice but got {first.associated_slice} and {second.associated_slice}")
-        if first.associated_slice.partition != second.associated_slice.partition:
-            raise ValueError(
-                f"To compare records, partition should be the same but got {first.associated_slice.partition} and {second.associated_slice.partition}"
-            )
+        # if not first.associated_slice or not second.associated_slice:
+        #     raise ValueError(f"Both records should have an associated slice but got {first.associated_slice} and {second.associated_slice}")
+        # if first.associated_slice.partition != second.associated_slice.partition:
+        #     raise ValueError(
+        #         f"To compare records, partition should be the same but got {first.associated_slice.partition} and {second.associated_slice.partition}"
+        #     )
 
         return self._stream_cursor.is_greater_than_or_equal(
             self._convert_record_to_cursor_record(first), self._convert_record_to_cursor_record(second)
