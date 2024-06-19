@@ -11,9 +11,9 @@ Every connector in Airbyte's catalog follows semantic versioning ([semver](https
 Major.Minor.Patch (e.g., 1.2.5)
 A connector reaching version 1.0 is considered mature and comes with semver guarantees. 
 
-**Minor updates (1.2.x):** These might introduce new features like streams or properties, but they are designed to be fully backward compatible with your existing setup.<br/>
-**Patch updates (1.x.x):** These typically contain bug fixes and small improvements that won't affect your existing configurations.<br/>
-**Major updates (x.0.0):** These are significant changes that may require you to adjust your configurations. We'll discuss this in more detail below.<br/>
+* **Patch updates (1.0.x):** These typically contain bug fixes and small improvements that won't affect your existing configurations.
+* **Minor updates (1.x.0):** These might introduce new features like streams or properties, but they are designed to be fully backward compatible with your existing setup.
+* **Major updates (x.0.0):** These are significant changes that may require you to adjust your configurations. We'll discuss this in more detail below.
 
 :::info
 When a connector version is 1.0 or higher, this means it's mature and now has semver guarantees.
