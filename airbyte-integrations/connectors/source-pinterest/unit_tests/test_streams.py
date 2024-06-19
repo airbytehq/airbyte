@@ -4,18 +4,17 @@
 
 import os
 from http import HTTPStatus
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-from unittest.mock import patch
 import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice
-from source_pinterest.streams import PinterestAnalyticsStream, PinterestStream, PinterestSubStream, RateLimitExceeded
-from source_pinterest.utils import get_analytics_columns
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from source_pinterest.streams import PinterestAnalyticsStream, PinterestStream, PinterestSubStream, RateLimitExceeded
+from source_pinterest.utils import get_analytics_columns
 
 from .conftest import get_stream_by_name
 
