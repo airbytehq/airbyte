@@ -23,6 +23,25 @@ import uuid
 
 logger = getLogger()
 
+def mapJsonSchemaTypeToGlideType(json_type: str) -> str:
+    jsonSchemaTypeToGlideType = {
+        "string":"string",
+        "number": "number",
+        "integer": "number",
+        "boolean":"boolean",
+    }
+    if isinstance(json_type, list):
+        logger.debug(f"Found list type '{json_type}'. Attempting to map to a primitive type.") # nopep8 because
+        # find the first type that is not 'null' and use that instead:
+        for t in json_type:
+            if t != "null" and t in jsonSchemaTypeToGlideType:
+                logger.debug(f"Mapped json schema list type of '{json_type}' to '{t}'.") # nopep8 because
+                json_type = t
+
+    if json_type in jsonSchemaTypeToGlideType:
+        return jsonSchemaTypeToGlideType[json_type]
+    raise ValueError(f"Unsupported JSON schema type for glide '{json_type}'")
+
 class DestinationGlide(Destination):
     # GlideBigTable optional for tests to inject mock
     def __init__(self, glide: GlideBigTableBase = None):
@@ -53,34 +72,16 @@ class DestinationGlide(Destination):
         api_key = config['api_key']
         table_id = config['table_id']
 
+        # TODO: choose a strategy based on config
         self.glide.init(api_host, api_key, api_path_root, table_id)
 
         # go through each stream and add it as needed:
         stream_names = {s.stream.name for s in configured_catalog.streams}
         for configured_stream in configured_catalog.streams:
             if configured_stream.destination_sync_mode != DestinationSyncMode.overwrite:
-                raise Exception(f'Only destination sync mode overwrite it supported, but received "{configured_stream.destination_sync_mode}".') # nopep8 because https://github.com/hhatto/autopep8/issues/712
+                raise Exception(f'Only destination sync mode overwrite is supported, but received "{configured_stream.destination_sync_mode}".') # nopep8 because https://github.com/hhatto/autopep8/issues/712
             
-            # TODO: upsert the GBT with schema to prepare for dumping the data into it
-            def mapJsonSchemaTypeToGlideType(json_type: str) -> str:
-                jsonSchemaTypeToGlideType = {
-                    "string":"string",
-                    "number": "number",
-                    "integer": "number",
-                    "boolean":"boolean",
-                }
-                if isinstance(json_type, list):
-                    logger.debug(f"Found list type '{json_type}' in stream {configured_stream.stream.name}. Attempting to map to a primitive type.") # nopep8 because
-                    # find the first type that is not 'null' and use that instead:
-                    for t in json_type:
-                        if t != "null" and t in jsonSchemaTypeToGlideType:
-                            logger.debug(f"Mapped json schema list type of '{json_type}' to '{t}' in stream {configured_stream.stream.name}.") # nopep8 because
-                            json_type = t
-
-                if json_type in jsonSchemaTypeToGlideType:
-                    return jsonSchemaTypeToGlideType[json_type]
-                raise ValueError(f"Unsupported JSON schema type for glide '{json_type}'")
-
+            # upsert the GBT with schema to prepare for dumping the data into it
             columns = []
             properties = configured_stream.stream.json_schema["properties"]
             for prop_name in properties.keys():
@@ -91,11 +92,6 @@ class DestinationGlide(Destination):
                 columns.append(Column(prop_name, mapJsonSchemaTypeToGlideType(prop_type)))
             
             self.glide.prepare_table(columns)
-            
-            # NOTE: for now using an existing GBT in old API
-            logger.debug("deleting all rows...")
-            self.glide.delete_all()
-            logger.debug("deleting all rows complete.")
 
             # stream the records into the GBT:
             buffer = defaultdict(list)
@@ -107,7 +103,7 @@ class DestinationGlide(Destination):
                     data = message.record.data
                     stream = message.record.stream
                     if stream not in stream_names:
-                        logger.debug(
+                        logger.warning(
                             f"Stream {stream} was not present in configured streams, skipping")
                         continue
 
@@ -154,3 +150,4 @@ class DestinationGlide(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+
