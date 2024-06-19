@@ -808,8 +808,8 @@ definitions:
         description: If the target API endpoint does not take cursor values to filter records and returns all records anyway, the connector with this cursor will filter out records locally, and only emit new records from the last sync, hence incremental. This means that all records would be read from the API, but only new records will be emitted to the destination.
         type: boolean
       is_compare_strictly:
-        title: Whether the target API should return an error for slice intersections
-        description: If the target API endpoint does not accept datetime filtering fields with the same value, the connector will perform slicing without intersections.
+        title: Whether the target API should return an error for last slice intersections
+        description: If the target API endpoint does not accept datetime filtering fields with the same value, the connector will perform last slice without intersections.
         type: boolean
       lookback_window:
         title: Lookback Window
