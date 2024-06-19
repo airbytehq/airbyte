@@ -33,6 +33,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
+    GlobalParentCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
 )
@@ -690,12 +691,18 @@ class ModelToComponentFactory:
 
         if model.incremental_sync and stream_slicer:
             incremental_sync_model = model.incremental_sync
-            return PerPartitionCursor(
-                cursor_factory=CursorFactory(
-                    lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
-                ),
-                partition_router=stream_slicer,
-            )
+            if hasattr(incremental_sync_model, "global_parent_cursor") and incremental_sync_model.global_parent_cursor:
+                return GlobalParentCursor(
+                    stream_cursor=self._create_component_from_model(model=incremental_sync_model, config=config),
+                    partition_router=stream_slicer,
+                )
+            else:
+                return PerPartitionCursor(
+                    cursor_factory=CursorFactory(
+                        lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
+                    ),
+                    partition_router=stream_slicer,
+                )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
