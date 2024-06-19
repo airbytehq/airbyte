@@ -67,6 +67,7 @@ class DatetimeBasedCursor(DeclarativeCursor):
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
     message_repository: Optional[MessageRepository] = None
+    is_compare_strictly: Optional[bool] = None
     cursor_datetime_formats: List[str] = field(default_factory=lambda: [])
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -207,7 +208,9 @@ class DatetimeBasedCursor(DeclarativeCursor):
         start_field = self._partition_field_start.eval(self.config)
         end_field = self._partition_field_end.eval(self.config)
         dates = []
-        while start <= end:
+
+        is_within_interval = start < end if self.is_compare_strictly else start <= end
+        while is_within_interval:
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
             dates.append(
