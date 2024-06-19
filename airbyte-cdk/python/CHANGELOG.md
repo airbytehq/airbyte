@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.6
+Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout take 2)
+
+## 1.5.5
+Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout)
+
+## 1.5.4
+Jinja interpolation - Allow access to _partition for source-jira
+
 ## 1.5.3
 Ensure error message is the same after migration to HttpClient
 
