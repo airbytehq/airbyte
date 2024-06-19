@@ -101,7 +101,7 @@ const getFromPaths = (obj, path, defaultValue = undefined) => {
   // Try to get the value from each possible path
   for (let possiblePath of possiblePaths) {
     const value = get(obj, possiblePath);
-    if (value !== undefined) {
+    if (value !== undefined && value !== null) {
       return value;
     }
   }
