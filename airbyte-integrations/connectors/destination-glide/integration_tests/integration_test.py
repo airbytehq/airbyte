@@ -16,7 +16,7 @@ from airbyte_cdk.models import (
 from datetime import datetime
 from destination_glide import DestinationGlide
 # for mock:
-from destination_glide.glide import GlideBigTable
+from destination_glide.glide import GlideBigTableBase
 
 import json
 import logging
@@ -25,7 +25,6 @@ import random
 import string
 from typing import Any, Mapping
 from unittest.mock import create_autospec
-
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
@@ -42,14 +41,20 @@ def test_table_name() -> str:
 
 @pytest.fixture
 def table_schema() -> str:
-    schema = {"type": "object", "properties": {
-        "column1": {"type": ["null", "string"]}}}
-    return schema
+    stream_schema = {
+        "type": "object",
+        "properties": {
+            "string_col": {"type": "string"},
+            "int_col": {"type": "integer"},
+            "date_col": {"type": "string", "format": "date-time"},
+            "other_col": {"type": ["null", "string"]}
+        },
+    }
+    return stream_schema
 
 
 def AirbyteLogger() -> logging.Logger:
     return logging.getLogger('airbyte')
-
 
 @pytest.fixture
 def configured_catalog(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
@@ -62,7 +67,6 @@ def configured_catalog(test_table_name: str, table_schema: str) -> ConfiguredAir
     )
     return ConfiguredAirbyteCatalog(streams=[overwrite_stream])
 
-
 @pytest.fixture
 def airbyte_message_record1(test_table_name: str):
     return AirbyteMessage(
@@ -71,7 +75,6 @@ def airbyte_message_record1(test_table_name: str):
             stream=test_table_name, data={"key_str": "value1", "key_int": 3}, emitted_at=int(datetime.now().timestamp()) * 1000
         ),
     )
-
 
 @pytest.fixture
 def airbyte_message_record2(test_table_name: str):
@@ -92,6 +95,9 @@ def airbyte_message_state(test_table_name: str):
         )
     )
 
+
+#configured_stream.stream.json_schema["properties"]
+
 ##### Tests Begin Here #####
 
 
@@ -109,7 +115,7 @@ def test_write(
     airbyte_message_state: AirbyteMessage,
     test_table_name: str,
 ):
-    mock_gbt = create_autospec(GlideBigTable)
+    mock_gbt = create_autospec(GlideBigTableBase)
 
     destination = DestinationGlide(mock_gbt)
     generator = destination.write(
