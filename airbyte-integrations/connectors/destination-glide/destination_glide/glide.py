@@ -197,7 +197,7 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         self.delete_all()
 
         for col in columns:
-            if col.name not in self.hardcoded_column_lookup:
+            if col.id not in self.hardcoded_column_lookup:
                 logger.warning(
                     f"Column '{col.id}' not found in hardcoded column lookup. Will be ignored.")
 
