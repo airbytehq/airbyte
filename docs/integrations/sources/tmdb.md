@@ -94,11 +94,11 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                            | Subject        |
-| :------ | :--------- | :------------------------------------------------------ | :------------- |
-| 0.1.3 | 2024-06-15 | [39109](https://github.com/airbytehq/airbyte/pull/39109) | Make compatible with builder |
-| 0.1.2 | 2024-06-06 | [39305](https://github.com/airbytehq/airbyte/pull/39305) | [autopull] Upgrade base image to v1.2.2 |
-| 0.1.1 | 2024-05-21 | [38496](https://github.com/airbytehq/airbyte/pull/38496) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561) | Initial commit |
+| Version | Date       | Pull Request                                             | Subject        |
+| :------ | :--------- | :------------------------------------------------------- | :------------- |
+|  1.0.0  | 2024-06-15 | [39109](https://github.com/airbytehq/airbyte/pull/39109) | Make compatible with builder, fix schema |
+|  0.1.2  | 2024-06-06 | [39305](https://github.com/airbytehq/airbyte/pull/39305) | [autopull] Upgrade base image to v1.2.2 |
+|  0.1.1  | 2024-05-21 | [38496](https://github.com/airbytehq/airbyte/pull/38496) | [autopull] base image + poetry + up_to_date |
+|  0.1.0  | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561)  | Initial commit |
 
 </details>
