@@ -202,7 +202,8 @@ class CsvParser(FileTypeParser):
             for row in data_generator:
                 line_no += 1
                 yield CsvParser._to_nullable(
-                    cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null
+                    cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null,
+                    config_format.whitespace_is_null
                 )
         except RecordParseError as parse_err:
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no) from parse_err
@@ -226,17 +227,20 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _to_nullable(
-        row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
-    ) -> Dict[str, Optional[str]]:
+        row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str],
+            strings_can_be_null: bool, whitespace_is_null: bool) -> Dict[str, Optional[str]]:
         nullable = {
-            k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
+            k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null,
+                                                whitespace_is_null) else v
             for k, v in row.items()
         }
         return nullable
 
     @staticmethod
-    def _value_is_none(value: Any, deduped_property_type: Optional[str], null_values: Set[str], strings_can_be_null: bool) -> bool:
-        return value in null_values and (strings_can_be_null or deduped_property_type != "string")
+    def _value_is_none(value: Any, deduped_property_type: Optional[str], null_values: Set[str],
+                       strings_can_be_null: bool, whitespace_is_null: bool) -> bool:
+        return (((whitespace_is_null and value.strip() == '') or value in null_values) and
+                (strings_can_be_null or deduped_property_type != "string"))
 
     @staticmethod
     def _pre_propcess_property_types(property_types: Dict[str, Any]) -> Mapping[str, str]:

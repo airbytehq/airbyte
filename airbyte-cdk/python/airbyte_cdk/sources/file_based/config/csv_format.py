@@ -113,6 +113,9 @@ class CsvFormat(BaseModel):
         default=[],
         description="A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.",
     )
+    whitespace_is_null: bool = Field(
+        title="Whitespace Is Null", default=False, description="Whether an empty space should be interpreted as null."
+    )
     strings_can_be_null: bool = Field(
         title="Strings Can Be Null",
         default=True,
