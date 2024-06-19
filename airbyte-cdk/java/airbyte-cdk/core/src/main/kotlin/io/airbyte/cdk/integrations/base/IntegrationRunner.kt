@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import datadog.trace.api.Trace
 import io.airbyte.cdk.integrations.util.ApmTraceUtils
+import io.airbyte.cdk.integrations.util.ConnectorExceptionTranslator
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer
 import io.airbyte.commons.features.EnvVariableFeatureFlags
@@ -110,17 +111,19 @@ internal constructor(
 
     @Trace(operationName = "RUN_OPERATION")
     @Throws(Exception::class)
-    fun run(args: Array<String>) {
+    fun run(args: Array<String>,
+            exceptionTranslator: ConnectorExceptionTranslator? = null) {
         val parsed = cliParser.parse(args)
         try {
-            runInternal(parsed)
+            runInternal(parsed, exceptionTranslator)
         } catch (e: Exception) {
             throw e
         }
     }
 
     @Throws(Exception::class)
-    private fun runInternal(parsed: IntegrationConfig) {
+    private fun runInternal(parsed: IntegrationConfig,
+                            exceptionTranslator: ConnectorExceptionTranslator? = null) {
         LOGGER.info { "Running integration: ${integration.javaClass.name}" }
         LOGGER.info { "Command: ${parsed.command}" }
         LOGGER.info { "Integration config: $parsed" }
@@ -238,9 +241,10 @@ internal constructor(
                             AirbyteConnectionStatus()
                                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                                 .withMessage(
-                                    ConnectorExceptionUtil.getDisplayMessage(
-                                        rootConfigErrorThrowable
-                                    )
+                                    exceptionTranslator?.getExternalMessage(rootConfigErrorThrowable)
+                                    //ConnectorExceptionUtil.getDisplayMessage(
+                                     //   rootConfigErrorThrowable
+                                    //)
                                 )
                         )
                 )
