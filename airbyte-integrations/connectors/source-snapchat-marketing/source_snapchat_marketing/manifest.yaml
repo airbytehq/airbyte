@@ -480,8 +480,8 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
+        type: DatetimeBasedCursor
+        is_compare_strictly: true
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -514,7 +514,7 @@ definitions:
             - path: ["granularity"]
               value: "HOUR"
             - path: ["spend"]
-              value: "{{ record['stats']['spend'] }}"
+              value: "{{ record.get('stats', {}).get('spend'] }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -568,8 +568,8 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/adaccounts"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
+        type: DatetimeBasedCursor
+        is_compare_strictly: true
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -602,7 +602,7 @@ definitions:
             - path: ["granularity"]
               value: "DAY"
             - path: ["spend"]
-              value: "{{ record['stats']['spend'] }}"
+              value: "{{ record.get('stats', {}).get('spend') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -656,7 +656,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["spend"]
-              value: "{{ record['stats']['spend'] }}"
+              value: "{{ record.get('stats', {}).get('spend') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -711,8 +711,8 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/ads"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
+        type: DatetimeBasedCursor
+        is_compare_strictly: true
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -744,135 +744,132 @@ definitions:
               value: "AD"
             - path: ["granularity"]
               value: "HOUR"
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
-          fields:
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -927,8 +924,8 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/ads"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
+        type: DatetimeBasedCursor
+        is_compare_strictly: true
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -960,147 +957,144 @@ definitions:
               value: "AD"
             - path: ["granularity"]
               value: "DAY"
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
-          fields:
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
             - path: ["attachment_frequency"]
-              value: "{{ record['stats']['attachment_frequency'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_frequency') }}"
             - path: ["attachment_uniques"]
-              value: "{{ record['stats']['attachment_uniques'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_uniques') }}"
             - path: ["frequency"]
-              value: "{{ record['stats']['frequency'] }}"
+              value: "{{ record.get('stats', {}).get('frequency') }}"
             - path: ["uniques"]
-              value: "{{ record['stats']['uniques'] }}"
+              value: "{{ record.get('stats', {}).get('uniques') }}"
             - path: ["total_reach"]
-              value: "{{ record['stats']['total_reach'] }}"
+              value: "{{ record.get('stats', {}).get('total_reach') }}"
             - path: ["earned_reach"]
-              value: "{{ record['stats']['earned_reach'] }}"
+              value: "{{ record.get('stats', {}).get('earned_reach') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1152,147 +1146,146 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/ads"
       transformations:
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
+        - type: AddFields
           fields:
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
             - path: ["attachment_frequency"]
-              value: "{{ record['stats']['attachment_frequency'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_frequency') }}"
             - path: ["attachment_uniques"]
-              value: "{{ record['stats']['attachment_uniques'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_uniques') }}"
             - path: ["frequency"]
-              value: "{{ record['stats']['frequency'] }}"
+              value: "{{ record.get('stats', {}).get('frequency') }}"
             - path: ["uniques"]
-              value: "{{ record['stats']['uniques'] }}"
+              value: "{{ record.get('stats', {}).get('uniques') }}"
             - path: ["total_reach"]
-              value: "{{ record['stats']['total_reach'] }}"
+              value: "{{ record.get('stats', {}).get('total_reach') }}"
             - path: ["earned_reach"]
-              value: "{{ record['stats']['earned_reach'] }}"
+              value: "{{ record.get('stats', {}).get('earned_reach') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1347,8 +1340,8 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/adsquads"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
+        type: DatetimeBasedCursor
+        is_compare_strictly: true
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -1380,135 +1373,132 @@ definitions:
               value: "AD_SQUAD"
             - path: ["granularity"]
               value: "HOUR"
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
-          fields:
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1563,8 +1553,8 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/adsquads"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
+        type: DatetimeBasedCursor
+        is_compare_strictly: true
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -1596,147 +1586,144 @@ definitions:
               value: "AD_SQUAD"
             - path: ["granularity"]
               value: "DAY"
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
-          fields:
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
             - path: ["attachment_frequency"]
-              value: "{{ record['stats']['attachment_frequency'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_frequency') }}"
             - path: ["attachment_uniques"]
-              value: "{{ record['stats']['attachment_uniques'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_uniques') }}"
             - path: ["frequency"]
-              value: "{{ record['stats']['frequency'] }}"
+              value: "{{ record.get('stats', {}).get('frequency') }}"
             - path: ["uniques"]
-              value: "{{ record['stats']['uniques'] }}"
+              value: "{{ record.get('stats', {}).get('uniques') }}"
             - path: ["total_reach"]
-              value: "{{ record['stats']['total_reach'] }}"
+              value: "{{ record.get('stats', {}).get('total_reach') }}"
             - path: ["earned_reach"]
-              value: "{{ record['stats']['earned_reach'] }}"
+              value: "{{ record.get('stats', {}).get('earned_reach') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1788,147 +1775,146 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/adsquads"
       transformations:
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
+        - type: AddFields
           fields:
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
             - path: ["attachment_frequency"]
-              value: "{{ record['stats']['attachment_frequency'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_frequency') }}"
             - path: ["attachment_uniques"]
-              value: "{{ record['stats']['attachment_uniques'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_uniques') }}"
             - path: ["frequency"]
-              value: "{{ record['stats']['frequency'] }}"
+              value: "{{ record.get('stats', {}).get('frequency') }}"
             - path: ["uniques"]
-              value: "{{ record['stats']['uniques'] }}"
+              value: "{{ record.get('stats', {}).get('uniques') }}"
             - path: ["total_reach"]
-              value: "{{ record['stats']['total_reach'] }}"
+              value: "{{ record.get('stats', {}).get('total_reach') }}"
             - path: ["earned_reach"]
-              value: "{{ record['stats']['earned_reach'] }}"
+              value: "{{ record.get('stats', {}).get('earned_reach') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1983,8 +1969,8 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
+        type: DatetimeBasedCursor
+        is_compare_strictly: true
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -2016,141 +2002,132 @@ definitions:
               value: "CAMPAIGN"
             - path: ["granularity"]
               value: "HOUR"
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
-          fields:
-            - path: ["id"]
-              value: "{{ stream_slice['id'] }}"
-            - path: ["type"]
-              value: "AD_ACCOUNT"
-            - path: ["granularity"]
-              value: "DAY"
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -2205,8 +2182,8 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_snapchat_marketing.components.SnapchatMarketingDatetimeBasedCursor
+        type: DatetimeBasedCursor
+        is_compare_strictly: true
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -2233,158 +2210,149 @@ definitions:
         - type: AddFields
           fields:
             - path: ["id"]
-              value: "{{ stream_slice['id'] }}"
+              value: "{{ stream_slice['id') }}"
             - path: ["type"]
               value: "CAMPAIGN"
             - path: ["granularity"]
               value: "DAY"
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
-          fields:
-            - path: ["id"]
-              value: "{{ stream_slice['id'] }}"
-            - path: ["type"]
-              value: "AD_ACCOUNT"
-            - path: ["granularity"]
-              value: "DAY"
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
             - path: ["attachment_frequency"]
-              value: "{{ record['stats']['attachment_frequency'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_frequency') }}"
             - path: ["attachment_uniques"]
-              value: "{{ record['stats']['attachment_uniques'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_uniques') }}"
             - path: ["frequency"]
-              value: "{{ record['stats']['frequency'] }}"
+              value: "{{ record.get('stats', {}).get('frequency') }}"
             - path: ["uniques"]
-              value: "{{ record['stats']['uniques'] }}"
+              value: "{{ record.get('stats', {}).get('uniques') }}"
             - path: ["total_reach"]
-              value: "{{ record['stats']['total_reach'] }}"
+              value: "{{ record.get('stats', {}).get('total_reach') }}"
             - path: ["earned_reach"]
-              value: "{{ record['stats']['earned_reach'] }}"
+              value: "{{ record.get('stats', {}).get('earned_reach') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -2436,147 +2404,146 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       transformations:
-        - type: CustomTransformation
-          class_name: source_snapchat_marketing.components.AddExistingRecordFields
+        - type: AddFields
           fields:
             - path: ["android_installs"]
-              value: "{{ record['stats']['android_installs'] }}"
+              value: "{{ record.get('stats', {}).get('android_installs') }}"
             - path: ["attachment_avg_view_time_millis"]
-              value: "{{ record['stats']['attachment_avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_avg_view_time_millis') }}"
             - path: ["attachment_impressions"]
-              value: "{{ record['stats']['attachment_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_impressions') }}"
             - path: ["attachment_quartile_1"]
-              value: "{{ record['stats']['attachment_quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_1') }}"
             - path: ["attachment_quartile_2"]
-              value: "{{ record['stats']['attachment_quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_2') }}"
             - path: ["attachment_quartile_3"]
-              value: "{{ record['stats']['attachment_quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_quartile_3') }}"
             - path: ["attachment_total_view_time_millis"]
-              value: "{{ record['stats']['attachment_total_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_total_view_time_millis') }}"
             - path: ["attachment_view_completion"]
-              value: "{{ record['stats']['attachment_view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_view_completion') }}"
             - path: ["avg_screen_time_millis"]
-              value: "{{ record['stats']['avg_screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_screen_time_millis') }}"
             - path: ["avg_view_time_millis"]
-              value: "{{ record['stats']['avg_view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('avg_view_time_millis') }}"
             - path: ["impressions"]
-              value: "{{ record['stats']['impressions'] }}"
+              value: "{{ record.get('stats', {}).get('impressions') }}"
             - path: ["ios_installs"]
-              value: "{{ record['stats']['ios_installs'] }}"
+              value: "{{ record.get('stats', {}).get('ios_installs') }}"
             - path: ["quartile_1"]
-              value: "{{ record['stats']['quartile_1'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_1') }}"
             - path: ["quartile_2"]
-              value: "{{ record['stats']['quartile_2'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_2') }}"
             - path: ["quartile_3"]
-              value: "{{ record['stats']['quartile_3'] }}"
+              value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
-              value: "{{ record['stats']['screen_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
             - path: ["swipe_up_percent"]
-              value: "{{ record['stats']['swipe_up_percent'] }}"
+              value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
-              value: "{{ record['stats']['swipes'] }}"
+              value: "{{ record.get('stats', {}).get('swipes') }}"
             - path: ["total_installs"]
-              value: "{{ record['stats']['total_installs'] }}"
+              value: "{{ record.get('stats', {}).get('total_installs') }}"
             - path: ["video_views"]
-              value: "{{ record['stats']['video_views'] }}"
+              value: "{{ record.get('stats', {}).get('video_views') }}"
             - path: ["video_views_time_based"]
-              value: "{{ record['stats']['video_views_time_based'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_time_based') }}"
             - path: ["video_views_15s"]
-              value: "{{ record['stats']['video_views_15s'] }}"
+              value: "{{ record.get('stats', {}).get('video_views_15s') }}"
             - path: ["view_completion"]
-              value: "{{ record['stats']['view_completion'] }}"
+              value: "{{ record.get('stats', {}).get('view_completion') }}"
             - path: ["view_time_millis"]
-              value: "{{ record['stats']['view_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('view_time_millis') }}"
             - path: ["paid_impressions"]
-              value: "{{ record['stats']['paid_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('paid_impressions') }}"
             - path: ["earned_impressions"]
-              value: "{{ record['stats']['earned_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('earned_impressions') }}"
             - path: ["total_impressions"]
-              value: "{{ record['stats']['total_impressions'] }}"
+              value: "{{ record.get('stats', {}).get('total_impressions') }}"
             - path: ["play_time_millis"]
-              value: "{{ record['stats']['play_time_millis'] }}"
+              value: "{{ record.get('stats', {}).get('play_time_millis') }}"
             - path: ["shares"]
-              value: "{{ record['stats']['shares'] }}"
+              value: "{{ record.get('stats', {}).get('shares') }}"
             - path: ["saves"]
-              value: "{{ record['stats']['saves'] }}"
+              value: "{{ record.get('stats', {}).get('saves') }}"
             - path: ["native_leads"]
-              value: "{{ record['stats']['native_leads'] }}"
+              value: "{{ record.get('stats', {}).get('native_leads') }}"
             - path: ["conversion_purchases"]
-              value: "{{ record['stats']['conversion_purchases'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases') }}"
             - path: ["conversion_purchases_value"]
-              value: "{{ record['stats']['conversion_purchases_value'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_purchases_value') }}"
             - path: ["conversion_save"]
-              value: "{{ record['stats']['conversion_save'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_save') }}"
             - path: ["conversion_start_checkout"]
-              value: "{{ record['stats']['conversion_start_checkout'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_checkout') }}"
             - path: ["conversion_add_cart"]
-              value: "{{ record['stats']['conversion_add_cart'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_cart') }}"
             - path: ["conversion_view_content"]
-              value: "{{ record['stats']['conversion_view_content'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_view_content') }}"
             - path: ["conversion_add_billing"]
-              value: "{{ record['stats']['conversion_add_billing'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_billing') }}"
             - path: ["conversion_searches"]
-              value: "{{ record['stats']['conversion_searches'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_searches') }}"
             - path: ["conversion_level_completes"]
-              value: "{{ record['stats']['conversion_level_completes'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_level_completes') }}"
             - path: ["conversion_app_opens"]
-              value: "{{ record['stats']['conversion_app_opens'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_app_opens') }}"
             - path: ["conversion_page_views"]
-              value: "{{ record['stats']['conversion_page_views'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_page_views') }}"
             - path: ["conversion_subscribe"]
-              value: "{{ record['stats']['conversion_subscribe'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_subscribe') }}"
             - path: ["conversion_ad_click"]
-              value: "{{ record['stats']['conversion_ad_click'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_click') }}"
             - path: ["conversion_ad_view"]
-              value: "{{ record['stats']['conversion_ad_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_ad_view') }}"
             - path: ["conversion_complete_tutorial"]
-              value: "{{ record['stats']['conversion_complete_tutorial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_complete_tutorial') }}"
             - path: ["conversion_invite"]
-              value: "{{ record['stats']['conversion_invite'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_invite') }}"
             - path: ["conversion_login"]
-              value: "{{ record['stats']['conversion_login'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_login') }}"
             - path: ["conversion_share"]
-              value: "{{ record['stats']['conversion_share'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_share') }}"
             - path: ["conversion_reserve"]
-              value: "{{ record['stats']['conversion_reserve'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_reserve') }}"
             - path: ["conversion_achievement_unlocked"]
-              value: "{{ record['stats']['conversion_achievement_unlocked'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_achievement_unlocked') }}"
             - path: ["conversion_add_to_wishlist"]
-              value: "{{ record['stats']['conversion_add_to_wishlist'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_add_to_wishlist') }}"
             - path: ["conversion_spend_credits"]
-              value: "{{ record['stats']['conversion_spend_credits'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_spend_credits') }}"
             - path: ["conversion_rate"]
-              value: "{{ record['stats']['conversion_rate'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_rate') }}"
             - path: ["conversion_start_trial"]
-              value: "{{ record['stats']['conversion_start_trial'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_start_trial') }}"
             - path: ["conversion_list_view"]
-              value: "{{ record['stats']['conversion_list_view'] }}"
+              value: "{{ record.get('stats', {}).get('conversion_list_view') }}"
             - path: ["custom_event_1"]
-              value: "{{ record['stats']['custom_event_1'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_1') }}"
             - path: ["custom_event_2"]
-              value: "{{ record['stats']['custom_event_2'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_2') }}"
             - path: ["custom_event_3"]
-              value: "{{ record['stats']['custom_event_3'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_3') }}"
             - path: ["custom_event_4"]
-              value: "{{ record['stats']['custom_event_4'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_4') }}"
             - path: ["custom_event_5"]
-              value: "{{ record['stats']['custom_event_5'] }}"
+              value: "{{ record.get('stats', {}).get('custom_event_5') }}"
             - path: ["story_opens"]
-              value: "{{ record['stats']['story_opens'] }}"
+              value: "{{ record.get('stats', {}).get('story_opens') }}"
             - path: ["story_completes"]
-              value: "{{ record['stats']['story_completes'] }}"
+              value: "{{ record.get('stats', {}).get('story_completes') }}"
             - path: ["attachment_frequency"]
-              value: "{{ record['stats']['attachment_frequency'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_frequency') }}"
             - path: ["attachment_uniques"]
-              value: "{{ record['stats']['attachment_uniques'] }}"
+              value: "{{ record.get('stats', {}).get('attachment_uniques') }}"
             - path: ["frequency"]
-              value: "{{ record['stats']['frequency'] }}"
+              value: "{{ record.get('stats', {}).get('frequency') }}"
             - path: ["uniques"]
-              value: "{{ record['stats']['uniques'] }}"
+              value: "{{ record.get('stats', {}).get('uniques') }}"
             - path: ["total_reach"]
-              value: "{{ record['stats']['total_reach'] }}"
+              value: "{{ record.get('stats', {}).get('total_reach') }}"
             - path: ["earned_reach"]
-              value: "{{ record['stats']['earned_reach'] }}"
+              value: "{{ record.get('stats', {}).get('earned_reach') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
