@@ -17,7 +17,7 @@ include = "source_tmdb"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "^1"
 
 [tool.poetry.scripts]
 source-tmdb = "source_tmdb.run:run"

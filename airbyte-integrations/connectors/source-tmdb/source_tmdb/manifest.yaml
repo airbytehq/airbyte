@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - trending
+    - certification_movie
 
 definitions:
   streams:
