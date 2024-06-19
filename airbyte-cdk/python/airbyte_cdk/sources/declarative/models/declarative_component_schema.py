@@ -1107,6 +1107,9 @@ class DatetimeBasedCursor(BaseModel):
         description='Set to True if the target API does not accept queries where the start time equal the end time.',
         title='Whether to skip requests if the start time equals the end time',
     )
+    global_parent_cursor: Optional[bool] = Field(
+        False, description='Indicates whether the parent stream state as one cursor instead of partitions.', title='Global Parent Cursor'
+    )
     lookback_window: Optional[str] = Field(
         None,
         description='Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.',
@@ -1561,9 +1564,6 @@ class ParentStreamConfig(BaseModel):
         False,
         description='Indicates whether the parent stream should be read incrementally based on updates in the child stream.',
         title='Incremental Dependency',
-    )
-    global_parent_cursor: Optional[bool] = Field(
-        False, description='Indicates whether the parent stream state as one cursor instead of partitions.', title='Global Parent Cursor'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 

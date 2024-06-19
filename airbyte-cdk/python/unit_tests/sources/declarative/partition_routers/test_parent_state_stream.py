@@ -815,12 +815,20 @@ def test_incremental_parent_state_no_incremental_dependency(
                                             "parent_key": "id",
                                             "partition_field": "id",
                                             "incremental_dependency": True,
-                                            "global_parent_cursor": True
                                         }
                                     ],
                                 },
                             },
-                            "incremental_sync": "#/definitions/cursor_incremental_sync",
+                            "incremental_sync": {
+                                "type": "DatetimeBasedCursor",
+                                "cursor_datetime_formats": ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"],
+                                "datetime_format": "%Y-%m-%dT%H:%M:%SZ",
+                                "cursor_field": "{{ parameters.get('cursor_field',  'updated_at') }}",
+                                "start_datetime": {"datetime": "{{ config.get('start_date')}}"},
+                                "start_time_option": {"inject_into": "request_parameter", "field_name": "start_time",
+                                                      "type": "RequestOption"},
+                                "global_parent_cursor": True
+                            },
                             "$parameters": {
                                 "name": "post_comment_votes",
                                 "path": "community/posts/{{ stream_slice.parent_slice.id }}/comments/{{ stream_slice.id }}/votes",
@@ -948,7 +956,7 @@ def test_incremental_parent_state_no_incremental_dependency(
                                             "parent_state": {"posts": {"updated_at": "2024-01-05T00:00:00Z"}},
                                         }
                                     },
-                                    "created_at": "2024-01-03T00:00:00Z",
+                                    "state": {"created_at": "2024-01-03T00:00:00Z"},
                                 }
                             ),
                         ),
@@ -956,7 +964,7 @@ def test_incremental_parent_state_no_incremental_dependency(
                 ],
                 # Expected state
                 {
-                    "created_at": "2024-01-15T00:00:00Z",
+                    "state": {"created_at": "2024-01-15T00:00:00Z"},
                     "parent_state": {
                         "post_comments": {
                             "states": [

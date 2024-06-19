@@ -815,6 +815,11 @@ definitions:
         description: Set to True if the target API does not accept queries where the start time equal the end time.
         type: boolean
         default: False
+      global_parent_cursor:
+        title: Global Parent Cursor
+        description: Indicates whether the parent stream state as one cursor instead of partitions.
+        type: boolean
+        default: false
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
@@ -2058,11 +2063,6 @@ definitions:
       incremental_dependency:
         title: Incremental Dependency
         description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
-        type: boolean
-        default: false
-      global_parent_cursor:
-        title: Global Parent Cursor
-        description: Indicates whether the parent stream state as one cursor instead of partitions.
         type: boolean
         default: false
       $parameters:
