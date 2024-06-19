@@ -340,7 +340,7 @@ def test_stream_slices(
 @pytest.mark.parametrize(
     "stream, json_content_example, last_job_elapsed_time, previous_slice_size, adjusted_slice_size",
     [
-        (CustomerAddress, "customer_address_jsonl_content_example", 10, 4, 5.5),
+        (CustomerAddress, "customer_address_jsonl_content_example", 20, 4, 5.5),
     ],
     ids=[
         "Expand Slice Size",
@@ -372,7 +372,6 @@ def test_expand_stream_slices_job_size(
     # fake `last job elapsed time` 
     if last_job_elapsed_time:
         stream.job_manager._job_last_elapsed_time = last_job_elapsed_time
-    # parsing result from completed job
 
     first_slice = next(stream.stream_slices())
     list(stream.read_records(SyncMode.incremental, stream_slice=first_slice))

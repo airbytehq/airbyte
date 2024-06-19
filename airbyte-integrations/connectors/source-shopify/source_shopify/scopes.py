@@ -20,7 +20,9 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "CustomerSavedSearch": ("read_customers",),
     "CustomerAddress": ("read_customers",),
     # SCOPE: read_orders
+    "OrderAgreements": ("read_orders",),
     "Orders": ("read_orders",),
+    "CustomerJourneySummary": ("read_orders",),
     "AbandonedCheckouts": ("read_orders",),
     "TenderTransactions": ("read_orders",),
     "Transactions": ("read_orders",),
