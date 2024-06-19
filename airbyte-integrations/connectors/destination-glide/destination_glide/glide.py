@@ -277,14 +277,14 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
                     "columnValues": mutated_row
                 }
             )
-            r = requests.post(
-                self.url("function/mutateTables"),
-                headers=self.headers(),
-                json={
-                    "appID": self.hardcoded_app_id,
-                    "mutations": mutations
-                }
-            )
+        r = requests.post(
+            self.url("function/mutateTables"),
+            headers=self.headers(),
+            json={
+                "appID": self.hardcoded_app_id,
+                "mutations": mutations
+            }
+        )
         if r.status_code != 200:
             logger.error(f"add rows failed with status {r.status_code}: {r.text}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
             r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
