@@ -1061,12 +1061,7 @@ definitions:
 
   # Incremental Streams
 
-  semi_incremental_retriever:
-    $ref: "#/definitions/retriever"
-    record_selector:
-      $ref: "#/definitions/selector"
-      record_filter:
-        condition: "{{ record['updated'] >= stream_slice['start_time'] }}"
+
 
   incremental_sync:
     type: DatetimeBasedCursor
@@ -1084,7 +1079,9 @@ definitions:
 
   semi_incremental_stream:
     $ref: "#/definitions/incremental_stream"
-    retriever: "#/definitions/semi_incremental_retriever"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      use_client_side_incremental: true
 
   # https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
   board_issues_stream:
