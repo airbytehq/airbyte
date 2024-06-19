@@ -166,7 +166,9 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def _fetch_report_data(self, url: str) -> dict:
         """Fetch the report data from the given URL."""
-        return self._http_get(url)
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
