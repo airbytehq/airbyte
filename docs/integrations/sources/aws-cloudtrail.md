@@ -54,7 +54,7 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 1.0.0   | 2024-06-19 | [36562](https://github.com/airbytehq/airbyte/pull/36562) | Migrate to low code CDK                           |
+| 1.0.0   | 2024-06-19 | [36562](https://github.com/airbytehq/airbyte/pull/36562) | Migrate to low code CDK, Add filter                           |
 | 0.1.11  | 2024-06-06 | [39246](https://github.com/airbytehq/airbyte/pull/39246) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.10  | 2024-06-03 | [38911](https://github.com/airbytehq/airbyte/pull/38911) | Replace AirbyteLogger with logging.Logger |
 | 0.1.9   | 2024-06-03 | [38911](https://github.com/airbytehq/airbyte/pull/38911) | Replace AirbyteLogger with logging.Logger |
