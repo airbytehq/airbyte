@@ -945,7 +945,7 @@ class DatetimeBasedCursor(BaseModel):
     is_compare_strictly: Optional[bool] = Field(
         None,
         description='If the target API endpoint does not accept datetime filtering fields with the same value, the connector will perform last slice without intersections.',
-        title='Whether the target API should return an error for last slice intersections',
+        title='Whether to skip requests if the start time equals the end time',
     )
     lookback_window: Optional[str] = Field(
         None,
