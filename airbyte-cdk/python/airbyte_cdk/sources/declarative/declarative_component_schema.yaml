@@ -809,8 +809,9 @@ definitions:
         type: boolean
       is_compare_strictly:
         title: Whether to skip requests if the start time equals the end time
-        description: If the target API endpoint does not accept datetime filtering fields with the same value, the connector will perform last slice without intersections.
+        description: Set to True if the target API does not accept queries where the start time equal the end time.
         type: boolean
+        default: False
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.

@@ -943,8 +943,8 @@ class DatetimeBasedCursor(BaseModel):
         title='Whether the target API does not support filtering and returns all data (the cursor filters records in the client instead of the API side)',
     )
     is_compare_strictly: Optional[bool] = Field(
-        None,
-        description='If the target API endpoint does not accept datetime filtering fields with the same value, the connector will perform last slice without intersections.',
+        False,
+        description='Set to True if the target API does not accept queries where the start time equal the end time.',
         title='Whether to skip requests if the start time equals the end time',
     )
     lookback_window: Optional[str] = Field(
