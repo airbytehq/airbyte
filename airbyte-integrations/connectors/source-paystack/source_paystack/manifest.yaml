@@ -33,9 +33,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -49,7 +46,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 5
+            page_size: 200
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -97,9 +94,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -113,7 +107,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 5
+            page_size: 200
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -161,9 +155,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['created_at'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -177,7 +168,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 5
+            page_size: 200
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -225,9 +216,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -241,7 +229,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 5
+            page_size: 200
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -289,9 +277,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -305,7 +290,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 5
+            page_size: 200
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -353,9 +338,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -369,7 +351,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 5
+            page_size: 200
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -417,9 +399,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -433,7 +412,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 5
+            page_size: 200
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -481,9 +460,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['createdAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -497,7 +473,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 5
+            page_size: 200
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
