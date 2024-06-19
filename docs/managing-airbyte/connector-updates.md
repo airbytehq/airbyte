@@ -7,7 +7,7 @@ This guide helps you understand the types of updates you may see, their impact o
 ## Understanding Connector Versions 
 To manage connection updates effectively, it's important to understand versioning and how to interpret the changelog entries. 
 
-Every connector in Airbyte's catalog follows semantic versioning (semver)
+Every connector in Airbyte's catalog follows semantic versioning ([semver](https://semver.org/))
 Major.Minor.Patch (e.g., 1.2.5)
 A connector reaching version 1.0 is considered mature and comes with semver guarantees. 
 
