@@ -356,6 +356,7 @@ def test_stream_slices(
     lookback_window,
     datetime_format,
     cursor_granularity,
+    is_compare_strictly,
     expected_slices,
 ):
     lookback_window = InterpolatedString(string=lookback_window, parameters={}) if lookback_window else None
@@ -367,6 +368,7 @@ def test_stream_slices(
         datetime_format=datetime_format,
         cursor_granularity=cursor_granularity,
         lookback_window=lookback_window,
+        is_compare_strictly=is_compare_strictly,
         config=config,
         parameters={},
     )
