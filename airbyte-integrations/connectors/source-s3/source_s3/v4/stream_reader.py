@@ -3,7 +3,7 @@
 #
 
 import logging
-from datetime import datetime
+from datetime import timezone, datetime
 from io import IOBase
 from os import getenv
 from typing import Iterable, List, Optional, Set
@@ -251,7 +251,9 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             yield remote_file
 
     def _handle_regular_file(self, file):
-        remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
+        # Directly localize last_modified to UTC and remove tzinfo
+        last_modified_utc = file["LastModified"].astimezone(timezone.utc).replace(tzinfo=None)
+        remote_file = RemoteFile(uri=file["Key"], last_modified=last_modified_utc)
         return remote_file
 
 
