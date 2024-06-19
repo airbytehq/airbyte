@@ -198,3 +198,23 @@ spec:
         default: "1970-01-01"
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         format: date
+      lookup_attributes_filter:
+        title: Filter applied while fetching records based on AttributeKey and AttributeValue which will be appended on the request body
+        type: object
+        required:
+          - attribute_key
+          - attribute_value
+        properties:
+          attribute_key:
+            type: string
+            title: Attribute Key from the response to filter
+            examples:
+              - "EventName"
+            default: "EventName"
+          attribute_value:
+            type: string
+            title: Corresponding value to the given attribute key
+            examples:
+              - "ListInstanceAssociations"
+              - "ConsoleLogin"
+            default: "ListInstanceAssociations"

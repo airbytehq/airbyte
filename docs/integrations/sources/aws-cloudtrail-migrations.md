@@ -5,3 +5,4 @@ The verison migrates the Aws Cloudtrail connector to the low-code framework for 
 Important update: The management_events stream changed it's EventTime field from integer to float. Destination should adapt this change if applicable.
 The connector as default uses us-east-1 region for accessing streams with its custom request signer.
 You may need to refresh the connection schema (with the reset), and run a sync.
+Connector has a new capability of adding filters to the response attributes using the `lookup_attributes_filter` config in the spec.

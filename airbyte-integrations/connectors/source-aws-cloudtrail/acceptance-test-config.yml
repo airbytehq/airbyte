@@ -5,6 +5,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_aws_cloudtrail/spec.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.11 # The spec has additional filtering property
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -15,23 +17,20 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 0.1.5 # The management_events stream changed it's EventTime field from integer to float
+          disable_for_version: 0.1.11 # The management_events stream changed it's EventTime field from integer to float
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 18000
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
   incremental:
     # bypass_reason: "This connector does not implement incremental sync"
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 18000
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 9000
         configured_catalog_path: "integration_tests/configured_catalog.json"

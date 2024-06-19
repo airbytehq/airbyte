@@ -38,6 +38,15 @@ class CustomAuthenticator(NoAuth):
         }
         # StartTime and EndTime should be Unix timestamps with integer type
         request_body_json = json.loads(request.body.decode("utf-8"))
+        if self.config.get('lookup_attributes_filter'):
+            lookup_attributes_filter = self.config.get('lookup_attributes_filter', {})
+            attribute_key = lookup_attributes_filter.get('attribute_key', '')
+            attribute_value = lookup_attributes_filter.get('attribute_value', '')
+
+            request_body_json["LookupAttributes"] = [{
+                "AttributeKey": attribute_key,
+                "AttributeValue": attribute_value
+            }]
         request_body_json["StartTime"] = int(float(request_body_json["StartTime"]))
         request_body_json["EndTime"] = int(float(request_body_json["EndTime"]))
         request.body = json.dumps(request_body_json).encode("utf-8")
