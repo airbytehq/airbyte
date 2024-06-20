@@ -2,12 +2,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime, timedelta
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.streams import Stream
 from airbyte_protocol.models import SyncMode
-from jsonref import requests
-from datetime import datetime, timedelta
 from source_adjust.source import SourceAdjust
 
 
