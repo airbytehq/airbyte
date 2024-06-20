@@ -4,39 +4,31 @@
 
 
 import logging
-import os
-import urllib
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
-import requests_cache
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler, ErrorResolution
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
+from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.types import JsonType
-from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests.auth import AuthBase
-
-from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
-# []  self.should_retry() - decides what to do at runtime based on the response -- how to wrap?? see def interpret_response
+# [x] self.should_retry() - decides what to do at runtime based on the response -- how to wrap?? see def interpret_response
 # [x] self.backoff_time() - decides what to do at runtime based on the response -- wrapped on init
-# [] self.error_message() - decides what to do at runtime based on the response
+# [x] self.error_message() - decides what to do at runtime based on the response -- removed as not used
 # [x] self.raise_on_http_errors() - This looks more static and could just be used as param inputs -- removed
+
 
 class HttpStream(Stream, ABC):
     """
@@ -47,13 +39,6 @@ class HttpStream(Stream, ABC):
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     def __init__(self, authenticator: Optional[AuthBase] = None, api_budget: Optional[APIBudget] = None):
-        # self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
-        # self._session = self.request_session()
-        # self._session.mount(
-        #     "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
-        # )
-        # self._session.auth = authenticator
-
 
         self._http_client = HttpClient(
             name=self.name,
@@ -121,12 +106,12 @@ class HttpStream(Stream, ABC):
         """
         return "GET"
 
-    # @property
-    # def raise_on_http_errors(self) -> bool:
-    #     """
-    #     Override if needed. If set to False, allows opting-out of raising HTTP code exception.
-    #     """
-    #     return True
+    @property
+    def raise_on_http_errors(self) -> bool:
+        """
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        """
+        return True
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -287,166 +272,50 @@ class HttpStream(Stream, ABC):
         return None
 
     def get_backoff_strategy(self):
-        return type("DynamicBackoffStrategy", (BackoffStrategy, object), {'backoff_time': self.backoff_time})()
-
-    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-        # TODO: how to wrap should_retry into ErrorResolution if exception is passed as argument?
-        should_retry = self.should_retry(response_or_exception)
+        return type("DynamicBackoffStrategy", (BackoffStrategy, object), {"backoff_time": self.backoff_time})()
 
     def get_error_handler(self):
+        raise_on_http_errors = self.raise_on_http_errors
 
-        DynamicHttpStatusErrorHandler = type("DynamicHttpStatusErrorHandler", (HttpStatusErrorHandler, object), {'interpret_response': self.interpret_response})
-        return DynamicHttpStatusErrorHandler(
-            logger=logging.Logger,
-            max_retries=self.max_retries,
-            max_time=self.max_time
+        def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+            if isinstance(response_or_exception, Exception):
+                return error_handler.interpret_response(response_or_exception)
+            should_retry = self.should_retry(response_or_exception)
+            if should_retry:
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message="Response does not include an HTTP status code.",
+                )
+            else:
+                if response_or_exception.ok:
+                    return ErrorResolution(
+                        response_action=ResponseAction.SUCCESS,
+                        failure_type=None,
+                        error_message=None,
+                    )
+                if raise_on_http_errors:
+                    return ErrorResolution(
+                        response_action=ResponseAction.FAIL,
+                        failure_type=FailureType.transient_error,
+                        error_message="Response does not include an HTTP status code.",
+                    )
+                else:
+                    return ErrorResolution(
+                        response_action=ResponseAction.IGNORE,
+                        failure_type=FailureType.transient_error,
+                        error_message="Response does not include an HTTP status code.",
+                    )
+
+        DynamicHttpStatusErrorHandler = type(
+            "DynamicHttpStatusErrorHandler", (HttpStatusErrorHandler, object), {"interpret_response": interpret_response}
         )
-
-    def error_message(self, response: requests.Response) -> str:
-        """
-        Override this method to specify a custom error message which can incorporate the HTTP response received
-
-        :param response: The incoming HTTP response from the partner API
-        :return:
-        """
-        return ""
-
-    # def must_deduplicate_query_params(self) -> bool:
-    #     return False
-
-    # def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
-    #     """
-    #     Remove query parameters from params mapping if they are already encoded in the URL.
-    #     :param url: URL with
-    #     :param params:
-    #     :return:
-    #     """
-    #     if params is None:
-    #         params = {}
-    #     query_string = urllib.parse.urlparse(url).query
-    #     query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
-    #
-    #     duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
-    #     return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
-
-    # def _create_prepared_request(
-    #     self,
-    #     path: str,
-    #     headers: Optional[Mapping[str, str]] = None,
-    #     params: Optional[Mapping[str, str]] = None,
-    #     json: Optional[Mapping[str, Any]] = None,
-    #     data: Optional[Union[str, Mapping[str, Any]]] = None,
-    # ) -> requests.PreparedRequest:
-    #     url = self._join_url(self.url_base, path)
-    #     if self.must_deduplicate_query_params():
-    #         query_params = self.deduplicate_query_params(url, params)
-    #     else:
-    #         query_params = params or {}
-    #     args = {"method": self.http_method, "url": url, "headers": headers, "params": query_params}
-    #     if self.http_method.upper() in BODY_REQUEST_METHODS:
-    #         if json and data:
-    #             raise RequestBodyException(
-    #                 "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
-    #             )
-    #         elif json:
-    #             args["json"] = json
-    #         elif data:
-    #             args["data"] = data
-    #     prepared_request: requests.PreparedRequest = self._session.prepare_request(requests.Request(**args))
-    #
-    #     return prepared_request
+        error_handler = DynamicHttpStatusErrorHandler(logger=logging.Logger, max_retries=self.max_retries, max_time=self.max_time)
+        return error_handler
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
         return urljoin(url_base, path)
-
-    # def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-    #     """
-    #     Wraps sending the request in rate limit and error handlers.
-    #     Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
-    #
-    #     This method handles two types of exceptions:
-    #         1. Expected transient exceptions e.g: 429 status code.
-    #         2. Unexpected transient exceptions e.g: timeout.
-    #
-    #     To trigger a backoff, we raise an exception that is handled by the backoff decorator. If an exception is not handled by the decorator will
-    #     fail the sync.
-    #
-    #     For expected transient exceptions, backoff time is determined by the type of exception raised:
-    #         1. CustomBackoffException uses the user-provided backoff value
-    #         2. DefaultBackoffException falls back on the decorator's default behavior e.g: exponential backoff
-    #
-    #     Unexpected transient exceptions use the default backoff parameters.
-    #     Unexpected persistent exceptions are not handled and will cause the sync to fail.
-    #     """
-    #     self.logger.debug(
-    #         "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
-    #     )
-    #     response: requests.Response = self._session.send(request, **request_kwargs)
-    #
-    #     # Evaluation of response.text can be heavy, for example, if streaming a large response
-    #     # Do it only in debug mode
-    #     if self.logger.isEnabledFor(logging.DEBUG):
-    #         self.logger.debug(
-    #             "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
-    #         )
-    #     if self.should_retry(response):
-    #         custom_backoff_time = self.backoff_time(response)
-    #         error_message = self.error_message(response)
-    #         if custom_backoff_time:
-    #             raise UserDefinedBackoffException(
-    #                 backoff=custom_backoff_time, request=request, response=response, error_message=error_message
-    #             )
-    #         else:
-    #             raise DefaultBackoffException(request=request, response=response, error_message=error_message)
-    #     elif self.raise_on_http_errors:
-    #         # Raise any HTTP exceptions that happened in case there were unexpected ones
-    #         try:
-    #             response.raise_for_status()
-    #         except requests.HTTPError as exc:
-    #             self.logger.error(response.text)
-    #             raise exc
-    #     return response
-
-    # def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-    #     """
-    #     Creates backoff wrappers which are responsible for retry logic
-    #     """
-    #
-    #     """
-    #     Backoff package has max_tries parameter that means total number of
-    #     tries before giving up, so if this number is 0 no calls expected to be done.
-    #     But for this class we call it max_REtries assuming there would be at
-    #     least one attempt and some retry attempts, to comply this logic we add
-    #     1 to expected retries attempts.
-    #     """
-    #     max_tries = self.max_retries
-    #     """
-    #     According to backoff max_tries docstring:
-    #         max_tries: The maximum number of attempts to make before giving
-    #             up ...The default value of None means there is no limit to
-    #             the number of tries.
-    #     This implies that if max_tries is explicitly set to None there is no
-    #     limit to retry attempts, otherwise it is limited number of tries. But
-    #     this is not true for current version of backoff packages (1.8.0). Setting
-    #     max_tries to 0 or negative number would result in endless retry attempts.
-    #     Add this condition to avoid an endless loop if it hasn't been set
-    #     explicitly (i.e. max_retries is not None).
-    #     """
-    #     max_time = self.max_time
-    #     """
-    #     According to backoff max_time docstring:
-    #         max_time: The maximum total amount of time to try for before
-    #             giving up. Once expired, the exception will be allowed to
-    #             escape. If a callable is passed, it will be
-    #             evaluated at runtime and its return value used.
-    #     """
-    #     if max_tries is not None:
-    #         max_tries = max(0, max_tries) + 1
-    #
-    #     user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-    #     backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
-    #     return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
@@ -538,16 +407,6 @@ class HttpStream(Stream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
-        # request = self._create_prepared_request(
-        #     path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        #     headers=self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        #     params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        #     json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        #     data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        # )
-        # request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-        # response = self._send_request(request, request_kwargs)
 
         request, response = self._http_client.send_request(
             http_method=self.http_method,
@@ -561,7 +420,7 @@ class HttpStream(Stream, ABC):
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             dedupe_query_params=True,
-            # log_formatter=log_formatter,
+            # log_formatter=log_formatter, TODO: what to return here
         )
 
         return request, response
