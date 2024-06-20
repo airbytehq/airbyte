@@ -1,7 +1,7 @@
 # Jina AI Reader Source
 
 This is the repository for the Jina AI Reader configuration based source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/jina-ai).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/jina-ai-reader).
 
 ## Local development
 
@@ -22,8 +22,8 @@ poetry install --with dev
 
 ### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/jina-ai)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` inside `source_jina_ai/mainfest.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/jina-ai-reader)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` inside `source_jina_ai_reader/mainfest.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
@@ -96,7 +96,7 @@ You've checked out the repo, implemented a million dollar feature, and you're re
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/jina-ai.md`).
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/jina-ai-reader.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
