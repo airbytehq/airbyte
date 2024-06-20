@@ -151,6 +151,7 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.4.3 | 2024-06-20 | [39873](https://github.com/airbytehq/airbyte/pull/39873) | Update dependencies |
 | 0.4.2 | 2024-06-06 | [39255](https://github.com/airbytehq/airbyte/pull/39255) | [autopull] Upgrade base image to v1.2.2 |
 | 0.4.1 | 2024-05-29 | [38696](https://github.com/airbytehq/airbyte/pull/38696) | Avoid error on empty stream when running discover |
 | 0.4.0 | 2024-03-21 | [36373](https://github.com/airbytehq/airbyte/pull/36373) | Add Gzip and Bzip compression support. Manage dependencies with Poetry. |
