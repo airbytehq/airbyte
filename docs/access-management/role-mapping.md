@@ -6,7 +6,7 @@ products: oss-enterprise, cloud-teams
 
 Role-Based Access Control (RBAC) role mapping allows automatic assignment of specific permissions to Airbyte users based on existing roles in your organization. It ensures users have appropriate Airbyte access without manual oversight. RBAC functionality is only available in Airbyte Teams and Self-Managed Enterprise.
 
-Enabling role mapping in Airbyte requires use of the Airbyte API. The Airbyte API exposes endpoints that allow you to retrieve and update user permissions. These endpoints can used to build automation that manages user access to different workspaces. This functionality is currently now limited to the Airbyte API, and is not available in the Terraform Provider.
+Enabling role mapping in Airbyte requires use of the Airbyte API. The Airbyte API exposes endpoints that allow you to retrieve and update user permissions. These endpoints can be used to build automation that manages user access to different workspaces. This functionality is currently limited to the Airbyte API, and is not available in the Terraform Provider.
 
 To enable the Airbyte API in Airbyte Teams or Self-Managed Enterprise, follow these [prerequisites](../enterprise-setup/api-access-config.md).
 

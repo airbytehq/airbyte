@@ -44,14 +44,14 @@ To help rightsize Airbyte deployments and reduce the likelihood of stuck syncs, 
 
 ```yaml
 worker:
-  extraEnvs: ## We recommend setting a single value for both environment environment variables.
+  extraEnvs: ## We recommend setting both environment variables with a single, shared value.
     - name: MAX_SYNC_WORKERS
       value: ## e.g. 5
     - name: MAX_CHECK_WORKERS
       value: ## e.g. 5
 ```
 
-If you are intending to run many syncs at a time, you may also want to increase the number of worker replicas that run in your Airbyte instance:
+If you intend to run many syncs at the same time, you may also want to increase the number of worker replicas that run in your Airbyte instance:
 
 ```yaml
 worker:

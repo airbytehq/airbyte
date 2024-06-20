@@ -27,7 +27,7 @@ helm upgrade [RELEASE_NAME] airbyte/airbyte
 
 ### Step 2: Configure Self-Managed Enterprise
 
-At this step, please update your `values.yml` file as explained in the [Self-Managed Enterprise implementation guide](./implementation-guide.md). You should avoid making any changes to your external database or log storage configuration at this time.
+Update your `values.yml` file as explained in the [Self-Managed Enterprise implementation guide](./implementation-guide.md). Avoid making any changes to your external database or log storage configuration at this time.
 
 ### Step 3: Deploy Self-Managed Enterprise
 
