@@ -11,6 +11,57 @@ Note that the following packages are not part of the top level init because they
 
 The `test` package is not included in the top level init either. The `test` package is still evolving and isn't considered stable.
 
+## Upgrading to 2.0.0
+Version 2.0.0 of the CDK updates the `pydantic` dependency to from Pydantic v1 to Pydantic v2. It also
+updates the `airbyte-protocol-models` dependency to a version that uses Pydantic V2 models.
+
+The changes to Airbyte CDK itself are backwards-compatible, but some changes are required if the connector:
+- uses Pydantic directly, e.g. for its own custom models, or
+- uses the `airbyte_protocol` models directly, or `airbyte_cdk.models`, which points to `airbyte_protocol` models, or
+- customizes HashableStreamDescriptor, which inherits from a protocol model and has therefore been updated to use Pydantic V2 models.
+
+Some test assertions may also need updating due to changes to default serialization of the protocol models.
+
+### Updating direct usage of Pydantic
+
+If the connector uses pydantic, the code will need to be updated to reflect the change `pydantic` dependency version.
+The Pydantic [migration guide](https://docs.pydantic.dev/latest/migration/) is a great resource for any questions that
+might arise around upgrade behavior.
+
+#### Using Pydantic V1 models with Pydantic V2
+The easiest way to update the code to be compatible without major changes is to update the import statements from
+`from pydantic` to `from pydantic.v1`, as Pydantic has kept the v1 module for backwards compatibility.
+
+Some potential gotchas:
+  - `ValidationError` must be imported from `pydantic.v1.error_wrappers` instead of `pydantic.v1`
+  - `ModelMetaclass` must be imported from `pydantic.v1.main` instead of `pydantic.v1`
+  - `resolve_annotations` must be imported from `pydantic.v1.typing` instead of `pydantic.v1`
+
+#### Upgrading to Pydantic V2
+To upgrade all the way to V2 proper, Pydantic also offers a [migration tool](https://docs.pydantic.dev/latest/migration/#code-transformation-tool)
+to automatically update the code to be compatible with Pydantic V2.
+
+#### Updating assertions
+It's possible that a connector might make assertions against protocol models without actually
+importing them - for example when testing methods which return `AirbyteStateBlob` or `AnyUrl`.
+
+To resolve this, either compare directly to a model, or `dict()` or `str()` your model accordingly, depending
+on if you care most about the serialized output or the model (for a method which returns a model, option 1 is
+preferred). For example:
+
+```python
+# Before
+assert stream_read.slices[1].state[0].stream.stream_state == {"a_timestamp": 123}
+
+# After - Option 1
+from airbyte_cdk.models import AirbyteStateBlob
+assert stream_read.slices[1].state[0].stream.stream_state == AirbyteStateBlob(a_timestamp=123)
+
+# After - Option 2
+assert stream_read.slices[1].state[0].stream.stream_state.dict() == {"a_timestamp": 123}
+```
+
+
 ## Upgrading to 1.0.0
 A few classes were deleted from the Airbyte CDK in version 1.0.0:
 - AirbyteLogger
