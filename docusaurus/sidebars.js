@@ -585,6 +585,7 @@ module.exports = {
             },
           ],
         },
+        "access-management/role-mapping"
       ],
     },
     {
