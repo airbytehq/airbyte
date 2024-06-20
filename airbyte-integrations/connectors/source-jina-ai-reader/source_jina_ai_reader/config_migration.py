@@ -17,7 +17,7 @@ logger = logging.getLogger("airbyte")
 
 class JinaAiReaderConfigMigration:
     """
-    This class stands for migrating the config at runtime.
+    This class stands for migrating the search prompt config at runtime to encode characters.
     """
 
     message_repository: MessageRepository = InMemoryMessageRepository()
@@ -31,7 +31,7 @@ class JinaAiReaderConfigMigration:
             > False, otherwise.
             > Raises the Exception if the structure could not be migrated.
         """
-        return cls.is_url_encoded(config["search_prompt"])  # if search_prompt is directly given in config, encoding it
+        return cls.is_url_encoded(config["search_prompt"])  # if search_prompt given in config is not encoded
 
     @classmethod
     def is_url_encoded(cls, s: str) -> bool:
