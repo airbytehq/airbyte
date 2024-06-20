@@ -31,7 +31,8 @@ class Column(dict):
         return self['id']
 
     def type(self) -> str:
-        return self['type']
+        # NOTE: we serialize this as {kind: "<typename>"} per the rest API's serialization
+        return self['type']['kind']
 
     def __eq__(self, other):
         if isinstance(other, Column):
@@ -156,7 +157,11 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
             self.url(f"/tables/{self.table_id}/rows"),
             headers=self.headers(),
             json={
-                "rows": rows
+                "rows": rows,
+                "options": {
+                    "unknownColumns": "ignore"
+                }
+
             }
         )
         if r.status_code != 200:
