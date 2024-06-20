@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8.0
+low-code: Add is_compare_strictly flag to DatetimeBasedCursor
+
+## 1.7.3
+Exclude airbyte-cdk modules from schema discovery (retry after pypi read error - take 2)
+
+## 1.7.2
+Exclude airbyte-cdk modules from schema discovery (retry after pypi read error)
+
 ## 1.7.1
 Exclude airbyte-cdk modules from schema discovery
 

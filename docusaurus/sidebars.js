@@ -588,7 +588,8 @@ module.exports = {
         {
           type: "doc",
           id: "access-management/rbac",
-        }
+        },
+        "access-management/role-mapping"
       ],
     },
     {
