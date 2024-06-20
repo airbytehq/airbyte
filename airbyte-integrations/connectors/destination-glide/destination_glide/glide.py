@@ -139,6 +139,8 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
 
         result = r.json()
 
+        # TODO: Paging??
+
         # the result looks like an array of results; each result has a rows member that has an array or JSON rows:
         for row in result:
             for r in row['rows']:
@@ -148,18 +150,32 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
         logger.warning(f"delete_all call is ignored in {type(self).__class__.__name__}")  # nopep8
         pass
 
-    def add_rows(self, rows: Iterator[BigTableRow]) -> None:
+    def _add_row_batch(self, rows: List[BigTableRow]) -> None:
+        logger.debug(f"Adding rows batch with size {len(rows)}")
         r = requests.post(
             self.url(f"/tables/{self.table_id}/rows"),
             headers=self.headers(),
             json={
-                "rows": list(rows)
+                "rows": rows
             }
         )
         if r.status_code != 200:
-            logger.error(f"get rows request failed with status {r.status_code}: {r.text}.")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-            r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
+            logger.error(f"add rows batch failed with status {r.status_code}: {r.text}")
+        else:
+            logger.debug(f"add rows batch succeeded")
 
+    def add_rows(self, rows: Iterator[BigTableRow]) -> None:
+        BATCH_SIZE = 100
+        
+        batch = []
+        for row in rows:
+            batch.append(row)
+            if len(batch) >= BATCH_SIZE:
+                self._add_row_batch(batch)
+                batch = []
+        
+        if len(batch) > 0:
+            self._add_row_batch(batch)
 
 class GlideBigTableMutationsStrategy(GlideBigTableBase):
     def __init__(self):
