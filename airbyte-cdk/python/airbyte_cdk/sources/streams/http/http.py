@@ -248,16 +248,16 @@ class HttpStream(Stream, ABC):
         """
         return None
 
-    def get_backoff_strategy(self) -> object:
+    def get_backoff_strategy(self) -> BackoffStrategy:
         return type("DynamicBackoffStrategy", (BackoffStrategy, object), {"backoff_time": self.backoff_time})()
 
-    def get_error_handler(self):
+    def get_error_handler(self) -> HttpStatusErrorHandler:
         raise_on_http_errors = self.raise_on_http_errors
-
+        should_retry_method = self.should_retry
         def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
             if isinstance(response_or_exception, Exception):
                 return error_handler.interpret_response(response_or_exception)
-            should_retry = self.should_retry(response_or_exception)
+            should_retry = should_retry_method(response_or_exception)
             if should_retry:
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
