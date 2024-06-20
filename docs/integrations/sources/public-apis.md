@@ -46,6 +46,7 @@ This source requires no setup.
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.2 | 2024-06-20 | [39654](https://github.com/airbytehq/airbyte/pull/39654) | Update dependencies |
 | 0.2.1 | 2024-05-20 | [38377](https://github.com/airbytehq/airbyte/pull/38377) | [autopull] base image + poetry + up_to_date |
 | 0.2.0 | 2023-06-15 | [29391](https://github.com/airbytehq/airbyte/pull/29391) | Migrated to Low Code |
 | 0.1.0 | 2022-10-28 | [18471](https://github.com/airbytehq/airbyte/pull/18471) | Initial Release |
