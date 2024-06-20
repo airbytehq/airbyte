@@ -1,0 +1,40 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-pokeapi-manifest
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:1.7.1-dev.186a7e326e@sha256:48226691ef8d43e03d140d6e608c4cecec785bfd005c2934d731eea450d580df
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-pokeapi-manifest
+  githubIssueLabel: source-pokeapi-manifest
+  icon: pokeapi.svg
+  license: MIT
+  name: PokeAPI
+  releaseDate: "2020-05-14"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-POKEAPI__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
