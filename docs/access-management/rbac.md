@@ -6,7 +6,9 @@ products: oss-enterprise, cloud-teams
 
 Role Based Access Control allows a user with Administrative access to apply roles to users, granting different levels of permission within an Organization or Workspace. 
 
-RBAC roles do not require a customer to use SSO. These roles can be enabled on any Organization.
+:::info
+**Self-Managed Enterprise** instances have an `Instance Admin` role in addition to the other roles outlined in this document. The first user who logs on to Airbyte in a Self-Managed Enterprise instance will be assigned this role. This user will have all permissions listed below for all workspaces and all organizations associated with their Enterptise account. To update this assigment, enterprise customers should contact [Airbyte support](https://support.airbyte.com/hc/en-us).
+:::
 
 ## Organization Resource Roles
 
@@ -27,10 +29,6 @@ Permissions are scoped to the specific Workspace in which the user has this role
 | **Modify Connector Settings**<br /><ul><li>Create, modify, delete  sources and destinations in a workspace</li></ul> | | X | X |
 | **Update Connection**<br /><ul><li> Start/cancel syncs</li><li>Modify a connection, including name, replication settings, normalization, DBT</li><li>Delete a connection</li><li> Create/Update/Delete connector builder connectors</li></ul> |  | X | X |
 | **Update Workspace**<br /><ul><li> Update workspace settings (data residency, users, connector versions, notification settings)</li><li> Modify workspace connector versions</li></ul> | |  | X |
-
-## Instance Admin
-
-The first user who logs on to Airbyte in a **Self-Managed Enterprise** instance will be assigned the `Instance Admin` role. This user will have all permissions listed above for all workspaces and all organizations associated with their Enterptise account. To update this assigment, enterprise customers should contact [Airbyte support](https://support.airbyte.com/hc/en-us).
 
 ## Setting Roles
 
