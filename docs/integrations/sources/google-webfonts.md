@@ -68,6 +68,7 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.1.6 | 2024-06-20 | [39865](https://github.com/airbytehq/airbyte/pull/39865) | Update dependencies |
 | 0.1.5 | 2024-06-04 | [38960](https://github.com/airbytehq/airbyte/pull/38960) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.4 | 2024-05-28 | [38684](https://github.com/airbytehq/airbyte/pull/38684) | Make connector compatible with Builder |
 | 0.1.3 | 2024-04-19 | [37172](https://github.com/airbytehq/airbyte/pull/37172) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
