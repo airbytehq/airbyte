@@ -93,22 +93,6 @@ def expand_refs(schema: Any) -> None:
     schema.pop("definitions", None)  # remove definitions created by $ref
 
 
-def rename_key(schema: Any, old_key: str, new_key: str) -> None:
-    """Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf. Recursive."
-
-    :param schema: schema that will be patched
-    :param old_key: name of the key to replace
-    :param new_key: new name of the key
-    """
-    if not isinstance(schema, MutableMapping):
-        return
-
-    for key, value in schema.items():
-        rename_key(value, old_key, new_key)
-        if old_key in schema:
-            schema[new_key] = schema.pop(old_key)
-
-
 class ResourceSchemaLoader:
     """JSONSchema loader from package resources"""
 
