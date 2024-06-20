@@ -449,7 +449,7 @@ class AbstractLiveTests(Step):
     context: ConnectorContext
     skipped_exit_code = 5
     accept_extra_params = True
-    tests_artifacts_dir = Path("/tmp/live_tests_artifacts")
+    in_container_tests_artifacts_dir = Path("/tmp/live_tests_artifacts")
     working_directory = "/app"
     github_user = "octavia-squidington-iii"
     platform_repo_url = "airbytehq/airbyte-platform-internal"
@@ -467,13 +467,45 @@ class AbstractLiveTests(Step):
             "--durations": ["3"],  # Show the 3 slowest tests in the report
         }
 
-
+    @property
     @abstractmethod
-    def _test_command(self):
+    def test_dir(self) -> str:
+        """
+        The directory of tests to run.
+        """
+        ...
+
+    def _test_command(self) -> List[str]:
         """
         The command used to run the tests
         """
-        ...
+        base_command = [
+            "poetry",
+            "run",
+            "pytest",
+            self.test_dir,
+            "--connector-image",
+            self.connector_image,
+        ]
+        return base_command + self._get_command_options()
+
+    def _get_command_options(self) -> List[str]:
+        command_options = []
+        if self.connection_id:
+            command_options += ["--connection-id", self.connection_id]
+        if self.control_version:
+            command_options += ["--control-version", self.control_version]
+        if self.target_version:
+            command_options += ["--target-version", self.target_version]
+        if self.pr_url:
+            command_options += ["--pr-url", self.pr_url]
+        if self.run_id:
+            command_options += ["--run-id", self.run_id]
+        if self.should_read_with_state:
+            command_options += ["--should-read-with-state", self.should_read_with_state]
+        if self.test_evaluation_mode:
+            command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
+        return command_options + ["--stream", self.selected_streams] if self.selected_streams else []
 
     def _run_command_with_proxy(self, command: str) -> List[str]:
         """
@@ -537,8 +569,8 @@ class AbstractLiveTests(Step):
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
         container = await self._build_test_container(await connector_under_test_container.id())
-        container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(self._test_command())))
-        tests_artifacts_dir = str(self.tests_artifacts_dir)
+        container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
+        tests_artifacts_dir = str(self.in_container_tests_artifacts_dir)
         path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
 
         exit_code, stdout, stderr = await get_exec_result(container)
@@ -658,98 +690,18 @@ class AbstractLiveTests(Step):
 class LiveTests(AbstractLiveTests):
 
     title = "Live tests (regression + validation)"
-
-    def _test_command(self) -> str:
-        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
-        return " ".join(
-            [
-                "poetry",
-                "run",
-                "pytest",
-                "src/live_tests",
-                "--connector-image",
-                self.connector_image,
-                "--connection-id",
-                self.connection_id or "",
-                "--control-version",
-                self.control_version or "",
-                "--target-version",
-                self.target_version or "",
-                "--pr-url",
-                self.pr_url or "",
-                "--run-id",
-                self.run_id or "",
-                "--should-read-with-state",
-                str(self.should_read_with_state),
-                "--test-evaluation-mode",
-                str(self.test_evaluation_mode),
-            ]
-            + selected_streams
-        )
+    test_dir = "src/live_tests"
 
 
 class RegressionTests(AbstractLiveTests):
     """A step to run regression tests for a connector."""
 
     title = "Regression tests"
-
-    def _test_command(self) -> str:
-        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
-        return " ".join(
-            [
-                "poetry",
-                "run",
-                "pytest",
-                "src/live_tests/regression_tests",
-                "--connector-image",
-                self.connector_image,
-                "--connection-id",
-                self.connection_id or "",
-                "--control-version",
-                self.control_version or "",
-                "--target-version",
-                self.target_version or "",
-                "--pr-url",
-                self.pr_url or "",
-                "--run-id",
-                self.run_id or "",
-                "--should-read-with-state",
-                str(self.should_read_with_state),
-                "--test-evaluation-mode",
-                str(self.test_evaluation_mode),
-            ]
-            + selected_streams
-        )
+    test_dir = "src/live_tests/regression_tests"
 
 
 class ValidationTests(AbstractLiveTests):
     """A step to run validation tests for a connector."""
 
     title = "Validation tests"
-
-    def _test_command(self) -> str:
-        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
-        return " ".join(
-            [
-                "poetry",
-                "run",
-                "pytest",
-                "src/live_tests/validation_tests",
-                "--connector-image",
-                self.connector_image,
-                "--connection-id",
-                self.connection_id or "",
-                "--target-version",
-                self.target_version or "",
-                "--pr-url",
-                self.pr_url or "",
-                "--run-id",
-                self.run_id or "",
-                "--should-read-with-state",
-                str(self.should_read_with_state),
-                "--test-evaluation-mode",
-                str(self.test_evaluation_mode),
-            ]
-            + selected_streams
-        )
-
+    test_dir = "src/live_tests/validation_tests"
