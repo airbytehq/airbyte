@@ -10,7 +10,7 @@ RBAC roles do not require a customer to use SSO. These roles can be enabled on a
 
 ## Organization Resource Roles
 
-A user can have at most one role of this kind per Organization. Permissions are scoped to the given Organization for which the user has this role, and any Workspaces within. 
+Permissions are scoped to the given Organization for which the user has this role, and any Workspaces within. 
 
 | Permissions           | Member |  Reader |  Editor | Admin |
 | :---------------------- | :--------: | :--------: | :--------: |:--------: |
