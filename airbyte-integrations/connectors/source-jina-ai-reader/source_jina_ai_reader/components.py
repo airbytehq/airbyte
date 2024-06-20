@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.requesters.http_requester import HttpReques
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
+
 @dataclass
 class JinaAiHttpRequester(HttpRequester):
     request_headers: Optional[Union[str, Mapping[str, str]]] = None
@@ -30,7 +31,7 @@ class JinaAiHttpRequester(HttpRequester):
     ) -> Mapping[str, Any]:
         headers = self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
         if isinstance(headers, dict):
-            api_key = self.config.get('api_key')
+            api_key = self.config.get("api_key")
             if api_key:
                 headers.update({"Authorization": f"Bearer {api_key}"})
             return headers

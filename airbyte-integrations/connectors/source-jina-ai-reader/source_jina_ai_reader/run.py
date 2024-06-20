@@ -6,9 +6,10 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from .source import SourceJinaAiReader
 
 from .config_migration import JinaAiReaderConfigMigration
+from .source import SourceJinaAiReader
+
 
 def run():
     source = SourceJinaAiReader()
