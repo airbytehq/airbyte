@@ -70,6 +70,7 @@ class Cursor(DefaultFileBasedCursor):
         if not value:
             return False
         try:
+            # Verify datetime format in history
             history_keys = list(value.get("history", {}).keys())
             if history_keys:
                 datetime.strptime(history_keys[0], Cursor._DATE_FORMAT)
@@ -157,92 +158,3 @@ class Cursor(DefaultFileBasedCursor):
             # If previous, update the time to end of day
             else:
                 return file_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
-
-    def set_initial_state(self, value: StreamState) -> None:
-        self._running_migration = self._is_legacy_state(value)
-        if self._running_migration:
-            value = self._convert_legacy_state(value)
-        self._v3_migration_start_datetime = (
-            datetime.strptime(value[Cursor._V3_MIN_SYNC_DATE_FIELD], DefaultFileBasedCursor.DATE_TIME_FORMAT)
-            if Cursor._V3_MIN_SYNC_DATE_FIELD in value
-            else None
-        )
-        super().set_initial_state(value)
-
-    def get_state(self) -> StreamState:
-        state = {"history": self._file_to_datetime_history, self.CURSOR_FIELD: self._get_cursor()}
-        if self._v3_migration_start_datetime:
-            state[Cursor._V3_MIN_SYNC_DATE_FIELD] = datetime.strftime(
-                self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT
-            )
-        return state
-
-    def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
-        """
-        Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
-        Else if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
-        Else sync according to the default logic
-        """
-        if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
-            return False
-        if self._running_migration:
-            return True
-        return super()._should_sync_file(file, logger)
-
-    @staticmethod
-    def _convert_legacy_state(legacy_state: StreamState) -> MutableMapping[str, Any]:
-        """
-        Transform the history from the old state message format to the new.
-
-        e.g.
-        {
-            "2022-05-26": ["simple_test.csv.csv", "simple_test_2.csv"],
-            "2022-05-27": ["simple_test_2.csv", "redshift_result.csv"],
-            ...
-        }
-        =>
-        {
-            "simple_test.csv": "2022-05-26T00:00:00.000000Z",
-            "simple_test_2.csv": "2022-05-27T00:00:00.000000Z",
-            "redshift_result.csv": "2022-05-27T00:00:00.000000Z",
-            ...
-        }
-        """
-        converted_history = {}
-        legacy_cursor = legacy_state[DefaultFileBasedCursor.CURSOR_FIELD]
-        cursor_datetime = datetime.strptime(legacy_cursor, Cursor._LEGACY_DATE_TIME_FORMAT)
-        log_info = logger.info
-        log_info(f"Converting v3 -> v4 state. v3_cursor={legacy_cursor} v3_history={legacy_state.get('history')}")
-
-        for date_str, filenames in legacy_state.get("history", {}).items():
-            datetime_obj = Cursor._get_adjusted_date_timestamp(cursor_datetime, datetime.strptime(date_str, Cursor._DATE_FORMAT))
-            datetime_str = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
-            for filename in filenames:
-                if filename not in converted_history or datetime_obj > datetime.strptime(
-                    converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT
-                ):
-                    converted_history[filename] = datetime_str
-
-        if converted_history:
-            filename, _ = max(converted_history.items(), key=lambda x: x[1])
-            cursor = f"{cursor_datetime}_{filename}"
-        else:
-            logger.warning(f"Cursor found without a history object; this is not expected. cursor_value={legacy_cursor}")
-            cursor = cursor_datetime
-
-        v3_migration_start_datetime = cursor_datetime - Cursor._V4_MIGRATION_BUFFER
-        return {
-            "history": converted_history,
-            DefaultFileBasedCursor.CURSOR_FIELD: cursor,
-            Cursor._V3_MIN_SYNC_DATE_FIELD: v3_migration_start_datetime.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT),
-        }
-
-    @staticmethod
-    def _get_adjusted_date_timestamp(cursor_datetime: datetime, file_datetime: datetime) -> datetime:
-        if file_datetime > cursor_datetime:
-            return file_datetime
-        cursor_date = cursor_datetime.date()
-        date_obj = file_datetime.date()
-        if date_obj == cursor_date:
-            return file_datetime.replace(hour=cursor_datetime.hour, minute=cursor_datetime.minute, second=cursor_datetime.second)
-        return file_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
