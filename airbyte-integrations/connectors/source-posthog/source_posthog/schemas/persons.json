@@ -14,7 +14,9 @@
       }
     },
     "properties": {
-      "type": "object"
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "created_at": {
       "type": "string",
