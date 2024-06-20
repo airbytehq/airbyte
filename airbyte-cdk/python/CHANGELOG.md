@@ -1,5 +1,44 @@
 # Changelog
 
+## 1.8.0
+low-code: Add is_compare_strictly flag to DatetimeBasedCursor
+
+## 1.7.3
+Exclude airbyte-cdk modules from schema discovery (retry after pypi read error - take 2)
+
+## 1.7.2
+Exclude airbyte-cdk modules from schema discovery (retry after pypi read error)
+
+## 1.7.1
+Exclude airbyte-cdk modules from schema discovery
+
+## 1.7.0
+add  from  to 
+
+## 1.6.0
+add  from  to 
+
+## 1.5.6
+Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout take 2)
+
+## 1.5.5
+Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout)
+
+## 1.5.4
+Jinja interpolation - Allow access to _partition for source-jira
+
+## 1.5.3
+Ensure error message is the same after migration to HttpClient
+
+## 1.5.2
+PerPartitionState - setting invalid initial state should trigger a config error
+
+## 1.5.1
+Fix client_side_incremental end_datetime comparison
+
+## 1.5.0
+Python/Low Code: Updates ErroHandler, BackoffStrategy, HttpClient. Integrates HttpClient into low-code CDK.
+
 ## 1.4.0
 low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter 
 
