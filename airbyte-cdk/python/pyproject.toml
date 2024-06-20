@@ -82,7 +82,7 @@ vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
 [tool.poe.tasks]
 # Build tasks
-assemble = {cmd = "bin/generate-component-manifest-docker.sh", help = "Generate component manifest files."}
+assemble = {cmd = "bin/generate-component-manifest-dagger.sh", help = "Generate component manifest files."}
 build-package = {cmd = "poetry build", help = "Build the python package: source and wheels archives."}
 build = {sequence = ["assemble", "build-package"], help = "Run all tasks to build the package."}
 
