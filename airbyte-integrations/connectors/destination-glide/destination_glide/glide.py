@@ -278,8 +278,7 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
             else:
                 logger.debug(f"Deleted row successfully (rowID:'{row['$rowID']}'")
 
-    def add_rows(self, rows: Iterator[BigTableRow]) -> None:
-        # TODO: lame. need to batch mutations/requests
+    def add_rows_batch(self, rows: Iterator[BigTableRow]) -> None:
         mutations = []
         for row in rows:
             # row is columnLabel -> value, but glide's mutate uses a column "name". We hard-code the lookup for our table here:
@@ -310,3 +309,16 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         if r.status_code != 200:
             logger.error(f"add rows failed with status {r.status_code}: {r.text}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
             r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
+    
+    def add_rows(self, rows: Iterator[BigTableRow]) -> None:
+        BATCH_SIZE = 100
+        
+        batch = []
+        for row in rows:
+            batch.append(row)
+            if len(batch) >= BATCH_SIZE:
+                self.add_rows_batch(batch)
+                batch = []
+        
+        if len(batch) > 0:
+            self.add_rows_batch(batch)

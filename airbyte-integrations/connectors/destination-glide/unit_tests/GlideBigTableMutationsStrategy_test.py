@@ -57,3 +57,20 @@ class TestGlideBigTableMutationsStrategy(unittest.TestCase):
       self.gbt.add_rows(test_data)
       self.assertEqual(1, mock_post.call_count)
 
+    @patch.object(requests, 'post')
+    def test_add_rows_batch(self, mock_post):
+      test_columns = [
+            Column('strcol', 'string'),
+            Column('numcol', 'number')   
+        ]
+      
+      mock_post.return_value.status_code = 200
+      
+      self.gbt.prepare_table(test_columns)
+
+      mock_post.reset_mock()
+      test_rows = list([{"strcol": f"{i}", "numcol": i} for i in range(1000)])
+      self.gbt.add_rows(test_rows)
+
+      self.assertEqual(10, mock_post.call_count)  
+
