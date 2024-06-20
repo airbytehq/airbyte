@@ -296,10 +296,8 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    // expect 6 records, 3 state messages and 4 stream status messages. (view does not have its own
-    // state message because it goes
-    // to non resumable full refresh path).
-    assertEquals(13, actualMessages.size());
+    // expect 6 records, 4 state messages and 4 stream status messages.
+    assertEquals(14, actualMessages.size());
     final var actualRecordMessages = filterRecords(actualMessages);
     assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
   }
