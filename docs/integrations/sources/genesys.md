@@ -31,6 +31,7 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.1.3 | 2024-06-20 | [39684](https://github.com/airbytehq/airbyte/pull/39684) | Update dependencies |
 | 0.1.2 | 2024-06-06 | [39256](https://github.com/airbytehq/airbyte/pull/39256) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.1 | 2024-05-20 | [38450](https://github.com/airbytehq/airbyte/pull/38450) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2023-04-27 | [25598](https://github.com/airbytehq/airbyte/pull/25598) | Use region specific API server |
