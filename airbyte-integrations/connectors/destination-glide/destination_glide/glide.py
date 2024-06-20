@@ -16,34 +16,30 @@ ALLOWED_COLUMN_TYPES = [
     "dateTime",
     "json",
 ]
-
-class Column:
+        
+class Column(dict):
+    """
+    Represents a Column in the glide API.
+    NOTE: inherits from dict to be serializable to json.
+    """
     def __init__(self, id: str, type: str):
         if type not in ALLOWED_COLUMN_TYPES:
             raise ValueError(f"Column type {type} not allowed. Must be one of {ALLOWED_COLUMN_TYPES}")  # nopep8
-        self._id = id
-        self._type = type
+        dict.__init__(self, id=id, type=type, displayName=id)
 
-    def id() -> str:
-        return self._id
+    def id(self) -> str:
+        return self['id']
 
-    def type() -> str:
-        return self._type
-
-    def to_json(self) -> Dict[str, Any]:
-        return {
-            'id': self._id,
-            'type': self._type,
-            'displayName': self._id
-        }
+    def type(self) -> str:
+        return self['type']
 
     def __eq__(self, other):
         if isinstance(other, Column):
-            return self._id == other._id and self._type == other._type
+            return dict(self) == dict(other)
         return False
 
     def __repr__(self):
-        return f"Column(id='{self._id}', type='{self._type}')"
+        return f"Column(id='{self.id()}', type='{self.type()}')"
 
 class GlideBigTableBase(ABC):
     def headers(self) -> Dict[str, str]:
@@ -96,15 +92,25 @@ class GlideBigTableBase(ABC):
         pass
 
 
-def CreateBigTableDefaultImpl() -> GlideBigTableBase:
+class GlideBigTableFactory:
     """
-    Creates a new instance of the default implementation for the GlideBigTable API client.
+    Factory for creating a GlideBigTableBase API client.
     """
-    return GlideBigTableMutationsStrategy()
+    @classmethod
+    def create(cls, strategy: str) -> GlideBigTableBase:
+        """
+        Creates a new instance of the default implementation for the GlideBigTable API client.
+        """
+        implementation_map = {
+            "tables": GlideBigTableRestStrategy(),
+            "mutations": GlideBigTableMutationsStrategy()
+        }
+        if strategy not in implementation_map:
+            raise ValueError(f"Strategy '{strategy}' not found. Expected one of '{implmap.keys()}'.")
+        return implementation_map[strategy]
 
 
 class GlideBigTableRestStrategy(GlideBigTableBase):
-
     def prepare_table(self, columns: List[Column]) -> None:
         logger.debug(f"prepare_table columns: {columns}")
         # update the table:

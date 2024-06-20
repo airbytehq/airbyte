@@ -1,7 +1,8 @@
-- [ ] feat: choose a strategy based on config
+- [+] feat: choose a strategy based on config
 - [+] chore: stop writing any record data to logs
 - [+] chore: cleanup logs generally
-- [ ] chore: unify test framework across unit/integration tests (remove pytest?)
+- [ ] fix: use friendly names for the properties on the config page
+- [+] chore: unify test framework across unit/integration tests (remove pytest?)
 - [ ] chore: clean up todos
 - [ ] chore: update readme
 - [ ] chore: figure out why the dev-write script stopped working (freezes)
