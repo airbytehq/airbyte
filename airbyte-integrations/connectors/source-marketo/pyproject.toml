@@ -17,7 +17,7 @@ include = "source_marketo"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "*"
+airbyte-cdk = "0.90.0"
 
 [tool.poetry.scripts]
 source-marketo = "source_marketo.run:run"
