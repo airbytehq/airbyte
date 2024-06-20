@@ -75,6 +75,7 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.1.5 | 2024-06-20 | [39889](https://github.com/airbytehq/airbyte/pull/39889) | Update dependencies |
 | 0.1.4 | 2024-06-04 | [38976](https://github.com/airbytehq/airbyte/pull/38976) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-05-30 | [38504](https://github.com/airbytehq/airbyte/pull/38504) | [autopull] base image + poetry + up_to_date |
 | 0.1.2 | 2024-05-28 | [38603](https://github.com/airbytehq/airbyte/pull/38603) | Make connector compatible with builder |
