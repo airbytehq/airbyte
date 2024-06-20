@@ -28,7 +28,8 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         self.gbt.prepare_table(test_columns)
 
         mock_put.assert_called_once()
-        self.assertListEqual(mock_put.call_args[1]['json']['schema']['columns'], test_columns)
+        self.assertListEqual(
+            mock_put.call_args[1]['json']['schema']['columns'], test_columns)
 
     @patch.object(requests, 'put')
     def test_prepare_table_invalid_col_type(self, mock_put):
@@ -47,14 +48,24 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         mock_post.return_value.json.return_value = {'data': 'test'}
 
         test_rows = [
-            Column('strcol', "string"),
-            Column('numcol', "number")
+            {"strcol": "one", "numcol": 1},
+            {"strcol": "two", "numcol": 2}
         ]
         self.gbt.add_rows(test_rows)
 
         mock_post.assert_called_once()
         assert mock_post.call_args[1]['json']['rows'] == test_rows
 
+    @patch.object(requests, 'post')
+    def test_add_rows_batching(self, mock_post):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {'data': 'test'}
+
+        test_rows = list([{"strcol": f"{i}", "numcol": i} for i in range(1000)])
+        
+        self.gbt.add_rows(test_rows)
+
+        self.assertEqual(10, mock_post.call_count)
 
 if __name__ == '__main__':
     unittest.main()
