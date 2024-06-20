@@ -2,8 +2,12 @@ version: 0.72.1
 type: DeclarativeSource
 
 definitions:
-  # Authenticators
+  # SchemaLoader
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_jira/schemas/{{ parameters['name'] }}.json"
 
+  # Authenticators
   authenticator:
     type: BasicHttpAuthenticator
     username: "{{ config['email'] }}"
@@ -101,6 +105,8 @@ definitions:
 
   full_refresh_stream:
     type: DeclarativeStream
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
     retriever: "#/definitions/retriever"
 
   # Full Refresh Streams
@@ -1061,8 +1067,6 @@ definitions:
 
   # Incremental Streams
 
-
-
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "updated"
@@ -1074,6 +1078,8 @@ definitions:
 
   incremental_stream:
     type: DeclarativeStream
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
     retriever: "#/definitions/retriever"
     incremental_sync: "#/definitions/incremental_sync"
 
