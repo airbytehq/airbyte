@@ -49,6 +49,7 @@ In order to get access token, follow these steps:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.6 | 2024-06-20 | [39802](https://github.com/airbytehq/airbyte/pull/39802) | Update dependencies |
 | 0.2.5 | 2024-06-04 | [39093](https://github.com/airbytehq/airbyte/pull/39093) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.4 | 2024-05-28 | [38695](https://github.com/airbytehq/airbyte/pull/38695) | Make compatibility with builder |
 | 0.2.3 | 2024-04-19 | [37267](https://github.com/airbytehq/airbyte/pull/37267) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
