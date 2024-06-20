@@ -36,6 +36,7 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.2 | 2024-06-20 | [39617](https://github.com/airbytehq/airbyte/pull/39617) | Update dependencies |
 | 0.2.1 | 2024-06-06 | [39308](https://github.com/airbytehq/airbyte/pull/39308) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.0 | 2024-03-15 | [36063](https://github.com/airbytehq/airbyte/pull/36063) | Migrate to Low Code |
 | 0.1.2 | 2023-11-20 | [32680](https://github.com/airbytehq/airbyte/pull/32680) | Schema and CDK updates |
