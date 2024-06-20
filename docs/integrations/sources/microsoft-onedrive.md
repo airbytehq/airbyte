@@ -126,6 +126,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 0.2.3 | 2024-06-20 | [39665](https://github.com/airbytehq/airbyte/pull/39665) | Update dependencies |
 | 0.2.2 | 2024-06-06 | [39227](https://github.com/airbytehq/airbyte/pull/39227) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.1 | 2024-05-29 | [38676](https://github.com/airbytehq/airbyte/pull/38676) | Avoid error on empty stream when running discover |
 | 0.2.0 | 2024-03-12 | [35849](https://github.com/airbytehq/airbyte/pull/35849) | Add fetching shared items |
