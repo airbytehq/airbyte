@@ -56,6 +56,7 @@ Select start date
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.1.5 | 2024-06-20 | [39888](https://github.com/airbytehq/airbyte/pull/39888) | Update dependencies |
 | 0.1.4 | 2024-06-06 | [39294](https://github.com/airbytehq/airbyte/pull/39294) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.3 | 2024-05-20 | [38434](https://github.com/airbytehq/airbyte/pull/38434) | [autopull] base image + poetry + up_to_date |
 | 0.1.2 | 2022-08-25 | [15667](https://github.com/airbytehq/airbyte/pull/15667) | Add message when no data available |
