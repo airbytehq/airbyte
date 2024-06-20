@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import logging
+from datetime import timedelta
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
@@ -286,7 +286,7 @@ class HttpStream(Stream, ABC):
         DynamicHttpStatusErrorHandler = type(
             "DynamicHttpStatusErrorHandler", (HttpStatusErrorHandler, object), {"interpret_response": interpret_response}
         )
-        error_handler = DynamicHttpStatusErrorHandler(logger=logging.Logger, max_retries=self.max_retries, max_time=self.max_time)
+        error_handler = DynamicHttpStatusErrorHandler(logger=logging.Logger, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time))
         return error_handler
 
     @classmethod
