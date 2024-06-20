@@ -11,6 +11,7 @@ import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +20,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
@@ -122,8 +124,8 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     // Create a table, then create a view referencing it
     getDestinationHandler().execute(generator.createTable(getIncrementalAppendStream(), "", false));
     database.execute(createView(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), "example_view"))
-        .as(select().from(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), getIncrementalAppendStream().getId().getFinalName())))
-        .getSQL(ParamType.INLINED));
+            .as(select().from(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), getIncrementalAppendStream().getId().getFinalName())))
+            .getSQL(ParamType.INLINED));
     // Create a "soft reset" table
     getDestinationHandler().execute(generator.createTable(getIncrementalDedupStream(), "_soft_reset", false));
 
@@ -131,4 +133,24 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
     assertDoesNotThrow(() -> getDestinationHandler().execute(generator.overwriteFinalTable(getIncrementalDedupStream().getId(), "_soft_reset")));
   }
 
+  /**
+   *  Verify that
+   *    * when cascadeDrop is disabled
+   *    * an error caused by dropping a table with dependencies
+   *    * results in a configuration error with the correct message
+   */
+  public void testCascadeDropDisabled() throws Exception {
+    // Create a sql generator with cascadeDrop=false
+    final PostgresSqlGenerator generator = new PostgresSqlGenerator(new PostgresSQLNameTransformer(), false);
+    getDestinationHandler().execute(generator.createTable(getIncrementalAppendStream(), "", false));
+    database.execute(createView(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), "example_view"))
+            .as(select().from(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), getIncrementalAppendStream().getId().getFinalName())))
+            .getSQL(ParamType.INLINED));
+    getDestinationHandler().execute(generator.createTable(getIncrementalDedupStream(), "_soft_reset", false));
+
+    // Overwriting the first table with the second table should fail.
+    Throwable t = assertThrowsExactly(ConfigErrorException.class,
+            () -> getDestinationHandler().execute(generator.overwriteFinalTable(getIncrementalDedupStream().getId(), "_soft_reset")));
+    assertTrue(t.getMessage().equals("Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter"));
+  }
 }
