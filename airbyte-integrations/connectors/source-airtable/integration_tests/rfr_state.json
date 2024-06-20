@@ -1,0 +1,11 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "offset": "itrl3GZk3aiRdtl2b/recSbSBPspxs22165"
+      },
+      "stream_descriptor": { "name": "users/field_type_test/tblFcp5mncufoYaR9" }
+    }
+  }
+]

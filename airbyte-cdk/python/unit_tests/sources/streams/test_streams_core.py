@@ -11,11 +11,16 @@ import requests
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.checkpoint import (
+    Cursor,
+    CursorBasedCheckpointReader,
     FullRefreshCheckpointReader,
     IncrementalCheckpointReader,
+    LegacyCursorBasedCheckpointReader,
     ResumableFullRefreshCheckpointReader,
+    ResumableFullRefreshCursor,
 )
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.types import StreamSlice
 
 logger = logging.getLogger("airbyte")
 
@@ -135,7 +140,7 @@ class StreamStubIncrementalEmptyNamespace(Stream):
     namespace = ""
 
 
-class HttpSubStreamStubFullRefresh(HttpSubStream):
+class HttpSubStreamStubFullRefreshLegacySlices(HttpSubStream):
     """
     Stub substream full refresh class to assist with testing.
     """
@@ -164,13 +169,74 @@ class HttpSubStreamStubFullRefresh(HttpSubStream):
         return []
 
 
+class CursorBasedStreamStubFullRefresh(StreamStubFullRefresh):
+    def get_cursor(self) -> Optional[Cursor]:
+        return ResumableFullRefreshCursor()
+
+
+class LegacyCursorBasedStreamStubFullRefresh(CursorBasedStreamStubFullRefresh):
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
+
+
+class MultipleSlicesStreamStub(HttpStream):
+    """
+    Stub full refresh class that returns multiple StreamSlice instances to assist with testing.
+    """
+
+    primary_key = "primary_key"
+
+    @property
+    def url_base(self) -> str:
+        return "https://airbyte.io/api/v1"
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [
+            StreamSlice(partition={"parent_id": "korra"}, cursor_slice={}),
+            StreamSlice(partition={"parent_id": "asami"}, cursor_slice={}),
+        ]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pass
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/stub"
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+
 class ParentHttpStreamStub(HttpStream):
     primary_key = "primary_key"
     url_base = "https://airbyte.io/api/v1"
-    path = "/parent"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        return [{"id": 400, "name": "a_parent_record"}]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/parent"
 
     def parse_response(
             self,
@@ -304,24 +370,32 @@ def test_get_json_schema_is_cached(mocked_method):
 
 
 @pytest.mark.parametrize(
-    "stream, expected_checkpoint_reader_type",
+    "stream, stream_state, expected_checkpoint_reader_type",
     [
-        pytest.param(StreamStubIncremental(), IncrementalCheckpointReader, id="test_incremental_checkpoint_reader"),
-        pytest.param(StreamStubFullRefresh(), FullRefreshCheckpointReader, id="test_full_refresh_checkpoint_reader"),
-        pytest.param(StreamStubResumableFullRefresh(), ResumableFullRefreshCheckpointReader, id="test_resumable_full_refresh_checkpoint_reader"),
-        pytest.param(StreamStubLegacyStateInterface(), IncrementalCheckpointReader, id="test_incremental_checkpoint_reader_with_legacy_state"),
-        pytest.param(HttpSubStreamStubFullRefresh(parent=ParentHttpStreamStub()), FullRefreshCheckpointReader, id="test_full_refresh_checkpoint_reader_for_substream"),
+        pytest.param(StreamStubIncremental(), {}, IncrementalCheckpointReader, id="test_incremental_checkpoint_reader"),
+        pytest.param(StreamStubFullRefresh(), {}, FullRefreshCheckpointReader, id="test_full_refresh_checkpoint_reader"),
+        pytest.param(StreamStubResumableFullRefresh(), {}, ResumableFullRefreshCheckpointReader, id="test_resumable_full_refresh_checkpoint_reader"),
+        pytest.param(StreamStubLegacyStateInterface(), {}, IncrementalCheckpointReader, id="test_incremental_checkpoint_reader_with_legacy_state"),
+        pytest.param(CursorBasedStreamStubFullRefresh(), {"next_page_token": 10}, CursorBasedCheckpointReader, id="test_checkpoint_reader_using_rfr_cursor"),
+        pytest.param(LegacyCursorBasedStreamStubFullRefresh(), {}, LegacyCursorBasedCheckpointReader, id="test_full_refresh_checkpoint_reader_for_legacy_slice_format"),
     ]
 )
-def test_get_checkpoint_reader(stream: Stream, expected_checkpoint_reader_type):
+def test_get_checkpoint_reader(stream: Stream, stream_state, expected_checkpoint_reader_type):
     checkpoint_reader = stream._get_checkpoint_reader(
         logger=logger,
         cursor_field=["updated_at"],
         sync_mode=SyncMode.incremental,
-        stream_state={},
+        stream_state=stream_state,
     )
 
     assert isinstance(checkpoint_reader, expected_checkpoint_reader_type)
+
+    if isinstance(checkpoint_reader, CursorBasedCheckpointReader):
+        cursor = checkpoint_reader._cursor
+        if isinstance(cursor, ResumableFullRefreshCursor):
+            actual_cursor_state = cursor.get_stream_state()
+
+            assert actual_cursor_state == stream_state
 
 
 def test_checkpoint_reader_with_no_partitions():

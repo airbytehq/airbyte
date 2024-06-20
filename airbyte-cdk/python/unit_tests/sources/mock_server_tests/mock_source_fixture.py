@@ -403,7 +403,7 @@ class JusticeSongs(HttpStream, CheckpointMixin, ABC):
         if has_more:
             self._state = {"page": current_page + 1}
         else:
-            self._state = None
+            self._state = {"__ab_full_refresh_sync_complete": True}
 
 
 class SourceFixture(AbstractSource):

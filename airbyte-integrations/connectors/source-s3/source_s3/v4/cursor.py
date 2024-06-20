@@ -52,6 +52,11 @@ class Cursor(DefaultFileBasedCursor):
         else:
             return state
 
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        # File-based cursors operate over slices made up files. Stream state is based on the progress
+        # through each slice and does not belong to a specific slice. We just return stream state as it is.
+        return self.get_stream_state()
+
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         """
         Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
