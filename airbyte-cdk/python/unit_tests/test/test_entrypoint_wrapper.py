@@ -8,7 +8,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
-from airbyte_cdk.test.entrypoint_wrapper import discover, read, EntrypointOutput
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import (
     AirbyteAnalyticsTraceMessage,
