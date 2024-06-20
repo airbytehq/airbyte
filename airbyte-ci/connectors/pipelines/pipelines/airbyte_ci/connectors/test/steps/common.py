@@ -467,13 +467,6 @@ class AbstractLiveTests(Step):
             "--durations": ["3"],  # Show the 3 slowest tests in the report
         }
 
-    @property
-    @abstractmethod
-    def title(self):
-        """
-        The title of the tests, for report display purposes.
-        """
-        ...
 
     @abstractmethod
     def _test_command(self):
