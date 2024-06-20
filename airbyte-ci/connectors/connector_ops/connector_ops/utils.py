@@ -261,6 +261,7 @@ class ConnectorLanguage(str, Enum):
     PYTHON = "python"
     JAVA = "java"
     LOW_CODE = "low-code"
+    MANIFEST_ONLY = "manifest-only"
 
 
 class ConnectorLanguageError(Exception):
@@ -385,6 +386,8 @@ class Connector:
 
     @property
     def language(self) -> ConnectorLanguage:
+        if Path(self.code_directory / "manifest.yaml").is_file():
+            return ConnectorLanguage.MANIFEST_ONLY
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
