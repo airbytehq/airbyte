@@ -10,6 +10,7 @@ from urllib.parse import urljoin
 
 import requests
 from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.message import NoopMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import Stream, StreamData
@@ -49,7 +50,7 @@ class HttpStream(Stream, ABC):
             use_cache=self.use_cache,
             backoff_strategy=self.get_backoff_strategy(),
             # disable_retries=self.disable_retries,
-            message_respository=self.message_repository,
+            message_respository=NoopMessageRepository(),
         )
 
     @property
@@ -286,7 +287,7 @@ class HttpStream(Stream, ABC):
         DynamicHttpStatusErrorHandler = type(
             "DynamicHttpStatusErrorHandler", (HttpStatusErrorHandler, object), {"interpret_response": interpret_response}
         )
-        error_handler = DynamicHttpStatusErrorHandler(logger=logging.Logger, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time))
+        error_handler = DynamicHttpStatusErrorHandler(logger=logging.Logger, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time or 0))
         return error_handler
 
     @classmethod
