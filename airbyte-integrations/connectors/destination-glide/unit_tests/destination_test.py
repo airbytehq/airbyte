@@ -19,10 +19,10 @@ import random
 import string
 from typing import Any, Mapping, Callable
 import unittest
-from unittest.mock import patch, create_autospec
+from unittest.mock import patch, create_autospec, Mock
 
 
-def create_config() -> Mapping[str, Any]:
+def create_default_config() -> Mapping[str, Any]:
     with open("secrets/config.json", "r") as f:
         return json.loads(f.read())
 
@@ -113,7 +113,7 @@ class TestDestinationGlide(unittest.TestCase):
         destination = DestinationGlide()
 
         generator = destination.write(
-            config=create_config(), configured_catalog=configured_catalog(self.test_table_name, table_schema=table_schema()), input_messages=[
+            config=create_default_config(), configured_catalog=configured_catalog(self.test_table_name, table_schema=table_schema()), input_messages=[
                 airbyte_message_record1(self.test_table_name), airbyte_message_record2(self.test_table_name), airbyte_message_state(self.test_table_name)]
         )
 
@@ -143,7 +143,7 @@ class TestDestinationGlide(unittest.TestCase):
         }
 
         generator = destination.write(
-            config=create_config(), configured_catalog=configured_catalog(self.test_table_name, table_schema=test_schema), input_messages=[
+            config=create_default_config(), configured_catalog=configured_catalog(self.test_table_name, table_schema=test_schema), input_messages=[
                 airbyte_message_record1(self.test_table_name), airbyte_message_record2(self.test_table_name), airbyte_message_state(self.test_table_name)]
         )
 
@@ -158,3 +158,29 @@ class TestDestinationGlide(unittest.TestCase):
         null_column = [col for col in prepared_cols if col.id()
                        == "obj_null_col"][0]
         self.assertEqual(null_column.type(), "string")
+
+    @patch.object(GlideBigTableFactory, "create")
+    def test_api_version_passes_correct_strategy(self, mock_factory: Mock):
+        mock_bigtable = CreateMockGlideBigTable()
+        mock_factory.return_value = mock_bigtable
+
+        
+
+        config = {
+            "api_host": "foo",
+            "api_path_root": "bar",
+            "api_key": "baz",
+            "table_id": "buz",
+            "glide_api_version": "mutations"
+        }
+        
+        destination = DestinationGlide()
+        generator = destination.write(
+            config=config, configured_catalog=configured_catalog(self.test_table_name, table_schema=table_schema()), input_messages=[
+                airbyte_message_record1(self.test_table_name), airbyte_message_record2(self.test_table_name), airbyte_message_state(self.test_table_name)]
+        )
+        # expecting only to return the state message:
+        result = list(generator)
+
+        passed_strategy = mock_factory.call_args[0][0]
+        self.assertEqual("mutations", passed_strategy)

@@ -22,7 +22,7 @@ import requests
 from typing import Any, Iterable, Mapping
 import uuid
 
-CONFIG_GLIDE_API_STRATEGY_DEFAULT = "tables"
+CONFIG_GLIDE_API_VERSION_DEFAULT = "tables"
 
 logger = getLogger()
 
@@ -72,11 +72,11 @@ class DestinationGlide(Destination):
         api_path_root = config['api_path_root']
         api_key = config['api_key']
         table_id = config['table_id']
-        glide_api_strategy = config.get('glide_api_strategy', CONFIG_GLIDE_API_STRATEGY_DEFAULT)
+        glide_api_version = config.get('glide_api_version', CONFIG_GLIDE_API_VERSION_DEFAULT)
 
         # TODO: choose a strategy based on config
-        glide = GlideBigTableFactory.create(glide_api_strategy)
-        logger.debug(f"Using glide api strategy '{glide.__class__.__name__}'.")
+        glide = GlideBigTableFactory.create(glide_api_version)
+        logger.debug(f"Using glide api strategy '{glide.__class__.__name__}' for glide_api_version '{glide_api_version}'.")
         glide.init(api_host, api_key, api_path_root, table_id)
 
         # go through each stream and add it as needed:
