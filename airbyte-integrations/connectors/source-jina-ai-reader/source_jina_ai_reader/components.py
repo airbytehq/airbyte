@@ -20,7 +20,7 @@ class JinaAiHttpRequester(HttpRequester):
             config=self.config, request_inputs=self.request_headers, parameters=parameters
         )
 
-    # For appending bearer token only if present
+    # For appending bearer token only if api_key is present
     def get_request_headers(
         self,
         *,
