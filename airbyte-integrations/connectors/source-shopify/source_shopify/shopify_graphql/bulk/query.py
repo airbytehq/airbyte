@@ -871,6 +871,149 @@ class CustomerAddresses(ShopifyBulkQuery):
                     yield customer_address
 
 
+class CustomerJourney(ShopifyBulkQuery):
+    """
+    Output example to BULK query `customer_journey_summary` from `orders` with `filter query` by `updated_at` sorted `ASC`:
+        {
+            orders(query: "updated_at:>='2020-01-20T00:00:00+00:00' AND updated_at:<'2024-04-25T00:00:00+00:00'", sortKey:UPDATED_AT) {
+                edges {
+                    node {
+                        __typename
+                        order_id: id
+                        createdAt
+                        updatedAt
+                        customerJourneySummary {
+                            ready
+                            momentsCount {
+                                count
+                                precision
+                            }
+                            customerOrderIndex
+                            daysToConversion
+                            firstVisit {
+                                id
+                                landingPage
+                                landingPageHtml
+                                occurredAt
+                                referralCode
+                                referrerUrl
+                                source
+                                sourceType
+                                sourceDescription
+                                utmParameters {
+                                    campaign
+                                    content
+                                    medium
+                                    source
+                                    term
+                                }
+                            }
+                            lastVisit {
+                                id
+                                landingPage
+                                landingPageHtml
+                                occurredAt
+                                referralCode
+                                referrerUrl
+                                source
+                                sourceType
+                                sourceDescription
+                                utmParameters {
+                                    campaign
+                                    content
+                                    medium
+                                    source
+                                    term
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """
+
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    visit_fields: List[Field] = [
+        "id",
+        "landingPage",
+        "landingPageHtml",
+        "occurredAt",
+        "referralCode",
+        "referrerUrl",
+        "source",
+        "sourceType",
+        "sourceDescription",
+        Field(name="utmParameters", fields=["campaign", "content", "medium", "source", "term"]),
+    ]
+    customer_journey_summary_fields: List[Field] = [
+        "ready",
+        Field(name="momentsCount", fields=["count", "precision"]),
+        "customerOrderIndex",
+        "daysToConversion",
+        Field(name="firstVisit", fields=visit_fields),
+        Field(name="lastVisit", fields=visit_fields),
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        Field(name="id", alias="order_id"),
+        "createdAt",
+        "updatedAt",
+        Field(name="customerJourneySummary", fields=customer_journey_summary_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+    }
+
+    def process_visit(
+        self,
+        visit_data: Mapping[str, Any],
+    ) -> MutableMapping[str, Any]:
+        # save the id before it's resolved
+        visit_data["admin_graphql_api_id"] = visit_data.get("id")
+        # resolve the order_id to str
+        visit_data["id"] = self.tools.resolve_str_id(visit_data.get("id"))
+        # convert dates from ISO-8601 to RFC-3339
+        visit_data["occurredAt"] = self.tools.from_iso8601_to_rfc3339(visit_data, "occurredAt")
+        # cast field names to snake_case
+        visit_data = self.tools.fields_names_to_snake_case(visit_data)
+        return visit_data
+
+    def process_customer_journey(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        customer_journey_summary = record.get("customerJourneySummary", {})
+        if customer_journey_summary:
+            # process first, last visit data
+            first_visit = customer_journey_summary.get("firstVisit", {})
+            last_visit = customer_journey_summary.get("lastVisit", {})
+            customer_journey_summary["firstVisit"] = self.process_visit(first_visit) if first_visit else {}
+            customer_journey_summary["lastVisit"] = self.process_visit(last_visit) if last_visit else {}
+        # cast field names to snake_case
+        customer_journey_summary = self.tools.fields_names_to_snake_case(customer_journey_summary)
+        return customer_journey_summary
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
+        """
+        Defines how to process collected components.
+        """
+
+        # save the id before it's resolved
+        record["admin_graphql_api_id"] = record.get("order_id")
+        # resolve the order_id to str
+        record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
+        # convert dates from ISO-8601 to RFC-3339
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        # process customerJourneySummary property
+        record["customerJourneySummary"] = self.process_customer_journey(record)
+        # cast field names to snake_case
+        record = self.tools.fields_names_to_snake_case(record)
+        yield record
+
+
 class InventoryItem(ShopifyBulkQuery):
     """
     {
@@ -2232,3 +2375,262 @@ class OrderRisk(ShopifyBulkQuery):
             record.pop("risk", None)
 
             yield record
+
+
+class OrderAgreement(ShopifyBulkQuery):
+    """
+    Output example to BULK query `order agreement` from `orders` with `filter query` by `updated_at` sorted `ASC`:
+        {
+            orders(query: "updated_at:>='2020-06-13T00:00:00+00:00' AND updated_at:<'2024-06-14T00:00:00+00:00'", sortKey:UPDATED_AT) {
+                edges {
+                    node {
+                        __typename
+                        id
+                        createdAt
+                        updatedAt
+                        agreements {
+                            edges {
+                                node {
+                                    __typename
+                                    id
+                                    happenedAt
+                                    reason
+                                    sales {
+                                        edges {
+                                            node {
+                                                __typename
+                                                quantity
+                                                id
+                                                actionType
+                                                lineType
+                                                totalAmount {
+                                                    shopMoney {
+                                                        amount
+                                                        currencyCode
+                                                    }
+                                                }
+                                                totalDiscountAmountAfterTaxes {
+                                                    shopMoney {
+                                                        amount
+                                                        currencyCode
+                                                    }
+                                                }
+                                                totalDiscountAmountBeforeTaxes {
+                                                    shopMoney {
+                                                        amount
+                                                        currencyCode
+                                                    }
+                                                }
+                                                totalTaxAmount {
+                                                    shopMoney {
+                                                        amount
+                                                        currencyCode
+                                                    }
+                                                }
+                                                ... on ProductSale {
+                                                    id
+                                                    lineItem {
+                                                        id
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """
+
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    shop_money_fields: List[Field] = [
+        "amount",
+        Field(name="currencyCode", alias="currency_code"),
+    ]
+
+    sales_fields: List[Field] = [
+        Field(
+            name="edges",
+            fields=[
+                Field(
+                    name="node",
+                    fields=[
+                        "__typename",
+                        "quantity",
+                        "id",
+                        Field(name="actionType", alias="action_type"),
+                        Field(name="lineType", alias="line_type"),
+                        Field(
+                            name="totalAmount",
+                            alias="total_amount",
+                            fields=[Field(name="shopMoney", alias="shop_money", fields=shop_money_fields)],
+                        ),
+                        Field(
+                            name="totalDiscountAmountAfterTaxes",
+                            alias="total_discount_amount_after_taxes",
+                            fields=[Field(name="shopMoney", alias="shop_money", fields=shop_money_fields)],
+                        ),
+                        Field(
+                            name="totalDiscountAmountBeforeTaxes",
+                            alias="total_discount_amount_before_taxes",
+                            fields=[Field(name="shopMoney", alias="shop_money", fields=shop_money_fields)],
+                        ),
+                        Field(
+                            name="totalTaxAmount",
+                            alias="total_tax_amount",
+                            fields=[Field(name="shopMoney", alias="shop_money", fields=shop_money_fields)],
+                        ),
+                        InlineFragment(
+                            type="ProductSale",
+                            fields=[
+                                "id",
+                                Field(name="lineItem", alias="line_item", fields=["id"]),
+                            ],
+                        ),
+                    ],
+                )
+            ],
+        )
+    ]
+
+    agreements_fields: List[Field] = [
+        Field(
+            name="edges",
+            fields=[
+                Field(
+                    name="node",
+                    fields=[
+                        "__typename",
+                        "id",
+                        Field(name="happenedAt", alias="happened_at"),
+                        "reason",
+                        Field(name="sales", fields=sales_fields),
+                    ],
+                )
+            ],
+        )
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        "createdAt",
+        "updatedAt",
+        Field(name="agreements", fields=agreements_fields),
+    ]
+
+    sale_record_components = [
+        # Each `OrderAgreement` could have one of the following sale component associated with it.
+        "AdditionalFeeSale",
+        "AdjustmentSale",
+        "DutySale",
+        "FeeSale",
+        "GiftCardSale",
+        "ProductSale",
+        "ShippingLineSale",
+        "TipSale",
+        "UnknownSale",
+    ]
+
+    agreement_record_components = [
+        # Each `Order` could have one of the following agreement component associated with it.
+        "OrderAgreement",
+        "OrderEditAgreement",
+        "RefundAgreement",
+        "ReturnAgreement",
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+        "record_components": agreement_record_components + sale_record_components,
+    }
+
+    def _resolve_and_save_id(self, entity: MutableMapping[str, Any]) -> Mapping[str, Any]:
+        # save the id before it's resolved
+        entity["admin_graphql_api_id"] = entity.get("id")
+        entity["id"] = self.tools.resolve_str_id(entity.get("id"))
+        # remove leftovers
+        entity.pop("__parentId", None)
+
+        return entity
+
+    def process_agreement(self, agreement: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        agreement = self._resolve_and_save_id(agreement)
+        # convert dates from ISO-8601 to RFC-3339
+        agreement["happened_at"] = self.tools.from_iso8601_to_rfc3339(agreement, "happened_at")
+
+        return agreement
+
+    def cast_sale_amount_to_float(self, sale: MutableMapping[str, Any], entities: Iterable[str]) -> float:
+        # cast the `amount` from str to float
+        for entity in entities:
+            if sale.get(entity):
+                sale[entity]["shop_money"]["amount"] = float(sale.get(entity, {}).get("shop_money", {}).get("amount"))
+        return sale
+
+    def process_sale(self, sale: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        sale = self._resolve_and_save_id(sale)
+        sale_line_item = sale.get("line_item")
+        # `sale_line_item` could be None
+        if sale_line_item:
+            sale["line_item"]["admin_graphql_api_id"] = sale_line_item.get("id")
+            sale["line_item"]["id"] = self.tools.resolve_str_id(sale_line_item.get("id"))
+        # cast the `amout` for the number of entities provided from str to float
+        sale = self.cast_sale_amount_to_float(
+            sale,
+            ["total_amount", "total_discount_amount_after_taxes", "total_discount_amount_before_taxes", "total_tax_amount"],
+        )
+        return sale
+
+    def collect_sub_components(
+        self, collected_record_components: MutableMapping[str, Any], entities: List[str]
+    ) -> Optional[Iterable[MutableMapping[str, Any]]]:
+        collected_entities: List[MutableMapping[str, Any]] = []
+        for component in entities:
+            _component: Optional[Iterable[Mapping[str, Any]]] = collected_record_components.get(component, [])
+            if _component:
+                for element in _component:
+                    collected_entities.append(element)
+
+        return collected_entities
+
+    def join_agreements_with_sales(
+        self, collected_agreements: List[MutableMapping[str, Any]], collected_sales: List[Mapping[str, Any]]
+    ) -> Iterable[Mapping[str, Any]]:
+        # process each `agreement` collected by checking the related `sales` presence
+        for agreement in collected_agreements:
+            agreement_id = agreement.get("id")
+            agreement["sales"] = []
+            # find the target `sale` record for each `agreement` collected
+            for sale in collected_sales:
+                sale_parent_id = sale.get("__parentId")
+                if sale_parent_id == agreement_id:
+                    agreement["sales"].append(self.process_sale(sale))
+            # process the final agreement element
+            self.process_agreement(agreement)
+
+        return collected_agreements
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
+        """
+        Defines how to process collected components.
+        """
+        # get the joined record components collected for the record
+        record_components = record.get("record_components", {})
+        if record_components:
+            collected_agreements = self.collect_sub_components(record_components, self.agreement_record_components)
+            collected_sales = self.collect_sub_components(record_components, self.sale_record_components)
+            if collected_agreements:
+                agreements_with_sales = self.join_agreements_with_sales(collected_agreements, collected_sales)
+            # remove leftovers
+            record.pop("record_components", None)
+
+        # populate the record with the collected and joined `agreement + sales` data, if present
+        record["agreements"] = agreements_with_sales if agreements_with_sales else {}
+
+        yield record
