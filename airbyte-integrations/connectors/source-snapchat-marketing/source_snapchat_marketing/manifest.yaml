@@ -514,7 +514,7 @@ definitions:
             - path: ["granularity"]
               value: "HOUR"
             - path: ["spend"]
-              value: "{{ record.get('stats', {}).get('spend'] }}"
+              value: "{{ record.get('stats', {}).get('spend') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -2210,7 +2210,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["id"]
-              value: "{{ stream_slice['id') }}"
+              value: "{{ stream_slice['id'] }}"
             - path: ["type"]
               value: "CAMPAIGN"
             - path: ["granularity"]
