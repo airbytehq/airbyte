@@ -16,7 +16,7 @@ Example:
 - [Reader](https://r.jina.ai/https://example.com)
 - [Search](https://s.jina.ai/When%20was%20Jina%20AI%20founded%3F)
 
-In the above links, replace the substring after base url `https://r.jina.ai/` or `https://r.jina.ai/` with the url or search prompt to get the results
+In the above links, replace the substring after base url `https://r.jina.ai/` or `https://s.jina.ai/` with the url or search prompt to get the results
 
 If there are more endpoints you'd like to support, please [Create an 
 issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
