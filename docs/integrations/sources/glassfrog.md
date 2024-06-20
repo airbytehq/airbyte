@@ -50,6 +50,7 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.7 | 2024-06-20 | [39845](https://github.com/airbytehq/airbyte/pull/39845) | Update dependencies |
 | 0.2.6 | 2024-06-04 | [39056](https://github.com/airbytehq/airbyte/pull/39056) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.5 | 2024-05-20 | [38323](https://github.com/airbytehq/airbyte/pull/38323) | Make compatibility with builder |
 | 0.2.4 | 2024-04-19 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | Updating to 0.80.0 CDK |
