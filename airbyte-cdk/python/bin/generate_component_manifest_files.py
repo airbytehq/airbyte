@@ -33,7 +33,8 @@ async def post_process_codegen(codegen_container: dagger.Container):
     for generated_file in await codegen_container.directory("/generated").entries():
         if generated_file.endswith(".py"):
             original_content = await codegen_container.file(f"/generated/{generated_file}").contents()
-            post_processed_content = original_content.replace("_parameters:", "parameters:").replace("from pydantic", "from pydantic.v1")
+            # the space before _parameters is intentional to avoid replacing things like `request_parameters:` with `requestparameters:`
+            post_processed_content = original_content.replace(" _parameters:", " parameters:")
             codegen_container = codegen_container.with_new_file(
                 f"/generated_post_processed/{generated_file}", contents=post_processed_content
             )
