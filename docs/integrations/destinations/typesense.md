@@ -40,6 +40,7 @@ The setup only requires two fields. First is the `host` which is the address at 
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.7 | 2024-06-20 | [39615](https://github.com/airbytehq/airbyte/pull/39615) | Update dependencies |
 | 0.1.6 | 2024-06-04 | [39050](https://github.com/airbytehq/airbyte/pull/39050) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.5 | 2024-05-20 | [38428](https://github.com/airbytehq/airbyte/pull/38428) | [autopull] base image + poetry + up_to_date |
 | 0.1.4 | 2024-03-25 | [36460](https://github.com/airbytehq/airbyte/pull/36460) | Added path config option |
