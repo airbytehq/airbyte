@@ -5,6 +5,18 @@
     "date": {
       "type": ["string", "null"]
     },
+    "campaign_id": {
+      "type": ["integer", "null"]
+    },
+    "offer_id": {
+      "type": ["integer", "null"]
+    },
+    "offer_uuid": {
+      "type": ["string", "null"]
+    },
+    "offer_name": {
+      "type": ["string", "null"]
+    },
     "creative_id": {
       "type": ["integer", "null"]
     },
