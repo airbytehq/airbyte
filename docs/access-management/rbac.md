@@ -19,7 +19,7 @@ Permissions are scoped to the given Organization for which the user has this rol
 | **Update Organization**<br /><ul><li>Modify organization settings, including billing, PbA, SSO</li><li>Modify user roles within the organization</li></ul> | |  |  | X |
 
 ## Workspace Resource Roles
-A user can have at most one role of this kind per Workspace. Permissions are scoped to the specific Workspace in which the user has this role.
+Permissions are scoped to the specific Workspace in which the user has this role.
 
 | Permissions           | Reader    | Editor    | Admin    |
 | ---------------------- | :--------: | :--------:| :--------: |
