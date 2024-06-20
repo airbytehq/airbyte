@@ -16,7 +16,13 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from live_tests.commons.json_schema_helper import ComparableType, JsonSchemaHelper, conforms_to_schema, get_expected_schema_structure, get_object_structure
+from live_tests.commons.json_schema_helper import (
+    ComparableType,
+    JsonSchemaHelper,
+    conforms_to_schema,
+    get_expected_schema_structure,
+    get_object_structure,
+)
 from pydantic import BaseModel
 
 

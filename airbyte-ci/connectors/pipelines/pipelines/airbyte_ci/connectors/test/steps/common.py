@@ -9,6 +9,7 @@ import json
 import os
 import time
 from abc import ABC, abstractmethod
+from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
@@ -443,16 +444,27 @@ class IncrementalAcceptanceTests(Step):
             )
 
 
-class AbstractLiveTests(Step):
+class LiveTestSuite(Enum):
+    ALL = "all"
+    REGRESSION = "regression"
+    VALIDATION = "validation"
+
+
+class LiveTests(Step):
     """A step to run live tests for a connector."""
 
     context: ConnectorContext
     skipped_exit_code = 5
     accept_extra_params = True
-    in_container_tests_artifacts_dir = Path("/tmp/live_tests_artifacts")
+    local_tests_artifacts_dir = Path("/tmp/live_tests_artifacts")
     working_directory = "/app"
     github_user = "octavia-squidington-iii"
     platform_repo_url = "airbytehq/airbyte-platform-internal"
+    test_suite_to_dir = {
+        LiveTestSuite.ALL: "src/live_tests",
+        LiveTestSuite.REGRESSION: "src/live_tests/regression_tests",
+        LiveTestSuite.VALIDATION: "src/live_tests/validation_tests",
+    }
 
     @property
     def default_params(self) -> STEP_PARAMS:
@@ -468,12 +480,8 @@ class AbstractLiveTests(Step):
         }
 
     @property
-    @abstractmethod
-    def test_dir(self) -> str:
-        """
-        The directory of tests to run.
-        """
-        ...
+    def title(self) -> str:
+        return f"Connector {self.test_suite.title()} Tests"
 
     def _test_command(self) -> List[str]:
         """
@@ -552,9 +560,11 @@ class AbstractLiveTests(Step):
         if not self.connection_id and self.pr_url:
             raise ValueError("`connection-id` and `pr-url` are required to run live tests.")
 
+        self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.ALL.value)
+        self.test_dir = self.test_suite_to_dir[LiveTestSuite(self.test_suite)]
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
-        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", True)
+        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.test_evaluation_mode = self.context.run_step_options.get_item_or_default(options, "test-evaluation-mode", "strict")
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
@@ -570,7 +580,7 @@ class AbstractLiveTests(Step):
         """
         container = await self._build_test_container(await connector_under_test_container.id())
         container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
-        tests_artifacts_dir = str(self.in_container_tests_artifacts_dir)
+        tests_artifacts_dir = str(self.local_tests_artifacts_dir)
         path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
 
         exit_code, stdout, stderr = await get_exec_result(container)
@@ -685,23 +695,3 @@ class AbstractLiveTests(Step):
 
         container = container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
         return container
-
-
-class LiveTests(AbstractLiveTests):
-
-    title = "Live tests (regression + validation)"
-    test_dir = "src/live_tests"
-
-
-class RegressionTests(AbstractLiveTests):
-    """A step to run regression tests for a connector."""
-
-    title = "Regression tests"
-    test_dir = "src/live_tests/regression_tests"
-
-
-class ValidationTests(AbstractLiveTests):
-    """A step to run validation tests for a connector."""
-
-    title = "Validation tests"
-    test_dir = "src/live_tests/validation_tests"
