@@ -109,7 +109,7 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             "start_time": start_date.strftime('%Y-%m-%d'),
             "end_time": end_date,
             "timezone": "+0",
-            "dimension_option": "Creative",
+            "dimension_option": "Creative,Offer,Campaign",
             "type": self.type
         }
         self.log(f"Request params: {request_params}")
