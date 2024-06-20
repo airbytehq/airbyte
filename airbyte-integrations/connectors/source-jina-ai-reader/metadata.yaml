@@ -11,7 +11,7 @@ data:
   remoteRegistries:
     pypi:
       enabled: true
-      packageName: airbyte-source-jina-ai
+      packageName: airbyte-source-jina-ai-reader
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
@@ -26,14 +26,14 @@ data:
   releaseDate: 2024-06-17
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/jina-ai
+  documentationUrl: https://docs.airbyte.com/integrations/sources/jina-ai-reader
   tags:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-JINA-AI__CREDS
+        - name: SECRET_SOURCE-JINA-AI-READER__CREDS
           fileName: config.json
           secretStore:
             type: GSM
