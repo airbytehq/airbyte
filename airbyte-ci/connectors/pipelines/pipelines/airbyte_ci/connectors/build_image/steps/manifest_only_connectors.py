@@ -35,22 +35,6 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         self.logger.info(f"Building manifest connector from base image {base_image_name}")
         return self.dagger_client.container(platform=platform).from_(base_image_name)
 
-    async def _create_builder_container(self, base_container: Container) -> Container:
-        """Pre install the connector dependencies in a builder container.
-
-        Args:
-            base_container (Container): The base container to use to build the connector.
-
-        Returns:
-            Container: The builder container, with installed dependencies.
-        """
-        ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt", "README.md"]
-
-        builder = await with_python_connector_installed(
-            self.context, base_container, str(self.context.connector.code_directory), install_root_package=False, include=ONLY_BUILD_FILES
-        )
-        return builder
-
     async def _build_from_base_image(self, platform: Platform) -> Container:
         """Build the connector container using the base image defined in the metadata, in the connectorBuildOptions.baseImage field.
 
