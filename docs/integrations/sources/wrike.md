@@ -50,6 +50,7 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.2.4 | 2024-06-20 | [39738](https://github.com/airbytehq/airbyte/pull/39738) | Update dependencies |
 | 0.2.3 | 2024-06-06 | [39224](https://github.com/airbytehq/airbyte/pull/39224) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.2 | 2024-05-28 | [38663](https://github.com/airbytehq/airbyte/pull/38663) | Make connector compatible with Builder |
 | 0.2.1 | 2024-04-30 | [31058](https://github.com/airbytehq/airbyte/pull/31058) | Changed last_records to last_record. Fix schema for stream `workflows` |
