@@ -3,8 +3,8 @@
 #
 
 import logging
-from datetime import timedelta
 from abc import ABC, abstractmethod
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
@@ -248,7 +248,7 @@ class HttpStream(Stream, ABC):
         """
         return None
 
-    def get_backoff_strategy(self):
+    def get_backoff_strategy(self) -> object:
         return type("DynamicBackoffStrategy", (BackoffStrategy, object), {"backoff_time": self.backoff_time})()
 
     def get_error_handler(self):
@@ -287,7 +287,9 @@ class HttpStream(Stream, ABC):
         DynamicHttpStatusErrorHandler = type(
             "DynamicHttpStatusErrorHandler", (HttpStatusErrorHandler, object), {"interpret_response": interpret_response}
         )
-        error_handler = DynamicHttpStatusErrorHandler(logger=logging.Logger, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time or 0))
+        error_handler = DynamicHttpStatusErrorHandler(
+            logger=logging.Logger, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time or 0)
+        )
         return error_handler
 
     @classmethod
