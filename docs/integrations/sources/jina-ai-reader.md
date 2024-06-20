@@ -1,8 +1,12 @@
-# Jina AI
+# Jina AI Reader
 
 ## Overview
 
-Jina AI Reader API addresses these issues of scraping by extracting the core content from a URL and converting it into clean, LLM-friendly text, ensuring high-quality input for your agent and RAG systems.
+This connector allows access to the [Jina Reader API](https://jina.ai/reader/) using two modes:
+- **"Reader" Mode** (`https://r.jina.api`) - Given a set of one or more URLs as input, return the content of those pages as Markdown text. The Reader endpoint extracts the core content from a URL and converting it into clean, LLM-friendly text, ensuring high-quality input for your agent and RAG systems.
+- **"Search" Mode** (`https://s.jina.api`) - Similar to the reader endpoint, but accepting a search prompt and returning the text from top 5 search results.
+Both of these API endpoints will generate human readable markdown, which can also be efficiently processed by downstream LLM and GenAI applications.
+Both modes can be utilized in the same sync, following the configuration instructions below.
 
 ### Available Streams
 
@@ -30,7 +34,7 @@ issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Requirements
 
-- Jina AI Bearer Token
+- Jina AI Bearer Token (For higher rate limits)
 - Reader URL
 - Search prompt
 
@@ -46,6 +50,6 @@ The website also provides a free bearer token for testing with its interface.
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
-| 0.1.0   | 2024-06-17 | [39515](https://github.com/airbytehq/airbyte/pull/39515) | Add Jina AI source                                                   |
+| 0.1.0   | 2024-06-25 | [39515](https://github.com/airbytehq/airbyte/pull/39515) | Add Jina AI source                                                   |
 
 </details>

@@ -1,6 +1,6 @@
-# Jina Ai Source
+# Jina AI Reader Source
 
-This is the repository for the Jina Ai configuration based source connector.
+This is the repository for the Jina AI Reader configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/jina-ai).
 
 ## Local development
@@ -31,10 +31,10 @@ See `integration_tests/sample_config.json` for a sample config file.
 ### Locally running the connector
 
 ```
-poetry run source-jina-ai spec
-poetry run source-jina-ai check --config secrets/config.json
-poetry run source-jina-ai discover --config secrets/config.json
-poetry run source-jina-ai read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-jina-ai-reader spec
+poetry run source-jina-ai-reader check --config secrets/config.json
+poetry run source-jina-ai-reader discover --config secrets/config.json
+poetry run source-jina-ai-reader read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running tests
@@ -50,27 +50,27 @@ poetry run pytest tests
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
 ```bash
-airbyte-ci connectors --name=source-jina-ai build
+airbyte-ci connectors --name=source-jina-ai-reader build
 ```
 
-An image will be available on your host with the tag `airbyte/source-jina-ai:dev`.
+An image will be available on your host with the tag `airbyte/source-jina-ai-reader:dev`.
 
 
 ### Running as a docker container
 
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-jina-ai:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-jina-ai:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-jina-ai:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-jina-ai:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-jina-ai-reader:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-jina-ai-reader:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-jina-ai-reader:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-jina-ai-reader:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Running our CI test suite
 
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 ```bash
-airbyte-ci connectors --name=source-jina-ai test
+airbyte-ci connectors --name=source-jina-ai-reader test
 ```
 
 ### Customizing acceptance Tests
@@ -91,7 +91,7 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-jina-ai test`
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-jina-ai-reader test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`

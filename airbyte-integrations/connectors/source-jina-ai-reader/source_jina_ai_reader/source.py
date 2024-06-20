@@ -13,6 +13,6 @@ WARNING: Do not modify this file.
 
 
 # Declarative Source
-class SourceJinaAi(YamlDeclarativeSource):
+class SourceJinaAiReader(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})

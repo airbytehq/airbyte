@@ -48,7 +48,7 @@ definitions:
         path: "/"
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['api_key'] or '' }}"
         request_headers:
           Accept: application/json
           X-With-Links-Summary: "{{ config['gather_links']}}"
@@ -116,12 +116,10 @@ schemas:
 
 spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/jina-ai
+  documentation_url: https://docs.airbyte.com/integrations/sources/jina-ai-reader
   connection_specification:
-    title: Jina Ai Spec
+    title: Jina AI Reader Spec
     type: object
-    required:
-      - api_key
     additionalProperties: true
     properties:
       api_key:
@@ -141,7 +139,7 @@ spec:
         type: string
         title: >-
           Your search prompt, that would be appended at the end of search stream, Should be an encoded string without spaces.
-          Visit https://coding.tools/url-encode for seamless encoding
+          Visit https://coding.tools/url-encode for seamless encoding.
         default: "Search%20airbyte"
         order: 2
       gather_links:
