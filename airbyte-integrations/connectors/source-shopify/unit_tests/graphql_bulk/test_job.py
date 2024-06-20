@@ -251,32 +251,32 @@ def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
 @pytest.mark.parametrize(
     "stream, json_content_example, expected",
     [
-        # (CustomerAddress, "customer_address_jsonl_content_example", "customer_address_parse_response_expected_result"),
-        # (MetafieldOrders, "metafield_jsonl_content_example", "metafield_parse_response_expected_result"),
+        (CustomerAddress, "customer_address_jsonl_content_example", "customer_address_parse_response_expected_result"),
+        (MetafieldOrders, "metafield_jsonl_content_example", "metafield_parse_response_expected_result"),
         (FulfillmentOrders, "filfillment_order_jsonl_content_example", "fulfillment_orders_response_expected_result"),
         (DiscountCodes, "discount_codes_jsonl_content_example", "discount_codes_response_expected_result"),
-        # (Collections, "collections_jsonl_content_example", "collections_response_expected_result"),
-        # (TransactionsGraphql, "transactions_jsonl_content_example", "transactions_response_expected_result"),
-        # (InventoryItems, "inventory_items_jsonl_content_example", "inventory_items_response_expected_result"),
-        # (InventoryLevels, "inventory_levels_jsonl_content_example", "inventory_levels_response_expected_result"),
-        # (OrderRisks, "order_risks_jsonl_content_example", "order_risks_response_expected_result"),
-        # (Products, "products_jsonl_content_example", "products_response_expected_result"),
-        # (ProductImages, "product_images_jsonl_content_example", "product_images_response_expected_result"),
-        # (ProductVariants, "product_variants_jsonl_content_example", "product_variants_response_expected_result"),
+        (Collections, "collections_jsonl_content_example", "collections_response_expected_result"),
+        (TransactionsGraphql, "transactions_jsonl_content_example", "transactions_response_expected_result"),
+        (InventoryItems, "inventory_items_jsonl_content_example", "inventory_items_response_expected_result"),
+        (InventoryLevels, "inventory_levels_jsonl_content_example", "inventory_levels_response_expected_result"),
+        (OrderRisks, "order_risks_jsonl_content_example", "order_risks_response_expected_result"),
+        (Products, "products_jsonl_content_example", "products_response_expected_result"),
+        (ProductImages, "product_images_jsonl_content_example", "product_images_response_expected_result"),
+        (ProductVariants, "product_variants_jsonl_content_example", "product_variants_response_expected_result"),
     ],
     ids=[
-        # "CustomerAddress",
-        # "MetafieldOrders",
-        # "FulfillmentOrders",
-        # "DiscountCodes",
-        # "Collections",
-        # "TransactionsGraphql",
-        # "InventoryItems",
-        # "InventoryLevels",
-        # "OrderRisks",
-        # "Products",
-        # "ProductImages",
-        # "ProductVariants",
+        "CustomerAddress",
+        "MetafieldOrders",
+        "FulfillmentOrders",
+        "DiscountCodes",
+        "Collections",
+        "TransactionsGraphql",
+        "InventoryItems",
+        "InventoryLevels",
+        "OrderRisks",
+        "Products",
+        "ProductImages",
+        "ProductVariants",
     ],
 )
 def test_bulk_stream_parse_response(
@@ -298,11 +298,6 @@ def test_bulk_stream_parse_response(
     # parsing result from completed job
     test_records = list(stream.read_records(SyncMode.full_refresh, stream_slice={}))
     expected_result = request.getfixturevalue(expected)
-    # 
-    import json
-    
-    print(json.dumps(test_records))
-    
     if isinstance(expected_result, dict):
         assert test_records == [expected_result]
     elif isinstance(expected_result, list):
