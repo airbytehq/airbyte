@@ -363,7 +363,7 @@ definitions:
   project_dora_metrics_deployment_frequency_stream:
     name: "project_dora_metrics_deployment_frequency"
     $ref: "#/definitions/base_projects_child_stream"
-    primary_key: ["project_id"]
+    primary_key: ["project_id", "date"]
     transformations:
       - "#/definitions/add_project_id_field"
     $parameters:
@@ -375,7 +375,7 @@ definitions:
   project_dora_metrics_lead_time_for_changes_stream:
     name: "project_dora_metrics_lead_time_for_changes"
     $ref: "#/definitions/base_projects_child_stream"
-    primary_key: ["project_id"]
+    primary_key: ["project_id", "date"]
     transformations:
       - "#/definitions/add_project_id_field"
     $parameters:
@@ -388,7 +388,7 @@ definitions:
   project_dora_metrics_time_to_restore_service_stream:
     name: "project_dora_metrics_time_to_restore_service"
     $ref: "#/definitions/base_projects_child_stream"
-    primary_key: ["project_id"]
+    primary_key: ["project_id", "date"]
     transformations:
       - "#/definitions/add_project_id_field"
     $parameters:
@@ -400,7 +400,7 @@ definitions:
   project_dora_metrics_change_failure_rate_stream:
     name: "project_dora_metrics_change_failure_rate"
     $ref: "#/definitions/base_projects_child_stream"
-    primary_key: ["project_id"]
+    primary_key: ["project_id", "date"]
     transformations:
       - "#/definitions/add_project_id_field"
     $parameters:
