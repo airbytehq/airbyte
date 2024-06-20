@@ -11,15 +11,18 @@ from airbyte_cdk.models import (
     Type
 )
 from collections import defaultdict
+from collections.abc import Hashable
 import datetime
 
-from .glide import GlideBigTableBase, CreateBigTableDefaultImpl, Column
+from .glide import Column, GlideBigTableFactory
 import json
 from .log import getLogger
 import logging
 import requests
 from typing import Any, Iterable, Mapping
 import uuid
+
+CONFIG_GLIDE_API_STRATEGY_DEFAULT = "tables"
 
 logger = getLogger()
 
@@ -32,23 +35,21 @@ def mapJsonSchemaTypeToGlideType(json_type: str) -> str:
     }
     if isinstance(json_type, list):
         logger.debug(f"Found list type '{json_type}'. Attempting to map to a primitive type.") # nopep8 because
-        # find the first type that is not 'null' and use that instead:
+        # find the first type that is not 'null' and supported and use that instead:
         for t in json_type:
             if t != "null" and t in jsonSchemaTypeToGlideType:
                 logger.debug(f"Mapped json schema list type of '{json_type}' to '{t}'.") # nopep8 because
                 json_type = t
-
-    if json_type in jsonSchemaTypeToGlideType:
+                break
+    
+    # NOTE: if json_type is still a list, it won't be Hashable and we can't use it as a key in the dict
+    if isinstance(json_type, Hashable) and json_type in jsonSchemaTypeToGlideType:
         return jsonSchemaTypeToGlideType[json_type]
-    raise ValueError(f"Unsupported JSON schema type for glide '{json_type}'")
+
+    logger.warning(f"Unsupported JSON schema type for glide '{json_type}'. Will use string.")
+    return "string"
 
 class DestinationGlide(Destination):
-    # GlideBigTable optional for tests to inject mock
-    def __init__(self, glide: GlideBigTableBase = None):
-        if glide is None:
-            glide = CreateBigTableDefaultImpl()
-        self.glide = glide
-
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -66,14 +67,17 @@ class DestinationGlide(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-        # get config:
+        # load user-specified config:
         api_host = config['api_host']
         api_path_root = config['api_path_root']
         api_key = config['api_key']
         table_id = config['table_id']
+        glide_api_strategy = config.get('glide_api_strategy', CONFIG_GLIDE_API_STRATEGY_DEFAULT)
 
         # TODO: choose a strategy based on config
-        self.glide.init(api_host, api_key, api_path_root, table_id)
+        glide = GlideBigTableFactory.create(glide_api_strategy)
+        logger.debug(f"Using glide api strategy '{glide.__class__.__name__}'.")
+        glide.init(api_host, api_key, api_path_root, table_id)
 
         # go through each stream and add it as needed:
         stream_names = {s.stream.name for s in configured_catalog.streams}
@@ -91,7 +95,7 @@ class DestinationGlide(Destination):
                 logger.debug(f"Found column/property '{prop_name}' with type '{prop_type}' and format '{prop_format}' in stream {configured_stream.stream.name}.")
                 columns.append(Column(prop_name, mapJsonSchemaTypeToGlideType(prop_type)))
             
-            self.glide.prepare_table(columns)
+            glide.prepare_table(columns)
 
             # stream the records into the GBT:
             buffer = defaultdict(list)
@@ -123,7 +127,7 @@ class DestinationGlide(Destination):
                         logger.debug(f"Saving buffered records to Glide API (stream: '{stream_name}' count: '{len(stream_records)}')...") # nopep8 because https://github.com/hhatto/autopep8/issues/712
                         DATA_INDEX = 2
                         data_rows = [row_tuple[DATA_INDEX] for row_tuple in stream_records]
-                        self.glide.add_rows(data_rows)
+                        glide.add_rows(data_rows)
                         logger.debug(f"Saving buffered records to Glide API complete.") # nopep8 because https://github.com/hhatto/autopep8/issues/712
 
                     yield message
