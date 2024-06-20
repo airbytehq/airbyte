@@ -1075,7 +1075,7 @@ class DatetimeBasedCursor(BaseModel):
         description='If the target API endpoint does not take cursor values to filter records and returns all records anyway, the connector with this cursor will filter out records locally, and only emit new records from the last sync, hence incremental. This means that all records would be read from the API, but only new records will be emitted to the destination.',
         title='Whether the target API does not support filtering and returns all data (the cursor filters records in the client instead of the API side)',
     )
-    is_compare_strictly: bool = Field(
+    is_compare_strictly: Optional[bool] = Field(
         False,
         description='Set to True if the target API does not accept queries where the start time equal the end time.',
         title='Whether to skip requests if the start time equals the end time',
