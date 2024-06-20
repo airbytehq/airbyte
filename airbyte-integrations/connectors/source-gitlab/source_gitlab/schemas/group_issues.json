@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "group_id": {
       "description": "The unique identifier of the group to which the label belongs.",
@@ -101,11 +102,13 @@
     },
     "time_stats": {
       "description": "Time statistics related to the issue.",
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "task_completion_status": {
       "description": "Task completion status for the issue.",
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "blocking_issues_count": {
       "description": "Number of blocking issues for this issue.",
@@ -117,11 +120,13 @@
     },
     "_links": {
       "description": "Links related to the GitLab issue.",
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "references": {
       "description": "References related to the issue.",
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "moved_to_id": {
       "description": "ID of the issue to which this issue has been moved.",
@@ -134,6 +139,7 @@
     "author": {
       "description": "Details of the author of the issue.",
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "state": {
           "description": "State of the author's account.",
@@ -172,6 +178,7 @@
     "assignee": {
       "description": "Details of the user assigned to the issue.",
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "state": {
           "description": "State of the assignee account.",
@@ -210,6 +217,7 @@
     "closed_by": {
       "description": "Details of the user who closed the issue.",
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "state": {
           "description": "State of the user's account who closed the issue.",
@@ -281,6 +289,7 @@
     "iteration": {
       "description": "Details of the iteration to which the issue belongs.",
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "id": {
           "description": "ID of the iteration.",
@@ -339,6 +348,7 @@
     "epic": {
       "description": "Details of the epic to which the issue belongs.",
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "id": {
           "description": "ID of the epic.",
