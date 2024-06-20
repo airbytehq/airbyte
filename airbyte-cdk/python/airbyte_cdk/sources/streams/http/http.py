@@ -68,30 +68,6 @@ class HttpStream(Stream, ABC):
         """
         return False
 
-    # def request_session(self) -> requests.Session:
-    #     """
-    #     Session factory based on use_cache property and call rate limits (api_budget parameter)
-    #     :return: instance of request-based session
-    #     """
-    #     if self.use_cache:
-    #         cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
-    #         # Use in-memory cache if cache_dir is not set
-    #         # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
-    #         if cache_dir:
-    #             sqlite_path = str(Path(cache_dir) / self.cache_filename)
-    #         else:
-    #             sqlite_path = "file::memory:?cache=shared"
-    #         return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
-    #     else:
-    #         return LimiterSession(api_budget=self._api_budget)
-
-    # def clear_cache(self) -> None:
-    #     """
-    #     Clear cached requests for current session, can be called any time
-    #     """
-    #     if isinstance(self._session, requests_cache.CachedSession):
-    #         self._session.cache.clear()  # type: ignore # cache.clear is not typed
-
     @property
     @abstractmethod
     def url_base(self) -> str:
