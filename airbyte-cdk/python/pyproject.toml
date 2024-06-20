@@ -24,7 +24,7 @@ keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-airbyte-protocol-models = ">=0.9.0, <1.0"
+airbyte-protocol-models-pdv2 = "^0.12.2"
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
@@ -35,7 +35,7 @@ Jinja2 = "~3.1.2"
 jsonref = "~0.2"
 jsonschema = "~3.2.0"
 pendulum = "<3.0.0"
-pydantic = "^1.10.8"
+pydantic = "^2.7"
 pyrate-limiter = "~3.1.0"
 python-dateutil = "*"
 PyYAML = "^6.0.1"
