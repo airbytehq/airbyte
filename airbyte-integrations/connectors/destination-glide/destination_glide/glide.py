@@ -25,7 +25,7 @@ class Column(dict):
     def __init__(self, id: str, type: str):
         if type not in ALLOWED_COLUMN_TYPES:
             raise ValueError(f"Column type {type} not allowed. Must be one of {ALLOWED_COLUMN_TYPES}")  # nopep8
-        dict.__init__(self, id=id, type=type, displayName=id)
+        dict.__init__(self, id=id, type={"kind":type}, displayName=id)
 
     def id(self) -> str:
         return self['id']
