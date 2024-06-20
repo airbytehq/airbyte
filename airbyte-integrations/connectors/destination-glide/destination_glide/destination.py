@@ -23,6 +23,7 @@ from typing import Any, Iterable, Mapping
 import uuid
 
 CONFIG_GLIDE_API_VERSION_DEFAULT = "tables"
+CONFIG_GLIDE_API_HOST_DEFAULT = "https://api.glideapp.io"
 
 logger = getLogger()
 
@@ -68,7 +69,7 @@ class DestinationGlide(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         # load user-specified config:
-        api_host = config['api_host']
+        api_host = config.get('api_host', CONFIG_GLIDE_API_HOST_DEFAULT)
         api_path_root = config['api_path_root']
         api_key = config['api_key']
         table_id = config['table_id']

@@ -49,7 +49,7 @@ class GlideBigTableBase(ABC):
         }
 
     def url(self, path: str) -> str:
-        return f"https://{self.api_host}/{self.api_path_root}/{path}"
+        return f"{self.api_host}/{self.api_path_root}/{path}"
 
     """
     An API client for interacting with a Glide Big Table.
@@ -212,7 +212,7 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         }
 
     def url(self, path: str) -> str:
-        return f"https://{self.api_host}/{self.api_path_root}/{path}"
+        return f"{self.api_host}/{self.api_path_root}/{path}"
 
     def prepare_table(self, columns: List[Column]) -> None:
         logger.debug(f"prepare_table for table '{self.table_id}. Expecting columns: '{[c.id for c in columns]}'.")

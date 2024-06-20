@@ -11,7 +11,7 @@
     "properties": {
       "api_host": {
         "type": "string",
-        "description": "The host name of the Glide API destination"
+        "description": "The protocol and host name (e.g. 'https://api.glideapp.io'). of the Glide API destination"
       },
       "api_path_root": {
         "type": "string",
