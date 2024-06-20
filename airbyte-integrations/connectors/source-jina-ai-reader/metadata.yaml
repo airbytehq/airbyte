@@ -31,6 +31,7 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-JINA-AI-READER__CREDS
