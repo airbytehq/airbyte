@@ -6,22 +6,24 @@ products: oss-*
 
 :::info
 
-If you run on [Airbyte Cloud](https://cloud.airbyte.com/signup) you'll always run on the newest
+[Airbyte Cloud](https://cloud.airbyte.com/signup) users always run on the newest
 Airbyte version automatically. This documentation only applies to users deploying our self-managed
 version.
 :::
 
 ## Overview
 
-This tutorial will describe how to determine if you need to run this upgrade process, and if you do, how to do so. This process does require temporarily turning off Airbyte.
+This document explains how to determine if you need to upgrade your Airbyte instance as well as how to proceed with an upgrade when needed. 
 
-When Airbyte is upgraded, it will attempt to upgrade some connector versions. It follows the following rules: 1. if a connector is not used, it will be upgraded to the latest version 2. if a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a connector, do so in the settings page in the webapp.
+<em>Note that upgrades require temporarily turning off Airbyte.</em>
+
+During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded: 1. if a connector is not used, it will be upgraded to the latest version 2. if a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a specific connector, do so in the settings page in the webapp.
 
 If you need help from our team for your upgrades, we offer premium support to our open-source users, [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to get access to it.
 
 ## Determining if you need to Upgrade
 
-Airbyte intelligently performs upgrades automatically based off of your version defined in your `.env` file and will handle data migration for you.
+Airbyte intelligently performs upgrades automatically based on the version defined in your `.env` file and will handle data migration for you.
 
 If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes-via-helm.md), you will need to use one of the two processes defined [here](#upgrading-on-k8s-0270-alpha-and-above) that differ based on your Airbyte version.
 
@@ -56,11 +58,11 @@ Airbyte version 0.40.27 or later requires [Docker Compose V2](https://docs.docke
    docker compose down
    ```
 
-2. Upgrade the docker instance to new version.
+2. Upgrade the Airbyte instance in Docker to a new version.
 
-   i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
+   1. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
 
-   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh` to download the installation script.
+   2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh` to download the installation script.
 
 3. Remove previous local `docker-compose.yaml` and `.env`
 
@@ -68,7 +70,7 @@ Airbyte version 0.40.27 or later requires [Docker Compose V2](https://docs.docke
    ./run-ab-platform.sh -r
    ```
 
-4. Bring Airbyte back online, optionally with the `-b` flag to run the containers in the background (docker detached mode).
+4. Bring Airbyte back online, optionally with the `-b` flag to run the containers in the background (Docker detached mode).
 
    ```bash
    ./run-ab-platform.sh -b
@@ -80,13 +82,13 @@ If you did not start Airbyte from the root of the Airbyte monorepo, you may run 
 
 :::danger
 
-This will completely reset your Airbyte deployment back to scratch and you will lose all data.
+This will completely reset your Airbyte deployment. You will lose all data.
 
 :::
 
 ## Upgrading on K8s using Helm
 
-The instructions below are for users using custom deployment and have a `values.yaml`. If you're not using a `values.yaml` to deploy Airbyte using Helm can jump directly to step `4.`.
+The instructions below are for users who have a custom deployment and `values.yaml` file. If you're not using a `values.yaml` file to deploy Airbyte using Helm, you can jump directly to step `4`.
 
 1. Access [Airbyte ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte) and select the version you want to upgrade.
 2. You can click in `Default Values` and compare the value file between the new version and version you're running. You can run `helm list -n <NAMESPACE>` to check the CHART version you're using.
