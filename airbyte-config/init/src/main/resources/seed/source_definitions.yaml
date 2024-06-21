@@ -1405,7 +1405,7 @@
   dockerRepository: yuanrui2014/source-alipay-worldfirst
   dockerImageTag: 0.0.1
   documentationUrl: https://docsurl.com
-  icon: 
+  icon: Alipay_logo.svg
   sourceType: api
   releaseStage: alpha
   public: true
