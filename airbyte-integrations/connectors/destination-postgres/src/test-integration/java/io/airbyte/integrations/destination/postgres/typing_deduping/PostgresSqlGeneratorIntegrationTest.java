@@ -134,8 +134,8 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   }
 
   /**
-   * Verify that * when cascadeDrop is disabled * an error caused by dropping a table with
-   * dependencies * results in a configuration error with the correct message
+   * Verify that when cascadeDrop is disabled, an error caused by dropping a table with
+   * dependencies results in a configuration error with the correct message.
    */
   @Test
   public void testCascadeDropDisabled() throws Exception {
