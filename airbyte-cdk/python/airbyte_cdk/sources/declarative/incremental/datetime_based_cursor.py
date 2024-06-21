@@ -67,7 +67,7 @@ class DatetimeBasedCursor(DeclarativeCursor):
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
     message_repository: Optional[MessageRepository] = None
-    is_compare_strictly: bool = False
+    is_compare_strictly: Optional[bool] = False
     cursor_datetime_formats: List[str] = field(default_factory=lambda: [])
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
