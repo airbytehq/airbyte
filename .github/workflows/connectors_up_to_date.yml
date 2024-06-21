@@ -1,4 +1,7 @@
 name: Connectors up-to-date
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 on:
   schedule:
@@ -8,7 +11,10 @@ on:
     inputs:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--concurrency=1 --language=python --language=low-code"
+        default: "--concurrency=10 --language=python --language=low-code"
+      auto-merge:
+        description: "Whether to auto-merge the PRs created by the action."
+        default: "false"
 jobs:
   connectors_up_to_date:
     name: Connectors up-to-date
@@ -33,4 +39,4 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors  ${{ github.event.inputs.connectors-options || '--concurrency=1 --language=python --language=low-code' }} up-to-date --create-prs"
+          subcommand: "connectors  ${{ github.event.inputs.connectors-options || '--concurrency=10 --language=python --language=low-code' }} up-to-date --create-prs ${{ github.event.inputs.auto-merge == 'true' && '--auto-merge' || '' }}"
