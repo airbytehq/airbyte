@@ -90,7 +90,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     } else if (columnTypeName.equalsIgnoreCase("geography")) {
       putGeography(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("datetimeoffset")) {
-      // JDBC will recognize such columns as VARCHAR.
+      // JDBC will recognize such columns as VARCHAR. Thus we have to have special handling on it.
       putTimestampWithTimezone(json, columnName, resultSet, colIndex);
     } else {
       super.copyToJsonField(resultSet, colIndex, json);
