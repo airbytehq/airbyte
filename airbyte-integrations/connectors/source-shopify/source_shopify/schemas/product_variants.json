@@ -147,6 +147,18 @@
     "shop_url": {
       "description": "The URL of the shop where the variant is listed",
       "type": ["null", "string"]
+    },
+    "available_for_sale": {
+      "description": "Whether the product variant is available for sale.",
+      "type": ["null", "boolean"]
+    },
+    "display_name": {
+      "description": "Display name of the variant, based on product's title + variant's title.",
+      "type": ["null", "string"]
+    },
+    "tax_code": {
+      "description": "The tax code for the product variant.",
+      "type": ["null", "string"]
     }
   }
 }

@@ -554,10 +554,25 @@ class DiscountCode(ShopifyBulkQuery):
                         __typename
                         id
                         codeDiscount {
+                            __typename
                             ... on DiscountCodeApp {
                                 updatedAt
                                 createdAt
                                 discountType: discountClass
+                                startsAt
+                                endsAt
+                                status
+                                title
+                                usageLimit
+                                appliesOncePerCustomer
+                                asyncUsageCount
+                                codesCount {
+                                    count
+                                }
+                                totalSales {
+                                    amount
+                                    currencyCode
+                                }
                                 codes {
                                     edges {
                                         node {
@@ -565,15 +580,33 @@ class DiscountCode(ShopifyBulkQuery):
                                             usageCount: asyncUsageCount
                                             code
                                             id
+                                            createdBy {
+                                                id
+                                                title
+                                            }
                                         }
                                     }
                                 }
                             }
                             ... on DiscountCodeBasic {
-                                createdAt
                                 updatedAt
+                                createdAt
                                 discountType: discountClass
                                 summary
+                                startsAt
+                                endsAt
+                                status
+                                title
+                                usageLimit
+                                appliesOncePerCustomer
+                                asyncUsageCount
+                                codesCount {
+                                    count
+                                }
+                                totalSales {
+                                    amount
+                                    currencyCode
+                                }
                                 codes {
                                     edges {
                                         node {
@@ -581,6 +614,10 @@ class DiscountCode(ShopifyBulkQuery):
                                             usageCount: asyncUsageCount
                                             code
                                             id
+                                            createdBy {
+                                                id
+                                                title
+                                            }
                                         }
                                     }
                                 }
@@ -590,6 +627,20 @@ class DiscountCode(ShopifyBulkQuery):
                                 createdAt
                                 discountType: discountClass
                                 summary
+                                startsAt
+                                endsAt
+                                status
+                                title
+                                usageLimit
+                                appliesOncePerCustomer
+                                asyncUsageCount
+                                codesCount {
+                                    count
+                                }
+                                totalSales {
+                                    amount
+                                    currencyCode
+                                }
                                 codes {
                                     edges {
                                         node {
@@ -597,6 +648,10 @@ class DiscountCode(ShopifyBulkQuery):
                                             usageCount: asyncUsageCount
                                             code
                                             id
+                                            createdBy {
+                                                id
+                                                title
+                                            }
                                         }
                                     }
                                 }
@@ -606,6 +661,20 @@ class DiscountCode(ShopifyBulkQuery):
                                 createdAt
                                 discountType: discountClass
                                 summary
+                                startsAt
+                                endsAt
+                                status
+                                title
+                                usageLimit
+                                appliesOncePerCustomer
+                                asyncUsageCount
+                                codesCount {
+                                    count
+                                }
+                                totalSales {
+                                    amount
+                                    currencyCode
+                                }
                                 codes {
                                     edges {
                                         node {
@@ -613,6 +682,10 @@ class DiscountCode(ShopifyBulkQuery):
                                             usageCount: asyncUsageCount
                                             code
                                             id
+                                            createdBy {
+                                                id
+                                                title
+                                            }
                                         }
                                     }
                                 }
@@ -627,8 +700,22 @@ class DiscountCode(ShopifyBulkQuery):
     query_name = "codeDiscountNodes"
     sort_key = "UPDATED_AT"
 
-    code_discount_fields: List[Field] = [
+    discount_code_fields: List[Field] = [
+        "updatedAt",
+        "createdAt",
         Field(name="discountClass", alias="discountType"),
+        "startsAt",
+        "endsAt",
+        "status",
+        "title",
+        "usageLimit",
+        "appliesOncePerCustomer",
+        "asyncUsageCount",
+        Field(name="codesCount", fields=["count"]),
+        Field(name="totalSales", fields=["amount", Field(name="currencyCode", alias="currency_code")]),
+    ]
+
+    codes_fields: List[Field] = [
         Field(
             name="codes",
             fields=[
@@ -642,6 +729,7 @@ class DiscountCode(ShopifyBulkQuery):
                                 Field(name="asyncUsageCount", alias="usageCount"),
                                 "code",
                                 "id",
+                                Field(name="createdBy", fields=["id", "title"]),
                             ],
                         )
                     ],
@@ -652,10 +740,11 @@ class DiscountCode(ShopifyBulkQuery):
 
     code_discount_fragments: List[InlineFragment] = [
         # the type: DiscountCodeApp has no `"summary"` field available
-        InlineFragment(type="DiscountCodeApp", fields=["updatedAt", "createdAt", *code_discount_fields]),
-        InlineFragment(type="DiscountCodeBasic", fields=["updatedAt", "createdAt", "summary", *code_discount_fields]),
-        InlineFragment(type="DiscountCodeBxgy", fields=["updatedAt", "createdAt", "summary", *code_discount_fields]),
-        InlineFragment(type="DiscountCodeFreeShipping", fields=["updatedAt", "createdAt", "summary", *code_discount_fields]),
+        "__typename",
+        InlineFragment(type="DiscountCodeApp", fields=[*discount_code_fields, *codes_fields]),
+        InlineFragment(type="DiscountCodeBasic", fields=[*discount_code_fields, "summary", *codes_fields]),
+        InlineFragment(type="DiscountCodeBxgy", fields=[*discount_code_fields, "summary", *codes_fields]),
+        InlineFragment(type="DiscountCodeFreeShipping", fields=[*discount_code_fields, "summary", *codes_fields]),
     ]
 
     query_nodes: List[Field] = [
@@ -1023,6 +1112,7 @@ class InventoryItem(ShopifyBulkQuery):
                     __typename
                     unitCost {
                         cost: amount
+                        currency_code: currencyCode
                     }
                     countryCodeOfOrigin
                     countryHarmonizedSystemCodes {
@@ -1040,6 +1130,7 @@ class InventoryItem(ShopifyBulkQuery):
                     sku
                     tracked
                     requiresShipping
+                    duplicateSkuCount
                 }
             }
         }
@@ -1055,35 +1146,44 @@ class InventoryItem(ShopifyBulkQuery):
     query_nodes: List[Field] = [
         "__typename",
         "id",
-        Field(name="unitCost", fields=[Field(name="amount", alias="cost")]),
+        "harmonizedSystemCode",
+        "provinceCodeOfOrigin",
+        "updatedAt",
+        "createdAt",
+        "sku",
+        "tracked",
+        "requiresShipping",
+        "duplicateSkuCount",
+        Field(name="unitCost", fields=[Field(name="amount", alias="cost"), Field(name="currencyCode", alias="currency_code")]),
         Field(name="countryCodeOfOrigin"),
         Field(name="countryHarmonizedSystemCodes", fields=country_harmonizedS_system_codes),
-        Field(name="harmonizedSystemCode"),
-        Field(name="provinceCodeOfOrigin"),
-        Field(name="updatedAt"),
-        Field(name="createdAt"),
-        Field(name="sku"),
-        Field(name="tracked"),
-        Field(name="requiresShipping"),
     ]
 
     record_composition = {
         "new_record": "InventoryItem",
     }
 
+    def _process_unit_cost(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        # resolve `cost` to root lvl as `number`
+        unit_cost = record.get("unitCost", {})
+        if unit_cost:
+            record["cost"] = float(unit_cost.get("cost"))
+            record["currency_code"] = unit_cost.get("currency_code")
+        else:
+            record["cost"] = None
+            record["currency_code"] = None
+        # clean up
+        record.pop("unitCost", None)
+
+        return record
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
         """
 
-        # resolve `cost` to root lvl as `number`
-        unit_cost = record.get("unitCost", {})
-        if unit_cost:
-            record["cost"] = float(unit_cost.get("cost"))
-        else:
-            record["cost"] = None
-        # clean up
-        record.pop("unitCost", None)
+        # unnest unit_cost to the root lvl
+        record = self._process_unit_cost(record)
         # add empty `country_harmonized_system_codes` array, if missing for record
         if "countryHarmonizedSystemCodes" not in record.keys():
             record["country_harmonized_system_codes"] = []
@@ -1111,8 +1211,15 @@ class InventoryLevel(ShopifyBulkQuery):
                                     available
                                     item {
                                         inventory_item_id: id
+                                        inventoryHistoryUrl
+                                        locationsCount {
+                                            count
+                                        }
                                     }
                                     updatedAt
+                                    canDeactivate
+                                    createdAt
+                                    deactivationAlert
                                 }
                             }
                         }
@@ -1152,11 +1259,20 @@ class InventoryLevel(ShopifyBulkQuery):
         "updatedAt",
     ]
 
+    item_fields: List[Field] = [
+        Field(name="inventoryHistoryUrl", alias="inventory_history_url"),
+        Field(name="id", alias="inventory_item_id"),
+        Field(name="locationsCount", alias="locations_count", fields=["count"]),
+    ]
+
     inventory_levels_fields: List[Field] = [
         "__typename",
         "id",
-        Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
-        Field(name="updatedAt"),
+        "canDeactivate",
+        "createdAt",
+        "deactivationAlert",
+        "updatedAt",
+        Field(name="item", fields=item_fields),
     ]
 
     def _quantities_query(self) -> Query:
@@ -1203,8 +1319,12 @@ class InventoryLevel(ShopifyBulkQuery):
         # process quantities
         quantities = record.get("quantities", [])
         record["quantities"] = self._process_quantities(quantities)
-        # resolve `inventory_item_id` to root lvl +  resolve to int
-        record["inventory_item_id"] = self.tools.resolve_str_id(record.get("item", {}).get("inventory_item_id"))
+        item = record.get("item", {})
+        if item:
+            # resolve `inventory_item_id` to root lvl +  resolve to int
+            record["inventory_item_id"] = self.tools.resolve_str_id(item.get("inventory_item_id"))
+            record["inventory_history_url"] = item.get("inventory_history_url")
+            record["locations_count"] = item.get("locations_count")
         # add `location_id` from `__parentId`
         record["location_id"] = self.tools.resolve_str_id(record[BULK_PARENT_KEY])
         # make composite `id` from `location_id|inventory_item_id`
@@ -1232,6 +1352,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
                                 node {
                                     __typename
                                     id
+                                    channelId
                                     assignedLocation {
                                         location {
                                             locationId: id
@@ -1382,18 +1503,19 @@ class FulfillmentOrder(ShopifyBulkQuery):
     fulfillment_order_fields: List[Field] = [
         "__typename",
         "id",
-        Field(name="assignedLocation", fields=assigned_location_fields),
-        Field(name="destination", fields=destination_fields),
-        Field(name="deliveryMethod", fields=delivery_method_fields),
         "fulfillAt",
         "fulfillBy",
-        Field(name="internationalDuties", fields=["incoterm"]),
-        Field(name="fulfillmentHolds", fields=["reason", "reasonNotes"]),
-        Field(name="lineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=line_items_fields)])]),
         "createdAt",
         "updatedAt",
         "requestStatus",
         "status",
+        "channelId",
+        Field(name="assignedLocation", fields=assigned_location_fields),
+        Field(name="destination", fields=destination_fields),
+        Field(name="deliveryMethod", fields=delivery_method_fields),
+        Field(name="internationalDuties", fields=["incoterm"]),
+        Field(name="fulfillmentHolds", fields=["reason", "reasonNotes"]),
+        Field(name="lineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=line_items_fields)])]),
         Field(name="supportedActions", fields=["action", "externalUrl"]),
         Field(name="merchantRequests", fields=[Field(name="edges", fields=[Field(name="node", fields=merchant_requests_fields)])]),
     ]
@@ -1562,12 +1684,40 @@ class Transaction(ShopifyBulkQuery):
                             createdAt
                             status
                             processedAt
+                            accountNumber
+                            formattedGateway
+                            manuallyCapturable
                             totalUnsettledSet {
                                 presentmentMoney {
                                     amount
                                     currency: currencyCode
                                 }
                                 shopMoney {
+                                    amount
+                                    currency: currencyCode
+                                }
+                            }
+                            amountSet {
+                                shopMoney {
+                                    amount
+                                    currency: currencyCode
+                                }
+                            }
+                            fees {
+                                flatFeeName
+                                id
+                                rate
+                                rateName
+                                type
+                                amount {
+                                    amount
+                                    currency: currencyCode
+                                }
+                                flatFee {
+                                    amount
+                                    currency: currencyCode
+                                }
+                                taxAmount {
                                     amount
                                     currency: currencyCode
                                 }
@@ -1596,9 +1746,14 @@ class Transaction(ShopifyBulkQuery):
     query_name = "orders"
     sort_key = "UPDATED_AT"
 
+    amount_fields: List[Field] = [
+        "amount",
+        Field(name="currencyCode", alias="currency"),
+    ]
+
     total_unsettled_set_fields: List[Field] = [
-        Field(name="presentmentMoney", fields=["amount", Field(name="currencyCode", alias="currency")]),
-        Field(name="shopMoney", fields=["amount", Field(name="currencyCode", alias="currency")]),
+        Field(name="presentmentMoney", fields=amount_fields),
+        Field(name="shopMoney", fields=amount_fields),
     ]
 
     payment_details: List[InlineFragment] = [
@@ -1618,35 +1773,75 @@ class Transaction(ShopifyBulkQuery):
         )
     ]
 
+    fees_fields: List[Field] = [
+        "id",
+        "rate",
+        "type",
+        Field(name="flatFeeName", alias="flat_fee_name"),
+        Field(name="rateName", alias="rate_name"),
+        Field(name="amount", fields=amount_fields),
+        Field(name="flatFee", alias="flat_fee", fields=amount_fields),
+        Field(name="taxAmount", alias="tax_amount", fields=amount_fields),
+    ]
+
+    transaction_fields: List[Field] = [
+        "id",
+        "errorCode",
+        "test",
+        "kind",
+        "amount",
+        "createdAt",
+        "status",
+        "processedAt",
+        "gateway",
+        "paymentId",
+        "accountNumber",
+        "formattedGateway",
+        "manuallyCapturable",
+        Field(name="receiptJson", alias="receipt"),
+        Field(name="parentTransaction", fields=[Field(name="id", alias="parentId")]),
+        Field(name="authorizationCode", alias="authorization"),
+        Field(name="totalUnsettledSet", fields=total_unsettled_set_fields),
+        Field(name="amountSet", fields=[Field(name="shopMoney", alias="shop_money", fields=amount_fields)]),
+        Field(name="fees", fields=fees_fields),
+        Field(name="paymentDetails", fields=payment_details),
+    ]
+
     query_nodes: List[Field] = [
         "__typename",
         "id",
         Field(name="currencyCode", alias="currency"),
-        Field(
-            name="transactions",
-            fields=[
-                "id",
-                "errorCode",
-                Field(name="parentTransaction", fields=[Field(name="id", alias="parentId")]),
-                "test",
-                "kind",
-                "amount",
-                Field(name="receiptJson", alias="receipt"),
-                "gateway",
-                Field(name="authorizationCode", alias="authorization"),
-                "createdAt",
-                "status",
-                "processedAt",
-                Field(name="totalUnsettledSet", fields=total_unsettled_set_fields),
-                "paymentId",
-                Field(name="paymentDetails", fields=payment_details),
-            ],
-        ),
+        Field(name="transactions", fields=transaction_fields),
     ]
 
     record_composition = {
         "new_record": "Order",
     }
+
+    def _cast_amount_to_float(self, entity: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        return float(entity.get("amount", 0.0))
+
+    def _process_fees(self, fees: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for fee in fees:
+            # save the id before it's resolved
+            fee["admin_graphql_api_id"] = fee.get("id")
+            fee["id"] = self.tools.resolve_str_id(fee.get("id"))
+            # cast `rate` to number
+            fee["rate"] = float(fee.get("rate", 0.0))
+            # cast `amount.amount` to number
+            amount = fee.get("amount", {})
+            if amount:
+                fee["amount"]["amount"] = self._cast_amount_to_float(amount)
+            # cast `flat_fee.amount` to number
+            flat_fee = fee.get("flat_fee", {})
+            if flat_fee:
+                fee["flat_fee"]["amount"] = self._cast_amount_to_float(flat_fee)
+            # cast `flat_fee.amount` to number
+            tax_amount = fee.get("tax_amount", {})
+            if tax_amount:
+                fee["tax_amount"]["amount"] = self._cast_amount_to_float(tax_amount)
+
+        return fees
 
     def process_transaction(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         # save the id before it's resolved
@@ -1665,6 +1860,10 @@ class Transaction(ShopifyBulkQuery):
         record["parent_id"] = self.tools.resolve_str_id(record.get("parent_id"))
         # remove leftovers
         record.pop("parentTransaction", None)
+        # process `fees`
+        fees = record.get("fees", [])
+        if fees:
+            record["fees"] = self._process_fees(fees)
         # field names to snake case
         total_unsettled_set = record.get("totalUnsettledSet", {})
         if total_unsettled_set:
@@ -1674,6 +1873,12 @@ class Transaction(ShopifyBulkQuery):
                 total_unsettled_set.get("presentmentMoney", {}).get("amount")
             )
             record["totalUnsettledSet"]["shop_money"]["amount"] = float(total_unsettled_set.get("shopMoney", {}).get("amount"))
+        # field names to snake case
+        amount_set = record.get("amountSet", {})
+        if amount_set:
+            record["amountSet"] = self.tools.fields_names_to_snake_case(amount_set)
+            # nested str values to float
+            record["amountSet"]["shop_money"]["amount"] = float(amount_set.get("shop_money", {}).get("amount"))
         payment_details = record.get("paymentDetails", {})
         if payment_details:
             record["paymentDetails"] = self.tools.fields_names_to_snake_case(payment_details)
@@ -1752,6 +1957,67 @@ class Product(ShopifyBulkQuery):
                     total_variants: variantsCount {
                         total_variants: count
                     }
+                    hasOnlyDefaultVariant
+                    hasOutOfStockVariants
+                    requiresSellingPlan
+                    priceRangeV2 {
+                        maxVariantPrice {
+                            amount
+                            currencyCode
+                        }
+                        minVariantPrice {
+                            amount
+                            currencyCode
+                        }
+                    }
+                    featuredImage {
+                        altText
+                        height
+                        id
+                        url
+                        width
+                    }
+                    seo {
+                        description
+                        title
+                    }
+                    featuredMedia {
+                        alt
+                        id
+                        mediaContentType
+                        status
+                        preview {
+                            image {
+                                id
+                                altText
+                            }
+                            status
+                        }
+                        mediaErrors {
+                            code
+                            details
+                            message
+                        }
+                        mediaWarnings {
+                            code
+                            message
+                        }
+                    }
+                    feedback {
+                        details {
+                            app {
+                                id
+                            }
+                            link {
+                                url
+                            }
+                            messages {
+                                field
+                                message
+                            }
+                        }
+                        summary
+                    }
                 }
             }
         }
@@ -1764,6 +2030,45 @@ class Product(ShopifyBulkQuery):
     images_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=["__typename", "id"])])]
     # variants property fields, we re-use the same field names as for the `images` property
     variants_fields: List[Field] = images_fields
+
+    amount_fields: List[Field] = [
+        "amount",
+        Field(name="currencyCode", alias="currency_code"),
+    ]
+
+    price_range_v2_fields: List[Field] = [
+        Field(name="maxVariantPrice", alias="max_variant_price", fields=amount_fields),
+        Field(name="minVariantPrice", alias="min_variant_price", fields=amount_fields),
+    ]
+
+    featured_image_fields: List[Field] = [
+        "height",
+        "id",
+        "url",
+        "width",
+        Field(name="altText", alias="alt_text"),
+    ]
+
+    featured_media_fields: List[Field] = [
+        "alt",
+        "id",
+        "status",
+        Field(name="mediaContentType", alias="media_content_type"),
+        Field(name="preview", fields=["status", Field(name="image", fields=["id", Field(name="altText", alias="alt_text")])]),
+        Field(name="mediaErrors", alias="media_errors", fields=["code", "details", "message"]),
+        Field(name="mediaWarnings", alias="media_warnings", fields=["code", "message"]),
+    ]
+
+    feedback_details_fields: List[Field] = [
+        Field(name="app", fields=["id"]),
+        Field(name="link", fields=["url"]),
+        Field(name="messages", fields=["field", "message"]),
+    ]
+    feedback_fields: List[Field] = [
+        "summary",
+        Field(name="details", fields=feedback_details_fields),
+    ]
+
     # main query
     query_nodes: List[Field] = [
         "__typename",
@@ -1787,6 +2092,14 @@ class Product(ShopifyBulkQuery):
         "onlineStoreUrl",
         "totalInventory",
         "tracksInventory",
+        "hasOnlyDefaultVariant",
+        "hasOutOfStockVariants",
+        "requiresSellingPlan",
+        Field(name="priceRangeV2", fields=price_range_v2_fields),
+        Field(name="featuredImage", fields=featured_image_fields),
+        Field(name="seo", fields=["description", "title"]),
+        Field(name="featuredMedia", fields=featured_media_fields),
+        Field(name="feedback", fields=feedback_fields),
         Field(name="variantsCount", alias="total_variants", fields=[Field(name="count", alias="total_variants")]),
         Field(name="mediaCount", alias="media_count", fields=[Field(name="count", alias="media_count")]),
         Field(name="options", fields=["id", "name", "values", "position"]),
@@ -1821,6 +2134,17 @@ class Product(ShopifyBulkQuery):
         tags = record.get("tags", [])
         return ", ".join(tags) if tags else None
 
+    def _process_price_range_v2(self, price_range_v2: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        max_variant_price = price_range_v2.get("max_variant_price", {})
+        min_variant_price = price_range_v2.get("min_variant_price", {})
+        # cast the `amount` for each of the min/max object
+        if max_variant_price:
+            price_range_v2["max_variant_price"]["amount"] = float(max_variant_price.get("amount"))
+        if min_variant_price:
+            price_range_v2["min_variant_price"]["amount"] = float(min_variant_price.get("amount"))
+
+        return price_range_v2
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
@@ -1847,6 +2171,10 @@ class Product(ShopifyBulkQuery):
         record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "publishedAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        # process `price_range_v2`
+        price_range_v2 = record.get("priceRangeV2", {})
+        if price_range_v2:
+            record["priceRangeV2"] = self._process_price_range_v2(price_range_v2)
 
         yield record
 
@@ -2079,6 +2407,9 @@ class ProductVariant(ShopifyBulkQuery):
                     image {
                         image_id: id
                     }
+                    availableForSale
+                    displayName
+                    taxCode
                 }
             }
         }
@@ -2120,6 +2451,9 @@ class ProductVariant(ShopifyBulkQuery):
         "weightUnit",
         "inventoryQuantity",
         "requiresShipping",
+        "availableForSale",
+        "displayName",
+        "taxCode",
         Field(name="weight", alias="grams"),
         Field(name="image", fields=[Field(name="id", alias="image_id")]),
         Field(name="inventoryQuantity", alias="old_inventory_quantity"),
