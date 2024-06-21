@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.0
+Update  dependency to pydantic v2, and  dependency to pydantic v2 models. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
+
 ## 1.8.0
 low-code: Add is_compare_strictly flag to DatetimeBasedCursor
 
