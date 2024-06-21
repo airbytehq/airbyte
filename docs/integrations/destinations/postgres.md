@@ -267,6 +267,7 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.13  | 2024-06-13 | [\#40159](https://github.com/airbytehq/airbyte/pull/40159) | Config error on drop failure when cascade is disabled                                                    |
 | 2.0.12  | 2024-06-12 | [\#39388](https://github.com/airbytehq/airbyte/pull/39388) | Sources auto-conversion to Kotlin                                                                        |
 | 2.0.11  | 2024-06-10 | [\#39372](https://github.com/airbytehq/airbyte/pull/39372) | Fixed function already exists error                                                                      |
 | 2.0.10  | 2024-05-07 | [\#37660](https://github.com/airbytehq/airbyte/pull/37660) | Adopt CDK 0.33.2                                                                                         |
