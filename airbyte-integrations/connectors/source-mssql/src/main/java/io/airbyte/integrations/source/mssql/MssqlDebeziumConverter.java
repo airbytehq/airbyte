@@ -118,7 +118,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
   }
 
   private void registerDateTimeOffSet(final RelationalColumn field,
-      final ConverterRegistration<SchemaBuilder> registration) {
+                                      final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
