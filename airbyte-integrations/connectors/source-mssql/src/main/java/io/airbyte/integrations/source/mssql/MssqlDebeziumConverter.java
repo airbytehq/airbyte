@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import microsoft.sql.DateTimeOffset;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,8 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       registerGeography(field, registration);
     } else if (TIME_TYPE.equalsIgnoreCase(field.typeName())) {
       registerTime(field, registration);
+    } else if (DATETIMEOFFSET.equalsIgnoreCase(field.typeName())) {
+      registerDateTimeOffSet(field, registration);
     }
   }
 
@@ -111,6 +114,24 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
         return DateTimeConverter.convertToDate(input);
       }
       return DateTimeConverter.convertToTimestamp(input);
+    });
+  }
+
+  private void registerDateTimeOffSet(final RelationalColumn field,
+                                      final ConverterRegistration<SchemaBuilder> registration) {
+    registration.register(SchemaBuilder.string(), input -> {
+      if (Objects.isNull(input)) {
+        return DebeziumConverterUtils.convertDefaultValue(field);
+      }
+
+      if (input instanceof DateTimeOffset) {
+        var offsetDateTime = ((DateTimeOffset) input).getOffsetDateTime();
+        return offsetDateTime.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER);
+      }
+
+      LOGGER.warn("Uncovered DateTimeOffSet class type '{}'. Use default converter",
+          input.getClass().getName());
+      return input.toString();
     });
   }
 
