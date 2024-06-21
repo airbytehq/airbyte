@@ -58,11 +58,11 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
-METADATA_FILE_NAME = "metadata.yaml"
 MANIFEST_FILE_NAME = "manifest.yaml"
 DOCKERFILE_FILE_NAME = "Dockerfile"
 PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
+POETRY_LOCK_FILE_NAME = "poetry.lock"
 
 STRATEGIC_CONNECTOR_THRESHOLDS = {
     "sl": 200,

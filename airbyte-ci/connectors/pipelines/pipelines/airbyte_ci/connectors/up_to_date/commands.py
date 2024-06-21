@@ -15,13 +15,6 @@ from pipelines.helpers.connectors.command import run_connector_pipeline
     short_help="Get the selected Python connectors up to date.",
 )
 @click.option(
-    "--dev",
-    type=bool,
-    default=False,
-    is_flag=True,
-    help="Force update when there are only dev changes.",
-)
-@click.option(
     "--dep",
     type=str,
     multiple=True,
@@ -29,18 +22,18 @@ from pipelines.helpers.connectors.command import run_connector_pipeline
     help="Give a specific set of `poetry add` dependencies to update. For example: --dep airbyte-cdk==0.80.0 --dep pytest@^6.2",
 )
 @click.option(
-    "--report",
+    "--create-prs",
     is_flag=True,
     type=bool,
     default=False,
-    help="Auto open report browser.",
+    help="Create pull requests for updated connectors",
 )
 @click.option(
-    "--pull",
+    "--auto-merge",
     is_flag=True,
     type=bool,
     default=False,
-    help="Create a pull request.",
+    help="Set the auto-merge label on the create pull requests",
 )
 @click.option(
     "--no-bump",
@@ -49,19 +42,24 @@ from pipelines.helpers.connectors.command import run_connector_pipeline
     default=False,
     help="Don't bump or changelog",
 )
-
-# TODO: flag to skip regression tests
+@click.option(
+    "--open-reports",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Auto open reports in browser",
+)
 @click.pass_context
 async def up_to_date(
     ctx: click.Context,
-    dev: bool,
-    pull: bool,
     dep: List[str],
-    report: bool,
+    create_prs: bool,
+    auto_merge: bool,
     no_bump: bool,
+    open_reports: bool,
 ) -> bool:
 
-    if not ctx.obj["ci_github_access_token"]:
+    if create_prs and not ctx.obj["ci_github_access_token"]:
         raise click.ClickException(
             "GitHub access token is required to create or simulate a pull request. Set the CI_GITHUB_ACCESS_TOKEN environment variable."
         )
@@ -69,10 +67,10 @@ async def up_to_date(
     return await run_connector_pipeline(
         ctx,
         "Get Python connector up to date",
-        report,
+        open_reports,
         run_connector_up_to_date_pipeline,
-        dev,
-        pull,
-        no_bump,
+        create_prs,
+        auto_merge,
         dep,
+        not no_bump,
     )

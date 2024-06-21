@@ -36,14 +36,14 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError as V2ValidationError
 
 
 class EntrypointOutput:
     def __init__(self, messages: List[str], uncaught_exception: Optional[BaseException] = None):
         try:
             self._messages = [self._parse_message(message) for message in messages]
-        except ValidationError as exception:
+        except V2ValidationError as exception:
             raise ValueError("All messages are expected to be AirbyteMessage") from exception
 
         if uncaught_exception:
@@ -53,7 +53,7 @@ class EntrypointOutput:
     def _parse_message(message: str) -> AirbyteMessage:
         try:
             return AirbyteMessage.parse_obj(json.loads(message))
-        except (json.JSONDecodeError, ValidationError):
+        except (json.JSONDecodeError, V2ValidationError):
             # The platform assumes that logs that are not of AirbyteMessage format are log messages
             return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))
 
