@@ -104,7 +104,7 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 7.0.0 | 2024-06-21 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update CDK to 2.0, memesis to 17.x, and remove Python 3.9 support |
+| 6.2.0 | 2024-06-21 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update CDK to 2.0, memesis to 11.x. |
 | 6.1.4 | 2024-06-21 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update dependencies |
 | 6.1.3 | 2024-06-04 | [39029](https://github.com/airbytehq/airbyte/pull/39029) | [autopull] Upgrade base image to v1.2.1 |
 | 6.1.2 | 2024-06-03 | [38831](https://github.com/airbytehq/airbyte/pull/38831) | Bump CDK to allow and prefer versions `1.x` |

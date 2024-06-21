@@ -662,18 +662,14 @@ files = [
 
 [[package]]
 name = "mimesis"
-version = "17.0.0"
+version = "11.1.0"
 description = "Mimesis: Fake Data Generator."
 optional = false
-python-versions = "<4.0,>=3.10"
+python-versions = ">=3.8,<4.0"
 files = [
-    {file = "mimesis-17.0.0-py3-none-any.whl", hash = "sha256:a088a14075c6d0356fea15e7687afb8f900a412daa80f2f3fe20f1771532402f"},
-    {file = "mimesis-17.0.0.tar.gz", hash = "sha256:57fd7c2762c668054f2ebb85f71d484fa2fd55647d2a02bac4f2e97b81f22d8d"},
+    {file = "mimesis-11.1.0-py3-none-any.whl", hash = "sha256:574715564c937cd40eba23a0d184febbe04e538d5d120bfa5b951775200f3084"},
+    {file = "mimesis-11.1.0.tar.gz", hash = "sha256:5f3839751190f6eef7f453dfafb8f2f38dbdcda11bb3ad742589c216c24985f1"},
 ]
-
-[package.extras]
-factory = ["factory-boy (>=3.3.0,<4.0.0)"]
-pytest = ["pytest (>=7.2,<8.0)"]
 
 [[package]]
 name = "orjson"
@@ -1394,5 +1390,5 @@ files = [
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.10,<4.0"
-content-hash = "d7d8a16110ec1d4f99d7b6adc487b388e0d1aa88683b5787247614d80ef73f9f"
+python-versions = "^3.9,<4.0"
+content-hash = "1bb941b66f0c94e94c72286e349f022c6e0c00b156efffb0000bbd2068dd2d94"
