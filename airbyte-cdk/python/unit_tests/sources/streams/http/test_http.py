@@ -399,7 +399,7 @@ def test_parent_attribute_exist():
 def test_that_response_was_cached(mocker, requests_mock):
     requests_mock.register_uri("GET", "https://google.com/", text="text")
     stream = CacheHttpStream()
-    stream.clear_cache()
+    stream._http_client.clear_cache()
     mocker.patch.object(stream, "url_base", "https://google.com/")
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
@@ -622,4 +622,4 @@ def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, pa
 
 def test_connection_pool():
     stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
-    assert stream._session.adapters["https://"]._pool_connections == 20
+    assert stream._http_client._session.adapters["https://"]._pool_connections == 20

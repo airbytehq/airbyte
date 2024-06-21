@@ -120,6 +120,13 @@ class HttpClient:
         else:
             return LimiterSession(api_budget=self._api_budget)
 
+    def clear_cache(self) -> None:
+        """
+        Clear cached requests for current session, can be called any time
+        """
+        if isinstance(self._session, requests_cache.CachedSession):
+            self._session.cache.clear()  # type: ignore # cache.clear is not typed
+
     def _dedupe_query_params(self, url: str, params: Optional[Mapping[str, str]]) -> Mapping[str, str]:
         """
         Remove query parameters from params mapping if they are already encoded in the URL.

@@ -254,6 +254,7 @@ class HttpStream(Stream, ABC):
     def get_error_handler(self) -> HttpStatusErrorHandler:
         raise_on_http_errors = self.raise_on_http_errors
         should_retry_method = self.should_retry
+
         def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
             if isinstance(response_or_exception, Exception):
                 return error_handler.interpret_response(response_or_exception)
