@@ -1,4 +1,4 @@
-version: 1.3.1
+version: 1.5.2
 
 type: DeclarativeSource
 
@@ -153,7 +153,7 @@ definitions:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
-                parent_key: id
+                parent_key: sid
                 partition_field: account_sid
                 stream:
                   $ref: "#/definitions/streams/Accounts"
@@ -203,7 +203,7 @@ definitions:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
-                parent_key: id
+                parent_key: sid
                 partition_field: account_sid
                 stream:
                   $ref: "#/definitions/streams/Accounts"
@@ -253,7 +253,7 @@ definitions:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
-                parent_key: id
+                parent_key: sid
                 partition_field: account_sid
                 stream:
                   $ref: "#/definitions/streams/Accounts"
@@ -523,7 +523,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - dependent_phone_numbers
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -602,8 +603,8 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: end_time
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
@@ -669,8 +670,8 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
@@ -878,8 +879,8 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
@@ -1127,8 +1128,8 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_sent
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
@@ -1200,10 +1201,10 @@ definitions:
                   $ref: "#/definitions/streams/Messages"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date_sent
+        cursor_field: date_created
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
@@ -1211,11 +1212,11 @@ definitions:
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: DateSent>
+          field_name: DateCreated>
         end_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: DateSent<
+          field_name: DateCreated<
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1242,7 +1243,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - records
+              - usage_records
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1269,20 +1270,20 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: start_date
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: StartDate
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: EndDate
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1309,7 +1310,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - triggers
+              - usage_triggers
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1336,6 +1337,140 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Usage Triggers"
+    Conversations:
+      type: DeclarativeStream
+      name: Conversations
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://conversations.twilio.com/v1/Conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversations
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Conversations"
+    Conversation Participants:
+      type: DeclarativeStream
+      name: Conversation Participants
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://conversations.twilio.com/v1/Conversations/{{
+            stream_partition.conversation_sid }}/Participants
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - participants
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: conversation_sid
+              stream:
+                $ref: "#/definitions/streams/Conversations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Conversation Participants"
+    Conversation Messages:
+      type: DeclarativeStream
+      name: Conversation Messages
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://conversations.twilio.com/v1/Conversations/{{
+            stream_partition.conversation_sid }}/Messages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: conversation_sid
+              stream:
+                $ref: "#/definitions/streams/Conversations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Conversation Messages"
+    Users:
+      type: DeclarativeStream
+      name: Users
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://conversations.twilio.com/v1/Users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Users"
+    User Conversation:
+      type: DeclarativeStream
+      name: User Conversation
+      primary_key:
+        - conversations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://conversations.twilio.com/v1/Users/{{
+            stream_partition.user_sid }}/Conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: user_sid
+              stream:
+                $ref: "#/definitions/streams/Users"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/User Conversation"
   base_requester:
     type: HttpRequester
     url_base: https://
@@ -1374,6 +1509,11 @@ streams:
   - $ref: "#/definitions/streams/Message Media"
   - $ref: "#/definitions/streams/Usage Records"
   - $ref: "#/definitions/streams/Usage Triggers"
+  - $ref: "#/definitions/streams/Conversations"
+  - $ref: "#/definitions/streams/Conversation Participants"
+  - $ref: "#/definitions/streams/Conversation Messages"
+  - $ref: "#/definitions/streams/Users"
+  - $ref: "#/definitions/streams/User Conversation"
 
 spec:
   type: Spec
@@ -1409,10 +1549,10 @@ spec:
         description: Studio Base API URL
       start_date:
         type: string
+        order: 4
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 4
     additionalProperties: true
 
 metadata:
@@ -1446,6 +1586,11 @@ metadata:
     Message Media: true
     Usage Records: true
     Usage Triggers: true
+    Conversations: true
+    Conversation Participants: true
+    Conversation Messages: true
+    Users: true
+    User Conversation: true
 
 schemas:
   Accounts:
@@ -1683,94 +1828,309 @@ schemas:
           - "null"
   Available Phone Numbers Local:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      address_requirements:
+        type:
+          - string
+          - "null"
+      beta:
+        type:
+          - boolean
+          - "null"
+      capabilities:
+        type:
+          - object
+          - "null"
+        properties:
+          MMS:
+            type:
+              - boolean
+              - "null"
+          SMS:
+            type:
+              - boolean
+              - "null"
+          voice:
+            type:
+              - boolean
+              - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      iso_country:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - string
+          - "null"
+      locality:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
   Available Phone Numbers Mobile:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      address_requirements:
+        type:
+          - string
+          - "null"
+      beta:
+        type:
+          - boolean
+          - "null"
+      capabilities:
+        type:
+          - object
+          - "null"
+        properties:
+          MMS:
+            type:
+              - boolean
+              - "null"
+          SMS:
+            type:
+              - boolean
+              - "null"
+          voice:
+            type:
+              - boolean
+              - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      iso_country:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
   Available Phone Numbers Toll-Free:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      address_requirements:
+        type:
+          - string
+          - "null"
+      beta:
+        type:
+          - boolean
+          - "null"
+      capabilities:
+        type:
+          - object
+          - "null"
+        properties:
+          MMS:
+            type:
+              - boolean
+              - "null"
+          SMS:
+            type:
+              - boolean
+              - "null"
+          voice:
+            type:
+              - boolean
+              - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      iso_country:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - string
+          - "null"
+      locality:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
   Incoming Phone Numbers:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
-        type: string
+        type:
+          - string
+          - "null"
       address_requirements:
-        type: string
+        type:
+          - string
+          - "null"
       api_version:
-        type: string
+        type:
+          - string
+          - "null"
       beta:
-        type: boolean
+        type:
+          - boolean
+          - "null"
       capabilities:
-        type: object
+        type:
+          - object
+          - "null"
         properties:
           fax:
-            type: boolean
+            type:
+              - boolean
+              - "null"
           mms:
-            type: boolean
+            type:
+              - boolean
+              - "null"
           sms:
-            type: boolean
+            type:
+              - boolean
+              - "null"
           voice:
-            type: boolean
+            type:
+              - boolean
+              - "null"
       date_created:
-        type: string
+        type:
+          - string
+          - "null"
       date_updated:
-        type: string
+        type:
+          - string
+          - "null"
       emergency_address_status:
-        type: string
+        type:
+          - string
+          - "null"
       emergency_status:
-        type: string
+        type:
+          - string
+          - "null"
       friendly_name:
-        type: string
+        type:
+          - string
+          - "null"
       origin:
-        type: string
+        type:
+          - string
+          - "null"
       phone_number:
-        type: string
+        type:
+          - string
+          - "null"
       sid:
-        type: string
+        type:
+          - string
+          - "null"
       sms_application_sid:
-        type: string
+        type:
+          - string
+          - "null"
       sms_fallback_method:
-        type: string
+        type:
+          - string
+          - "null"
       sms_fallback_url:
-        type: string
+        type:
+          - string
+          - "null"
       sms_method:
-        type: string
+        type:
+          - string
+          - "null"
       sms_url:
-        type: string
+        type:
+          - string
+          - "null"
       status:
-        type: string
+        type:
+          - string
+          - "null"
       status_callback:
-        type: string
+        type:
+          - string
+          - "null"
       status_callback_method:
-        type: string
+        type:
+          - string
+          - "null"
       subresource_uris:
-        type: object
+        type:
+          - object
+          - "null"
         properties:
           assigned_add_ons:
-            type: string
+            type:
+              - string
+              - "null"
       uri:
-        type: string
+        type:
+          - string
+          - "null"
       voice_application_sid:
-        type: string
+        type:
+          - string
+          - "null"
       voice_caller_id_lookup:
-        type: boolean
+        type:
+          - boolean
+          - "null"
       voice_fallback_method:
-        type: string
+        type:
+          - string
+          - "null"
       voice_fallback_url:
-        type: string
+        type:
+          - string
+          - "null"
       voice_method:
-        type: string
+        type:
+          - string
+          - "null"
       voice_url:
-        type: string
+        type:
+          - string
+          - "null"
   Keys:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1878,6 +2238,28 @@ schemas:
             type:
               - string
               - "null"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: start_date
+        cursor_datetime_formats:
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: StartDate
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: EndDate
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   Applications:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1969,24 +2351,382 @@ schemas:
       - sid
   Dependent Phone Numbers:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      address_requirements:
+        type:
+          - string
+          - "null"
+      api_version:
+        type:
+          - string
+          - "null"
+      capabilities:
+        type:
+          - object
+          - "null"
+        properties:
+          MMS:
+            type:
+              - boolean
+              - "null"
+          SMS:
+            type:
+              - boolean
+              - "null"
+          Voice:
+            type:
+              - boolean
+              - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      emergency_status:
+        type:
+          - string
+          - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      sms_application_sid:
+        type:
+          - string
+          - "null"
+      sms_fallback_method:
+        type:
+          - string
+          - "null"
+      sms_fallback_url:
+        type:
+          - string
+          - "null"
+      sms_method:
+        type:
+          - string
+          - "null"
+      sms_url:
+        type:
+          - string
+          - "null"
+      status_callback:
+        type:
+          - string
+          - "null"
+      status_callback_method:
+        type:
+          - string
+          - "null"
+      uri:
+        type:
+          - string
+          - "null"
+      voice_application_sid:
+        type:
+          - string
+          - "null"
+      voice_caller_id_lookup:
+        type:
+          - boolean
+          - "null"
+      voice_fallback_method:
+        type:
+          - string
+          - "null"
+      voice_fallback_url:
+        type:
+          - string
+          - "null"
+      voice_method:
+        type:
+          - string
+          - "null"
+      voice_url:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Calls:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      api_version:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      end_time:
+        type:
+          - string
+          - "null"
+      forwarded_from:
+        type:
+          - string
+          - "null"
+      from:
+        type:
+          - string
+          - "null"
+      from_formatted:
+        type:
+          - string
+          - "null"
+      phone_number_sid:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_unit:
+        type:
+          - string
+          - "null"
+      queue_time:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      start_time:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subresource_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          streams:
+            type:
+              - string
+              - "null"
+          events:
+            type:
+              - string
+              - "null"
+          notifications:
+            type:
+              - string
+              - "null"
+          payments:
+            type:
+              - string
+              - "null"
+          recordings:
+            type:
+              - string
+              - "null"
+          siprec:
+            type:
+              - string
+              - "null"
+          user_defined_message_subscriptions:
+            type:
+              - string
+              - "null"
+          user_defined_messages:
+            type:
+              - string
+              - "null"
+      to:
+        type:
+          - string
+          - "null"
+      to_formatted:
+        type:
+          - string
+          - "null"
+      trunk_sid:
+        type:
+          - string
+          - "null"
+      uri:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Conferences:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      api_version:
+        type:
+          - string
+          - "null"
+      call_sid_ending_conference:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      reason_conference_ended:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      subresource_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          participants:
+            type:
+              - string
+              - "null"
+          recordings:
+            type:
+              - string
+              - "null"
+      uri:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Conference Participants:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        description: "The unique identifier for the Twilio account associated with the conference participant."
+        type:
+          - "null"
+          - string
+      call_sid:
+        description: "The unique identifier for the call made by the participant."
+        type:
+          - "null"
+          - string
+      label:
+        description: "A custom label assigned to the participant for identification."
+        type:
+          - "null"
+          - string
+      conference_sid:
+        description: "The unique identifier for the conference the participant is a part of."
+        type:
+          - "null"
+          - string
+      date_created:
+        description: "The date and time when the participant was added to the conference."
+        format: "date-time"
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: "The date and time when the participant's information was last updated."
+        format: "date-time"
+        type:
+          - "null"
+          - string
+      end_conference_on_exit:
+        description: "Indicates whether the conference will end when the participant exits."
+        type:
+          - "null"
+          - boolean
+      muted:
+        description: "Indicates whether the participant's audio is muted."
+        type:
+          - "null"
+          - boolean
+      hold:
+        description: "Indicates whether the participant is on hold."
+        type:
+          - "null"
+          - boolean
+      status:
+        description: "The current status of the participant in the conference."
+        type:
+          - "null"
+          - string
+      start_conference_on_enter:
+        description: "Indicates whether the conference will start when the participant enters."
+        type:
+          - "null"
+          - boolean
+      coaching:
+        description: "Indicates whether the participant is in coaching mode."
+        type:
+          - "null"
+          - boolean
+      call_sid_to_coach:
+        description: "The unique identifier for the call made to the coach."
+        type:
+          - "null"
+          - string
+      uri:
+        description: "The URI for accessing the details of the conference participant."
+        type:
+          - "null"
+          - string
   Executions:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1999,9 +2739,86 @@ schemas:
     properties: {}
   Recordings:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      api_version:
+        type:
+          - string
+          - "null"
+      call_sid:
+        type:
+          - string
+          - "null"
+      channels:
+        type:
+          - number
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      error_code:
+        type:
+          - number
+          - "null"
+      media_url:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_unit:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      source:
+        type:
+          - string
+          - "null"
+      start_time:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subresource_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          add_on_results:
+            type:
+              - string
+              - "null"
+          transcriptions:
+            type:
+              - string
+              - "null"
+      uri:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Services:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2161,34 +2978,462 @@ schemas:
           - "null"
   Verify Services:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      code_length:
+        type:
+          - number
+          - "null"
+      custom_code_enabled:
+        type:
+          - boolean
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      do_not_share_warning_enabled:
+        type:
+          - boolean
+          - "null"
+      dtmf_input_required:
+        type:
+          - boolean
+          - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          access_tokens:
+            type:
+              - string
+              - "null"
+          entities:
+            type:
+              - string
+              - "null"
+          messaging_configurations:
+            type:
+              - string
+              - "null"
+          rate_limits:
+            type:
+              - string
+              - "null"
+          verification_checks:
+            type:
+              - string
+              - "null"
+          verifications:
+            type:
+              - string
+              - "null"
+          webhooks:
+            type:
+              - string
+              - "null"
+      lookup_enabled:
+        type:
+          - boolean
+          - "null"
+      psd2_enabled:
+        type:
+          - boolean
+          - "null"
+      push:
+        type:
+          - object
+          - "null"
+        properties:
+          include_date:
+            type:
+              - boolean
+              - "null"
+      sid:
+        type: string
+      skip_sms_to_landlines:
+        type:
+          - boolean
+          - "null"
+      totp:
+        type:
+          - object
+          - "null"
+        properties:
+          code_length:
+            type:
+              - number
+              - "null"
+          issuer:
+            type:
+              - string
+              - "null"
+          skew:
+            type:
+              - number
+              - "null"
+          time_step:
+            type:
+              - number
+              - "null"
+      url:
+        type:
+          - string
+          - "null"
+      verify_event_subscription_enabled:
+        type:
+          - boolean
+          - "null"
+      whatsapp:
+        type:
+          - object
+          - "null"
+        properties: {}
+    required:
+      - sid
   Roles:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_sid:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      service_sid:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Transcriptions:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_sid:
+        type:
+          - string
+          - "null"
+      api_version:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_unit:
+        type:
+          - string
+          - "null"
+      recording_sid:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      transcription_text:
+        type:
+          - string
+          - "null"
+      uri:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Trunks:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      auth_type:
+        type:
+          - string
+          - "null"
+      auth_type_set:
+        type:
+          - array
+          - "null"
+      cnam_lookup_enabled:
+        type:
+          - boolean
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          credential_lists:
+            type:
+              - string
+              - "null"
+          ip_access_control_lists:
+            type:
+              - string
+              - "null"
+          origination_urls:
+            type:
+              - string
+              - "null"
+          phone_numbers:
+            type:
+              - string
+              - "null"
+      recording:
+        type:
+          - object
+          - "null"
+        properties:
+          mode:
+            type:
+              - string
+              - "null"
+          trim:
+            type:
+              - string
+              - "null"
+      secure:
+        type:
+          - boolean
+          - "null"
+      sid:
+        type: string
+      transfer_caller_id:
+        type:
+          - string
+          - "null"
+      transfer_mode:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Queues:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      average_wait_time:
+        type:
+          - number
+          - "null"
+      current_size:
+        type:
+          - number
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      max_size:
+        type:
+          - number
+          - "null"
+      sid:
+        type: string
+      subresource_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          members:
+            type:
+              - string
+              - "null"
+      uri:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Messages:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      api_version:
+        type:
+          - string
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_sent:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      error_code:
+        type:
+          - number
+          - "null"
+      error_message:
+        type:
+          - string
+          - "null"
+      from:
+        type:
+          - string
+          - "null"
+      num_media:
+        type:
+          - string
+          - "null"
+      num_segments:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_unit:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      subresource_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          feedback:
+            type:
+              - string
+              - "null"
+          media:
+            type:
+              - string
+              - "null"
+      to:
+        type:
+          - string
+          - "null"
+      uri:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
   Message Media:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -2196,11 +3441,483 @@ schemas:
     properties: {}
   Usage Records:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      api_version:
+        type:
+          - string
+          - "null"
+      as_of:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      count:
+        type:
+          - string
+          - "null"
+      count_unit:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_unit:
+        type:
+          - string
+          - "null"
+      start_date:
+        type: string
+      subresource_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          all_time:
+            type:
+              - string
+              - "null"
+          daily:
+            type:
+              - string
+              - "null"
+          last_month:
+            type:
+              - string
+              - "null"
+          monthly:
+            type:
+              - string
+              - "null"
+          this_month:
+            type:
+              - string
+              - "null"
+          today:
+            type:
+              - string
+              - "null"
+          yearly:
+            type:
+              - string
+              - "null"
+          yesterday:
+            type:
+              - string
+              - "null"
+      uri:
+        type:
+          - string
+          - "null"
+      usage:
+        type:
+          - string
+          - "null"
+      usage_unit:
+        type:
+          - string
+          - "null"
+    required:
+      - start_date
   Usage Triggers:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      api_version:
+        type:
+          - string
+          - "null"
+      callback_method:
+        type:
+          - string
+          - "null"
+      callback_url:
+        type:
+          - string
+          - "null"
+      current_value:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      recurring:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      trigger_by:
+        type:
+          - string
+          - "null"
+      trigger_value:
+        type:
+          - string
+          - "null"
+      uri:
+        type:
+          - string
+          - "null"
+      usage_category:
+        type:
+          - string
+          - "null"
+      usage_record_uri:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
+  Conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      chat_service_sid:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      friendly_name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          messages:
+            type:
+              - string
+              - "null"
+          participants:
+            type:
+              - string
+              - "null"
+          webhooks:
+            type:
+              - string
+              - "null"
+      messaging_service_sid:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      state:
+        type:
+          - string
+          - "null"
+      timers:
+        type:
+          - object
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
+  Conversation Participants:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      conversation_sid:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      identity:
+        type:
+          - string
+          - "null"
+      role_sid:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
+  Conversation Messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      author:
+        type:
+          - string
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      conversation_sid:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      index:
+        type:
+          - number
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          channel_metadata:
+            type:
+              - string
+              - "null"
+          delivery_receipts:
+            type:
+              - string
+              - "null"
+      sid:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
+  Users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      chat_service_sid:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_updated:
+        type:
+          - string
+          - "null"
+      identity:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user_conversations:
+            type:
+              - string
+              - "null"
+      role_sid:
+        type:
+          - string
+          - "null"
+      sid:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - sid
+  User Conversation:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      conversations:
+        type: array
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            account_sid:
+              type:
+                - string
+                - "null"
+            attributes:
+              type:
+                - string
+                - "null"
+            chat_service_sid:
+              type:
+                - string
+                - "null"
+            conversation_sid:
+              type:
+                - string
+                - "null"
+            conversation_state:
+              type:
+                - string
+                - "null"
+            created_by:
+              type:
+                - string
+                - "null"
+            date_created:
+              type:
+                - string
+                - "null"
+            date_updated:
+              type:
+                - string
+                - "null"
+            friendly_name:
+              type:
+                - string
+                - "null"
+            links:
+              type:
+                - object
+                - "null"
+              properties:
+                conversation:
+                  type:
+                    - string
+                    - "null"
+                participant:
+                  type:
+                    - string
+                    - "null"
+            notification_level:
+              type:
+                - string
+                - "null"
+            participant_sid:
+              type:
+                - string
+                - "null"
+            timers:
+              type:
+                - object
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+            user_sid:
+              type:
+                - string
+                - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          first_page_url:
+            type:
+              - string
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+          page:
+            type:
+              - number
+              - "null"
+          page_size:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+    required:
+      - conversations
