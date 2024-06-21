@@ -71,7 +71,7 @@ class SourceAlipayWorldfirst(AbstractSource):
         if config["tunnel_method"]["tunnel_method"] == "PERIODIC":
             period_in_days = config["tunnel_method"]["days"]
         else:
-            start_time = (config["tunnel_method"]["start_time"],)
+            start_time = config["tunnel_method"]["start_time"]
             end_time = config["tunnel_method"]["end_time"]
         key_str = {
             "url_base": base_url,
