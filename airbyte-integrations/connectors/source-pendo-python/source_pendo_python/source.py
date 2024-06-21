@@ -14,8 +14,8 @@ from .streams import (
     Feature,
     Guide,
     Page,
-    Report,
-    ReportResult,
+    # Report,
+    # ReportResult,
     VisitorMetadata,
     AccountMetadata,
     Visitor,
@@ -67,7 +67,7 @@ class SourcePendoPython(AbstractSource):
             Feature(authenticator=auth),
             Guide(authenticator=auth),
             Page(authenticator=auth),
-            Report(authenticator=auth),
+            # Report(authenticator=auth),
             VisitorMetadata(authenticator=auth),
             AccountMetadata(authenticator=auth),
             Visitor(authenticator=auth),
@@ -77,8 +77,8 @@ class SourcePendoPython(AbstractSource):
             GuideEvents(authenticator=auth)
         ]
 
-        all_reports = self.get_reports(config)
-        for report in all_reports:
-            result.append(ReportResult(report=report, authenticator=auth))
+        # all_reports = self.get_reports(config)
+        # for report in all_reports:
+        #     result.append(ReportResult(report=report, authenticator=auth))
 
         return result
