@@ -8,15 +8,19 @@ Once you've completed the initial installation of Airbyte Self-Managed Enterpris
 
 ## Concurrent Syncs
 
-The primary indicator of increased resource usage in Airbyte is the number of concurrent syncs running at any given time. Each concurrent sync requires at least 3 additional connector pods to be running at once (`orchestrator`, `read`, `write`). This means that 10 concurrent syncs requires 30 additional pods in your namespace. Connector pods last only for the duration of a sync, and will be appended by the ID of the ongoing job.
+The primary driver of increased resource usage in Airbyte is the number of concurrent syncs running at any given time. Each concurrent sync requires at least 3 additional connector pods to be running at once (`orchestrator`, `read`, `write`). For example, 10 concurrent syncs require 30 additional pods in your namespace. Connector pods last only for the duration of a sync, and will be appended by the ID of the ongoing job.
 
-If your deployment of Airbyte is intended to run many concurrent syncs at once (e.g. an overnight backfill), we recommend provisioning an increased number of instances. Some connectors are memory and CPU intensive, while others are not. Using an infrastructure monitoring tool, we recommend measuring the following at all times:
+If your deployment of Airbyte is intended to run many concurrent syncs at once (e.g. an overnight backfill), you are likely to require an increased number of instances to run all syncs. 
+
+### Connector CPU & Memory Settings
+
+Some connectors are memory and CPU intensive, while others are not. Using an infrastructure monitoring tool, we recommend measuring the following at all times:
 * Requested CPU %
 * CPU Usage %
 * Requested Memory %
 * Memory Usage %
 
-With high CPU or Memory usage, we recommend scaling up your Airbyte deployment to a higher number of nodes, or reducing the maximum resource usage by any given connector pod. If high _requested_ CPU or memory usage is blocking new pods from being scheduled, while _used_ CPU or memory is low, you may modify connector pod provisioning defaults in your `values.yml` file:
+If your nodes are under high CPU or Memory usage, we recommend scaling up your Airbyte deployment to a larger number of nodes, or reducing the maximum resource usage by any given connector pod. If high _requested_ CPU or memory usage is blocking new pods from being scheduled, while _used_ CPU or memory is low, you may modify connector pod provisioning defaults in your `values.yml` file:
 
 ```yaml
 global:
@@ -25,14 +29,34 @@ global:
   jobs:
     resources:
       limits:
-        cpu: 
-        memory: 
+        cpu: ## e.g. 250m
+        memory: ## e.g. 500m
       requests:
-        cpu: 
-        memory: 
+        cpu: ## e.g. 75m
+        memory: ## e.g. 150m
 ```
 
-If your Airbyte deployment is underprovisioned, you may often notice occasional 'stuck jobs' that remain in-progress for long periods, with eventual failures related to unavailable pods. If you begin to see such errors, we recommend you follow the troubleshooting steps above.
+If your Airbyte deployment is underprovisioned, you may notice occasional 'stuck jobs' that remain in-progress for long periods, with eventual failures related to unavailable pods. Increasing job CPU and memory limits may also allow for increased sync speeds.
+
+### Concurrent Sync Limits
+
+To help rightsize Airbyte deployments and reduce the likelihood of stuck syncs, there are configurable limits to the number of syncs that can be run at once:
+
+```yaml
+worker:
+  extraEnvs: ## We recommend setting both environment variables with a single, shared value.
+    - name: MAX_SYNC_WORKERS
+      value: ## e.g. 5
+    - name: MAX_CHECK_WORKERS
+      value: ## e.g. 5
+```
+
+If you intend to run many syncs at the same time, you may also want to increase the number of worker replicas that run in your Airbyte instance:
+
+```yaml
+worker:
+  replicaCount: ## e.g. 2
+```
 
 ## Multiple Node Groups
 

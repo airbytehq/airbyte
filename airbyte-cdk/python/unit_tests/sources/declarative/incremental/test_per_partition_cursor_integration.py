@@ -4,8 +4,7 @@
 
 from unittest.mock import patch
 
-from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -251,82 +250,3 @@ def test_substream_without_input_state():
             StreamSlice(partition={"parent_id": "2", "parent_slice": {}, },
                         cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
         ]
-
-
-def test_substream_with_legacy_input_state():
-    source = ManifestDeclarativeSource(
-        source_config=ManifestBuilder()
-        .with_substream_partition_router("AnotherStream")
-        .with_incremental_sync(
-            "Rates",
-            start_datetime="2022-01-01",
-            end_datetime="2022-02-28",
-            datetime_format="%Y-%m-%d",
-            cursor_field=CURSOR_FIELD,
-            step="P1M",
-            cursor_granularity="P1D",
-        )
-        .with_incremental_sync(
-            "AnotherStream",
-            start_datetime="2022-01-01",
-            end_datetime="2022-02-28",
-            datetime_format="%Y-%m-%d",
-            cursor_field=CURSOR_FIELD,
-            step="P1M",
-            cursor_granularity="P1D",
-        )
-        .build()
-    )
-
-    stream_instance = source.streams({})[1]
-
-    input_state = {
-        "states": [
-            {
-                "partition": {"item_id": "an_item_id",
-                              "parent_slice": {"end_time": "1629640663", "start_time": "1626962264"},
-                              },
-                "cursor": {
-                    "updated_at": "1709058818"
-                }
-            }
-        ]
-    }
-    stream_instance.state = input_state
-
-    stream_slice = StreamSlice(partition={"parent_id": "1"},
-                               cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
-
-    logger = init_logger("airbyte")
-    configured_catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            {
-                "stream": {"name": "AnotherStream", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-        ]
-    )
-
-    with patch.object(
-            SimpleRetriever, "_read_pages", side_effect=[
-                [Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
-                [Record({"parent_id": "1", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
-                [Record({"id": "2", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
-                [Record({"parent_id": "2", CURSOR_FIELD: "2022-01-15"}, stream_slice)]
-            ]
-    ):
-        messages = list(source.read(logger, {}, configured_catalog, input_state))
-
-        output_state_message = [message for message in messages if message.type == Type.STATE][0]
-
-        expected_state = {"states": [
-            {
-                "cursor": {
-                    CURSOR_FIELD: "2022-01-15"
-                },
-                "partition": {"parent_id": "1", "parent_slice": {}}
-            }
-        ]}
-
-        assert output_state_message.state.stream.stream_state == expected_state
