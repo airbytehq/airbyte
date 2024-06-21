@@ -29,8 +29,8 @@ urllib3 = "<2"
 source-s3 = "source_s3.run:run"
 
 [tool.poetry.dependencies.airbyte-cdk]
-path = "../../../airbyte-cdk/python"
 extras = [ "file-based",]
+version = "^2"
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
