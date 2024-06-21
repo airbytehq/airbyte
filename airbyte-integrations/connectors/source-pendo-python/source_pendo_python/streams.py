@@ -96,6 +96,8 @@ class PendoAggregationStream(PendoPythonStream):
         }
 
         if next_page_token is not None:
+            # Some primary keys are already wrapped in quotation marks - strip them when building filter query
+            next_page_token = next_page_token.strip('"')
             request_body["request"]["pipeline"].insert(2, {"filter": f'{self.primary_key} > "{next_page_token}"'})
 
         return request_body
