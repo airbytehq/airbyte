@@ -1400,3 +1400,12 @@
   sourceType: api
   releaseStage: alpha
   public: true
+- name: AlipayWorldFirst
+  sourceDefinitionId: 56a218cf-d294-4a26-8ac4-4d91da965814
+  dockerRepository: yuanrui2014/source-alipay-worldfirst
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docsurl.com
+  icon: 
+  sourceType: api
+  releaseStage: alpha
+  public: true

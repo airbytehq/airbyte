@@ -1,6 +1,6 @@
 {
-  "secret_key": "f6357235-7e1f-4f55-af00-9867e1f421db",
-  "tunnel_method":{
+  "secret_key": "",
+  "tunnel_method": {
     "tunnel_method": "PERIODIC",
     "days": 10
   }

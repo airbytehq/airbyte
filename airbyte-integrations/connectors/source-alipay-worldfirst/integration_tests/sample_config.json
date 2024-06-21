@@ -1,0 +1,11 @@
+{
+  "source_name": "alipay worldfirst test",
+  "client_id": "3J...",
+  "private_key": "MIIEvgIBADANB...",
+  "base_url": "",
+  "tunnel_method": {
+    "tunnel_method": "MANUAL",
+    "start_time": "2024-06-01T00:00:00Z",
+    "end_time": "2024-06-15T00:00:00Z"
+  }
+}

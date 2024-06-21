@@ -1,7 +1,7 @@
 {
   "source_name": "CARLOS TEST",
-  "open_key_id": "6DF5F597AEF84494B42388C63F4632B3",
-  "secret_key": "E547DCB619824189AD3A532546AE37F9",
+  "open_key_id": "",
+  "secret_key": "",
   "tunnel_method":{
     "tunnel_method": "PERIODIC",
     "days": 1
