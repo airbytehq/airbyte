@@ -125,10 +125,8 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
       }
 
       if (input instanceof DateTimeOffset) {
-        System.out.println("running converter logic");
-        return DataTypeUtils.toISO8601String(
-            OffsetDateTime.parse(input.toString(),
-                DataTypeUtils.TIMESTAMPTZ_FORMATTER));
+        var offsetDateTime = ((DateTimeOffset) input).getOffsetDateTime();
+        return offsetDateTime.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER);
       }
 
       LOGGER.warn("Uncovered DateTimeOffSet class type '{}'. Use default converter",
