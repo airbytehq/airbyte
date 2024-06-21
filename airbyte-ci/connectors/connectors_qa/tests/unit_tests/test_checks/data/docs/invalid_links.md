@@ -2,7 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [GitHub](https://www.github.com) source connector.
+This page contains the setup guide and reference information for the [GitHub](https://www.github.com/invalid-link) source connector.
 
 </HideInUI>
 
@@ -14,25 +14,25 @@ This page contains the setup guide and reference information for the [GitHub](ht
 **For Airbyte Cloud:**
 
 - OAuth
-- Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+- Personal Access Token (see [Permissions and scopes](https://docs.airbyte.invalid.com/integrations/sources/github#permissions-and-scopes))
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
 
-- Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+- Personal Access Token (see [Permissions and scopes](https://docs.airbyte.invalid.com/integrations/sources/github#permissions-and-scopes))
 <!-- /env:oss -->
 
 ## Setup guide
 
 ### Step 1: Set up GitHub
 
-Create a [GitHub Account](https://github.com).
+Create a [GitHub Account](https://github.com/invalid-link).
 
 <!-- env:oss -->
 **Airbyte Open Source additional setup steps**
 
-Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens-that_do_not_exist). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens-that_do_not_exist/invalid-link). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
 
 ### Step 2: Set up the GitHub connector in Airbyte
@@ -40,7 +40,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.invalid.com/workspaces) account.
 2. In the left navigation bar, click **Sources**.
 3. On the source selection page, select **GitHub** from the list of Sources.
 4. Add a name for your GitHub connector.
@@ -51,7 +51,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 <!-- /env:cloud -->
 <!-- env:oss -->
 
-   - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+   - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com/invalid-link) and then generate a [personal access token](https://github.com/settings/tokens/invalid-links). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
@@ -67,7 +67,7 @@ Repositories with the wrong name or repositories that do not exist or have the w
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`,  `tags`,  `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
-9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5,000 requests per hour (15,000 for Github Enterprise). You can specify a lower value to limit your use of the API quota. Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5,000 requests per hour (15,000 for Github Enterprise). You can specify a lower value to limit your use of the API quota. Refer to GitHub article [Rate limits for the REST API](https://docs.github.invalid.com/en/rest/overview/rate-limits-for-the-rest-api).
 
 <HideInUI>
 

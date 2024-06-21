@@ -38,14 +38,22 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 ### Step 2: Set up the GitHub connector in Airbyte
 
 <!-- env:cloud -->
-**For Airbyte Cloud:**
+## For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**.
-3. On the source selection page, select **GitHub** from the list of Sources.
-4. Add a name for your GitHub connector.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select GitHub from the Source type dropdown.
+4. Enter a name for the GitHub connector.
+4. Set start date if needed.
 5. To authenticate:
 <!-- env:cloud -->
+
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set up start date.
+<!-- /env:oss -->
 
   - **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
 <!-- /env:cloud -->
@@ -188,6 +196,12 @@ Your token should have at least the `repo` scope. Depending on which streams you
 * Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
 
 </details>
+
+### Tutorials
+
+Now that you have set up the GitHub source connector, check out the following GitHub tutorials:
+
+See github guidelines here.
 
 ## Changelog
 
