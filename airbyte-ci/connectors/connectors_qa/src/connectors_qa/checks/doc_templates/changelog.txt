@@ -1,3 +1,0 @@
-<details>
-  <summary>Expand to review</summary>
-</details>
