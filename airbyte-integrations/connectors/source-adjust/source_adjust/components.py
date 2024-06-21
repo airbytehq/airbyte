@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
-
 import source_adjust.model
 
 
