@@ -61,7 +61,7 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         mock_post.return_value.status_code = 200
         mock_post.return_value.json.return_value = {'data': 'test'}
 
-        test_rows = list([{"strcol": f"{i}", "numcol": i} for i in range(1000)])
+        test_rows = list([{"strcol": f"{i}", "numcol": i} for i in range(5000)])
         
         self.gbt.add_rows(test_rows)
 

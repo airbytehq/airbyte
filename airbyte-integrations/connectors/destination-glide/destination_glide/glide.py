@@ -16,16 +16,18 @@ ALLOWED_COLUMN_TYPES = [
     "dateTime",
     "json",
 ]
-        
+
+
 class Column(dict):
     """
     Represents a Column in the glide API.
     NOTE: inherits from dict to be serializable to json.
     """
+
     def __init__(self, id: str, type: str):
         if type not in ALLOWED_COLUMN_TYPES:
             raise ValueError(f"Column type {type} not allowed. Must be one of {ALLOWED_COLUMN_TYPES}")  # nopep8
-        dict.__init__(self, id=id, type={"kind":type}, displayName=id)
+        dict.__init__(self, id=id, type={"kind": type}, displayName=id)
 
     def id(self) -> str:
         return self['id']
@@ -41,6 +43,7 @@ class Column(dict):
 
     def __repr__(self):
         return f"Column(id='{self.id()}', type='{self.type()}')"
+
 
 class GlideBigTableBase(ABC):
     def headers(self) -> Dict[str, str]:
@@ -73,13 +76,6 @@ class GlideBigTableBase(ABC):
         pass
 
     @abstractmethod
-    def rows(self) -> Iterator[BigTableRow]:
-        """
-        Gets the rows as of the Glide Big Table.
-        """
-        pass
-
-    @abstractmethod
     def delete_all(self) -> None:
         """
         Deletes all rows in the table.
@@ -107,7 +103,7 @@ class GlideBigTableFactory:
             "mutations": GlideBigTableMutationsStrategy()
         }
         if strategy not in implementation_map:
-            raise ValueError(f"Strategy '{strategy}' not found. Expected one of '{implmap.keys()}'.")
+            raise ValueError(f"Strategy '{strategy}' not found. Expected one of '{implmap.keys()}'.")  # nopep8
         return implementation_map[strategy]
 
 
@@ -129,24 +125,6 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
         if r.status_code != 200:
             logger.error(f"prepare table request failed with status {r.status_code}: {r.text}.")  # nopep8
 
-    def rows(self) -> Iterator[BigTableRow]:
-        r = requests.get(
-            self.url(f"/tables/{self.table_id}/rows"),
-            headers=self.headers(),
-        )
-        if r.status_code != 200:
-            logger.error(f"get rows request failed with status {r.status_code}: {r.text}.")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-            r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
-
-        result = r.json()
-
-        # TODO: Paging??
-
-        # the result looks like an array of results; each result has a rows member that has an array or JSON rows:
-        for row in result:
-            for r in row['rows']:
-                yield r
-
     def delete_all(self) -> None:
         logger.warning(f"delete_all call is ignored in {type(self).__class__.__name__}")  # nopep8
         pass
@@ -161,26 +139,26 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
                 "options": {
                     "unknownColumns": "ignore"
                 }
-
             }
         )
         if r.status_code != 200:
-            logger.error(f"add rows batch failed with status {r.status_code}: {r.text}")
+            logger.error(f"add rows batch failed with status {r.status_code}: {r.text}") # nopep8
         else:
             logger.debug(f"add rows batch succeeded")
 
     def add_rows(self, rows: Iterator[BigTableRow]) -> None:
-        BATCH_SIZE = 100
-        
+        BATCH_SIZE = 500
+
         batch = []
         for row in rows:
             batch.append(row)
             if len(batch) >= BATCH_SIZE:
                 self._add_row_batch(batch)
                 batch = []
-        
+
         if len(batch) > 0:
             self._add_row_batch(batch)
+
 
 class GlideBigTableMutationsStrategy(GlideBigTableBase):
     def __init__(self):
@@ -220,7 +198,7 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         return f"{self.api_host}/{self.api_path_root}/{path}"
 
     def prepare_table(self, columns: List[Column]) -> None:
-        logger.debug(f"prepare_table for table '{self.table_id}. Expecting columns: '{[c.id for c in columns]}'.")
+        logger.debug(f"prepare_table for table '{self.table_id}. Expecting columns: '{[c.id for c in columns]}'.") # nopep8
         self.delete_all()
 
         for col in columns:
@@ -279,9 +257,10 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
             )
             if r.status_code != 200:
                 logger.error(f"delete request failed with status {r.status_code}: {r.text} trying to delete row id {row['$rowID']} with row: {row}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-                r.raise_for_status() # This will raise an HTTPError if the status is 4xx or 5xx
+                r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
             else:
-                logger.debug(f"Deleted row successfully (rowID:'{row['$rowID']}'")
+                logger.debug(
+                    f"Deleted row successfully (rowID:'{row['$rowID']}'")
 
     def add_rows_batch(self, rows: Iterator[BigTableRow]) -> None:
         mutations = []
@@ -314,16 +293,16 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         if r.status_code != 200:
             logger.error(f"add rows failed with status {r.status_code}: {r.text}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
             r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
-    
+
     def add_rows(self, rows: Iterator[BigTableRow]) -> None:
         BATCH_SIZE = 100
-        
+
         batch = []
         for row in rows:
             batch.append(row)
             if len(batch) >= BATCH_SIZE:
                 self.add_rows_batch(batch)
                 batch = []
-        
+
         if len(batch) > 0:
             self.add_rows_batch(batch)

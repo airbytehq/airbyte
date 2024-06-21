@@ -1,7 +1,7 @@
 - [+] feat: choose a strategy based on config
 - [+] chore: stop writing any record data to logs
 - [+] chore: cleanup logs generally
-- [ ] fix: "add rows failed with status 400: {"message":"More than 500 mutations"}" in mutation api (batch them to ~100 or something)
+- [+] fix: "add rows failed with status 400: {"message":"More than 500 mutations"}" in mutation api (batch them to ~100 or something)
 - [+] fix: batch row adds in rest api
 - [ ] fix: use friendly names for the properties on the config page
 - [ ] fix: ensure table_id is not optional (or come up with a way to consistently name tables to find it again and use that?)
