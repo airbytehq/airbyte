@@ -994,7 +994,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ last_record['token'] }}"
-          stop_condition: "{{ not last_record }}"
+          stop_condition: "{{ last_page_size == 0 }}"
           page_size: 1000
       partition_router:
         $ref: "#/definitions/form_id_partition_router"
