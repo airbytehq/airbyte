@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "source_name": {
+      "type": ["null", "string"]
+    },
+    "accountBalance": {
+      "type": ["null", "object"]
+    },
+    "balanceType": {
+      "type": ["null", "string"]
+    },
+    "extTransactionId": {
+      "type": ["null", "string"]
+    },
+    "feeAmount": {
+      "type": ["null", "object"]
+    },
+    "foreignExchangeQuote": {
+      "type": ["null", "object"]
+    },
+    "fundMoveDetail": {
+      "type": ["null", "object"]
+    },
+    "netAmount": {
+      "type": ["null", "object"]
+    },
+    "originalTransactionAmount": {
+      "type": ["null", "object"]
+    },
+    "receiveAmount": {
+      "type": ["null", "object"]
+    },
+    "transactionAmount": {
+      "type": ["null", "object"]
+    },
+    "transactionId": {
+      "type": ["null", "string"]
+    },
+    "transactionStatus": {
+      "type": ["null", "string"]
+    },
+    "transactionTime": {
+      "type": ["null", "string"]
+    },
+    "transactionType": {
+      "type": ["null", "string"]
+    }
+  }
+}

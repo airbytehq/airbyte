@@ -1,8 +1,8 @@
 {
   "source_name": "test_test",
-  "client_id": "SictecIn-Plixol-PRD-969e8f5f8-cdffd625",
-  "client_secret": "PRD-69e8f5f8ed65-b98f-401a-b3fd-df3f",
-  "refresh_token": "v^1.1#i^1#r^1#f^0#p^3#I^3#t^Ul4xMF8xMDpDQTAyNERDOEEyQ0Y4MDRDMkY0RTVBMkVBMkYyRjhDOV8yXzEjRV4yNjA=",
+  "client_id": "",
+  "client_secret": "",
+  "refresh_token": "",
   "marketplace_id": "EBAY_US",
   "tunnel_method":{
     "tunnel_method": "PERIODIC",

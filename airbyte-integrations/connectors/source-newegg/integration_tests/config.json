@@ -1,8 +1,8 @@
 {
-  "api_key": "2f06801e41094038b5f7a5271b89b60e",
-  "secret_key": "4f5931ab-1860-4a08-929c-ea9ffcfd3fe7",
-  "seller_id": "AG49",
-  "tunnel_method":{
+  "api_key": "",
+  "secret_key": "",
+  "seller_id": "",
+  "tunnel_method": {
     "tunnel_method": "PERIODIC",
     "days": 10
   }

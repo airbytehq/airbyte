@@ -1,13 +1,12 @@
 {
   "replication_start_date": "2022-10-11T00:00:00Z",
-  "refresh_token": "Atzr|IwEBIPdIspOPtjpRPVY29PHg_PV0cC46K9JGPqxu40TeVz_ApALXxTlOixGjLJdVwaQouXKj6Az3KagxXldc2l2J0_qK3zc9BtgJm0ZVuOOuu-4d3eTq30iFjszOzYHhWVa1DBshZUej4MIdunxFW3w5XVpnJ8qV2L5uVTAHYyMw41Wk6PvY-N8gUa90c_M5gCDfHsYfjWqJD4DMJv_drI9YOBRoD2InvKaMrimv0WWZK_6IuEPj84b-2lLHJbDow2y4nZUgoedBXPCPMHbPe9cWxxnpVQNH3Vw_tR2AXpAzJP9r4FRglbRNckyn-fIqIVXu1QQ",
-  "app_id": "amzn1.sp.solution.d76283f8-8423-4644-af33-523d71d55b95",
+  "refresh_token": "",
   "source_name": "niubi plus",
-  "lwa_app_id": "amzn1.application-oa2-client.434969ca690d4a46b523e6b5eeda41d3",
-  "lwa_client_secret": "db8f4e030b5383a01e1f5e6e82d8f2f1ffd614e322ea90c4836a1cf06b0838e8",
-  "aws_access_key": "AKIAZZVBETK5WWDOPO4Q",
-  "aws_secret_key": "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",
-  "role_arn": "arn:aws:iam::673574066875:role/sp-api-role",
+  "lwa_app_id": "",
+  "lwa_client_secret": "",
+  "aws_access_key": "",
+  "aws_secret_key": "",
+  "role_arn": "",
   "aws_environment": "PRODUCTION",
   "region": "CA"
 }

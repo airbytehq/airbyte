@@ -1,7 +1,7 @@
 {
   "source_name": "test_test",
-  "client_id": "a5f7856b-5795-4132-896b-7a626e42849e",
-  "client_secret": "BTmNluTHM4o0snNChVimWy_LtkTrfITS2TReBvcs7oM1CwYaS7YLXyFR2SVAPLPejD5KHc_O7L76JQpHXjJ_sA",
+  "client_id": "",
+  "client_secret": "",
   "tunnel_method":{
     "tunnel_method": "PERIODIC",
     "days": 7
