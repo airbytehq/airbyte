@@ -34,7 +34,6 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
   private static final String SMALLMONEY_TYPE = "SMALLMONEY";
   private static final String GEOMETRY = "GEOMETRY";
   private static final String GEOGRAPHY = "GEOGRAPHY";
-  private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss[.][SSSSSSS] XXX";
 
   private static final String DATETIME_FORMAT_MICROSECONDS = "yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]";
 
@@ -118,6 +117,24 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
     });
   }
 
+  private void registerDateTimeOffSet(final RelationalColumn field,
+                                      final ConverterRegistration<SchemaBuilder> registration) {
+    registration.register(SchemaBuilder.string(), input -> {
+      if (Objects.isNull(input)) {
+        return DebeziumConverterUtils.convertDefaultValue(field);
+      }
+
+      if (input instanceof DateTimeOffset) {
+        var offsetDateTime = ((DateTimeOffset) input).getOffsetDateTime();
+        return offsetDateTime.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER);
+      }
+
+      LOGGER.warn("Uncovered DateTimeOffSet class type '{}'. Use default converter",
+          input.getClass().getName());
+      return input.toString();
+    });
+  }
+
   private void registerDatetime(final RelationalColumn field,
                                 final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(),
@@ -142,25 +159,6 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
           return input.toString();
         });
 
-  }
-
-  private void registerDateTimeOffSet(final RelationalColumn field,
-                                      final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), input -> {
-      if (Objects.isNull(input)) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
-      }
-
-      if (input instanceof DateTimeOffset) {
-        return DataTypeUtils.toISO8601String(
-            OffsetDateTime.parse(input.toString(),
-                DateTimeFormatter.ofPattern(DEBEZIUM_DATETIMEOFFSET_FORMAT)));
-      }
-
-      LOGGER.warn("Uncovered DateTimeOffSet class type '{}'. Use default converter",
-          input.getClass().getName());
-      return input.toString();
-    });
   }
 
   private void registerTime(final RelationalColumn field,

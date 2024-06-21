@@ -39,6 +39,12 @@ import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categor
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.postgresql.PGProperty.ADAPTIVE_FETCH;
+import static org.postgresql.PGProperty.ADAPTIVE_FETCH_MAXIMUM;
+import static org.postgresql.PGProperty.CURRENT_SCHEMA;
+import static org.postgresql.PGProperty.DEFAULT_ROW_FETCH_SIZE;
+import static org.postgresql.PGProperty.MAX_RESULT_BUFFER;
+import static org.postgresql.PGProperty.PREPARE_THRESHOLD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -52,7 +58,6 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
-import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -65,6 +70,8 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -126,6 +133,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
+import org.postgresql.PGProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,6 +158,22 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_MODE_DISABLE = "disable";
   public static final String SSL_MODE_REQUIRE = "require";
 
+  public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
+      // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
+      // https://github.com/airbytehq/airbyte/issues/24796
+      PREPARE_THRESHOLD, "0",
+      DEFAULT_ROW_FETCH_SIZE, "1",
+      ADAPTIVE_FETCH, "true",
+      MAX_RESULT_BUFFER, "10percent",
+      // The implementation of adaptive fetching in the PG JDBC driver is very optimistic in its
+      // predictions. It determines the fetchSize by taking the maxResultBuffer value and dividing
+      // it by the largest row byte size encountered so far. This fails spectacularly when
+      // streaming from a table whose initial rows are smaller than the rest and therefore requires
+      // setting an upper bound on the fetchSize. Consequently, this adaptive fetching scheme is
+      // only useful to us to avoid OOMing when streaming from tables with particularly large rows,
+      // an edge case where we need to read less than 1000 rows at a time.
+      ADAPTIVE_FETCH_MAXIMUM, "1000");
+
   private List<String> schemas;
 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
@@ -161,7 +185,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
+    super(DRIVER_CLASS, PostgresStreamingQueryConfig::new, new PostgresSourceOperations());
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
@@ -180,9 +204,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
-    // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
-    // https://github.com/airbytehq/airbyte/issues/24796
-    additionalParameters.add("prepareThreshold=0");
+    for (var e : JDBC_CONNECTION_PARAMS.entrySet()) {
+      additionalParameters.add(e.getKey().getName() + EQUALS + e.getValue());
+    }
 
     final String encodedDatabaseName = URLEncoder.encode(config.get(JdbcUtils.DATABASE_KEY).asText(), StandardCharsets.UTF_8);
 
@@ -192,7 +216,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         encodedDatabaseName));
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
+      additionalParameters.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     final Map<String, String> sslParameters = parseSSLConfig(config);
@@ -210,12 +234,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     if (schemas != null && !schemas.isEmpty()) {
-      additionalParameters.add("currentSchema=" + String.join(",", schemas));
+      additionalParameters.add(CURRENT_SCHEMA.getName() + EQUALS + String.join(",", schemas));
     }
-
-    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
-
-    jdbcUrl.append(toJDBCQueryParams(sslParameters));
+    additionalParameters.addAll(toJDBCQueryParams(sslParameters));
+    jdbcUrl.append(String.join(AMPERSAND, additionalParameters));
     LOGGER.debug("jdbc url: {}", jdbcUrl);
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
@@ -229,8 +251,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public String toJDBCQueryParams(final Map<String, String> sslParams) {
-    return Objects.isNull(sslParams) ? ""
+  public List<String> toJDBCQueryParams(final Map<String, String> sslParams) {
+    return Objects.isNull(sslParams)
+        ? List.of()
         : sslParams.entrySet()
             .stream()
             .map((entry) -> {
@@ -247,7 +270,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               }
             })
             .filter(s -> Objects.nonNull(s) && !s.isEmpty())
-            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
+            .toList();
   }
 
   @Override
@@ -470,6 +493,16 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       });
     }
 
+    if (isXmin(config)) {
+      checkOperations.add(database -> {
+        if (PostgresQueryUtils.getXminStatus(database).getNumWraparound() > 0) {
+          throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
+              "which makes this sync option inefficient and can lead to higher credit consumption. " +
+              "Please change the replication method to CDC or cursor based.");
+        }
+      });
+    }
+
     return checkOperations;
   }
 
@@ -491,6 +524,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final XminStatus xminStatus;
       try {
         xminStatus = PostgresQueryUtils.getXminStatus(database);
+        if (xminStatus.getNumWraparound() > 0) {
+          throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
+              "which makes this sync option inefficient and can lead to higher credit consumption. " +
+              "Please change the replication method to CDC or cursor based.");
+        }
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -824,6 +862,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         ctidStateManager.setFileNodeHandler(fileNodeHandler);
       }
     }
+  }
+
+  @Override
+  protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), ctidStateManager);
   }
 
   @Override

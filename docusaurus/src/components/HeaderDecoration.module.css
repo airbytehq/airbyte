@@ -22,20 +22,29 @@ div.connectorMetadataCallout  {
   align-items: center;
   font-size: 0.75rem;
   font-weight: var(--ifm-font-weight-normal);
+  flex-wrap: wrap;
 }
 
 .metadataStatLabel {
   display: inline-flex;
   align-items: center;
-
   font-weight: var(--ifm-font-weight-semibold);
-  margin-right: 10px;
+  margin-right: 5px;
+  flex: 0 1 auto;
 }
 
 .metadataStatValue {
   display: inline-flex;
   align-items: center;
   margin: 0;
+  gap: 5px;
+  flex: 0 1 auto;
+  width: fit-content;
+}
+
+.deemphasizeText {
+  color: var(--color-grey-400);
+  white-space: nowrap;
 }
 
 .metadataStatValue > * {
@@ -46,13 +55,15 @@ div.connectorMetadataCallout  {
 .connectorMetadata .availability {
   display: inline-flex;
   align-items: center;
-  column-gap: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .connectorMetadata .availability > span {
   display: inline-flex;
   align-items: center;
   column-gap: 2px;
+  flex: 0 1 auto;
 }
 
 .connectorMetadata .availability .unavailable {
@@ -61,4 +72,15 @@ div.connectorMetadataCallout  {
 
 [data-theme="dark"] .connectorMetadata .availability .unavailable {
   color: var(--ifm-color-emphasis-400);
+}
+
+.metricIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metricIcon svg {
+  height: 12px;
+  width: auto;
 }

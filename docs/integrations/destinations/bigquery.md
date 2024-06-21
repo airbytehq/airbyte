@@ -218,8 +218,16 @@ tutorials:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.0   | 2024-06-21 | [39904](https://github.com/airbytehq/airbyte/pull/39904)   | Convert all production code to kotlin                   |
+| 2.7.1   | 2024-06-17 | [39526](https://github.com/airbytehq/airbyte/pull/39526)   | Internal code change for improved error reporting in case of source/platform failure (`INCOMPLETE` stream status / empty ConfiguredCatalog).                    |
+| 2.7.0   | 2024-06-17 | [38713](https://github.com/airbytehq/airbyte/pull/38713)   | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.0 before upgrading to this connector version. |
+| 2.6.3   | 2024-06-10 | [38331](https://github.com/airbytehq/airbyte/pull/38331)   | Internal code changes in preparation for future feature release                                                                                                 |
+| 2.6.2   | 2024-06-07 | [38764](https://github.com/airbytehq/airbyte/pull/38764)   | Increase message length limit to 50MiB                                                                                                                          |
 | 2.6.1   | 2024-05-29 | [38770](https://github.com/airbytehq/airbyte/pull/38770)   | Internal code change (switch to CDK artifact)                                                                                                                   |
 | 2.6.0   | 2024-05-28 | [38359](https://github.com/airbytehq/airbyte/pull/38359)   | Propagate airbyte_meta from sources; add generation_id column                                                                                                   |
 | 2.5.1   | 2024-05-22 | [38591](https://github.com/airbytehq/airbyte/pull/38591)   | Bugfix to include forward-slash when cleaning up stage                                                                                                          |
@@ -409,3 +417,5 @@ tutorials:
 | 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026)   | Add sanitized json fields in raw tables to handle quotes in column names                                                                                        |
 | 0.3.6   | 2021-06-18 | [\#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional.                                                                                                                   |
 | 0.3.4   | 2021-06-07 | [\#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option                                                                                                                                     |
+
+</details>

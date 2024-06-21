@@ -58,11 +58,11 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
-METADATA_FILE_NAME = "metadata.yaml"
 MANIFEST_FILE_NAME = "manifest.yaml"
 DOCKERFILE_FILE_NAME = "Dockerfile"
 PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
+POETRY_LOCK_FILE_NAME = "poetry.lock"
 
 STRATEGIC_CONNECTOR_THRESHOLDS = {
     "sl": 200,
@@ -612,6 +612,31 @@ class Connector:
             return None
 
         return get(connector_entry, "generated.metrics.cloud.usage")
+
+    @property
+    def image_address(self) -> str:
+        return f'{self.metadata["dockerRepository"]}:{self.metadata["dockerImageTag"]}'
+
+    @property
+    def cdk_name(self) -> str | None:
+        try:
+            return [tag.split(":")[-1] for tag in self.metadata["tags"] if tag.startswith("cdk:")][0]
+        except IndexError:
+            return None
+
+    @property
+    def base_image_address(self) -> str | None:
+        return self.metadata.get("connectorBuildOptions", {}).get("baseImage")
+
+    @property
+    def uses_base_image(self) -> bool:
+        return self.base_image_address is not None
+
+    @property
+    def base_image_version(self) -> str | None:
+        if not self.uses_base_image:
+            return None
+        return self.base_image_address.split(":")[1].split("@")[0]
 
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
