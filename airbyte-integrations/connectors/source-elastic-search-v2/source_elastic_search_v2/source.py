@@ -222,7 +222,7 @@ class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, IncrementalMixin, 
         """State setter, accept state serialized by state getter."""
         try:
             timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
-            new_timestamp_dt = timestamp_dt - timedelta(hours=7)
+            new_timestamp_dt = timestamp_dt - timedelta(hours=1)
             new_timestamp_str = new_timestamp_dt.isoformat()
             self.cursor_value = new_timestamp_str
         except KeyError:
