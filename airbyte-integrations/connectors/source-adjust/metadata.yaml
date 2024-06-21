@@ -25,7 +25,7 @@ data:
   supportLevel: community
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
