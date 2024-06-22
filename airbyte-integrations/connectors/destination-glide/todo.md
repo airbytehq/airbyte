@@ -3,10 +3,16 @@
 - [+] chore: cleanup logs generally
 - [+] fix: "add rows failed with status 400: {"message":"More than 500 mutations"}" in mutation api (batch them to ~100 or something)
 - [+] fix: batch row adds in rest api
-- [ ] fix: use friendly names for the properties on the config page
-- [ ] fix: ensure table_id is not optional (or come up with a way to consistently name tables to find it again and use that?)
 - [+] chore: unify test framework across unit/integration tests (remove pytest?)
-- [ ] chore: clean up todos
+- [+] feat: snuggle rows in batch
+- [ ] feat: support multiple streams from source by using a naming convention and discovering existing tables with GET /tables
+- [ ] fix: replace "hostname" and "path" configs with "baseUrl"
+- [ ] feat: verify actual host/api/auth connection in check: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#check
+- [ ] feat: add a default timeout everywhere per https://requests.readthedocs.io/en/latest/user/quickstart/#timeouts
+- [ ] fix: use friendly names for the properties on the config page
+
 - [ ] chore: update readme
+- [ ] chore: unit test for Column to ensure it serializes to json as expected
+- [ ] chore: remove GlideBigTableMutationsStrategy?
+- [ ] chore: clean up todos
 - [ ] chore: figure out why the dev-write script stopped working (freezes)
-- [ ] feat: make the check verify api connection and config settings

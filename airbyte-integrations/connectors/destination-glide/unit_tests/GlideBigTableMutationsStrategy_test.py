@@ -15,22 +15,22 @@ class TestGlideBigTableMutationsStrategy(unittest.TestCase):
                       self.api_path_root, self.table_id)
                       
     @patch.object(requests, 'post')
-    def test_prepare_table_valid(self, mock_post):
+    def test_set_schema_valid(self, mock_post):
         mock_post.return_value.status_code = 200
         test_columns = [
             Column('id', 'string'),
             Column('name', 'string')
         ]
-        self.gbt.prepare_table(test_columns)
+        self.gbt.set_schema(test_columns)
 
     @patch.object(requests, 'post')
-    def test_prepare_table_invalid_column(self, mock_post):
+    def test_set_schema_invalid_column(self, mock_post):
         mock_post.return_value.status_code = 200
         test_columns = [
             Column('id', 'string'),
             Column('this column wont be found', 'string')
         ]
-        self.gbt.prepare_table(test_columns)
+        self.gbt.set_schema(test_columns)
     
     @patch.object(requests, 'post')
     def test_add_rows(self, mock_post):
@@ -41,7 +41,7 @@ class TestGlideBigTableMutationsStrategy(unittest.TestCase):
       
       mock_post.return_value.status_code = 200
       
-      self.gbt.prepare_table(test_columns)
+      self.gbt.set_schema(test_columns)
 
       mock_post.reset_mock()
       test_data = [
@@ -66,7 +66,7 @@ class TestGlideBigTableMutationsStrategy(unittest.TestCase):
       
       mock_post.return_value.status_code = 200
       
-      self.gbt.prepare_table(test_columns)
+      self.gbt.set_schema(test_columns)
 
       mock_post.reset_mock()
       test_rows = list([{"strcol": f"{i}", "numcol": i} for i in range(1000)])
