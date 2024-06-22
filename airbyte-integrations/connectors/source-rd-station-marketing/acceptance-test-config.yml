@@ -3,7 +3,7 @@
 connector_image: airbyte/source-rd-station-marketing:dev
 tests:
   spec:
-    - spec_path: "source_rd_station_marketing/spec.json"
+    - spec_path: "source_rd_station_marketing/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
