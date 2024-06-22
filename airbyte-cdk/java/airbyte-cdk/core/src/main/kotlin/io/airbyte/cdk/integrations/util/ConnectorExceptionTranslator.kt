@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.cdk.integrations.util
 
@@ -14,11 +14,36 @@ private val LOGGER = KotlinLogging.logger {}
 const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
     "Could not connect with provided configuration. Error: %s"
 
+const val DATABASE_CONNECTION_ERROR: String =
+    "Encountered an error while connecting to the database error"
+
+class ConnectorErrorProfile {
+    var id: Int = 0
+    var errorClass: String? = null
+    var regexMatchingPattern: String? = null
+    var errorType: String? = null // config, transient, system
+    var externalMessage: String? = null
+    var sampleInternalMessage: String? = null
+    var githubIssues: List<String>? = null
+
+    constructor(id: Int, errorClass: String?, regexMatchingPattern: String?,
+                errorType: String?, externalMessage: String?, sampleInternalMessage: String?, githubIssues: List<String>?) {
+        this.id = id
+        this.errorClass = errorClass
+        this.regexMatchingPattern = regexMatchingPattern
+        this.errorType = errorType
+        this.externalMessage = externalMessage
+        this.sampleInternalMessage = sampleInternalMessage
+        this.githubIssues = githubIssues
+    }
+}
+
 /**
  * This abstract class defines interfaces that will be implemented by individual connectors for
  *  translating internal exception error messages to external user-friendly error messages.
  */
 abstract class ConnectorExceptionTranslator {
+
 
     /**
      * Translates an internal exception message to an external user-friendly message.
@@ -32,8 +57,9 @@ abstract class ConnectorExceptionTranslator {
             return e.message
         } else if (e is ConnectionErrorException) {
             return ErrorMessage.getErrorMessage(e.stateCode, e.errorCode, e.exceptionMessage, e)
-        } else if (isConnectorSpecificError(e) ) {
-            return translateConnectorSpecificErrorMessage(e)
+        } else {
+            val msg = translateConnectorSpecificErrorMessage(e)
+            if (msg != null) return msg
         }
 
         // if no specific translation is found, return a generic message
@@ -44,13 +70,11 @@ abstract class ConnectorExceptionTranslator {
     }
 
     /**
-     * Checks if the error is a connector specific error.
+     * Initializes the error dictionary for the connector.
      * This method should be implemented by individual connectors that wish to translate
      * connector specific error messages.
      */
-    open fun isConnectorSpecificError(e: Throwable?): Boolean {
-        return false
-    }
+    open fun initializeErrorDictionary() {}
 
     /**
      * Translates a connector specific error message to an external user-friendly message.
@@ -61,8 +85,6 @@ abstract class ConnectorExceptionTranslator {
         return null
     }
 
-
-
-
+    public open var connectorErrorDictionary: List<ConnectorErrorProfile> = listOf()
 
 }

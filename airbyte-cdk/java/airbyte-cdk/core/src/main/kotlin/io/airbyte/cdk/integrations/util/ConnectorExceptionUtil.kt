@@ -42,7 +42,10 @@ object ConnectorExceptionUtil {
             isTransientSQLException(e)
     }
 
-    fun getDisplayMessage(e: Throwable?): String? {
+    fun getDisplayMessage(e: Throwable?, translator: ConnectorExceptionTranslator?): String? {
+        if (translator != null) {
+            return translator.getExternalMessage(e);
+        }
         return if (e is ConfigErrorException) {
             e.displayMessage
         } else if (e is TransientErrorException) {
@@ -182,6 +185,7 @@ object ConnectorExceptionUtil {
             containsOneOfTheErrorMessages(e, RECOVERY_CONNECTION_EXCEPTION_MESSAGE)
     }
 
+    // MySQL error
     private fun isUnknownColumnInFieldListException(e: Throwable?): Boolean {
         return (e is SQLSyntaxErrorException &&
             e.message!!.lowercase().contains("unknown column") &&

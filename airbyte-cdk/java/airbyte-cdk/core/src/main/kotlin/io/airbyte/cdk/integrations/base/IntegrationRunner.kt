@@ -111,6 +111,7 @@ internal constructor(
 
     @Trace(operationName = "RUN_OPERATION")
     @Throws(Exception::class)
+    @JvmOverloads
     fun run(args: Array<String>,
             exceptionTranslator: ConnectorExceptionTranslator? = null) {
         val parsed = cliParser.parse(args)
@@ -241,10 +242,9 @@ internal constructor(
                             AirbyteConnectionStatus()
                                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                                 .withMessage(
-                                    exceptionTranslator?.getExternalMessage(rootConfigErrorThrowable)
-                                    //ConnectorExceptionUtil.getDisplayMessage(
-                                     //   rootConfigErrorThrowable
-                                    //)
+                                    ConnectorExceptionUtil.getDisplayMessage(
+                                        rootConfigErrorThrowable, exceptionTranslator
+                                    )
                                 )
                         )
                 )
@@ -254,14 +254,14 @@ internal constructor(
             if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
                 AirbyteTraceMessageUtility.emitConfigErrorTrace(
                     e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
+                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable, exceptionTranslator),
                 )
                 // On receiving a config error, the container should be immediately shut down.
                 System.exit(1)
             } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(
                     e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable)
+                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable, exceptionTranslator)
                 )
                 // On receiving a transient error, the container should be immediately shut down.
                 System.exit(1)
