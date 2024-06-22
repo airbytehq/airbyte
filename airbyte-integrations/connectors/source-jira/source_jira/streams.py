@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging as Logger
 import re
 import urllib.parse as urlparse
 from abc import ABC
@@ -10,7 +11,6 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream

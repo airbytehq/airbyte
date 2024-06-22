@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import logging
 import os
 import socket
 import ssl
@@ -13,7 +14,6 @@ from urllib.error import URLError
 
 import backoff
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
@@ -32,7 +32,7 @@ TIMEOUT_IN_MILLISECONDS = 3_600_000
 class Client:
     api_version: int = 13
     refresh_token_safe_delta: int = 10  # in seconds
-    logger: AirbyteLogger = AirbyteLogger()
+    logger: logging.Logger = logging.getLogger("airbyte")
     # retry on: rate limit errors, auth token expiration, internal errors
     # https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling
     # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13

@@ -1,12 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
+import logging
 import unittest
 from unittest.mock import Mock, patch
 
 import pytest
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read

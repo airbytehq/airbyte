@@ -3,9 +3,9 @@
 #
 
 
+import logging
 from typing import Any, Iterable, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
@@ -43,7 +43,7 @@ class DestinationPinecone(Destination):
         except Exception as e:
             yield AirbyteMessage(type="LOG", log=AirbyteLogger(level="ERROR", message=str(e)))
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             parsed_config = ConfigModel.parse_obj(config)
             init_status = self._init_indexer(parsed_config)
