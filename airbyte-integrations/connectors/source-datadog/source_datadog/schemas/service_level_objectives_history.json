@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$defs": {
+    "group": {
+      "$id": "group",
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "error_budget_remaining": {
+            "additionalProperties": true,
+            "properties": {},
+            "type": "object"
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": true,
+              "properties": {
+                "error_message": {
+                  "type": "string"
+                },
+                "error_type": {
+                  "type": "string"
+                }
+              }
+            },
+            "type": ["array", "null"]
+          },
+          "group": {
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "monitor_modified": {
+            "type": "integer"
+          },
+          "monitor_type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "precision": {
+            "type": "number"
+          },
+          "preview": {
+            "type": "boolean"
+          },
+          "sli_value": {
+            "type": "number"
+          },
+          "span_precision": {
+            "type": "number"
+          },
+          "uptime": {
+            "type": "number"
+          }
+        }
+      },
+      "type": ["array", "null"]
+    }
+  },
+  "additionalProperties": true,
+  "properties": {
+    "from_ts": {
+      "type": "integer"
+    },
+    "group_by": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "groups": {
+      "$ref": "#/$defs/group"
+    },
+    "monitors": {
+      "$ref": "#/$defs/group"
+    },
+    "overall": {
+      "$ref": "#/$defs/group"
+    },
+    "series": {
+      "additionalProperties": true,
+      "properties": {
+        "denominator": {
+          "additionalProperties": true,
+          "properties": {
+            "count": {
+              "type": "integer"
+            },
+            "metadata": {
+              "additionalProperties": true,
+              "properties": {
+                "aggr": {
+                  "type": "string"
+                },
+                "expression": {
+                  "type": "string"
+                },
+                "metric": {
+                  "type": "string"
+                },
+                "query_index": {
+                  "type": "integer"
+                },
+                "scope": {
+                  "type": "string"
+                },
+                "unit": {
+                  "items": {
+                    "family": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "plural": {
+                      "type": "string"
+                    },
+                    "scale_factor": {
+                      "type": "number"
+                    },
+                    "short_name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "type": "object"
+          },
+          "sum": {
+            "type": "number"
+          },
+          "values": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          }
+        },
+        "query": {
+          "type": "string"
+        },
+        "res_type": {
+          "type": "string"
+        },
+        "resp_version": {
+          "type": "integer"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "thresholds": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "to_ts": {
+      "type": "integer"
+    },
+    "type": {
+      "type": "string"
+    },
+    "type_id": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
