@@ -7,11 +7,11 @@ data:
       - amplitude.com
       - analytics.eu.amplitude.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
-  dockerImageTag: 0.3.10
+  dockerImageTag: 0.3.12
   dockerRepository: airbyte/source-amplitude
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   githubIssueLabel: source-amplitude

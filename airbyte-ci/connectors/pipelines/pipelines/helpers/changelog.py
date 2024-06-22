@@ -20,7 +20,7 @@ class ChangelogParsingException(Exception):
 class ChangelogEntry:
     date: datetime.date
     version: semver.Version
-    pr_number: int
+    pr_number: int | str
     comment: str
 
     def to_markdown(self, github_repo: str = AIRBYTE_GITHUB_REPO) -> str:
@@ -38,7 +38,7 @@ class ChangelogEntry:
         entry_matches = (
             self.date == other.date
             and self.version == other.version
-            and self.pr_number == other.pr_number
+            and str(self.pr_number) == str(other.pr_number)
             and self.comment == other.comment
         )
         return entry_matches
@@ -99,7 +99,7 @@ class Changelog:
         self.new_entries: Set[ChangelogEntry] = set()
         self.github_repo = github_repo
 
-    def add_entry(self, version: semver.Version, date: datetime.date, pull_request_number: int, comment: str) -> None:
+    def add_entry(self, version: semver.Version, date: datetime.date, pull_request_number: int | str, comment: str) -> None:
         self.new_entries.add(ChangelogEntry(date, version, pull_request_number, comment))
 
     def to_markdown(self) -> str:
@@ -110,7 +110,7 @@ class Changelog:
         all_entries = set(self.original_entries.union(self.new_entries))
         sorted_entries = sorted(
             sorted(
-                sorted(sorted(all_entries, key=attrgetter("comment"), reverse=True), key=attrgetter("pr_number"), reverse=True),
+                all_entries,
                 key=attrgetter("date"),
                 reverse=True,
             ),

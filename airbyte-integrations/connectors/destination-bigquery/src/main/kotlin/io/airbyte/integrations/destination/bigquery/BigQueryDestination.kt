@@ -39,10 +39,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts as bqConstants
 import io.airbyte.integrations.destination.bigquery.BigQueryConsumerFactory.createDirectUploadConsumer
 import io.airbyte.integrations.destination.bigquery.BigQueryConsumerFactory.createStagingConsumer
-import io.airbyte.integrations.destination.bigquery.BigQueryUtils.*
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDV2Migration
 import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDestinationState
+import io.airbyte.integrations.destination.bigquery.migrators.BigqueryAirbyteMetaAndGenerationIdMigration
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryGcsStorageOperation
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler
@@ -55,7 +55,6 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
-import org.apache.commons.lang3.StringUtils
 
 private val log = KotlinLogging.logger {}
 
@@ -63,14 +62,14 @@ class BigQueryDestination : BaseConnector(), Destination {
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
-            val datasetId = getDatasetId(config)
-            val datasetLocation = getDatasetLocation(config)
+            val datasetId = BigQueryUtils.getDatasetId(config)
+            val datasetLocation = BigQueryUtils.getDatasetLocation(config)
             val bigquery = getBigQuery(config)
-            val uploadingMethod = getLoadingMethod(config)
+            val uploadingMethod = BigQueryUtils.getLoadingMethod(config)
 
-            checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation)
+            BigQueryUtils.checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation)
 
-            val dataset = getOrCreateDataset(bigquery, datasetId, datasetLocation)
+            val dataset = BigQueryUtils.getOrCreateDataset(bigquery, datasetId, datasetLocation)
             if (dataset.location != datasetLocation) {
                 throw ConfigErrorException(
                     "Actual dataset location doesn't match to location from config",
@@ -93,12 +92,12 @@ class BigQueryDestination : BaseConnector(), Destination {
                 }
             }
 
-            val result = executeQuery(bigquery, queryConfig)
+            val result = BigQueryUtils.executeQuery(bigquery, queryConfig)
             if (result.getLeft() != null) {
                 return AirbyteConnectionStatus()
                     .withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
             } else {
-                throw ConfigErrorException(result.getRight())
+                throw ConfigErrorException(result.right)
             }
         } catch (e: Exception) {
             log.error(e) { "Check failed." }
@@ -123,7 +122,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                 StorageOptions.newBuilder()
                     .setProjectId(config[bqConstants.CONFIG_PROJECT_ID].asText())
                     .setCredentials(credentials)
-                    .setHeaderProvider(getHeaderProvider())
+                    .setHeaderProvider(BigQueryUtils.headerProvider)
                     .build()
                     .service
             val permissionsCheckStatusList: List<Boolean> =
@@ -141,7 +140,7 @@ class BigQueryDestination : BaseConnector(), Destination {
             )
 
             val gcsDestination: BaseGcsDestination = object : BaseGcsDestination() {}
-            val gcsJsonNodeConfig = getGcsJsonNodeConfig(config)
+            val gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config)
             return gcsDestination.check(gcsJsonNodeConfig)
         } catch (e: Exception) {
             val message = StringBuilder("Cannot access the GCS bucket.")
@@ -187,11 +186,10 @@ class BigQueryDestination : BaseConnector(), Destination {
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer {
-        val uploadingMethod = getLoadingMethod(config)
-        val defaultNamespace = getDatasetId(config)
-        setDefaultStreamNamespace(catalog, defaultNamespace)
-        val disableTypeDedupe = getDisableTypeDedupFlag(config)
-        val datasetLocation = getDatasetLocation(config)
+        val uploadingMethod = BigQueryUtils.getLoadingMethod(config)
+        val defaultNamespace = BigQueryUtils.getDatasetId(config)
+        val disableTypeDedupe = BigQueryUtils.getDisableTypeDedupFlag(config)
+        val datasetLocation = BigQueryUtils.getDatasetLocation(config)
         val projectId = config[bqConstants.CONFIG_PROJECT_ID].asText()
         val bigquery = getBigQuery(config)
         val rawNamespaceOverride = getRawNamespaceOverride(bqConstants.RAW_DATA_DATASET)
@@ -221,15 +219,20 @@ class BigQueryDestination : BaseConnector(), Destination {
         val parsedCatalog =
             parseCatalog(
                 sqlGenerator,
+                defaultNamespace,
                 rawNamespaceOverride.orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
                 catalog,
             )
         val destinationHandler = BigQueryDestinationHandler(bigquery, datasetLocation)
 
-        val migrations = listOf(BigQueryDV2Migration(sqlGenerator, bigquery))
+        val migrations =
+            listOf(
+                BigQueryDV2Migration(sqlGenerator, bigquery),
+                BigqueryAirbyteMetaAndGenerationIdMigration(bigquery),
+            )
 
         if (uploadingMethod == UploadingMethod.STANDARD) {
-            val bigQueryClientChunkSize = getBigQueryClientChunkSize(config)
+            val bigQueryClientChunkSize = BigQueryUtils.getBigQueryClientChunkSize(config)
             val bigQueryLoadingStorageOperation =
                 BigQueryDirectLoadingStorageOperation(
                     bigquery,
@@ -264,8 +267,8 @@ class BigQueryDestination : BaseConnector(), Destination {
         }
 
         val gcsNameTransformer = GcsNameTransformer()
-        val gcsConfig = getGcsCsvDestinationConfig(config)
-        val keepStagingFiles = isKeepFilesInGcs(config)
+        val gcsConfig = BigQueryUtils.getGcsCsvDestinationConfig(config)
+        val keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config)
         val gcsOperations =
             GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig)
 
@@ -289,7 +292,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                         bigQueryGcsStorageOperations,
                         initialStatus,
                         FileUploadFormat.CSV,
-                        V2_WITHOUT_META,
+                        V2_WITH_GENERATION,
                         disableTD
                     )
                 },
@@ -304,28 +307,18 @@ class BigQueryDestination : BaseConnector(), Destination {
         )
     }
 
-    private fun setDefaultStreamNamespace(catalog: ConfiguredAirbyteCatalog, namespace: String) {
-        // Set the default originalNamespace on streams with null originalNamespace. This means we
-        // don't
-        // need to repeat this
-        // logic in the rest of the connector.
-        // (record messages still need to handle null namespaces though, which currently happens in
-        // e.g.
-        // AsyncStreamConsumer#accept)
-        // This probably should be shared logic amongst destinations eventually.
-        for (stream in catalog.streams) {
-            if (StringUtils.isEmpty(stream.stream.namespace)) {
-                stream.stream.withNamespace(namespace)
-            }
-        }
-    }
-
     private fun parseCatalog(
         sqlGenerator: BigQuerySqlGenerator,
+        defaultNamespace: String,
         rawNamespaceOverride: String,
         catalog: ConfiguredAirbyteCatalog
     ): ParsedCatalog {
-        val catalogParser = CatalogParser(sqlGenerator, rawNamespaceOverride)
+        val catalogParser =
+            CatalogParser(
+                sqlGenerator,
+                defaultNamespace = defaultNamespace,
+                rawNamespace = rawNamespaceOverride,
+            )
 
         return catalogParser.parseCatalog(catalog)
     }
@@ -355,7 +348,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                 return bigQueryBuilder
                     .setProjectId(projectId)
                     .setCredentials(credentials)
-                    .setHeaderProvider(getHeaderProvider())
+                    .setHeaderProvider(BigQueryUtils.headerProvider)
                     .build()
                     .service
             } catch (e: IOException) {

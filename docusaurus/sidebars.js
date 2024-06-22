@@ -4,6 +4,7 @@ const {
   parseMarkdownContentTitle,
   parseFrontMatter,
 } = require("@docusaurus/utils");
+const { type } = require("os");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -112,7 +113,7 @@ const sourceMongoDB = {
     {
       type: "doc",
       label: "Migration Guide",
-      id: "integrations/sources/mongodb-v2/mongodb-v2-migrations",
+      id: "integrations/sources/mongodb-v2-migrations",
     },
     {
       type: "doc",
@@ -516,25 +517,12 @@ module.exports = {
             "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
           ],
         },
-        {
-          type: "category",
-          label: "Typing and Deduping",
-          link: {
-            type: "doc",
-            id: "using-airbyte/core-concepts/typing-deduping",
-          },
-          items: ["using-airbyte/core-concepts/basic-normalization"],
-        },
+        "using-airbyte/core-concepts/typing-deduping",
         "using-airbyte/schema-change-management",
         {
           type: "category",
           label: "Transformations",
-          items: [
-            "cloud/managing-airbyte-cloud/dbt-cloud-integration",
-            "operator-guides/transformation-and-normalization/transformations-with-sql",
-            "operator-guides/transformation-and-normalization/transformations-with-dbt",
-            "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-          ],
+          items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
         },
       ],
     },
@@ -545,7 +533,8 @@ module.exports = {
         "cloud/managing-airbyte-cloud/review-connection-status",
         "cloud/managing-airbyte-cloud/review-sync-history",
         "operator-guides/browsing-output-logs",
-        "operator-guides/reset",
+        "operator-guides/clear",
+        "operator-guides/refreshes",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
@@ -561,6 +550,7 @@ module.exports = {
       items: [
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
+        "enterprise-setup/scaling-airbyte",
         "enterprise-setup/upgrading-from-community",
       ],
     },
@@ -596,7 +586,18 @@ module.exports = {
             },
           ],
         },
-      ],
+        {
+          type: "category",
+          label: "Role-Based Access Control (RBAC)",
+          link: {
+            type: "doc",
+            id: "access-management/rbac",
+          },
+          items: [
+            {type: "doc", id: "access-management/role-mapping"},
+          ],
+        },
+      ]
     },
     {
       type: "category",
@@ -675,6 +676,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/may_2024",
         "release_notes/april_2024",
         "release_notes/march_2024",
         "release_notes/february_2024",

@@ -101,6 +101,14 @@ There is no published rate limit. However, since this data updates infrequently,
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.0   | 2022-10-17 | [#18075](https://github.com/airbytehq/airbyte/pull/18075) | 🎉 New Source: Gutendex API [low-code CDK] |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject                                     |
+| :------ |:-----------| :-------------------------------------------------------- |:--------------------------------------------|
+| 0.1.3 | 2024-06-15 | [39509](https://github.com/airbytehq/airbyte/pull/39509) | Make connector compatible with Builder      |
+| 0.1.2 | 2024-06-04 | [39017](https://github.com/airbytehq/airbyte/pull/39017) | [autopull] Upgrade base image to v1.2.1     |
+| 0.1.1 | 2024-05-21 | [38509](https://github.com/airbytehq/airbyte/pull/38509) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-17 | [#18075](https://github.com/airbytehq/airbyte/pull/18075) | 🎉 New Source: Gutendex API [low-code CDK]  |
+
+</details>

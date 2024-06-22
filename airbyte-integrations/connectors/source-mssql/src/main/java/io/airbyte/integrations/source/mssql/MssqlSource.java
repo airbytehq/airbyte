@@ -9,6 +9,7 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConver
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.*;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
+import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.isCdc;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.*;
@@ -37,11 +38,15 @@ import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
@@ -214,7 +219,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final JsonNode config) {
     final AirbyteCatalog catalog = super.discover(config);
 
     if (MssqlCdcHelper.isCdc(config)) {
@@ -428,11 +433,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
             new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), getQuoteString(), initialLoadStateManager,
                 Optional.of(namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(namespacePair))),
                 getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), getQuoteString()));
-
+        // Cursor based incremental iterators are decorated with start and complete status traces
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
             tableNameToTable,
-            emittedAt));
+            emittedAt, true, true));
 
         // Build Cursor based iterator
         final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
@@ -468,7 +473,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
     final var emptyHistory = new AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>>(Optional.empty(), false);
     final var schemaHistoryManager = AirbyteSchemaHistoryStorage.initializeDBHistory(emptyHistory, cdcStateHandler.compressSchemaHistoryForState());
-    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(properties, config, catalog);
+    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(properties, config, catalog, Collections.emptyList());
     final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(propertiesManager);
     tableSnapshotPublisher.start(queue, offsetManager, Optional.of(schemaHistoryManager));
 
@@ -491,6 +496,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected int getStateEmissionFrequency() {
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
+
+  @Override
+  protected void checkUserHasPrivileges(JsonNode config, JdbcDatabase database) {}
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
     return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
@@ -634,7 +642,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       return;
     }
     var sourceConfig = database.getSourceConfig();
-    if (MssqlCdcHelper.isCdc(sourceConfig)) {
+    if (isCdc(sourceConfig)) {
       initialLoadStateManager = getMssqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString());
     } else {
       final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
@@ -651,7 +659,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                             final ConfiguredAirbyteCatalog catalog,
                                                             final StateManager stateManager) {
     var sourceConfig = database.getSourceConfig();
-    if (MssqlCdcHelper.isCdc(sourceConfig)) {
+    if (isCdc(sourceConfig)) {
       return getMssqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, airbyteStream, Instant.now(),
           getQuoteString())
               .get();
@@ -670,6 +678,24 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
 
     return false;
+  }
+
+  @Override
+  protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), initialLoadStateManager);
+  }
+
+  @NotNull
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(@NotNull final ConfiguredAirbyteStream airbyteStream,
+                                                                       @NotNull final AutoCloseableIterator<AirbyteMessage> streamItrator) {
+    final var pair =
+        new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    final var starterStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
+    final var completeStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
+    return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
   }
 
 }

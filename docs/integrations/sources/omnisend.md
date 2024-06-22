@@ -14,10 +14,10 @@ This source can sync data from the [Omnisend API](https://api-docs.omnisend.com/
 
 ### Features
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
+| Feature           | Supported?\(Yes/No\) |
+|:------------------|:---------------------|
+| Full Refresh Sync | Yes                  |
+| Incremental Sync  | No                   |
 
 ### Performance considerations
 
@@ -31,6 +31,12 @@ The connector has a rate limit of 400 requests per 1 minute.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.1.1   | 2024-05-30 | [38533](https://github.com/airbytehq/airbyte/pull/38533) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-25 | [18577](https://github.com/airbytehq/airbyte/pull/18577) | Initial commit |
+
+</details>

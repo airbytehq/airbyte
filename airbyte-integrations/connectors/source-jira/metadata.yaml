@@ -6,11 +6,11 @@ data:
     hosts:
       - ${domain}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 2.0.1
+  dockerImageTag: 3.0.2
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   githubIssueLabel: source-jira
@@ -30,6 +30,12 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      3.0.0:
+        message: "Primary key for Workflows stream has been changed from `Id` to [`entityId`, `name`]. This change of pk makes the stream compatible with more types of destinations."
+        upgradeDeadline: "2024-07-02"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["workflows"]
       2.0.0:
         message: "The source Jira connector is being migrated from the Python CDK to our declarative low-code CDK. Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally, an issue in the `ProjectAvatars` stream has been fixed. After updating, please reset your source before resuming syncs. For more information, see our migration documentation for source Jira."
         upgradeDeadline: "2024-05-31"
