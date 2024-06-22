@@ -1,4 +1,5 @@
 {
   "api_key": "<invalid-key>",
-  "start_date": "2022-10-25"
+  "start_date": "2022-10-25",
+  "include_archived": "no"
 }

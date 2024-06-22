@@ -18,7 +18,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /applications.list
+          path: /application.list
           http_method: POST
           request_body_json:
             createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
@@ -34,14 +34,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -69,14 +65,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -104,14 +96,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -139,14 +127,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -174,14 +158,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -209,14 +189,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -244,18 +220,47 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/feedback_form_definitions"
+    interview_plans:
+      type: DeclarativeStream
+      name: interview_plans
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /interviewPlan.list
+          http_method: POST
+          request_body_json:
+            includeArchived: '{{ config["include_archived"] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interview_plans"
     interview_schedules:
       type: DeclarativeStream
       name: interview_schedules
@@ -281,18 +286,87 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/interview_schedules"
+    interview_stages:
+      type: DeclarativeStream
+      name: interview_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/streams/interview_plans"
+              parent_key: id
+              partition_field: plan_id
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /interviewStage.list
+          http_method: POST
+          request_body_json:
+            interviewPlanId: "{{ stream_slice.plan_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interviews"
+    interviews:
+      type: DeclarativeStream
+      name: interviews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /interview.list
+          http_method: POST
+          request_body_json:
+            includeArchived: '{{ config["include_archived"] }}'
+            includeNonSharedInterviews: 'True'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interviews"
     job_postings:
       type: DeclarativeStream
       name: job_postings
@@ -316,14 +390,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -351,14 +421,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -386,14 +452,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -421,18 +483,45 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/offers"
+    openings:
+      type: DeclarativeStream
+      name: openings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /opening.list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/openings"
     sources:
       type: DeclarativeStream
       name: sources
@@ -456,14 +545,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -479,6 +564,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /user.list
           http_method: POST
+          request_body_json:
+            includeDeactivated: "{{ config['include_archived'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -491,14 +578,10 @@ definitions:
             type: RequestOption
             inject_into: body_json
             field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
+            cursor_value: '{{ response.nextCursor }}'
+            stop_condition: '{{ not response.moreDataAvailable }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -519,11 +602,15 @@ streams:
   - $ref: "#/definitions/streams/custom_fields"
   - $ref: "#/definitions/streams/departments"
   - $ref: "#/definitions/streams/feedback_form_definitions"
+  - $ref: "#/definitions/streams/interview_plans"
   - $ref: "#/definitions/streams/interview_schedules"
+  - $ref: "#/definitions/streams/interview_stages"
+  - $ref: "#/definitions/streams/interviews"
   - $ref: "#/definitions/streams/job_postings"
   - $ref: "#/definitions/streams/jobs"
   - $ref: "#/definitions/streams/locations"
   - $ref: "#/definitions/streams/offers"
+  - $ref: "#/definitions/streams/openings"
   - $ref: "#/definitions/streams/sources"
   - $ref: "#/definitions/streams/users"
 
@@ -554,7 +641,16 @@ spec:
           this date will not be replicated.
         examples:
           - "2017-01-25T00:00:00Z"
+        format: date-time
         order: 1
+      include_archived:
+        type: boolean
+        title: Include archived records
+        description: >-
+          Whether to include archived records. If true, archived records will be
+          included in streams that would otherwise filter those records out.
+        default: false
+        order: 2
     additionalProperties: true
 
 metadata:
@@ -566,11 +662,15 @@ metadata:
     custom_fields: false
     departments: false
     feedback_form_definitions: false
+    interview_plans: false
     interview_schedules: false
+    interview_stages: false
+    interviews: false
     job_postings: false
     jobs: false
     locations: false
     offers: false
+    openings: false
     sources: false
     users: false
 
@@ -580,27 +680,23 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      archiveReason:
+      appliedViaJobPostingId:
         type:
           - "null"
           - string
+      archiveReason:
+        $ref: "#/schemas/archive_reasons"
       candidate:
-        type:
-          - "null"
-          - object
+        $ref: "#/schemas/candidates"
       createdAt:
         type:
           - "null"
           - string
         format: date-time
       creditedToUser:
-        type:
-          - "null"
-          - object
+        $ref: "#/schemas/users"
       currentInterviewStage:
-        type:
-          - "null"
-          - object
+        $ref: "#/schemas/interview_stages"
       customFields:
         type:
           - "null"
@@ -614,9 +710,7 @@ schemas:
           - "null"
           - string
       job:
-        type:
-          - "null"
-          - object
+        $ref: "#/schemas/jobs"
       status:
         type:
           - "null"
@@ -626,6 +720,8 @@ schemas:
           - "null"
           - string
         format: date-time
+      source:
+        $ref: "#/schemas/sources"
   archive_reasons:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -670,9 +766,11 @@ schemas:
     additionalProperties: true
     properties:
       applicationIds:
-        type:
-          - "null"
-          - array
+        type: array
+        items:
+          type:
+            - "null"
+            - string
       company:
         type:
           - "null"
@@ -685,6 +783,8 @@ schemas:
         type:
           - "null"
           - array
+        items:
+          $ref: "#/schemas/contacts"
       fileHandles:
         type:
           - "null"
@@ -701,14 +801,16 @@ schemas:
         type:
           - "null"
           - array
+        items:
+          $ref: "#/schemas/contacts"
       position:
         type:
           - "null"
           - string
       primaryEmailAddress:
-        type:
-          - "null"
-          - object
+        $ref: "#/schemas/contacts"
+      primaryPhoneNumber:
+        $ref: "#/schemas/contacts"
       resumeFileHandle:
         type:
           - "null"
@@ -725,6 +827,10 @@ schemas:
         type:
           - "null"
           - array
+      creditedToUser:
+        $ref: "#/schemas/users"
+      source:
+        $ref: "#/schemas/sources"
   custom_fields:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -804,6 +910,23 @@ schemas:
         type:
           - "null"
           - string
+  interview_plans:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      isArchived:
+        type:
+          - "null"
+          - boolean
   interview_schedules:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -822,6 +945,114 @@ schemas:
           - "null"
           - string
       status:
+        type:
+          - "null"
+          - string
+      interviewEvents:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            interviewId:
+              type:
+                - "null"
+                - string
+            interviewScheduleId:
+              type:
+                - "null"
+                - string
+            interviewerUserIds:
+              type: array
+              items:
+                type:
+                  - "null"
+                  - string
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            startTime:
+              type:
+                - "null"
+                - string
+              format: date-time
+            endTime:
+              type:
+                - "null"
+                - string
+              format: date-time
+            feedbackLink:
+              type:
+                - "null"
+                - string
+            location:
+              type:
+                - "null"
+                - string
+            meetingLink:
+              type:
+                - "null"
+                - string
+  interview_stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      orderInInterviewPlan:
+        type:
+          - "null"
+          - integer
+      interviewPlanId:
+        type:
+          - "null"
+          - string
+  interviews:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      isArchived:
+        type:
+          - "null"
+          - boolean
+      instructionsHtml:
+        type:
+          - "null"
+          - string
+      instructionsPlain:
+        type:
+          - "null"
+          - string
+      jobId:
+        type:
+          - "null"
+          - string
+      feedbackFormDefinitionId:
         type:
           - "null"
           - string
@@ -983,6 +1214,114 @@ schemas:
         type:
           - "null"
           - object
+  openings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      openedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      closedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      isArchived:
+        type:
+          - "null"
+          - boolean
+      openingState:
+        type:
+          - "null"
+          - string
+      latestVersion:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          identifier:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          authorId:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          teamId:
+            type:
+              - "null"
+              - string
+          targetHireDate:
+            type:
+              - "null"
+              - string
+            format: date
+          targetStartDate:
+            type:
+              - "null"
+              - string
+            format: date
+          isBackfill:
+            type:
+              - "null"
+              - boolean
+          employmentType:
+            type:
+              - "null"
+              - string
+          locationIds:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          hiringTeam:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                email:
+                  type:
+                    - "null"
+                    - string
+                firstName:
+                  type:
+                    - "null"
+                    - string
+                lastName:
+                  type:
+                    - "null"
+                    - string
+                role:
+                  type:
+                    - "null"
+                    - string
+                userId:
+                  type:
+                    - "null"
+                    - string
   sources:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1021,3 +1360,22 @@ schemas:
         type:
           - "null"
           - string
+  contacts:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      value:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      isPrimary:
+        type:
+          - "null"
+          - boolean
