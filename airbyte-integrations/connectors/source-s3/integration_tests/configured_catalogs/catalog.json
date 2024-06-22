@@ -1,0 +1,73 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "age": {
+              "type": ["null", "integer"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "email": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "gender": {
+              "type": ["null", "string"]
+            },
+            "height": {
+              "type": ["null", "number"]
+            },
+            "weight": {
+              "type": ["null", "integer"]
+            },
+            "language": {
+              "type": ["null", "string"]
+            },
+            "telephone": {
+              "type": ["null", "string"]
+            },
+            "blood_type": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"]
+            },
+            "occupation": {
+              "type": ["null", "string"]
+            },
+            "updated_at": {
+              "type": ["null", "string"]
+            },
+            "nationality": {
+              "type": ["null", "string"]
+            },
+            "academic_degree": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_source_file_last_modified"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
