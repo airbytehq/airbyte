@@ -37,6 +37,7 @@ In order to connect, you need:
 
 | Version | Date       | Pull Request                                              | Subject                        |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------- |
+| 0.1.5 | 2024-06-22 | [39991](https://github.com/airbytehq/airbyte/pull/39991) | Update dependencies |
 | 0.1.4 | 2024-06-04 | [39088](https://github.com/airbytehq/airbyte/pull/39088) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-05-21 | [38499](https://github.com/airbytehq/airbyte/pull/38499) | [autopull] base image + poetry + up_to_date |
 | 0.1.2   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector           |
