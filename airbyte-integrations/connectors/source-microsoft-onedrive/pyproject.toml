@@ -19,7 +19,7 @@ include = "source_microsoft_onedrive"
 python = "^3.9,<3.12"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
-msal = "==1.25.0"
+msal = "==1.28.0"
 # override transitive dependency that had a vulnerability https://nvd.nist.gov/vuln/detail/CVE-2023-6730
 transformers = "4.38.2"
 
