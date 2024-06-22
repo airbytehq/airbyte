@@ -16,7 +16,7 @@ import datetime
 
 from .glide import Column, GlideBigTableFactory
 import json
-from .log import getLogger
+from .log import LOG_LEVEL_DEFAULT
 import logging
 import requests
 from typing import Any, Iterable, Mapping
@@ -25,7 +25,8 @@ import uuid
 CONFIG_GLIDE_API_VERSION_DEFAULT = "tables"
 CONFIG_GLIDE_API_HOST_DEFAULT = "https://api.glideapp.io"
 
-logger = getLogger()
+logger = logging.getLogger(__name__)
+logger.setLevel(LOG_LEVEL_DEFAULT)
 
 
 def mapJsonSchemaTypeToGlideType(json_type: str) -> str:

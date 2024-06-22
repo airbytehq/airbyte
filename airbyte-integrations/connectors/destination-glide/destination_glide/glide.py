@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
+from .log import LOG_LEVEL_DEFAULT
+import logging
 import requests
 from typing import Dict, Any, Iterator, List
 
-from .log import getLogger
-
-logger = getLogger()
+logger = logging.getLogger(__name__)
+logger.setLevel(LOG_LEVEL_DEFAULT)
 
 BigTableRow = Dict[str, Any]
 
@@ -201,6 +202,7 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
             r.raise_for_status()
         except Exception as e:
             raise Exception(f"failed to finalize stash") from e  # nopep8
+        logger.info(f"Successfully finalized record stash for table '{self.table_id}' (stash ID '{self.stash_id}')")
 
     def commit(self) -> None:
         self.raise_if_set_schema_not_called()

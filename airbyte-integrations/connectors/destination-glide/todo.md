@@ -4,7 +4,7 @@
 - [+] fix: "add rows failed with status 400: {"message":"More than 500 mutations"}" in mutation api (batch them to ~100 or something)
 - [+] fix: batch row adds in rest api
 - [+] chore: unify test framework across unit/integration tests (remove pytest?)
-- [+] feat: snuggle rows in batch
+- [+] feat: snuggle rows in a batch
 - [ ] feat: support multiple streams from source by using a naming convention and discovering existing tables with GET /tables
 - [ ] fix: replace "hostname" and "path" configs with "baseUrl"
 - [ ] feat: verify actual host/api/auth connection in check: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#check

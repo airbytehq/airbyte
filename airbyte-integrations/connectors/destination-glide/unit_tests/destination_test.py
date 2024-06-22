@@ -13,6 +13,7 @@ from airbyte_cdk.models import (
 from datetime import datetime
 from destination_glide import DestinationGlide
 from destination_glide.glide import GlideBigTableBase, GlideBigTableFactory
+from destination_glide.log import LOG_LEVEL_DEFAULT
 import json
 import logging
 import random
@@ -48,6 +49,7 @@ def table_schema() -> str:
 
 def AirbyteLogger() -> logging.Logger:
     logger = logging.getLogger('airbyte')
+    logger.setLevel(LOG_LEVEL_DEFAULT)
 
 
 def configured_catalog(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
