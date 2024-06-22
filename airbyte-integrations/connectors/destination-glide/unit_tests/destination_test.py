@@ -52,9 +52,8 @@ def AirbyteLogger() -> logging.Logger:
     logger.setLevel(LOG_LEVEL_DEFAULT)
 
 
-def configured_catalog(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
+def create_configured_catalog_default(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
     overwrite_stream = ConfiguredAirbyteStream(
-        # TODO: I'm not sure if we should expect incoming streams SyncMode.incremental and only the destination to be full_refresh or they should
         stream=AirbyteStream(name=test_table_name, json_schema=table_schema,
                              supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
@@ -63,16 +62,16 @@ def configured_catalog(test_table_name: str, table_schema: str) -> ConfiguredAir
     return ConfiguredAirbyteCatalog(streams=[overwrite_stream])
 
 
-def create_airbyte_message_record(test_table_name: str, record_index: int):
+def create_airbyte_message_record(stream_name: str, record_index: int):
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name, data={"key_str": f"value{record_index}", "key_int": record_index}, emitted_at=int(datetime.now().timestamp()) * 1000
+            stream=stream_name, data={"key_str": f"value{record_index}", "key_int": record_index}, emitted_at=int(datetime.now().timestamp()) * 1000
         ),
     )
 
 
-def airbyte_message_state(test_table_name: str):
+def create_airbyte_message_state(stream_name: str):
     return AirbyteMessage(
         type=Type.STATE,
         state=AirbyteStateMessage(
@@ -107,12 +106,12 @@ class TestDestinationGlide(unittest.TestCase):
 
         generator = destination.write(
             config=create_default_config(),
-            configured_catalog=configured_catalog(self.test_table_name,
-                                                  table_schema=table_schema()),
+            configured_catalog=create_configured_catalog_default(self.test_table_name,
+                                                                 table_schema=table_schema()),
             input_messages=[
                 create_airbyte_message_record(self.test_table_name, 1),
                 create_airbyte_message_record(self.test_table_name, 2),
-                airbyte_message_state(self.test_table_name)
+                create_airbyte_message_state(self.test_table_name)
             ]
         )
 
@@ -149,16 +148,16 @@ class TestDestinationGlide(unittest.TestCase):
         input_messages.extend([create_airbyte_message_record(
             self.test_table_name, i) for i in range(RECORD_COUNT)])
         # create first checkpoint record:
-        input_messages.append(airbyte_message_state(self.test_table_name))
+        input_messages.append(create_airbyte_message_state(self.test_table_name))
         input_messages.extend([create_airbyte_message_record(
             self.test_table_name, i) for i in range(RECORD_COUNT)])
         # create second checkpoint record:
-        input_messages.append(airbyte_message_state(self.test_table_name))
+        input_messages.append(create_airbyte_message_state(self.test_table_name))
 
         generator = destination.write(
             config=create_default_config(),
-            configured_catalog=configured_catalog(self.test_table_name,
-                                                  table_schema=table_schema()),
+            configured_catalog=create_configured_catalog_default(self.test_table_name,
+                                                                 table_schema=table_schema()),
             input_messages=input_messages
         )
 
@@ -179,6 +178,50 @@ class TestDestinationGlide(unittest.TestCase):
         self.assertEqual(
             "commit", mock_bigtable.mock_calls[mock_bigtable.call_count - 1][CALL_METHOD_NAME_INDEX])
 
+    @patch.object(GlideBigTableFactory, "create", wraps=CreateMockGlideBigTable())
+    def test_write_with_multiple_streams(self, mock_factory: Callable):
+        """
+        multiple streams should cause multiple tables to be created, and multiple stashes to be committed
+        """
+        # mock_bigtable = CreateMockGlideBigTable()
+        # mock_factory.return_value = mock_bigtable
+
+        destination = DestinationGlide()
+
+        # create a catalog with multiple streams:
+        streamA = ConfiguredAirbyteStream(
+            stream=AirbyteStream(name="stream-a", json_schema=table_schema(),
+                                 supported_sync_modes=[SyncMode.incremental]),
+            sync_mode=SyncMode.incremental,
+            destination_sync_mode=DestinationSyncMode.overwrite,
+        )
+        streamB = ConfiguredAirbyteStream(
+            stream=AirbyteStream(name="stream-b", json_schema=table_schema(),
+                                 supported_sync_modes=[SyncMode.incremental]),
+            sync_mode=SyncMode.incremental,
+            destination_sync_mode=DestinationSyncMode.overwrite,
+        )
+
+        configured_catalog = ConfiguredAirbyteCatalog(
+            streams=[streamA, streamB])
+
+        generator = destination.write(
+            config=create_default_config(),
+            configured_catalog=configured_catalog,
+            input_messages=[
+                create_airbyte_message_record("stream-a", 0),
+                create_airbyte_message_record("stream-b", 0),
+                create_airbyte_message_state("stream-a"),
+                create_airbyte_message_state("stream-b")
+            ]
+        )
+
+        # invoke the generator to get the results:
+        result = list(generator)
+
+        # multiple tables should have been created, and multiple stashes been committed
+        self.assertEqual(mock_factory.call_count, 2)
+
     @patch.object(GlideBigTableFactory, "create")
     def test_with_invalid_column_types(self, mock_factory: Callable):
         mock_bigtable = CreateMockGlideBigTable()
@@ -198,12 +241,12 @@ class TestDestinationGlide(unittest.TestCase):
 
         generator = destination.write(
             config=create_default_config(),
-            configured_catalog=configured_catalog(self.test_table_name,
-                                                  table_schema=test_schema),
+            configured_catalog=create_configured_catalog_default(self.test_table_name,
+                                                                 table_schema=test_schema),
             input_messages=[
                 create_airbyte_message_record(self.test_table_name, 1),
                 create_airbyte_message_record(self.test_table_name, 2),
-                airbyte_message_state(self.test_table_name)
+                create_airbyte_message_state(self.test_table_name)
             ]
         )
 
@@ -218,33 +261,3 @@ class TestDestinationGlide(unittest.TestCase):
         null_column = [col for col in schema_calls if col.id()
                        == "obj_null_col"][0]
         self.assertEqual(null_column.type(), "string")
-
-    @patch.object(GlideBigTableFactory, "create")
-    def test_api_version_passes_correct_strategy(self, mock_factory: Mock):
-        mock_bigtable = CreateMockGlideBigTable()
-        mock_factory.return_value = mock_bigtable
-
-        config = {
-            "api_host": "foo",
-            "api_path_root": "bar",
-            "api_key": "baz",
-            "table_id": "buz",
-            "glide_api_version": "mutations"
-        }
-
-        destination = DestinationGlide()
-        generator = destination.write(
-            config=config,
-            configured_catalog=configured_catalog(
-                self.test_table_name, table_schema=table_schema()),
-            input_messages=[
-                create_airbyte_message_record(self.test_table_name, 1),
-                create_airbyte_message_record(self.test_table_name, 2),
-                airbyte_message_state(self.test_table_name)
-            ]
-        )
-        # expecting only to return the state message:
-        result = list(generator)
-
-        passed_strategy = mock_factory.call_args[0][0]
-        self.assertEqual("mutations", passed_strategy)

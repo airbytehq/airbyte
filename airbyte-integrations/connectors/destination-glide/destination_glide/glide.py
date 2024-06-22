@@ -64,16 +64,15 @@ class GlideBigTableBase(ABC):
     The protocol is to call `init`, `set_schema`, `add_rows` one or more times, and `commit` in that order.
     """
 
-    def init(self, api_host, api_key, api_path_root, table_id):
+    def init(self, api_host, api_key, api_path_root, table_name):
         """
         Sets the connection information for the table.
         """
         self.api_host = api_host
         self.api_key = api_key
         self.api_path_root = api_path_root
-        self.table_id = table_id
+        self.table_name = table_name
         # todo: validate args
-        pass
 
     @abstractmethod
     def set_schema(self, columns: List[Column]) -> None:
@@ -108,8 +107,7 @@ class GlideBigTableFactory:
         Creates a new instance of the default implementation for the GlideBigTable API client.
         """
         implementation_map = {
-            "tables": GlideBigTableRestStrategy(),
-            "mutations": GlideBigTableMutationsStrategy()
+            "tables": GlideBigTableRestStrategy()
         }
         if strategy not in implementation_map:
             raise ValueError(f"Strategy '{strategy}' not found. Expected one of '{implmap.keys()}'.")  # nopep8
@@ -135,13 +133,13 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
         self.columns = columns
         # Create stash we can stash records into for later
         r = requests.post(
-            self.url(f"/stashes"),
+            self.url(f"stashes"),
             headers=self.headers(),
         )
         try:
             r.raise_for_status()
         except Exception as e:
-            raise Exception(f"failed to create stash") from e  # nopep8
+            raise Exception(f"failed to create stash. Response was '{r.text}'") from e  # nopep8
 
         result = r.json()
         self.stash_id = result["data"]["stashID"]
@@ -157,7 +155,7 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
         # TODO: add rows to stash/serial https://web.postman.co/workspace/glideapps-Workspace~46b48d24-5fc1-44b6-89aa-8d6751db0fc5/request/9026518-c282ef52-4909-4806-88bf-08510ee80770
         logger.debug(f"Adding rows batch with size {len(rows)}")
         r = requests.post(
-            self.url(f"/stashes/{self.stash_id}/{self.stash_serial}"),
+            self.url(f"stashes/{self.stash_id}/{self.stash_serial}"),
             headers=self.headers(),
             json={
                 "data": rows,
@@ -170,9 +168,9 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
         try:
             r.raise_for_status()
         except Exception as e:
-            raise Exception(f"failed to add rows batch for serial '{self.stash_serial}'") from e  # nopep8
+            raise Exception(f"failed to add rows batch for serial '{self.stash_serial}'. Response was '{r.text}'") from e  # nopep8
 
-        logger.info(f"Add rows batch for serial '{self.stash_serial}' succeeded.")  # nopep8
+        logger.info(f"Added {len(rows)} rows as batch for serial '{self.stash_serial}' successfully.")  # nopep8
         self.stash_serial += 1
 
     def add_rows(self, rows: Iterator[BigTableRow]) -> None:
@@ -184,10 +182,32 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
             batch = rows[i:i + min(BATCH_SIZE, len(rows) - i)]
             self._add_row_batch(batch)
 
-    def finalize_stash(self) -> None:
-        # overwrite the existing table with the right schema and rows:
+    def create_table_from_stash(self) -> None:
+        logger.info(f"Creating new table for table name '{self.table_name}'...") # nopep8
+        r = requests.post(
+            self.url(f"tables"),
+            headers=self.headers(),
+            json={
+                "name": self.table_name,
+                "schema": {
+                    "columns": self.columns
+                },
+                "rows": {
+                    "$stashID": self.stash_id
+                }
+            }
+        )
+        try:
+            r.raise_for_status()
+        except Exception as e:
+            raise Exception(f"failed to create table '{self.table_name}'. Response was '{r.text}'.") from e  # nopep8
+
+        logger.info(f"Creating table '{self.table_name}' succeeded.")
+
+    def overwrite_table_from_stash(self, table_id) -> None:
+        # overwrite the specified table's schema and rows with the stash:
         r = requests.put(
-            self.url(f"/tables/{self.table_id}"),
+            self.url(f"tables/{table_id}"),
             headers=self.headers(),
             json={
                 "schema": {
@@ -201,161 +221,35 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
         try:
             r.raise_for_status()
         except Exception as e:
-            raise Exception(f"failed to finalize stash") from e  # nopep8
-        logger.info(f"Successfully finalized record stash for table '{self.table_id}' (stash ID '{self.stash_id}')")
+            raise Exception(f"failed to overwrite table '{table_id}'. Response was '{r.text}'") from e  # nopep8
 
     def commit(self) -> None:
         self.raise_if_set_schema_not_called()
-        self.finalize_stash()
-
-
-class GlideBigTableMutationsStrategy(GlideBigTableBase):
-    def __init__(self):
-        # TODO: hardcoded for now using old api
-        self.hardcoded_app_id = "Ix9CEuP6DiFugfjhSG5t"
-        self.hardcoded_column_lookup = {
-            '_airtable_id': {'type': "string", 'name': "Name"},
-            '_airtable_created_time': {'type': "date-time", 'name': "AwkFL"},
-            '_airtable_table_name': {'type': "string", 'name': "QF0zI"},
-            'id': {'type': "string", 'name': "tLPjZ"},
-            'name': {'type': "string", 'name': "1ZqF1"},
-            'host_id': {'type': "string", 'name': "B7fYe"},
-            'host_name': {'type': "string", 'name': "oyVzO"},
-            'neighbourhood_group': {'type': "string", 'name': "15J8U"},
-            'neighbourhood': {'type': "string", 'name': "Fy28U"},
-            'latitude': {'type': "number", 'name': "TLpMC"},
-            'longitude': {'type': "number", 'name': "oazQO"},
-            'room_type': {'type': "string", 'name': "TPJDZ"},
-            'price': {'type': "number", 'name': "7xzlG"},
-            'minimum_nights': {'type': "number", 'name': "usoY5"},
-            'number_of_reviews': {'type': "number", 'name': "XFXmR"},
-            'last_review': {'type': "date-time", 'name': "oseZl"},
-            'reviews_per_month': {'type': "number", 'name': "alw2R"},
-            'calculated_host_listings_count': {'type': "number", 'name': "hKws0"},
-            'availability_365': {'type': "number", 'name': "qZsgl"},
-            'number_of_reviews_ltm': {'type': "number", 'name': "rWisS"},
-            'license': {'type': "string", 'name': "7PVig"}
-        }
-
-    def headers(self) -> Dict[str, str]:
-        return {
-            "Content-Type": "application/json",
-            f"Authorization": f"Bearer {self.api_key}"
-        }
-
-    def url(self, path: str) -> str:
-        return f"{self.api_host}/{self.api_path_root}/{path}"
-
-    def set_schema(self, columns: List[Column]) -> None:
-        logger.debug(f"set_schema for table '{self.table_id}. Expecting columns: '{[c.id for c in columns]}'.")  # nopep8
-        self.delete_all()
-
-        for col in columns:
-            if col.id not in self.hardcoded_column_lookup:
-                logger.warning(
-                    f"Column '{col.id}' not found in hardcoded column lookup. Will be ignored.")
-
-    def rows(self) -> Iterator[BigTableRow]:
-        """
-        Gets the rows as of the Glide Big Table.
-        """
-        r = requests.post(
-            self.url("function/queryTables"),
-            headers=self.headers(),
-            json={
-                "appID": self.hardcoded_app_id,
-                "queries": [
-                    {
-                        "tableName": self.table_id,
-                        "utc": True
-                    }
-                ]
-            }
+        # first see if the table already exists
+        r = requests.get(
+            self.url(f"tables"),
+            headers=self.headers()
         )
-        if r.status_code != 200:
-            logger.error(f"get rows request failed with status {r.status_code}: {r.text}.")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
+        try:
             r.raise_for_status()
+        except Exception as e:
+            raise Exception(f"Failed to get table list. Response was '{r.text}'.") from e # nopep8
 
-        result = r.json()
+        found_table_id = None
+        # confirm if table exists:
+        body = r.json()
+        if "data" not in body:
+            raise Exception(f"get tables response did not include data in body. Status was: {r.status_code}: {r.text}.")  # nopep8
 
-        # the result looks like an array of results; each result has a rows member that has an array or JSON rows:
-        for row in result:
-            for r in row['rows']:
-                yield r
+        for table in body["data"]:
+            if table["name"] == self.table_name:
+                found_table_id = table["id"]
+                logger.info(f"Found existing table to reuse for table name '{self.table_name}' with ID '{found_table_id}'.")  # nopep8
+                break
 
-    def delete_all(self) -> None:
-        # TODO: perf: don't put these in a list
-        rows = list(self.rows())
-        logger.debug(f"Iterating over {len(rows)} rows to delete")
+        if found_table_id != None:
+            self.overwrite_table_from_stash(found_table_id)
+        else:
+            self.create_table_from_stash()
 
-        for row in rows:
-            # TODO: lame. batch these into one request with multiple mutations
-            r = requests.post(
-                self.url("function/mutateTables"),
-                headers=self.headers(),
-                json={
-                    "appID": self.hardcoded_app_id,
-                    "mutations": [
-                        {
-                            "kind": "delete-row",
-                            "tableName": self.table_id,
-                            "rowID": row['$rowID']
-                        }
-                    ]
-                }
-            )
-            if r.status_code != 200:
-                logger.error(f"delete request failed with status {r.status_code}: {r.text} trying to delete row id {row['$rowID']} with row: {row}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-                r.raise_for_status()
-            else:
-                logger.debug(
-                    f"Deleted row successfully (rowID:'{row['$rowID']}'")
-
-    def add_rows_batch(self, rows: Iterator[BigTableRow]) -> None:
-        mutations = []
-        for row in rows:
-            # row is columnLabel -> value, but glide's mutate uses a column "name". We hard-code the lookup for our table here:
-            mutated_row = dict()
-            for k, v in row.items():
-                if k in self.hardcoded_column_lookup:
-                    col_info = self.hardcoded_column_lookup[k]
-                    mutated_row[col_info["name"]] = v
-                else:
-                    logger.error(
-                        f"Column {k} not found in column lookup. Ignoring column")
-
-            mutations.append(
-                {
-                    "kind": "add-row-to-table",
-                    "tableName": self.table_id,
-                    "columnValues": mutated_row
-                }
-            )
-        r = requests.post(
-            self.url("function/mutateTables"),
-            headers=self.headers(),
-            json={
-                "appID": self.hardcoded_app_id,
-                "mutations": mutations
-            }
-        )
-        if r.status_code != 200:
-            logger.error(f"add rows failed with status {r.status_code}: {r.text}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-            r.raise_for_status()
-
-    def add_rows(self, rows: Iterator[BigTableRow]) -> None:
-        BATCH_SIZE = 100
-
-        batch = []
-        for row in rows:
-            batch.append(row)
-            if len(batch) >= BATCH_SIZE:
-                self.add_rows_batch(batch)
-                batch = []
-
-        if len(batch) > 0:
-            self.add_rows_batch(batch)
-
-    def commit(self) -> None:
-        logger.debug("commit table (noop).")
-        pass
+        logger.info(f"Successfully committed record stash for table '{self.table_name}' (stash ID '{self.stash_id}')")  # nopep8

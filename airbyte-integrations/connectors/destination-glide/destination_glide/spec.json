@@ -21,16 +21,6 @@
         "type": "string",
         "description": "The user's key for the Glide API destination. Needs permission to write to the specified GBT.",
         "airbyte_secret": true
-      },
-      "table_id": {
-        "type": "string",
-        "description": "The ID of the table that the Glide destination should use. If it does not exist it will be created.",
-        "airbyte_secret": true
-      },
-      "glide_api_version": {
-        "type": "string",
-        "description": "The Glide API version to use. Options are 'tables' or 'mutations'. Default is 'tables'.",
-        "enum": ["tables", "mutations"]
       }
     }
   }

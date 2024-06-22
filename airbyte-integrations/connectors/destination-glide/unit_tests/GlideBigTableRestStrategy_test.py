@@ -9,8 +9,9 @@ import uuid
 class TestGlideBigTableRestStrategy(unittest.TestCase):
     api_host = "https://test-api-host.com"
     api_key = "test-api-key"
-    api_path_root = "/test/api/path/root"
+    api_path_root = "test/api/path/root"
     table_id = ""
+    table_name = ""
     stash_id = ""
 
     test_columns = [
@@ -20,10 +21,11 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
 
     def setUp(self):
         self.table_id = f"test-table-id-{str(uuid.uuid4())}"
+        self.table_name = f"test-table-name-{str(uuid.uuid4())}"
         self.stash_id = f"stash-id-{str(uuid.uuid4())}"
         self.gbt = GlideBigTableRestStrategy()
         self.gbt.init(self.api_host, self.api_key,
-                      self.api_path_root, self.table_id)
+                      self.api_path_root, self.table_name)
 
     def mock_post_for_set_schema(self, mock_post):
         mock_post.return_value.status_code = 200
@@ -93,11 +95,6 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
             {"test-str": f"one {TEST_ROW_COUNT-1}", "test-num": TEST_ROW_COUNT-1}
         ])
 
-    @skip("future version that supports multiple streams")
-    def test_add_rows_with_multiple_streams():
-        # when multiple streams are coming into destination, ensure adds rows for all
-        pass
-
     def test_commit_with_pre_existing_table(self):
         with patch.object(requests, "post") as mock_post:
             self.mock_post_for_set_schema(mock_post)
@@ -109,22 +106,55 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
             mock_post.reset_mock()
             self.gbt.add_rows(test_rows)
 
-            with patch.object(requests, "put") as mock_put:
-                self.gbt.commit()
-                # it should have called post to create a new table
-                mock_post.assert_called_once()
-                self.assertEqual(
-                    mock_put.call_args.kwargs["json"]["rows"]["$stashID"], self.stash_id)
+            with patch.object(requests, "get") as mock_get:
+                # mock the `GET /tables` response to include the table:
+                mock_get.return_value.status_code = 200
+                mock_get.return_value.json.return_value = {
+                    "data": [
+                        {
+                            "name": self.table_name,
+                            "id": self.table_id
+                        }
+                    ]
+                }
+                mock_post.reset_mock()
+                with patch.object(requests, "put") as mock_put:
+                    self.gbt.commit()
+                    # it should have called put to overwrite a table and NOT called post
+                    mock_put.assert_called_once()
+                    self.assertEqual(
+                        mock_put.call_args.kwargs["json"]["rows"]["$stashID"], self.stash_id)
+                    # it should have NOT created a new table via post:
+                    mock_post.assert_not_called()
 
-    @skip("future version that supports multiple streams")
     def test_commit_with_non_existing_table(self):
         # TODO: in a future version, we want to search for the table and if not found, create it. if found, update it (put).
-        pass
+        with patch.object(requests, "post") as mock_post:
+            self.mock_post_for_set_schema(mock_post)
+            self.gbt.set_schema(self.test_columns)
+            test_rows = [
+                {"test-str": "one", "test-num": 1},
+                {"test-str": "two", "test-num": 2}
+            ]
+            mock_post.reset_mock()
+            self.gbt.add_rows(test_rows)
 
-    @skip("future version that supports multiple streams")
-    def test_commit_with_multiple_streams(self):
-        # when multiple streams are coming into destination, ensure stash is committed for each.
-        pass
+            with patch.object(requests, "get") as mock_get:
+                # mock the `GET /tables` response to include the table:
+                mock_get.return_value.status_code = 200
+                mock_get.return_value.json.return_value = {
+                    "data": []
+                }
+                mock_post.reset_mock()
+                with patch.object(requests, "put") as mock_put:
+                    self.gbt.commit()
+                    # it should not have tried to overwrite a table with put
+                    mock_put.assert_not_called()
+                    self.assertEqual(
+                        mock_post.call_args.kwargs["json"]["rows"]["$stashID"], self.stash_id)
+                    # it should have created a new table with post:
+                    mock_put.assert_not_called()
+
 
 
 if __name__ == '__main__':
