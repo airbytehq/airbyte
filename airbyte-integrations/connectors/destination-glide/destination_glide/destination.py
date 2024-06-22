@@ -27,28 +27,30 @@ CONFIG_GLIDE_API_HOST_DEFAULT = "https://api.glideapp.io"
 
 logger = getLogger()
 
+
 def mapJsonSchemaTypeToGlideType(json_type: str) -> str:
     jsonSchemaTypeToGlideType = {
-        "string":"string",
+        "string": "string",
         "number": "number",
         "integer": "number",
-        "boolean":"boolean",
+        "boolean": "boolean",
     }
     if isinstance(json_type, list):
-        logger.debug(f"Found list type '{json_type}'. Attempting to map to a primitive type.") # nopep8 because
+        logger.debug(f"Found list type '{json_type}'. Attempting to map to a primitive type.")  # nopep8
         # find the first type that is not 'null' and supported and use that instead:
         for t in json_type:
             if t != "null" and t in jsonSchemaTypeToGlideType:
-                logger.debug(f"Mapped json schema list type of '{json_type}' to '{t}'.") # nopep8 because
+                logger.debug(f"Mapped json schema list type of '{json_type}' to '{t}'.")  # nopep8
                 json_type = t
                 break
-    
+
     # NOTE: if json_type is still a list, it won't be Hashable and we can't use it as a key in the dict
     if isinstance(json_type, Hashable) and json_type in jsonSchemaTypeToGlideType:
         return jsonSchemaTypeToGlideType[json_type]
 
-    logger.warning(f"Unsupported JSON schema type for glide '{json_type}'. Will use string.")
+    logger.warning(f"Unsupported JSON schema type for glide '{json_type}'. Will use string.")  # nopep8
     return "string"
+
 
 class DestinationGlide(Destination):
     def write(
@@ -73,67 +75,82 @@ class DestinationGlide(Destination):
         api_path_root = config['api_path_root']
         api_key = config['api_key']
         table_id = config['table_id']
-        glide_api_version = config.get('glide_api_version', CONFIG_GLIDE_API_VERSION_DEFAULT)
+        glide_api_version = config.get(
+            'glide_api_version', CONFIG_GLIDE_API_VERSION_DEFAULT)
 
-        # TODO: choose a strategy based on config
+        # choose a strategy based on config:
         glide = GlideBigTableFactory.create(glide_api_version)
-        logger.debug(f"Using glide api strategy '{glide.__class__.__name__}' for glide_api_version '{glide_api_version}'.")
+        logger.debug(f"Using glide api strategy '{glide.__class__.__name__}' for glide_api_version '{glide_api_version}'.")  # nopep8
         glide.init(api_host, api_key, api_path_root, table_id)
 
-        # go through each stream and add it as needed:
+        if len(configured_catalog.streams) > 1:
+            # TODO: Consider how we might want to support multiple streams. Review other airbyte destinations
+            raise Exception(f"The Glide destination expects only a single stream to be streamed into a Glide Table but found '{len(configured_catalog.streams)}' streams. Please select only one stream from the source.")  # nopep8
+
+        # configure the table based on the stream catalog:
         stream_names = {s.stream.name for s in configured_catalog.streams}
         for configured_stream in configured_catalog.streams:
             if configured_stream.destination_sync_mode != DestinationSyncMode.overwrite:
-                raise Exception(f'Only destination sync mode overwrite is supported, but received "{configured_stream.destination_sync_mode}".') # nopep8 because https://github.com/hhatto/autopep8/issues/712
-            
-            # upsert the GBT with schema to prepare for dumping the data into it
+                raise Exception(f'Only destination sync mode overwrite is supported, but received "{configured_stream.destination_sync_mode}".')  # nopep8 because https://github.com/hhatto/autopep8/issues/712
+
+            # upsert the GBT with schema to set_schema for dumping the data into it
             columns = []
             properties = configured_stream.stream.json_schema["properties"]
             for prop_name in properties.keys():
                 prop = properties[prop_name]
                 prop_type = prop["type"]
                 prop_format = prop["format"] if "format" in prop else ""
-                logger.debug(f"Found column/property '{prop_name}' with type '{prop_type}' and format '{prop_format}' in stream {configured_stream.stream.name}.")
-                columns.append(Column(prop_name, mapJsonSchemaTypeToGlideType(prop_type)))
-            
-            glide.prepare_table(columns)
+                logger.debug(f"Found column/property '{prop_name}' with type '{prop_type}' and format '{prop_format}' in stream {configured_stream.stream.name}.")  # nopep8
+                columns.append(
+                    Column(prop_name, mapJsonSchemaTypeToGlideType(prop_type)))
 
-            # stream the records into the GBT:
-            buffer = defaultdict(list)
-            logger.debug("Processing messages...")
-            for message in input_messages:
-                logger.debug(f"processing message {message.type}...")
-                if message.type == Type.RECORD:
-                    logger.debug("buffering record...")
-                    data = message.record.data
-                    stream = message.record.stream
-                    if stream not in stream_names:
-                        logger.warning(
-                            f"Stream {stream} was not present in configured streams, skipping")
-                        continue
+            glide.set_schema(columns)
 
-                    # TODO: Check the columns match the columns that we saw in configured_catalog per https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#destination
+        # stream the records into the GBT:
+        buffers = defaultdict(list)
+        logger.debug("Processing messages...")
+        for message in input_messages:
+            logger.debug(f"processing message {message.type}...")
+            if message.type == Type.RECORD:
+                logger.debug("buffering record...")
+                stream_name = message.record.stream
+                if stream_name not in stream_names:
+                    logger.warning(
+                        f"Stream {stream_name} was not present in configured streams, skipping")
+                    continue
 
-                    # add to buffer
-                    record_id = str(uuid.uuid4())
-                    stream_buffer = buffer[stream]
-                    stream_buffer.append(
-                        (record_id, datetime.datetime.now().isoformat(), data))
-                    logger.debug(f"buffering record complete.")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
+                # TODO: check the columns match the columns that we saw in configured_catalog per https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#destination
+                # add to buffer
+                record_data = message.record.data
+                record_id = str(uuid.uuid4())
+                stream_buffer = buffers[stream_name]
+                stream_buffer.append(
+                    (record_id, datetime.datetime.now().isoformat(), record_data))
+                logger.debug("buffering record complete.")
 
-                elif message.type == Type.STATE:
-                    # This is a queue from the source that we should save the buffer of records from message.type == Type.RECORD messages. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#state--the-whole-sync
-                    for stream_name in buffer.keys():
-                        stream_records = buffer[stream_name]
-                        logger.debug(f"Saving buffered records to Glide API (stream: '{stream_name}' count: '{len(stream_records)}')...") # nopep8 because https://github.com/hhatto/autopep8/issues/712
-                        DATA_INDEX = 2
-                        data_rows = [row_tuple[DATA_INDEX] for row_tuple in stream_records]
+            elif message.type == Type.STATE:
+                # `Type.State` is a signal from the source that we should save the previous batch of `Type.RECORD` messages to the destination.
+                #   It is a checkpoint that enables partial success.
+                #   See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#state--checkpointing
+                logger.info(f"Writing buffered records to Glide API from {len(buffers.keys())} streams...")  # nopep8 because
+                for stream_name in buffers.keys():
+                    stream_buffer = buffers[stream_name]
+                    logger.info(f"Saving buffered records to Glide API (stream: '{stream_name}' count: '{len(stream_buffer)}')...")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
+                    DATA_INDEX = 2
+                    data_rows = [row_tuple[DATA_INDEX]
+                                 for row_tuple in stream_buffer]
+                    if len(data_rows) > 0:
                         glide.add_rows(data_rows)
-                        logger.debug(f"Saving buffered records to Glide API complete.") # nopep8 because https://github.com/hhatto/autopep8/issues/712
+                    stream_buffer.clear()
+                    logger.info(f"Saving buffered records to Glide API complete.")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
 
-                    yield message
-                else:
-                    logger.warn(f"Ignoring unknown Airbyte input message type: {message.type}")
+                yield message
+            else:
+                logger.warn(f"Ignoring unknown Airbyte input message type: {message.type}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
+
+        # commit the stash to the table
+        glide.commit()
+
         pass
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
@@ -154,4 +171,3 @@ class DestinationGlide(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
-

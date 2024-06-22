@@ -56,10 +56,17 @@ class GlideBigTableBase(ABC):
         return f"{self.api_host}/{self.api_path_root}/{path}"
 
     """
-    An API client for interacting with a Glide Big Table.
+    An API client for interacting with a Glide Big Table. The intention is to
+    create a new table or update an existing table including the table's schema
+    and the table's rows.
+
+    The protocol is to call `init`, `set_schema`, `add_rows` one or more times, and `commit` in that order.
     """
 
     def init(self, api_host, api_key, api_path_root, table_id):
+        """
+        Sets the connection information for the table.
+        """
         self.api_host = api_host
         self.api_key = api_key
         self.api_path_root = api_path_root
@@ -68,23 +75,24 @@ class GlideBigTableBase(ABC):
         pass
 
     @abstractmethod
-    def prepare_table(self, columns: List[Column]) -> None:
+    def set_schema(self, columns: List[Column]) -> None:
         """
-        Prepares the table with the given columns.
+        set_schemas the table with the given schema.
         Each column is a json-schema property where the key is the column name and the type is the .
         """
         pass
 
     @abstractmethod
-    def delete_all(self) -> None:
-        """
-        Deletes all rows in the table.
-        """
-        pass
-
     def add_rows(self, rows: Iterator[BigTableRow]) -> None:
         """
         Adds rows to the table.
+        """
+        pass
+
+    @abstractmethod
+    def commit(self) -> None:
+        """
+        Commits the table.
         """
         pass
 
@@ -108,56 +116,95 @@ class GlideBigTableFactory:
 
 
 class GlideBigTableRestStrategy(GlideBigTableBase):
-    def prepare_table(self, columns: List[Column]) -> None:
-        logger.debug(f"prepare_table columns: {columns}")
-        # update the table:
-        r = requests.put(
-            self.url(f"/tables/{self.table_id}"),
-            headers=self.headers(),
-            json={
-                "name": self.table_id,
-                "schema": {
-                    "columns": columns,
-                },
-                "rows": []
-            }
-        )
-        if r.status_code != 200:
-            logger.error(f"prepare table request failed with status {r.status_code}: {r.text}.")  # nopep8
+    def reset(self):
+        self.stash_id = None
+        self.stash_serial = 0
 
-    def delete_all(self) -> None:
-        logger.warning(f"delete_all call is ignored in {type(self).__class__.__name__}")  # nopep8
-        pass
+    def __init__(self):
+        super().__init__()
+        self.reset()
+
+    def set_schema(self, columns: List[Column]) -> None:
+        logger.debug(f"set_schema columns: {columns}")
+        if columns is None:
+            raise ValueError("columns must be provided")
+        if len(columns) == 0:
+            raise ValueError("columns must be provided")
+        self.reset()
+        self.columns = columns
+        # Create stash we can stash records into for later
+        r = requests.post(
+            self.url(f"/stashes"),
+            headers=self.headers(),
+        )
+        try:
+            r.raise_for_status()
+        except Exception as e:
+            raise Exception(f"failed to create stash") from e  # nopep8
+
+        result = r.json()
+        self.stash_id = result["data"]["stashID"]
+        self.stash_serial = 0
+        logger.info(f"Created stash for records with id '{self.stash_id}'")
+
+    def raise_if_set_schema_not_called(self):
+        if self.stash_id is None:
+            raise ValueError(
+                "set_schema must be called before add_rows or commit")
 
     def _add_row_batch(self, rows: List[BigTableRow]) -> None:
+        # TODO: add rows to stash/serial https://web.postman.co/workspace/glideapps-Workspace~46b48d24-5fc1-44b6-89aa-8d6751db0fc5/request/9026518-c282ef52-4909-4806-88bf-08510ee80770
         logger.debug(f"Adding rows batch with size {len(rows)}")
         r = requests.post(
-            self.url(f"/tables/{self.table_id}/rows"),
+            self.url(f"/stashes/{self.stash_id}/{self.stash_serial}"),
             headers=self.headers(),
             json={
-                "rows": rows,
+                "data": rows,
                 "options": {
+                    # ignore columns in rows that are not part of schema:
                     "unknownColumns": "ignore"
                 }
             }
         )
-        if r.status_code != 200:
-            logger.error(f"add rows batch failed with status {r.status_code}: {r.text}") # nopep8
-        else:
-            logger.debug(f"add rows batch succeeded")
+        try:
+            r.raise_for_status()
+        except Exception as e:
+            raise Exception(f"failed to add rows batch for serial '{self.stash_serial}'") from e  # nopep8
+
+        logger.info(f"Add rows batch for serial '{self.stash_serial}' succeeded.")  # nopep8
+        self.stash_serial += 1
 
     def add_rows(self, rows: Iterator[BigTableRow]) -> None:
+        self.raise_if_set_schema_not_called()
+        # TODO: to optimize batch size for variable number and size of columns, we could estimate row byte size based on the first row and choose a batch size based on that.
         BATCH_SIZE = 500
-
         batch = []
-        for row in rows:
-            batch.append(row)
-            if len(batch) >= BATCH_SIZE:
-                self._add_row_batch(batch)
-                batch = []
-
-        if len(batch) > 0:
+        for i in range(0, len(rows), BATCH_SIZE):
+            batch = rows[i:i + min(BATCH_SIZE, len(rows) - i)]
             self._add_row_batch(batch)
+
+    def finalize_stash(self) -> None:
+        # overwrite the existing table with the right schema and rows:
+        r = requests.put(
+            self.url(f"/tables/{self.table_id}"),
+            headers=self.headers(),
+            json={
+                "schema": {
+                    "columns": self.columns,
+                },
+                "rows": {
+                    "$stashID": self.stash_id
+                }
+            }
+        )
+        try:
+            r.raise_for_status()
+        except Exception as e:
+            raise Exception(f"failed to finalize stash") from e  # nopep8
+
+    def commit(self) -> None:
+        self.raise_if_set_schema_not_called()
+        self.finalize_stash()
 
 
 class GlideBigTableMutationsStrategy(GlideBigTableBase):
@@ -197,8 +244,8 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
     def url(self, path: str) -> str:
         return f"{self.api_host}/{self.api_path_root}/{path}"
 
-    def prepare_table(self, columns: List[Column]) -> None:
-        logger.debug(f"prepare_table for table '{self.table_id}. Expecting columns: '{[c.id for c in columns]}'.") # nopep8
+    def set_schema(self, columns: List[Column]) -> None:
+        logger.debug(f"set_schema for table '{self.table_id}. Expecting columns: '{[c.id for c in columns]}'.")  # nopep8
         self.delete_all()
 
         for col in columns:
@@ -225,7 +272,7 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         )
         if r.status_code != 200:
             logger.error(f"get rows request failed with status {r.status_code}: {r.text}.")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-            r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
+            r.raise_for_status()
 
         result = r.json()
 
@@ -257,7 +304,7 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
             )
             if r.status_code != 200:
                 logger.error(f"delete request failed with status {r.status_code}: {r.text} trying to delete row id {row['$rowID']} with row: {row}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-                r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
+                r.raise_for_status()
             else:
                 logger.debug(
                     f"Deleted row successfully (rowID:'{row['$rowID']}'")
@@ -292,7 +339,7 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
         )
         if r.status_code != 200:
             logger.error(f"add rows failed with status {r.status_code}: {r.text}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-            r.raise_for_status()  # This will raise an HTTPError if the status is 4xx or 5xx
+            r.raise_for_status()
 
     def add_rows(self, rows: Iterator[BigTableRow]) -> None:
         BATCH_SIZE = 100
@@ -306,3 +353,7 @@ class GlideBigTableMutationsStrategy(GlideBigTableBase):
 
         if len(batch) > 0:
             self.add_rows_batch(batch)
+
+    def commit(self) -> None:
+        logger.debug("commit table (noop).")
+        pass
