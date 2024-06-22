@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/analytics/conversions
           http_method: GET
         record_selector:
@@ -34,12 +34,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: asset_updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -50,8 +50,8 @@ definitions:
           field_name: end_date
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
     analytic_emails:
       type: DeclarativeStream
       name: analytic_emails
@@ -60,7 +60,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/analytics/emails
           http_method: GET
         record_selector:
@@ -77,12 +77,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: send_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -93,8 +93,8 @@ definitions:
           field_name: end_date
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
     analytics_funnel:
       type: DeclarativeStream
       name: analytics_funnel
@@ -103,7 +103,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/analytics/funnel
           http_method: GET
         record_selector:
@@ -120,12 +120,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: reference_day
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -136,8 +136,8 @@ definitions:
           field_name: end_date
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
     analytics_workflow_emails_statistics:
       type: DeclarativeStream
       name: analytics_workflow_emails_statistics
@@ -146,7 +146,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/analytics/workflow_email_statistics
           http_method: GET
         record_selector:
@@ -163,12 +163,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%fZ'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -179,8 +179,8 @@ definitions:
           field_name: end_date
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
     emails:
       type: DeclarativeStream
       name: emails
@@ -189,7 +189,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/emails
           http_method: GET
         record_selector:
@@ -224,7 +224,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: embeddables
           http_method: GET
         record_selector:
@@ -258,7 +258,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/contacts/fields
           http_method: GET
         record_selector:
@@ -279,7 +279,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/landing_pages
           http_method: GET
         record_selector:
@@ -313,7 +313,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/popups
           http_method: GET
         record_selector:
@@ -347,7 +347,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/segmentations
           http_method: GET
         record_selector:
@@ -382,7 +382,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /platform/workflows
           http_method: GET
         record_selector:
@@ -422,561 +422,561 @@ definitions:
       grant_type: refresh_token
 
 streams:
-  - $ref: '#/definitions/streams/analytics_conversions'
-  - $ref: '#/definitions/streams/analytic_emails'
-  - $ref: '#/definitions/streams/analytics_funnel'
-  - $ref: '#/definitions/streams/analytics_workflow_emails_statistics'
-  - $ref: '#/definitions/streams/emails'
-  - $ref: '#/definitions/streams/embeddables'
-  - $ref: '#/definitions/streams/fields'
-  - $ref: '#/definitions/streams/landing_pages'
-  - $ref: '#/definitions/streams/popups'
-  - $ref: '#/definitions/streams/segmentations'
-  - $ref: '#/definitions/streams/workflows'
+  - $ref: "#/definitions/streams/analytics_conversions"
+  - $ref: "#/definitions/streams/analytic_emails"
+  - $ref: "#/definitions/streams/analytics_funnel"
+  - $ref: "#/definitions/streams/analytics_workflow_emails_statistics"
+  - $ref: "#/definitions/streams/emails"
+  - $ref: "#/definitions/streams/embeddables"
+  - $ref: "#/definitions/streams/fields"
+  - $ref: "#/definitions/streams/landing_pages"
+  - $ref: "#/definitions/streams/popups"
+  - $ref: "#/definitions/streams/segmentations"
+  - $ref: "#/definitions/streams/workflows"
 
 schemas:
   analytics_conversions:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       asset_id:
         type:
-          - 'null'
+          - "null"
           - integer
       asset_identifier:
         type:
-          - 'null'
+          - "null"
           - string
       asset_created_at:
         type:
-          - 'null'
+          - "null"
           - string
       asset_updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       asset_type:
         type:
-          - 'null'
+          - "null"
           - string
       conversion_count:
         type:
-          - 'null'
+          - "null"
           - integer
       visits_count:
         type:
-          - 'null'
+          - "null"
           - integer
       conversion_rate:
         type:
-          - 'null'
+          - "null"
           - number
   analytic_emails:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       send_at:
         type:
-          - 'null'
+          - "null"
           - string
       campaign_id:
         type:
-          - 'null'
+          - "null"
           - integer
       campaign_name:
         type:
-          - 'null'
+          - "null"
           - string
       email_dropped_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_delivered_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_bounced_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_opened_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_clicked_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_unsubscribed_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_spam_reported_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_delivered_rate:
         type:
-          - 'null'
+          - "null"
           - number
       email_opened_rate:
         type:
-          - 'null'
+          - "null"
           - number
       email_clicked_rate:
         type:
-          - 'null'
+          - "null"
           - number
       email_spam_reported_rate:
         type:
-          - 'null'
+          - "null"
           - number
       contacts_count:
         type:
-          - 'null'
+          - "null"
           - integer
   analytics_funnel:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       reference_day:
         type:
-          - 'null'
+          - "null"
           - string
       contacts_count:
         type:
-          - 'null'
+          - "null"
           - integer
       qualified_contacts_count:
         type:
-          - 'null'
+          - "null"
           - integer
       opportunities_count:
         type:
-          - 'null'
+          - "null"
           - integer
       sales_count:
         type:
-          - 'null'
+          - "null"
           - integer
       visitors_count:
         type:
-          - 'null'
+          - "null"
           - integer
   analytics_workflow_emails_statistics:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       workflow_name:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       email_name:
         type:
-          - 'null'
+          - "null"
           - string
       workflow_action_id:
         type:
-          - 'null'
+          - "null"
           - string
       workflow_id:
         type:
-          - 'null'
+          - "null"
           - string
       contacts_count:
         type:
-          - 'null'
+          - "null"
           - integer
       count_processed:
         type:
-          - 'null'
+          - "null"
           - integer
       email_delivered_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_opened_unique_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_clicked_unique_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_dropped_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_unsubscribed_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_spam_reported_count:
         type:
-          - 'null'
+          - "null"
           - integer
       email_delivered_rate:
         type:
-          - 'null'
+          - "null"
           - number
       email_opened_rate:
         type:
-          - 'null'
+          - "null"
           - number
       email_clicked_rate:
         type:
-          - 'null'
+          - "null"
           - number
       email_spam_reported_rate:
         type:
-          - 'null'
+          - "null"
           - number
       email_bounced_unique_count:
         type:
-          - 'null'
+          - "null"
           - integer
   emails:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       campaign_id:
         type:
-          - 'null'
+          - "null"
           - integer
       behavior_score_info:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           engaged:
             type:
-              - 'null'
+              - "null"
               - boolean
           disengaged:
             type:
-              - 'null'
+              - "null"
               - boolean
           indeterminate:
             type:
-              - 'null'
+              - "null"
               - boolean
       send_at:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       sending_is_imminent:
         type:
-          - 'null'
+          - "null"
           - boolean
       is_predictive_sending:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       component_template_id:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       type:
         type:
-          - 'null'
+          - "null"
           - string
       leads_count:
         type:
-          - 'null'
+          - "null"
           - integer
   embeddables:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       title:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       conversion_identifier:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
   fields:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       uuid:
         type:
-          - 'null'
+          - "null"
           - string
       label:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           en-UD:
             type:
-              - 'null'
+              - "null"
               - string
           en-US:
             type:
-              - 'null'
+              - "null"
               - string
           es-ES:
             type:
-              - 'null'
+              - "null"
               - string
           pt-BR:
             type:
-              - 'null'
+              - "null"
               - string
           default:
             type:
-              - 'null'
+              - "null"
               - string
       name:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           en-UD:
             type:
-              - 'null'
+              - "null"
               - string
           en-US:
             type:
-              - 'null'
+              - "null"
               - string
           es-ES:
             type:
-              - 'null'
+              - "null"
               - string
           pt-BR:
             type:
-              - 'null'
+              - "null"
               - string
           default:
             type:
-              - 'null'
+              - "null"
               - string
       api_identifier:
         type:
-          - 'null'
+          - "null"
           - string
       custom_field:
         type:
-          - 'null'
+          - "null"
           - boolean
       validation_rules:
         type:
-          - 'null'
+          - "null"
           - object
       presentation_type:
         type:
-          - 'null'
+          - "null"
           - string
       data_type:
         type:
-          - 'null'
+          - "null"
           - string
   landing_pages:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       title:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       conversion_identifier:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       has_active_experiment:
         type:
-          - 'null'
+          - "null"
           - boolean
       had_experiment:
         type:
-          - 'null'
+          - "null"
           - boolean
   popups:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       title:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       conversion_identifier:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       trigger:
         type:
-          - 'null'
+          - "null"
           - string
   segmentations:
-    $schema: 'https://json-schema.org/draft-07/schema#'
+    $schema: "https://json-schema.org/draft-07/schema#"
     type: object
     additionalProperties: true
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       standard:
         type:
-          - 'null'
+          - "null"
           - boolean
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       process_status:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             rel:
               type:
-                - 'null'
+                - "null"
                 - string
             href:
               type:
-                - 'null'
+                - "null"
                 - string
             media:
               type:
-                - 'null'
+                - "null"
                 - string
             type:
               type:
-                - 'null'
+                - "null"
                 - string
   workflows:
-    $schema: 'https://json-schema.org/draft-07/schema'
+    $schema: "https://json-schema.org/draft-07/schema"
     type: object
     additionalProperties: true
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       user_email_created:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       user_email_updated:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
 
 spec:
@@ -1026,7 +1026,7 @@ spec:
         description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. When specified and not None, then stream will behave as incremental
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
-          - '2017-01-25T00:00:00Z'
+          - "2017-01-25T00:00:00Z"
         order: 0
   supportsIncremental: true
   advanced_auth:
