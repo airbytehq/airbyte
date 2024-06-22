@@ -5,7 +5,7 @@
 - [+] fix: batch row adds in rest api
 - [+] chore: unify test framework across unit/integration tests (remove pytest?)
 - [+] feat: snuggle rows in a batch
-- [ ] feat: support multiple streams from source by using a naming convention and discovering existing tables with GET /tables
+- [+] feat: support multiple streams from source by using a naming convention and discovering existing tables with GET /tables
 - [ ] fix: replace "hostname" and "path" configs with "baseUrl"
 - [ ] feat: verify actual host/api/auth connection in check: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#check
 - [ ] feat: add a default timeout everywhere per https://requests.readthedocs.io/en/latest/user/quickstart/#timeouts
