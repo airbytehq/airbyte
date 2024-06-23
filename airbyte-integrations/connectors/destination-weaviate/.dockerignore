@@ -1,6 +1,0 @@
-*
-!Dockerfile
-!main.py
-!destination_weaviate
-!pyproject.toml
-!poetry.lock

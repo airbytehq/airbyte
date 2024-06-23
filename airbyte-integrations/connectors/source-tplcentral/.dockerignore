@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!main.py
-!source_tplcentral
-!setup.py
-!secrets
