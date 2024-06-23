@@ -73,4 +73,4 @@ def test_http_method(config_pass):
 def test_subscription_usage_schema(config_pass):
     stream = get_stream_by_name("subscription_usage", config_pass)
     json_schema = stream.get_json_schema()
-    assert len(json_schema["properties"]) == 6
+    assert len(json_schema["properties"]) == 7
