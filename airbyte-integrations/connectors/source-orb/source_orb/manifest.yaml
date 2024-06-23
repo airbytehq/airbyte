@@ -228,6 +228,11 @@ definitions:
       - type: AddFields
         fields:
           - path:
+              - credit_block_per_unit_cost_basis
+            value: "{{ record['credit_block_per_unit_cost_basis'] | string }}"
+      - type: AddFields
+        fields:
+          - path:
               - block_expiry_date
             value: "{{ record['credit_block']['expiry_date'] }}"
       - type: AddFields
