@@ -3,26 +3,25 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.5"
-name = "source-pocket"
-description = "Source implementation for Pocket."
+version = "0.1.1"
+name = "source-serpstat"
+description = "Source implementation for serpstat."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/pocket"
+documentation = "https://docs.airbyte.com/integrations/sources/serpstat"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-[[tool.poetry.packages]]
-include = "source_pocket"
+packages = [ { include = "source_serpstat" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
-source-pocket = "source_pocket.run:run"
+source-serpstat = "source_serpstat.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-pytest-mock = "^3.6.1"
-pytest = "^6.1"
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
