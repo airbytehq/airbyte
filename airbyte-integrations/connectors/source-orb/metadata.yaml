@@ -22,8 +22,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message:
-        "This version changes the datatype of the `credit_block_per_unit_cost_basis` field in the `credits_ledger_entries` from `string` to `number`."
+        message: This version changes the datatype of the `credit_block_per_unit_cost_basis` field in the `credits_ledger_entries` from `string` to `number`.
         upgradeDeadline: "2024-12-30"
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/orb
