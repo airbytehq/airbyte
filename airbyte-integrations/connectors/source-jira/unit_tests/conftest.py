@@ -295,6 +295,15 @@ def mock_projects_responses(config, projects_response):
 
 
 @fixture
+def mock_non_deleted_projects_responses(config, projects_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived",
+        json=projects_response,
+    )
+
+
+@fixture
 def mock_projects_responses_additional_project(config, projects_response):
     projects_response["values"] += [{"id": "3", "key": "Project3"}, {"id": "4", "key": "Project4"}]
     responses.add(

@@ -106,7 +106,7 @@ class TestIncrementalAnalyticsStream:
     def test_get_updated_state(self, report_init_kwargs, current_stream_state, latest_record, expected_date):
         stream = SomeIncrementalAnalyticsStream(**report_init_kwargs)
         expected_state = {stream.cursor_field: expected_date}
-        assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+        assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
 
     @pytest.mark.parametrize(
         ("start_date", "end_date", "stream_state", "fixed_period_in_days", "expected_slices"),

@@ -15,6 +15,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.mockk.clearMocks
 import io.mockk.confirmVerified
@@ -77,6 +78,7 @@ class DefaultSyncOperationTest {
                         hasUnprocessedRecords = false,
                         maxProcessedTimestamp = Optional.empty(),
                     ),
+                initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
                 destinationState =
@@ -140,12 +142,18 @@ class DefaultSyncOperationTest {
         streamOperations.values.onEach { clearMocks(it) }
 
         syncOperation.finalizeStreams(
-            mapOf(appendStreamConfig.id.asStreamDescriptor() to StreamSyncSummary(Optional.of(42)))
+            mapOf(
+                appendStreamConfig.id.asStreamDescriptor() to
+                    StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
         )
 
         verify(exactly = 1) {
             streamOperations.values.onEach {
-                it.finalizeTable(appendStreamConfig, StreamSyncSummary(Optional.of(42)))
+                it.finalizeTable(
+                    appendStreamConfig,
+                    StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                )
             }
         }
         confirmVerified(destinationHandler)
@@ -168,6 +176,7 @@ class DefaultSyncOperationTest {
                         hasUnprocessedRecords = false,
                         maxProcessedTimestamp = Optional.empty(),
                     ),
+                initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
                 destinationState =

@@ -77,9 +77,9 @@ public class RedshiftSuperLimitationTransformerTest {
         transformer.transformNodes(jsonNode, text -> text.length() > 10);
     // Calculate the size of the json after transformation
     final int jacksonDeserializeSizeAfterTransform = Jsons.serialize(jsonNode).getBytes(StandardCharsets.UTF_8).length;
-    assertEquals(jacksonDeserializationSize, transformationInfo.originalBytes());
-    assertEquals(jacksonDeserializeSizeAfterTransform, transformationInfo.originalBytes() - transformationInfo.removedBytes());
-    System.out.println(transformationInfo.meta());
+    assertEquals(jacksonDeserializationSize, transformationInfo.getOriginalBytes());
+    assertEquals(jacksonDeserializeSizeAfterTransform, transformationInfo.getOriginalBytes() - transformationInfo.getRemovedBytes());
+    System.out.println(transformationInfo.getMeta());
     System.out.println(Jsons.serialize(jsonNode));
   }
 

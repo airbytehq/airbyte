@@ -8,7 +8,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Minimu
 
 // Note the nonnullable fields. Even though the underlying storage medium (a JSON blob) supports
 // nullability, we don't want to deal with that in our codebase.
-data class SnowflakeState(val needsSoftReset: Boolean) : MinimumDestinationState {
+data class SnowflakeState(val needsSoftReset: Boolean, val isAirbyteMetaPresentInRaw: Boolean) :
+    MinimumDestinationState {
     override fun needsSoftReset(): Boolean {
         return needsSoftReset
     }

@@ -1,5 +1,11 @@
 # Shopify Migration Guide
 
+## Upgrading to 2.2.0
+This version updates the schema for countries as our testing caught that `provinces.tax_percentage` is a number and not an integer.
+
+### Action items required for 2.2.0
+- `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.
+
 ## Upgrading to 2.1.0
 This version implements `Shopify GraphQL BULK Operations` to speed up the following streams:
  - `Products`

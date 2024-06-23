@@ -119,7 +119,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 // Filter for nonNull values in case the query returned NULL (i.e. no unloaded
                 // records).
                 val minUnloadedTimestamp: Optional<Timestamp> =
-                    timestampStream.filter { obj: Timestamp -> Objects.nonNull(obj) }.findFirst()
+                    timestampStream.filter { obj: Timestamp? -> Objects.nonNull(obj) }.findFirst()
                 if (minUnloadedTimestamp.isPresent) {
                     // Decrement by 1 second since timestamp precision varies between databases.
                     val ts =
@@ -145,7 +145,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 // Filter for nonNull values in case the query returned NULL (i.e. no raw records at
                 // all).
                 val minUnloadedTimestamp: Optional<Timestamp> =
-                    timestampStream.filter { obj: Timestamp -> Objects.nonNull(obj) }.findFirst()
+                    timestampStream.filter { obj: Timestamp? -> Objects.nonNull(obj) }.findFirst()
                 return InitialRawTableStatus(
                     true,
                     false,
@@ -325,6 +325,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     streamConfig,
                     finalTableDefinition.isPresent,
                     initialRawTableState,
+                    // TODO fix this
+                    // for now, no JDBC destinations actually do refreshes
+                    // so this is just to make our code compile
+                    InitialRawTableStatus(false, false, Optional.empty()),
                     isSchemaMismatch,
                     isFinalTableEmpty,
                     destinationState

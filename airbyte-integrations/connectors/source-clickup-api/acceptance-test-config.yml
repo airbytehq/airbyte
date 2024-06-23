@@ -2,7 +2,11 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
-        empty_streams: []
+        empty_streams:
+          - name: space
+          - name: folder
+          - name: list
+          - name: task
   connection:
     tests:
       - config_path: secrets/config.json

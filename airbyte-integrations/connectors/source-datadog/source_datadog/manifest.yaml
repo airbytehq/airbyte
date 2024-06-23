@@ -55,17 +55,31 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['meta', 'pagination', 'next_offset'] }}"
+      cursor_value: "{{ last_record['meta']['pagination']['next_offset'] if last_record else None }}"
     page_token_option:
       type: "RequestPath"
       field_name: "page[offset]"
       inject_into: "request_parameter"
 
+  base_page_paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page[size]"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 100
+    page_token_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page[number]"
+
   base_after_paginator:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['meta', 'page', 'after'] }}"
+      cursor_value: "{{ last_record['meta']['page']['after'] if last_record else None }}"
     page_token_option:
       type: "RequestPath"
       field_name: "page[cursor]"
@@ -231,7 +245,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_v2"
       paginator:
-        $ref: "#/definitions/base_paginator"
+        $ref: "#/definitions/base_page_paginator"
 
 streams:
   - "#/definitions/audit_logs_stream"

@@ -85,9 +85,14 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
-| 1.3.1   | 2024-05-30 | [38135](https://github.com/airbytehq/airbyte/pull/38135) | Make connector compatable with the builder                                                                                                  |
+| 1.3.3   | 2024-05-30 | [38543](https://github.com/airbytehq/airbyte/pull/38543) | [autopull] base image + poetry + up_to_date                                                                         |
+| 1.3.2   | 2024-06-06 | [39250](https://github.com/airbytehq/airbyte/pull/39250) | [autopull] Upgrade base image to v1.2.2                                                                             |
+| 1.3.1   | 2024-05-30 | [38135](https://github.com/airbytehq/airbyte/pull/38135) | Make connector compatable with the builder                                                                          |
 | 1.3.0   | 2023-08-25 | [29299](https://github.com/airbytehq/airbyte/pull/29299) | Migrate to low-code                                                                                                 |
 | 1.2.9   | 2023-08-15 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Fix schema and tests                                                                                                |
 | 1.2.8   | 2023-02-14 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Specified date formatting in specification                                                                          |
@@ -100,5 +105,7 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 | 0.2.2   | 2021-05-28 | [3677](https://github.com/airbytehq/airbyte/pull/3677)   | Adding clearer error message when a currency isn't supported. access_key field in spec.json was marked as sensitive |
 | 0.2.0   | 2021-05-26 | [3566](https://github.com/airbytehq/airbyte/pull/3566)   | Move from `api.ratesapi.io/` to `api.exchangeratesapi.io/`. Add required field `access_key` to `config.json`.       |
 | 0.1.0   | 2021-04-19 | [2942](https://github.com/airbytehq/airbyte/pull/2942)   | Implement Exchange API using the CDK                                                                                |
+
+</details>
 
 </HideInUI>
