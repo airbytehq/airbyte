@@ -228,11 +228,6 @@ definitions:
       - type: AddFields
         fields:
           - path:
-              - credit_block_per_unit_cost_basis
-            value: "{{ record['credit_block_per_unit_cost_basis'] | string }}"
-      - type: AddFields
-        fields:
-          - path:
               - block_expiry_date
             value: "{{ record['credit_block']['expiry_date'] }}"
       - type: AddFields
@@ -532,6 +527,10 @@ schemas:
       subscription_id:
         description: Unique identifier for the subscription the usage data belongs to
         type: string
+      grouping_key:
+        type:
+          - "null"
+          - string
     required:
       - quantity
       - timeframe_start
@@ -782,7 +781,7 @@ schemas:
         description: The cost per unit of the credit block
         type:
           - "null"
-          - string
+          - number
       description:
         description: A description of the ledger entry
         type:
