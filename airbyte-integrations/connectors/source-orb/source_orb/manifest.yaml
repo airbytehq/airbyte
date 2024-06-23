@@ -302,6 +302,7 @@ definitions:
       lookback_window: P{{ config.get('lookback_window_days', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       start_datetime:
         type: MinMaxDatetime
