@@ -37,5 +37,5 @@ def test_streams(requests_mock, config_pass, subscriptions_url, mock_subscriptio
     requests_mock.get(url=get_mocked_url(subscriptions_url, config_pass), status_code=200, json=mock_subscriptions_response)
     source = SourceOrb()
     streams = source.streams(config_pass)
-    expected_streams_number = 6
+    expected_streams_number = 7
     assert len(streams) == expected_streams_number
