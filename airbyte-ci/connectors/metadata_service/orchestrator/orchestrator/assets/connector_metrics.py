@@ -14,6 +14,16 @@ from orchestrator.logging import sentry
 GROUP_NAME = "connector_metrics"
 
 
+class StringNullJsonDecoder(json.JSONDecoder):
+    """A JSON decoder that converts "null" strings to None."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(object_hook=self.object_hook, *args, **kwargs)
+
+    def object_hook(self, obj):
+        return {k: (None if v == "null" else v) for k, v in obj.items()}
+
+
 @sentry_sdk.trace
 def _safe_read_gcs_file(gcs_blob: storage.Blob) -> Optional[str]:
     """Read the connector metrics jsonl blob.
@@ -35,7 +45,7 @@ def _convert_json_to_metrics_dict(jsonl_string: str) -> dict:
     metrics_dict = defaultdict(dict)
     jsonl_lines = jsonl_string.splitlines()
     for line in jsonl_lines:
-        data = json.loads(line)
+        data = json.loads(line, cls=StringNullJsonDecoder)
         connector_data = data["_airbyte_data"]
         connector_definition_id = connector_data["connector_definition_id"]
         airbyte_platform = connector_data["airbyte_platform"]

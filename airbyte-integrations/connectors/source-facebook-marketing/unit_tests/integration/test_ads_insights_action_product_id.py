@@ -156,6 +156,26 @@ def _job_start_request(
         ],
         "time_increment": 1,
         "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view", "7d_view", "28d_view"],
+        "filtering": [
+            {
+                "field": f"ad.effective_status",
+                "operator": "IN",
+                "value": [
+                    "ACTIVE",
+                    "ADSET_PAUSED",
+                    "ARCHIVED",
+                    "CAMPAIGN_PAUSED",
+                    "DELETED",
+                    "DISAPPROVED",
+                    "IN_PROCESS",
+                    "PAUSED",
+                    "PENDING_BILLING_INFO",
+                    "PENDING_REVIEW",
+                    "PREAPPROVED",
+                    "WITH_ISSUES"
+                ],
+            },
+        ],
         "time_range": {"since": since, "until": until},
     }
     return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id).with_body(encode_request_body(body))

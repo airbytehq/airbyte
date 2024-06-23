@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedupingTest {
@@ -178,7 +179,9 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
-    runSync(catalog, messages1, "airbyte/destination-bigquery:2.4.20");
+    // We don't want to send a stream status message, because this version of destination-bigquery will
+    // crash.
+    runSync(catalog, messages1, "airbyte/destination-bigquery:2.4.20", Function.identity(), null);
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");

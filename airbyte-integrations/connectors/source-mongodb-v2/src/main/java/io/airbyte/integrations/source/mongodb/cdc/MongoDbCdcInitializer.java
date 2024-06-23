@@ -69,6 +69,7 @@ public class MongoDbCdcInitializer {
    * @param mongoClient The {@link MongoClient} used to interact with the target MongoDB server.
    * @param cdcMetadataInjector The {@link MongoDbCdcConnectorMetadataInjector} used to add metadata
    *        to generated records.
+   * @param streams The configured Airbyte catalog of streams for the source.
    * @param stateManager The {@link MongoDbStateManager} that provides state information used for
    *        iterator selection.
    * @param emittedAt The timestamp of the sync.
@@ -98,7 +99,7 @@ public class MongoDbCdcInitializer {
     final BsonDocument initialResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, incrementalOnlyStreamsCatalog);
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, mongoClient, databaseName);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, databaseName);
     final MongoDbCdcState cdcState =
         (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
             ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
@@ -107,8 +108,7 @@ public class MongoDbCdcInitializer {
         Jsons.clone(defaultDebeziumProperties),
         incrementalOnlyStreamsCatalog,
         cdcState.state(),
-        config.getDatabaseConfig(),
-        mongoClient);
+        config.getDatabaseConfig());
 
     // We should always be able to extract offset out of state if it's not null
     if (cdcState.state() != null && optSavedOffset.isEmpty()) {
@@ -153,8 +153,12 @@ public class MongoDbCdcInitializer {
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, queueSize, false);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
+    final var cdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
+        .toList();
     final var propertiesManager =
-        new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog);
+        new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog, cdcStreamList);
     final var eventConverter =
         new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
 

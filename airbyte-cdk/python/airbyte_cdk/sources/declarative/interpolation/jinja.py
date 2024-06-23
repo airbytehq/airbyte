@@ -14,6 +14,19 @@ from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import SandboxedEnvironment
 
 
+class StreamPartitionAccessEnvironment(SandboxedEnvironment):
+    """
+    Currently, source-jira is setting an attribute to StreamSlice specific to its use case which because of the PerPartitionCursor is set to
+    StreamSlice._partition but not exposed through StreamSlice.partition. This is a patch to still allow source-jira to have access to this
+    parameter
+    """
+
+    def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
+        if attr in ["_partition"]:
+            return True
+        return super().is_safe_attribute(obj, attr, value)  # type: ignore  # for some reason, mypy says 'Returning Any from function declared to return "bool"'
+
+
 class JinjaInterpolation(Interpolation):
     """
     Interpolation strategy using the Jinja2 template engine.
@@ -49,7 +62,7 @@ class JinjaInterpolation(Interpolation):
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
     def __init__(self) -> None:
-        self._environment = SandboxedEnvironment()
+        self._environment = StreamPartitionAccessEnvironment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 

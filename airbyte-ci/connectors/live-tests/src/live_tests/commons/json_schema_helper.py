@@ -3,7 +3,8 @@
 #
 
 
-from functools import reduce
+from enum import Enum
+from functools import reduce, total_ordering
 from typing import Any, Dict, List, Mapping, Optional, Set, Text, Union
 
 import dpath.util
@@ -48,6 +49,22 @@ class CatalogField:
         path = path or self.path
         value = reduce(lambda data, key: data[key], path, record)
         return self._parse_value(value)
+
+
+@total_ordering
+class ComparableType(Enum):
+    NULL = 0
+    BOOLEAN = 1
+    INTEGER = 2
+    NUMBER = 3
+    STRING = 4
+    OBJECT = 5
+
+    def __lt__(self, other: Any) -> bool:
+        if self.__class__ is other.__class__:
+            return self.value < other.value  # type: ignore
+        else:
+            return NotImplemented
 
 
 class JsonSchemaHelper:
@@ -263,3 +280,88 @@ def get_paths_in_connector_config(schema: dict) -> List[str]:
     :returns list of path_in_connector_config paths
     """
     return ["/" + "/".join(value["path_in_connector_config"]) for value in schema.values()]
+
+
+def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
+    """
+    Return true iff the record conforms to the supplied schema.
+
+    The record conforms to the supplied schema iff:
+    - All columns in the record are in the schema.
+    - For every column in the record, that column's type is equal to or narrower than the same column's
+      type in the schema.
+    """
+    schema_columns = set(schema.get("properties", {}).keys())
+    record_columns = set(record.keys())
+
+    if not record_columns.issubset(schema_columns):
+        return False
+
+    for column, definition in schema.get("properties", {}).items():
+        expected_type = definition.get("type")
+        value = record.get(column)
+
+        if value is not None:
+            if isinstance(expected_type, list):
+                return any(_is_equal_or_narrower_type(value, e) for e in expected_type)
+            elif expected_type == "object":
+                return isinstance(value, dict)
+            elif expected_type == "array":
+                if not isinstance(value, list):
+                    return False
+                array_type = definition.get("items", {}).get("type")
+                if not all(_is_equal_or_narrower_type(v, array_type) for v in value):
+                    return False
+            elif not _is_equal_or_narrower_type(value, expected_type):
+                return False
+
+    return True
+
+
+def _is_equal_or_narrower_type(value: Any, expected_type: str) -> bool:
+    if isinstance(value, list):
+        # We do not compare lists directly; the individual items are compared.
+        # If we hit this condition, it means that the expected type is not
+        # compatible with the inferred type.
+        return False
+
+    inferred_type = ComparableType(_get_inferred_type(value))
+
+    if inferred_type is None:
+        return False
+
+    return ComparableType(inferred_type) <= ComparableType(_get_comparable_type(expected_type))
+
+
+def _get_inferred_type(value: Any) -> Optional[ComparableType]:
+    if value is None:
+        return ComparableType.NULL
+    if isinstance(value, bool):
+        return ComparableType.BOOLEAN
+    if isinstance(value, int):
+        return ComparableType.INTEGER
+    if isinstance(value, float):
+        return ComparableType.NUMBER
+    if isinstance(value, str):
+        return ComparableType.STRING
+    if isinstance(value, dict):
+        return ComparableType.OBJECT
+    else:
+        return None
+
+
+def _get_comparable_type(value: Any) -> Optional[ComparableType]:
+    if value == "null":
+        return ComparableType.NULL
+    if value == "boolean":
+        return ComparableType.BOOLEAN
+    if value == "integer":
+        return ComparableType.INTEGER
+    if value == "number":
+        return ComparableType.NUMBER
+    if value == "string":
+        return ComparableType.STRING
+    if value == "object":
+        return ComparableType.OBJECT
+    else:
+        return None
