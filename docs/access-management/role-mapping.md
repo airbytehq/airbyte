@@ -14,12 +14,12 @@ To enable the Airbyte API in Airbyte Teams or Self-Managed Enterprise, follow th
 
 Organization-wide permissions and each set of workspace permissions each count as their own permission object. For example, if an Airbyte user is an 'Organization Member' and has 'Workspace Editor' access in 3 distinct workspaces, this user has 4 permissions in total.
 
-1. [Get a list of current Airbyte users](https://reference.airbyte.com/reference/listusers).
+1. [Get a list of current Airbyte users in your organization](https://reference.airbyte.com/reference/listuserswithinanorganization).
 2. [Get a list of current Airbyte workspaces](https://reference.airbyte.com/reference/listworkspaces).
-2. [Provide an Airbyte user with access to a new workspace](https://reference.airbyte.com/reference/createpermission).
+2. [Create a permission for an Airbyte user to access to a new workspace](https://reference.airbyte.com/reference/createpermission).
 3. [Get a list of a user's current permissions](https://reference.airbyte.com/reference/listpermissions).
 3. [Modify permission scope or level of access](https://reference.airbyte.com/reference/updatepermission).
-4. [Delete a permmission](https://reference.airbyte.com/reference/deletepermission).
+4. [Delete a permission](https://reference.airbyte.com/reference/deletepermission).
 
 ## Script Example
 
@@ -77,14 +77,14 @@ usersGroups = json.load(usersGroupsFile)
 groupPermissionsFile = open('groupPermissions.json')
 groupPermissions = json.load(groupPermissionsFile)
 
-# 0 - Enter your own credentials to use Airbyte API. 
+# 0. - Enter your own credentials to use Airbyte API. 
 s = airbyte_api.AirbyteAPI(
   security=models.Security(
     bearer_auth='...'
   ),
 )
 
-# 1 - List all users in your organization. Find your organization ID in the Airbyte settings page.
+# 1. - List all users in your organization. Find your organization ID in the Airbyte settings page.
 res = s.users.list_users(request=api.ListUsersRequest(
   api.ListUsersRequest(organization_id='00000000-00000000-00000000-00000000')
 ))
