@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1e9086ab-ddac-4c1d-aafd-ba43ff575fe4
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/source-google-pagespeed-insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
   githubIssueLabel: source-google-pagespeed-insights
