@@ -18,6 +18,8 @@ from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.source import TState
 
+from .stream_reader import SourceGithubFilesReader
+
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -215,8 +217,7 @@ class Employees(IncrementalGithubFilesStream):
 class SourceGithubFiles(FileBasedSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
-            # stream_reader=SourceGoogleDriveStreamReader(),
-            stream_reader={},
+            stream_reader=SourceGithubFilesReader(),
             spec_class=SourceGithubFilesSpec,
             catalog=catalog,
             config=config,

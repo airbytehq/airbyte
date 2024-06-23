@@ -16,7 +16,8 @@ packages = [ { include = "source_github_files" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = {extras = ["file-based"], version = "^1"}
+requests = "*"
 
 [tool.poetry.scripts]
 source-github-files = "source_github_files.run:run"
@@ -25,4 +26,3 @@ source-github-files = "source_github_files.run:run"
 requests-mock = "*"
 pytest-mock = "*"
 pytest = "*"
-
