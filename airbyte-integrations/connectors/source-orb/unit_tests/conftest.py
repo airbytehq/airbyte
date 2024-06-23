@@ -3,6 +3,7 @@
 #
 from pytest import fixture
 
+
 @fixture
 def config_pass():
     return {"api_key": "test-token", "start_date": "2023-01-25T00:00:00Z"}

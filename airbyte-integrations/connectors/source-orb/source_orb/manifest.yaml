@@ -330,9 +330,9 @@ streams:
 
 schemas:
   subscriptions:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     type:
-      - 'null'
+      - "null"
       - object
     additionalProperties: true
     properties:
@@ -342,7 +342,7 @@ schemas:
       created_at:
         description: The date and time when the subscription was created.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       customer_id:
@@ -351,18 +351,18 @@ schemas:
       external_customer_id:
         description: The external identifier of the customer associated with the subscription.
         type:
-          - 'null'
+          - "null"
           - string
       start_date:
         description: The date and time when the subscription is set to start.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       end_date:
         description: The date and time when the subscription is set to end.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       plan_id:
@@ -379,9 +379,9 @@ schemas:
       - status
 
   customers:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     type:
-      - 'null'
+      - "null"
       - object
     additionalProperties: true
     properties:
@@ -392,7 +392,7 @@ schemas:
         description: The ID of the customer in an external system.
         type:
           - string
-          - 'null'
+          - "null"
       name:
         description: The name of the customer.
         type: string
@@ -400,108 +400,108 @@ schemas:
         description: The email address of the customer.
         type:
           - string
-          - 'null'
+          - "null"
       created_at:
         description: The date and time when the customer account was created.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       payment_provider:
         description: The payment provider used by the customer.
         type:
-          - 'null'
+          - "null"
           - string
       payment_provider_id:
         description: The ID of the customer in the payment provider's system.
         type:
-          - 'null'
+          - "null"
           - string
       timezone:
         description: The timezone setting of the customer.
         type:
-          - 'null'
+          - "null"
           - string
       shipping_address:
         description: The shipping address of the customer.
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           city:
             description: The city of the shipping address.
             type:
-              - 'null'
+              - "null"
               - string
           country:
             description: The country of the shipping address.
             type:
-              - 'null'
+              - "null"
               - string
           line1:
             description: The first line in the shipping address.
             type:
-              - 'null'
+              - "null"
               - string
           line2:
             description: The second line in the shipping address if applicable.
             type:
-              - 'null'
+              - "null"
               - string
           postal_code:
             description: The postal code of the shipping address.
             type:
-              - 'null'
+              - "null"
               - string
           state:
             description: The state or region of the shipping address.
             type:
-              - 'null'
+              - "null"
               - string
       billing_address:
         description: The billing address of the customer.
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           city:
             description: The city of the billing address.
             type:
-              - 'null'
+              - "null"
               - string
           country:
             description: The country of the billing address.
             type:
-              - 'null'
+              - "null"
               - string
           line1:
             description: The first line in the billing address.
             type:
-              - 'null'
+              - "null"
               - string
           line2:
             description: The second line in the billing address if applicable.
             type:
-              - 'null'
+              - "null"
               - string
           postal_code:
             description: The postal code of the billing address.
             type:
-              - 'null'
+              - "null"
               - string
           state:
             description: The state or region of the billing address.
             type:
-              - 'null'
+              - "null"
               - string
     required:
       - id
       - created_at
 
   subscription_usage:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     type:
-      - 'null'
+      - "null"
       - object
     additionalProperties: true
     properties:
@@ -536,9 +536,9 @@ schemas:
       - subscription_id
 
   plans:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     type:
-      - 'null'
+      - "null"
       - object
     properties:
       id:
@@ -547,18 +547,18 @@ schemas:
       created_at:
         description: The timestamp of when the plan was created
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       description:
         description: A short description of the plan
         type:
-          - 'null'
+          - "null"
           - string
       name:
         description: The name of the plan
         type:
-          - 'null'
+          - "null"
           - string
       prices:
         description: An array of pricing options for the plan
@@ -582,9 +582,9 @@ schemas:
       - created_at
 
   invoices:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     type:
-      - 'null'
+      - "null"
       - object
     properties:
       id:
@@ -593,7 +593,7 @@ schemas:
       created_at:
         description: The date and time when the invoice was created.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       invoice_date:
@@ -609,7 +609,7 @@ schemas:
       invoice_pdf:
         description: The URL to download the PDF version of the invoice.
         type:
-          - 'null'
+          - "null"
           - string
       subtotal:
         description: The subtotal amount before applying taxes or discounts.
@@ -624,60 +624,60 @@ schemas:
         type:
           - string
       status:
-        description: 'The current status of the invoice (e.g., pending, paid, voided).'
+        description: "The current status of the invoice (e.g., pending, paid, voided)."
         type:
           - string
       memo:
         description: Any additional notes or comments associated with the invoice.
         type:
-          - 'null'
+          - "null"
           - string
       issue_failed_at:
         description: The date and time when issuing the invoice failed.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       sync_failed_at:
         description: The date and time when syncing the invoice data failed.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       payment_failed_at:
         description: The date and time when the payment for the invoice failed.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       payment_started_at:
         description: The date and time when the payment process started for the invoice.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       voided_at:
         description: The date and time when the invoice was voided.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       paid_at:
         description: The date and time when the invoice was paid.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       issued_at:
         description: The date and time when the invoice was issued.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       hosted_invoice_url:
         description: The URL to view the hosted invoice online.
         type:
-          - 'null'
+          - "null"
           - string
       line_items:
         description: The line items included in the invoice.
@@ -701,20 +701,20 @@ schemas:
             start_date:
               description: The start date of the service period for the line item.
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             end_date:
               description: The end date of the service period for the line item.
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
       subscription:
         description: Information about the subscription associated with the invoice.
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           id:
             description: The unique identifier of the subscription.
@@ -730,9 +730,9 @@ schemas:
       - status
 
   credits_ledger_entries:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     type:
-      - 'null'
+      - "null"
       - object
     properties:
       id:
@@ -747,27 +747,27 @@ schemas:
       amount:
         description: The amount of credits involved in the ledger entry
         type:
-          - 'null'
+          - "null"
           - number
       block_expiry_date:
         description: The date and time when the credit block will expire
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       created_at:
         description: The date and time when the ledger entry was created
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       entry_type:
-        description: 'The type of ledger entry (e.g., debit, credit)'
+        description: "The type of ledger entry (e.g., debit, credit)"
         type: string
       new_block_expiry_date:
         description: The new expiry date and time of the credit block after the ledger entry
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       customer_id:
@@ -776,17 +776,17 @@ schemas:
       credit_block_per_unit_cost_basis:
         description: The cost per unit of the credit block
         type:
-          - 'null'
+          - "null"
           - string
       description:
         description: A description of the ledger entry
         type:
-          - 'null'
+          - "null"
           - string
       credit_block_id:
         description: The ID of the associated credit block
         type:
-          - 'null'
+          - "null"
           - string
     required:
       - id

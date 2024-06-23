@@ -3,8 +3,8 @@
 #
 
 from typing import Any, Mapping
-import pytest
 
+import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from source_orb.source import SourceOrb

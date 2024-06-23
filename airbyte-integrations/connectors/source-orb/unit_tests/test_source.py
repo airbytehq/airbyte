@@ -2,8 +2,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock
 from urllib import parse
 
 from source_orb.source import SourceOrb

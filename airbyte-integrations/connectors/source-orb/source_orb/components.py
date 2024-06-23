@@ -17,11 +17,11 @@ class SubscriptionUsageTransformation(RecordTransformation):
     subscription_id: str
 
     def transform(
-            self,
-            record: Record,
-            config: Optional[Config] = None,
-            stream_state: Optional[StreamState] = None,
-            stream_slice: Optional[StreamSlice] = None,
+        self,
+        record: Record,
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
 
         # for each top level response record, there can be multiple sub-records depending
