@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_babelforce import SourceBabelforce
+
+from .source import SourceBabelforce
 
 
 def run():
