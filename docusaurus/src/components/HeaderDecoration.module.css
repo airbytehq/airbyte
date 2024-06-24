@@ -82,5 +82,5 @@ div.connectorMetadataCallout  {
 
 .metricIcon svg {
   height: 12px;
-  width: fit-content;
+  width: auto;
 }

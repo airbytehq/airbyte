@@ -142,7 +142,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Resp
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
 
