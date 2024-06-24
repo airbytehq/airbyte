@@ -2736,118 +2736,121 @@ schemas:
       account_sid:
         description: The unique identifier for the account associated with the execution.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       contact_channel_address:
         description: The contact channel address where the execution is targeted.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       contact_sid:
         description: The unique identifier for the contact associated with the execution.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       context:
         additionalProperties: true
         description: Additional context or data related to the execution.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       date_created:
         description: The date and time when the execution was created.
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_updated:
         description: The date and time when the execution was last updated.
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       flow_sid:
         description: The unique identifier for the flow associated with the execution.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       links:
         additionalProperties: true
-        description: Contains related hypermedia links associated with the executions
+        description:
+          Contains related hypermedia links associated with the executions
           data.
         properties:
           execution_context:
             description: Link to the execution context data.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           steps:
             description: Link to the steps involved in the execution.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       sid:
         description: The unique identifier for the execution.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       status:
         description: The status of the execution process.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       url:
         description: The URL endpoint for accessing detailed information about the execution.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   Outgoing Caller Ids:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       account_sid:
-        description: The unique identifier for the Twilio account associated with this
+        description:
+          The unique identifier for the Twilio account associated with this
           outgoing caller ID.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_created:
         description: The date and time when the outgoing caller ID was created.
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_updated:
         description: The date and time when the outgoing caller ID was last updated.
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       friendly_name:
         description: A user-defined friendly name for the outgoing caller ID.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       phone_number:
         description: The phone number associated with the outgoing caller ID.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sid:
         description: The unique identifier for the outgoing caller ID.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       uri:
-        description: The URI for accessing detailed information about the outgoing caller
+        description:
+          The URI for accessing detailed information about the outgoing caller
           ID.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   Recordings:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3551,44 +3554,46 @@ schemas:
     additionalProperties: true
     properties:
       account_sid:
-        description: The unique identifier of the account associated with this message
+        description:
+          The unique identifier of the account associated with this message
           media.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       content_type:
         description: The MIME type of the media content.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_created:
         description: The date and time when the message media was created.
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_updated:
         description: The date and time when the message media was last updated.
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       parent_sid:
-        description: The unique identifier of the parent message associated with this
+        description:
+          The unique identifier of the parent message associated with this
           media.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sid:
         description: The unique identifier of the message media.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       uri:
         description: The URI that can be used to access this message media resource.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   Usage Records:
     type: object
     $schema: http://json-schema.org/schema#
