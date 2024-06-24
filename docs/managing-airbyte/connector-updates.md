@@ -1,6 +1,8 @@
 # Managing Connector Updates in Airbyte
 
-While maintaining an Airbyte instance, you'll need to manage connector updates. These are essential for improved functionality and reliability over time. Our team and community contributors are dedicated to maintaining and improving the functionality of connectors. Reasons for updates can be broadly categorized into bug fixes, new features, and changes that impact the user experience or the functionality of the connector.
+While maintaining an Airbyte instance, you'll need to manage connector updates. These are essential for improved functionality, reliability, and compatibility over time. Our team and community contributors are dedicated to maintaining up-to-date connectors. Reasons for updates can be broadly categorized into bug fixes, new features, and changes that impact the user experience or the functionality of the connector.
+
+The issue of compatibility is important in maintaining connectors because as various APIs and databases you're syncing with Airbyte evolve over time, we must review the connectors for compatibility with those changes. Sometimes, this kind of update introduces a breaking change. Without making the changes necessary for an update of this type, your connection will eventually stop working because it will be incompatible with the source or destination API.
 
 This guide helps you understand the types of updates you may see, their impact on your Airbyte environment, and the actions you may need to take in response to certain types of updates.
 
@@ -30,10 +32,15 @@ Each connector's changelog details its update history. You can find it in the [c
 
 **Major Updates:** These are opt-in. You'll receive notifications about major updates and have a deadline to apply them. If you choose not to opt-in by the deadline, any syncs using the affected connector will be paused to prevent compatibility issues.
 
-<!-- Can I find a screenshot for something in cloud requiring attention and showing a deadline? -->
+Updates involving a breaking change will be called out in the UI. The example below shows a prompt that you might see if a connector needs upgrading. Note there is a deadline associated with this upgrade and a link to further guidance on completing the upgrade. 
+
+![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
 
 
 ## Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
+
+It's good practice to ensure that you are using an updated version of Airbyte when updating connections. 
+
 **All Updates (Major, Minor, Patch):** These are opt-in via the settings page. You'll see a badge in the sidebar indicating available updates.
 
 **Minor and Patch Updates:** Once you opt-in, these are applied immediately and globally to all connectors of that type in your instance.
@@ -41,16 +48,18 @@ Each connector's changelog details its update history. You can find it in the [c
 **Major Updates:** These require a two-step opt-in process:
 1. Opt-in to the update on the settings page.
 
-2. Accept the update for each individual connection using the affected connector. This allows you to review and potentially adjust the connection settings before applying the update.
+2. While there is an option available to upgrade all connections at once, we recommend that you accept the update for each individual connection using the affected connector. This allows you to review and potentially adjust the connection settings before applying the update.
+
+<Arcade id="WfelDcLx6EivqngiTlFR" title="Settings > Connector Upgrade Prompts" paddingBottom="calc(61.37931034482759% + 41px)" />
 
 Note that in an Airbyte Open Source or Self-Managed Enterprise instance, syncs are not automatically paused. This differs from what you would see in Airbyte Cloud. Although syncs will not be paused if you miss the deadline for a major update, we recommended you update promptly to avoid potential compatibility issues.
-
-<!-- Maybe a short clip from arcade showing opt-in and updating -->
 
 ## Actions to Take in Response to Connector Updates
 
 ### Review the Changelog: 
-Before applying any update, carefully review the changelog to understand the changes and their potential impact on your existing connections.
+Before applying any update, carefully review the changelog to understand the changes and their potential impact on your existing connections. You can find the changelog for any connector by navigating to the bottom of the documentation for the connector and expanding the view. 
+
+<Arcade id="bNNS6hQ4nNCXiXnq85jI" title="Settings > Connector Upgrade Prompts" paddingBottom="calc(61.37931034482759% + 41px)" />
 
 ### Plan for Major Updates: 
 Major updates may require you to adjust connection settings or even make changes to your data pipelines. Be sure to allocate time and resources for this.
@@ -58,7 +67,3 @@ Major updates may require you to adjust connection settings or even make changes
 :::info
 Important Note: Airbyte provides tooling that guarantees safe connector version bumps and enforces automated version bumps for minor and patch updates.  You will always need to manually update for major version bumps.
 :::
-
-<!-- review this tomorrow and look for one or two places I could add a screenshot or video -->
-
-<!-- question about RBAC, who is able to opt in?  -->
