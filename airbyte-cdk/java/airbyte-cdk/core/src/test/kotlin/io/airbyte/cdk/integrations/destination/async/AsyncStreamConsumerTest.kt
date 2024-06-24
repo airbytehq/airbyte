@@ -43,7 +43,6 @@ import java.util.stream.Stream
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertThrowsExactly
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -462,12 +461,11 @@ class AsyncStreamConsumerTest {
 
     @Test
     internal fun deserializeAirbyteMessageWithUnrecognizedEnum() {
-        val airbyteMessage =
-            AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD);
+        val airbyteMessage = AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         val serialized = Jsons.serialize(airbyteMessage)
         // Fake an upstream protocol change
-        val retyped = serialized.replace(AirbyteMessage.Type.RECORD.toString(), "__UNKNOWN_TYPE_OF_MESSAGE__")
+        val retyped =
+            serialized.replace(AirbyteMessage.Type.RECORD.toString(), "__UNKNOWN_TYPE_OF_MESSAGE__")
         // Assert that this doesn't throw an exception
         assertDoesNotThrow {
             airbyteMessageDeserializer.deserializeAirbyteMessage(

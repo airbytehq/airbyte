@@ -163,7 +163,10 @@ object Jsons {
     }
 
     @JvmStatic
-    fun <T : Any> tryDeserializeExactNullingUnknownEnums(jsonString: String?, klass: Class<T>?): Optional<T> {
+    fun <T : Any> tryDeserializeExactNullingUnknownEnums(
+        jsonString: String?,
+        klass: Class<T>?
+    ): Optional<T> {
         return try {
             Optional.of(OBJECT_MAPPER_EXACT_NULL_UNKNOWN_ENUMS.readValue(jsonString, klass))
         } catch (e: Throwable) {

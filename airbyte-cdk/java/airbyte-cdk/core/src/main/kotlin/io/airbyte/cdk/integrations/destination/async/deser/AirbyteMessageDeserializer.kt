@@ -32,9 +32,8 @@ class AirbyteMessageDeserializer(
         // Use JsonSubTypes and extend StdDeserializer to properly handle this.
         // Make immutability a first class citizen in the PartialAirbyteMessage class.
         val partial =
-            Jsons.tryDeserializeExactNullingUnknownEnums(message, PartialAirbyteMessage::class.java).orElseThrow {
-                RuntimeException("Unable to deserialize PartialAirbyteMessage.")
-            }
+            Jsons.tryDeserializeExactNullingUnknownEnums(message, PartialAirbyteMessage::class.java)
+                .orElseThrow { RuntimeException("Unable to deserialize PartialAirbyteMessage.") }
 
         val msgType = partial.type
         if (AirbyteMessage.Type.RECORD == msgType && partial.record?.data != null) {
