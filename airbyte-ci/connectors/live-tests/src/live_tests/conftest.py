@@ -90,6 +90,11 @@ def pytest_addoption(parser: Parser) -> None:
         default=TestEvaluationMode.STRICT.value,
         help='If "diagnostic" mode is selected, all tests will pass as long as there is no exception; warnings will be logged. In "strict" mode, tests may fail.',
     )
+    parser.addoption(
+        "--run-noncertified-optional-tests",
+        action="store_true",
+        help='If "true", all tests will be run in strict mode. Otherwise, optional tests will be run in diagnostic mode. Noncertified-optional tests should always be run for certified connectors.',
+    )
 
 
 def pytest_configure(config: Config) -> None:
@@ -132,6 +137,9 @@ def pytest_configure(config: Config) -> None:
     custom_state_path = config.getoption("--state-path")
     config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
     config.stash[stash_keys.TEST_EVALUATION_MODE] = TestEvaluationMode(config.getoption("--test-evaluation-mode", "strict"))
+    config.stash[stash_keys.RUN_NONCERTIFIED_OPTIONAL_TESTS] = config.getoption("--run-noncertified-optional-tests", True)
+    if not config.stash[stash_keys.RUN_NONCERTIFIED_OPTIONAL_TESTS]:
+        config.stash[stash_keys.TEST_EVALUATION_MODE] = TestEvaluationMode.DIAGNOSTIC
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(get_option_or_fail(config, "--should-read-with-state"))
@@ -203,6 +211,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(pytest.mark.skip(reason="Test is marked with without_state marker"))
         if not config.stash[stash_keys.SHOULD_READ_WITH_STATE] and "with_state" in item.keywords:
             item.add_marker(pytest.mark.skip(reason="Test is marked with with_state marker"))
+        if not config.stash[stash_keys.RUN_NONCERTIFIED_OPTIONAL_TESTS] and "noncertified_optional" in item.keywords:
+            item.add_marker(pytest.mark.allow_diagnostic_mode)
 
 
 def pytest_terminal_summary(terminalreporter: SugarTerminalReporter, exitstatus: int, config: Config) -> None:

@@ -487,7 +487,11 @@
             {% for test in test_results %}
                 <div class="test-result">
                     {% if test["result"] == "passed" %}
+                    {% if test["output"] %}
+                    <h3 class="test-name" style="color: yellow;">{{ test["name"] }} [{{ test["result"] + " with errors" }}]</h3>
+                    {% else %}
                     <h3 class="test-name" style="color: #7ee787;">{{ test["name"] }} [{{ test["result"] }}]</h3>
+                    {% endif %}
                     {% elif  test["result"] == "failed" %}
                     <h3 class="test-name" style="color: crimson;">{{ test["name"] }} [{{ test["result"] }}]</h3>
                     {% else %}

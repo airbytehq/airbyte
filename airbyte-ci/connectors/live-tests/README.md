@@ -280,6 +280,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.17.6
+
+Allow non-certified connectors to run some tests in diagnostic mode.
+
 ### 0.17.5
 
 Performance improvements using caching.
