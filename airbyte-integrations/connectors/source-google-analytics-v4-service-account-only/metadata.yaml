@@ -22,9 +22,9 @@ data:
   name: Google Analytics (Universal Analytics)
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: generally_available
   supportLevel: community
   tags:
