@@ -23,7 +23,8 @@ When a connector version is 1.0 or higher, this means it's mature and now has se
 
 Each connector's changelog details its update history. You can find it in the [connector catalog](../integrations/) at the end of each individual connector's entry.
 
-<!-- maybe insert Arcade clip navigating to changelog and toggling it open for revew -->
+<Arcade id="vMZISMWeitH8X7kT1ArF" title="Review a Connector Changelog" paddingBottom="calc(61.37931034482759% + 41px)" />
+
 
 ## How Airbyte Handles Connector Updates
 
@@ -34,7 +35,7 @@ Each connector's changelog details its update history. You can find it in the [c
 
 Updates involving a breaking change will be called out in the UI. The example below shows a prompt that you might see if a connector needs upgrading. Note there is a deadline associated with this upgrade and a link to further guidance on completing the upgrade. 
 
-![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
+![Upgrade Path](../release_notes/assets/airbyte_destinations_v2_upgrade_prompt.png)
 
 
 ## Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
@@ -59,7 +60,6 @@ Note that in an Airbyte Open Source or Self-Managed Enterprise instance, syncs a
 ### Review the Changelog: 
 Before applying any update, carefully review the changelog to understand the changes and their potential impact on your existing connections. You can find the changelog for any connector by navigating to the bottom of the documentation for the connector and expanding the view. 
 
-<Arcade id="bNNS6hQ4nNCXiXnq85jI" title="Settings > Connector Upgrade Prompts" paddingBottom="calc(61.37931034482759% + 41px)" />
 
 ### Plan for Major Updates: 
 Major updates may require you to adjust connection settings or even make changes to your data pipelines. Be sure to allocate time and resources for this.
