@@ -1,0 +1,49 @@
+name: Connectors Insights
+
+on:
+  schedule:
+    - cron: "0 0,12 * * *" # Run every 12 hours UTC
+  workflow_dispatch:
+
+jobs:
+  connectors_insights:
+    name: Connectors Insights generation
+    runs-on: connector-nightly-xlarge
+    timeout-minutes: 1440 # 24 hours
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Get Dagger Engine Image
+        uses: ./.github/actions/get-dagger-engine-image
+        with:
+          dagger_engine_image: "registry.dagger.io/engine:v0.9.6"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry -C airbyte-ci/connectors/connectors_insights install --no-interaction --no-root
+      - name: Install project
+        run: poetry -C airbyte-ci/connectors/connectors_insights install --no-interaction
+      - name: Write Google service account key to file
+        run: echo "$GCP_SA_KEY" > $HOME/gcp-sa-key.json
+        env:
+          GCP_SA_KEY: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
+        run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-sa-key.json" >> $GITHUB_ENV
+      - name: Run connectors insights
+        run: |
+          poetry -C airbyte-ci/connectors/connectors_insights run connectors-insights generate --gcs-uri=gs://prod-airbyte-cloud-connector-metadata-service/connector_insights --connector-directory airbyte-integrations/connectors/ --concurrency 10
