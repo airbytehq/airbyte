@@ -569,16 +569,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -694,16 +685,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -819,16 +801,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -944,16 +917,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1069,16 +1033,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1194,16 +1149,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1319,16 +1265,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1444,16 +1381,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1569,16 +1497,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1694,16 +1613,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1819,16 +1729,7 @@ definitions:
               stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
-          type: DefaultPaginator
-          $parameters:
-            url_base: "https://api.linkedin.com/rest/"
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
