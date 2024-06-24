@@ -33,7 +33,11 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
     ) {
 
     private val log = KotlinLogging.logger {}
-    override fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
+    override fun writeRecordsImpl(
+        streamConfig: StreamConfig,
+        suffix: String,
+        stream: Stream<PartialAirbyteMessage>
+    ) {
         val writeBuffer =
             StagingSerializedBufferFactory.initializeBuffer(fileUploadFormat, destinationColumns)
 
@@ -51,7 +55,7 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
                 "Buffer flush complete for stream ${streamConfig.id.originalName} (${FileUtils.byteCountToDisplaySize(it.byteCount)}) to staging"
             }
             if (it.byteCount != 0L) {
-                storageOperation.writeToStage(streamConfig, writeBuffer)
+                storageOperation.writeToStage(streamConfig, suffix, writeBuffer)
             } else {
                 log.info { "Skipping writing to storage since there are no bytes to write" }
             }

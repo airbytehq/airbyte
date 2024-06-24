@@ -116,7 +116,8 @@ public class AzureBlobDestinationTest {
 
   private JsonNode getFormatConfig() {
     return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
+        + "  \"format_type\": \"JSONL\",\n"
+        + "  \"file_extension\": \"true\"\n"
         + "}");
   }
 
