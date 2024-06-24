@@ -3,8 +3,9 @@
 #
 
 import datetime
-import pytest
+
 import freezegun
+import pytest
 
 
 @pytest.fixture()
