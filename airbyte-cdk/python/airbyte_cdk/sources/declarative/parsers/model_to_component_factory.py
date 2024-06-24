@@ -142,7 +142,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Resp
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
 
@@ -603,6 +603,7 @@ class ModelToComponentFactory:
             partition_field_end=model.partition_field_end,
             partition_field_start=model.partition_field_start,
             message_repository=self._message_repository,
+            is_compare_strictly=model.is_compare_strictly,
             config=config,
             parameters=model.parameters or {},
         )
