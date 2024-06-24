@@ -25,7 +25,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     MIGRATE_POETRY_POETRY_INIT = "migrate_to_poetry.poetry_init"
     MIGRATE_POETRY_DELETE_SETUP_PY = "migrate_to_poetry.delete_setup_py"
     MIGRATE_POETRY_REGRESSION_TEST = "migrate_to_poetry.regression"
-    CONNECTOR_REGRESSION_TESTS = "connector_regression_tests"
+    CONNECTOR_LIVE_TESTS = "connector_live_tests"
     REGRESSION_TEST = "common.regression_test"
     ADD_CHANGELOG_ENTRY = "bump_version.changelog"
     SET_CONNECTOR_VERSION = "bump_version.set"

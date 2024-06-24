@@ -148,6 +148,26 @@ class AsyncStreamConsumerTest {
                             ),
                     ),
             )
+        private val STREAM2_SUCCESS_MESSAGE =
+            Jsons.serialize(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        AirbyteTraceMessage()
+                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withStreamStatus(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(
+                                        StreamDescriptor()
+                                            .withName(STREAM_NAME2)
+                                            .withNamespace(SCHEMA_NAME),
+                                    )
+                                    .withStatus(
+                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                                    ),
+                            ),
+                    ),
+            )
         private val STREAM2_FAILURE_MESSAGE =
             Jsons.serialize(
                 AirbyteMessage()
@@ -262,6 +282,9 @@ class AsyncStreamConsumerTest {
         consumer.start()
         consumeRecords(consumer, expectedRecords)
         consumer.accept(Jsons.serialize(STATE_MESSAGE1), RECORD_SIZE_20_BYTES)
+        consumer.accept(STREAM1_SUCCESS_MESSAGE, STREAM1_SUCCESS_MESSAGE.length)
+        consumer.accept(STREAM2_SUCCESS_MESSAGE, STREAM2_SUCCESS_MESSAGE.length)
+        consumer.accept(STREAM3_SUCCESS_MESSAGE, STREAM3_SUCCESS_MESSAGE.length)
         consumer.close()
 
         verifyStartAndClose()
@@ -298,6 +321,9 @@ class AsyncStreamConsumerTest {
         consumeRecords(consumer, expectedRecords)
         consumer.accept(Jsons.serialize(STATE_MESSAGE1), RECORD_SIZE_20_BYTES)
         consumer.accept(Jsons.serialize(STATE_MESSAGE2), RECORD_SIZE_20_BYTES)
+        consumer.accept(STREAM1_SUCCESS_MESSAGE, STREAM1_SUCCESS_MESSAGE.length)
+        consumer.accept(STREAM2_SUCCESS_MESSAGE, STREAM2_SUCCESS_MESSAGE.length)
+        consumer.accept(STREAM3_SUCCESS_MESSAGE, STREAM3_SUCCESS_MESSAGE.length)
         consumer.close()
 
         verifyStartAndClose()
@@ -334,6 +360,9 @@ class AsyncStreamConsumerTest {
 
         consumer.start()
         consumeRecords(consumer, allRecords)
+        consumer.accept(STREAM1_SUCCESS_MESSAGE, STREAM1_SUCCESS_MESSAGE.length)
+        consumer.accept(STREAM2_SUCCESS_MESSAGE, STREAM2_SUCCESS_MESSAGE.length)
+        consumer.accept(STREAM3_SUCCESS_MESSAGE, STREAM3_SUCCESS_MESSAGE.length)
         consumer.close()
 
         verifyStartAndClose()
@@ -496,7 +525,8 @@ class AsyncStreamConsumerTest {
         consumer.accept(STREAM1_SUCCESS_MESSAGE, STREAM1_SUCCESS_MESSAGE.length)
         consumer.accept(STREAM2_FAILURE_MESSAGE, STREAM2_FAILURE_MESSAGE.length)
         consumer.accept(STREAM3_SUCCESS_MESSAGE, STREAM3_SUCCESS_MESSAGE.length)
-        consumer.close()
+        // We had a failure, so expect an exception
+        assertThrows(RuntimeException::class.java) { consumer.close() }
 
         val captor: ArgumentCaptor<Map<StreamDescriptor, StreamSyncSummary>> =
             ArgumentCaptor.captor()
@@ -532,29 +562,29 @@ class AsyncStreamConsumerTest {
         consumer.start()
         consumeRecords(consumer, expectedRecords)
         // Note: no stream status messages
-        consumer.close()
+        // We assume stream failure, so expect an exception
+        assertThrows(RuntimeException::class.java) { consumer.close() }
 
         val captor: ArgumentCaptor<Map<StreamDescriptor, StreamSyncSummary>> =
             ArgumentCaptor.captor()
         Mockito.verify(onClose).accept(any(), capture(captor))
         assertEquals(
-            // All streams have a COMPLETE status.
-            // TODO: change this to INCOMPLETE after we switch the default behavior.
+            // All streams have an INCOMPLETE status.
             mapOf(
                 StreamDescriptor().withNamespace(SCHEMA_NAME).withName(STREAM_NAME) to
                     StreamSyncSummary(
                         expectedRecords.size.toLong(),
-                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
                     ),
                 StreamDescriptor().withNamespace(SCHEMA_NAME).withName(STREAM_NAME2) to
                     StreamSyncSummary(
                         0,
-                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
                     ),
                 StreamDescriptor().withNamespace(DEFAULT_NAMESPACE).withName(STREAM_NAME3) to
                     StreamSyncSummary(
                         0,
-                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
                     ),
             ),
             captor.value,
