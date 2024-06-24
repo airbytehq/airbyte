@@ -13,8 +13,7 @@ def pytest_collection_modifyitems(config, items):
     skip_cursor = pytest.mark.skip(reason="MANUALLY SKIPPED: Cursor never in schema")
     for item in items:
         if (
-            "test_defined_cursors_exist_in_schema" in item.name
-            or "test_read_sequential_slices" in item.name
+            "test_read_sequential_slices" in item.name
             or "test_two_sequential_reads" in item.name
         ):
             item.add_marker(skip_cursor)
