@@ -6,7 +6,7 @@ Google Firestore, officially known as Cloud Firestore, is a flexible, scalable d
 
 ## Getting started
 
-### Requiremnets
+### Requirements
 
 - An existing GCP project
 - A role with permissions to create a Service Account Key in GCP
