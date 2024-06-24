@@ -36,7 +36,9 @@ class AirbyteMessageDeserializer(
                 .orElseThrow { RuntimeException("Unable to deserialize PartialAirbyteMessage.") }
 
         val msgType = partial.type
-        if (AirbyteMessage.Type.RECORD == msgType && partial.record?.data != null) {
+        if (msgType == null) {
+            logger.warn { "Unrecognized message type." }
+        } else if (AirbyteMessage.Type.RECORD == msgType && partial.record?.data != null) {
             // Transform data provided by destination.
             val transformedData =
                 dataTransformer.transform(
