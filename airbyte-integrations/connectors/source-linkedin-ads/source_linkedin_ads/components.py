@@ -5,10 +5,10 @@
 
 import datetime
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlencode, urljoin
-
+from copy import deepcopy
 import pendulum
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -22,7 +22,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
+from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
@@ -210,29 +210,28 @@ class LinkedInSemiIncrementalFilter(RecordFilter):
 
 @dataclass
 class LinkedInAdsCustomRetriever(SimpleRetriever):
+    partition_router: Optional[Union[List[StreamSlicer], StreamSlicer]] = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
 
-    partition_router: Optional[Union[List[StreamSlicer], StreamSlicer]] = SinglePartitionRouter(parameters={})
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self.cursor = self._initialize_cursor()
 
-    def stream_slices(self) -> Iterable[Optional[StreamSlice]]:  # type: ignore
-        """
-        Specifies the slices for this stream. See the stream slicing section of the docs for more information.
-        """
+    def _initialize_cursor(self):
         partition_router = (
             CartesianProductStreamSlicer(self.partition_router, parameters={})
             if isinstance(self.partition_router, list)
             else self.partition_router
         )
 
-        stream_slicer = PerPartitionCursor(
+        return PerPartitionCursor(
             cursor_factory=CursorFactory(
-                lambda: self.stream_slicer,
+                lambda: deepcopy(self.stream_slicer),
             ),
             partition_router=partition_router,
         )
 
-        self._cursor = stream_slicer
-
-        return stream_slicer.stream_slices()
+    def stream_slices(self) -> Iterable[Optional[StreamSlice]]:
+        return self.cursor.stream_slices()
 
     def read_records(
         self,
@@ -241,18 +240,32 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
     ) -> Iterable[StreamData]:
         merged_records = defaultdict(dict)
 
+        self._apply_transformations()
+
+        for field_slice in stream_slice.cursor_slice.get("field_date_chunks", []):
+            updated_slice = StreamSlice(partition=stream_slice.partition, cursor_slice={**field_slice})
+            for record in super().read_records(records_schema, stream_slice=updated_slice):
+                merged_records[f"{record['end_date']}-{record['pivotValues']}"].update(record)
+
+        yield from merged_records.values()
+
+    def _apply_transformations(self):
         transformations = [
             AddFields(
                 fields=[
                     AddedFieldDefinition(
                         path=field["path"],
-                        value=InterpolatedString(string=field["value"], default=field["value"], parameters={}),
-                        value_type=type(""),
-                        parameters={},
+                        value=InterpolatedString(
+                            string=field["value"],
+                            default=field["value"],
+                            parameters={}
+                        ),
+                        value_type=str,
+                        parameters={}
                     )
                     for field in transformation.get("fields", [])
                 ],
-                parameters={},
+                parameters={}
             )
             for transformation in self.record_selector.transformations
             if isinstance(transformation, dict)
@@ -260,11 +273,3 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
 
         if transformations:
             self.record_selector.transformations = transformations
-
-        partition_field = self.partition_router[0].parent_stream_configs[0].partition_field.string
-
-        for field_slice in stream_slice.cursor_slice.get("field_date_chunks", []):
-            field_slice = StreamSlice(partition={}, cursor_slice={partition_field: stream_slice.partition[partition_field], **field_slice})
-            for record in super().read_records(records_schema, stream_slice=field_slice):
-                merged_records[f"{record['end_date']}-{record['pivotValues']}"].update(record)
-        yield from merged_records.values()
