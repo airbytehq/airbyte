@@ -24,17 +24,17 @@ class ConnectorErrorProfile {
     var errorType: String? = null // config, transient, system
     var externalMessage: String? = null
     var sampleInternalMessage: String? = null
-    var githubIssues: List<String>? = null
+    var referenceLink: List<String>? = null
 
     constructor(id: Int, errorClass: String?, regexMatchingPattern: String?,
-                errorType: String?, externalMessage: String?, sampleInternalMessage: String?, githubIssues: List<String>?) {
+                errorType: String?, externalMessage: String?, sampleInternalMessage: String?, referenceLink: List<String>?) {
         this.id = id
         this.errorClass = errorClass
         this.regexMatchingPattern = regexMatchingPattern
         this.errorType = errorType
         this.externalMessage = externalMessage
         this.sampleInternalMessage = sampleInternalMessage
-        this.githubIssues = githubIssues
+        this.referenceLink = referenceLink
     }
 }
 
