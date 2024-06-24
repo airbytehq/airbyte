@@ -47,7 +47,8 @@ abstract class JdbcSqlGenerator
 constructor(
     protected val namingTransformer: NamingConventionTransformer,
     private val cascadeDrop: Boolean = false,
-    private val columns: DestinationColumns = DestinationColumns.V2_WITH_GENERATION,
+    @VisibleForTesting
+    internal val columns: DestinationColumns = DestinationColumns.V2_WITH_GENERATION,
 ) : SqlGenerator {
     protected val cdcDeletedAtColumn: ColumnId = buildColumnId("_ab_cdc_deleted_at")
 
