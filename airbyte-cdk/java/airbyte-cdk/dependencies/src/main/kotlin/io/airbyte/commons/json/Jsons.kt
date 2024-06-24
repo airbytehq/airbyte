@@ -48,6 +48,7 @@ object Jsons {
         MoreMappers.initMapper().also {
             it.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
             it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
+            it.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
         }
 
     private val YAML_OBJECT_MAPPER: ObjectMapper = MoreMappers.initYamlMapper(YAMLFactory())
