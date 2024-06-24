@@ -48,6 +48,10 @@ object Jsons {
         MoreMappers.initMapper().also {
             it.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
             it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
+        }
+
+    private val OBJECT_MAPPER_EXACT_NULL_UNKNOWN_ENUMS: ObjectMapper =
+        OBJECT_MAPPER_EXACT.copy().also {
             it.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
         }
 
@@ -153,6 +157,15 @@ object Jsons {
     fun <T : Any> tryDeserializeExact(jsonString: String?, klass: Class<T>?): Optional<T> {
         return try {
             Optional.of(OBJECT_MAPPER_EXACT.readValue(jsonString, klass))
+        } catch (e: Throwable) {
+            handleDeserThrowable(e)
+        }
+    }
+
+    @JvmStatic
+    fun <T : Any> tryDeserializeExactNullingUnknownEnums(jsonString: String?, klass: Class<T>?): Optional<T> {
+        return try {
+            Optional.of(OBJECT_MAPPER_EXACT_NULL_UNKNOWN_ENUMS.readValue(jsonString, klass))
         } catch (e: Throwable) {
             handleDeserThrowable(e)
         }
