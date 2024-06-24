@@ -121,6 +121,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.4.4 | 2024-06-23 | [40001](https://github.com/airbytehq/airbyte/pull/40001) | Update dependencies |
 | `1.4.3`  | 2024-06-18 | [39549](https://github.com/airbytehq/airbyte/pull/39549) | Refactor: use `client_side_incremental` feature                                                  |
 | `1.4.2`  | 2024-06-06 | [39297](https://github.com/airbytehq/airbyte/pull/39297) | [autopull] Upgrade base image to v1.2.2                                                          |
 | `1.4.1`  | 2024-05-23 | [38631](https://github.com/airbytehq/airbyte/pull/38631) | Update deprecated authenticator package                                                          |
