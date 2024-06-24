@@ -25,6 +25,7 @@ import java.util.*
 import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.sql.Connection
 
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 class RedshiftS3StagingSqlOperations(
@@ -151,7 +152,7 @@ class RedshiftS3StagingSqlOperations(
             String.format(
                 """
         COPY %s.%s FROM '%s'
-        CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'
+        CREDENTIALS 'aws_access_key_id=' || ? || ';aws_secret_access_key=' || ?
         %s
         CSV GZIP
         REGION '%s' TIMEFORMAT 'auto'
@@ -161,13 +162,15 @@ class RedshiftS3StagingSqlOperations(
                 schemaName,
                 tableName,
                 getFullS3Path(s3Config.bucketName, manifestPath),
-                credentialConfig!!.accessKeyId,
-                credentialConfig.secretAccessKey,
                 encryptionClause,
                 s3Config.bucketRegion
             )
 
-        toRuntime { db!!.execute(copyQuery) }
+        toRuntime { db!!.execute { connection: Connection ->
+            val stmt = connection.prepareStatement(copyQuery)
+            stmt.setString(1, credentialConfig!!.accessKeyId)
+            stmt.setString(2, credentialConfig.secretAccessKey)
+            stmt.execute() } }
     }
 
     private fun createManifest(stagedFiles: List<String?>?, stagingPath: String?): String? {
