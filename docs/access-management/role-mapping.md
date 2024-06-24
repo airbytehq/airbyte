@@ -40,9 +40,9 @@ Organization-wide permissions and each set of workspace permissions each count a
 {
   "companyGroup1": [
     {
-      "scope": "workspace", ## Must be set to either 'workspace' or 'organization'.
+      "scope": "workspace",
       "scopeId": "workspace1",
-      "permissionType": "workspace_admin" ## Must be set to valid value, listed https://github.com/airbytehq/airbyte-api-python-sdk/blob/main/src/airbyte_api/models/publicpermissiontype.py.
+      "permissionType": "workspace_admin"
     },
     {
       "scope": "workspace",
@@ -59,6 +59,9 @@ Organization-wide permissions and each set of workspace permissions each count a
   ]
 }
 ```
+Notes:
+- `scope` must be set to either 'workspace' or 'organization'.
+- `permissionType` must be set to a valid value, e.g. 'workspace_admin', 'workspace_reader', 'organization_admin', etc. All valid values are listed [here](https://github.com/airbytehq/airbyte-api-python-sdk/blob/main/src/airbyte_api/models/publicpermissiontype.py).
 
 ### Complete Python Script
 
@@ -126,4 +129,4 @@ for airbyteUserResponse in allAirbyteUsers:
 
 </details>
 
-With the script enabled, you are free to configure it on a CRON job to run at the frequency of your choice.
+Please feel free to add your own logging and error-handling workflow in the example script, and you are free to configure it on a CRON job to run at the frequency of your choice.
