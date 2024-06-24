@@ -18,7 +18,6 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
-import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.SCHEMA_V2
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -64,7 +63,9 @@ class BigQueryDirectLoadingStorageOperation(
         // TODO: why do we need ratelimiter, and using unstable API from Google's guava
         rateLimiter.acquire()
         val tableId = tableId(streamConfig.id, suffix)
-        log.info { "Writing data to table $tableId with schema $SCHEMA_V2" }
+        log.info {
+            "Writing data to table $tableId with schema ${BigQueryRecordFormatter.SCHEMA_V2}"
+        }
         val writeChannel = initWriteChannel(tableId)
         writeChannel.use {
             data.forEach { record ->
@@ -84,7 +85,7 @@ class BigQueryDirectLoadingStorageOperation(
         val writeChannelConfiguration =
             WriteChannelConfiguration.newBuilder(tableId)
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
-                .setSchema(SCHEMA_V2)
+                .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
                 .setFormatOptions(FormatOptions.json())
                 .build() // new-line delimited json.
 
