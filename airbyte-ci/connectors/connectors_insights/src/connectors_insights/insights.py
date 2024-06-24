@@ -65,8 +65,7 @@ def get_sbom_inferred_insights(raw_sbom: str | None, connector: Connector) -> Di
         dependency = {"type": artifact["type"], "version": artifact["version"], "package_name": artifact["name"]}
         if isinstance(sbom_inferred_insights["dependencies"], list) and dependency not in sbom_inferred_insights["dependencies"]:
             sbom_inferred_insights["dependencies"].append(dependency)
-    if connector.cdk_name == "python" or connector.cdk_name == "low-code":
-        sbom_inferred_insights["cdk_version"] = python_artifacts.get("airbyte-cdk", {}).get("version")
+    sbom_inferred_insights["cdk_version"] = python_artifacts.get("airbyte-cdk", {}).get("version")
     return sbom_inferred_insights
 
 

@@ -56,5 +56,8 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.1.1
+- Fix missing CDK version on some connectors
+
 ### 0.1.0
 - Initial release
