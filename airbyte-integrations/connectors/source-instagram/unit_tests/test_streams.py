@@ -8,17 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
-from source_instagram.streams import (
-    DatetimeTransformerMixin,
-    InstagramStream,
-    Media,
-    MediaInsights,
-    Stories,
-    StoryInsights,
-    UserInsights,
-    UserLifetimeInsights,
-    Users,
-)
+from source_instagram.streams import DatetimeTransformerMixin, InstagramStream, MediaInsights, StoryInsights, UserInsights
 from utils import read_full_refresh, read_incremental
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
@@ -38,25 +28,6 @@ def test_state_outdated(api, config):
 
 def test_state_is_not_outdated(api, config):
     assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": {}})
-
-
-def test_media_get_children(api, requests_mock, some_config):
-    test_id = "test_id"
-    expected = {"id": "test_id"}
-
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/", [{}])
-
-    assert next(Media(api=api)._get_children([test_id])) == expected
-
-
-def test_media_read(api, user_stories_data, requests_mock):
-    test_id = "test_id"
-    stream = Media(api=api)
-
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/media", [{"json": user_stories_data}])
-
-    records = read_full_refresh(stream)
-    assert records == [{"business_account_id": "test_id", "id": "test_id", "page_id": "act_unknown_account"}]
 
 
 def test_media_insights_read(api, user_stories_data, user_media_insights_data, requests_mock):
@@ -154,23 +125,6 @@ def test_media_insights_read_error(api, requests_mock):
     assert records == expected_records
 
 
-def test_user_read(api, user_data, requests_mock):
-    test_id = "test_id"
-    stream = Users(api=api)
-
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/", [{"json": user_data}])
-
-    records = read_full_refresh(stream)
-    assert records == [
-        {
-            "biography": "Dino data crunching app",
-            "id": "17841405822304914",
-            "page_id": "act_unknown_account",
-            "username": "metricsaurus",
-            "website": "http://www.metricsaurus.com/",
-        }
-    ]
-
 
 def test_user_insights_read(api, config, user_insight_data, requests_mock):
     test_id = "test_id"
@@ -182,23 +136,6 @@ def test_user_insights_read(api, config, user_insight_data, requests_mock):
     records = read_incremental(stream, {})
     assert records
 
-
-def test_user_lifetime_insights_read(api, config, user_lifetime_insight_data, requests_mock):
-    test_id = "test_id"
-
-    stream = UserLifetimeInsights(api=api)
-
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_lifetime_insight_data}])
-
-    records = read_full_refresh(stream)
-    expected_record = {
-        "breakdown": "city",
-        "business_account_id": "test_id",
-        "metric": "impressions",
-        "page_id": "act_unknown_account",
-        "value": {"London, England": 22, "Sydney, New South Wales": 33}
-    }
-    assert expected_record in records
 
 
 @pytest.mark.parametrize(
@@ -257,15 +194,6 @@ def test_user_insights_state(api, user_insights, values, slice_dates, expected):
     assert stream.state == expected
 
 
-def test_stories_read(api, requests_mock, user_stories_data):
-    test_id = "test_id"
-    stream = Stories(api=api)
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/stories", [{"json": user_stories_data}])
-
-    records = read_full_refresh(stream)
-    assert records == [{"business_account_id": "test_id", "id": "test_id", "page_id": "act_unknown_account"}]
-
-
 def test_stories_insights_read(api, requests_mock, user_stories_data, user_media_insights_data):
     test_id = "test_id"
     stream = StoryInsights(api=api)
@@ -305,24 +233,23 @@ def test_stories_insights_read(api, requests_mock, user_stories_data, user_media
         "user_media_creation_time_error",
     ],
 )
-def test_common_error_retry(error_response, requests_mock, api, account_id):
+def test_common_error_retry(config, error_response, requests_mock, api, account_id, user_insight_data):
     """Error once, check that we retry and not fail"""
-    response = {"business_account_id": "test_id", "page_id": "act_unknown_account"}
+    # response = {"business_account_id": "test_id", "page_id": "act_unknown_account"}
     responses = [
         error_response,
         {
-            "json": response,
+            "json": user_insight_data,
             "status_code": 200,
         },
     ]
     test_id = "test_id"
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/media", responses)
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", responses)
 
-    stream = Media(api=api)
+    stream = UserInsights(api=api, start_date=config["start_date"])
     records = read_full_refresh(stream)
 
-    assert [response] == records
-
+    assert records
 
 def test_exit_gracefully(api, config, requests_mock, caplog):
     test_id = "test_id"

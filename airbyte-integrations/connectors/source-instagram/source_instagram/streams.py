@@ -123,73 +123,6 @@ class InstagramIncrementalStream(InstagramStream, IncrementalMixin):
         return new_stream_state
 
 
-class Users(InstagramStream):
-    """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user"""
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        account = stream_slice["account"]
-        ig_account = account["instagram_business_account"]
-        record = ig_account.api_get(fields=self.fields).export_all_data()
-        record["page_id"] = account["page_id"]
-        yield self.transform(record)
-
-
-class UserLifetimeInsights(DatetimeTransformerMixin, InstagramStream):
-    """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
-
-    primary_key = ["business_account_id", "breakdown"]
-    BREAKDOWNS = ["city", "country", "age,gender"]
-    BASE_METRIC = ["follower_demographics"]
-    period = "lifetime"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            for breakdown in self.BREAKDOWNS:
-                yield slice | {"breakdown": breakdown}
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        account = stream_slice["account"]
-        ig_account = account["instagram_business_account"]
-        for insight in ig_account.get_insights(params=self.request_params(stream_slice=stream_slice)):
-            insight_data = insight.export_all_data()
-            yield {
-                "page_id": account["page_id"],
-                "breakdown": stream_slice["breakdown"],
-                "business_account_id": ig_account.get("id"),
-                "metric": insight["name"],
-                "value": self._transform_breakdown_results(insight_data["total_value"]["breakdowns"][0]["results"]),
-            }
-
-    def request_params(
-        self,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_slice=stream_slice, stream_state=stream_state)
-        params.update(
-            {"metric": self.BASE_METRIC, "metric_type": "total_value", "period": self.period, "breakdown": stream_slice["breakdown"]}
-        )
-        return params
-
-    @staticmethod
-    def _transform_breakdown_results(breakdown_results: Iterable[Mapping[str, Any]]) -> Mapping[str, Any]:
-        return {res.get("dimension_values")[0]: res.get("value") for res in breakdown_results}
-
-
 class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
@@ -329,48 +262,7 @@ class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
         return False
 
 
-class Media(DatetimeTransformerMixin, InstagramStream):
-    """Children objects can only be of the media_type == "CAROUSEL_ALBUM".
-    And children objects do not support INVALID_CHILDREN_FIELDS fields,
-    so they are excluded when trying to get child objects to avoid the error
-    """
-
-    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children", "media_product_type"]
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        This method should be overridden by subclasses to read records based on the inputs
-        """
-        account = stream_slice["account"]
-        ig_account = account["instagram_business_account"]
-        media = ig_account.get_media(params=self.request_params(), fields=self.fields)
-        for record in media:
-            record_data = record.export_all_data()
-            if record_data.get("children"):
-                ids = [child["id"] for child in record["children"]["data"]]
-                record_data["children"] = list(self._get_children(ids))
-
-            record_data.update(
-                {
-                    "page_id": account["page_id"],
-                    "business_account_id": ig_account.get("id"),
-                }
-            )
-            yield self.transform(record_data)
-
-    def _get_children(self, ids: List):
-        children_fields = list(set(self.fields) - set(self.INVALID_CHILDREN_FIELDS))
-        for pk in ids:
-            yield self.transform(IGMedia(pk).api_get(fields=children_fields).export_all_data())
-
-
-class MediaInsights(Media):
+class MediaInsights(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights"""
 
     MEDIA_METRICS = ["impressions", "reach", "saved", "video_views", "likes", "comments", "shares"]
@@ -449,27 +341,7 @@ class MediaInsights(Media):
             raise error
 
 
-class Stories(DatetimeTransformerMixin, InstagramStream):
-    """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories"""
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        account = stream_slice["account"]
-        ig_account = account["instagram_business_account"]
-        stories = ig_account.get_stories(params=self.request_params(), fields=self.fields)
-        for record in stories:
-            record_data = record.export_all_data()
-            record_data["page_id"] = account["page_id"]
-            record_data["business_account_id"] = ig_account.get("id")
-            yield self.transform(record_data)
-
-
-class StoryInsights(Stories):
+class StoryInsights(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights"""
 
     metrics = ["impressions", "reach", "replies"]
