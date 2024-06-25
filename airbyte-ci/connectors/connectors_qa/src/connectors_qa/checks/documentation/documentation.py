@@ -472,7 +472,7 @@ class CheckSourceSectionContent(CheckDocumentationContent):
             return [f"Expected only one header {header}. Please rename duplicate."]
 
         actual = actual_contents[0]
-        actual = replace_connector_specific_urls_from_section(actual)[:len(expected)]
+        actual = replace_connector_specific_urls_from_section(actual)[: len(expected)]
         if actual != expected:
             errors = list(ndiff(actual.splitlines(keepends=True), expected.splitlines(keepends=True)))
 
