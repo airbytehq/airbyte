@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Set, Tuple
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Set, Tuple, List, Callable
+    from dagger import Container
 
 from connector_ops.utils import METADATA_FILE_NAME, Connector  # type: ignore
 
@@ -54,3 +58,28 @@ def gcs_uri_to_bucket_key(gcs_uri: str) -> Tuple[str, str]:
 
     bucket, key = match.groups()
     return bucket, key
+
+
+def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
+    """
+    Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
+
+    Underlying issue:
+        When a classic dagger with_exec is returning a >0 exit code an ExecError is raised.
+        It's OK for the majority of our container interaction.
+        But some execution, like running CAT, are expected to often fail.
+        In CAT we don't want ExecError to be raised on container interaction because CAT might write updated secrets that we need to pull from the container after the test run.
+        The bash trick below is a hack to always return a 0 exit code but write the actual exit code to a file.
+        The file is then read by the pipeline to determine the exit code of the container.
+
+    Args:
+        command (List[str]): The command to run in the container.
+
+    Returns:
+        Callable: _description_
+    """
+
+    def never_fail_exec_inner(container: Container) -> Container:
+        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
+
+    return never_fail_exec_inner
