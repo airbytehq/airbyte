@@ -3,6 +3,7 @@
  */
 package io.airbyte.integrations.destination.snowflake.operation
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.commons.string.Strings.join
@@ -17,6 +18,22 @@ private val log = KotlinLogging.logger {}
 
 /** Client wrapper providing Snowflake Stage related operations. */
 class SnowflakeStagingClient(private val database: JdbcDatabase) {
+
+    private data class CopyIntoTableResult(
+        val file: String,
+        val copyStatus: CopyStatus,
+        val rowsParsed: Int,
+        val rowsLoaded: Int,
+        val errorsSeen: Int,
+        val firstError: String?
+    )
+
+    private enum class CopyStatus {
+        UNKNOWN,
+        LOADED,
+        LOAD_FAILED,
+        PARTIALLY_LOADED
+    }
 
     // Most of the code here is preserved from
     // https://github.com/airbytehq/airbyte/blob/503b819b846663b0dff4c90322d0219a93e61d14/airbyte-integrations/connectors/destination-snowflake/src/main/java/io/airbyte/integrations/destination/snowflake/SnowflakeInternalStagingSqlOperations.java
@@ -63,8 +80,18 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
         recordsData: SerializableBuffer
     ) {
         val query = getPutQuery(stageName, stagingPath, recordsData.file!!.absolutePath)
-        log.info { "Executing query: $query" }
-        database.execute(query)
+        val queryId = UUID.randomUUID()
+        log.info { "executing query $queryId, $query" }
+        val results = database.queryJsons(query)
+        if (results.isNotEmpty() && (results.first().has("source_size"))) {
+            if (results.first().get("source_size").asLong() == 0L) {
+                // TODO: Should we break the Sync rather than proceeding with empty file for COPY ?
+                log.warn {
+                    "query $queryId, uploaded an empty file, no new records will be inserted"
+                }
+            }
+        }
+        log.info { "query $queryId, completed with $results" }
         if (!checkStageObjectExists(stageName, stagingPath, recordsData.filename)) {
             log.error {
                 "Failed to upload data into stage, object @${
@@ -84,7 +111,8 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
             filePath,
             stageName,
             stagingPath,
-            Runtime.getRuntime().availableProcessors()
+            // max allowed param is 99, we don't need so many threads for a single file upload
+            minOf(Runtime.getRuntime().availableProcessors(), 4)
         )
     }
 
@@ -144,11 +172,69 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
         streamId: StreamId
     ) {
         try {
+            val queryId = UUID.randomUUID()
             val query = getCopyQuery(stageName, stagingPath, stagedFiles, streamId)
-            log.info { "Executing query: $query" }
-            database.execute(query)
+            log.info { "query $queryId, $query" }
+            // queryJsons is intentionally used here to get the error message in case of failure
+            // instead of execute
+            val results = database.queryJsons(query)
+            if (results.isNotEmpty()) {
+                // There will be only one row returned as the result of COPY INTO query
+                val copyResult = getCopyResult(results.first())
+                when (copyResult.copyStatus) {
+                    CopyStatus.LOADED ->
+                        log.info {
+                            "query $queryId, successfully loaded ${copyResult.rowsLoaded} rows of data into table"
+                        }
+                    CopyStatus.LOAD_FAILED -> {
+                        log.error {
+                            "query $queryId, failed to load data into table, " +
+                                "rows_parsed: ${copyResult.rowsParsed}, " +
+                                "rows_loaded: ${copyResult.rowsLoaded} " +
+                                "errors: ${copyResult.errorsSeen}, " +
+                                "firstError: ${copyResult.firstError}"
+                        }
+                        throw Exception(
+                            "COPY into table failed with ${copyResult.errorsSeen} errors, check logs"
+                        )
+                    }
+                    else -> log.warn { "query $queryId, unrecognized result format, $results" }
+                }
+            } else {
+                log.warn { "query $queryId, no result returned" }
+            }
         } catch (e: SQLException) {
             throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
+        }
+    }
+
+    private fun getCopyResult(result: JsonNode): CopyIntoTableResult {
+        if (
+            result.has("file") &&
+                result.has("status") &&
+                result.has("rows_parsed") &&
+                result.has("rows_loaded") &&
+                result.has("errors_seen")
+        ) {
+            val status =
+                when (result.get("status").asText()) {
+                    "LOADED" -> CopyStatus.LOADED
+                    "LOAD_FAILED" -> CopyStatus.LOAD_FAILED
+                    "PARTIALLY_LOADED" -> CopyStatus.PARTIALLY_LOADED
+                    else -> CopyStatus.UNKNOWN
+                }
+            return CopyIntoTableResult(
+                result.get("file").asText(),
+                status,
+                result.get("rows_parsed").asInt(),
+                result.get("rows_loaded").asInt(),
+                result.get("errors_seen").asInt(),
+                if (result.has("first_error")) result.get("first_error").asText() else null
+            )
+        } else {
+            // Safety in case snowflake decides to change the response format
+            // instead of blowing up, we return a default object
+            return CopyIntoTableResult("", CopyStatus.UNKNOWN, 0, 0, 0, null)
         }
     }
 

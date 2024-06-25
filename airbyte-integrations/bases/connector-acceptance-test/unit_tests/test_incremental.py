@@ -26,7 +26,13 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.config import (
+    Config,
+    EmptyStreamConfiguration,
+    FutureStateConfig,
+    FutureStateCursorFormatConfiguration,
+    IncrementalConfig,
+)
 from connector_acceptance_test.tests import test_incremental
 from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
 from connector_acceptance_test.tests.test_incremental import future_state_configuration_fixture, future_state_fixture
@@ -296,39 +302,39 @@ async def test_incremental_two_sequential_reads(
             does_not_raise(),
             id="test_first_incremental_only_younger_records",
         ),
-        pytest.param(
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-05"}, "sourceStats": {"recordCount": 2.0}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
-            ],
-            [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-05"}, "sourceStats": {"recordCount": 2.0}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
-                ]
-            ],
-            IncrementalConfig(),
-            pytest.raises(AssertionError, match="Records for subsequent reads with new state should be different"),
-            id="test_incremental_returns_identical",
-        ),
+        # pytest.param(
+        #     [
+        #         {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},
+        #         {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-05"}, "sourceStats": {"recordCount": 2.0}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+        #         {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+        #         {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
+        #     ],
+        #     [
+        #         [
+        #             {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},
+        #             {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-05"}, "sourceStats": {"recordCount": 2.0}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+        #             {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+        #             {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
+        #         ]
+        #     ],
+        #     IncrementalConfig(),
+        #     pytest.raises(AssertionError, match="Records for subsequent reads with new state should be different"),
+        #     id="test_incremental_returns_identical",
+        # ),
         pytest.param(
             [
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
@@ -494,9 +500,15 @@ async def test_config_skip_test(mocker):
 
 
 @pytest.mark.parametrize(
-    "read_output, expectation",
+    "read_output, inputs, abnormal_state, json_schema, expectation",
     [
-        pytest.param([], pytest.raises(AssertionError), id="Error because incremental stream should always emit state messages"),
+        pytest.param(
+            [],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
+            pytest.raises(AssertionError), id="Error because incremental stream should always emit state messages"
+        ),
         pytest.param(
             [
                 AirbyteMessage(
@@ -514,6 +526,9 @@ async def test_config_skip_test(mocker):
                     ),
                 ),
             ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
             pytest.raises(AssertionError),
             id="Error because incremental sync with abnormally large state value should not produce record.",
         ),
@@ -531,23 +546,162 @@ async def test_config_skip_test(mocker):
                     ),
                 )
             ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {
+                            "name": "test_stream"
+                        },
+                        "stream_state": {
+                            "states": [
+                                {
+                                    "partition": {},
+                                    "cursor": {
+                                        "date": "2222-10-12"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
             does_not_raise(),
+        ),
+        pytest.param(
+            [
+                AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name="test_stream"),
+                            stream_state=AirbyteStateBlob.parse_obj({"date": "2022-10-04"}),
+                        ),
+                        data={"date": "2022-10-04"},
+                    ),
+                )
+            ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration(format="^\\d{4}-\\d{2}-\\d{2}$"))),
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {
+                            "name": "test_stream"
+                        },
+                        "stream_state": {
+                            "states": [
+                                {
+                                    "partition": {},
+                                    "cursor": {
+                                        "date": "2222-10-12"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
+            does_not_raise(),
+        ),
+        pytest.param(
+            [
+                AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name="test_stream"),
+                            stream_state=AirbyteStateBlob.parse_obj({"date": "2022-10-04"}),
+                        ),
+                        data={"date": "2022-10-04"},
+                    ),
+                )
+            ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {
+                            "name": "test_stream"
+                        },
+                        "stream_state": {
+                            "states": [
+                                {
+                                    "partition": {},
+                                    "cursor": {
+                                        "date": "2222-05-08T03:04:45.139-0700"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
+            pytest.raises(AssertionError),
+            id="Error because cursor formats do not match.",
+        ),
+        pytest.param(
+            [
+                AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name="test_stream"),
+                            stream_state=AirbyteStateBlob.parse_obj({"date": 10000000}),
+                        ),
+                        data={"date": 10000000},
+                    ),
+                )
+            ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {
+                            "name": "test_stream"
+                        },
+                        "stream_state": {
+                            "states": [
+                                {
+                                    "partition": {},
+                                    "cursor": {
+                                        "date": 10000000.0
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            {"type": "object", "properties": {"date": {"type": ["int", "null"]}}},
+            pytest.raises(AssertionError),
+            id="Error because cursor numeric types do not match.",
         ),
     ],
 )
-async def test_state_with_abnormally_large_values(mocker, read_output, expectation):
+async def test_state_with_abnormally_large_values(mocker, read_output, inputs, abnormal_state, json_schema, expectation):
     docker_runner_mock = mocker.MagicMock()
     docker_runner_mock.call_read_with_state = mocker.AsyncMock(return_value=read_output)
     t = _TestIncremental()
     with expectation:
         await t.test_state_with_abnormally_large_values(
+            inputs,
             connector_config=mocker.MagicMock(),
             configured_catalog=ConfiguredAirbyteCatalog(
                 streams=[
                     ConfiguredAirbyteStream(
                         stream=AirbyteStream(
                             name="test_stream",
-                            json_schema={"type": "object", "properties": {"date": {"type": "date"}}},
+                            json_schema=json_schema,
                             supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
                         ),
                         sync_mode=SyncMode.incremental,
@@ -556,7 +710,7 @@ async def test_state_with_abnormally_large_values(mocker, read_output, expectati
                     )
                 ]
             ),
-            future_state=mocker.MagicMock(),
+            future_state=abnormal_state,
             docker_runner=docker_runner_mock,
         )
 

@@ -83,7 +83,9 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
               "_airbyte_raw_id" TEXT NOT NULL,
               "_airbyte_data" VARIANT NOT NULL,
               "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
-              "_airbyte_loaded_at" TIMESTAMP_TZ
+              "_airbyte_loaded_at" TIMESTAMP_TZ,
+              "_airbyte_meta" VARIANT,
+              "_airbyte_generation_id" INTEGER
             )
             
             """.trimIndent()
@@ -123,12 +125,13 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
+        generationId: Long
     ) {
         val columnNames =
             if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES
         val cdcDeletedAtName = if (includeCdcDeletedAt) ",\"_AB_CDC_DELETED_AT\"" else ""
-        val cdcDeletedAtExtract = if (includeCdcDeletedAt) ",column19" else ""
+        val cdcDeletedAtExtract = if (includeCdcDeletedAt) ",column20" else ""
         val recordsText =
             records
                 .stream() // For each record, convert it to a string like "(rawId, extractedAt,
@@ -169,6 +172,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
               "_AIRBYTE_RAW_ID",
               "_AIRBYTE_EXTRACTED_AT",
               "_AIRBYTE_META",
+              "_AIRBYTE_GENERATION_ID",
               "ID1",
               "ID2",
               "UPDATED_AT",
@@ -193,9 +197,9 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
               column4,
               column5,
               column6,
-              PARSE_JSON(column7),
+              column7,
               PARSE_JSON(column8),
-              column9,
+              PARSE_JSON(column9),
               column10,
               column11,
               column12,
@@ -204,7 +208,8 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
               column15,
               column16,
               column17,
-              PARSE_JSON(column18)
+              column18,
+              PARSE_JSON(column19)
               #{cdc_deleted_at_extract}
             FROM VALUES
               #{records}
@@ -230,7 +235,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                 .stream() // For each record, convert it to a string like "(rawId, extractedAt,
                 // loadedAt, data)"
                 .map { record: JsonNode ->
-                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES.stream()
+                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITH_GENERATION.stream()
                         .map { fieldName: String? -> record[fieldName] }
                         .map { node: JsonNode? -> this.dollarQuoteWrap(node) }
                         .collect(Collectors.joining(","))
@@ -255,13 +260,17 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
               "_airbyte_raw_id",
               "_airbyte_extracted_at",
               "_airbyte_loaded_at",
-              "_airbyte_data"
+              "_airbyte_data",
+              "_airbyte_meta",
+              "_airbyte_generation_id"
             )
             SELECT
               column1,
               column2,
               column3,
-              PARSE_JSON(column4)
+              PARSE_JSON(column4),
+              PARSE_JSON(column5),
+              column6
             FROM VALUES
               #{records_text};
             
@@ -341,6 +350,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                         .put("_AIRBYTE_RAW_ID", "TEXT")
                         .put("_AIRBYTE_EXTRACTED_AT", "TIMESTAMP_TZ")
                         .put("_AIRBYTE_META", "VARIANT")
+                        .put("_AIRBYTE_GENERATION_ID", "NUMBER(38, 0)")
                         .put("ID1", "NUMBER(38, 0)")
                         .put("ID2", "NUMBER(38, 0)")
                         .put("UPDATED_AT", "TIMESTAMP_TZ")
@@ -708,7 +718,8 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                           
                           """.trimIndent()
                 )
-            )
+            ),
+            0
         )
         // Gather initial state at the start of our updated sync
         val initialState =
@@ -792,7 +803,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice01"
@@ -805,7 +816,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 2,
                                 "ID2": 100,
                                 "STRING": "Bob01"
@@ -818,7 +829,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 3",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 3,
                                 "ID2": 100,
                                 "STRING": "Charlie01"
@@ -831,7 +842,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 4",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 4,
                                 "ID2": 100,
                                 "STRING": "Dave01"
@@ -923,7 +934,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice02"
@@ -1029,7 +1040,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "pre-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice01"
@@ -1042,7 +1053,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "pre-dst utc 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 2,
                                 "ID2": 100,
                                 "STRING": "Bob01"
@@ -1108,7 +1119,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice02"
@@ -1121,7 +1132,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 2,
                                 "ID2": 100,
                                 "STRING": "Bob02"
@@ -1213,7 +1224,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                           {
                             "_airbyte_raw_id": "pre-dst local tz 3",
                             "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
-                            "_airbyte_meta": {"errors": []},
+                            "_airbyte_meta": {"changes": []},
                             "id1": 3,
                             "id2": 100,
                             "string": "Charlie00"
@@ -1226,7 +1237,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                           {
                             "_airbyte_raw_id": "post-dst local tz 4",
                             "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
-                            "_airbyte_meta": {"errors": []},
+                            "_airbyte_meta": {"changes": []},
                             "id1": 4,
                             "id2": 100,
                             "string": "Dave00"
@@ -1234,7 +1245,8 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                           
                           """.trimIndent()
                 )
-            )
+            ),
+            0
         )
         // Gather initial state at the start of our updated sync
         val initialState =
@@ -1318,7 +1330,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "pre-dst local tz 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice00"
@@ -1331,7 +1343,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice01"
@@ -1345,7 +1357,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "post-dst local tz 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 2,
                                 "ID2": 100,
@@ -1358,7 +1370,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 2,
                                 "ID2": 100,
                                 "STRING": "Bob01"
@@ -1373,7 +1385,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst local tz 3",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000-08:00",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 3,
                                 "ID2": 100,
@@ -1386,7 +1398,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 3",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 3,
                                 "ID2": 100,
                                 "STRING": "Charlie01"
@@ -1401,7 +1413,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "post-dst local tz 4",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000-07:00",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 4,
                                 "ID2": 100,
@@ -1414,7 +1426,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 4",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 4,
                                 "ID2": 100,
                                 "STRING": "Dave01"
@@ -1507,7 +1519,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst local tz 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 1,
                                 "ID2": 100,
@@ -1521,7 +1533,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 1,
                                 "ID2": 100,
@@ -1534,7 +1546,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice02"
@@ -1641,7 +1653,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst local tz 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 1,
                                 "ID2": 100,
@@ -1654,7 +1666,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "pre-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice01"
@@ -1668,7 +1680,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst local tz 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 2,
                                 "ID2": 100,
@@ -1681,7 +1693,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "pre-dst utc 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 2,
                                 "ID2": 100,
                                 "STRING": "Bob01"
@@ -1748,7 +1760,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst local tz 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 1,
                                 "ID2": 100,
@@ -1762,7 +1774,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 1,
                                 "ID2": 100,
@@ -1775,7 +1787,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 1",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 1,
                                 "ID2": 100,
                                 "STRING": "Alice02"
@@ -1789,7 +1801,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst local tz 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 2,
                                 "ID2": 100,
@@ -1803,7 +1815,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                                 "_AIRBYTE_RAW_ID": "pre-dst utc 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
                                 "_AIRBYTE_META": {
-                                  "errors": []
+                                  "changes": []
                                 },
                                 "ID1": 2,
                                 "ID2": 100,
@@ -1816,7 +1828,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                               {
                                 "_AIRBYTE_RAW_ID": "post-dst utc 2",
                                 "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
-                                "_AIRBYTE_META": {"errors": []},
+                                "_AIRBYTE_META": {"changes": []},
                                 "ID1": 2,
                                 "ID2": 100,
                                 "STRING": "Bob02"

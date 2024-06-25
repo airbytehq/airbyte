@@ -136,7 +136,10 @@ object ConnectorExceptionUtil {
             "temporary file size exceeds temp_file_limit"
         )
     private val TRANSIENT_EOF_EXCEPTION_MESSAGE: Array<String> =
-        arrayOf("connection was unexpectedly lost")
+        arrayOf(
+            "connection was unexpectedly lost",
+            "can not read response from server. expected to read"
+        )
     private val RECOVERY_CONNECTION_EXCEPTION_MESSAGE: Array<String> =
         arrayOf("due to conflict with recovery")
 
@@ -156,9 +159,10 @@ object ConnectorExceptionUtil {
         e: Throwable?,
         errorMessages: Array<String>
     ): Boolean {
-        val msg = e?.message!!.lowercase()
+        val msg: String = e?.message ?: return false
+        val msgLowerCase = msg.lowercase()
         for (errorMessage in errorMessages) {
-            if (msg.contains(errorMessage)) return true
+            if (msgLowerCase.contains(errorMessage)) return true
         }
         return false
     }

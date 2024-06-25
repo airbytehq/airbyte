@@ -1,17 +1,19 @@
 # News-Api source connector
 
-
-This is the repository for the News-Api source connector, written in Python.
+This is the repository for the News Api configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/news-api).
 
 ## Local development
 
 ### Prerequisites
-* Python (~=3.9)
-* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
+
+* Python (`^3.9`)
+* Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
+
 
 
 ### Installing the connector
+
 From this connector directory, run:
 ```bash
 poetry install --with dev
@@ -19,13 +21,15 @@ poetry install --with dev
 
 
 ### Create credentials
+
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/news-api)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_news_api/spec.yaml` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_news_api/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
 
 ### Locally running the connector
+
 ```
 poetry run source-news-api spec
 poetry run source-news-api check --config secrets/config.json
@@ -33,13 +37,16 @@ poetry run source-news-api discover --config secrets/config.json
 poetry run source-news-api read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
-### Running unit tests
-To run unit tests locally, from the connector directory run:
+### Running tests
+
+To run tests locally, from the connector directory run:
+
 ```
-poetry run pytest unit_tests
+poetry run pytest tests
 ```
 
 ### Building the docker image
+
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
 ```bash
@@ -50,6 +57,7 @@ An image will be available on your host with the tag `airbyte/source-news-api:de
 
 
 ### Running as a docker container
+
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-news-api:dev spec
@@ -59,16 +67,19 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ```
 
 ### Running our CI test suite
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 ```bash
 airbyte-ci connectors --name=source-news-api test
 ```
 
 ### Customizing acceptance Tests
+
 Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ### Dependency Management
+
 All of your dependencies should be managed via Poetry. 
 To add a new dependency, run:
 ```bash
@@ -78,6 +89,7 @@ poetry add <package-name>
 Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
 ## Publishing a new version of the connector
+
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-news-api test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 

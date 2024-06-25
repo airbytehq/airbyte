@@ -76,7 +76,7 @@ class SnowflakeStagingClientTest {
                 stagingClient.uploadRecordsToStage(recordBuffer, stageName, stagingPath)
             assertEquals(stagedFile, mockFileName)
             val inOrder = inOrder(database)
-            inOrder.verify(database).execute(putQuery)
+            inOrder.verify(database).queryJsons(putQuery)
             inOrder.verify(database).unsafeQuery(listQuery)
             verifyNoMoreInteractions(database)
         }
@@ -99,7 +99,9 @@ class SnowflakeStagingClientTest {
             val inOrder = inOrder(database)
             inOrder
                 .verify(database)
-                .execute(stagingClient.getCopyQuery(stageName, stagingPath, stagedFiles, streamId))
+                .queryJsons(
+                    stagingClient.getCopyQuery(stageName, stagingPath, stagedFiles, streamId)
+                )
             verifyNoMoreInteractions(database)
         }
 
@@ -142,7 +144,7 @@ class SnowflakeStagingClientTest {
             assertThrows(RuntimeException::class.java) {
                 stagingClient.uploadRecordsToStage(recordBuffer, stageName, stagingPath)
             }
-            verify(database, times(3)).execute(putQuery)
+            verify(database, times(3)).queryJsons(putQuery)
             verify(database, times(3)).unsafeQuery(listQuery)
             verifyNoMoreInteractions(database)
         }
@@ -153,7 +155,7 @@ class SnowflakeStagingClientTest {
                 mock<JdbcDatabase>() {
                     doThrow(SQLException("Query can't be executed"))
                         .whenever(it)
-                        .execute(any<String>())
+                        .queryJsons(any<String>())
                 }
             val stagingClient = SnowflakeStagingClient(database)
 
@@ -173,7 +175,7 @@ class SnowflakeStagingClientTest {
             assertThrows(RuntimeException::class.java) {
                 stagingClient.uploadRecordsToStage(recordBuffer, stageName, stagingPath)
             }
-            verify(database, times(3)).execute(putQuery)
+            verify(database, times(3)).queryJsons(putQuery)
             verifyNoMoreInteractions(database)
         }
 
@@ -219,7 +221,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     false,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(
+                        mockStagingClientExecuteThrowsException(
                                 UNKNOWN_EXCEPTION_MESSAGE,
                             )
                             .createStageIfNotExists(mockStageName)
@@ -228,7 +230,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     true,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(
+                        mockStagingClientExecuteThrowsException(
                                 IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG,
                             )
                             .createStageIfNotExists(mockStageName)
@@ -237,14 +239,14 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     true,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(PERMISSION_EXCEPTION_PARTIAL_MSG)
+                        mockStagingClientExecuteThrowsException(PERMISSION_EXCEPTION_PARTIAL_MSG)
                             .createStageIfNotExists(mockStageName)
                     }
                 ),
                 Arguments.of(
                     false,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(
+                        mockStagingClientQueryJsonsThrowsException(
                                 UNKNOWN_EXCEPTION_MESSAGE,
                             )
                             .copyIntoTableFromStage(
@@ -258,7 +260,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     true,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(
+                        mockStagingClientQueryJsonsThrowsException(
                                 IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG,
                             )
                             .copyIntoTableFromStage(
@@ -272,7 +274,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     true,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(
+                        mockStagingClientQueryJsonsThrowsException(
                                 PERMISSION_EXCEPTION_PARTIAL_MSG,
                             )
                             .copyIntoTableFromStage(
@@ -286,7 +288,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     false,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(
+                        mockStagingClientExecuteThrowsException(
                                 UNKNOWN_EXCEPTION_MESSAGE,
                             )
                             .dropStageIfExists(mockStageName)
@@ -295,7 +297,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     true,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(
+                        mockStagingClientExecuteThrowsException(
                                 IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG,
                             )
                             .dropStageIfExists(mockStageName)
@@ -304,7 +306,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     true,
                     Executable {
-                        getMockedStagingClientWithExceptionThrown(
+                        mockStagingClientExecuteThrowsException(
                                 PERMISSION_EXCEPTION_PARTIAL_MSG,
                             )
                             .dropStageIfExists(mockStageName)
@@ -313,7 +315,7 @@ class SnowflakeStagingClientTest {
             )
         }
 
-        private fun getMockedStagingClientWithExceptionThrown(
+        private fun mockStagingClientExecuteThrowsException(
             exceptionMessage: String
         ): SnowflakeStagingClient {
             val database =
@@ -321,6 +323,18 @@ class SnowflakeStagingClientTest {
                     doThrow(SnowflakeSQLException(exceptionMessage))
                         .whenever(it)
                         .execute(any<String>())
+                }
+            return SnowflakeStagingClient(database)
+        }
+
+        private fun mockStagingClientQueryJsonsThrowsException(
+            exceptionMessage: String
+        ): SnowflakeStagingClient {
+            val database =
+                mock<JdbcDatabase> {
+                    doThrow(SnowflakeSQLException(exceptionMessage))
+                        .whenever(it)
+                        .queryJsons(any<String>())
                 }
             return SnowflakeStagingClient(database)
         }
