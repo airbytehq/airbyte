@@ -37,8 +37,6 @@ object DbAnalyticsUtils {
 
     @JvmStatic
     fun debeziumCloseReasonMessage(reason: String): AirbyteAnalyticsTraceMessage {
-        return AirbyteAnalyticsTraceMessage()
-            .withType(DEBEZIUM_CLOSE_REASON_KEY)
-            .withValue(reason)
+        return AirbyteAnalyticsTraceMessage().withType(DEBEZIUM_CLOSE_REASON_KEY).withValue(reason)
     }
 }

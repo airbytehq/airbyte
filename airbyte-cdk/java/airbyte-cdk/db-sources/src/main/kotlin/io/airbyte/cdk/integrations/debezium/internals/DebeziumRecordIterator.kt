@@ -74,10 +74,10 @@ class DebeziumRecordIterator<T>(
             // producer to
             // shutdown.
             if (next == null) {
-                if (
-                    !receivedFirstRecord || maxInstanceOfNoRecordsFound >= 10
-                ) {
-                    requestClose("No records were returned by Debezium within the timeout period, closing the engine and iterator")
+                if (!receivedFirstRecord || maxInstanceOfNoRecordsFound >= 10) {
+                    requestClose(
+                        "No records were returned by Debezium within the timeout period, closing the engine and iterator"
+                    )
                 }
                 LOGGER.info { "no record found. polling again." }
                 maxInstanceOfNoRecordsFound++
@@ -98,7 +98,7 @@ class DebeziumRecordIterator<T>(
                         "Closing: Heartbeat indicates sync is done by reaching the target position",
                     )
                 } else if (heartbeatPos == this.lastHeartbeatPosition) {
-                    logHeartbeatPosNotChanging();
+                    logHeartbeatPosNotChanging()
                 }
 
                 if (heartbeatPos != lastHeartbeatPosition) {
@@ -192,7 +192,9 @@ class DebeziumRecordIterator<T>(
             return
         }
         LOGGER.info { closeLogMessage }
-        AirbyteTraceMessageUtility.emitAnalyticsTrace(DbAnalyticsUtils.debeziumCloseReasonMessage(closeLogMessage))
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(
+            DbAnalyticsUtils.debeziumCloseReasonMessage(closeLogMessage)
+        )
         debeziumShutdownProcedure.initiateShutdownProcedure()
         signalledDebeziumEngineShutdown = true
     }
