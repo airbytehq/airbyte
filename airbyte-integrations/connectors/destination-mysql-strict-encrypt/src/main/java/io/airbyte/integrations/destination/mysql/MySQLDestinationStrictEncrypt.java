@@ -9,10 +9,8 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
-import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import java.sql.SQLSyntaxErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
