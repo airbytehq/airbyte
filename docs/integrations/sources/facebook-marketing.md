@@ -16,7 +16,7 @@ This page contains the setup guide and reference information for the [Facebook M
 
 <!-- env:cloud -->
 
-#### For Airbyte Cloud
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -29,7 +29,7 @@ If you are not the owner/admin of the Ad account, you must be granted [permissio
 
 <!-- env:oss -->
 
-#### For Airbyte Open Source
+#### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.

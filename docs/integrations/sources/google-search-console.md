@@ -92,6 +92,15 @@ For more information on this topic, please refer to [this Google article](https:
 7. To authenticate the connection:
 <!-- env:cloud -->
 
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Search Console from the Source type dropdown.
+4. Enter a name for the Google Search Console connector.
+<!-- /env:oss -->
+
 - **For Airbyte Cloud:**
   - Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
     <!-- /env:cloud -->

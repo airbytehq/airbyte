@@ -30,10 +30,22 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 ### Step 2: Set up the Stripe connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
+<!-- env:cloud -->
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Stripe from the Source type dropdown.
 4. Enter a name for the Stripe connector.
+<!-- /env:cloud -->
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Stripe from the Source type dropdown.
+4. Enter a name for the Stripe connector.
+<!-- /env:oss -->
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.

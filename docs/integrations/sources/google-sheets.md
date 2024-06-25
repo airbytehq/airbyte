@@ -76,12 +76,22 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 ### Set up the Google Sheets connector in Airbyte
 
+<!-- env:cloud -->
 #### For Airbyte Cloud: 
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Sheets from the Source type dropdown.
 4. Enter a name for the Google Sheets connector.
+<!-- /env:cloud -->
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Sheets from the Source type dropdown.
+4. Enter a name for the Google Sheets connector.
+<!-- /env:oss -->
 5. Select your authentication method:
 <!-- env:cloud -->
 

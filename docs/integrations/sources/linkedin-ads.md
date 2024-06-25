@@ -83,7 +83,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 <!-- env:cloud -->
 
-#### For Airbyte Cloud
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -96,7 +96,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 <!-- env:oss -->
 
-#### For Airbyte Open Source
+#### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.

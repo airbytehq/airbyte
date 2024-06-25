@@ -55,10 +55,22 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 ### Set up the Zendesk Support connector in Airbyte
 
+<!-- env:cloud -->
+#### For Airbyte Cloud:
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
 4. Enter a name for the Zendesk Support connector.
+<!-- /env:cloud -->
+<!-- env:oss -->
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+4. Enter a name for the Zendesk Support connector.
+<!-- /env:oss -->
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
 

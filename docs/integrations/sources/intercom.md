@@ -41,6 +41,15 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 <!-- env:cloud -->
 
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Intercom from the Source type dropdown.
+4. Enter a name for the Intercom connector.
+<!-- /env:oss -->
+
 - For **Airbyte Cloud**, click **Authenticate your Intercom account**. When the pop-up appears, select the appropriate workspace from the dropdown and click **Authorize access**.
   <!-- /env:cloud -->
   <!-- env:oss -->
