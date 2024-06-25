@@ -10,7 +10,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        upgradeDeadline: "2024-06-30"
+        upgradeDeadline: "2024-07-30"
         message:
           "The verison migrates the Aws CloudTrail connector to the low-code framework for greater maintainability.
           !! Important: The management_events stream changed it's EventTime field from integer to float."
@@ -29,6 +29,7 @@ data:
   icon: aws-cloudtrail.svg
   license: MIT
   name: Aws Cloudtrail
+  releaseStage: alpha
   releaseDate: 2021-06-23
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/aws-cloudtrail
