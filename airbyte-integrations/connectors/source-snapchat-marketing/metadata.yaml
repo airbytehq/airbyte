@@ -28,7 +28,11 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "The source Jira connector is being migrated from the Python CDK to our declarative low-code CDK. Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally, an issue in the `ProjectAvatars` stream has been fixed. After updating, please reset your source before resuming syncs. For more information, see our migration documentation for source Jira."
+        message: >-
+          The source Snapchat Marketing connector is being migrated from the Python CDK to our declarative low-code CDK. 
+          Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally, 
+          added incremental functionality to organizations. After updating, please reset your source before resuming syncs. 
+          For more information, see our migration documentation for source Snapchat Marketing.
         upgradeDeadline: "2024-07-01"
         scopedImpact:
           - scopeType: stream
