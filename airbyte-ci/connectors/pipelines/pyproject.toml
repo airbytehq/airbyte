@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "4.18.3"
+version = "4.20.0"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -39,6 +39,7 @@ google-auth = "^2.29.0"
 pygithub = "^2.3.0"
 pydash = "6.0.2"
 python-slugify = ">=8.0.4"
+deepdiff = "^7.0.1"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"
@@ -52,6 +53,7 @@ ruff = "^0.1.9"
 types-toml = "^0.10.8"
 types-requests = "^2.31"
 types-xmltodict = "^0.13.0"
+types-pyyaml = "^6.0.12.20240311"
 
 [tool.poetry.scripts]
 airbyte-ci = "pipelines.cli.airbyte_ci:airbyte_ci"
