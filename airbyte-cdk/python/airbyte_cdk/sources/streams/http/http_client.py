@@ -239,9 +239,15 @@ class HttpClient:
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
         if self._logger.isEnabledFor(logging.DEBUG) and response is not None:
-            self._logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
-            )
+            if request_kwargs.get("stream"):
+                self._logger.debug(
+                    "Receiving response, but not logging it as it is a stream response",
+                    extra={"headers": response.headers, "status": response.status_code},
+                )
+            else:
+                self._logger.debug(
+                    "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+                )
 
         # Request/repsonse logging for declarative cdk.
         if log_formatter is not None and response is not None and self._message_repository is not None:

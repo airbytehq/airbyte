@@ -299,7 +299,7 @@ class HttpRequester(Requester):
                 self.get_url_base(),
                 path or self.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             ),
-            request_kwargs={},
+            request_kwargs={"stream": self.stream_response},
             headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
             params=self._request_params(stream_state, stream_slice, next_page_token, request_params),
             json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),
