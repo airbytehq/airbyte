@@ -111,6 +111,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.0.1   | 2024-06-25 | [40513](https://github.com/airbytehq/airbyte/pull/40513) | Improve error reporting for "access denied" error                                                   |
 | 1.0.0   | 2024-04-26 | [37322](https://github.com/airbytehq/airbyte/pull/37322) | Remove normalization and upgrade to DV2 output format                                               |
 | 0.3.1   | 2024-04-12 | [36926](https://github.com/airbytehq/airbyte/pull/36926) | Upgrade to Kotlin CDK                                                                               |
 | 0.3.0   | 2023-12-18 | [33468](https://github.com/airbytehq/airbyte/pull/33468) | Upgrade to latest Java CDK                                                                          |
