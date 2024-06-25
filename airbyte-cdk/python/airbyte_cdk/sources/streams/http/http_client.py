@@ -241,7 +241,7 @@ class HttpClient:
         if self._logger.isEnabledFor(logging.DEBUG) and response is not None:
             if request_kwargs.get("stream"):
                 self._logger.debug(
-                    "Receiving response, but not logging it as it is a stream response",
+                    "Receiving response, but not logging it as the response is streamed",
                     extra={"headers": response.headers, "status": response.status_code},
                 )
             else:
