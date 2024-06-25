@@ -50,8 +50,8 @@ definitions:
             type: string
           workspace_settings:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
           created_at:
             type: string
             format: date-time
@@ -64,24 +64,24 @@ definitions:
             type: string
           tier:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           hubspot_token:
             type:
-            - object
-            - 'null'
+              - object
+              - "null"
           marketo_cred:
             type:
-            - object
-            - 'null'
+              - object
+              - "null"
           salesforce_token:
             type:
-            - object
-            - 'null'
+              - object
+              - "null"
           base_marketo_program_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           lead_creation_preferences:
             type: object
             properties:
@@ -107,20 +107,20 @@ definitions:
             type: boolean
           ga_script:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           drift_script:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           drift_url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           salesforce_base_url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           tray_id:
             type: string
           use_new_integrations:
@@ -131,24 +131,24 @@ definitions:
             type: boolean
           caption_glossary:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           enable_hls_captions:
             type: boolean
           hubspot_portal_id:
             type: integer
           marketo_user_engagement_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           marketo_user_profile_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           marketo_goldcast_event_custom_activity_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           has_marketo_api_permissions:
             type: boolean
           can_create_live_hybrid_broadcasts:
@@ -211,16 +211,16 @@ definitions:
             type: boolean
           vivenu_api_key:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           sso_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           workos_connection_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           is_registrant_activity_enabled:
             type: boolean
           anonymize_log_rocket:
@@ -239,8 +239,8 @@ definitions:
             type: boolean
           salesforce_org_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           cross_event_report_available:
             type: boolean
           disable_non_sso_admin_logins:
@@ -251,8 +251,8 @@ definitions:
             type: boolean
           eloqua_form_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           in_person_events_enabled:
             type: boolean
           content_lab_enabled:
@@ -301,12 +301,12 @@ definitions:
             type: boolean
           add_ons:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
           allowed_event_count:
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           is_repeating_events_enabled:
             type: boolean
           is_waitlist_enabled:
@@ -315,12 +315,12 @@ definitions:
             type: boolean
           content_video_duration:
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           content_clips_count:
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           is_tentpole:
             type: boolean
           is_renewal:
@@ -355,18 +355,18 @@ definitions:
             type: string
           csv_data:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           manual_breakout:
             type: boolean
           vivenu_event_url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           ticker_url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           is_single_session:
             type: boolean
           created_by_user:
@@ -386,8 +386,8 @@ definitions:
                 type: string
               profile_picture_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           updated_by_user:
             type: object
             properties:
@@ -405,16 +405,16 @@ definitions:
                 type: string
               profile_picture_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           registrant_count:
             type: integer
           registration_cta_link:
             type: string
           deleted:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           deleted_by_cascade:
             type: boolean
           created_at:
@@ -433,34 +433,34 @@ definitions:
             type: boolean
           discussion_room_tab_title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           show_booths:
             type: boolean
           booth_chat_disabled:
             type: boolean
           booth_tab_title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           booth_tab_title_2:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           show_attendees:
             type: boolean
           p2p_chat_disabled:
             type: boolean
           people_tab_title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           speaker_tab_visible:
             type: boolean
           speaker_tab_title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           public_chat_disabled:
             type: boolean
           gifs_enabled:
@@ -477,8 +477,8 @@ definitions:
             type: boolean
           email_alias_name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           demo_request_message:
             type: string
           broadcast_chat_disabled:
@@ -501,8 +501,8 @@ definitions:
             type: string
           favicon:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           show_discussion_rooms:
             type: boolean
           title:
@@ -545,8 +545,8 @@ definitions:
               type: boolean
             description:
               type:
-              - string
-              - 'null'
+                - string
+                - "null"
             expected_end_time:
               type: string
               format: date-time
@@ -558,13 +558,13 @@ definitions:
               format: date-time
             live_start_time:
               type:
-              - string
-              - 'null'
+                - string
+                - "null"
               format: date-time
             live_end_time:
               type:
-              - string
-              - 'null'
+                - string
+                - "null"
               format: date-time
   discussion_groups_stream:
     $ref: "#/definitions/base_stream"
@@ -586,8 +586,8 @@ definitions:
             type: string
           deleted:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           deleted_by_cascade:
             type: boolean
           created_at:
@@ -602,36 +602,36 @@ definitions:
             type: string
           description:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           recording:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
           capacity:
             type: integer
           sponsor_image:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           tags:
             type:
-            - 'null'
-            - array
+              - "null"
+              - array
           mmid:
             type: string
           shadow_mmid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           starts_at:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           ends_at:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           is_live:
             type: boolean
           is_booth:
@@ -642,8 +642,8 @@ definitions:
             type: boolean
           video_quality:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           event:
             type: string
           owner:
@@ -684,8 +684,8 @@ definitions:
             type: string
           channel_mmid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           sort_priority:
             type: integer
           event:
@@ -697,13 +697,13 @@ definitions:
     primary_key: "id"
     $parameters:
       partition_router:
-      - type: SubstreamPartitionRouter
-        parent_stream_configs:
-        - type: ParentStreamConfig
-          parent_key: id
-          partition_field: event
-          stream:
-            $ref: "#/definitions/events_stream"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event
+              stream:
+                $ref: "#/definitions/events_stream"
       path: "/event/webinars/{{ stream_partition.event }}"
 
     schema_loader:
@@ -720,18 +720,18 @@ definitions:
             type: string
           csv_data:
             type:
-            - 'null'
-            - array
+              - "null"
+              - array
           manual_breakout:
             type: boolean
           vivenu_event_url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           ticker_url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           is_single_session:
             type: boolean
           created_by_user:
@@ -752,8 +752,8 @@ definitions:
                 type: string
               profile_picture_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           updated_by_user:
             type: object
             properties:
@@ -772,18 +772,18 @@ definitions:
                 type: string
               profile_picture_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           registrant_count:
             type: integer
           registration_cta_link:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           deleted:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           deleted_by_cascade:
             type: boolean
           created_at:
@@ -796,34 +796,34 @@ definitions:
             type: boolean
           discussion_room_tab_title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           show_booths:
             type: boolean
           booth_chat_disabled:
             type: boolean
           booth_tab_title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           booth_tab_title_2:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           show_attendees:
             type: boolean
           p2p_chat_disabled:
             type: boolean
           people_tab_title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           speaker_tab_visible:
             type: boolean
           speaker_tab_title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           public_chat_disabled:
             type: boolean
           gifs_enabled:
@@ -840,12 +840,12 @@ definitions:
             type: boolean
           email_alias_name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           demo_request_message:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           broadcast_chat_disabled:
             type: boolean
           anonymous_qna_enabled:
@@ -854,8 +854,8 @@ definitions:
             type: boolean
           textqna_answerers_alias:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           is_title_visible:
             type: boolean
           disable_enter_event_button:
@@ -866,12 +866,12 @@ definitions:
             type: boolean
           logo_url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           favicon:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           show_discussion_rooms:
             type: boolean
           title:
@@ -902,13 +902,13 @@ definitions:
     primary_key: "id"
     $parameters:
       partition_router:
-      - type: SubstreamPartitionRouter
-        parent_stream_configs:
-        - type: ParentStreamConfig
-          parent_key: id
-          partition_field: event
-          stream:
-            $ref: "#/definitions/events_stream"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event
+              stream:
+                $ref: "#/definitions/events_stream"
       path: "/event/event-members?event={{ stream_partition.event }}"
 
     schema_loader:
@@ -925,8 +925,8 @@ definitions:
             type: string
           vivenu_ticket_url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           event_role:
             type: integer
           event_role_list:
@@ -943,24 +943,24 @@ definitions:
             type: string
           identification_tag:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           salesperson_email:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           customer_message:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           attended:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           entered:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           props:
             type: object
             properties:
@@ -988,49 +988,49 @@ definitions:
                 type: string
           tags:
             type:
-            - 'null'
-            - array
+              - "null"
+              - array
           kind:
             type: array
             items: {}
           demo_requested:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           quality_rating:
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           feedback:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           quality_rating_timestamp:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           is_engaged:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           is_in_person:
             type: boolean
           external_demo_requested:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           external_demo_requested_at:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           salesforce_member_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           marketo_lead_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           blocked:
             type: boolean
           magic_link:
@@ -1043,92 +1043,92 @@ definitions:
             type: boolean
           badge_id:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           event_hub_link:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           attendance_status:
             type: integer
           session_attendance:
             type: object
           utm_campaign:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           utm_source:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           utm_medium:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           utm_content:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           utm_term:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           utm_creative:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           utm_keyword:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           utm_region:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           code_of_conduct:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           privacy_policy:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           health_and_safety_policy:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           data_share_consent:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           visa_required:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           dietary_restrictions:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           accessibility:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           registrant_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           pronouns:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           on_demand_attended_time:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           in_person_attended_time:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           status:
             type: string
           event:
@@ -1150,20 +1150,20 @@ definitions:
                 type: string
               title:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               description:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               linkedin_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               twitter_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               location:
                 type: object
                 properties:
@@ -1173,56 +1173,56 @@ definitions:
                     type: string
               organization:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               profile_picture_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               extra_data:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
               mmid:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               age:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               phone_number:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               industry:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               street_address:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               address_line_2:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               city:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               state:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               country:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               zip_code:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               allow_admin_panel_notifications:
                 type: boolean
               email:
@@ -1231,12 +1231,12 @@ definitions:
                 type: string
               role:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               workspace_count:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               workspaces:
                 type: array
                 items: {}
@@ -1244,8 +1244,8 @@ definitions:
                 type: boolean
           track:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           organization_user:
             type: object
             properties:
@@ -1263,68 +1263,68 @@ definitions:
                 type: string
               profile_picture_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               description:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               company:
                 type: string
               title:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               extra_data:
                 type: object
               linkedin_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               twitter_url:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               location:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               age:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               phone_number:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               industry:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               street_address:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               address_line_2:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               city:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               state:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               country:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               zip_code:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               allow_admin_panel_notifications:
                 type: boolean
               organization:
@@ -1333,31 +1333,31 @@ definitions:
                 type: string
           blocked_by:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           status_updated_by:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 streams:
-- "#/definitions/organizations_stream"
-- "#/definitions/events_stream"
-- "#/definitions/agenda_items_stream"
-- "#/definitions/discussion_groups_stream"
-- "#/definitions/tracks_stream"
-- "#/definitions/webinars_stream"
-- "#/definitions/event_members_stream"
+  - "#/definitions/organizations_stream"
+  - "#/definitions/events_stream"
+  - "#/definitions/agenda_items_stream"
+  - "#/definitions/discussion_groups_stream"
+  - "#/definitions/tracks_stream"
+  - "#/definitions/webinars_stream"
+  - "#/definitions/event_members_stream"
 
 check:
   type: CheckStream
   stream_names:
-  - "events"
-  - "agenda_items"
-  - "organizations"
-  - "discussion_groups"
-  - "tracks"
-  - "webinars"
-  - "event_members"
+    - "events"
+    - "agenda_items"
+    - "organizations"
+    - "discussion_groups"
+    - "tracks"
+    - "webinars"
+    - "event_members"
 
 spec:
   documentation_url: https://customapi.goldcast.io/swagger-ui/#/
@@ -1366,7 +1366,7 @@ spec:
     title: goldcast.io Source Spec
     type: object
     required:
-    - access_key
+      - access_key
     additionalProperties: true
     properties:
       access_key:
