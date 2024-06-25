@@ -48,7 +48,6 @@ class AirbyteTraceMessageUtilityTest {
             Mockito.mock(RuntimeException::class.java),
             "this is a config error"
         )
-        System.out.println("HERE:" + outContent.toString(StandardCharsets.UTF_8))
         val outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8))
         assertJsonNodeIsTraceMessage(outJson)
         Assertions.assertEquals("config_error", outJson["trace"]["error"]["failure_type"].asText())
