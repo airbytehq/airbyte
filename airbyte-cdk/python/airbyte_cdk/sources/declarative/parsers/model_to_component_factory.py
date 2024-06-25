@@ -421,12 +421,9 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    def create_cursor_pagination(self, model: CursorPaginationModel, config: Config, **kwargs: Any) -> CursorPaginationStrategy:
-        if model.decoder:
-            decoder = self._create_component_from_model(model=model.decoder, config=config)
-        else:
-            decoder = JsonDecoder(parameters=model.parameters or {})
-
+    def create_cursor_pagination(
+        self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
+    ) -> CursorPaginationStrategy:
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
             decoder=decoder,
@@ -742,21 +739,20 @@ class ModelToComponentFactory:
         config: Config,
         *,
         url_base: str,
+        decoder: Decoder,
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
-        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
         page_token_option = (
             self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
         )
-        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config)
+        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder)
         if cursor_used_for_stop_condition:
             pagination_strategy = StopConditionPaginationStrategyDecorator(
                 pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
             )
-
         paginator = DefaultPaginator(
             decoder=decoder,
             page_size_option=page_size_option,
@@ -770,17 +766,9 @@ class ModelToComponentFactory:
             return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
         return paginator
 
-    def create_dpath_extractor(
-        self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder] = None, **kwargs: Any
-    ) -> DpathExtractor:
-        if model.decoder:
-            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
-        elif decoder:
-            decoder_to_use = decoder
-        else:
-            decoder_to_use = JsonDecoder(parameters={})
+    def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, decoder: Decoder, **kwargs: Any) -> DpathExtractor:
         model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
-        return DpathExtractor(decoder=decoder_to_use, field_path=model_field_path, config=config, parameters=model.parameters or {})
+        return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
@@ -973,10 +961,11 @@ class ModelToComponentFactory:
         )
 
     @staticmethod
-    def create_offset_increment(model: OffsetIncrementModel, config: Config, **kwargs: Any) -> OffsetIncrement:
+    def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
         return OffsetIncrement(
             page_size=model.page_size,
             config=config,
+            decoder=decoder,
             inject_on_first_request=model.inject_on_first_request or False,
             parameters=model.parameters or {},
         )
@@ -1091,7 +1080,7 @@ class ModelToComponentFactory:
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
-        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else None
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         requester = self._create_component_from_model(model=model.requester, decoder=decoder, config=config, name=name)
         record_selector = self._create_component_from_model(
             model=model.record_selector,
@@ -1110,6 +1099,7 @@ class ModelToComponentFactory:
                 model=model.paginator,
                 config=config,
                 url_base=url_base,
+                decoder=decoder,
                 cursor_used_for_stop_condition=cursor_used_for_stop_condition,
             )
             if model.paginator

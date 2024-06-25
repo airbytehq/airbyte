@@ -26,7 +26,9 @@ class JsonDecoder(Decoder):
             body_json = response.json()
             if not isinstance(body_json, list):
                 body_json = [body_json]
-            yield from body_json
+            for rec in body_json:
+                self.last_decoded = rec
+                yield rec
         except requests.exceptions.JSONDecodeError:
             yield {}
 
@@ -47,7 +49,8 @@ class IterableDecoder(Decoder):
         #  see list_users in iterable:: response.body == b'user1@example.com\nuser2@example.com'
         #  possible option: we can wrap strings directly into records => {"record": {line.decode()}}
         for line in response.iter_lines():
-            yield {"record": line.decode()}
+            self.last_decoded = {"record": line.decode()}
+            yield self.last_decoded
 
 
 @dataclass
@@ -63,5 +66,7 @@ class JsonlDecoder(Decoder):
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         # TODO???: set delimiter? usually it is `\n` but maybe it would be useful to set optional?
+        #  https://github.com/airbytehq/airbyte-internal-issues/issues/8436
         for record in response.iter_lines():
-            yield json.loads(record)
+            self.last_decoded = json.loads(record)
+            yield self.last_decoded
