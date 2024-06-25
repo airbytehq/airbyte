@@ -11,6 +11,7 @@ import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +20,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
@@ -129,6 +131,36 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
 
     // Overwriting the first table with the second table should succeed.
     assertDoesNotThrow(() -> getDestinationHandler().execute(generator.overwriteFinalTable(getIncrementalDedupStream().getId(), "_soft_reset")));
+  }
+
+  /**
+   * Verify that when cascadeDrop is disabled, an error caused by dropping a table with dependencies
+   * results in a configuration error with the correct message.
+   */
+  @Test
+  public void testCascadeDropDisabled() throws Exception {
+    // Create a sql generator with cascadeDrop=false (this simulates what the framework passes from the
+    // config).
+    final PostgresSqlGenerator generator = new PostgresSqlGenerator(new PostgresSQLNameTransformer(), false);
+
+    // Create a table in the test namespace with a default name.
+    getDestinationHandler().execute(generator.createTable(getIncrementalAppendStream(), "", false));
+
+    // Create a view in the test namespace that selects from the test table.
+    // (Ie, emulate a client action that creates some dependency on the table.)
+    database.execute(createView(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), "example_view"))
+        .as(select().from(quotedName(getIncrementalAppendStream().getId().getFinalNamespace(), getIncrementalAppendStream().getId().getFinalName())))
+        .getSQL(ParamType.INLINED));
+
+    // Simulate a staging table with an arbitrary suffix.
+    getDestinationHandler().execute(generator.createTable(getIncrementalDedupStream(), "_soft_reset", false));
+
+    // `overwriteFinalTable` drops the "original" table (without the suffix) and swaps in the
+    // suffixed table. The first step should fail because of the view dependency.
+    // (The generator does not support dropping tables directly.)
+    Throwable t = assertThrowsExactly(ConfigErrorException.class,
+        () -> getDestinationHandler().execute(generator.overwriteFinalTable(getIncrementalDedupStream().getId(), "_soft_reset")));
+    assertTrue(t.getMessage().equals("Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter"));
   }
 
 }
