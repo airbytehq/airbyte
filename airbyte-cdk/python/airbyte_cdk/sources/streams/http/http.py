@@ -249,7 +249,11 @@ class HttpStream(Stream, ABC):
         return None
 
     def get_backoff_strategy(self) -> BackoffStrategy:
-        return type("DynamicBackoffStrategy", (BackoffStrategy, object), {"backoff_time": self.backoff_time})()
+        def backoff_time_wrapper(self_strategy, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+    ) -> Optional[float]:
+            return self.backoff_time(response=response_or_exception)
+
+        return type("DynamicBackoffStrategy", (BackoffStrategy, object), {"backoff_time": backoff_time_wrapper})()
 
     def get_error_handler(self) -> HttpStatusErrorHandler:
         raise_on_http_errors = self.raise_on_http_errors
