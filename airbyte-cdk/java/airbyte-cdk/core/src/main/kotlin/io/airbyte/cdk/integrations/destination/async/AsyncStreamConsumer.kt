@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
+import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -193,7 +194,9 @@ constructor(
         // In this case, it would be misleading to mark the sync as successful, because e.g. we
         // maybe didn't commit a truncate.
         if (unsuccessfulStreams.isNotEmpty()) {
-            throw RuntimeException(
+            // Throw as a "transient" error. This will tell platform to retry the sync,
+            // but won't trigger any alerting.
+            throw TransientErrorException(
                 "Some streams were unsuccessful due to a source error: $unsuccessfulStreams"
             )
         }
