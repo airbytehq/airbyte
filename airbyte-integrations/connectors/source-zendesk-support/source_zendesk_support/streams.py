@@ -408,27 +408,17 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self._ignore_pagination:
             return None
-        next_page = self._parse_next_page_number(response)
-        if not next_page:
-            self._finished = True
-            return None
-        return next_page
+        meta = response.json().get("meta",{}) if response.content else {}
+        return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params.update(
-            {
-                "page": next_page_token or 1,
-                "per_page": self.page_size,
-            }
-        )
+        params = {"page[size]": self.page_size}
+        if next_page_token:
+            params.update(next_page_token)
         return params
 
 
-class SourceZendeskSupportOffsetPaginationStream(SourceZendeskSupportFullRefreshStream):
-    """
-    TODO: Migrate incremental streams to SourceZendeskSupportPaginationStream also and see if we can remove this class.
-    """
+class SourceZendeskSupportTimeBasePaginationStream(SourceZendeskSupportFullRefreshStream):
 
     cursor_field = "updated_at"
     next_page_field = "next_page"
@@ -535,7 +525,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return params
 
 
-class SourceZendeskIncrementalExportStream(SourceZendeskSupportOffsetPaginationStream):
+class SourceZendeskIncrementalExportStream(SourceZendeskSupportTimeBasePaginationStream):
     """Incremental Export from Tickets stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based
 
@@ -720,7 +710,7 @@ class TicketFields(SourceZendeskSupportStream):
     """TicketFields stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_fields/"""
 
 
-class TicketForms(SourceZendeskSupportOffsetPaginationStream):
+class TicketForms(SourceZendeskSupportTimeBasePaginationStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
     
     """
