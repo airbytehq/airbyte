@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contactslist
           http_method: GET
         record_selector:
@@ -43,7 +43,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contactslist'
+          $ref: "#/schemas/contactslist"
     contacts:
       type: DeclarativeStream
       name: contacts
@@ -52,7 +52,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contact
           http_method: GET
         record_selector:
@@ -77,7 +77,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
     stats_api_lifetime_message:
       type: DeclarativeStream
       name: stats_api_lifetime_message
@@ -86,7 +86,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message
           http_method: GET
@@ -99,7 +99,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/stats_api_lifetime_message'
+          $ref: "#/schemas/stats_api_lifetime_message"
     campaign:
       type: DeclarativeStream
       name: campaign
@@ -108,7 +108,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /campaign
           http_method: GET
         record_selector:
@@ -120,7 +120,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaign'
+          $ref: "#/schemas/campaign"
     message:
       type: DeclarativeStream
       name: message
@@ -129,7 +129,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /message?ShowSubject=true
           http_method: GET
         record_selector:
@@ -154,7 +154,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/message'
+          $ref: "#/schemas/message"
     listrecipient:
       type: DeclarativeStream
       name: listrecipient
@@ -163,7 +163,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /listrecipient
           http_method: GET
         record_selector:
@@ -188,22 +188,22 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/listrecipient'
+          $ref: "#/schemas/listrecipient"
   base_requester:
     type: HttpRequester
     url_base: https://api.mailjet.com/v3/REST
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''api_key''] }}'
-      password: '{{ config[''api_key_secret''] }}'
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['api_key_secret'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/contactslist'
-  - $ref: '#/definitions/streams/contacts'
-  - $ref: '#/definitions/streams/stats_api_lifetime_message'
-  - $ref: '#/definitions/streams/campaign'
-  - $ref: '#/definitions/streams/message'
-  - $ref: '#/definitions/streams/listrecipient'
+  - $ref: "#/definitions/streams/contactslist"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/stats_api_lifetime_message"
+  - $ref: "#/definitions/streams/campaign"
+  - $ref: "#/definitions/streams/message"
+  - $ref: "#/definitions/streams/listrecipient"
 
 spec:
   type: Spec
