@@ -562,11 +562,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -678,11 +673,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -794,11 +784,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -910,11 +895,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -1026,11 +1006,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -1142,11 +1117,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -1258,11 +1228,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -1374,11 +1339,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -1490,11 +1450,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -1606,11 +1561,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
@@ -1722,11 +1672,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['end_date'] >= stream_state['end_date'] if
-              stream_state.get('end_date') else record['end_date'] >= config['start_date'] }}
           schema_normalization: Default
         paginator:
           type: NoPagination
