@@ -1027,7 +1027,10 @@ class CursorPagination(BaseModel):
         ],
         title='Stop Condition',
     )
-    decoder: Optional[Decoder] = Field(None, description='Component decoding the response so records can be extracted.', title='Decoder',
+    decoder: Optional[Decoder] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1184,7 +1187,8 @@ class DpathExtractor(BaseModel):
         ],
         title='Field Path',
     )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(None, title='Decoder',
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None, title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1577,7 +1581,9 @@ class SimpleRetriever(BaseModel):
         title='Partition Router',
     )
     decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
-        None, description='Component decoding the response so records can be extracted.', title='Decoder'
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
