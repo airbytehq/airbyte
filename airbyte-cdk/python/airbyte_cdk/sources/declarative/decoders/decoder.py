@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Generator, Mapping, Optional
+from typing import Any, Generator, Mapping
 
 import requests
 
