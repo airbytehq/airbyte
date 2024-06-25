@@ -107,6 +107,15 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
 
 
 @dataclass
+class InstagramInsightsTransformation(RecordTransformation):
+    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        insights_data = record.get("data", [])
+        for insight in insights_data:
+            record[insight["name"]] = insight.get("values")[0]["value"]
+        return record
+
+
+@dataclass
 class InstagramBreakDownResultsTransformation(RecordTransformation):
     """
     The transformation flattens a nested array of breakdown results located at total_value.breakdowns[0].results into a single object
