@@ -3,38 +3,49 @@
   "type": "object",
   "properties": {
     "Account Id": {
+      "description": "The unique identifier of the account associated with the budget.",
       "type": ["null", "integer"]
     },
     "Type": {
+      "description": "The type of budget entity, such as campaign or ad group budget.",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "The current status of the budget, such as active or paused.",
       "type": ["null", "string"]
     },
     "Id": {
+      "description": "The unique identifier of the budget entity.",
       "type": ["null", "integer"]
     },
     "Parent Id": {
+      "description": "The identifier of the parent entity to which the budget belongs, if applicable.",
       "type": ["null", "integer"]
     },
     "Client Id": {
+      "description": "The unique identifier of the client associated with the budget.",
       "type": ["null", "integer"]
     },
     "Modified Time": {
+      "description": "The date and time when the budget information was last modified.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "Budget Id": {
+      "description": "The unique identifier of the budget.",
       "type": ["null", "integer"]
     },
     "Budget Name": {
+      "description": "The name assigned to the budget for easy identification.",
       "type": ["null", "string"]
     },
     "Budget": {
+      "description": "The amount allocated for spending on advertising campaigns.",
       "type": ["null", "number"]
     },
     "Budget Type": {
+      "description": "The type of budget allocation, such as daily or monthly.",
       "type": ["null", "string"]
     }
   }

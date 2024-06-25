@@ -4,13 +4,16 @@
 
 import json
 from datetime import datetime
+from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
+from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsights
+from source_facebook_marketing.streams.common import traced_exception
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -300,6 +303,17 @@ class TestRealErrors:
                 # Potentially could be caused by some particular field (list of requested fields is constant).
                 # But since sync was successful on next attempt, then conclusion is that this is a temporal problem.
             ),
+            (
+                "error_503_service_unavailable",
+                {
+                    "json": {
+                        "error": {
+                            "message": "Call was not successful",
+                        }
+                    },
+                    "status_code": 503,
+                },
+            ),
         ],
     )
     def test_retryable_error(self, some_config, requests_mock, name, retryable_error_response):
@@ -510,3 +524,35 @@ class TestRealErrors:
             stream_state={},
         )
         assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]
+
+def test_traced_exception_with_api_error():
+    error = FacebookRequestError(
+        message="Some error occurred",
+        request_context={},
+        http_status=400,
+        http_headers={},
+        body='{"error": {"message": "Error validating access token", "code": 190}}'
+    )
+    error.api_error_message = MagicMock(return_value="Error validating access token")
+    
+    result = traced_exception(error)
+    
+    assert isinstance(result, AirbyteTracedException)
+    assert result.message == "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
+    assert result.failure_type == FailureType.config_error
+
+def test_traced_exception_without_api_error():
+    error = FacebookRequestError(
+        message="Call was unsuccessful. The Facebook API has imploded",
+        request_context={},
+        http_status=408,
+        http_headers={},
+        body='{}'
+    )
+    error.api_error_message = MagicMock(return_value=None)
+
+    result = traced_exception(error)
+
+    assert isinstance(result, AirbyteTracedException)
+    assert result.message == "Error code 408: Call was unsuccessful. The Facebook API has imploded."
+    assert result.failure_type == FailureType.system_error

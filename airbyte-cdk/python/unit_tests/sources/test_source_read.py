@@ -301,7 +301,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
     config = {}
     catalog = _create_configured_catalog(source._streams)
     messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, AirbyteTracedException)
-    messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, RuntimeError)
+    messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, AirbyteTracedException)
 
     _assert_status_messages(messages_from_abstract_source, messages_from_concurrent_source)
     _assert_record_messages(messages_from_abstract_source, messages_from_concurrent_source)

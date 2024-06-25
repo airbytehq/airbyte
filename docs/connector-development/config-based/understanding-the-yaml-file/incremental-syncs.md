@@ -10,10 +10,10 @@ When a stream is read incrementally, a state message will be output by the conne
 
 ## DatetimeBasedCursor
 
-The `DatetimeBasedCursor` is used to read records from the underlying data source (e.g: an API)  according to a specified datetime range. This time range is partitioned into time windows according to the `step`. For example, if you have `start_time=2022-01-01T00:00:00`, `end_time=2022-01-05T00:00:00` and `step=P1D`, the following partitions will be created:
+The `DatetimeBasedCursor` is used to read records from the underlying data source (e.g: an API) according to a specified datetime range. This time range is partitioned into time windows according to the `step`. For example, if you have `start_time=2022-01-01T00:00:00`, `end_time=2022-01-05T00:00:00` and `step=P1D`, the following partitions will be created:
 
 | Start               | End                 |
-|---------------------|---------------------|
+| ------------------- | ------------------- |
 | 2022-01-01T00:00:00 | 2022-01-01T23:59:59 |
 | 2022-01-02T00:00:00 | 2022-01-02T23:59:59 |
 | 2022-01-03T00:00:00 | 2022-01-03T23:59:59 |
@@ -27,83 +27,83 @@ Upon a successful sync, the final stream state will be the datetime of the last 
 Schema:
 
 ```yaml
-  DatetimeBasedCursor:
-    description: Cursor to provide incremental capabilities over datetime
-    type: object
-    required:
-      - type
-      - cursor_field
-      - end_datetime
-      - datetime_format
-      - cursor_granularity
-      - start_datetime
-      - step
-    properties:
-      type:
-        type: string
-        enum: [DatetimeBasedCursor]
-      cursor_field:
-        description: The location of the value on a record that will be used as a bookmark during sync
-        type: string
-      datetime_format:
-        description: The format of the datetime
-        type: string
-      cursor_granularity:
-        description: Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one
-        type: string
-      end_datetime:
-        description: The datetime that determines the last record that should be synced
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/MinMaxDatetime"
-      start_datetime:
-        description: The datetime that determines the earliest record that should be synced
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/MinMaxDatetime"
-      step:
-        description: The size of the time window (ISO8601 duration)
-        type: string
-      end_time_option:
-        description: Request option for end time
-        "$ref": "#/definitions/RequestOption"
-      lookback_window:
-        description: How many days before start_datetime to read data for (ISO8601 duration)
-        type: string
-      start_time_option:
-        description: Request option for start time
-        "$ref": "#/definitions/RequestOption"
-      partition_field_end:
-        description: Partition start time field
-        type: string
-      partition_field_start:
-        description: Partition end time field
-        type: string
-      $parameters:
-        type: object
-        additionalProperties: true
-  MinMaxDatetime:
-    description: Compares the provided date against optional minimum or maximum times. The max_datetime serves as the ceiling and will be returned when datetime exceeds it. The min_datetime serves as the floor
-    type: object
-    required:
-      - type
-      - datetime
-    properties:
-      type:
-        type: string
-        enum: [MinMaxDatetime]
-      datetime:
-        type: string
-      datetime_format:
-        type: string
-        default: ""
-      max_datetime:
-        type: string
-      min_datetime:
-        type: string
-      $parameters:
-        type: object
-        additionalProperties: true
+DatetimeBasedCursor:
+  description: Cursor to provide incremental capabilities over datetime
+  type: object
+  required:
+    - type
+    - cursor_field
+    - end_datetime
+    - datetime_format
+    - cursor_granularity
+    - start_datetime
+    - step
+  properties:
+    type:
+      type: string
+      enum: [DatetimeBasedCursor]
+    cursor_field:
+      description: The location of the value on a record that will be used as a bookmark during sync
+      type: string
+    datetime_format:
+      description: The format of the datetime
+      type: string
+    cursor_granularity:
+      description: Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one
+      type: string
+    end_datetime:
+      description: The datetime that determines the last record that should be synced
+      anyOf:
+        - type: string
+        - "$ref": "#/definitions/MinMaxDatetime"
+    start_datetime:
+      description: The datetime that determines the earliest record that should be synced
+      anyOf:
+        - type: string
+        - "$ref": "#/definitions/MinMaxDatetime"
+    step:
+      description: The size of the time window (ISO8601 duration)
+      type: string
+    end_time_option:
+      description: Request option for end time
+      "$ref": "#/definitions/RequestOption"
+    lookback_window:
+      description: How many days before start_datetime to read data for (ISO8601 duration)
+      type: string
+    start_time_option:
+      description: Request option for start time
+      "$ref": "#/definitions/RequestOption"
+    partition_field_end:
+      description: Partition start time field
+      type: string
+    partition_field_start:
+      description: Partition end time field
+      type: string
+    $parameters:
+      type: object
+      additionalProperties: true
+MinMaxDatetime:
+  description: Compares the provided date against optional minimum or maximum times. The max_datetime serves as the ceiling and will be returned when datetime exceeds it. The min_datetime serves as the floor
+  type: object
+  required:
+    - type
+    - datetime
+  properties:
+    type:
+      type: string
+      enum: [MinMaxDatetime]
+    datetime:
+      type: string
+    datetime_format:
+      type: string
+      default: ""
+    max_datetime:
+      type: string
+    min_datetime:
+      type: string
+    $parameters:
+      type: object
+      additionalProperties: true
 ```
 
 Example:

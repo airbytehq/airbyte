@@ -61,7 +61,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         self._client_id = InterpolatedString.create(self.client_id, parameters=parameters)
         self._client_secret = InterpolatedString.create(self.client_secret, parameters=parameters)
         if self.refresh_token is not None:
-            self._refresh_token = InterpolatedString.create(self.refresh_token, parameters=parameters)
+            self._refresh_token: Optional[InterpolatedString] = InterpolatedString.create(self.refresh_token, parameters=parameters)
         else:
             self._refresh_token = None
         self.access_token_name = InterpolatedString.create(self.access_token_name, parameters=parameters)
@@ -97,7 +97,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         return client_secret
 
     def get_refresh_token(self) -> Optional[str]:
-        return None if self._refresh_token is None else self._refresh_token.eval(self.config)
+        return None if self._refresh_token is None else str(self._refresh_token.eval(self.config))
 
     def get_scopes(self) -> List[str]:
         return self.scopes or []

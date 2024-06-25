@@ -4,35 +4,45 @@
   "additionalProperties": true,
   "properties": {
     "amount": {
+      "description": "The amount of the transfer reversal, in cents.",
       "type": ["null", "integer"]
     },
     "balance_transaction": {
+      "description": "The balance transaction associated with this transfer reversal.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp representing when the transfer reversal was created.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency of the transfer reversal amount.",
       "type": ["null", "string"]
     },
     "destination_payment_refund": {
+      "description": "The ID of the payment refund to which this transfer reversal is linked.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the transfer reversal.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "A set of key-value pairs that you can attach to the transfer reversal.",
       "additionalProperties": true,
       "type": ["null", "object"],
       "properties": {}
     },
     "object": {
+      "description": "Indicates the object type, which should be 'transfer_reversal'.",
       "type": ["null", "string"]
     },
     "source_refund": {
+      "description": "The ID of the refund on the source transfer that created this reversal.",
       "type": ["null", "string"]
     },
     "transfer": {
+      "description": "The ID of the transfer for which this is a reversal.",
       "type": ["null", "string"]
     }
   }

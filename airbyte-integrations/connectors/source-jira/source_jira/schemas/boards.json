@@ -3,51 +3,67 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the board.",
       "type": ["null", "integer"]
     },
     "self": {
+      "description": "URI that points to the board data.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the board.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of the board.",
       "type": ["null", "string"]
     },
     "projectId": {
+      "description": "ID of the project to which the board belongs.",
       "type": ["null", "string"]
     },
     "projectKey": {
+      "description": "Key of the project to which the board belongs.",
       "type": ["null", "string"]
     },
     "location": {
+      "description": "Information about the location of the board.",
       "type": ["null", "object"],
       "properties": {
         "projectId": {
+          "description": "ID of the project to which the board location belongs.",
           "type": ["null", "integer"]
         },
         "userId": {
+          "description": "ID of the user associated with the board location.",
           "type": ["null", "integer"]
         },
         "userAccountId": {
+          "description": "Account ID of the user associated with the board location.",
           "type": ["null", "string"]
         },
         "displayName": {
+          "description": "Display name of the board location.",
           "type": ["null", "string"]
         },
         "projectName": {
+          "description": "Name of the project to which the board location belongs.",
           "type": ["null", "string"]
         },
         "projectKey": {
+          "description": "Key of the project to which the board location belongs.",
           "type": ["null", "string"]
         },
         "projectTypeKey": {
+          "description": "Type key of the project to which the board location belongs.",
           "type": ["null", "string"]
         },
         "avatarURI": {
+          "description": "URI for the avatar of the board location.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the board location.",
           "type": ["null", "string"]
         }
       }

@@ -9,15 +9,16 @@ import com.amazonaws.services.s3.AmazonS3
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.writer.BaseGcsWriter
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSheetGenerator
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSheetGenerator.Factory.create
-import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.csv.UploadCsvFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -26,8 +27,8 @@ import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.QuoteMode
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class GcsCsvWriter(
     config: GcsDestinationConfig,
@@ -43,20 +44,17 @@ class GcsCsvWriter(
     override val outputPath: String
 
     init {
-        val formatConfig = config.formatConfig as S3CsvFormatConfig
+        val formatConfig = config.formatConfig as UploadCsvFormatConfig
         this.csvSheetGenerator = create(configuredStream.stream.jsonSchema, formatConfig)
 
         val outputFilename: String =
-            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.CSV)
+            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, FileUploadFormat.CSV)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
-        LOGGER.info(
-            "Full GCS path for stream '{}': {}/{}",
-            stream.name,
-            config.bucketName,
-            outputPath
-        )
+        LOGGER.info {
+            "Full GCS path for stream '${stream.name}': ${config.bucketName}/$outputPath"
+        }
 
         this.uploadManager =
             create(config.bucketName, outputPath, s3Client)
@@ -68,6 +66,7 @@ class GcsCsvWriter(
         this.csvPrinter =
             CSVPrinter(
                 PrintWriter(outputStream, true, StandardCharsets.UTF_8),
+                @Suppress("deprecation")
                 CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
                     .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>())
             )
@@ -97,10 +96,8 @@ class GcsCsvWriter(
         uploadManager.abort()
     }
 
-    override val fileFormat: S3Format
-        get() = S3Format.CSV
+    override val fileFormat: FileUploadFormat
+        get() = FileUploadFormat.CSV
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(GcsCsvWriter::class.java)
-    }
+    companion object {}
 }

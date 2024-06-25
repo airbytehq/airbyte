@@ -7,8 +7,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.*
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * A CsvSheetGenerator that produces data in the format expected by JdbcSqlOperations. See
@@ -24,14 +27,12 @@ import java.util.*
  */
 class StagingDatabaseCsvSheetGenerator
 @JvmOverloads
-constructor(private val useDestinationsV2Columns: Boolean = false) : CsvSheetGenerator {
-    // TODO is this even used anywhere?
-    private var header: List<String> =
-        if (this.useDestinationsV2Columns) JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
-        else JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
-
+constructor(
+    private val destinationColumns: JavaBaseConstants.DestinationColumns =
+        JavaBaseConstants.DestinationColumns.LEGACY,
+) : CsvSheetGenerator {
     override fun getHeaderRow(): List<String> {
-        return header
+        return destinationColumns.rawColumns
     }
 
     override fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage): List<Any> {
@@ -39,7 +40,9 @@ constructor(private val useDestinationsV2Columns: Boolean = false) : CsvSheetGen
             id,
             Jsons.serialize(recordMessage.data),
             recordMessage.emittedAt,
-            Jsons.serialize(recordMessage.meta)
+            Jsons.serialize(recordMessage.meta),
+            // Legacy code. Default to generation 0.
+            0,
         )
     }
 
@@ -51,18 +54,31 @@ constructor(private val useDestinationsV2Columns: Boolean = false) : CsvSheetGen
         id: UUID,
         formattedString: String,
         emittedAt: Long,
-        formattedAirbyteMetaString: String
+        formattedAirbyteMetaString: String,
+        generationId: Long,
     ): List<Any> {
-        return if (useDestinationsV2Columns) {
-            java.util.List.of<Any>(
-                id,
-                Instant.ofEpochMilli(emittedAt),
-                "",
-                formattedString,
-                formattedAirbyteMetaString
-            )
-        } else {
-            java.util.List.of<Any>(id, formattedString, Instant.ofEpochMilli(emittedAt))
+        return when (destinationColumns) {
+            JavaBaseConstants.DestinationColumns.LEGACY ->
+                listOf(id, formattedString, Instant.ofEpochMilli(emittedAt))
+            JavaBaseConstants.DestinationColumns.V2_WITH_META ->
+                listOf(
+                    id,
+                    Instant.ofEpochMilli(emittedAt),
+                    "",
+                    formattedString,
+                    formattedAirbyteMetaString
+                )
+            JavaBaseConstants.DestinationColumns.V2_WITHOUT_META ->
+                listOf(id, Instant.ofEpochMilli(emittedAt), "", formattedString)
+            JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION ->
+                listOf(
+                    id,
+                    Instant.ofEpochMilli(emittedAt),
+                    "",
+                    formattedString,
+                    formattedAirbyteMetaString,
+                    generationId
+                )
         }
     }
 }

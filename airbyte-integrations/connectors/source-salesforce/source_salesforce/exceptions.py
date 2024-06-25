@@ -3,14 +3,14 @@
 #
 
 
-from airbyte_cdk.logger import AirbyteLogger
+import logging
 
 
 class Error(Exception):
     """Base Error class for other exceptions"""
 
     # Define the instance of the Native Airbyte Logger
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
 
 class SalesforceException(Exception):
@@ -28,8 +28,3 @@ class TypeSalesforceException(SalesforceException):
 class TmpFileIOError(Error):
     def __init__(self, msg: str, err: str = None):
         self.logger.fatal(f"{msg}. Error: {err}")
-
-
-AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
-    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
-}

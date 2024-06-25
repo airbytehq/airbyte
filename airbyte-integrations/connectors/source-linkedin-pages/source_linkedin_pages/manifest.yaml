@@ -1,0 +1,847 @@
+version: 0.73.0
+type: DeclarativeSource
+
+definitions:
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+
+  selective_authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_method"]
+    authenticators:
+      oAuth2.0: "#/definitions/oauth_authenticator"
+      access_token: "#/definitions/bearer_authenticator"
+
+check:
+  type: CheckStream
+  stream_names:
+    - organization_lookup
+
+streams:
+  - type: DeclarativeStream
+    name: organization_lookup
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          alternativeNames:
+            type:
+              - array
+              - "null"
+          autoCreated:
+            type:
+              - boolean
+              - "null"
+          created:
+            properties:
+              actor:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - number
+                  - "null"
+            type:
+              - object
+              - "null"
+          defaultLocale:
+            properties:
+              country:
+                type:
+                  - string
+                  - "null"
+              language:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          groups:
+            type:
+              - array
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastModified:
+            properties:
+              actor:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - number
+                  - "null"
+            type:
+              - object
+              - "null"
+          localizedName:
+            type:
+              - string
+              - "null"
+          localizedSpecialties:
+            type:
+              - array
+              - "null"
+          locations:
+            type:
+              - array
+              - "null"
+          name:
+            properties:
+              localized:
+                properties:
+                  ru_RU:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+              preferredLocale:
+                properties:
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  language:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+            type:
+              - object
+              - "null"
+          organizationType:
+            type:
+              - string
+              - "null"
+          primaryOrganizationType:
+            type:
+              - string
+              - "null"
+          specialties:
+            type:
+              - array
+              - "null"
+          vanityName:
+            type:
+              - string
+              - "null"
+          versionTag:
+            type:
+              - string
+              - "null"
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.linkedin.com/rest
+        path: /organizations/{{ config['org_id'] }}
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Linkedin-Version: "202403"
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 429
+                  error_message: >-
+                    {{ "\n\nStream Organization Lookup: LinkedIn API requests
+                    are rate limited.\n" + "Rate limits specify the maximum
+                    number of API calls that can be made in a 24 hour period.\n"
+                    + "These limits reset at midnight UTC every day.\n" + "You
+                    can find more information here
+                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
+                    + "Also quotas and usage are here:
+                    https://www.linkedin.com/developers/apps.\n" }}
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router: []
+
+  - type: DeclarativeStream
+    name: follower_statistics
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          followerCountsByAssociationType:
+            type:
+              - array
+              - "null"
+          followerCountsByFunction:
+            type:
+              - array
+              - "null"
+          followerCountsByGeo:
+            type:
+              - array
+              - "null"
+          followerCountsByGeoCountry:
+            type:
+              - array
+              - "null"
+          followerCountsByIndustry:
+            type:
+              - array
+              - "null"
+          followerCountsBySeniority:
+            type:
+              - array
+              - "null"
+          followerCountsByStaffCountRange:
+            type:
+              - array
+              - "null"
+          organizationalEntity:
+            type:
+              - string
+              - "null"
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.linkedin.com/rest
+        path: /organizationalEntityFollowerStatistics
+        http_method: GET
+        request_parameters:
+          q: organizationalEntity
+          organizationalEntity: urn:li:organization:{{ config['org_id'] }}
+        request_headers:
+          Linkedin-Version: "202403"
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 429
+                  error_message: >-
+                    {{ "\n\nStream Follower Statistics: LinkedIn API requests
+                    are rate limited.\n" + "Rate limits specify the maximum
+                    number of API calls that can be made in a 24 hour period.\n"
+                    + "These limits reset at midnight UTC every day.\n" + "You
+                    can find more information here
+                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
+                    + "Also quotas and usage are here:
+                    https://www.linkedin.com/developers/apps.\n" }}
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - elements
+      paginator:
+        type: NoPagination
+      partition_router: []
+
+  - type: DeclarativeStream
+    name: share_statistics
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          organizationalEntity:
+            type:
+              - string
+              - "null"
+          totalShareStatistics:
+            properties:
+              clickCount:
+                type:
+                  - number
+                  - "null"
+              commentCount:
+                type:
+                  - number
+                  - "null"
+              commentMentionsCount:
+                type:
+                  - number
+                  - "null"
+              engagement:
+                type:
+                  - number
+                  - "null"
+              impressionCount:
+                type:
+                  - number
+                  - "null"
+              likeCount:
+                type:
+                  - number
+                  - "null"
+              shareCount:
+                type:
+                  - number
+                  - "null"
+              shareMentionsCount:
+                type:
+                  - number
+                  - "null"
+              uniqueImpressionsCount:
+                type:
+                  - number
+                  - "null"
+            type:
+              - object
+              - "null"
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.linkedin.com/rest
+        path: /organizationalEntityShareStatistics
+        http_method: GET
+        request_parameters:
+          q: organizationalEntity
+          organizationalEntity: urn:li:organization:{{ config['org_id'] }}
+        request_headers:
+          Linkedin-Version: "202403"
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 429
+                  error_message: >-
+                    {{ "\n\nStream Share Statistics: LinkedIn API requests are
+                    rate limited.\n" + "Rate limits specify the maximum number
+                    of API calls that can be made in a 24 hour period.\n" +
+                    "These limits reset at midnight UTC every day.\n" + "You can
+                    find more information here
+                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
+                    + "Also quotas and usage are here:
+                    https://www.linkedin.com/developers/apps.\n" }}
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - elements
+      paginator:
+        type: NoPagination
+      partition_router: []
+
+  - type: DeclarativeStream
+    name: total_follower_count
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          firstDegreeSize:
+            type:
+              - number
+              - "null"
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.linkedin.com/rest
+        path: /networkSizes/urn:li:organization:{{ config['org_id'] }}
+        http_method: GET
+        request_parameters:
+          edgeType: COMPANY_FOLLOWED_BY_MEMBER
+        request_headers:
+          Linkedin-Version: "202403"
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 429
+                  error_message: >-
+                    {{ "\n\nStream Total Follower Count: LinkedIn API requests
+                    are rate limited.\n" + "Rate limits specify the maximum
+                    number of API calls that can be made in a 24 hour period.\n"
+                    + "These limits reset at midnight UTC every day.\n" + "You
+                    can find more information here
+                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
+                    + "Also quotas and usage are here:
+                    https://www.linkedin.com/developers/apps.\n" }}
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router: []
+
+  - type: DeclarativeStream
+    name: follower_statistics_time_bound
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          followerCountsByAssociationType:
+            type:
+              - array
+              - "null"
+          followerCountsByFunction:
+            type:
+              - array
+              - "null"
+          followerCountsByGeo:
+            type:
+              - array
+              - "null"
+          followerCountsByGeoCountry:
+            type:
+              - array
+              - "null"
+          followerCountsByIndustry:
+            type:
+              - array
+              - "null"
+          followerCountsBySeniority:
+            type:
+              - array
+              - "null"
+          followerCountsByStaffCountRange:
+            type:
+              - array
+              - "null"
+          followerGains:
+            properties:
+              organicFollowerGain:
+                type:
+                  - number
+                  - "null"
+              paidFollowerGain:
+                type:
+                  - number
+                  - "null"
+            type:
+              - object
+              - "null"
+          organizationalEntity:
+            type:
+              - string
+              - "null"
+          timeRange:
+            type:
+              - object
+              - "null"
+          timeRangeEnd:
+            type: number
+          timeRangeStart:
+            type:
+              - number
+              - "null"
+        required:
+          - timeRangeEnd
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.linkedin.com/rest
+        path: /organizationalEntityFollowerStatistics
+        http_method: GET
+        request_parameters:
+          q: organizationalEntity
+          organizationalEntity: urn:li:organization:{{ config['org_id'] }}
+          timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] or 'DAY' }}"
+        request_headers:
+          Linkedin-Version: "202403"
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 429
+                  error_message: >-
+                    {{ "\n\nStream Follower Statistics: LinkedIn API requests
+                    are rate limited.\n" + "Rate limits specify the maximum
+                    number of API calls that can be made in a 24 hour period.\n"
+                    + "These limits reset at midnight UTC every day.\n" + "You
+                    can find more information here
+                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
+                    + "Also quotas and usage are here:
+                    https://www.linkedin.com/developers/apps.\n" }}
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 400
+                  error_message: >-
+                    {{ "\n\n" }}Stream Follower Statistics Time Bound: Start
+                    Date must be atmost 12 months before the request date (UTC)
+                    and atleast 2 days prior to the request date (UTC). {{ "\n"
+                    }}See https://bit.ly/linkedin-pages-date-rules
+                  error_message_contains: Invalid timeIntervals parameter
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - elements
+      paginator:
+        type: NoPagination
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - timeRangeStart
+            value: "{{ record['timeRange']['start'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - timeRange
+            - start
+      - type: AddFields
+        fields:
+          - path:
+              - timeRangeEnd
+            value: "{{ record['timeRange']['end'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - timeRange
+            - end
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timeRangeEnd
+      cursor_datetime_formats:
+        - "%ms"
+      datetime_format: "%ms"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date'])) if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: timeIntervals.timeRange.start
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: timeIntervals.timeRange.end
+        type: RequestOption
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ day_delta(-2, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  - type: DeclarativeStream
+    name: share_statistics_time_bound
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      additionalProperties: true
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          organizationalEntity:
+            type:
+              - string
+              - "null"
+          timeRange:
+            type:
+              - object
+              - "null"
+          timeRangeEnd:
+            type: number
+          timeRangeStart:
+            type:
+              - number
+              - "null"
+          totalShareStatistics:
+            properties:
+              clickCount:
+                type:
+                  - number
+                  - "null"
+              commentCount:
+                type:
+                  - number
+                  - "null"
+              engagement:
+                type:
+                  - number
+                  - "null"
+              impressionCount:
+                type:
+                  - number
+                  - "null"
+              likeCount:
+                type:
+                  - number
+                  - "null"
+              shareCount:
+                type:
+                  - number
+                  - "null"
+              uniqueImpressionsCount:
+                type:
+                  - number
+                  - "null"
+            type:
+              - object
+              - "null"
+        required:
+          - timeRangeEnd
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.linkedin.com/rest
+        path: /organizationalEntityShareStatistics
+        http_method: GET
+        request_parameters:
+          q: organizationalEntity
+          organizationalEntity: urn:li:organization:{{ config['org_id'] }}
+          timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] or 'DAY' }}"
+        request_headers:
+          Linkedin-Version: "202403"
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 429
+                  error_message: >-
+                    {{ "\n\nStream Share Statistics Time Bound: LinkedIn API
+                    requests are rate limited.\n" + "Rate limits specify the
+                    maximum number of API calls that can be made in a 24 hour
+                    period.\n" + "These limits reset at midnight UTC every
+                    day.\n" + "You can find more information here
+                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
+                    + "Also quotas and usage are here:
+                    https://www.linkedin.com/developers/apps.\n" }}
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 400
+                  error_message: >-
+                    {{ "\n\n" }}Stream Share Statistics Time Bound: Start Date
+                    must be atmost 12 months before the request date (UTC) and
+                    atleast 2 days prior to the request date (UTC). {{ "\n"
+                    }}See https://bit.ly/linkedin-pages-date-rules {{ "\n" }} {{ response.errorDetails }}
+                  error_message_contains: Invalid timeIntervals parameter
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - elements
+      paginator:
+        type: NoPagination
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - timeRangeStart
+            value: "{{ record['timeRange']['start'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - timeRange
+            - start
+      - type: AddFields
+        fields:
+          - path:
+              - timeRangeEnd
+            value: "{{ record['timeRange']['end'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - timeRange
+            - end
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timeRangeEnd
+      cursor_datetime_formats:
+        - "%ms"
+      datetime_format: "%ms"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date'])) if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: timeIntervals.timeRange.start
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: timeIntervals.timeRange.end
+        type: RequestOption
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ day_delta(-2, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - org_id
+    properties:
+      credentials:
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              client_id:
+                type: string
+                title: Client ID
+                description: The client ID of the LinkedIn developer application.
+                airbyte_secret: true
+              auth_method:
+                type: string
+                const: oAuth2.0
+              client_secret:
+                type: string
+                title: Client secret
+                description: The client secret of the LinkedIn developer application.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh token
+                description: >-
+                  The token value generated using the LinkedIn Developers OAuth
+                  Token Tools. See the <a
+                  href="https://docs.airbyte.com/integrations/sources/linkedin-pages/">docs</a>
+                  to obtain yours.
+                airbyte_secret: true
+          - type: object
+            title: Access token
+            required:
+              - access_token
+            properties:
+              auth_method:
+                type: string
+                const: access_token
+              access_token:
+                type: string
+                title: Access token
+                description: >-
+                  The token value generated using the LinkedIn Developers OAuth
+                  Token Tools. See the <a
+                  href="https://docs.airbyte.com/integrations/sources/linkedin-pages/">docs</a>
+                  to obtain yours.
+                airbyte_secret: true
+        order: 0
+        title: Authentication
+      org_id:
+        type: string
+        order: 1
+        title: Organization ID
+        examples:
+          - "123456789"
+        description: Specify the Organization ID
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        default: "2023-01-01T00:00:00Z"
+        description: >-
+          Start date for getting metrics per time period. Must be atmost 12
+          months before the request date (UTC) and atleast 2 days prior to the
+          request date (UTC). See https://bit.ly/linkedin-pages-date-rules {{ "\n" }} {{ response.errorDetails }}
+      time_granularity_type:
+        enum:
+          - DAY
+          - MONTH
+        type: string
+        order: 3
+        title: Time Granularity Type
+        default: DAY
+        description: >-
+          Granularity of the statistics for metrics per time period. Must be
+          either "DAY" or "MONTH"
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    organization_lookup: false
+    follower_statistics: false
+    share_statistics: false
+    total_follower_count: false
+    follower_statistics_time_bound: false
+    share_statistics_time_bound: false

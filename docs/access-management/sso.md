@@ -35,4 +35,3 @@ import DocCardList from '@theme/DocCardList';
     Accessing your self hosted Airbyte will automatically forward you to your IdP's login page (e.g. Okta login page). Log into your work account and you’ll be forwarded back to your Airbyte and be logged in.
   </TabItem>
 </Tabs>
-

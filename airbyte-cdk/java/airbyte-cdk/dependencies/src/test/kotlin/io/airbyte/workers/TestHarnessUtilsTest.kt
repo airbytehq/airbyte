@@ -6,6 +6,7 @@ package io.airbyte.workers
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
 import io.airbyte.workers.internal.HeartbeatMonitor
 import io.airbyte.workers.test_utils.TestConfigHelpers
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
@@ -18,8 +19,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.kotlin.mock
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 internal class TestHarnessUtilsTest {
     @Nested
@@ -56,11 +57,11 @@ internal class TestHarnessUtilsTest {
         fun testStartsWait() {
             Mockito.`when`(process.isAlive).thenReturn(true)
             val recordedBeats = AtomicInteger(0)
-            Mockito.doAnswer { ignored: InvocationOnMock? ->
+            Mockito.doAnswer { ignored: InvocationOnMock ->
                     recordedBeats.incrementAndGet()
                     true
                 }
-                .`when`<HeartbeatMonitor?>(heartbeatMonitor)
+                .`when`<HeartbeatMonitor>(heartbeatMonitor)
                 .isBeating
 
             val thread = Thread { this.runShutdown() }
@@ -127,7 +128,6 @@ internal class TestHarnessUtilsTest {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(GentleCloseWithHeartbeat::class.java)
 
         /**
          * As long as the the heartbeatMonitor detects a heartbeat, the process will be allowed to
@@ -160,7 +160,7 @@ internal class TestHarnessUtilsTest {
                 try {
                     process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS)
                 } catch (e: InterruptedException) {
-                    LOGGER.error("Exception while waiting for process to finish", e)
+                    LOGGER.error(e) { "Exception while waiting for process to finish" }
                 }
             }
 
@@ -168,9 +168,9 @@ internal class TestHarnessUtilsTest {
                 try {
                     process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS)
                 } catch (e: InterruptedException) {
-                    LOGGER.error(
+                    LOGGER.error {
                         "Exception during grace period for process to finish. This can happen when cancelling jobs."
-                    )
+                    }
                 }
             }
 

@@ -127,7 +127,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
 
     endpoint = "adAnalytics"
     # For Analytics streams, the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc.] + `end_date`
-    primary_key = ["pivotValues", "end_date"]
+    primary_key = ["string_of_pivot_values", "end_date"]
     cursor_field = "end_date"
     records_limit = 15000
     FIELDS_CHUNK_SIZE = 18
@@ -213,7 +213,18 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) < self.records_limit:
+        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
+
+        # Note: The API might return fewer records than requested within the limits during pagination.
+        # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
+        paging_params = parsed_response.get("paging", {})
+        is_end_of_records = (
+            paging_params["total"] - paging_params["start"] <= self.records_limit
+            if all(param in paging_params for param in ("total", "start"))
+            else True
+        )
+
+        if is_elements_less_than_limit and is_end_of_records:
             return None
         raise Exception(
             f"Limit {self.records_limit} elements exceeded. "
@@ -226,7 +237,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[List[Mapping[str, Any]]]:
+    ) -> Iterable[Optional[Mapping[str, List[Mapping[str, Any]]]]]:
         """
         LinkedIn has a max of 20 fields per request. We make chunks by size of 19 fields to have the `dateRange` be included as well.
         https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-05&tabs=http#requesting-specific-metrics-in-the-analytics-finder
@@ -234,11 +245,30 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         :param sync_mode:
         :param cursor_field:
         :param stream_state:
-        :return: Iterable with List of stream slices within the same date range and chunked fields, example
-        [{'campaign_id': 123, 'fields': 'field_1,field_2,dateRange', 'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}},
-        {'campaign_id': 123, 'fields': 'field_2,field_3,dateRange',  'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}},
-        {'campaign_id': 123, 'fields': 'field_4,field_5,dateRange',  'dateRange': {'start.day': 1, 'start.month': 1, 'start.year': 2020, 'end.day': 30, 'end.month': 1, 'end.year': 2020}}]
+        :return: An iterable of dictionaries, each containing a single key 'field_date_chunks'. The value under 'field_date_chunks' is
+        a list of dictionaries where each dictionary represents a slice of data defined by a specific date range and chunked fields.
 
+        Example of returned data:
+        {
+            'field_date_chunks': [
+                {
+                    'campaign_id': 123,
+                    'fields': 'field_1,field_2,dateRange',
+                    'dateRange': {
+                        'start.day': 1, 'start.month': 1, 'start.year': 2020,
+                        'end.day': 30, 'end.month': 1, 'end.year': 2020
+                    }
+                },
+                {
+                    'campaign_id': 123,
+                    'fields': 'field_3,field_4,dateRange',
+                    'dateRange': {
+                        'start.day': 1, 'start.month': 1, 'start.year': 2020,
+                        'end.day': 30, 'end.month': 1, 'end.year': 2020
+                    }
+                }
+            ]
+        }
         """
         parent_stream = self.parent_stream(config=self.config)
         stream_state = stream_state or {self.cursor_field: self.config.get("start_date")}
@@ -249,7 +279,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
                 for fields_set in self.chunk_analytics_fields():
                     base_slice["fields"] = ",".join(fields_set)
                     date_slice_with_fields.append(base_slice | date_slice)
-                yield date_slice_with_fields
+                yield {"field_date_chunks": date_slice_with_fields}
 
     @staticmethod
     def get_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> Iterable[Mapping[str, Any]]:
@@ -296,7 +326,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         merged_records = defaultdict(dict)
-        for field_slice in stream_slice:
+        for field_slice in stream_slice.get("field_date_chunks", []):
             for rec in super().read_records(stream_slice=field_slice, **kwargs):
                 merged_records[f"{rec[self.cursor_field]}-{rec['pivotValues']}"].update(rec)
         yield from merged_records.values()

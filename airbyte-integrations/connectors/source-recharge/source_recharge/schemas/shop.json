@@ -7,6 +7,9 @@
     },
     "store": {
       "type": ["null", "object"]
+    },
+    "id": {
+      "type": ["null", "integer"]
     }
   }
 }

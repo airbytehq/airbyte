@@ -20,7 +20,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.InternalModels.StateType;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.math.BigDecimal;
@@ -51,7 +51,7 @@ public class MssqlQueryUtils {
 
   private static final String MAX_CURSOR_VALUE_QUERY =
       """
-        SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
+        SELECT TOP 1 %s, COUNT(*) AS %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s) GROUP BY %s;
       """;
   public static final String INDEX_QUERY = "EXEC sp_helpindex N'%s'";
 
@@ -185,46 +185,50 @@ public class MssqlQueryUtils {
 
     final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
-      try {
-        final String name = stream.getStream().getName();
-        final String namespace = stream.getStream().getNamespace();
-        final String fullTableName =
-            getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
+      final String name = stream.getStream().getName();
+      final String namespace = stream.getStream().getNamespace();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
 
-        final Optional<CursorInfo> cursorInfoOptional =
-            stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace));
-        if (cursorInfoOptional.isEmpty()) {
-          throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
-        }
-
-        LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
-        final String cursorField = cursorInfoOptional.get().getCursorField();
+      final Optional<CursorInfo> cursorInfoOptional =
+          stateManager.getCursorInfo(new AirbyteStreamNameNamespacePair(name, namespace));
+      if (cursorInfoOptional.isEmpty()) {
+        throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
+      }
+      final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
+      final Optional<String> maybeCursorField = Optional.ofNullable(cursorInfoOptional.get().getCursorField());
+      maybeCursorField.ifPresent(cursorField -> {
+        LOGGER.info("Cursor {}. Querying max cursor value for {}.{}", cursorField, namespace, name);
         final String quotedCursorField = getIdentifierWithQuoting(cursorField, quoteString);
+        final String counterField = cursorField + "_count";
+        final String quotedCounterField = getIdentifierWithQuoting(counterField, quoteString);
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             quotedCursorField,
+            quotedCounterField,
             fullTableName,
             quotedCursorField,
             quotedCursorField,
-            fullTableName);
-        final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
-            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-        final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
+            fullTableName,
+            quotedCursorField);
+        final List<JsonNode> jsonNodes;
+        try {
+          jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
+              resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        } catch (SQLException e) {
+          throw new RuntimeException("Failed to read max cursor value from %s.%s".formatted(namespace, name), e);
+        }
+        cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
+        if (!jsonNodes.isEmpty()) {
+          final JsonNode result = jsonNodes.get(0);
+          cursorBasedStatus.setCursor(result.get(cursorField).asText());
+          cursorBasedStatus.setCursorRecordCount(result.get(counterField).asLong());
+        }
         cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
         cursorBasedStatus.setVersion(2L);
         cursorBasedStatus.setStreamName(name);
         cursorBasedStatus.setStreamNamespace(namespace);
-        cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
-
-        if (!jsonNodes.isEmpty()) {
-          final JsonNode result = jsonNodes.get(0);
-          cursorBasedStatus.setCursor(result.get(cursorField).asText());
-          cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
-        }
-
-        cursorBasedStatusMap.put(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
-      } catch (final SQLException e) {
-        throw new RuntimeException(e);
-      }
+        cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
+      });
     });
 
     return cursorBasedStatusMap;

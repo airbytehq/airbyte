@@ -8,4 +8,4 @@ package io.airbyte.cdk.integrations.destination.jdbc
  *
  * @param columns
  */
-@JvmRecord data class TableDefinition(val columns: LinkedHashMap<String?, ColumnDefinition>)
+@JvmRecord data class TableDefinition(val columns: LinkedHashMap<String, ColumnDefinition>)

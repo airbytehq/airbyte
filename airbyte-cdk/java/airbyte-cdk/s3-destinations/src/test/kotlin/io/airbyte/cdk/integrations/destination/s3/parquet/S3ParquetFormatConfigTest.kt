@@ -23,7 +23,7 @@ internal class S3ParquetFormatConfigTest {
                     "}"
             )
 
-        val config = S3ParquetFormatConfig(formatConfig)
+        val config = UploadParquetFormatConfig(formatConfig)
 
         // The constructor should automatically convert MB or KB to bytes.
         Assertions.assertEquals(1024 * 1024, config.blockSize)

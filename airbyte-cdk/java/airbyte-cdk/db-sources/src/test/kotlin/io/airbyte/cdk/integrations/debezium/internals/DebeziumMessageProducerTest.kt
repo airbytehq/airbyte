@@ -39,7 +39,7 @@ class DebeziumMessageProducerTest {
             DebeziumMessageProducer<Any>(
                 cdcStateHandler,
                 targetPosition,
-                eventConverter!!,
+                eventConverter,
                 offsetManager,
                 Optional.of(schemaHistoryManager)
             )
@@ -49,7 +49,7 @@ class DebeziumMessageProducerTest {
     fun testProcessRecordMessage() {
         val message = Mockito.mock(ChangeEventWithMetadata::class.java)
 
-        Mockito.`when`(targetPosition!!.isSameOffset(any(), any())).thenReturn(true)
+        Mockito.`when`(targetPosition.isSameOffset(any(), any())).thenReturn(true)
         producer!!.processRecordMessage(null, message)
         Mockito.verify(eventConverter).toAirbyteMessage(message)
         Assert.assertFalse(producer!!.shouldEmitStateMessage(null))
@@ -59,15 +59,15 @@ class DebeziumMessageProducerTest {
     fun testProcessRecordMessageWithStateMessage() {
         val message = Mockito.mock(ChangeEventWithMetadata::class.java)
 
-        Mockito.`when`(targetPosition!!.isSameOffset(any(), any())).thenReturn(false)
-        Mockito.`when`(targetPosition!!.isEventAheadOffset(OFFSET_MANAGER_READ, message))
+        Mockito.`when`(targetPosition.isSameOffset(any(), any())).thenReturn(false)
+        Mockito.`when`(targetPosition.isEventAheadOffset(OFFSET_MANAGER_READ, message))
             .thenReturn(true)
         producer!!.processRecordMessage(null, message)
-        Mockito.verify(eventConverter!!).toAirbyteMessage(message)
+        Mockito.verify(eventConverter).toAirbyteMessage(message)
         Assert.assertTrue(producer!!.shouldEmitStateMessage(null))
 
-        Mockito.`when`(cdcStateHandler!!.isCdcCheckpointEnabled).thenReturn(false)
-        Mockito.`when`(cdcStateHandler!!.saveState(eq(OFFSET_MANAGER_READ), eq(SCHEMA)))
+        Mockito.`when`(cdcStateHandler.isCdcCheckpointEnabled).thenReturn(false)
+        Mockito.`when`(cdcStateHandler.saveState(eq(OFFSET_MANAGER_READ), eq(SCHEMA)))
             .thenReturn(AirbyteMessage().withState(STATE_MESSAGE))
 
         Assert.assertEquals(producer!!.generateStateMessageAtCheckpoint(null), STATE_MESSAGE)
@@ -75,14 +75,14 @@ class DebeziumMessageProducerTest {
 
     @Test
     fun testGenerateFinalMessageNoProgress() {
-        Mockito.`when`(cdcStateHandler!!.saveState(eq(OFFSET_MANAGER_READ), eq(SCHEMA)))
+        Mockito.`when`(cdcStateHandler.saveState(eq(OFFSET_MANAGER_READ), eq(SCHEMA)))
             .thenReturn(AirbyteMessage().withState(STATE_MESSAGE))
 
         // initialOffset will be OFFSET_MANAGER_READ, final state would be OFFSET_MANAGER_READ2.
         // Mock CDC handler will only accept OFFSET_MANAGER_READ.
-        Mockito.`when`<Map<String, String>>(offsetManager!!.read()).thenReturn(OFFSET_MANAGER_READ2)
+        Mockito.`when`<Map<String, String>>(offsetManager.read()).thenReturn(OFFSET_MANAGER_READ2)
 
-        Mockito.`when`(targetPosition!!.isSameOffset(OFFSET_MANAGER_READ, OFFSET_MANAGER_READ2))
+        Mockito.`when`(targetPosition.isSameOffset(OFFSET_MANAGER_READ, OFFSET_MANAGER_READ2))
             .thenReturn(true)
 
         Assert.assertEquals(producer!!.createFinalStateMessage(null), STATE_MESSAGE)
@@ -90,13 +90,13 @@ class DebeziumMessageProducerTest {
 
     @Test
     fun testGenerateFinalMessageWithProgress() {
-        Mockito.`when`(cdcStateHandler!!.saveState(eq(OFFSET_MANAGER_READ2), eq(SCHEMA)))
+        Mockito.`when`(cdcStateHandler.saveState(eq(OFFSET_MANAGER_READ2), eq(SCHEMA)))
             .thenReturn(AirbyteMessage().withState(STATE_MESSAGE))
 
         // initialOffset will be OFFSET_MANAGER_READ, final state would be OFFSET_MANAGER_READ2.
         // Mock CDC handler will only accept OFFSET_MANAGER_READ2.
-        Mockito.`when`<Map<String, String>>(offsetManager!!.read()).thenReturn(OFFSET_MANAGER_READ2)
-        Mockito.`when`(targetPosition!!.isSameOffset(OFFSET_MANAGER_READ, OFFSET_MANAGER_READ2))
+        Mockito.`when`<Map<String, String>>(offsetManager.read()).thenReturn(OFFSET_MANAGER_READ2)
+        Mockito.`when`(targetPosition.isSameOffset(OFFSET_MANAGER_READ, OFFSET_MANAGER_READ2))
             .thenReturn(false)
 
         Assert.assertEquals(producer!!.createFinalStateMessage(null), STATE_MESSAGE)

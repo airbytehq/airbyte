@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from dagger import Container
 
 
-
 async def pre_connector_install(base_image_container: Container) -> Container:
     """This function will run before the connector installation.
     We set these environment variable to match what was originally in the Dockerfile.

@@ -66,6 +66,7 @@ bash run-ab-platform.sh
 - Start moving some data!
 
 ## Troubleshooting
+
 If you have any questions about the local setup and deployment process, head over to our [Getting Started FAQ](https://github.com/airbytehq/airbyte/discussions/categories/questions) on our Airbyte Forum that answers the following questions and more:
 
 - How long does it take to set up Airbyte?

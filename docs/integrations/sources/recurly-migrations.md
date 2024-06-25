@@ -13,7 +13,7 @@ Once you have migrated to the new version, we highly recommend all users refresh
 Airbyte Open Source users with existing connections must manually update the connector image in their local registry before proceeding with the migration. To do so:
 
 1. Select **Settings** in the main navbar.
-    1. Select **Sources**.
+   1. Select **Sources**.
 2. Find Recurly in the list of connectors.
 
 :::note
@@ -24,7 +24,7 @@ You will see two versions listed, the current in-use version and the latest vers
 
 ### Update the connector version
 
-1. Select **Sources** in the main navbar. 
+1. Select **Sources** in the main navbar.
 2. Select the instance of the connector you wish to upgrade.
 
 :::note
@@ -32,26 +32,26 @@ Each instance of the connector must be updated separately. If you have created m
 :::
 
 3. Select **Upgrade**
-    1. Follow the prompt to confirm you are ready to upgrade to the new version.
+   1. Follow the prompt to confirm you are ready to upgrade to the new version.
 
 ### Refresh schemas and reset data
 
 1. Select **Connections** in the main navbar.
 2. Select the connection(s) affected by the update.
-3. Select the **Replication** tab. 
-    1. Select **Refresh source schema**.
-    2. Select **OK**.
+3. Select the **Replication** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
 
 :::note
 Any detected schema changes will be listed for your review.
 :::
 
 4. Select **Save changes** at the bottom of the page.
-    1. Ensure the **Reset all streams** option is checked.
-5. Select **Save connection**. 
+   1. Ensure the **Reset all streams** option is checked.
+5. Select **Save connection**.
 
 :::note
 This will reset the data in your destination and initiate a fresh sync.
 :::
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).

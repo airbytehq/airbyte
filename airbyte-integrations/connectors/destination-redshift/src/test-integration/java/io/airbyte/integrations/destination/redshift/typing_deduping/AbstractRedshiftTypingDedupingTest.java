@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
-import static io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer.*;
+import static io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,7 +12,7 @@ import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
+import io.airbyte.integrations.destination.redshift.RedshiftDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGeneratorIntegrationTest.RedshiftSourceOperations;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedupingTest {
@@ -40,7 +41,7 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   @Override
   protected DataSource getDataSource(final JsonNode config) {
-    return new RedshiftInsertDestination().getDataSource(config);
+    return new RedshiftDestination().getDataSource(config);
   }
 
   @Override
@@ -50,7 +51,7 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   @Override
   protected SqlGenerator getSqlGenerator() {
-    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false) {
 
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
       // to save bytes.
@@ -63,6 +64,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
   public void testRawTableMetaMigration_append() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
@@ -86,6 +90,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
   public void testRawTableMetaMigration_incrementalDedupe() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()

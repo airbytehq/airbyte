@@ -44,7 +44,7 @@ def test_dpath_extractor(test_name, field_path, body, expected_records):
     extractor = DpathExtractor(field_path=field_path, config=config, decoder=decoder, parameters=parameters)
 
     response = create_response(body)
-    actual_records = extractor.extract_records(response)
+    actual_records = list(extractor.extract_records(response))
 
     assert actual_records == expected_records
 

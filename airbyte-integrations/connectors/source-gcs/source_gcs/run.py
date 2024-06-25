@@ -7,8 +7,8 @@ import sys
 import traceback
 from datetime import datetime
 
-from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
+from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
 from source_gcs import Config, Cursor, SourceGCS, SourceGCSStreamReader
 
 

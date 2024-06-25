@@ -3,70 +3,70 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer",
-      "description": "The ID of the link."
+      "description": "The ID of the link.",
+      "type": "integer"
     },
     "issueId": {
-      "type": ["null", "string"],
-      "description": "Id of the related issue."
+      "description": "Id of the related issue.",
+      "type": ["null", "string"]
     },
     "self": {
-      "type": "string",
-      "description": "The URL of the link."
+      "description": "The URL of the link.",
+      "type": "string"
     },
     "globalId": {
-      "type": "string",
-      "description": "The global ID of the link, such as the ID of the item on the remote system."
+      "description": "The global ID of the link, such as the ID of the item on the remote system.",
+      "type": "string"
     },
     "application": {
       "description": "Details of the remote application the linked item is in.",
       "type": "object",
       "properties": {
         "type": {
-          "type": "string",
-          "description": "The name-spaced type of the application, used by registered rendering apps."
+          "description": "The name-spaced type of the application, used by registered rendering apps.",
+          "type": "string"
         },
         "name": {
-          "type": "string",
-          "description": "The name of the application. Used in conjunction with the (remote) object icon title to display a tooltip for the link's icon. The tooltip takes the format \"\\[application name\\] icon title\". Blank items are excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\". Grouping and sorting of links may place links without an application name last."
+          "description": "The name of the application. Used in conjunction with the (remote) object icon title to display a tooltip for the link's icon. The tooltip takes the format \"[application name] icon title\". Blank items are excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\". Grouping and sorting of links may place links without an application name last.",
+          "type": "string"
         }
       }
     },
     "relationship": {
-      "type": "string",
-      "description": "Description of the relationship between the issue and the linked item."
+      "description": "Description of the relationship between the issue and the linked item.",
+      "type": "string"
     },
     "object": {
       "description": "Details of the item linked to.",
       "type": "object",
       "properties": {
         "url": {
-          "type": "string",
-          "description": "The URL of the item."
+          "description": "The URL of the item.",
+          "type": "string"
         },
         "title": {
-          "type": "string",
-          "description": "The title of the item."
+          "description": "The title of the item.",
+          "type": "string"
         },
         "summary": {
-          "type": "string",
-          "description": "The summary details of the item."
+          "description": "The summary details of the item.",
+          "type": "string"
         },
         "icon": {
           "description": "Details of the icon for the item. If no icon is defined, the default link icon is used in Jira.",
           "type": "object",
           "properties": {
             "url16x16": {
-              "type": "string",
-              "description": "The URL of an icon that displays at 16x16 pixel in Jira."
+              "description": "The URL of an icon that displays at 16x16 pixel in Jira.",
+              "type": "string"
             },
             "title": {
-              "type": "string",
-              "description": "The title of the icon. This is used as follows:\n\n *  For a status icon it is used as a tooltip on the icon. If not set, the status icon doesn't display a tooltip in Jira.\n *  For the remote object icon it is used in conjunction with the application name to display a tooltip for the link's icon. The tooltip takes the format \"\\[application name\\] icon title\". Blank itemsare excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\"."
+              "description": "The title of the icon. This is used as follows:\n\n *  For a status icon it is used as a tooltip on the icon. If not set, the status icon doesn't display a tooltip in Jira.\n *  For the remote object icon it is used in conjunction with the application name to display a tooltip for the link's icon. The tooltip takes the format \"[application name] icon title\". Blank itemsare excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\".",
+              "type": "string"
             },
             "link": {
-              "type": "string",
-              "description": "The URL of the tooltip, used only for a status icon. If not set, the status icon in Jira is not clickable."
+              "description": "The URL of the tooltip, used only for a status icon. If not set, the status icon in Jira is not clickable.",
+              "type": "string"
             }
           }
         },
@@ -75,24 +75,24 @@
           "type": "object",
           "properties": {
             "resolved": {
-              "type": "boolean",
-              "description": "Whether the item is resolved. If set to \"true\", the link to the issue is displayed in a strikethrough font, otherwise the link displays in normal font."
+              "description": "Whether the item is resolved. If set to \"true\", the link to the issue is displayed in a strikethrough font, otherwise the link displays in normal font.",
+              "type": "boolean"
             },
             "icon": {
               "description": "Details of the icon representing the status. If not provided, no status icon displays in Jira.",
               "type": "object",
               "properties": {
                 "url16x16": {
-                  "type": "string",
-                  "description": "The URL of an icon that displays at 16x16 pixel in Jira."
+                  "description": "The URL of an icon that displays at 16x16 pixel in Jira.",
+                  "type": "string"
                 },
                 "title": {
-                  "type": "string",
-                  "description": "The title of the icon. This is used as follows:\n\n *  For a status icon it is used as a tooltip on the icon. If not set, the status icon doesn't display a tooltip in Jira.\n *  For the remote object icon it is used in conjunction with the application name to display a tooltip for the link's icon. The tooltip takes the format \"\\[application name\\] icon title\". Blank itemsare excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\"."
+                  "description": "The title of the icon. This is used as follows:\n\n *  For a status icon it is used as a tooltip on the icon. If not set, the status icon doesn't display a tooltip in Jira.\n *  For the remote object icon it is used in conjunction with the application name to display a tooltip for the link's icon. The tooltip takes the format \"[application name] icon title\". Blank itemsare excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\".",
+                  "type": "string"
                 },
                 "link": {
-                  "type": "string",
-                  "description": "The URL of the tooltip, used only for a status icon. If not set, the status icon in Jira is not clickable."
+                  "description": "The URL of the tooltip, used only for a status icon. If not set, the status icon in Jira is not clickable.",
+                  "type": "string"
                 }
               }
             }

@@ -9,7 +9,7 @@ import io.airbyte.cdk.integrations.base.DestinationConfig
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.InMemoryBuffer
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.Field
@@ -143,10 +143,10 @@ class CsvSerializedBufferTest {
             true,
             135L,
             150L,
-            S3CsvFormatConfig(
+            UploadCsvFormatConfig(
                 Jsons.jsonNode(
                     mapOf(
-                        "format_type" to S3Format.CSV,
+                        "format_type" to FileUploadFormat.CSV,
                         "flattening" to Flattening.ROOT_LEVEL.value,
                     ),
                 ),
@@ -162,7 +162,7 @@ class CsvSerializedBufferTest {
         withCompression: Boolean,
         minExpectedByte: Long,
         maxExpectedByte: Long,
-        config: S3CsvFormatConfig?,
+        config: UploadCsvFormatConfig?,
         expectedData: String
     ) {
         val outputFile = buffer.file

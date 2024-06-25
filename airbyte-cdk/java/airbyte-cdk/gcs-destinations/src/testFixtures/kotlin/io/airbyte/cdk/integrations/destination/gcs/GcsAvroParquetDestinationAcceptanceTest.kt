@@ -4,7 +4,7 @@
 package io.airbyte.cdk.integrations.destination.gcs
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaType
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider
@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 
-abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
-    GcsDestinationAcceptanceTest(s3Format) {
+abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUploadFormat) :
+    GcsDestinationAcceptanceTest(fileUploadFormat) {
     override fun getProtocolVersion() = ProtocolVersion.V1
 
     @ParameterizedTest
@@ -63,16 +63,7 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
                     )
                 )
 
-        return nameToNode.entries
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    Function { obj: Map.Entry<String, JsonNode> -> obj.key },
-                    Function { entry: Map.Entry<String, JsonNode> ->
-                        getExpectedSchemaType(entry.value)
-                    }
-                )
-            )
+        return nameToNode.entries.associate { it.key to getExpectedSchemaType(it.value) }
     }
 
     private fun getJsonNode(stream: AirbyteStream, name: String): JsonNode {
@@ -133,47 +124,30 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {
         val fieldList =
-            record.schema.fields
-                .stream()
-                .filter { field: Schema.Field -> !field.name().startsWith("_airbyte") }
-                .toList()
+            record.schema.fields.filter { field: Schema.Field ->
+                !field.name().startsWith("_airbyte")
+            }
 
         return if (fieldList.size == 1) {
-            fieldList
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function { obj: Schema.Field -> obj.name() },
-                        Function { field: Schema.Field ->
-                            field
-                                .schema()
-                                .types
-                                .stream()
-                                .map { obj: Schema -> obj.type }
-                                .filter { type: Schema.Type -> type != Schema.Type.NULL }
-                                .collect(Collectors.toSet())
-                        }
-                    )
-                )
+            fieldList.associate {
+                it.name() to
+                    it.schema()
+                        .types
+                        .map { obj: Schema -> obj.type }
+                        .filter { type: Schema.Type -> type != Schema.Type.NULL }
+                        .toSet()
+            }
         } else {
-            fieldList
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function { obj: Schema.Field -> obj.name() },
-                        Function { field: Schema.Field ->
-                            field
-                                .schema()
-                                .types
-                                .stream()
-                                .filter { type: Schema -> type.type != Schema.Type.NULL }
-                                .flatMap { type: Schema -> type.elementType.types.stream() }
-                                .map { obj: Schema -> obj.type }
-                                .filter { type: Schema.Type -> type != Schema.Type.NULL }
-                                .collect(Collectors.toSet())
-                        }
-                    )
-                )
+            fieldList.associate {
+                it.name() to
+                    it.schema()
+                        .types
+                        .filter { type: Schema -> type.type != Schema.Type.NULL }
+                        .flatMap { type: Schema -> type.elementType.types }
+                        .map { obj: Schema -> obj.type }
+                        .filter { type: Schema.Type -> type != Schema.Type.NULL }
+                        .toSet()
+            }
         }
     }
 }

@@ -4,53 +4,480 @@
   "additionalProperties": true,
   "properties": {
     "object": {
+      "description": "Type or category of the page object.",
       "enum": ["page"]
     },
     "id": {
+      "description": "Unique identifier of the page.",
       "type": "string"
     },
     "created_time": {
+      "description": "Date and time when the page was created.",
       "type": "string",
       "format": "date-time"
     },
     "created_by": {
-      "$ref": "user.json"
+      "description": "User ID or name of the creator of the page.",
+
+      "type": "object",
+      "properties": {
+        "object": {
+          "enum": ["user"]
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "enum": ["person", "bot"]
+        },
+        "person": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "email": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "bot": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "owner": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "info": {
+                  "avatar_url": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  },
+                  "person": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "email": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                "workspace": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "workspace_name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "last_edited_time": {
+      "description": "Date and time when the page was last edited.",
       "type": "string",
       "format": "date-time"
     },
     "last_edited_by": {
-      "$ref": "user.json"
+      "description": "User ID or name of the last editor of the page.",
+
+      "type": "object",
+      "properties": {
+        "object": {
+          "enum": ["user"]
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "enum": ["person", "bot"]
+        },
+        "person": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "email": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "bot": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "owner": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "info": {
+                  "avatar_url": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  },
+                  "person": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "email": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                "workspace": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "workspace_name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "archived": {
+      "description": "Indicates whether the page is archived or not.",
       "type": "boolean"
     },
     "icon": {
-      "$ref": "icon.json"
+      "description": "URL or reference to the page icon.",
+      "anyOf": [
+        {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "enum": ["file", "external"]
+            },
+            "caption": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "text": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "content": {
+                        "type": ["null", "string"]
+                      },
+                      "link": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "type": {
+                            "enum": ["url"]
+                          },
+                          "url": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "mention": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "info": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "id": {
+                            "type": ["null", "string"]
+                          },
+                          "object": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "equation": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "expression": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "annotations": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "bold": {
+                        "type": ["null", "boolean"]
+                      },
+                      "italic": {
+                        "type": ["null", "boolean"]
+                      },
+                      "strikethrough": {
+                        "type": ["null", "boolean"]
+                      },
+                      "underline": {
+                        "type": ["null", "boolean"]
+                      },
+                      "code": {
+                        "type": ["null", "boolean"]
+                      },
+                      "color": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "plain_text": {
+                    "type": ["null", "string"]
+                  },
+                  "href": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "external": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              }
+            },
+            "file": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "expiry_time": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "emoji": {
+              "type": "string"
+            }
+          }
+        }
+      ]
     },
     "cover": {
-      "$ref": "file.json"
+      "description": "URL or reference to the page cover image.",
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "enum": ["file", "external"]
+        },
+        "caption": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "text": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "content": {
+                    "type": ["null", "string"]
+                  },
+                  "link": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "type": {
+                        "enum": ["url"]
+                      },
+                      "url": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "mention": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "info": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "object": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "equation": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "expression": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "annotations": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "bold": {
+                    "type": ["null", "boolean"]
+                  },
+                  "italic": {
+                    "type": ["null", "boolean"]
+                  },
+                  "strikethrough": {
+                    "type": ["null", "boolean"]
+                  },
+                  "underline": {
+                    "type": ["null", "boolean"]
+                  },
+                  "code": {
+                    "type": ["null", "boolean"]
+                  },
+                  "color": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "plain_text": {
+                "type": ["null", "string"]
+              },
+              "href": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "external": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "file": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "expiry_time": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
     },
     "parent": {
-      "$ref": "parent.json"
+      "description": "ID or reference to the parent page.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": ["block_id", "database_id", "page_id", "workspace"]
+        },
+        "block_id": {
+          "type": "string"
+        },
+        "database_id": {
+          "type": "string"
+        },
+        "page_id": {
+          "type": "string"
+        },
+        "workspace": {
+          "type": "boolean"
+        }
+      }
     },
     "url": {
+      "description": "URL of the page within the service.",
       "type": "string"
     },
     "public_url": {
+      "description": "Publicly accessible URL of the page.",
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Custom properties associated with the page.",
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": true,
         "properties": {
           "name": {
+            "description": "Name or key of the custom property.",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "Value of the custom property.",
             "type": "object",
             "additionalProperties": true,
             "oneOf": [
@@ -63,7 +490,68 @@
                   "type": {
                     "enum": ["title"]
                   },
-                  "title": { "$ref": "title.json" }
+                  "title": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "additionalProperties": true,
+                      "properties": {
+                        "type": {
+                          "type": ["null", "string"]
+                        },
+                        "text": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "content": {
+                              "type": ["null", "string"]
+                            },
+                            "link": {
+                              "type": ["null", "object"],
+                              "additionalProperties": true,
+                              "properties": {
+                                "type": {
+                                  "enum": ["url"]
+                                },
+                                "url": {
+                                  "type": ["null", "string"]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "annotations": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "bold": {
+                              "type": ["null", "boolean"]
+                            },
+                            "italic": {
+                              "type": ["null", "boolean"]
+                            },
+                            "strikethrough": {
+                              "type": ["null", "boolean"]
+                            },
+                            "underline": {
+                              "type": ["null", "boolean"]
+                            },
+                            "code": {
+                              "type": ["null", "boolean"]
+                            },
+                            "color": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "plain_text": {
+                          "type": ["null", "string"]
+                        },
+                        "href": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
                 }
               },
               {
@@ -77,67 +565,92 @@
                   },
                   "rich_text": {
                     "type": ["null", "array"],
-                    "items": { "$ref": "rich_text.json" }
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["select"] },
-                  "select": { "$ref": "options.json" }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["multi_select"] },
-                  "multi_select": {
-                    "type": ["null", "array"],
-                    "items": { "$ref": "options.json" }
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["date"] },
-                  "date": { "$ref": "date.json" }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["formula"] },
-                  "formula": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "type": {
-                        "enum": ["string", "number", "boolean", "date"]
-                      },
-                      "string": { "type": ["null", "string"] },
-                      "number": { "type": ["null", "number"] },
-                      "boolean": { "type": ["null", "boolean"] },
-                      "date": { "$ref": "date.json" }
-                    }
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["relation"] },
-                  "relation": {
-                    "type": ["null", "array"],
                     "items": {
                       "type": "object",
                       "properties": {
-                        "id": { "type": "string" }
+                        "type": {
+                          "type": ["null", "string"]
+                        },
+                        "text": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "content": {
+                              "type": ["null", "string"]
+                            },
+                            "link": {
+                              "type": ["null", "object"],
+                              "additionalProperties": true,
+                              "properties": {
+                                "type": {
+                                  "enum": ["url"]
+                                },
+                                "url": {
+                                  "type": ["null", "string"]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "mention": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "type": {
+                              "type": ["null", "string"]
+                            },
+                            "info": {
+                              "type": ["null", "object"],
+                              "properties": {
+                                "id": {
+                                  "type": ["null", "string"]
+                                },
+                                "object": {
+                                  "type": ["null", "string"]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "equation": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "expression": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "annotations": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "bold": {
+                              "type": ["null", "boolean"]
+                            },
+                            "italic": {
+                              "type": ["null", "boolean"]
+                            },
+                            "strikethrough": {
+                              "type": ["null", "boolean"]
+                            },
+                            "underline": {
+                              "type": ["null", "boolean"]
+                            },
+                            "code": {
+                              "type": ["null", "boolean"]
+                            },
+                            "color": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "plain_text": {
+                          "type": ["null", "string"]
+                        },
+                        "href": {
+                          "type": ["null", "string"]
+                        }
                       }
                     }
                   }
@@ -146,20 +659,167 @@
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["rollup"] },
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["select"]
+                  },
+                  "select": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "color": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["multi_select"]
+                  },
+                  "multi_select": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "id": {
+                          "type": ["null", "string"]
+                        },
+                        "name": {
+                          "type": ["null", "string"]
+                        },
+                        "color": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["date"]
+                  },
+                  "date": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "start": { "type": ["null", "string"] },
+                      "end": { "type": ["null", "string"] },
+                      "time_zone": { "type": ["null", "string"] }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["formula"]
+                  },
+                  "formula": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "type": {
+                        "enum": ["string", "number", "boolean", "date"]
+                      },
+                      "string": {
+                        "type": ["null", "string"]
+                      },
+                      "number": {
+                        "type": ["null", "number"]
+                      },
+                      "boolean": {
+                        "type": ["null", "boolean"]
+                      },
+                      "date": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "start": { "type": ["null", "string"] },
+                          "end": { "type": ["null", "string"] },
+                          "time_zone": { "type": ["null", "string"] }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["relation"]
+                  },
+                  "relation": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["rollup"]
+                  },
                   "rollup": {
                     "type": ["null", "object"],
                     "properties": {
-                      "type": { "enum": ["number", "date", "array"] },
-                      "number": { "type": ["null", "number"] },
-                      "date": { "$ref": "date.json" },
+                      "type": {
+                        "enum": ["number", "date", "array"]
+                      },
+                      "number": {
+                        "type": ["null", "number"]
+                      },
+                      "date": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "start": { "type": ["null", "string"] },
+                          "end": { "type": ["null", "string"] },
+                          "time_zone": { "type": ["null", "string"] }
+                        }
+                      },
                       "array": {
                         "type": ["null", "array"],
                         "items": {
                           "type": "object",
                           "properties": {
-                            "type": { "type": "string" }
+                            "type": {
+                              "type": "string"
+                            }
                           }
                         }
                       }
@@ -170,30 +830,86 @@
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["people"] },
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["people"]
+                  },
                   "people": {
-                    "type": ["null", "array"],
-                    "items": {
-                      "$ref": "user.json"
-                    }
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["files"] },
-                  "files": {
                     "type": ["null", "array"],
                     "items": {
                       "type": "object",
                       "properties": {
-                        "type": { "enum": ["external", "file"] },
-                        "url": { "type": "string" },
-                        "expiry_time": { "type": ["null", "string"] },
-                        "name": { "type": "string" }
+                        "object": {
+                          "enum": ["user"]
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": ["null", "string"]
+                        },
+                        "avatar_url": {
+                          "type": ["null", "string"]
+                        },
+                        "type": {
+                          "enum": ["person", "bot"]
+                        },
+                        "person": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "email": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "bot": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "owner": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "info": {
+                                  "avatar_url": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "id": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "name": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "object": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "person": {
+                                    "type": ["null", "object"],
+                                    "properties": {
+                                      "email": {
+                                        "type": ["null", "string"]
+                                      },
+                                      "type": {
+                                        "type": ["null", "string"]
+                                      }
+                                    }
+                                  }
+                                },
+                                "workspace": {
+                                  "type": ["null", "boolean"]
+                                }
+                              }
+                            },
+                            "workspace_name": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -202,8 +918,43 @@
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["checkbox"] },
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["files"]
+                  },
+                  "files": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "enum": ["external", "file"]
+                        },
+                        "url": {
+                          "type": "string"
+                        },
+                        "expiry_time": {
+                          "type": ["null", "string"]
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["checkbox"]
+                  },
                   "checkout": {
                     "type": ["null", "boolean"]
                   }
@@ -212,68 +963,140 @@
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["url"] },
-                  "url": { "type": "string" }
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["url"]
+                  },
+                  "url": {
+                    "type": "string"
+                  }
                 }
               },
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["email"] },
-                  "email": { "type": "string" }
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["email"]
+                  },
+                  "email": {
+                    "type": "string"
+                  }
                 }
               },
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["phone_number"] },
-                  "phone_number": { "type": "object" }
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["phone_number"]
+                  },
+                  "phone_number": {
+                    "type": "object"
+                  }
                 }
               },
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["created_time"] },
-                  "created_time": { "type": "string" }
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["created_time"]
+                  },
+                  "created_time": {
+                    "type": "string"
+                  }
                 }
               },
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["created_by"] },
-                  "created_by": { "$ref": "user.json" }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["last_edited_time"] },
-                  "last_edited_time": { "type": "string" }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["last_edited_by"] },
-                  "last_edited_by": { "$ref": "user.json" }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["number"] },
-                  "number": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["created_by"]
+                  },
+                  "created_by": {
                     "type": "object",
                     "properties": {
-                      "format": { "type": "string" }
+                      "object": {
+                        "enum": ["user"]
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "avatar_url": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "enum": ["person", "bot"]
+                      },
+                      "person": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "email": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "bot": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "owner": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "info": {
+                                "avatar_url": {
+                                  "type": ["null", "string"]
+                                },
+                                "id": {
+                                  "type": ["null", "string"]
+                                },
+                                "name": {
+                                  "type": ["null", "string"]
+                                },
+                                "object": {
+                                  "type": ["null", "string"]
+                                },
+                                "person": {
+                                  "type": ["null", "object"],
+                                  "properties": {
+                                    "email": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "type": {
+                                      "type": ["null", "string"]
+                                    }
+                                  }
+                                }
+                              },
+                              "workspace": {
+                                "type": ["null", "boolean"]
+                              }
+                            }
+                          },
+                          "workspace_name": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -281,21 +1104,164 @@
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["status"] },
-                  "status": { "$ref": "options.json" }
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["last_edited_time"]
+                  },
+                  "last_edited_time": {
+                    "type": "string"
+                  }
                 }
               },
               {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "type": { "enum": ["unique_id"] },
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["last_edited_by"]
+                  },
+                  "last_edited_by": {
+                    "type": "object",
+                    "properties": {
+                      "object": {
+                        "enum": ["user"]
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "avatar_url": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "enum": ["person", "bot"]
+                      },
+                      "person": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "email": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "bot": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "owner": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "info": {
+                                "avatar_url": {
+                                  "type": ["null", "string"]
+                                },
+                                "id": {
+                                  "type": ["null", "string"]
+                                },
+                                "name": {
+                                  "type": ["null", "string"]
+                                },
+                                "object": {
+                                  "type": ["null", "string"]
+                                },
+                                "person": {
+                                  "type": ["null", "object"],
+                                  "properties": {
+                                    "email": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "type": {
+                                      "type": ["null", "string"]
+                                    }
+                                  }
+                                }
+                              },
+                              "workspace": {
+                                "type": ["null", "boolean"]
+                              }
+                            }
+                          },
+                          "workspace_name": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["number"]
+                  },
+                  "number": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["status"]
+                  },
+                  "status": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "color": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["unique_id"]
+                  },
                   "unique_id": {
                     "type": "object",
                     "properties": {
-                      "number": { "type": "number" },
-                      "prefix": { "type": ["null", "string"] }
+                      "number": {
+                        "type": "number"
+                      },
+                      "prefix": {
+                        "type": ["null", "string"]
+                      }
                     }
                   }
                 }
@@ -315,8 +1281,88 @@
                       "state": {
                         "enum": ["verified", "unverified"]
                       },
-                      "verified_by": { "$ref": "user.json" },
-                      "date": { "$ref": "date.json" }
+                      "verified_by": {
+                        "type": "object",
+                        "properties": {
+                          "object": {
+                            "enum": ["user"]
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": ["null", "string"]
+                          },
+                          "avatar_url": {
+                            "type": ["null", "string"]
+                          },
+                          "type": {
+                            "enum": ["person", "bot"]
+                          },
+                          "person": {
+                            "type": ["null", "object"],
+                            "additionalProperties": true,
+                            "properties": {
+                              "email": {
+                                "type": ["null", "string"]
+                              }
+                            }
+                          },
+                          "bot": {
+                            "type": ["null", "object"],
+                            "additionalProperties": true,
+                            "properties": {
+                              "owner": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string"
+                                  },
+                                  "info": {
+                                    "avatar_url": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "id": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "name": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "object": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "person": {
+                                      "type": ["null", "object"],
+                                      "properties": {
+                                        "email": {
+                                          "type": ["null", "string"]
+                                        },
+                                        "type": {
+                                          "type": ["null", "string"]
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "workspace": {
+                                    "type": ["null", "boolean"]
+                                  }
+                                }
+                              },
+                              "workspace_name": {
+                                "type": ["null", "string"]
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "date": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "start": { "type": ["null", "string"] },
+                          "end": { "type": ["null", "string"] },
+                          "time_zone": { "type": ["null", "string"] }
+                        }
+                      }
                     }
                   }
                 }

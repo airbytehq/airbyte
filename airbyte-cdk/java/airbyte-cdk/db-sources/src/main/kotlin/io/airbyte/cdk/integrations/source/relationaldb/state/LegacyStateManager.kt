@@ -10,12 +10,12 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Legacy implementation (pre-per-stream state support) of the [StateManager] interface.
  *
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
               state management."""
 )
 class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
-    AbstractStateManager<DbState?, DbStreamState>(
+    AbstractStateManager<DbState, DbStreamState>(
         catalog,
         Supplier { dbState.streams },
         CURSOR_FUNCTION,
@@ -57,7 +57,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
         this.isCdc = dbState.cdc ?: false
     }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() {
             throw UnsupportedOperationException(
                 "Raw state retrieval not supported by global state manager."
@@ -70,7 +70,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
                 .withCdc(isCdc)
                 .withCdcState(cdcStateManager.cdcState)
 
-        LOGGER.debug("Generated legacy state for {} streams", dbState.streams.size)
+        LOGGER.debug { "Generated legacy state for ${dbState.streams.size} streams" }
         return AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(dbState))
@@ -97,7 +97,6 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(LegacyStateManager::class.java)
 
         /** [Function] that extracts the cursor from the stream state. */
         private val CURSOR_FUNCTION = DbStreamState::getCursor
@@ -112,7 +111,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
         /** [Function] that creates an [AirbyteStreamNameNamespacePair] from the stream state. */
         private val NAME_NAMESPACE_PAIR_FUNCTION =
             Function<DbStreamState, AirbyteStreamNameNamespacePair?> { s: DbStreamState ->
-                AirbyteStreamNameNamespacePair(s!!.streamName, s.streamNamespace)
+                AirbyteStreamNameNamespacePair(s.streamName, s.streamNamespace)
             }
     }
 }

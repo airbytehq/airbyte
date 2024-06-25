@@ -3,8 +3,8 @@
   "type": "object",
   "properties": {
     "self": {
-      "type": "string",
       "description": "The URL of the worklog item.",
+      "type": "string",
       "readOnly": true
     },
     "author": {
@@ -13,28 +13,28 @@
       "type": "object",
       "properties": {
         "self": {
-          "type": "string",
           "description": "The URL of the user.",
+          "type": "string",
           "readOnly": true
         },
         "name": {
-          "type": "string",
           "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string",
           "readOnly": true
         },
         "key": {
-          "type": "string",
           "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string",
           "readOnly": true
         },
         "accountId": {
+          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.",
           "maxLength": 128,
-          "type": "string",
-          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*."
+          "type": "string"
         },
         "emailAddress": {
-          "type": "string",
           "description": "The email address of the user. Depending on the user\u2019s privacy settings, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "avatarUrls": {
@@ -43,41 +43,41 @@
           "type": "object",
           "properties": {
             "16x16": {
-              "type": "string",
-              "description": "The URL of the item's 16x16 pixel avatar."
+              "description": "The URL of the item's 16x16 pixel avatar.",
+              "type": "string"
             },
             "24x24": {
-              "type": "string",
-              "description": "The URL of the item's 24x24 pixel avatar."
+              "description": "The URL of the item's 24x24 pixel avatar.",
+              "type": "string"
             },
             "32x32": {
-              "type": "string",
-              "description": "The URL of the item's 32x32 pixel avatar."
+              "description": "The URL of the item's 32x32 pixel avatar.",
+              "type": "string"
             },
             "48x48": {
-              "type": "string",
-              "description": "The URL of the item's 48x48 pixel avatar."
+              "description": "The URL of the item's 48x48 pixel avatar.",
+              "type": "string"
             }
           }
         },
         "displayName": {
-          "type": "string",
           "description": "The display name of the user. Depending on the user\u2019s privacy settings, this may return an alternative value.",
+          "type": "string",
           "readOnly": true
         },
         "active": {
-          "type": "boolean",
           "description": "Whether the user is active.",
+          "type": "boolean",
           "readOnly": true
         },
         "timeZone": {
-          "type": "string",
           "description": "The time zone specified in the user's profile. Depending on the user\u2019s privacy settings, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "accountType": {
-          "type": "string",
           "description": "The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)",
+          "type": "string",
           "readOnly": true
         }
       }
@@ -88,28 +88,28 @@
       "type": "object",
       "properties": {
         "self": {
-          "type": "string",
           "description": "The URL of the user.",
+          "type": "string",
           "readOnly": true
         },
         "name": {
-          "type": "string",
           "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string",
           "readOnly": true
         },
         "key": {
-          "type": "string",
           "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string",
           "readOnly": true
         },
         "accountId": {
+          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.",
           "maxLength": 128,
-          "type": "string",
-          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*."
+          "type": "string"
         },
         "emailAddress": {
-          "type": "string",
           "description": "The email address of the user. Depending on the user\u2019s privacy settings, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "avatarUrls": {
@@ -118,58 +118,58 @@
           "type": "object",
           "properties": {
             "16x16": {
-              "type": "string",
-              "description": "The URL of the item's 16x16 pixel avatar."
+              "description": "The URL of the item's 16x16 pixel avatar.",
+              "type": "string"
             },
             "24x24": {
-              "type": "string",
-              "description": "The URL of the item's 24x24 pixel avatar."
+              "description": "The URL of the item's 24x24 pixel avatar.",
+              "type": "string"
             },
             "32x32": {
-              "type": "string",
-              "description": "The URL of the item's 32x32 pixel avatar."
+              "description": "The URL of the item's 32x32 pixel avatar.",
+              "type": "string"
             },
             "48x48": {
-              "type": "string",
-              "description": "The URL of the item's 48x48 pixel avatar."
+              "description": "The URL of the item's 48x48 pixel avatar.",
+              "type": "string"
             }
           }
         },
         "displayName": {
-          "type": "string",
           "description": "The display name of the user. Depending on the user\u2019s privacy settings, this may return an alternative value.",
+          "type": "string",
           "readOnly": true
         },
         "active": {
-          "type": "boolean",
           "description": "Whether the user is active.",
+          "type": "boolean",
           "readOnly": true
         },
         "timeZone": {
-          "type": "string",
           "description": "The time zone specified in the user's profile. Depending on the user\u2019s privacy settings, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "accountType": {
-          "type": "string",
           "description": "The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)",
+          "type": "string",
           "readOnly": true
         }
       }
     },
     "comment": {
-      "type": "object",
-      "description": "A comment about the worklog in [Atlassian Document Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/). Optional when creating or updating a worklog."
+      "description": "A comment about the worklog in [Atlassian Document Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/). Optional when creating or updating a worklog.",
+      "type": "object"
     },
     "created": {
-      "type": "string",
       "description": "The datetime on which the worklog was created.",
+      "type": "string",
       "format": "date-time",
       "readOnly": true
     },
     "updated": {
-      "type": "string",
       "description": "The datetime on which the worklog was last updated.",
+      "type": "string",
       "format": "date-time",
       "readOnly": true
     },
@@ -178,48 +178,48 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string",
           "description": "Whether visibility of this item is restricted to a group or role.",
+          "type": "string",
           "enum": ["group", "role"]
         },
         "value": {
-          "type": "string",
-          "description": "The name of the group or role to which visibility of this item is restricted."
+          "description": "The name of the group or role to which visibility of this item is restricted.",
+          "type": "string"
         }
       }
     },
     "started": {
-      "type": "string",
       "description": "The datetime on which the worklog effort was started. Required when creating a worklog. Optional when updating a worklog.",
+      "type": "string",
       "format": "date-time"
     },
     "timeSpent": {
-      "type": "string",
-      "description": "The time spent working on the issue as days (\\#d), hours (\\#h), or minutes (\\#m or \\#). Required when creating a worklog if `timeSpentSeconds` isn't provided. Optional when updating a worklog. Cannot be provided if `timeSpentSecond` is provided."
+      "description": "The time spent working on the issue as days (#d), hours (#h), or minutes (#m or #). Required when creating a worklog if `timeSpentSeconds` isn't provided. Optional when updating a worklog. Cannot be provided if `timeSpentSecond` is provided.",
+      "type": "string"
     },
     "timeSpentSeconds": {
-      "type": "integer",
-      "description": "The time in seconds spent working on the issue. Required when creating a worklog if `timeSpent` isn't provided. Optional when updating a worklog. Cannot be provided if `timeSpent` is provided."
+      "description": "The time in seconds spent working on the issue. Required when creating a worklog if `timeSpent` isn't provided. Optional when updating a worklog. Cannot be provided if `timeSpent` is provided.",
+      "type": "integer"
     },
     "id": {
-      "type": "string",
       "description": "The ID of the worklog record.",
+      "type": "string",
       "readOnly": true
     },
     "issueId": {
-      "type": "string",
       "description": "The ID of the issue this worklog is for.",
+      "type": "string",
       "readOnly": true
     },
     "properties": {
-      "type": "array",
       "description": "Details of properties for the worklog. Optional when creating or updating a worklog.",
+      "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "key": {
-            "type": "string",
-            "description": "The key of the property. Required on create and update."
+            "description": "The key of the property. Required on create and update.",
+            "type": "string"
           },
           "value": {
             "description": "The value of the property. Required on create and update."

@@ -15,7 +15,7 @@ class RelationalDbDebeziumEventConverter(
 ) : DebeziumEventConverter {
     override fun toAirbyteMessage(event: ChangeEventWithMetadata): AirbyteMessage {
         val debeziumEvent = event.eventValueAsJson()
-        val before: JsonNode = debeziumEvent!!.get(DebeziumEventConverter.Companion.BEFORE_EVENT)
+        val before: JsonNode = debeziumEvent.get(DebeziumEventConverter.Companion.BEFORE_EVENT)
         val after: JsonNode = debeziumEvent.get(DebeziumEventConverter.Companion.AFTER_EVENT)
         val source: JsonNode = debeziumEvent.get(DebeziumEventConverter.Companion.SOURCE_EVENT)
 

@@ -39,7 +39,7 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Revelant information
+      label: Relevant information
       description: Please give any additional information you have and steps to reproduce the problem.
   - type: textarea
     id: logs

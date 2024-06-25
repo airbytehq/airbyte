@@ -96,7 +96,8 @@ class S3CsvFormatConfigTest {
         val s3ConfigWithoutGzipCompression = getS3DestinationConfig(configWithoutGzipCompression!!)
         Assertions.assertEquals(
             S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
-            (s3ConfigWithoutGzipCompression.formatConfig as S3CsvFormatConfig?)!!.compressionType
+            (s3ConfigWithoutGzipCompression.formatConfig as UploadCsvFormatConfig?)!!
+                .compressionType
         )
 
         // with gzip compression config
@@ -110,7 +111,7 @@ class S3CsvFormatConfigTest {
         val gcsConfigWithGzipCompression = getS3DestinationConfig(configWithGzipCompression!!)
         Assertions.assertEquals(
             CompressionType.GZIP,
-            (gcsConfigWithGzipCompression.formatConfig as S3CsvFormatConfig?)!!.compressionType
+            (gcsConfigWithGzipCompression.formatConfig as UploadCsvFormatConfig?)!!.compressionType
         )
     }
 }

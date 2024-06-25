@@ -71,10 +71,15 @@ Connect your first source and then head to the Chargify application. You can sea
 
 If you have any questions or want to get started, [please reach out to a billing expert](https://go.chargify.com/contact/).
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
 | 0.2.2   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.2.0   | 2021-09-10 | [\#5973](https://github.com/airbytehq/airbyte/pull/5973) | Fix timestamp inference for complex schemas  |
 | 0.1.0   | 2021-08-18 | [\#5339](https://github.com/airbytehq/airbyte/pull/5339) | Chargify Destination Release!                |
+
+</details>

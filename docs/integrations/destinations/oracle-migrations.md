@@ -7,7 +7,7 @@ the schema and database of Airbyte's "raw" tables to be compatible with the new
 [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
 format. These changes will likely require updates to downstream dbt / SQL models. After this update,
 Airbyte will only produce the "raw" v2 tables, which store all content in JSON. These changes remove
-the ability to do deduplicated syncs with Oracle.  
+the ability to do deduplicated syncs with Oracle.
 
 If you are interested in the Oracle destination gaining the full features
 of Destinations V2 (including final tables), click [[https://github.com/airbytehq/airbyte/discussions/37024]]
@@ -42,6 +42,7 @@ INSERT INTO airbyte_internal.default_raw__stream_{{stream_name}}
 **Airbyte will not delete any of your v1 data.**
 
 ### Database/Schema and the Internal Schema
+
 We have split the raw and final tables into their own schemas, which means that
 we will only write into the raw tables which will live in the `airbyte_internal` schema.
 The tables written into this schema will be prefixed with either the default schema provided in
