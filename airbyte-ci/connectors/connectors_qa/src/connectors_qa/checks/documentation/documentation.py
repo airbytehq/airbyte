@@ -466,12 +466,13 @@ class CheckSourceSectionContent(CheckDocumentationContent):
 
         expected = expected_content[self.expected_section_index]
 
-        close_matches = get_close_matches(expected, actual_contents)
-        if not close_matches:
-            return [f"Please review your {header} section, unable to find the expected content:\n{expected}"]
+        if not actual_contents:
+            return [f"Please update your {header} section section content to follow our guidelines:\n{expected}"]
+        if len(actual_contents) > 1:
+            return [f"Expected only one header {header}. Please rename duplicate."]
 
-        actual = close_matches[0]
-        actual = replace_connector_specific_urls_from_section(actual)
+        actual = actual_contents[0]
+        actual = replace_connector_specific_urls_from_section(actual)[:len(expected)]
         if actual != expected:
             errors = list(ndiff(actual.splitlines(keepends=True), expected.splitlines(keepends=True)))
 

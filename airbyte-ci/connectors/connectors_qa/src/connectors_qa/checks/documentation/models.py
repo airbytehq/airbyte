@@ -39,7 +39,7 @@ class SectionContent:
 
 class Content:
     HEADING = "heading"
-    supported_header_levels = ["h1", "h2", "h3"]
+    supported_header_levels = ["h1", "h2", "h3", "h4"]
 
     def __init__(self) -> None:
         self.content = self._content()
