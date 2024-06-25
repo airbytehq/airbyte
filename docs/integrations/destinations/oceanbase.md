@@ -87,4 +87,9 @@ Using this feature requires additional configuration, when creating the source. 
 
 <details>
   <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                               | Subject                                                                                        |
+| :------ |:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------|
+| 1.0.0   | 2024-06-25 | [\#40256](https://github.com/airbytehq/airbyte/pull/40256) |New dest oceanbase                                                                                                |
+
 </details>

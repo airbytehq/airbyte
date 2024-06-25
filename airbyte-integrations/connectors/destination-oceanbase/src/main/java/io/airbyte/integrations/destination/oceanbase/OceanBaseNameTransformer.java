@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.oceanbase;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import org.jetbrains.annotations.NotNull;
 
-
 public class OceanBaseNameTransformer extends StandardNameTransformer {
 
   @Override

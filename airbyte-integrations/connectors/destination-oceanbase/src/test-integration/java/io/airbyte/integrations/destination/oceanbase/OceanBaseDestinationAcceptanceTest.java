@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.destination.oceanbase;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -18,6 +22,10 @@ import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataC
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -28,25 +36,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 // Disabled after DV2 migration. Re-enable with fixtures updated to DV2.
 @Disabled
 public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOG = LoggerFactory.getLogger(OceanBaseDestinationAcceptanceTest.class);
 
-
   public final static OceanBaseContainer db = new OceanBaseContainer(OceanBaseContainer.DOCKER_IMAGE_NAME + ":" + OceanBaseContainer.IMAGE_TAG)
-          .withSysPassword("123456")
-          .withLogConsumer(new Slf4jLogConsumer(LOG));
+      .withSysPassword("123456")
+      .withLogConsumer(new Slf4jLogConsumer(LOG));
 
   private final OceanBaseDestination destination = new OceanBaseDestination();
   private final StandardNameTransformer namingResolver = new OceanBaseNameTransformer();
@@ -164,7 +162,6 @@ public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanc
     executeQuery("set global local_infile=true", getConfig(), destination);
   }
 
-
   private static void executeQuery(final OceanBaseContainer db, final String query) {
     final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
@@ -255,4 +252,5 @@ public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanc
   private static void assertStringContains(final String str, final String target) {
     assertTrue(str.contains(target), "Expected message to contain \"" + target + "\" but got " + str);
   }
+
 }

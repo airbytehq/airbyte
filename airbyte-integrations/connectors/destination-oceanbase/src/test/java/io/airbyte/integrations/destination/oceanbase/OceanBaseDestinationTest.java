@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.destination.oceanbase;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OceanBaseDestinationTest {
 
@@ -18,28 +18,28 @@ public class OceanBaseDestinationTest {
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, "localhost",
-            JdbcUtils.PORT_KEY, 1337,
-            JdbcUtils.USERNAME_KEY, "user",
-            JdbcUtils.DATABASE_KEY, "db"));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, "localhost",
-            JdbcUtils.PORT_KEY, 1337,
-            JdbcUtils.USERNAME_KEY, "user",
-            JdbcUtils.DATABASE_KEY, "db",
-            JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
   private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
     return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, "localhost",
-            JdbcUtils.PORT_KEY, 1337,
-            JdbcUtils.USERNAME_KEY, "user",
-            JdbcUtils.DATABASE_KEY, "db",
-            JdbcUtils.SSL_KEY, false));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.SSL_KEY, false));
   }
 
   @Test

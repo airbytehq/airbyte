@@ -13,14 +13,14 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.Disabled;
-
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
+
 @Disabled
 public class SslOceanBaseDestinationAcceptanceTest extends OceanBaseDestinationAcceptanceTest {
 

@@ -5,7 +5,7 @@ data:
   dockerImageTag: 1.0.0
   dockerRepository: airbyte/destination-oceanbase
   githubIssueLabel: destination-oceanbase
-  icon: oceanbase.svg
+  icon: icon.svg
   license: ELv2
   name: OceanBase
   registries:
@@ -16,7 +16,7 @@ data:
       enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/oceanbase
-  supportsDbt: true
+  supportsDbt: false
   tags:
     - language:java
   ab_internal:
@@ -31,16 +31,5 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-OceanBase_SSH-KEY__CREDS
-          fileName: ssh-key-config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-OceanBase_SSH-PWD__CREDS
-          fileName: ssh-pwd-config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 spec:
 metadataSpecVersion: "1.0"

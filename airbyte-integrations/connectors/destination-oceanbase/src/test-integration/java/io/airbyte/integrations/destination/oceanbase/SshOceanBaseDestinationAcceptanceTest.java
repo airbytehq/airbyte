@@ -19,17 +19,16 @@ import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataC
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.Disabled;
-
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 
 @Disabled
 public abstract class SshOceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
@@ -46,7 +45,7 @@ public abstract class SshOceanBaseDestinationAcceptanceTest extends JdbcDestinat
   @Override
   protected @NotNull JsonNode getConfig() throws IOException, InterruptedException {
     return Objects.requireNonNull(sshBastionContainer.getTunnelConfig(getTunnelMethod(),
-            getConfigFromTestContainer(db).put(JdbcUtils.SCHEMA_KEY, schemaName), false));
+        getConfigFromTestContainer(db).put(JdbcUtils.SCHEMA_KEY, schemaName), false));
   }
 
   @Override
@@ -56,13 +55,13 @@ public abstract class SshOceanBaseDestinationAcceptanceTest extends JdbcDestinat
 
   public static ImmutableMap.Builder<Object, Object> getConfigFromTestContainer(final OceanBaseContainer db) {
     return ImmutableMap.builder()
-            .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
-            .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-            .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-            .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-            .put(JdbcUtils.SCHEMA_KEY, db.getDatabaseName())
-            .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
-            .put(JdbcUtils.SSL_KEY, false);
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SCHEMA_KEY, db.getDatabaseName())
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
+        .put(JdbcUtils.SSL_KEY, false);
   }
 
   @Override

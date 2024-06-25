@@ -23,17 +23,16 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandl
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
+import java.util.List;
+import java.util.Map;
+import javax.sql.DataSource;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.util.List;
-import java.util.Map;
-
 public class OceanBaseDestination extends AbstractJdbcDestination<MinimumDestinationState> implements Destination {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(OceanBaseDestination.class);
 
   public static final String DRIVER_CLASS = "com.oceanbase.jdbc.Driver";
@@ -52,15 +51,15 @@ public class OceanBaseDestination extends AbstractJdbcDestination<MinimumDestina
   protected Map<String, String> getDefaultConnectionProperties(@NotNull final JsonNode config) {
     if (JdbcUtils.useSsl(config)) {
       return ImmutableMap.of(
-              "zeroDateTimeBehavior", "convertToNull",
-              "allowLoadLocalInfile", "true",
-              "useSSL", "true",
-              "requireSSL", "true",
-              "verifyServerCertificate", "false");
+          "zeroDateTimeBehavior", "convertToNull",
+          "allowLoadLocalInfile", "true",
+          "useSSL", "true",
+          "requireSSL", "true",
+          "verifyServerCertificate", "false");
     } else {
       return ImmutableMap.of(
-              "zeroDateTimeBehavior", "convertToNull",
-              "allowLoadLocalInfile", "true");
+          "zeroDateTimeBehavior", "convertToNull",
+          "allowLoadLocalInfile", "true");
     }
   }
 
@@ -68,13 +67,13 @@ public class OceanBaseDestination extends AbstractJdbcDestination<MinimumDestina
   @Override
   public JsonNode toJdbcConfig(@NotNull final JsonNode config) {
     final String connectionString = String.format(URL_FORMAT_STRING,
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asText(),
-            config.get(JdbcUtils.DATABASE_KEY).asText());
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-            .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-            .put(JdbcUtils.JDBC_URL_KEY, connectionString);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, connectionString);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
@@ -85,7 +84,6 @@ public class OceanBaseDestination extends AbstractJdbcDestination<MinimumDestina
 
     return Jsons.jsonNode(configBuilder.build());
   }
-
 
   @Override
   public boolean isV2Destination() {
@@ -124,9 +122,9 @@ public class OceanBaseDestination extends AbstractJdbcDestination<MinimumDestina
   @Override
   public DataSource getDataSource(@NotNull JsonNode config) {
     String url = String.format("jdbc:oceanbase://%s:%s/%s",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asText(),
-            config.get(JdbcUtils.DATABASE_KEY).asText());
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     var hikariConfig = new HikariConfig();
     hikariConfig.setDriverClassName(DRIVER_CLASS);

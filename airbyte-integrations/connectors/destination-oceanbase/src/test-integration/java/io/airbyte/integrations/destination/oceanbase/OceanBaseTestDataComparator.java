@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.oceanbase;
 
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ public class OceanBaseTestDataComparator extends AdvancedTestDataComparator {
     }
     return result;
   }
-
 
   @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
