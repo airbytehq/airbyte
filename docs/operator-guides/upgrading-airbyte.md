@@ -15,9 +15,9 @@ version.
 
 This document explains how to determine if you need to upgrade your Airbyte instance as well as how to proceed with an upgrade when needed. 
 
-<em>Note that upgrades require temporarily turning off Airbyte.</em>
+**Note: upgrades require temporarily turning off Airbyte.**
 
-During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded: 1. if a connector is not used, it will be upgraded to the latest version 2. if a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a specific connector, do so in the settings page in the webapp.
+During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded: 1. If a connector is not used, it will be upgraded to the latest version 2. If a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a specific connector, do so in the settings page in the webapp.
 
 If you need help from our team for your upgrades, we offer premium support to our open-source users, [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to get access to it.
 
