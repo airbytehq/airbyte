@@ -212,9 +212,11 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 | :------ |:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.4 | 2024-06-19 | [39594](https://github.com/airbytehq/airbyte/pull/39594) | Extended the `Discount Codes`, `Fulfillment Orders`, `Inventory Items`, `Inventory Levels`, `Products`, `Product Variants` and `Transactions` stream schemas |
+| 2.4.3 | 2024-06-06 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | add resiliency on some transient errors using the HttpClient |
+| 2.4.1 | 2024-06-20 | [39651](https://github.com/airbytehq/airbyte/pull/39651) | Update dependencies |
 | 2.4.0 | 2024-06-17 | [39527](https://github.com/airbytehq/airbyte/pull/39527) | Added new stream `Order Agreements` |
 | 2.3.0 | 2024-06-14 | [39487](https://github.com/airbytehq/airbyte/pull/39487) | Added new stream `Customer Journey Summary` |
-| 2.4.3 | 2024-06-06 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | add resiliency on some transient errors using the HttpClient |
 | 2.2.3 | 2024-06-06 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | add resiliency on some transient errors using the HttpClient |
 | 2.2.2 | 2024-06-04 | [39019](https://github.com/airbytehq/airbyte/pull/39019) | [autopull] Upgrade base image to v1.2.1 |
 | 2.2.1 | 2024-05-30 | [38769](https://github.com/airbytehq/airbyte/pull/38769) | Have products stream return all the tags comma separated |
