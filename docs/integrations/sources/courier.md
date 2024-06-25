@@ -66,6 +66,11 @@ Courier's [API reference](https://www.courier.com/docs/reference/) does not addr
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-09-10 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Initial commit |
+
+</details>

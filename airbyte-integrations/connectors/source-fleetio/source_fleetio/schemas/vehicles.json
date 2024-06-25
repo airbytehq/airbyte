@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "account_id": {
+      "type": "number"
+    },
+    "archived_at": {
+      "type": ["string", "null"]
+    },
+    "fuel_type_id": {
+      "type": ["number", "null"]
+    },
+    "fuel_type_name": {
+      "type": ["string", "null"]
+    },
+    "ai_enabled": {
+      "type": "boolean"
+    },
+    "assetable_type": {
+      "type": "string"
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "comments_count": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "current_location_entry_id": {
+      "type": ["null", "number"]
+    },
+    "default_image_url_small": {
+      "type": ["null", "string"]
+    },
+    "external_ids": {
+      "type": ["object", "null"]
+    },
+    "documents_count": {
+      "type": "number"
+    },
+    "estimated_replacement_mileage": {
+      "type": ["null", "string"]
+    },
+    "estimated_resale_price_cents": {
+      "type": ["null", "number"]
+    },
+    "estimated_service_months": {
+      "type": ["null", "number"]
+    },
+    "fuel_entries_count": {
+      "type": "number"
+    },
+    "fuel_volume_units": {
+      "type": "string"
+    },
+    "group_ancestry": {
+      "type": ["null", "string"]
+    },
+    "group_id": {
+      "type": ["null", "number"]
+    },
+    "group_name": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": "number"
+    },
+    "images_count": {
+      "type": "number"
+    },
+    "in_service_date": {
+      "type": ["null", "string"]
+    },
+    "in_service_meter_value": {
+      "type": ["null", "string"]
+    },
+    "is_sample": {
+      "type": "boolean"
+    },
+    "issues_count": {
+      "type": "number"
+    },
+    "labels": {
+      "type": "array"
+    },
+    "license_plate": {
+      "type": ["null", "string"]
+    },
+    "make": {
+      "type": ["null", "string"]
+    },
+    "model": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "out_of_service_date": {
+      "type": ["null", "string"]
+    },
+    "out_of_service_meter_value": {
+      "type": ["null", "string"]
+    },
+    "ownership": {
+      "type": "string"
+    },
+    "primary_meter_date": {
+      "type": ["null", "string"]
+    },
+    "primary_meter_unit": {
+      "type": "string"
+    },
+    "primary_meter_usage_per_day": {
+      "type": ["null", "string"]
+    },
+    "secondary_meter_unit": {
+      "type": ["string", "null"]
+    },
+    "secondary_meter_date": {
+      "type": ["string", "null"]
+    },
+    "primary_meter_value": {
+      "type": "string"
+    },
+    "registration_expiration_month": {
+      "type": "number"
+    },
+    "secondary_meter_usage_per_day": {
+      "type": ["null", "string"]
+    },
+    "secondary_meter_value": {
+      "type": "string"
+    },
+    "service_entries_count": {
+      "type": "number"
+    },
+    "service_reminders_count": {
+      "type": "number"
+    },
+    "system_of_measurement": {
+      "type": "string"
+    },
+    "trim": {
+      "type": ["null", "string"]
+    },
+    "registration_state": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "vehicle_renewal_reminders_count": {
+      "type": "number"
+    },
+    "vehicle_status_color": {
+      "type": ["string", "null"]
+    },
+    "vehicle_status_id": {
+      "type": "number"
+    },
+    "vehicle_status_name": {
+      "type": "string"
+    },
+    "vehicle_type_id": {
+      "type": "number"
+    },
+    "vehicle_type_name": {
+      "type": "string"
+    },
+    "vin": {
+      "type": ["null", "string"]
+    },
+    "work_orders_count": {
+      "type": "number"
+    },
+    "year": {
+      "type": ["null", "number"]
+    }
+  },
+  "type": "object"
+}

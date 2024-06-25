@@ -1,81 +1,533 @@
-version: "0.29.0"
+version: 0.79.1
 
-definitions:
-  selector:
-    extractor:
-      field_path: []
-  requester:
-    # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api
-    url_base: "https://api.tyntec.com"
-    http_method: "GET"
-    authenticator:
-      type: ApiKeyAuthenticator
-      header: "apikey"
-      api_token: "{{ config['api_key'] }}"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-  base_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Send%20SMS%20(GET)
-  sms_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "sms"
-      primary_key: "requestId"
-      path: "/messaging/v1/sms?to={{ config['to'] }}&from={{ config['from']}}&message={{ config['message'] or ''}}"
-  sms_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/sms_stream"
-        parent_key: "requestId"
-        partition_field: "requestId"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Read%20SMS%20status
-  messages_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "messages"
-      primary_key: "requestId"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/messaging/v1/messages/{{ stream_slice.requestId }}"
-      partition_router:
-        $ref: "#/definitions/sms_partition_router"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
-  contacts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "contacts"
-      path: "/byon/contacts/v1"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phone%20numbers
-  phones_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "phones"
-      path: "/byon/phonebook/v1/numbers"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phones
-  registrations_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "registrations"
-      path: "/byon/provisioning/v1"
-
-streams:
-  - "#/definitions/sms_stream"
-  - "#/definitions/messages_stream"
-  - "#/definitions/contacts_stream"
-  - "#/definitions/phones_stream"
-  - "#/definitions/registrations_stream"
+type: DeclarativeSource
 
 check:
+  type: CheckStream
   stream_names:
-    - "phones"
+    - phones
+
+definitions:
+  streams:
+    sms:
+      type: DeclarativeStream
+      name: sms
+      primary_key:
+        - requestId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /messaging/v1/sms?to={{ config['to'] }}&from={{
+            config['from']}}&message={{ config['message'] or ''}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sms"
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - requestId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /messaging/v1/messages/{{ stream_slice.requestId }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: requestId
+                partition_field: requestId
+                stream:
+                  $ref: "#/definitions/streams/sms"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /byon/contacts/v1
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    phones:
+      type: DeclarativeStream
+      name: phones
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /byon/phonebook/v1/numbers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/phones"
+    registrations:
+      type: DeclarativeStream
+      name: registrations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /byon/provisioning/v1
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/registrations"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.tyntec.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: apikey
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/sms"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/phones"
+  - $ref: "#/definitions/streams/registrations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - to
+      - from
+    properties:
+      api_key:
+        type: string
+        title: Tyntec API Key
+        airbyte_secret: true
+        description: >-
+          Your Tyntec API Key. See <a
+          href="https://www.tyntec.com/docs/docs-center-sms-api-quick-start">here</a>
+        order: 0
+      to:
+        type: string
+        title: SMS Message Recipient Phone
+        description: The phone number of the SMS message recipient (international).
+        order: 1
+      from:
+        type: string
+        title: SMS Message Sender Phone
+        description: The phone number of the SMS message sender (international).
+        order: 2
+      message:
+        type: string
+        title: SMS Message Body
+        description: The content of the SMS message to be sent.
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    sms: false
+    messages: false
+    contacts: false
+    phones: false
+    registrations: false
+
+schemas:
+  sms:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      doneDate:
+        type:
+          - "null"
+          - string
+      errorCode:
+        type:
+          - "null"
+          - string
+      errorReason:
+        type:
+          - "null"
+          - string
+      from:
+        type:
+          - "null"
+          - string
+      href:
+        type:
+          - "null"
+          - string
+      mccmnc:
+        type:
+          - "null"
+          - string
+      overallPrice:
+        type:
+          - "null"
+          - string
+      parts:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            currency:
+              type:
+                - "null"
+                - string
+            deliveryState:
+              type:
+                - "null"
+                - string
+            doneDate:
+              type:
+                - "null"
+                - string
+            errorCode:
+              type:
+                - "null"
+                - string
+            partId:
+              type:
+                - "null"
+                - string
+            price:
+              type:
+                - "null"
+                - string
+            priceEffective:
+              type:
+                - "null"
+                - string
+              format: date-time
+            sendDate:
+              type:
+                - "null"
+                - string
+            statusText:
+              type:
+                - "null"
+                - string
+      priceEffective:
+        type:
+          - "null"
+          - string
+        format: date-time
+      reference:
+        type:
+          - "null"
+          - string
+      requestId:
+        type:
+          - "null"
+          - string
+      sentDate:
+        type:
+          - "null"
+          - string
+      size:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - string
+      submitDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      to:
+        type:
+          - "null"
+          - string
+      ttid:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      doneDate:
+        type:
+          - "null"
+          - string
+      errorCode:
+        type:
+          - "null"
+          - string
+      errorReason:
+        type:
+          - "null"
+          - string
+      from:
+        type:
+          - "null"
+          - string
+      href:
+        type:
+          - "null"
+          - string
+      mccmnc:
+        type:
+          - "null"
+          - string
+      overallPrice:
+        type:
+          - "null"
+          - string
+      parts:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            currency:
+              type:
+                - "null"
+                - string
+            deliveryState:
+              type:
+                - "null"
+                - string
+            doneDate:
+              type:
+                - "null"
+                - string
+            errorCode:
+              type:
+                - "null"
+                - string
+            partId:
+              type:
+                - "null"
+                - string
+            price:
+              type:
+                - "null"
+                - string
+            priceEffective:
+              type:
+                - "null"
+                - string
+              format: date-time
+            sendDate:
+              type:
+                - "null"
+                - string
+            statusText:
+              type:
+                - "null"
+                - string
+      priceEffective:
+        type:
+          - "null"
+          - string
+        format: date-time
+      reference:
+        type:
+          - "null"
+          - string
+      requestId:
+        type:
+          - "null"
+          - string
+      sentDate:
+        type:
+          - "null"
+          - string
+      size:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - string
+      submitDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      to:
+        type:
+          - "null"
+          - string
+      ttid:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      contacts:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            companyAddress:
+              type:
+                - "null"
+                - string
+            companyName:
+              type:
+                - "null"
+                - string
+            contactEmail:
+              type:
+                - "null"
+                - string
+            contactName:
+              type:
+                - "null"
+                - string
+            contactPhone:
+              type:
+                - "null"
+                - string
+            contactTitle:
+              type:
+                - "null"
+                - string
+            friendlyName:
+              type:
+                - "null"
+                - string
+      size:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+  phones:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      provisioningRequests:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            accountId:
+              type:
+                - "null"
+                - string
+            contactId:
+              type:
+                - "null"
+                - string
+            friendlyName:
+              type:
+                - "null"
+                - string
+            requestId:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+      size:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+  registrations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      provisioningRequests:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            accountId:
+              type:
+                - "null"
+                - string
+            contactId:
+              type:
+                - "null"
+                - string
+            friendlyName:
+              type:
+                - "null"
+                - string
+            requestId:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+      size:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true

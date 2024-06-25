@@ -295,7 +295,7 @@ class PipelineContext:
         """
         if exception_value is not None or report is None:
             return ContextState.ERROR
-        if report is not None and report.failed_steps:
+        if report is not None and report.considered_failed_steps:
             return ContextState.FAILURE
         if report is not None and report.success:
             return ContextState.SUCCESSFUL
