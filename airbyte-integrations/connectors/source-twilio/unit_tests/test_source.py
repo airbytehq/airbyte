@@ -8,8 +8,6 @@ import pytest
 import requests
 from source_twilio.source import SourceTwilio
 from source_twilio.streams import (
-    Accounts,
-    Addresses,
     Alerts,
     Applications,
     AvailablePhoneNumberCountries,
@@ -42,8 +40,8 @@ from source_twilio.streams import (
 @pytest.fixture
 def config():
     return {
-        "account_sid": "airbyte.io",
-        "auth_token": "secret",
+        "account_sid": "ACdade166c12e160e9ed0a6088226718fb",
+        "auth_token": "d36d25e4517633af8e17dd02dd6ba21b",
         "start_date": "2022-01-01T00:00:00Z",
         "lookback_window": 0,
     }
@@ -80,8 +78,6 @@ def test_check_connection_handles_exceptions(mocker, config, exception, expected
 @pytest.mark.parametrize(
     "stream_cls",
     [
-        (Accounts),
-        (Addresses),
         (Alerts),
         (Applications),
         (AvailablePhoneNumberCountries),

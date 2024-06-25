@@ -8,12 +8,11 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.streams import (
     Accounts,
-    Addresses,
     Alerts,
     Applications,
     AvailablePhoneNumberCountries,
@@ -51,7 +50,10 @@ from source_twilio.streams import (
 RETENTION_WINDOW_LIMIT = 400
 
 
-class SourceTwilio(AbstractSource):
+class SourceTwilio(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             auth = HttpBasicAuthenticator(
@@ -91,10 +93,7 @@ class SourceTwilio(AbstractSource):
             incremental_stream_kwargs_message_stream["start_date"] = (
                 pendulum.now() - datetime.timedelta(days=RETENTION_WINDOW_LIMIT - 1)
             ).to_iso8601_string()
-
-        streams = [
-            Accounts(**full_refresh_stream_kwargs),
-            Addresses(**full_refresh_stream_kwargs),
+        streams = super().streams(config) + [
             Alerts(**incremental_stream_kwargs),
             Applications(**full_refresh_stream_kwargs),
             AvailablePhoneNumberCountries(**full_refresh_stream_kwargs),
