@@ -59,7 +59,12 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
 
     @Override
     public String getDriverClassName() {
-        return "com.oceanbase.jdbc.Driver";
+        try {
+            Class.forName("com.oceanbase.jdbc.Driver");
+            return "com.oceanbase.jdbc.Driver";
+        } catch (ClassNotFoundException e) {
+            return "com.oceanbase.jdbc.Driver";
+        }
     }
 
     public Integer getSqlPort() {

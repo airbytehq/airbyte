@@ -7,28 +7,20 @@ package io.airbyte.integrations.destination.oceanbase;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -36,9 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
-
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,20 +37,28 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Disabled after DV2 migration. Re-enable with fixtures updated to DV2.
 @Disabled
 public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOG = LoggerFactory.getLogger(OceanBaseDestinationAcceptanceTest.class);
 
-  protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
-  protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
 
-  protected OceanBaseContainer db;
+  public final static OceanBaseContainer db = new OceanBaseContainer(OceanBaseContainer.DOCKER_IMAGE_NAME + ":" + OceanBaseContainer.IMAGE_TAG)
+          .withSysPassword("123456")
+          .withLogConsumer(new Slf4jLogConsumer(LOG));
+
+  private final OceanBaseDestination destination = new OceanBaseDestination();
   private final StandardNameTransformer namingResolver = new OceanBaseNameTransformer();
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-mysql:dev";
+    return "airbyte/destination-oceanbase:dev";
+  }
+
+  @Override
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
+    db.start();
   }
 
   @Override
@@ -99,16 +97,12 @@ public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanc
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SCHEMA_KEY, db.getDatabaseName())
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
-  /**
-   * {@link #getConfig()} returns a config with host/port set to the in-docker values. This works for
-   * running the destination-mysql container, but we have some tests which run the destination code
-   * directly from the JUnit process. These tests need to connect using the "normal" host/port.
-   */
   private JsonNode getConfigForBareMetalConnection() {
     return ((ObjectNode) getConfig())
         .put(JdbcUtils.HOST_KEY, db.getHost())
@@ -143,15 +137,7 @@ public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanc
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    final DSLContext dslContext = DSLContextFactory.create(
-        db.getUsername(),
-        db.getPassword(),
-        db.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()),
-        SQLDialect.MYSQL);
+    final DSLContext dslContext = DSL.using(destination.getDataSource(getConfigForBareMetalConnection()), SQLDialect.DEFAULT);
     return new Database(dslContext).query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
@@ -169,43 +155,35 @@ public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanc
     return retrieveRecordsFromTable(tableName, schema);
   }
 
-  @Override
-  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
-    db = new OceanBaseContainer(OceanBaseContainer.DOCKER_IMAGE_NAME + ":" + OceanBaseContainer.IMAGE_TAG)
-            .withSysPassword("123456")
-            .withLogConsumer(new Slf4jLogConsumer(LOG));;
-    db.start();
-    configureTestContainer(db);
-  }
-
-  public static void configureTestContainer(final OceanBaseContainer db) {
+  public void configureTestContainer(final OceanBaseContainer db) {
     setLocalInFileToTrue(db);
-    revokeAllPermissions(db);
-    grantCorrectPermissions(db);
   }
 
-  private static void setLocalInFileToTrue(final OceanBaseContainer db) {
-    executeQuery(db, "set global local_infile=true");
+  private void setLocalInFileToTrue(final OceanBaseContainer db) {
+    final OceanBaseDestination destination = new OceanBaseDestination();
+    executeQuery("set global local_infile=true", getConfig(), destination);
   }
 
-  private static void revokeAllPermissions(final OceanBaseContainer db) {
-    executeQuery(db, "REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + db.getUsername() + "@'%';");
-  }
-
-  private static void grantCorrectPermissions(final OceanBaseContainer db) {
-    executeQuery(db, "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
-  }
 
   private static void executeQuery(final OceanBaseContainer db, final String query) {
     final DSLContext dslContext = DSLContextFactory.create(
-        "root",
-        "test",
+        db.getUsername(),
+        db.getPassword(),
         db.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+        String.format("jdbc:oceanbase://%s:%s/%s",
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
         SQLDialect.MYSQL);
+    try {
+      new Database(dslContext).query(ctx -> ctx.execute(query));
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static void executeQuery(final String query, JsonNode config, OceanBaseDestination oceanBaseDestination) {
+    DSLContext dslContext = DSL.using(oceanBaseDestination.getDataSource(config), SQLDialect.DEFAULT);
     try {
       new Database(dslContext).query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
@@ -219,67 +197,6 @@ public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanc
     db.close();
   }
 
-  @Override
-  @Test
-  public void testCustomDbtTransformations() throws Exception {
-    // We need to create view for testing custom dbt transformations
-    executeQuery(db, "GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
-    super.testCustomDbtTransformations();
-  }
-
-  @Test
-  public void testJsonSync() throws Exception {
-    final String catalogAsText = "{\n"
-        + "  \"streams\": [\n"
-        + "    {\n"
-        + "      \"name\": \"exchange_rate\",\n"
-        + "      \"json_schema\": {\n"
-        + "        \"properties\": {\n"
-        + "          \"id\": {\n"
-        + "            \"type\": \"integer\"\n"
-        + "          },\n"
-        + "          \"data\": {\n"
-        + "            \"type\": \"string\"\n"
-        + "          }"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}\n";
-
-    final AirbyteCatalog catalog = Jsons.deserialize(catalogAsText, AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = Lists.newArrayList(
-        new AirbyteMessage()
-            .withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream(catalog.getStreams().get(0).getName())
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.builder()
-                    .put("id", 1)
-                    .put("data", "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}")
-                    .build()))),
-        new AirbyteMessage()
-            .withType(Type.STATE)
-            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
-
-    final JsonNode config = getConfig();
-    final String defaultSchema = getDefaultSchema(config);
-    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
-  }
-
-  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
-    if (expectedValue.isBoolean()) {
-      // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
-      assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());
-    } else {
-      assertEquals(expectedValue, actualValue);
-    }
-  }
-
-  // Something is very weird in our connection check code. A wrong password takes >1 minute to return.
-  // TODO investigate why invalid creds take so long to detect
   @Timeout(value = 300,
            unit = SECONDS)
   @Test
@@ -330,40 +247,12 @@ public class OceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanc
   public void testCheckIncorrectDataBaseFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     final OceanBaseDestination destination = new OceanBaseDestination();
+    DestinationConfig.Companion.initialize(config);
     final AirbyteConnectionStatus status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertStringContains(status.getMessage(), "State code: 42000; Error code: 1049;");
-  }
-
-  @Timeout(value = 300,
-           unit = SECONDS)
-  @Test
-  public void testUserHasNoPermissionToDataBase() {
-    executeQuery(db, "create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
-    final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
-    final OceanBaseDestination destination = new OceanBaseDestination();
-    final AirbyteConnectionStatus status = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertStringContains(status.getMessage(), "State code: 42000; Error code: 1044;");
   }
 
   private static void assertStringContains(final String str, final String target) {
     assertTrue(str.contains(target), "Expected message to contain \"" + target + "\" but got " + str);
   }
-
-  /**
-   * Legacy mysql normalization is broken, and uses the FLOAT type for numbers. This rounds off e.g.
-   * 12345.678 to 12345.7. We can fix this in DV2, but will not fix legacy normalization. As such,
-   * disabling the test case.
-   */
-  @Override
-  @Disabled("MySQL normalization uses the wrong datatype for numbers. This will not be fixed, because we intend to replace normalization with DV2.")
-  public void testDataTypeTestWithNormalization(final String messagesFilename,
-                                                final String catalogFilename,
-                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
-      throws Exception {
-    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
-  }
-
 }

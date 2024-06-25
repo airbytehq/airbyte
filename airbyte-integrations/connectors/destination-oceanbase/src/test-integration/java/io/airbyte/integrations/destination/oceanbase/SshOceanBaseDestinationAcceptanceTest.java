@@ -6,62 +6,67 @@ package io.airbyte.integrations.destination.oceanbase;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Disabled;
 
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-/**
- * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
- * or with a password.
- * <p>
- * This class probably should extend {@link OceanBaseDestinationAcceptanceTest} to further reduce code
- * duplication though.
- */
 @Disabled
 public abstract class SshOceanBaseDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final StandardNameTransformer namingResolver = new OceanBaseNameTransformer();
   private String schemaName;
 
-  public abstract Path getConfigFilePath();
+  private final SshBastionContainer sshBastionContainer = new SshBastionContainer();
+
+  public abstract SshTunnel.TunnelMethod getTunnelMethod();
+
+  private OceanBaseContainer db;
+
+  @Override
+  protected @NotNull JsonNode getConfig() throws IOException, InterruptedException {
+    return Objects.requireNonNull(sshBastionContainer.getTunnelConfig(getTunnelMethod(),
+            getConfigFromTestContainer(db).put(JdbcUtils.SCHEMA_KEY, schemaName), false));
+  }
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-mysql:dev";
+    return "airbyte/destination-oceanbase:dev";
+  }
+
+  public static ImmutableMap.Builder<Object, Object> getConfigFromTestContainer(final OceanBaseContainer db) {
+    return ImmutableMap.builder()
+            .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+            .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+            .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+            .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+            .put(JdbcUtils.SCHEMA_KEY, db.getDatabaseName())
+            .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
+            .put(JdbcUtils.SSL_KEY, false);
   }
 
   @Override
-  protected JsonNode getConfig() {
-    final var config = getConfigFromSecretsFile();
-    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, schemaName);
-    return config;
-  }
-
-  private JsonNode getConfigFromSecretsFile() {
-    return Jsons.deserialize(IOs.readFile(getConfigFilePath()));
-  }
-
-  @Override
-  protected JsonNode getFailCheckConfig() {
+  protected JsonNode getFailCheckConfig() throws IOException, InterruptedException {
     final JsonNode clone = Jsons.clone(getConfig());
     ((ObjectNode) clone).put("password", "wrong password");
     return clone;
@@ -126,10 +131,11 @@ public abstract class SshOceanBaseDestinationAcceptanceTest extends JdbcDestinat
     final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s",
+        OceanBaseDestination.DRIVER_CLASS,
+        String.format(OceanBaseDestination.URL_FORMAT_STRING,
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asText()),
+            config.get(JdbcUtils.PORT_KEY).asText(),
+            config.get(JdbcUtils.SCHEMA_KEY)),
         SQLDialect.MYSQL);
     return new Database(dslContext);
   }
@@ -172,19 +178,6 @@ public abstract class SshOceanBaseDestinationAcceptanceTest extends JdbcDestinat
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
         });
-  }
-
-  /**
-   * Disabled for the same reason as in {@link OceanBaseDestinationAcceptanceTest}. But for some reason,
-   * this class doesn't extend that one so we have to do it again.
-   */
-  @Override
-  @Disabled("MySQL normalization uses the wrong datatype for numbers. This will not be fixed, because we intend to replace normalization with DV2.")
-  public void testDataTypeTestWithNormalization(final String messagesFilename,
-                                                final String catalogFilename,
-                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
-      throws Exception {
-    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
 }

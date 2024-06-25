@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.oceanbase;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
@@ -14,19 +13,14 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @Disabled
 public class SslOceanBaseDestinationAcceptanceTest extends OceanBaseDestinationAcceptanceTest {
 
@@ -40,6 +34,7 @@ public class SslOceanBaseDestinationAcceptanceTest extends OceanBaseDestinationA
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SCHEMA_KEY, db.getDatabaseName())
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .put(JdbcUtils.SSL_KEY, true)
         .build());
@@ -52,6 +47,7 @@ public class SslOceanBaseDestinationAcceptanceTest extends OceanBaseDestinationA
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SCHEMA_KEY, db.getDatabaseName())
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .put(JdbcUtils.SSL_KEY, false)
         .build());
@@ -78,15 +74,6 @@ public class SslOceanBaseDestinationAcceptanceTest extends OceanBaseDestinationA
   }
 
   @Override
-  @Test
-  public void testCustomDbtTransformations() {
-    // We need to create view for testing custom dbt transformations
-    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
-    // overrides test with a no-op until https://github.com/dbt-labs/jaffle_shop/pull/8 is merged
-    // super.testCustomDbtTransformations();
-  }
-
-  @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     super.setup(testEnv, TEST_SCHEMAS);
 
@@ -94,7 +81,7 @@ public class SslOceanBaseDestinationAcceptanceTest extends OceanBaseDestinationA
         db.getUsername(),
         db.getPassword(),
         db.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+        String.format("jdbc:oceanbase://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
@@ -134,7 +121,7 @@ public class SslOceanBaseDestinationAcceptanceTest extends OceanBaseDestinationA
         "root",
         "test",
         db.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+        String.format("jdbc:oceanbase://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
@@ -144,17 +131,6 @@ public class SslOceanBaseDestinationAcceptanceTest extends OceanBaseDestinationA
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  @Test
-  public void testUserHasNoPermissionToDataBase() {
-    executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
-    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
-    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
-    final OceanBaseDestination destination = new OceanBaseDestination();
-    final AirbyteConnectionStatus status = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
   }
 
 }

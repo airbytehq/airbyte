@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.29.10'
+    cdkVersionRequired = '0.33.0'
     features = ['db-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -25,5 +25,5 @@ application {
 dependencies {
     implementation 'com.oceanbase:oceanbase-client:2.4.3'
 
-    testImplementation 'org.testcontainers:testcontainers:1.19.0'
+    integrationTestJavaImplementation 'org.testcontainers:testcontainers:1.19.0'
 }

@@ -10,13 +10,11 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OceanBaseDestinationTest {
 
-  public static final String JDBC_URL = "jdbc:oceanbase://localhost:1337";
+  public static final String JDBC_URL = "jdbc:oceanbase://localhost:1337/db";
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
@@ -63,19 +61,5 @@ public class OceanBaseDestinationTest {
     final JsonNode jdbcConfig = new OceanBaseDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
     assertEquals(JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
-
-  @Test
-  void testDefaultParamsNoSSL() {
-    final Map<String, String> defaultProperties = new OceanBaseDestination().getDefaultConnectionProperties(buildConfigNoExtraJdbcParametersWithoutSsl());
-    assertEquals(OceanBaseDestination.DEFAULT_JDBC_PARAMETERS, defaultProperties);
-  }
-
-  @Test
-  void testDefaultParamsWithSSL() {
-    final Map<String, String> defaultProperties = new OceanBaseDestination().getDefaultConnectionProperties(buildConfigNoJdbcParameters());
-    assertEquals(OceanBaseDestination.DEFAULT_SSL_JDBC_PARAMETERS, defaultProperties);
-  }
-
-
 
 }

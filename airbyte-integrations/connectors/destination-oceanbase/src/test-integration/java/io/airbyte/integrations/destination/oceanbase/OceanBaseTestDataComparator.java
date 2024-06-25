@@ -48,10 +48,8 @@ public class OceanBaseTestDataComparator extends AdvancedTestDataComparator {
 
   private String getFormat(String dateTimeValue) {
     if (dateTimeValue.contains("T")) {
-      // MySql stores array of objects as a jsonb type, i.e. array of string for all cases
       return AIRBYTE_DATETIME_FORMAT;
     } else {
-      // MySql stores datetime as datetime type after normalization
       return AIRBYTE_DATETIME_PARSED_FORMAT;
     }
   }

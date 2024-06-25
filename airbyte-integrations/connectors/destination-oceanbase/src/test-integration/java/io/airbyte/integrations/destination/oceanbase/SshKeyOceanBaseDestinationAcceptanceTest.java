@@ -4,16 +4,15 @@
 
 package io.airbyte.integrations.destination.oceanbase;
 
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import org.junit.jupiter.api.Disabled;
 
 import java.nio.file.Path;
 
 @Disabled
 public class SshKeyOceanBaseDestinationAcceptanceTest extends SshOceanBaseDestinationAcceptanceTest {
-
   @Override
-  public Path getConfigFilePath() {
-    return Path.of("secrets/ssh-key-config.json");
+  public SshTunnel.TunnelMethod getTunnelMethod() {
+    return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
-
 }
