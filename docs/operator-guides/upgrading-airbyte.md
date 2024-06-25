@@ -15,34 +15,45 @@ version.
 
 This document explains how to determine if you need to upgrade your Airbyte instance as well as how to proceed with an upgrade when needed. 
 
-**Note: upgrades require temporarily turning off Airbyte.**
+**Note: Upgrades require temporarily turning off Airbyte.**
 
-During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded: 1. If a connector is not used, it will be upgraded to the latest version 2. If a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a specific connector, do so in the settings page in the webapp.
+During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded: 
 
-If you need help from our team for your upgrades, we offer premium support to our open-source users, [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to get access to it.
+   1. If a connector is not used, it will be upgraded to the latest version 
+   
+   2. If a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a specific connector, do so in the settings page in the webapp.
 
-## Determining if you need to Upgrade
+Refer to [Managing Connector Updates](../managing-airbyte/connector-updates.md) for more details about keeping connectors updated.
+
+## Determining if you need to upgrade
 
 Airbyte intelligently performs upgrades automatically based on the version defined in your `.env` file and will handle data migration for you.
 
-If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes-via-helm.md), you will need to use one of the two processes defined [here](#upgrading-on-k8s-0270-alpha-and-above) that differ based on your Airbyte version.
+<em>If you are using an Airbyte version earlier than v0.32.0-alpha-patch-1, you must upgrade to this version as an intermediary step before upgrading to any later version. Read more about this process [here](#mandatory-intermediate-upgrade)</em>
 
-## Mandatory Intermediate Upgrade
+## Upgrading on K8s using Helm
 
-**If your current version of airbyte is < v0.32.0-alpha-patch-1, you first need to upgrade to this version before upgrading to any later version.**
+Production setup of our Open Source Software is best accomplished by running it as a Kubernetes deployment via Helm Charts. This simplifies the configuration and deployment process. 
 
-The reason for this is that there are breaking changes made in v0.32.0-alpha-patch-1, and the logic for these changes is removed in later versions, making it impossible to upgrade directly.
-To upgrade to v0.32.0-alpha-patch-1, follow the steps in the following sections, but replace the `docker pull` or `wget` commands with the following:
+When deployed this way, you'll upgrade by modifying the `values.yaml` file. If you're not using a `values.yaml` to deploy Airbyte using Helm, you can jump directly to step `4`.
 
-1. If you are in a cloned Airbyte repo, v0.32.0-alpha-patch-1 can be pulled from GitHub with
+1. Access [Airbyte ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte) and select the version you want to upgrade.
+2. You can click in `Default Values` and compare the value file between the new version and version you're running. You can run `helm list -n <NAMESPACE>` to check the CHART version you're using.
+3. Update your `values.yaml` file if necessary.
+4. Upgrade the Helm app by running:
 
+   ```bash
+   helm upgrade --install <RELEASE-NAME> airbyte/airbyte --values <VALUE.YAML> --version <HELM-APP-VERSION>
    ```
-   git checkout v0.32.0-alpha-patch-1
+
+   After 2-5 minutes, Helm will print a message showing how to port-forward Airbyte. This may take longer on Kubernetes clusters with slow internet connections. In general the message is the following:
+
+   ```bash
+   export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=webapp" -o jsonpath="{.items[0].metadata.name}")
+   export CONTAINER_PORT=$(kubectl get pod  $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+   echo "Visit http://127.0.0.1:8080 to use your application"
+   kubectl  port-forward $POD_NAME 8080:$CONTAINER_PORT
    ```
-
-2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.32.0-alpha-patch-1/{.env,flags.yml,docker-compose.yaml}` to pull this version and overwrite both files.
-
-If you use custom connectors, this upgrade requires all of your connector specs to be retrievable from the node running Airbyte, or Airbyte will fail on startup. If the specs are not retrievable, you need to fix this before proceeding. Alternatively, you could delete the custom connector definitions from Airbyte upon upgrade by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to true. This will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
 
 ## Upgrading on Docker
 
@@ -86,27 +97,24 @@ This will completely reset your Airbyte deployment. You will lose all data.
 
 :::
 
-## Upgrading on K8s using Helm
 
-The instructions below are for users who have a custom deployment and `values.yaml` file. If you're not using a `values.yaml` file to deploy Airbyte using Helm, you can jump directly to step `4`.
 
-1. Access [Airbyte ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte) and select the version you want to upgrade.
-2. You can click in `Default Values` and compare the value file between the new version and version you're running. You can run `helm list -n <NAMESPACE>` to check the CHART version you're using.
-3. Update your `values.yaml` file if necessary.
-4. Upgrade the Helm app running:
+## Mandatory Intermediate Upgrade
 
-   ```bash
-   helm upgrade --install <RELEASE-NAME> airbyte/airbyte --values <VALUE.YAML> --version <HELM-APP-VERSION>
+**If your current version of airbyte is < v0.32.0-alpha-patch-1, you first need to upgrade to this version before upgrading to any later version.**
+
+The reason for this is that there are breaking changes made in v0.32.0-alpha-patch-1, and the logic for these changes is removed in later versions, making it impossible to upgrade directly.
+To upgrade to v0.32.0-alpha-patch-1, follow the steps in the following sections, but replace the `docker pull` or `wget` commands with the following:
+
+1. If you are in a cloned Airbyte repo, v0.32.0-alpha-patch-1 can be pulled from GitHub with
+
+   ```
+   git checkout v0.32.0-alpha-patch-1
    ```
 
-   After 2-5 minutes, Helm will print a message showing how to port-forward Airbyte. This may take longer on Kubernetes clusters with slow internet connections. In general the message is the following:
+2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.32.0-alpha-patch-1/{.env,flags.yml,docker-compose.yaml}` to pull this version and overwrite both files.
 
-   ```bash
-   export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=webapp" -o jsonpath="{.items[0].metadata.name}")
-   export CONTAINER_PORT=$(kubectl get pod  $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-   echo "Visit http://127.0.0.1:8080 to use your application"
-   kubectl  port-forward $POD_NAME 8080:$CONTAINER_PORT
-   ```
+If you use custom connectors, this upgrade requires all of your connector specs to be retrievable from the node running Airbyte, or Airbyte will fail on startup. If the specs are not retrievable, you need to fix this before proceeding. Alternatively, you could delete the custom connector definitions from Airbyte upon upgrade by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to true. This will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
 
 ```
 
