@@ -49,6 +49,7 @@ def test_analytics_stream_slices(requests_mock):
 def test_read_records(requests_mock):
     stream = find_stream("ad_member_country_analytics", TEST_CONFIG)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
+    requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))", json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]})
     requests_mock.get(
         "https://api.linkedin.com/rest/adAnalytics",
         [
@@ -58,8 +59,6 @@ def test_read_records(requests_mock):
         ],
     )
 
-    stream_slice = load_json_file("output_slices.json")[0]
-    records = list(stream.read_records(sync_mode=SyncMode.incremental,
-                                       stream_slice=StreamSlice(partition={"campaign_id": 1111}, cursor_slice=stream_slice),
-                                       stream_state=None))
+    stream_slice = next(stream.stream_slices(sync_mode=SyncMode.incremental))
+    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice, stream_state=None))
     assert len(records) == 2

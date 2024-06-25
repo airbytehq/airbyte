@@ -1,38 +1,38 @@
 [
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "account_users",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "account_users",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "account_id" : 508720451,
-              "parent_slice" : {}
+            "partition": {
+              "account_id": 508720451,
+              "parent_slice": {}
             },
-            "cursor" : {
-              "lastModified" : "2050-01-01T00:00:00+00:00"
+            "cursor": {
+              "lastModified": "2050-01-01T00:00:00+00:00"
             }
           },
           {
-            "partition" : {
-              "account_id" : 508774356,
-              "parent_slice" : {}
+            "partition": {
+              "account_id": 508774356,
+              "parent_slice": {}
             },
-            "cursor" : {
-              "lastModified" : "2050-01-01T00:00:00+00:00"
+            "cursor": {
+              "lastModified": "2050-01-01T00:00:00+00:00"
             }
           },
           {
-            "partition" : {
-              "account_id" : 508777244,
-              "parent_slice" : {}
+            "partition": {
+              "account_id": 508777244,
+              "parent_slice": {}
             },
-            "cursor" : {
-              "lastModified" : "2050-01-01T00:00:00+00:00"
+            "cursor": {
+              "lastModified": "2050-01-01T00:00:00+00:00"
             }
           }
         ]
@@ -40,21 +40,21 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "campaign_groups",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaign_groups",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "account_id" : 508720451,
-              "parent_slice" : {}
+            "partition": {
+              "account_id": 508720451,
+              "parent_slice": {}
             },
-            "cursor" : {
-              "lastModified" : "2050-01-01T00:00:00+00:00"
+            "cursor": {
+              "lastModified": "2050-01-01T00:00:00+00:00"
             }
           }
         ]
@@ -62,21 +62,21 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "campaigns",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaigns",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "account_id" : 508720451,
-              "parent_slice" : {}
+            "partition": {
+              "account_id": 508720451,
+              "parent_slice": {}
             },
-            "cursor" : {
-              "lastModified" : "2050-01-01T00:00:00+00:00"
+            "cursor": {
+              "lastModified": "2050-01-01T00:00:00+00:00"
             }
           }
         ]
@@ -84,21 +84,21 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "creatives",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "creatives",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "account_id" : 508720451,
-              "parent_slice" : {}
+            "partition": {
+              "account_id": 508720451,
+              "parent_slice": {}
             },
-            "cursor" : {
-              "lastModifiedAt" : 2524608000000
+            "cursor": {
+              "lastModifiedAt": 2524608000000
             }
           }
         ]
@@ -106,21 +106,21 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "conversions",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "conversions",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "account_id" : 508720451,
-              "parent_slice" : {}
+            "partition": {
+              "account_id": 508720451,
+              "parent_slice": {}
             },
-            "cursor" : {
-              "lastModified" : 2524608000000
+            "cursor": {
+              "lastModified": 2524608000000
             }
           }
         ]
@@ -128,24 +128,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_campaign_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_campaign_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -153,24 +153,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_creative_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_creative_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "creative_id" : "urn:li:sponsoredCreative:287513206",
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "creative_id": "urn:li:sponsoredCreative:287513206",
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -178,24 +178,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_impression_device_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_impression_device_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -203,24 +203,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_member_company_size_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_member_company_size_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -228,24 +228,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_member_country_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_member_country_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -253,24 +253,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_member_job_function_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_member_job_function_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -278,24 +278,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_member_job_title_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_member_job_title_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -303,24 +303,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_member_industry_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_member_industry_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -328,24 +328,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_member_seniority_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_member_seniority_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -353,24 +353,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_member_region_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_member_region_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]
@@ -378,24 +378,24 @@
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "ad_member_company_analytics",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_member_company_analytics",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "campaign_id" : 252074216,
-              "parent_slice" : {
-                "account_id" : 508720451,
-                "parent_slice" : {}
+            "partition": {
+              "campaign_id": 252074216,
+              "parent_slice": {
+                "account_id": 508720451,
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "end_date" : "2050-01-01"
+            "cursor": {
+              "end_date": "2050-01-01"
             }
           }
         ]

@@ -5,16 +5,18 @@
 
 import datetime
 from collections import defaultdict
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlencode, urljoin
-from copy import deepcopy
+
 import pendulum
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -22,7 +24,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
-from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
@@ -210,7 +211,9 @@ class LinkedInSemiIncrementalFilter(RecordFilter):
 
 @dataclass
 class LinkedInAdsCustomRetriever(SimpleRetriever):
-    partition_router: Optional[Union[List[StreamSlicer], StreamSlicer]] = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
+    partition_router: Optional[Union[List[StreamSlicer], StreamSlicer]] = field(
+        default_factory=lambda: SinglePartitionRouter(parameters={})
+    )
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
@@ -255,17 +258,13 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
                 fields=[
                     AddedFieldDefinition(
                         path=field["path"],
-                        value=InterpolatedString(
-                            string=field["value"],
-                            default=field["value"],
-                            parameters={}
-                        ),
+                        value=InterpolatedString(string=field["value"], default=field["value"], parameters={}),
                         value_type=str,
-                        parameters={}
+                        parameters={},
                     )
                     for field in transformation.get("fields", [])
                 ],
-                parameters={}
+                parameters={},
             )
             for transformation in self.record_selector.transformations
             if isinstance(transformation, dict)
