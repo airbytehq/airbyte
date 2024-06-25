@@ -416,7 +416,7 @@ definitions:
       type: OAuthAuthenticator
       client_id: '{{ config["authorization"][''client_id''] }}'
       client_secret: '{{ config["authorization"][''client_secret''] }}'
-      refresh_token: '{{ config["authorization"][''client_refresh_token''] }}'
+      refresh_token: '{{ config["authorization"][''refresh_token''] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://api.rd.services/auth/token
       grant_type: refresh_token
@@ -442,7 +442,6 @@ schemas:
     properties:
       asset_id:
         type:
-          - "null"
           - integer
       asset_identifier:
         type:
@@ -483,7 +482,6 @@ schemas:
           - string
       campaign_id:
         type:
-          - "null"
           - integer
       campaign_name:
         type:
@@ -544,7 +542,6 @@ schemas:
     properties:
       reference_day:
         type:
-          - "null"
           - string
       contacts_count:
         type:
@@ -593,7 +590,6 @@ schemas:
           - string
       workflow_id:
         type:
-          - "null"
           - string
       contacts_count:
         type:
@@ -691,7 +687,6 @@ schemas:
           - boolean
       id:
         type:
-          - "null"
           - integer
       name:
         type:
@@ -724,7 +719,6 @@ schemas:
     properties:
       id:
         type:
-          - "null"
           - integer
       title:
         type:
@@ -753,7 +747,6 @@ schemas:
     properties:
       uuid:
         type:
-          - "null"
           - string
       label:
         type:
@@ -832,7 +825,6 @@ schemas:
     properties:
       id:
         type:
-          - "null"
           - integer
       title:
         type:
@@ -869,7 +861,6 @@ schemas:
     properties:
       id:
         type:
-          - "null"
           - integer
       title:
         type:
@@ -902,7 +893,6 @@ schemas:
     properties:
       id:
         type:
-          - "null"
           - integer
       name:
         type:
@@ -956,7 +946,6 @@ schemas:
     properties:
       id:
         type:
-          - "null"
           - string
       name:
         type:

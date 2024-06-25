@@ -21,7 +21,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
