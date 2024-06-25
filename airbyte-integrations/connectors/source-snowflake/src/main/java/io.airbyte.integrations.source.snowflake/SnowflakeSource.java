@@ -146,7 +146,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   }
 
   private void createPrivateKeyFile(String fileName, String fileValue) {
-    try(PrintWriter pw = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
+    try (PrintWriter pw = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       pw.print(fileValue);
     } catch (IOException e) {
       throw new RuntimeException("Failed to create file for private key", e);

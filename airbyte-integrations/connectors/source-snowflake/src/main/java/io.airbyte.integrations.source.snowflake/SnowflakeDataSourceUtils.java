@@ -35,7 +35,7 @@ public class SnowflakeDataSourceUtils {
   public static final String OAUTH_METHOD = "OAuth";
   public static final String USERNAME_PASSWORD_METHOD = "username/password";
   public static final String KEY_PAIR_METHOD = "Key Pair Authentication";
-  public static final String PRIVATE_KEY_FIELD_NAME  = "private_key";
+  public static final String PRIVATE_KEY_FIELD_NAME = "private_key";
   public static final String PRIVATE_KEY_PASSWORD = "private_key_password";
   public static final String PRIVATE_KEY_FILE_NAME = "rsa_key.p8";
 
@@ -226,4 +226,5 @@ public class SnowflakeDataSourceUtils {
     }
     return properties;
   }
+
 }
