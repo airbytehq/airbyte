@@ -13,7 +13,8 @@ data:
         upgradeDeadline: "2024-07-30"
         message:
           "The verison migrates the Aws CloudTrail connector to the low-code framework for greater maintainability.
-          !! Important: The management_events stream changed it's EventTime field from integer to float."
+          !! Important: The management_events stream changed it's EventTime field from integer to float.
+          The `start_date` parameter is now optional and the connector now takes current date as default start date "
   remoteRegistries:
     pypi:
       enabled: true
