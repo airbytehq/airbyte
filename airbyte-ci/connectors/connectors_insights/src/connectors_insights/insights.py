@@ -219,7 +219,7 @@ async def generate_insights_for_connector(
     insights_file = FileToPersist("insights.json")
     sbom_file = FileToPersist("sbom.json")
     files_to_persist = [insights_file, sbom_file]
-    
+
     async with semaphore:
         if should_skip_generation(result_backends, connector, files_to_persist, rewrite):
             logger.info(f"Skipping insights generation for {connector.technical_name} because it is already generated.")
