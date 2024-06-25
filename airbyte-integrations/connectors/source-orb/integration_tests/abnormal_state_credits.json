@@ -10,15 +10,6 @@
         "states": [
           {
             "partition": {
-              "id": "hHQF5BT5jtyj9r7V",
-              "parent_slice": {}
-            },
-            "cursor": {
-              "created_at": "2122-01-01T00:00:00+00:00"
-            }
-          },
-          {
-            "partition": {
               "customer_id": "hHQF5BT5jtyj9r7V",
               "parent_slice": {}
             },
