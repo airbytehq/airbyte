@@ -18,6 +18,9 @@ class JsonDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
+    def is_stream_response(self) -> bool:
+        return False
+
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         try:
             body_json = response.json()
@@ -34,8 +37,10 @@ class IterableDecoder(Decoder):
     Decoder strategy that returns the string content of the response, if any.
     """
 
-    is_stream_response = True
     parameters: InitVar[Mapping[str, Any]]
+
+    def is_stream_response(self) -> bool:
+        return True
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         # TODO: how to handle simple string in extractor;
@@ -51,8 +56,10 @@ class JsonlDecoder(Decoder):
     Decoder strategy that returns the json-encoded content of the response, if any.
     """
 
-    is_stream_response = True
     parameters: InitVar[Mapping[str, Any]]
+
+    def is_stream_response(self) -> bool:
+        return True
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         # TODO???: set delimiter? usually it is `\n` but maybe it would be useful to set optional?

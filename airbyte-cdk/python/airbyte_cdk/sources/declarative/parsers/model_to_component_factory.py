@@ -824,7 +824,7 @@ class ModelToComponentFactory:
             message_repository=self._message_repository,
             use_cache=model.use_cache,
             decoder=decoder,
-            stream_response=decoder.is_stream_response if decoder else False,
+            stream_response=decoder.is_stream_response() if decoder else False,
         )
 
     @staticmethod
