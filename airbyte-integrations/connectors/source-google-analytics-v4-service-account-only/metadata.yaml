@@ -26,7 +26,7 @@ data:
     oss:
       enabled: false
   releaseStage: generally_available
-  supportLevel: community
+  supportLevel: archived
   tags:
     - language:python
     - cdk:python
