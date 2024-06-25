@@ -28,14 +28,14 @@ object ConnectorExceptionUtil {
         if (translator != null) {
             return translator.isConfigError(e);
         }
-        return isConfigErrorException(e) || isConnectionError(e)
+        return (e is ConfigErrorException || e is ConnectionErrorException)
     }
 
     fun isTransientError(e: Throwable?, translator: ConnectorExceptionTranslator?): Boolean {
         if (translator != null) {
             return translator.isTransientError(e);
         }
-        return isTransientErrorException(e)
+        return e is TransientErrorException
     }
 
     fun getDisplayMessage(e: Throwable?, translator: ConnectorExceptionTranslator?): String? {
@@ -122,17 +122,5 @@ object ConnectorExceptionUtil {
         }
         // No need to filter on isRight since isLeft will throw before reaching this line.
         return eithers.map { obj: Either<out T, Result> -> obj.right!! }
-    }
-
-    private fun isTransientErrorException(e: Throwable?): Boolean {
-        return e is TransientErrorException
-    }
-
-    private fun isConfigErrorException(e: Throwable?): Boolean {
-        return e is ConfigErrorException
-    }
-
-    private fun isConnectionError(e: Throwable?): Boolean {
-        return e is ConnectionErrorException
     }
 }
