@@ -56,7 +56,7 @@
             "title": "Key Pair Authentication",
             "type": "object",
             "order": 1,
-            "required": ["username","private_key"],
+            "required": ["username", "private_key"],
             "properties": {
               "auth_type": {
                 "type": "string",
