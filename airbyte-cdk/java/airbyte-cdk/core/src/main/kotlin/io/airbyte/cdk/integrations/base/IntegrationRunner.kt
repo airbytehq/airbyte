@@ -228,8 +228,8 @@ internal constructor(
             // exist, we
             // just return the original exception.
             ApmTraceUtils.addExceptionToTrace(e)
-            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e)
-            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e)
+            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e, exceptionTranslator)
+            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e, exceptionTranslator)
             // If the source connector throws a config error, a trace message with the relevant
             // message should
             // be surfaced.
@@ -255,14 +255,14 @@ internal constructor(
                 return
             }
 
-            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
+            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable, exceptionTranslator)) {
                 AirbyteTraceMessageUtility.emitConfigErrorTrace(
                     e,
                     ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable, exceptionTranslator),
                 )
                 // On receiving a config error, the container should be immediately shut down.
                 System.exit(1)
-            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
+            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable, exceptionTranslator)) {
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(
                     e,
                     ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable, exceptionTranslator)
