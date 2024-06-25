@@ -15,7 +15,7 @@ class Decoder:
     Decoder strategy to transform a requests.Response into a Mapping[str, Any]
     """
 
-    last_decoded: Optional[Mapping[str, Any]] = field(init=False, repr=False, default_factory=dict)
+    last_decoded: Mapping[str, Any] = field(init=False, repr=False, default_factory=dict)
 
     @abstractmethod
     def is_stream_response(self) -> bool:
