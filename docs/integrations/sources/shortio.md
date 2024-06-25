@@ -44,6 +44,8 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.2.4 | 2024-06-22 | [40099](https://github.com/airbytehq/airbyte/pull/40099) | Update dependencies |
+| 0.2.3 | 2024-06-05 | [38842](https://github.com/airbytehq/airbyte/pull/38842) | Embed schemas and spec |
 | 0.2.2 | 2024-06-04 | [38970](https://github.com/airbytehq/airbyte/pull/38970) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.1 | 2024-05-02 | [37597](https://github.com/airbytehq/airbyte/pull/37597) | Change `last_records` to `last_record` |
 | 0.2.0 | 2023-08-02 | [28950](https://github.com/airbytehq/airbyte/pull/28950) | Migrate to Low-Code CDK |

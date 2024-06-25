@@ -83,6 +83,7 @@ class DiscoveryTestConfig(BaseConfig):
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
+    validate_primary_keys_data_type: bool = Field(True, description="Ensure correct primary keys data type")
 
 
 class ExpectedRecordsConfig(BaseModel):
@@ -168,6 +169,7 @@ class BasicReadTestConfig(BaseConfig):
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
     validate_stream_statuses: bool = Field(None, description="Ensure that all streams emit status messages")
     validate_state_messages: bool = Field(True, description="Ensure that state messages emitted as expected")
+    validate_primary_keys_data_type: bool = Field(True, description="Ensure correct primary keys data type")
     fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(

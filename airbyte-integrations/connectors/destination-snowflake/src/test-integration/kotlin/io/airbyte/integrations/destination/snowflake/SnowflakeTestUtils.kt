@@ -20,11 +20,13 @@ object SnowflakeTestUtils {
     @Throws(SQLException::class)
     fun dumpRawTable(database: JdbcDatabase, tableIdentifier: String?): List<JsonNode> {
         return dumpTable(
-            java.util.List.of<String>(
+            listOf(
                 quote(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
                 timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)),
                 timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
-                quote(JavaBaseConstants.COLUMN_NAME_DATA)
+                quote(JavaBaseConstants.COLUMN_NAME_DATA),
+                quote(JavaBaseConstants.COLUMN_NAME_AB_META),
+                quote(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
             ),
             database,
             tableIdentifier, // Raw tables still have lowercase names

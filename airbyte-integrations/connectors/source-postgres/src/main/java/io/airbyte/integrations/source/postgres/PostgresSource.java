@@ -39,6 +39,8 @@ import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categor
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.postgresql.PGProperty.CURRENT_SCHEMA;
+import static org.postgresql.PGProperty.PREPARE_THRESHOLD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -65,6 +67,8 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -126,6 +130,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
+import org.postgresql.PGProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,6 +154,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_MODE_PREFER = "prefer";
   public static final String SSL_MODE_DISABLE = "disable";
   public static final String SSL_MODE_REQUIRE = "require";
+
+  public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
+      // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
+      // https://github.com/airbytehq/airbyte/issues/24796
+      PREPARE_THRESHOLD, "0");
 
   private List<String> schemas;
 
@@ -180,9 +190,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
-    // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
-    // https://github.com/airbytehq/airbyte/issues/24796
-    additionalParameters.add("prepareThreshold=0");
+    for (var e : JDBC_CONNECTION_PARAMS.entrySet()) {
+      additionalParameters.add(e.getKey().getName() + EQUALS + e.getValue());
+    }
 
     final String encodedDatabaseName = URLEncoder.encode(config.get(JdbcUtils.DATABASE_KEY).asText(), StandardCharsets.UTF_8);
 
@@ -192,7 +202,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         encodedDatabaseName));
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
+      additionalParameters.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     final Map<String, String> sslParameters = parseSSLConfig(config);
@@ -210,12 +220,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     if (schemas != null && !schemas.isEmpty()) {
-      additionalParameters.add("currentSchema=" + String.join(",", schemas));
+      additionalParameters.add(CURRENT_SCHEMA.getName() + EQUALS + String.join(",", schemas));
     }
-
-    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
-
-    jdbcUrl.append(toJDBCQueryParams(sslParameters));
+    additionalParameters.addAll(toJDBCQueryParams(sslParameters));
+    jdbcUrl.append(String.join(AMPERSAND, additionalParameters));
     LOGGER.debug("jdbc url: {}", jdbcUrl);
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
@@ -229,8 +237,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public String toJDBCQueryParams(final Map<String, String> sslParams) {
-    return Objects.isNull(sslParams) ? ""
+  public List<String> toJDBCQueryParams(final Map<String, String> sslParams) {
+    return Objects.isNull(sslParams)
+        ? List.of()
         : sslParams.entrySet()
             .stream()
             .map((entry) -> {
@@ -247,7 +256,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               }
             })
             .filter(s -> Objects.nonNull(s) && !s.isEmpty())
-            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
+            .toList();
   }
 
   @Override
@@ -839,6 +848,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         ctidStateManager.setFileNodeHandler(fileNodeHandler);
       }
     }
+  }
+
+  @Override
+  protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), ctidStateManager);
   }
 
   @Override

@@ -25,7 +25,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
@@ -86,25 +85,25 @@ class SnowflakeDestinationHandler(
     @Throws(Exception::class)
     private fun getInitialRawTableState(
         id: StreamId,
-        destinationSyncMode: DestinationSyncMode
     ): InitialRawTableStatus {
         // Short-circuit for overwrite, table will be truncated anyway
-        if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-            return InitialRawTableStatus(
-                rawTableExists = false,
-                hasUnprocessedRecords = false,
-                maxProcessedTimestamp = Optional.empty()
-            )
-        }
         val tableExists =
             database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
                 LOGGER.info("Retrieving table from Db metadata: {} {}", id.rawNamespace, id.rawName)
                 try {
-                    databaseMetaData
-                        .getTables(databaseName, id.rawNamespace, id.rawName, null)
-                        .use { tables ->
-                            return@executeMetadataQuery tables.next()
-                        }
+                    val rs =
+                        databaseMetaData.getTables(databaseName, id.rawNamespace, id.rawName, null)
+                    // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
+                    // interpreted as uppercase
+                    // in db metadata calls. check for both
+                    val rsUppercase =
+                        databaseMetaData.getTables(
+                            databaseName,
+                            id.rawNamespace.uppercase(),
+                            id.rawName.uppercase(),
+                            null
+                        )
+                    rs.next() || rsUppercase.next()
                 } catch (e: SQLException) {
                     LOGGER.error("Failed to retrieve table metadata", e)
                     throw RuntimeException(e)
@@ -287,6 +286,14 @@ class SnowflakeDestinationHandler(
             "VARIANT" == existingTable.columns[abMetaColumnName]!!.type
     }
 
+    fun isAirbyteGenerationIdColumnMatch(existingTable: TableDefinition): Boolean {
+        val abGenerationIdColumnName: String =
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase(Locale.getDefault())
+        return existingTable.columns.containsKey(abGenerationIdColumnName) &&
+            toJdbcTypeName(AirbyteProtocolType.INTEGER) ==
+                existingTable.columns[abGenerationIdColumnName]!!.type
+    }
+
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
@@ -299,7 +306,8 @@ class SnowflakeDestinationHandler(
         if (
             !isAirbyteRawIdColumnMatch(existingTable) ||
                 !isAirbyteExtractedAtColumnMatch(existingTable) ||
-                !isAirbyteMetaColumnMatch(existingTable)
+                !isAirbyteMetaColumnMatch(existingTable) ||
+                !isAirbyteGenerationIdColumnMatch(existingTable)
         ) {
             // Missing AB meta columns from final table, we need them to do proper T+D so trigger
             // soft-reset
@@ -380,8 +388,7 @@ class SnowflakeDestinationHandler(
                             !existingSchemaMatchesStreamConfig(streamConfig, existingTable!!)
                         isFinalTableEmpty = hasRowCount && tableRowCounts[namespace]!![name] == 0
                     }
-                    val initialRawTableState =
-                        getInitialRawTableState(streamConfig.id, streamConfig.destinationSyncMode)
+                    val initialRawTableState = getInitialRawTableState(streamConfig.id)
                     val destinationState =
                         destinationStates.getOrDefault(
                             streamConfig.id.asPair(),
@@ -417,8 +424,13 @@ class SnowflakeDestinationHandler(
     }
 
     override fun toDestinationState(json: JsonNode): SnowflakeState {
+        // Note the field name is isAirbyteMetaPresentInRaw but jackson interprets it as
+        // airbyteMetaPresentInRaw when serializing so we map that to the correct field when
+        // deserializing
         return SnowflakeState(
-            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean()
+            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
+            json.hasNonNull("airbyteMetaPresentInRaw") &&
+                json["airbyteMetaPresentInRaw"].asBoolean()
         )
     }
 
