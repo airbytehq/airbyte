@@ -84,7 +84,9 @@ def retry_connection_handler(**kwargs):
             return False
         if isinstance(exc, JSONDecodeError):
             return False
-        if TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR.lower() in exc.response.text.lower():
+        if exc.response is not None and TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR.lower() in exc.response.text.lower():
+            return False
+        if TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR.lower() in str(exc):
             return False
         if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
             return True
