@@ -364,10 +364,8 @@ class Account(PendoAggregationStream):
         try:
             session = requests.get(url, headers=auth_headers)
             body = session.json()
-            print(f'Body - {json.dumps(body)}')
 
             full_schema = base_schema
-            print(f'Full Schema - {json.dumps(full_schema)}')
 
             # Not all fields are getting returned by Pendo's metadata apis so we need to do some manual construction
             full_schema["properties"]["metadata"]["properties"]["auto__323232"] = {"type": ["null", "object"]}
@@ -377,7 +375,6 @@ class Account(PendoAggregationStream):
                 auto_fields[key] = self.get_valid_field_info(body["auto"][key]["Type"])
             full_schema["properties"]["metadata"]["properties"]["auto"]["properties"] = auto_fields
             full_schema["properties"]["metadata"]["properties"]["auto__323232"]["properties"] = auto_fields
-            print(f'Full Schema After adding fields - {json.dumps(full_schema)}')
 
             full_schema = self.build_schema(full_schema, body)
             self.json_schema = full_schema
