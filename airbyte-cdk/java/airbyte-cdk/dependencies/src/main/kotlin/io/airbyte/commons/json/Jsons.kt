@@ -140,6 +140,11 @@ object Jsons {
     }
 
     @JvmStatic
+    fun <T : Any> deserializeExactUnchecked(jsonString: String?, klass: Class<T>?): T {
+        return OBJECT_MAPPER_EXACT.readValue(jsonString, klass)
+    }
+
+    @JvmStatic
     fun <T : Any> tryDeserialize(jsonString: String, klass: Class<T>): Optional<T> {
         return try {
             Optional.of(OBJECT_MAPPER.readValue(jsonString, klass))
@@ -425,9 +430,17 @@ object Jsons {
      * potentially-sensitive information. </snip...>
      */
     private fun <T : Any> handleDeserThrowable(throwable: Throwable): Optional<T> {
-        // Manually build the stacktrace, excluding the top-level exception object
-        // so that we don't accidentally include the exception message.
-        // Otherwise we could just do ExceptionUtils.getStackTrace(t).
+        val obfuscated = obfuscate(throwable)
+        LOGGER.warn { "Failed to deserialize json due to $obfuscated" }
+        return Optional.empty()
+    }
+
+    /**
+     * Build a stacktrace from the given throwable, enabling us to log or rethrow without leaking
+     * sensitive information in the exception message (which would be exposed with eg,
+     * ExceptionUtils.getStackTrace(t).)
+     */
+    fun obfuscate(throwable: Throwable): String {
         var t: Throwable = throwable
         val sb = StringBuilder()
         sb.append(t.javaClass)
@@ -444,8 +457,7 @@ object Jsons {
                 sb.append(traceElement.toString())
             }
         }
-        LOGGER.warn { "Failed to deserialize json due to $sb" }
-        return Optional.empty()
+        return sb.toString()
     }
 
     /**

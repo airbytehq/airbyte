@@ -106,6 +106,13 @@ constructor(
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 message,
             )
+
+        // The message had an unrecognized type, presumably because
+        // upstream is head. Just skip it.
+        if (partialAirbyteMessage == null) {
+            return
+        }
+
         when (partialAirbyteMessage.type) {
             AirbyteMessage.Type.RECORD -> {
                 validateRecord(partialAirbyteMessage)

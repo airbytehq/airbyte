@@ -42,6 +42,7 @@ import java.util.function.Consumer
 import java.util.stream.Stream
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -456,7 +457,7 @@ class AsyncStreamConsumerTest {
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 serializedAirbyteMessage,
             )
-        assertEquals(airbyteRecordString, partial.serialized)
+        assertEquals(airbyteRecordString, partial!!.serialized)
     }
 
     @Test
@@ -482,7 +483,7 @@ class AsyncStreamConsumerTest {
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 serializedAirbyteMessage,
             )
-        assertEquals(airbyteRecordString, partial.serialized)
+        assertEquals(airbyteRecordString, partial!!.serialized)
     }
 
     @Test
@@ -502,7 +503,7 @@ class AsyncStreamConsumerTest {
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 serializedAirbyteMessage,
             )
-        assertEquals(emptyMap.toString(), partial.serialized)
+        assertEquals(emptyMap.toString(), partial!!.serialized)
     }
 
     @Test
@@ -512,7 +513,7 @@ class AsyncStreamConsumerTest {
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 serializedAirbyteMessage,
             )
-        assertEquals(serializedAirbyteMessage, partial.serialized)
+        assertEquals(serializedAirbyteMessage, partial!!.serialized)
     }
 
     @Test
@@ -731,5 +732,39 @@ class AsyncStreamConsumerTest {
                     )
             }
         assertEquals(expRecords, actualRecords)
+    }
+
+    @Test
+    internal fun deserializeAirbyteMessageWithUnrecognizedType() {
+        val airbyteMessage = AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+        val serialized = Jsons.serialize(airbyteMessage)
+        // Fake an upstream protocol change
+        val retyped =
+            serialized.replace(AirbyteMessage.Type.RECORD.toString(), "__UNKNOWN_TYPE_OF_MESSAGE__")
+        // Assert that this doesn't throw an exception
+        assertDoesNotThrow { airbyteMessageDeserializer.deserializeAirbyteMessage(retyped) }
+    }
+
+    @Test
+    internal fun deserializeAirbyteMessageWithUnrecognizedNonTypeEnum() {
+        // NOTE: We are only guaranteeing failure on the top-level message type. Anything else
+        // should break deserialization and result in an *obfuscated* error message.
+        val airbyteMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withState(
+                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                )
+        val serialized = Jsons.serialize(airbyteMessage)
+        // Fake an upstream protocol change
+        val offender = "__UNKNOWN_NONTTYPE_ENUM__"
+        val retyped = serialized.replace("STREAM", offender)
+        // Assert that this doesn't throw an exception
+        val throwable =
+            assertThrows(RuntimeException::class.java) {
+                airbyteMessageDeserializer.deserializeAirbyteMessage(retyped)
+            }
+        // Ensure that the offending data has been scrubbed from the error message
+        assertFalse(throwable.message!!.contains(offender))
     }
 }
