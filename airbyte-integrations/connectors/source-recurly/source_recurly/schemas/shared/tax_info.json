@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "type": {
+      "type": ["null", "string"]
+    },
+    "region": {
+      "type": ["null", "string"]
+    },
+    "rate": {
+      "type": ["null", "number"]
+    },
+    "tax_details": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "region": {
+            "type": ["null", "string"]
+          },
+          "rate": {
+            "type": ["null", "number"]
+          },
+          "tax": {
+            "type": ["null", "number"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "level": {
+            "type": ["null", "string"]
+          },
+          "billable": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    }
+  }
+}

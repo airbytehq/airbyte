@@ -101,6 +101,8 @@ acceptance_tests:
             bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
           - name: "activities_interactedwith_documentin_conversational_flow"
             bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_create_buying_group"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
         # 52 streams, most of them use BULK API therefore it takes much time to run a sync
         timeout_seconds: 9000
         fail_on_extra_columns: false

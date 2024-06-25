@@ -2,18 +2,30 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 1.1.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/destination-databricks
   githubIssueLabel: destination-databricks
   icon: databricks.svg
-  license: MIT
+  license: ELv2
   name: Databricks Lakehouse
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 1.1.0 # pinning due to CDK incompatibility, see https://github.com/airbytehq/alpha-beta-issues/issues/2596
     oss:
       enabled: true
+      dockerImageTag: 1.1.0 # pinning due to CDK incompatibility, see https://github.com/airbytehq/alpha-beta-issues/issues/2596
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: >
+          **This is a private preview version, Do not upgrade until you review the changes**.\n
+          This version is a rewrite of the community connector with support for Unity catalog, and staging files using Unity catalog volumes.
+          This version also introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), 
+          which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. 
+          To review the breaking changes, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
+        upgradeDeadline: "2024-12-31"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   tags:
     - language:java
@@ -21,4 +33,28 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-DATABRICKS_AZURE__CREDS
+          fileName: azure_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-DATABRICKS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-DATABRICKS__STAGING_CREDS
+          fileName: staging_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_DATABRICKS_OAUTH_CONFIG
+          fileName: oauth_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -3,83 +3,111 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the account",
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "description": "Type of object",
+      "type": ["null", "string"]
+    },
+    "hosted_login_token": {
+      "description": "Token for hosted login functionality",
+      "type": ["null", "string"]
+    },
     "code": {
+      "description": "Unique code assigned to the account",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "parent_account_id": {
+      "description": "ID of the parent account",
       "type": ["null", "string"],
       "maxLength": 13
     },
     "bill_to": {
+      "description": "The billing details",
       "type": ["null", "string"],
       "maxLength": 6
     },
     "state": {
+      "description": "State/province of the account address",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "username": {
+      "description": "Username of the account holder",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "email": {
+      "description": "Email address of the account holder",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "cc_emails": {
+      "description": "Email addresses for carbon copy (CC)",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "preferred_locale": {
+      "description": "Preferred language/locale of the account holder",
       "type": ["null", "string"],
       "maxLength": 12
     },
     "first_name": {
+      "description": "First name of the account holder",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "last_name": {
+      "description": "Last name of the account holder",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "company": {
+      "description": "Company associated with the account",
       "type": ["null", "string"],
       "maxLength": 50
     },
     "vat_number": {
+      "description": "VAT (Value Added Tax) number of the account",
       "type": ["null", "string"],
       "maxLength": 20
     },
     "tax_exempt": {
+      "description": "Flag indicating if the account is tax exempt",
       "type": ["null", "boolean"]
     },
     "exemption_certificate": {
+      "description": "Exemption certificate details",
       "type": ["null", "string"],
       "maxLength": 30
     },
     "address": {
+      "description": "The address details of the account",
       "type": "object",
       "properties": {
         "phone": {
+          "description": "Phone number associated with the address",
           "type": "string",
           "title": "Phone number",
           "maxLength": 256
         },
         "street1": {
+          "description": "First line of the street address",
           "type": "string",
           "title": "Street 1",
           "maxLength": 256
         },
         "street2": {
+          "description": "Second line of the street address",
           "type": "string",
           "title": "Street 2",
           "maxLength": 256
         },
         "city": {
+          "description": "City of the address",
           "type": "string",
           "title": "City",
           "maxLength": 256
@@ -101,45 +129,94 @@
           "title": "Country",
           "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
           "maxLength": 2
+        },
+        "geo_code": {
+          "description": "Geographical coordinates of the address",
+          "type": ["null", "string"]
         }
       }
     },
     "custom_fields": {
-      "type": ["null", "array"]
+      "description": "Custom fields associated with the account",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     },
     "has_live_subscription": {
+      "description": "Flag indicating if the account has a live subscription",
       "type": ["null", "boolean"]
     },
     "has_active_subscription": {
+      "description": "Flag indicating if the account has an active subscription",
       "type": ["null", "boolean"]
     },
     "has_future_subscription": {
+      "description": "Flag indicating if the account has a future subscription",
       "type": ["null", "boolean"]
     },
     "has_canceled_subscription": {
+      "description": "Flag indicating if the account has a canceled subscription",
       "type": ["null", "boolean"]
     },
     "has_paused_subscription": {
+      "description": "Flag indicating if the account has a paused subscription",
       "type": ["null", "boolean"]
     },
     "has_past_due_invoice": {
+      "description": "Flag indicating if the account has a past due invoice",
       "type": ["null", "boolean"]
     },
     "dunning_campaign_id": {
+      "description": "Campaign ID for dunning management",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "created_at": {
+      "description": "Date and time when the account was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when the account was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deleted_at": {
+      "description": "Date and time when the account was deleted",
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "billing_info": {
+      "description": "Billing information",
+      "$ref": "billing_infos.json"
+    },
+    "external_accounts": {
+      "description": "External accounts associated with the account",
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "external_accounts.json"
+      }
+    },
+    "invoice_template_id": {
+      "description": "ID of the invoice template used",
+      "type": ["null", "string"]
+    },
+    "override_business_entity_id": {
+      "description": "ID for overriding business entity",
+      "type": ["null", "string"]
+    },
+    "preferred_time_zone": {
+      "description": "Preferred time zone of the account holder",
+      "type": ["null", "string"]
+    },
+    "shipping_addresses": {
+      "description": "Addresses for shipping",
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "shipping_addresses.json"
+      }
     }
   }
 }

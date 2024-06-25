@@ -6,7 +6,7 @@ import base64
 import time
 from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
@@ -63,12 +63,12 @@ class ServerToServerOauthAuthenticator(NoAuth):
         return request
 
     @property
-    def auth_header(self) -> dict[str, str]:
-        return {"Authorization": f"Bearer {self.token}", "Content-type": "application/json"}
+    def auth_header(self) -> str:
+        return "Authorization"
 
     @property
-    def token(self) -> str:
-        return self._access_token
+    def token(self) -> Optional[str]:
+        return self._access_token if self._access_token else None
 
     def generate_access_token(self) -> str:
         self._generate_token_time = time.time()

@@ -4,6 +4,7 @@
 
 
 from copy import deepcopy
+from unittest.mock import call
 
 import pytest
 from airbyte_cdk.models import (
@@ -26,13 +27,25 @@ from .utils import command_check
 @pytest.fixture(name="config")
 def config_fixture(requests_mock):
     config = {
-        "account_id": "123",
-        "access_token": "TOKEN",
+        "account_ids": ["123"],
+        "access_token": "ACCESS_TOKEN",
+        "credentials": {
+            "auth_type": "Service",
+            "access_token": "ACCESS_TOKEN",
+        },
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
     }
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users", json={"data": []})
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", json={"account": 123})
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users",
+        json={"data": []},
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",
+        json={"account": 123},
+    )
     return config
 
 
@@ -50,7 +63,7 @@ def config_gen(config):
 @pytest.fixture(name="api")
 def api_fixture(mocker):
     api_mock = mocker.patch("source_facebook_marketing.source.API")
-    api_mock.return_value = mocker.Mock(account=123)
+    api_mock.return_value = mocker.Mock(account=mocker.Mock(return_value=123))
     return api_mock
 
 
@@ -82,8 +95,13 @@ class TestSourceFacebookMarketing:
         """Check if _find_account was called to validate credentials"""
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
-        api_find_account.assert_called_once_with(config["account_id"])
-        logger_mock.info.assert_called_once_with("Select account 1234")
+        api_find_account.assert_called_once_with(config["account_ids"][0])
+        logger_mock.info.assert_has_calls(
+            [
+                call("Attempting to retrieve information for account with ID: 123"),
+                call("Successfully retrieved account information for account: 1234"),
+            ]
+        )
         assert ok
         assert not error_msg
 
@@ -137,21 +155,35 @@ class TestSourceFacebookMarketing:
 
     def test_get_custom_insights_streams(self, api, config, fb_marketing):
         config["custom_insights"] = [
-            {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": ["action_device"]},
+            {
+                "name": "test",
+                "fields": ["account_id"],
+                "breakdowns": ["ad_format_asset"],
+                "action_breakdowns": ["action_device"],
+            },
         ]
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
 
     def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config, fb_marketing):
         config["custom_insights"] = [
-            {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": []},
+            {
+                "name": "test",
+                "fields": ["account_id"],
+                "breakdowns": ["ad_format_asset"],
+                "action_breakdowns": [],
+            },
         ]
 
         config["action_breakdowns_allow_empty"] = False
         streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
-        assert streams[0].action_breakdowns == ["action_type", "action_target_id", "action_destination"]
+        assert streams[0].action_breakdowns == [
+            "action_type",
+            "action_target_id",
+            "action_destination",
+        ]
 
         config["action_breakdowns_allow_empty"] = True
         streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))

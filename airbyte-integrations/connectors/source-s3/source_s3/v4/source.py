@@ -4,10 +4,8 @@
 
 from typing import Any, Dict, Mapping, Optional
 
-from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
-from airbyte_cdk.models import ConnectorSpecification
-from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
-from airbyte_cdk.utils import is_cloud_environment
+from airbyte_cdk import ConnectorSpecification, emit_configuration_as_airbyte_control_message, is_cloud_environment
+from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
 from source_s3.source import SourceS3Spec
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 
@@ -21,14 +19,17 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 
 class SourceS3(FileBasedSource):
-    def read_config(self, config_path: str) -> Mapping[str, Any]:
+    _concurrency_level = DEFAULT_CONCURRENCY
+
+    @classmethod
+    def read_config(cls, config_path: str) -> Mapping[str, Any]:
         """
         Used to override the default read_config so that when the new file-based S3 connector processes a config
         in the legacy format, it can be transformed into the new config. This happens in entrypoint before we
         validate the config against the new spec.
         """
         config = super().read_config(config_path)
-        if not self._is_v4_config(config):
+        if not SourceS3._is_v4_config(config):
             parsed_legacy_config = SourceS3Spec(**config)
             converted_config = LegacyConfigTransformer.convert(parsed_legacy_config)
             emit_configuration_as_airbyte_control_message(converted_config)
@@ -66,7 +67,8 @@ class SourceS3(FileBasedSource):
             connectionSpecification=s4_spec,
         )
 
-    def _is_v4_config(self, config: Mapping[str, Any]) -> bool:
+    @staticmethod
+    def _is_v4_config(config: Mapping[str, Any]) -> bool:
         return "streams" in config
 
     @staticmethod

@@ -1,6 +1,6 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 {
-  "name": "Connector Development DevContainer (Generic)",
+  "name": "Java Development DevContainer (Generic)",
 
   "image": "mcr.microsoft.com/devcontainers/java:0-17",
   "features": {
@@ -42,8 +42,8 @@
   // Mark the root directory as 'safe' for git.
   "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
 
-  // Install Gradle, `airbyte-ci` CLI, and Dagger (installed via airbyte-ci --help)
-  "postCreateCommand": "./gradlew --version && pipx install --editable ./airbyte-ci/connectors/pipelines/ || airbyte-ci --help || true",
+  // Install `airbyte-ci` and Gradle
+  "postCreateCommand": "make tools.airbyte-ci-dev.install && ./gradlew --version",
 
   "containerEnv": {
     // Deterministic Poetry virtual env location: `./.venv`

@@ -1,8 +1,5 @@
 {
-  "credentials": {
-    "auth_type": "Service",
-    "credentials_json": ""
-  },
+  "credentials": { "auth_type": "Service", "credentials_json": "" },
   "custom_reports": "[{\"name\": \"custom_dimensions\", \"dimensions\": [\"date\", \"country\", \"device\"]}]",
   "date_ranges_start_date": "2023-09-01",
   "window_in_days": 30,

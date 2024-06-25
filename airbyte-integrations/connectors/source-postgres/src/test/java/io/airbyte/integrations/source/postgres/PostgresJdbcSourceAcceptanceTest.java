@@ -20,11 +20,9 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.Field;
@@ -38,7 +36,6 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
@@ -51,6 +48,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<PostgresSource, PostgresTestDatabase> {
 
   private static final String DATABASE = "new_db";
@@ -80,16 +78,20 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
         .build();
   }
 
+  private PostgresSource postgresSource = null;
+
   @Override
   protected PostgresSource source() {
-    final var source = new PostgresSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    if (postgresSource != null) {
+      postgresSource.close();
+    }
+    postgresSource = new PostgresSource();
+    return postgresSource;
   }
 
   @Override
   protected PostgresTestDatabase createTestDatabase() {
-    return PostgresTestDatabase.in("postgres:16-bullseye");
+    return PostgresTestDatabase.in(BaseImage.POSTGRES_16);
   }
 
   @Override
@@ -237,14 +239,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
     return true;
   }
 
-  @Test
-  void testSpec() throws Exception {
-    final ConnectorSpecification actual = source().spec();
-    final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
-
-    assertEquals(expected, actual);
-  }
-
   @Override
   protected List<AirbyteMessage> getTestMessages() {
     return getTestMessages(streamName());
@@ -304,7 +298,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
             Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
             Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)))
+            .withIsResumable(true),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
@@ -315,7 +310,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
             Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
             Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(Collections.emptyList()),
+            .withSourceDefinedPrimaryKey(Collections.emptyList())
+            .withIsResumable(true),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_COMPOSITE_PK,
             defaultNamespace,
@@ -327,7 +323,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
             Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
-                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))
+            .withIsResumable(true)));
   }
 
   @Override
@@ -364,11 +361,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
         "2006-01-01T17:23:54.123456",
         Lists.newArrayList(getTestMessages().get(1),
             getTestMessages().get(2)));
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
   /**
@@ -446,7 +438,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
   }
 
   @Test
-  void testReadMultipleTablesIncrementally() throws Exception {
+  @Override
+  protected void testReadMultipleTablesIncrementally() throws Exception {
     final var config = config();
     ((ObjectNode) config).put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1);
     final String namespace = getDefaultNamespace();
@@ -691,7 +684,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
         .withCursor("5")
         .withCursorRecordCount(1L);
 
-    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state), 2));
     return expectedMessages;
   }
 
@@ -718,6 +711,11 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
     }
 
     throw new IllegalArgumentException("Stream not found in state message: " + streamName);
+  }
+
+  @Override
+  protected Boolean supportResumeableFullRefreshWithoutPk() {
+    return true;
   }
 
 }

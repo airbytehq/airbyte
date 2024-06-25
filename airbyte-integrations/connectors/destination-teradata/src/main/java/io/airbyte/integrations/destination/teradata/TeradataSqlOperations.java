@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.teradata.util.JSONStruct;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -50,7 +51,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           LOGGER.info("jsonData: " + jsonData);
           LOGGER.info("emittedAt: " + emittedAt);
           pstmt.setString(1, uuid);
-          pstmt.setString(2, jsonData);
+          pstmt.setObject(2, new JSONStruct("JSON", new Object[] {jsonData}));
           pstmt.setTimestamp(3, emittedAt);
           pstmt.addBatch();
 
@@ -107,10 +108,10 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
-        "CREATE SET TABLE %s.%s, FALLBACK ( \n" + "%s VARCHAR(256), \n" + "%s JSON, \n" + "%s TIMESTAMP(6) \n"
-            + ");\n",
+        "CREATE SET TABLE %s.%s, FALLBACK ( %s VARCHAR(256), %s JSON, %s TIMESTAMP(6)) " +
+            " UNIQUE PRIMARY INDEX (%s) ",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JavaBaseConstants.COLUMN_NAME_AB_ID);
   }
 
   @Override

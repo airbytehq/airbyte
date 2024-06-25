@@ -21,6 +21,7 @@ from source_stripe.availability_strategy import StripeAvailabilityStrategy, Stri
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+IS_TESTING = os.environ.get("DEPLOYMENT_MODE") == "testing"
 USE_CACHE = not CACHE_DISABLED
 
 
@@ -197,6 +198,12 @@ class StripeStream(HttpStream, ABC):
             headers["Stripe-Account"] = self.account_id
         return headers
 
+    def retry_factor(self) -> float:
+        """
+        Override for testing purposes
+        """
+        return 0 if IS_TESTING else super(StripeStream, self).retry_factor
+
 
 class IStreamSelector(ABC):
     @abstractmethod
@@ -349,7 +356,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         # as each event holds the latest value of a record.
         # `start_date_max_days_from_now` represents the events API limitation.
         self.events_stream = Events(
-            authenticator=self.authenticator,
+            authenticator=kwargs.get("authenticator"),
             lookback_window_days=0,
             start_date_max_days_from_now=30,
             account_id=self.account_id,
@@ -499,7 +506,7 @@ class CustomerBalanceTransactions(StripeStream):
             path="customers",
             use_cache=USE_CACHE,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
-            authenticator=self.authenticator,
+            authenticator=kwargs.get("authenticator"),
             account_id=self.account_id,
             start_date=self.start_date,
         )
@@ -828,7 +835,7 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
             # as the events API does not support expandable items. Parent class will try getting sub-items from this object,
             # then from its own API. In case there are no sub-items at all for this entity, API will raise 404 error.
             self.logger.warning(
-                "Data was not found for URL: {response.request.url}. "
+                f"Data was not found for URL: {response.request.url}. "
                 "If this is a path for getting child attributes like /v1/checkout/sessions/<session_id>/line_items when running "
                 "the incremental sync, you may safely ignore this warning."
             )

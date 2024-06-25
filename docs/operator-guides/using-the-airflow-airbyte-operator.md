@@ -1,10 +1,11 @@
 ---
 description: Start triggering Airbyte jobs with Apache Airflow in minutes
+products: oss-*
 ---
 
 # Using the Airbyte Operator to orchestrate Airbyte OSS
 
-Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger Airbyte OSS synchronization jobs from Apache Airflow, and this article will walk through configuring your Airflow DAG to do so. 
+Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger Airbyte OSS synchronization jobs from Apache Airflow, and this article will walk through configuring your Airflow DAG to do so.
 
 :::note
 
@@ -12,11 +13,6 @@ For [historic reasons](https://github.com/airbytehq/airbyte/issues/836), the Air
 
 :::
 
-:::caution
-
-Due to some difficulties in setting up Airflow, we recommend first trying out the deployment using the local example [here](https://github.com/airbytehq/airbyte/tree/master/resources/examples/airflow), as it contains accurate configuration required to get the Airbyte operator up and running.
-
-:::
 
 The Airbyte Provider documentation on Airflow project can be found [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html).
 
@@ -83,11 +79,11 @@ with DAG(dag_id='trigger_airbyte_job_example',
 
 The Airbyte Airflow Operator accepts the following parameters:
 
-* `airbyte_conn_id`: Name of the Airflow HTTP Connection pointing at the Airbyte API. Tells Airflow where the Airbyte API is located.
-* `connection_id`: The ID of the Airbyte Connection to be triggered by Airflow.
-* `asynchronous`: Determines how the Airbyte Operator executes. When true, Airflow will monitor the Airbyte Job using an **AirbyteJobSensor**. Default value is `false`.
-* `timeout`: Maximum time Airflow will wait for the Airbyte job to complete. Only valid when `asynchronous=False`. Default value is `3600` seconds.
-* `wait_seconds`: The amount of time to wait between checks. Only valid when `asynchronous=False`. Default value is `3` seconds.
+- `airbyte_conn_id`: Name of the Airflow HTTP Connection pointing at the Airbyte API. Tells Airflow where the Airbyte API is located.
+- `connection_id`: The ID of the Airbyte Connection to be triggered by Airflow.
+- `asynchronous`: Determines how the Airbyte Operator executes. When true, Airflow will monitor the Airbyte Job using an **AirbyteJobSensor**. Default value is `false`.
+- `timeout`: Maximum time Airflow will wait for the Airbyte job to complete. Only valid when `asynchronous=False`. Default value is `3600` seconds.
+- `wait_seconds`: The amount of time to wait between checks. Only valid when `asynchronous=False`. Default value is `3` seconds.
 
 This code will produce the following simple DAG in the Airbyte UI:
 
@@ -107,7 +103,7 @@ If your Airflow instance has limited resources and/or is under load, setting the
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
-from airflow.providers.airbyte.sensors.airbyte import AirbyteJobSensor 
+from airflow.providers.airbyte.sensors.airbyte import AirbyteJobSensor
 
 with DAG(dag_id='airbyte_trigger_job_example_async',
          default_args={'owner': 'airflow'},
@@ -137,11 +133,13 @@ Don't be fooled by our simple example of only one Airflow task. Airbyte is a pow
 
 We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
-## Related articles
+## Related articles and guides
+
 For additional information about using the Airflow and Airbyte together, see the following:
 
 - [Using the new Airbyte API to orchestrate Airbyte Cloud with Airflow](https://airbyte.com/blog/orchestrating-airbyte-api-airbyte-cloud-airflow)
 - [A step-by-step guide to setting up and configuring Airbyte and Airflow to work together](https://airbyte.com/tutorials/how-to-use-airflow-and-airbyte-together)
+- [Build an e-commerce Analytics Stack with Airbyte, dbt, Airflow (ADA) and BigQuery](https://github.com/airbytehq/quickstarts/tree/main/airbyte_dbt_airflow_bigquery)
 - [The difference between Airbyte and Airflow](https://airbyte.com/blog/airbyte-vs-airflow)
 - [ETL Pipelines with Airflow: the Good, the Bad and the Ugly](https://airbyte.com/blog/airflow-etl-pipelines)
 - [Automate your Data Scraping with Apache Airflow and Beautiful Soup](https://airbyte.com/tutorials/data-scraping-with-airflow-and-beautiful-soup)

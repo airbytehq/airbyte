@@ -18,9 +18,7 @@ tests:
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #      expect_records:
   #        path: "integration_tests/expected_records.jsonl"
-  #        extra_fields: no
   #        exact_order: no
-  #        extra_records: yes
   #  incremental: # TODO if your connector does not implement incremental sync, remove this block
   #    - config_path: "secrets/config.json"
   #      configured_catalog_path: "integration_tests/configured_catalog.json"

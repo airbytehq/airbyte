@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from typing import List, Optional
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -80,3 +81,7 @@ class Config(AbstractFileBasedSpec):
             objects_to_check["anyOf"] = objects_to_check.pop("allOf")
 
         return super(Config, Config).replace_enum_allOf_and_anyOf(schema)
+
+    @staticmethod
+    def remove_discriminator(schema) -> None:
+        pass

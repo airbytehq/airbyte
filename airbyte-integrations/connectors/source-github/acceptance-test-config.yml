@@ -4,8 +4,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_github/spec.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.4.3"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -17,72 +15,16 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.4.3"
       - config_path: "secrets/config_oauth.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.4.8"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         empty_streams:
           - name: "events"
-            bypass_reason: "Only events created within the past 90 days can be showed"
-        ignored_fields:
-          contributor_activity:
-            - name: weeks
-              bypass_reason: "depend on changing data"
-            - name: total
-              bypass_reason: "depend on changing data"
-          workflows:
-            - name: created_at
-              bypass_reason: value may be returned in different time zones
-            - name: updated_at
-              bypass_reason: value may be returned in different time zones
-          workflow_jobs:
-            - name: steps/*/started_at
-              bypass_reason: "depend on changing data"
-            - name: steps/*/completed_at
-              bypass_reason: "depend on changing data"
-          organizations:
-            - name: followers
-              bypass_reason: "fast changing data"
-            - name: updated_at
-              bypass_reason: "fast changing data"
-            - name: plan
-              bypass_reason: "fast changing data"
-            - name: public_repos
-              bypass_reason: "fast changing data"
-            - name: total_private_repos
-              bypass_reason: "fast changing data"
-            - name: owned_private_repos
-              bypass_reason: "fast changing data"
-          repositories:
-            - name: updated_at
-              bypass_reason: "fast changing data"
-            - name: pushed_at
-              bypass_reason: "fast changing data"
-            - name: size
-              bypass_reason: "fast changing data"
-            - name: stargazers_count
-              bypass_reason: "fast changing data"
-            - name: watchers_count
-              bypass_reason: "fast changing data"
-            - name: forks_count
-              bypass_reason: "fast changing data"
-            - name: forks
-              bypass_reason: "fast changing data"
-            - name: open_issues
-              bypass_reason: "fast changing data"
-            - name: open_issues_count
-              bypass_reason: "fast changing data"
-            - name: watchers
-              bypass_reason: "fast changing data"
+            bypass_reason: "Only events created within the past 90 days can be showed. Stream is tested with integration tests."
   incremental:
     tests:
       - config_path: "secrets/config.json"

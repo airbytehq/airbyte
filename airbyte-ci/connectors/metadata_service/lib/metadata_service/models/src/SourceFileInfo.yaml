@@ -1,0 +1,17 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/SourceFileInfo.yaml
+title: SourceFileInfo
+description: Information about the source file that generated the registry entry
+type: object
+properties:
+  metadata_etag:
+    type: string
+  metadata_file_path:
+    type: string
+  metadata_bucket_name:
+    type: string
+  metadata_last_modified:
+    type: string
+  registry_entry_generated_at:
+    type: string

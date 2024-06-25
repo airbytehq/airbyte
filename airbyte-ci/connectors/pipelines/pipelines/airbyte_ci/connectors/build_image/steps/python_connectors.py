@@ -3,6 +3,8 @@
 #
 
 
+from typing import Any
+
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
@@ -17,9 +19,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     A spec command is run on the container to validate it was built successfully.
     """
 
+    context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: Platform):
+    async def _build_connector(self, platform: Platform, *args: Any) -> Container:
         if (
             "connectorBuildOptions" in self.context.connector.metadata
             and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]
@@ -42,14 +45,11 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         Returns:
             Container: The builder container, with installed dependencies.
         """
-        ONLY_PYTHON_BUILD_FILES = ["setup.py", "requirements.txt", "pyproject.toml", "poetry.lock"]
-        builder = await with_python_connector_installed(
-            self.context,
-            base_container,
-            str(self.context.connector.code_directory),
-            include=ONLY_PYTHON_BUILD_FILES,
-        )
+        ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt", "README.md"]
 
+        builder = await with_python_connector_installed(
+            self.context, base_container, str(self.context.connector.code_directory), install_root_package=False, include=ONLY_BUILD_FILES
+        )
         return builder
 
     async def _build_from_base_image(self, platform: Platform) -> Container:
@@ -74,10 +74,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             # copy python dependencies from builder to connector container
             customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
-            .with_file(main_file_name, (await self.context.get_connector_dir(include=main_file_name)).file(main_file_name))
+            .with_file(main_file_name, (await self.context.get_connector_dir(include=[main_file_name])).file(main_file_name))
             .with_directory(
                 connector_snake_case_name,
-                (await self.context.get_connector_dir(include=connector_snake_case_name)).directory(connector_snake_case_name),
+                (await self.context.get_connector_dir(include=[connector_snake_case_name])).directory(connector_snake_case_name),
             )
             .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
             .with_entrypoint(entrypoint)

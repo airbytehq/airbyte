@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7cf88806-25f5-4e1a-b422-b2fa9e1b0090
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-elasticsearch
   githubIssueLabel: source-elasticsearch
   icon: elasticsearch.svg
@@ -17,9 +17,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
   tags:
     - language:java
-    - language:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

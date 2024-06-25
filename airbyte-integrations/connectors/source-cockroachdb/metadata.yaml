@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
-  dockerImageTag: 0.1.22
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-cockroachdb
   githubIssueLabel: source-cockroachdb
   icon: cockroachdb.svg
@@ -20,9 +20,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   tags:
     - language:java
-    - language:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

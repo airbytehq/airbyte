@@ -2,168 +2,220 @@
   "type": ["null", "object"],
   "properties": {
     "metadata": {
+      "description": "Additional information attached to the subscription item.",
       "type": ["null", "object"],
       "properties": {}
     },
     "canceled_at": {
+      "description": "Timestamp indicating when the subscription was canceled.",
       "type": ["null", "string"]
     },
     "current_period_end": {
+      "description": "Timestamp indicating when the current billing period ends.",
       "type": ["null", "string"]
     },
     "plan": {
+      "description": "Details of the plan associated with the subscription item.",
       "type": ["null", "object", "string"],
       "properties": {
         "nickname": {
+          "description": "Nickname of the plan.",
           "type": ["null", "string"]
         },
         "tiers": {
+          "description": "Tiers of pricing for the plan of the subscription item.",
           "type": ["null", "array"],
           "items": {
+            "description": "Individual pricing tiers with specific criteria for the plan.",
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat fee amount for this tier.",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount for usage within this tier.",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Upper usage boundary for this tier.",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "object": {
+          "description": "Type of object, in this case, 'plan'.",
           "type": ["null", "string"]
         },
         "aggregate_usage": {
+          "description": "Type of usage aggregation for the subscription.",
           "type": ["null", "string"]
         },
         "created": {
+          "description": "Timestamp indicating when the plan was created.",
           "type": ["null", "integer"]
         },
         "statement_description": {
+          "description": "Description to be shown on the customer's statement for the plan.",
           "type": ["null", "string"]
         },
         "product": {
+          "description": "ID of the product associated with the plan.",
           "type": ["null", "string"]
         },
         "statement_descriptor": {
+          "description": "Descriptor shown on the customer's credit card statement for the plan.",
           "type": ["null", "string"]
         },
         "interval_count": {
+          "description": "Number of intervals between each billing cycle.",
           "type": ["null", "integer"]
         },
         "transform_usage": {
+          "description": "Transform usage to a new quantity in the subscription.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the plan.",
           "type": ["null", "string"]
         },
         "amount": {
+          "description": "Amount in the smallest currency unit representing the plan price.",
           "type": ["null", "integer"]
         },
         "interval": {
+          "description": "Interval at which the plan is billed.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the plan associated with the subscription item.",
           "type": ["null", "string"]
         },
         "trial_period_days": {
+          "description": "Number of days in the trial period for the plan.",
           "type": ["null", "integer"]
         },
         "usage_type": {
+          "description": "Type of usage, either 'licensed' or 'metered'.",
           "type": ["null", "string"]
         },
         "active": {
+          "description": "Flag indicating if the plan associated with the subscription item is active.",
           "type": ["null", "boolean"]
         },
         "tiers_mode": {
+          "description": "Mode to define tiered pricing, either 'graduated' or 'volume'.",
           "type": ["null", "string"]
         },
         "billing_scheme": {
+          "description": "Scheme for how prices will be billed for the plan.",
           "type": ["null", "string"]
         },
         "livemode": {
+          "description": "Flag indicating if the plan is in live mode.",
           "type": ["null", "boolean"]
         },
         "currency": {
+          "description": "The currency of the plan price.",
           "type": ["null", "string"]
         },
         "metadata": {
+          "description": "Additional information specific to the plan of the subscription item.",
           "type": ["null", "object"],
           "properties": {}
         },
         "updated": {
+          "description": "Timestamp indicating when the plan was last updated.",
           "type": ["null", "number"]
         }
       }
     },
     "subscription": {
+      "description": "ID of the subscription to which the subscription item belongs.",
       "type": ["null", "string"]
     },
     "trial_start": {
+      "description": "Timestamp indicating when the trial period for the subscription item starts.",
       "type": ["null", "integer"]
     },
     "created": {
+      "description": "Timestamp indicating when the subscription item was created.",
       "type": ["null", "integer"]
     },
     "cancel_at_period_end": {
+      "description": "Flag indicating if the subscription will be canceled at the end of the current period.",
       "type": ["null", "boolean"]
     },
     "quantity": {
+      "description": "Quantity of the plan to be included in the subscription item.",
       "type": ["null", "integer"]
     },
     "tax_percent": {
+      "description": "Tax percentage applied to the subscription item price.",
       "type": ["null", "number"]
     },
     "current_period_start": {
+      "description": "Timestamp indicating when the current billing period began.",
       "type": ["null", "integer"]
     },
     "start": {
+      "description": "Timestamp indicating when the subscription item starts.",
       "type": ["null", "integer"]
     },
     "discount": {
+      "description": "Any discounts applied to the subscription item.",
       "type": ["null", "object"],
       "properties": {}
     },
     "application_fee_percent": {
+      "description": "A fee percentage applied to the subscription that will be transferred to the platform owner.",
       "type": ["null", "number"]
     },
     "id": {
+      "description": "Unique identifier for the subscription item.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the subscription item, e.g., 'active', 'trialing', 'canceled'.",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "ID of the customer to whom the subscription item belongs.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Type of object, in this case, 'subscription_item'.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Flag indicating if the subscription item is in live mode.",
       "type": ["null", "boolean"]
     },
     "ended_at": {
+      "description": "Timestamp indicating when the subscription ended.",
       "type": ["null", "number"]
     },
     "trial_end": {
+      "description": "Timestamp indicating when the trial period for the subscription item ends.",
       "type": ["null", "number"]
     },
     "billing_thresholds": {
+      "description": "Threshold rules that trigger billing actions for the subscription item.",
       "type": ["null", "object"],
       "properties": {
         "usage_gte": {
+          "description": "The usage threshold that triggers the billing for metered billing subscriptions.",
           "type": ["null", "integer"]
         }
       }
     },
     "tax_rates": {
+      "description": "Tax rates applied to the subscription item price.",
       "$ref": "tax_rates.json"
     },
     "price": {
+      "description": "Price of the subscription item.",
       "$ref": "price.json"
     }
   }

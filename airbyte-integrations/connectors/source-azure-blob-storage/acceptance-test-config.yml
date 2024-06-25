@@ -9,7 +9,7 @@ acceptance_tests:
         expect_records:
           path: integration_tests/expected_records/csv_custom_encoding.jsonl
           exact_order: true
-      - config_path: secrets/csv_custom_format_config.json
+      - config_path: secrets/csv_custom_format_encoding_config.json
         expect_records:
           path: integration_tests/expected_records/csv_custom_format.jsonl
           exact_order: true
@@ -64,7 +64,7 @@ acceptance_tests:
         status: succeed
       - config_path: secrets/csv_custom_encoding_config.json
         status: succeed
-      - config_path: secrets/csv_custom_format_config.json
+      - config_path: secrets/csv_custom_format_encoding_config.json
         status: succeed
       - config_path: secrets/csv_user_schema_config.json
         status: succeed
@@ -86,11 +86,13 @@ acceptance_tests:
         status: succeed
       - config_path: secrets/jsonl_newlines_config.json
         status: succeed
+      - config_path: secrets/unstructured_config.json
+        status: succeed
   discovery:
     tests:
       - config_path: secrets/config.json
       - config_path: secrets/csv_custom_encoding_config.json
-      - config_path: secrets/csv_custom_format_config.json
+      - config_path: secrets/csv_custom_format_encoding_config.json
       - config_path: secrets/csv_user_schema_config.json
       - config_path: secrets/csv_no_header_config.json
       - config_path: secrets/csv_skip_rows_config.json

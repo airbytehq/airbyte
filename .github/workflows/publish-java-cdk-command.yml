@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 # Usage: This workflow can be invoked manually or by a slash command.
 #
 # To invoke via GitHub UI, go to Actions tab, select the workflow, and click "Run workflow".
@@ -8,17 +10,15 @@
 #    /publish-java-cdk force=true     # Force-publish if needing to replace an already published version
 name: Publish Java CDK
 on:
-  # Temporarily run on commits to the 'java-cdk/publish-workflow' branch.
-  # TODO: Remove this 'push' trigger before merging to master.
   push:
     branches:
-      - java-cdk/publish-workflow
-
+      - master
+    paths:
+      - "airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
   workflow_dispatch:
     inputs:
       repo:
         description: "Repo to check out code from. Defaults to the main airbyte repo."
-        # TODO: If publishing from forks is needed, we'll need to revert type to `string` of `choice`.
         type: choice
         required: true
         default: airbytehq/airbyte
@@ -30,7 +30,7 @@ on:
         type: boolean
         default: false
       force:
-        description: "Force release (ignore existing)"
+        description: "Force release (overwrite existing)"
         required: true
         type: boolean
         default: false
@@ -40,103 +40,107 @@ on:
       comment-id:
         description: "Optional comment-id of the slash command. Ignore if not applicable."
         required: false
-      # uuid:
-      #   description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
-      #   required: false
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
 
 concurrency:
-  group: publish-airbyte-cdk
+  group: publish-java-cdk
   cancel-in-progress: false
 
 env:
   # Use the provided GITREF or default to the branch triggering the workflow.
-  REPO: ${{ github.event.inputs.repo }}
   GITREF: ${{ github.event.inputs.gitref || github.ref }}
-  FORCE: "${{ github.event.inputs.force == null && 'false' || github.event.inputs.force }}"
-  DRY_RUN: "${{ github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
+  FORCE: "${{ github.event_name == 'push' || github.event.inputs.force == null && 'false' ||  github.event.inputs.force }}"
+  DRY_RUN: "${{ github.event_name == 'push' && 'false' || github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
   CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
 jobs:
-  # We are using these runners because they are the same as the one for `publish-command.yml`
-  # One problem we had using `ubuntu-latest` for example is that the user is not root and some commands would fail in
-  # `manage.sh` (specifically `apt-get`)
-  start-publish-docker-image-runner-0:
-    name: Start Build EC2 Runner 0
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: airbytehq/airbyte
-          ref: master
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ env.PAT }}
-          label: ${{ github.run_id }}-publisher
-
   publish-cdk:
     name: Publish Java CDK
-    needs: start-publish-docker-image-runner-0
-    runs-on: ubuntu-latest
+    runs-on: connector-test-large
+    timeout-minutes: 30
     steps:
-      - name: Link comment to workflow run
+      - name: Link comment to Workflow Run
         if: github.event.inputs.comment-id
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          repository: ${{ env.REPO }}
           ref: ${{ env.GITREF }}
+
       - name: Read Target Java CDK version
         id: read-target-java-cdk-version
         run: |
           cdk_version=$(cat $CDK_VERSION_FILE_PATH | tr -d '\n')
+          echo "CDK_VERSION=$CDK_VERSION"
+          echo "FORCE=$FORCE"
+          echo "DRY_RUN=$DRY_RUN"
           if [[ -z "$cdk_version" ]]; then
             echo "Failed to retrieve CDK version from $CDK_VERSION_FILE_PATH"
             exit 1
           fi
           echo "CDK_VERSION=${cdk_version}" >> $GITHUB_ENV
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "17"
-      - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
-        if: ${{ !(env.FORCE == 'true') }}
-        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
-      - name: Build Java CDK
-        run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:build
-      - name: Publish Java Modules to MavenLocal (Dry-Run)
-        if: ${{ !(env.DRY_RUN == 'false') }}
-        run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal
-      - name: Upload jars as artifacts
-        if: ${{ !(env.DRY_RUN == 'false') }}
-        uses: actions/upload-artifact@v2
+          java-version: "21"
+
+      - name: Docker login
+        # Some tests use testcontainers which pull images from DockerHub.
+        uses: docker/login-action@v1
         with:
-          name: mavenlocal-jars
-          path: ~/.m2/repository/io/airbyte/
-      - name: Publish Java Modules to CloudRepo
-        if: ${{ env.DRY_RUN == 'false' }}
-        run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publish
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Build Java CDK
+        uses: burrunan/gradle-cache-action@v1
         env:
+          CI: true
+        with:
+          job-id: cdk-publish
+          read-only: ${{ !(env.DRY_RUN == 'false') }}
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkBuild
+
+      - name: Check for Existing Version
+        # we only check existing version if it's a manual trigger and FORCE is set to false
+        if: ${{ (env.FORCE != 'true') }}
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          job-id: cdk-publish
+          read-only: true
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
+
+      - name: Publish Poms and Jars to CloudRepo
+        if: ${{ env.DRY_RUN == 'false' }}
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        with:
+          job-id: cdk-publish
+          read-only: true
+          concurrent: true
+          execution-only-caches: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkPublish
 
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
@@ -146,6 +150,7 @@ jobs:
           edit-mode: append
           body: |
             > :white_check_mark: Successfully published Java CDK ${{ env.CDK_VERSION }}!
+
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && failure()
         uses: peter-evans/create-or-update-comment@v1
@@ -154,7 +159,8 @@ jobs:
           edit-mode: append
           body: |
             > :x: Publish Java CDK ${{ env.CDK_VERSION }} failed!
-      - name: "Post failure to Slack channel `#dev-connectors-extensibility-releases`"
+
+      - name: "Post failure to Slack channel"
         if: ${{ env.DRY_RUN == 'false' && failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
@@ -182,7 +188,8 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-      - name: "Post success to Slack channel `#dev-connectors-extensibility-releases`"
+
+      - name: "Post success to Slack channel"
         if: ${{ env.DRY_RUN == 'false' && !failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
@@ -210,33 +217,3 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-publish-docker-image-runner-0:
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-    name: Stop Build EC2 Runner
-    needs:
-      - start-publish-docker-image-runner-0 # required to get output from the start-runner job
-      - publish-cdk # required to wait when the main job is done
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Stop EC2 runner
-        uses: airbytehq/ec2-github-runner@base64v1.1.0
-        with:
-          mode: stop
-          github-token: ${{ env.PAT }}
-          label: ${{ needs.start-publish-docker-image-runner-0.outputs.label }}
-          ec2-instance-id: ${{ needs.start-publish-docker-image-runner-0.outputs.ec2-instance-id }}

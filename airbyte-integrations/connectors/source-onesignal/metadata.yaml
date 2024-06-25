@@ -1,7 +1,11 @@
 data:
   allowedHosts:
     hosts:
-      - "onesignal.com"
+      - onesignal.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-onesignal
   registries:
     oss:
       enabled: true
@@ -20,6 +24,15 @@ data:
   releaseDate: 2023-08-31
   releaseStage: alpha
   tags:
-    - language:lowcode
+    - language:python
+    - cdk:low-code
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ONESIGNAL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

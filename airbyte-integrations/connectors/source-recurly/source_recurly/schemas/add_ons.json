@@ -3,12 +3,14 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the add-on.",
       "type": "string",
       "title": "Add-on ID",
       "maxLength": 13,
       "readOnly": true
     },
     "plan_id": {
+      "description": "The ID of the plan to which the add-on is associated.",
       "type": "string",
       "title": "Plan ID",
       "maxLength": 13,
@@ -130,18 +132,21 @@
       "maxLength": 256
     },
     "created_at": {
+      "description": "The date and time when the add-on was created.",
       "type": "string",
       "format": "date-time",
       "title": "Created at",
       "readOnly": true
     },
     "updated_at": {
+      "description": "The date and time when the add-on was last updated.",
       "type": "string",
       "format": "date-time",
       "title": "Last updated at",
       "readOnly": true
     },
     "deleted_at": {
+      "description": "The date and time when the add-on was deleted, if applicable.",
       "type": "string",
       "format": "date-time",
       "title": "Deleted at",

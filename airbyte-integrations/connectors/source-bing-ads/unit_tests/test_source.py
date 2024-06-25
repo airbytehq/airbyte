@@ -16,7 +16,7 @@ from source_bing_ads.source import SourceBingAds
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
-    assert len(streams) == 60
+    assert len(streams) == 77
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -176,7 +176,7 @@ def test_ads_stream_slices(mocked_client, config):
 @pytest.mark.parametrize(
     ("stream", "stream_slice"),
     (
-        (Accounts, {}),
+        (Accounts, {"predicates": {"Predicate": [{"Field": "UserId", "Operator": "Equals", "Value": "131313131"},]}}),
         (AdGroups, {"campaign_id": "campaign_id"}),
         (Ads, {"ad_group_id": "ad_group_id"}),
         (Campaigns, {"account_id": "account_id"}),
@@ -204,3 +204,9 @@ def test_transform(mocked_client, config):
         "EditorialStatus": "ActiveLimited",
         "FinalAppUrls": None,
     }
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_check_connection_with_accounts_names_config(mocked_client, config_with_account_names, logger_mock):
+    with patch.object(Accounts, "read_records", return_value=iter([{"Id": 180519267}, {"Id": 180278106}])):
+        assert SourceBingAds().check_connection(logger_mock, config=config_with_account_names) == (True, None)

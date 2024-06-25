@@ -1,257 +1,920 @@
-version: "0.29.0"
-definitions:
-  page_size: 50
-  step: "P30D"
-
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
-
-  requester:
-    type: HttpRequester
-    url_base: "https://api.sendgrid.com"
-    http_method: "GET"
-    authenticator:
-      type: "BearerAuthenticator"
-      api_token: "{{ config.apikey }}"
-  cursor_paginator:
-    type: DefaultPaginator
-    page_size: "#/definitions/page_size"
-    limit_option:
-      inject_into: "request_parameter"
-      field_name: "page_size"
-    page_token_option:
-      type: RequestPath
-    pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ response._metadata.next }}"
-  offset_paginator:
-    type: DefaultPaginator
-    $parameters:
-      page_size: "#/definitions/page_size"
-    limit_option:
-      inject_into: "request_parameter"
-      field_name: "limit"
-    page_token_option:
-      type: RequestOption
-      inject_into: "request_parameter"
-      field_name: "offset"
-    pagination_strategy:
-      type: "OffsetIncrement"
-  retriever:
-    type: SimpleRetriever
-  incremental_sync:
-    type: "DatetimeBasedCursor"
-    start_datetime:
-      datetime: "{{ config['start_time'] }}"
-      datetime_format: "%s"
-    end_datetime:
-      datetime: "{{ now_utc() }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
-    step: "#/definitions/step"
-    start_time_option:
-      field_name: "start_time"
-      inject_into: "request_parameter"
-    end_time_option:
-      field_name: "end_time"
-      inject_into: "request_parameter"
-    datetime_format: "%s"
-    cursor_granularity: "PT1S"
-  messages_incremental_sync:
-    type: "DatetimeBasedCursor"
-    start_datetime:
-      datetime: "{{ config['start_time'] }}"
-      datetime_format: "%s"
-    end_datetime:
-      datetime: "{{ now_utc() }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
-    step: "#/definitions/step"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    cursor_granularity: "PT0.000001S"
-
-  base_stream:
-    type: DeclarativeStream
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        extractor:
-          field_path: []
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        type: NoPagination
-streams:
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "lists"
-      primary_key: "id"
-      path: "/v3/marketing/lists"
-      field_path: ["result"]
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "campaigns"
-      primary_key: "id"
-      path: "/v3/marketing/campaigns"
-      field_path: ["result"]
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "contacts"
-      primary_key: "id"
-      path: "/v3/marketing/contacts"
-      field_path: ["result"]
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "stats_automations"
-      primary_key: "id"
-      path: "/v3/marketing/stats/automations"
-      field_path: ["results"]
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "segments"
-      primary_key: "id"
-      path: "/v3/marketing/segments"
-      field_path: ["results"]
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "single_sends"
-      primary_key: "id"
-      path: "/v3/marketing/stats/singlesends"
-      field_path: ["results"]
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "templates"
-      primary_key: "id"
-      path: "/v3/templates"
-      field_path: ["result"]
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      requester:
-        $ref: "#/definitions/base_stream/retriever/requester"
-        request_parameters:
-          generations: "legacy,dynamic"
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "bounces"
-      primary_key: "email"
-      cursor_field: "created"
-      path: "/v3/suppression/bounces"
-      field_path: []
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/offset_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "global_suppressions"
-      primary_key: "email"
-      cursor_field: "created"
-      path: "/v3/suppression/unsubscribes"
-      field_path: []
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/offset_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "blocks"
-      primary_key: "email"
-      cursor_field: "created"
-      path: "/v3/suppression/blocks"
-      field_path: []
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/offset_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "suppression_groups"
-      primary_key: "id"
-      path: "/v3/asm/groups"
-      field_path: []
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "suppression_group_members"
-      primary_key: "group_id"
-      path: "/v3/asm/suppressions"
-      field_path: []
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/offset_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "invalid_emails"
-      primary_key: "email"
-      cursor_field: "created"
-      path: "/v3/suppression/invalid_emails"
-      field_path: []
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/offset_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "spam_reports"
-      primary_key: "email"
-      cursor_field: "created"
-      path: "/v3/suppression/spam_reports"
-      field_path: []
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      paginator:
-        $ref: "#/definitions/offset_paginator"
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "messages"
-      primary_key: "msg_id"
-      cursor_field: "last_event_time"
-      path: "/v3/messages"
-      field_path: []
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          limit: "1000"
-          query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
-  - $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "unsubscribe_groups"
-      primary_key: "id"
-      path: "/v3/asm/groups"
-      field_path: []
+version: 0.81.1
+type: DeclarativeSource
 check:
   type: CheckStream
-  stream_names: ["lists"]
+  stream_names:
+    - bounces
+streams:
+  - type: DeclarativeStream
+    name: bounces
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created:
+            type: integer
+          email:
+            type: string
+          reason:
+            type: string
+          status:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/bounces
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 500
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: spam_reports
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          created:
+            type: integer
+          email:
+            type: string
+          ip:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/spam_reports
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 500
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: global_suppressions
+    primary_key:
+      - email
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created:
+            type: integer
+          email:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/unsubscribes
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 500
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: blocks
+    primary_key:
+      - email
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          created:
+            type: integer
+          email:
+            type: string
+          reason:
+            type: string
+          status:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/blocks
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 500
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: invalid_emails
+    primary_key:
+      - email
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          created:
+            type: integer
+          email:
+            type: string
+          reason:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/suppression/invalid_emails
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 500
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: suppression_groups
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type: string
+          id:
+            type: integer
+          is_default:
+            type: boolean
+          name:
+            type: string
+          unsubscribes:
+            type: integer
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/asm/groups
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: suppression_group_members
+    primary_key:
+      - group_id
+      - email
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: integer
+          email:
+            type: string
+          group_id:
+            type: integer
+          group_name:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/asm/suppressions
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 500
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: lists
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _metadata:
+            properties:
+              self:
+                type: string
+            type: object
+          contact_count:
+            type: integer
+          id:
+            type: string
+          name:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/lists
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - result
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page_size
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
+  - type: DeclarativeStream
+    name: segments
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          contacts_count:
+            type: integer
+          created_at:
+            format: date-time
+            type: ["null", string]
+          id:
+            type: string
+          name:
+            type: string
+          next_sample_update:
+            format: date-time
+            type: ["null", string]
+          parent_list_ids:
+            items:
+              type: ["null", string]
+            type:
+              - array
+              - "null"
+          query_version:
+            type: string
+          sample_updated_at:
+            format: date-time
+            type: ["null", string]
+          status:
+            properties:
+              query_validation:
+                type: string
+            type: object
+          updated_at:
+            format: date-time
+            type: ["null", string]
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/segments/2.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: singlesend_stats
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          ab_phase:
+            type: string
+          ab_variation:
+            type: string
+          aggregation:
+            type: string
+          id:
+            type: string
+            format: uuid
+          stats:
+            properties:
+              bounce_drops:
+                type: integer
+              bounces:
+                type: integer
+              clicks:
+                type: integer
+              delivered:
+                type: integer
+              invalid_emails:
+                type: integer
+              opens:
+                type: integer
+              requests:
+                type: integer
+              spam_report_drops:
+                type: integer
+              spam_reports:
+                type: integer
+              unique_clicks:
+                type: integer
+              unique_opens:
+                type: integer
+              unsubscribes:
+                type: integer
+            type: object
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/stats/singlesends
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
+  - type: DeclarativeStream
+    name: stats_automations
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          aggregation:
+            type: string
+          id:
+            type: string
+          stats:
+            properties:
+              bounce_drops:
+                type: integer
+              bounces:
+                type: integer
+              clicks:
+                type: integer
+              delivered:
+                type: integer
+              invalid_emails:
+                type: integer
+              opens:
+                type: integer
+              requests:
+                type: integer
+              spam_report_drops:
+                type: integer
+              spam_reports:
+                type: integer
+              unique_clicks:
+                type: integer
+              unique_opens:
+                type: integer
+              unsubscribes:
+                type: integer
+            type: object
+          step_id:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/stats/automations
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
+  - type: DeclarativeStream
+    name: singlesends
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          categories:
+            items:
+              type: string
+            type: array
+          created_at:
+            format: date-time
+            type: string
+          id:
+            type: string
+            format: uuid
+          is_abtest:
+            type: boolean
+          name:
+            type: string
+          send_at:
+            format: date-time
+            type:
+              - "null"
+              - string
+          status:
+            type: string
+          updated_at:
+            format: date-time
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/singlesends
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - result
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
+  - type: DeclarativeStream
+    name: templates
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          generation:
+            type: string
+          id:
+            type: string
+          name:
+            type: string
+          updated_at:
+            format: date-time
+            type: ["null", string]
+          versions:
+            type: array
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/templates
+        http_method: GET
+        request_parameters:
+          generations: legacy,dynamic
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - result
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 200
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
+  - type: DeclarativeStream
+    name: campaigns
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          created_at:
+            type: ["null", string]
+            format: date-time
+          status:
+            type: string
+          updated_at:
+            type: ["null", string]
+            format: date-time
+          is_abtest:
+            type: boolean
+          channels:
+            items:
+              type: string
+            type: array
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/campaigns
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - result
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - start_date
+      - api_key
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 0
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated.
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 1
+        description: >-
+          Sendgrid API Key, use <a
+          href=\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to
+          generate this key.
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    bounces: false
+    spam_reports: false
+    global_suppressions: false
+    blocks: false
+    invalid_emails: false
+    suppression_groups: false
+    suppression_group_members: false
+    lists: false
+    segments: false
+    singlesend_stats: false
+    stats_automations: false
+    singlesends: false
+    templates: false
+    campaigns: false

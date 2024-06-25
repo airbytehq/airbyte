@@ -2,78 +2,112 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier of the creative",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp indicating when the creative was last updated",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp indicating when the creative was created",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name or title given to the creative",
       "type": ["null", "string"]
     },
     "ad_account_id": {
+      "description": "The ID of the advertising account linked to the creative",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type or category of the creative",
       "type": ["null", "string"]
     },
     "packaging_status": {
+      "description": "The status of the packaging for the creative",
       "type": ["null", "string"]
     },
     "review_status": {
+      "description": "The overall review status of the creative",
       "type": ["null", "string"]
     },
     "review_status_details": {
+      "description": "Additional details related to the review status",
       "type": ["null", "string"]
     },
     "shareable": {
+      "description": "Indicates if the creative is shareable",
       "type": ["null", "boolean"]
     },
     "forced_view_eligibility": {
+      "description": "Whether the creative is eligible for forced views",
       "type": ["null", "string"]
     },
     "headline": {
+      "description": "The headline or title of the creative",
       "type": ["null", "string"]
     },
     "brand_name": {
+      "description": "The name of the brand associated with the creative",
       "type": ["null", "string"]
     },
     "call_to_action": {
+      "description": "The call to action prompt for the creative",
       "type": ["null", "string"]
     },
     "render_type": {
+      "description": "The type of rendering used for the creative",
       "type": ["null", "string"]
     },
     "top_snap_media_id": {
+      "description": "The ID of the media file for the top snap",
       "type": ["null", "string"]
     },
     "top_snap_crop_position": {
+      "description": "The crop position for the top snap of the creative",
       "type": ["null", "string"]
     },
     "web_view_properties": {
+      "description": "Properties related to the web view functionality when a user interacts with the ad.",
       "type": ["null", "object"],
       "properties": {
         "url": {
+          "description": "The URL to be loaded in the web view",
           "type": ["null", "string"]
         },
         "allow_snap_javascript_sdk": {
+          "description": "Whether to allow the use of Snap JavaScript SDK in the web view",
           "type": ["null", "boolean"]
         },
         "use_immersive_mode": {
+          "description": "Whether to use immersive mode in the web view",
           "type": ["null", "boolean"]
         },
         "deep_link_urls": {
+          "description": "List of deep link URLs associated with the web view",
           "type": ["null", "array"]
         },
         "block_preload": {
+          "description": "Indicates if preloading is blocked for the web view",
           "type": ["null", "boolean"]
         }
       }
     },
     "ad_product": {
+      "description": "The type of Snapchat advertising product used for the creative",
       "type": ["null", "string"]
+    },
+    "ad_to_place_properties": {
+      "description": "Properties related to the ad to be displayed within the Snapchat interface.",
+      "type": ["null", "object"],
+      "properties": {
+        "place_id": {
+          "description": "The ID of the place where the ad is to be displayed",
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

@@ -4,7 +4,7 @@
 
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from dagger import Container, Directory
 from pipelines import hacks
@@ -89,9 +89,7 @@ async def find_local_dependencies_in_requirements_txt(python_package: Container,
         # Some package declare themselves as a requirement in requirements.txt,
         # #Without line != "-e ." the package will be considered a dependency of itself which can cause an infinite loop
         if line.startswith("-e .") and line != "-e .":
-            local_dependency_path = Path(line[3:])
-            package_source_code_path = Path(package_source_code_path)
-            local_dependency_path = str((package_source_code_path / local_dependency_path).resolve().relative_to(Path.cwd()))
+            local_dependency_path = str((Path(package_source_code_path) / Path(line[3:])).resolve().relative_to(Path.cwd()))
             local_requirements_dependency_paths.append(local_dependency_path)
     return local_requirements_dependency_paths
 
@@ -135,7 +133,7 @@ async def find_local_python_dependencies(
 
 def _install_python_dependencies_from_setup_py(
     container: Container,
-    additional_dependency_groups: Optional[List] = None,
+    additional_dependency_groups: Optional[Sequence[str]] = None,
 ) -> Container:
     install_connector_package_cmd = ["pip", "install", "."]
     container = container.with_exec(install_connector_package_cmd)
@@ -157,25 +155,36 @@ def _install_python_dependencies_from_requirements_txt(container: Container) -> 
 
 def _install_python_dependencies_from_poetry(
     container: Container,
-    additional_dependency_groups: Optional[List] = None,
+    additional_dependency_groups: Optional[Sequence[str]] = None,
+    install_root_package: bool = True,
 ) -> Container:
     pip_install_poetry_cmd = ["pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
-    poetry_install_no_venv_cmd = ["poetry", "install"]
+    poetry_install_cmd = ["poetry", "install"]
+    poetry_check_cmd = ["poetry", "check"]
+    if not install_root_package:
+        poetry_install_cmd += ["--no-root"]
     if additional_dependency_groups:
         for group in additional_dependency_groups:
-            poetry_install_no_venv_cmd += ["--with", group]
-
-    return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
+            poetry_install_cmd += ["--with", group]
+    else:
+        poetry_install_cmd += ["--only", "main"]
+    return (
+        container.with_exec(pip_install_poetry_cmd)
+        .with_exec(poetry_disable_virtual_env_cmd)
+        .with_exec(poetry_check_cmd)
+        .with_exec(poetry_install_cmd)
+    )
 
 
 async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
-    additional_dependency_groups: Optional[List] = None,
+    additional_dependency_groups: Optional[Sequence[str]] = None,
     exclude: Optional[List] = None,
     include: Optional[List] = None,
+    install_root_package: bool = True,
 ) -> Container:
     """Install a python package in a python environment container.
 
@@ -183,8 +192,10 @@ async def with_installed_python_package(
         context (PipelineContext): The current test context, providing the repository directory from which the python sources will be pulled.
         python_environment (Container): An existing python environment in which the package will be installed.
         package_source_code_path (str): The local path to the package source code.
-        additional_dependency_groups (Optional[List]): extra_requires dependency of setup.py to install. Defaults to None.
+        additional_dependency_groups (Optional[Sequence[str]]): extra_requires dependency of setup.py to install. Defaults to None.
         exclude (Optional[List]): A list of file or directory to exclude from the python package source code.
+        include (Optional[List]): A list of file or directory to include from the python package source code.
+        install_root_package (bool): Whether to install the root package. Defaults to True.
 
     Returns:
         Container: A python environment container with the python package installed.
@@ -201,7 +212,7 @@ async def with_installed_python_package(
 
     if has_pyproject_toml:
         container = with_poetry_cache(container, context.dagger_client)
-        container = _install_python_dependencies_from_poetry(container, additional_dependency_groups)
+        container = _install_python_dependencies_from_poetry(container, additional_dependency_groups, install_root_package)
     elif has_setup_py:
         container = with_pip_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_setup_py(container, additional_dependency_groups)
@@ -237,9 +248,9 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         context.logger.info(f"Mounting CDK from {directory_to_mount}")
 
         # Install the airbyte-cdk package from the local directory
-        # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
+        # We use `--force-reinstall` to use local CDK with the latest updates and dependencies
         connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
-            ["pip", "install", "--no-deps", f"/{path_to_cdk}"], skip_entrypoint=True
+            ["pip", "install", "--force-reinstall", f"/{path_to_cdk}"], skip_entrypoint=True
         )
 
     return connector_container
@@ -249,9 +260,10 @@ async def with_python_connector_installed(
     context: ConnectorContext,
     python_container: Container,
     connector_source_path: str,
-    additional_dependency_groups: Optional[List] = None,
-    exclude: Optional[List] = None,
-    include: Optional[List] = None,
+    additional_dependency_groups: Optional[Sequence[str]] = None,
+    exclude: Optional[List[str]] = None,
+    include: Optional[List[str]] = None,
+    install_root_package: bool = True,
 ) -> Container:
     """Install an airbyte python connectors  dependencies."""
 
@@ -265,6 +277,7 @@ async def with_python_connector_installed(
         additional_dependency_groups=additional_dependency_groups,
         exclude=exclude,
         include=include,
+        install_root_package=install_root_package,
     )
 
     container = await apply_python_development_overrides(context, container)

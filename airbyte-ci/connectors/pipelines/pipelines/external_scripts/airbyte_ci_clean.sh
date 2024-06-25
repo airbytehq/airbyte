@@ -3,7 +3,8 @@ set -o errexit -o nounset -o pipefail
 
 # Check if pipx is on the path and if so, uninstall pipelines
 if which pipx >/dev/null 2>&1; then
-    pipx uninstall pipelines
+    # ignore errors if pipelines is not installed
+    pipx uninstall pipelines || true
     echo "Uninstalled pipelines via pipx"
 else
     echo "pipx not found, skipping uninstall of pipelines"
@@ -30,7 +31,13 @@ while which airbyte-ci-dev >/dev/null 2>&1; do
 done
   echo "Removed airbyte-ci-dev"
 
-echo "Cleanup completed."
-echo ""
-echo "Please run 'make tools.airbyte-ci.install' to install airbyte-ci again"
+# Check if airbyte-ci is stashed away in pyenv
+# If so, remove it
+# This prevents `pyenv init -` from adding it back to the path
+while pyenv whence --path airbyte-ci >/dev/null 2>&1; do
+    rm "$(pyenv whence --path airbyte-ci)"
+    echo "Uninstalled pipelines via pyenv"
+done
+    echo "All airbyte-ci references removed from pyenv versions."
 
+echo "Cleanup of airbyte-ci install completed."

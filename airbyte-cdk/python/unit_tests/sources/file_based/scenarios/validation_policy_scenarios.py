@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
+
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -69,6 +70,7 @@ _base_single_stream_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -163,6 +165,7 @@ _base_multi_stream_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 },
                 {
                     "json_schema": {
@@ -182,6 +185,7 @@ _base_multi_stream_scenario = (
                     "name": "stream2",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 },
             ]
         }
@@ -271,6 +275,10 @@ skip_record_scenario_single_stream = (
                 },
             ]
         }
+    )
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
     )
 ).build()
 
@@ -416,6 +424,10 @@ skip_record_scenario_multi_stream = (
             ]
         }
     )
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
+    )
 ).build()
 
 
@@ -492,19 +504,9 @@ emit_record_scenario_single_stream = (
             },
         ]
     )
-    .set_expected_logs(
-        {
-            "read": [
-                {
-                    "level": "ERROR",
-                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=c.csv line_no=2 n_skipped=0",
-                },
-                {
-                    "level": "WARN",
-                    "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
-                },
-            ]
-        }
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
     )
 ).build()
 
@@ -640,23 +642,9 @@ emit_record_scenario_multi_stream = (
             },
         ]
     )
-    .set_expected_logs(
-        {
-            "read": [
-                {
-                    "level": "ERROR",
-                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a/a3.csv line_no=2 n_skipped=0",
-                },
-                {
-                    "level": "WARN",
-                    "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
-                },
-                {
-                    "level": "WARN",
-                    "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
-                },
-            ]
-        }
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
     )
 ).build()
 
@@ -676,29 +664,7 @@ wait_for_rediscovery_scenario_single_stream = (
             ]
         }
     )
-    .set_expected_records(
-        [
-            {
-                "data": {
-                    "col1": "val_a_11",
-                    "col2": 1,
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.csv",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val_a_12",
-                    "col2": 2,
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.csv",
-                },
-                "stream": "stream1",
-            },
-            # No records past that because the first record for the second file did not conform to the schema
-        ]
-    )
+    .set_expected_records(None)  # When syncing streams concurrently we don't know how many records will be emitted before the sync stops
     .set_expected_logs(
         {
             "read": [
@@ -737,56 +703,7 @@ wait_for_rediscovery_scenario_multi_stream = (
             ]
         }
     )
-    .set_expected_records(
-        [
-            {
-                "data": {
-                    "col1": "val_aa1_11",
-                    "col2": 1,
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a/a1.csv",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val_aa1_12",
-                    "col2": 2,
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a/a1.csv",
-                },
-                "stream": "stream1",
-            },
-            # {"data": {"col1": "val_aa2_11", "col2": "this is text that will trigger validation policy", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa2_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
-            {
-                "data": {
-                    "col1": "val_bb1_11",
-                    "col2": 1,
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b/b1.csv",
-                },
-                "stream": "stream2",
-            },
-            {
-                "data": {
-                    "col1": "val_bb1_12",
-                    "col2": 2,
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b/b1.csv",
-                },
-                "stream": "stream2",
-            },
-            # {"data": {"col1": "val_bb2_11", "col2": "this is text that will trigger validation policy", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb2_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-        ]
-    )
+    .set_expected_records(None)  # When syncing streams concurrently we don't know how many records will be emitted before the sync stops
     .set_expected_logs(
         {
             "read": [

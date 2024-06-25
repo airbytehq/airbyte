@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_milvus.config import ConfigModel
 from destination_milvus.destination import DestinationMilvus
@@ -28,7 +28,7 @@ class TestDestinationMilvus(unittest.TestCase):
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)
-        self.logger = AirbyteLogger()
+        self.logger = logging.getLogger("airbyte")
 
     @patch("destination_milvus.destination.MilvusIndexer")
     @patch("destination_milvus.destination.create_from_config")
@@ -91,7 +91,7 @@ class TestDestinationMilvus(unittest.TestCase):
         destination = DestinationMilvus()
         list(destination.write(self.config, configured_catalog, input_messages))
 
-        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=128)
+        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=128, omit_raw_text=False)
         mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
 
     def test_spec(self):

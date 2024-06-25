@@ -1,40 +1,54 @@
 {
   "properties": {
     "createdAt": {
+      "description": "The timestamp when the email subscription was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "signupSource": {
+      "description": "The source where the subscriber signed up for the emails",
       "type": ["null", "string"]
     },
     "emailListIds": {
+      "description": "List of email list identifiers the subscriber belongs to",
       "type": ["null", "array"],
       "items": {}
     },
     "itblInternal": {
+      "description": "Internal properties related to the subscription",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {
+          "description": "The timestamp when the internal document was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentUpdatedAt": {
+          "description": "The timestamp when the internal document was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "emailListId": {
+      "description": "The unique identifier of the email list",
       "type": ["null", "integer"]
     },
     "email": {
+      "description": "The email address of the subscriber",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "The unique identifier of the subscriber user",
       "type": ["null", "string"]
     },
     "profileUpdatedAt": {
+      "description": "The timestamp when the subscriber profile was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "workflowId": {
+      "description": "The identifier of the workflow associated with the subscription",
       "type": ["null", "integer"]
     }
   },

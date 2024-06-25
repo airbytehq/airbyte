@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Security
 
 Airbyte is committed to keeping your data safe by following industry-standard practices for securing physical deployments, setting access policies, and leveraging the security features of leading Cloud providers.
@@ -46,9 +50,9 @@ You can secure access to Airbyte using the following methods:
     listen 443 ssl;
     server_name airbyte.<your-domain>.com;
     client_max_body_size 200M;  # required for Airbyte API
-    ssl_certificate <path-to-your-cert>.crt.pem; 
+    ssl_certificate <path-to-your-cert>.crt.pem;
     ssl_certificate_key <path-to-your-key>.key.pem;
-    
+
     location / {
       proxy_pass http://127.0.0.1:8000;
       proxy_set_header Cookie $http_cookie;  # if you use Airbytes basic auth
@@ -56,7 +60,7 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- *Only for docker compose deployments:* Change the default username and password in your environment's `.env` file:
+- _Only for docker compose deployments:_ Change the default username and password in your environment's `.env` file:
   ```
   	# Proxy Configuration
   	# Set to empty values, e.g. "" to disable basic auth
@@ -84,14 +88,6 @@ Note that this process is not reversible. Once you have converted to a secret st
 
 Most Airbyte Open Source connectors support encryption-in-transit (SSL or HTTPS). We recommend configuring your connectors to use the encryption option whenever available.
 
-### Telemetry
-
-Airbyte does send anonymized data to our services to improve the product (especially connector reliability and scale). To disable telemetry, modify the .env file and define the following environment variable:
-
-```
-TRACKING_STRATEGY=logging
-```
-
 ## Securing Airbyte Cloud
 
 Airbyte Cloud leverages the security features of leading Cloud providers and sets least-privilege access policies to ensure data security.
@@ -109,22 +105,23 @@ Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airby
 #### United States and Airbyte Default
 
 GCP region: us-west3
-* 34.106.109.131
-* 34.106.196.165
-* 34.106.60.246
-* 34.106.229.69
-* 34.106.127.139
-* 34.106.218.58
-* 34.106.115.240
-* 34.106.225.141
+
+- 34.106.109.131
+- 34.106.196.165
+- 34.106.60.246
+- 34.106.229.69
+- 34.106.127.139
+- 34.106.218.58
+- 34.106.115.240
+- 34.106.225.141
 
 #### European Union
 
 AWS region: eu-west-3
-* 13.37.4.46
-* 13.37.142.60
-* 35.181.124.238
 
+- 13.37.4.46
+- 13.37.142.60
+- 35.181.124.238
 
 ### Credential management
 
@@ -142,14 +139,16 @@ Airbyte Cloud allows you to log in to the platform using your email and password
 
 ### Access Control
 
-Airbyte Cloud supports [user management](/using-airbyte/workspaces.md#add-users-to-your-workspace) but doesn’t support role-based access control (RBAC) yet.
+Airbyte Cloud supports [user management](/using-airbyte/workspaces.md#add-users-to-your-workspace). 
+
+In addition, Airbyte Cloud and  Airbyte Enterprise support [role-based access control](../access-management/rbac.md) allowing admins to manage varying access levels across users in their instance.
 
 ### Compliance
 
 Our compliance efforts for Airbyte Cloud include:
 
 - SOC 2 Type II assessment: An independent third-party completed a SOC2 Type II assessment and found effective operational controls in place. Independent third-party audits will continue at a regular cadence, and the most recent report is available upon request.
-- ISO 27001 certification: We received our ISO 27001 certification in November 2022. A copy of the certificate is available upon request. 
+- ISO 27001 certification: We received our ISO 27001 certification in November 2022. A copy of the certificate is available upon request.
 - Assessments and penetration tests: We use tools provided by the Cloud platforms as well as third-party assessments and penetration tests.
 
 ## Reporting Vulnerabilities​

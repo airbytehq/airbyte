@@ -2,36 +2,54 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier of the ad.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the ad was last updated.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the ad was created.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name or title of the ad.",
       "type": ["null", "string"]
     },
     "ad_squad_id": {
+      "description": "The unique identifier of the ad squad this ad belongs to.",
       "type": ["null", "string"]
     },
     "creative_id": {
+      "description": "The unique identifier of the creative content used in the ad.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the ad.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type or category of the ad.",
       "type": ["null", "string"]
     },
     "render_type": {
+      "description": "The type of rendering used for the ad.",
       "type": ["null", "string"]
     },
     "review_status": {
+      "description": "The review status of the ad.",
       "type": ["null", "string"]
     },
+    "review_status_reasons": {
+      "description": "Reasons for the review status of the ad.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "delivery_status": {
+      "description": "The delivery status of the ad.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

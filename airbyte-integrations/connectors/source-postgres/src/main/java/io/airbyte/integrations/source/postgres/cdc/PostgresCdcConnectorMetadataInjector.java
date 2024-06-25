@@ -4,15 +4,29 @@
 
 package io.airbyte.integrations.source.postgres.cdc;
 
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_LSN;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 
 public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector<Long> {
+
+  private final String transactionTimestamp;
+
+  private final Long lsn;
+
+  PostgresCdcConnectorMetadataInjector() {
+    this.transactionTimestamp = null;
+    this.lsn = null;
+  }
+
+  public PostgresCdcConnectorMetadataInjector(final String transactionTimestamp, final Long lsn) {
+    this.transactionTimestamp = transactionTimestamp;
+    this.lsn = lsn;
+  }
 
   @Override
   public void addMetaData(final ObjectNode event, final JsonNode source) {
@@ -21,7 +35,7 @@ public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector
   }
 
   @Override
-  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final Long lsn) {
+  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record) {
     record.put(CDC_UPDATED_AT, transactionTimestamp);
     record.put(CDC_LSN, lsn);
     record.put(CDC_DELETED_AT, (String) null);

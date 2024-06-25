@@ -3,12 +3,12 @@
   "type": "object",
   "properties": {
     "label": {
-      "type": "string",
-      "description": "The issue navigator column label."
+      "description": "The label representing the data displayed in the issue navigator column.",
+      "type": "string"
     },
     "value": {
-      "type": "string",
-      "description": "The issue navigator column value."
+      "description": "The actual value/data associated with the label in the issue navigator column.",
+      "type": "string"
     }
   },
   "additionalProperties": true,

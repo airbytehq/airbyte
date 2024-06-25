@@ -1,0 +1,30 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "2.6.5"
+name = "source-zendesk-support"
+description = "Source implementation for Zendesk Support."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/zendesk-support"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_zendesk_support"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "0.81.4"
+pytz = "==2024.1"
+
+[tool.poetry.scripts]
+source-zendesk-support = "source_zendesk_support.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.1"
+pytest-mock = "^3.6"
+requests-mock = "==1.9.3"
+freezegun = "^1.4.0"

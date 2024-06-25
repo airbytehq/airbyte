@@ -50,7 +50,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a crude copy of {@link io.airbyte.workers.general.DefaultReplicationWorker} where if that
@@ -58,9 +59,9 @@ import lombok.extern.slf4j.Slf4j;
  * of the platform from the perspectives of the platform communicating with the destination by
  * sending AirbyteRecordMessages the same way platform pipes data into the destination
  */
-@Slf4j
 public class PerformanceHarness {
 
+  private static final Logger log = LoggerFactory.getLogger(PerformanceHarness.class);
   public static final int PORT1 = 9877;
   public static final int PORT2 = 9878;
   public static final int PORT3 = 9879;
@@ -145,7 +146,7 @@ public class PerformanceHarness {
           log.info("End of datasource after {} lines", counter);
           break;
         }
-        final List row;
+        final List<String> row;
         try {
           row = Arrays.asList(pattern.split(line));
         } catch (final NullPointerException npe) {
@@ -226,7 +227,7 @@ public class PerformanceHarness {
         allowedHosts, false, new EnvVariableFeatureFlags());
   }
 
-  private String buildRecordString(final List<String> columns, final List row) {
+  private String buildRecordString(final List<String> columns, final List<String> row) {
     final StringBuilder sb = new StringBuilder();
     sb.append("{");
     final Iterator<String> rowIterator = row.iterator();

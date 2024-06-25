@@ -1,0 +1,177 @@
+name: "Run Dagger pipeline"
+description: "Runs a given dagger pipeline"
+inputs:
+  subcommand:
+    description: "Subcommand for airbyte-ci"
+    required: true
+  context:
+    description: "CI context (e.g., pull_request, manual)"
+    required: true
+  github_token:
+    description: "GitHub token"
+    required: false
+  dagger_cloud_token:
+    description: "Dagger Cloud token"
+    required: false
+  docker_hub_username:
+    description: "Dockerhub username"
+    required: false
+  docker_hub_password:
+    description: "Dockerhub password"
+    required: false
+  options:
+    description: "Options for the subcommand"
+    required: false
+  production:
+    description: "Whether to run in production mode"
+    required: false
+    default: "True"
+  report_bucket_name:
+    description: "Bucket name for CI reports"
+    required: false
+    default: "airbyte-ci-reports-multi"
+  gcp_gsm_credentials:
+    description: "GCP credentials for GCP Secret Manager"
+    required: false
+    default: ""
+  git_repo_url:
+    description: "Git repository URL"
+    default: https://github.com/airbytehq/airbyte.git
+    required: false
+  git_branch:
+    description: "Git branch to checkout"
+    required: false
+  git_revision:
+    description: "Git revision to checkout"
+    required: false
+  slack_webhook_url:
+    description: "Slack webhook URL"
+    required: false
+  metadata_service_gcs_credentials:
+    description: "GCP credentials for metadata service"
+    required: false
+  metadata_service_bucket_name:
+    description: "Bucket name for metadata service"
+    required: false
+    default: "prod-airbyte-cloud-connector-metadata-service"
+  sentry_dsn:
+    description: "Sentry DSN"
+    required: false
+  spec_cache_bucket_name:
+    description: "Bucket name for GCS spec cache"
+    required: false
+    default: "io-airbyte-cloud-spec-cache"
+  spec_cache_gcs_credentials:
+    description: "GCP credentials for GCS spec cache"
+    required: false
+  gcs_credentials:
+    description: "GCP credentials for GCS"
+    required: false
+  ci_job_key:
+    description: "CI job key"
+    required: false
+  s3_build_cache_access_key_id:
+    description: "Gradle S3 Build Cache AWS access key ID"
+    required: false
+  s3_build_cache_secret_key:
+    description: "Gradle S3 Build Cache AWS secret key"
+    required: false
+  airbyte_ci_binary_url:
+    description: "URL to airbyte-ci binary"
+    required: false
+    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+  python_registry_token:
+    description: "Python registry API token to publish python package"
+    required: false
+  is_fork:
+    description: "Whether the PR is from a fork"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Get start timestamp
+      id: get-start-timestamp
+      shell: bash
+      run: echo "start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+    - name: Docker login
+      id: docker-login
+      uses: docker/login-action@v3
+      if: ${{ inputs.docker_hub_username != '' && inputs.docker_hub_password != '' }}
+      with:
+        username: ${{ inputs.docker_hub_username }}
+        password: ${{ inputs.docker_hub_password }}
+    - name: Install Airbyte CI
+      id: install-airbyte-ci
+      uses: ./.github/actions/install-airbyte-ci
+      with:
+        airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
+        is_fork: ${{ inputs.is_fork }}
+    - name: Run airbyte-ci
+      id: run-airbyte-ci
+      shell: bash
+      env:
+        CI: "True"
+        CI_GIT_USER: ${{ github.repository_owner }}
+        CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+        PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        # Next environment variables are workflow inputs based and can be set with empty values if the inputs are not required and passed
+        CI_CONTEXT: "${{ inputs.context }}"
+        CI_GIT_BRANCH: ${{ inputs.git_branch || github.head_ref }}
+        CI_GIT_REPO_URL: ${{ inputs.git_repo_url }}
+        CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
+        CI_GITHUB_ACCESS_TOKEN: ${{ inputs.github_token }}
+        CI_JOB_KEY: ${{ inputs.ci_job_key }}
+        CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
+        DAGGER_CLOUD_TOKEN: "${{ inputs.dagger_cloud_token }}"
+        DOCKER_HUB_PASSWORD: ${{ inputs.docker_hub_password }}
+        DOCKER_HUB_USERNAME: ${{ inputs.docker_hub_username }}
+        GCP_GSM_CREDENTIALS: ${{ inputs.gcp_gsm_credentials }}
+        GCP_INTEGRATION_TESTER_CREDENTIALS: ${{ inputs.gcp_integration_tester_credentials }}
+        GCS_CREDENTIALS: ${{ inputs.gcs_credentials }}
+        METADATA_SERVICE_BUCKET_NAME: ${{ inputs.metadata_service_bucket_name }}
+        METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata_service_gcs_credentials }}
+        PRODUCTION: ${{ inputs.production }}
+        PYTHON_REGISTRY_TOKEN: ${{ inputs.python_registry_token }}
+        PYTHON_REGISTRY_URL: ${{ inputs.python_registry_url }}
+        S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ inputs.s3_build_cache_access_key_id }}
+        S3_BUILD_CACHE_SECRET_KEY: ${{ inputs.s3_build_cache_secret_key }}
+        SENTRY_DSN: ${{ inputs.sentry_dsn }}
+        SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
+        SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
+        SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
+      run: |
+        airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+    - name: Stop Engine
+      id: stop-engine
+      if: always()
+      shell: bash
+      run: |
+        mapfile -t containers < <(docker ps --filter name="dagger-engine-*" -q)
+        if [[ "${#containers[@]}" -gt 0 ]]; then
+          # give 5mn to the Dagger Engine to push cache data to Dagger Cloud
+          docker stop -t 300 "${containers[@]}";
+        fi
+
+    - name: Collect dagger engine logs
+      id: collect-dagger-engine-logs
+      if: always()
+      uses: jwalton/gh-docker-logs@v2
+      with:
+        dest: "./dagger_engine_logs"
+        images: "registry.dagger.io/engine"
+
+    - name: Tar logs
+      id: tar-logs
+      if: always()
+      shell: bash
+      run: tar cvzf ./dagger_engine_logs.tgz ./dagger_engine_logs
+
+    - name: Upload logs to GitHub
+      id: upload-dagger-engine-logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.job }}_dagger_engine_logs.tgz
+        path: ./dagger_engine_logs.tgz
+        retention-days: 7

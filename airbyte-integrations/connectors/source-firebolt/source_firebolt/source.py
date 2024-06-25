@@ -3,9 +3,9 @@
 #
 
 import json
+import logging
 from typing import Dict, Generator
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -24,7 +24,7 @@ SUPPORTED_SYNC_MODES = [SyncMode.full_refresh]
 
 
 class SourceFirebolt(Source):
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
@@ -45,7 +45,7 @@ class SourceFirebolt(Source):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: json) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration.
         For example, given valid credentials to a Postgres database,
@@ -79,7 +79,7 @@ class SourceFirebolt(Source):
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
         state: Dict[str, any],
@@ -109,18 +109,19 @@ class SourceFirebolt(Source):
             with connection.cursor() as cursor:
                 for c_stream in catalog.streams:
                     table_name = c_stream.stream.name
-                    table_properties = c_stream.stream.json_schema["properties"]
+                    table_properties = c_stream.stream.json_schema.get("properties", {})
                     columns = list(table_properties.keys())
+                    if columns:
+                        # Escape columns with " to avoid reserved keywords e.g. id
+                        escaped_columns = ['"{}"'.format(col) for col in columns]
 
-                    # Escape columns with " to avoid reserved keywords e.g. id
-                    escaped_columns = ['"{}"'.format(col) for col in columns]
+                        query = "SELECT {columns} FROM {table}".format(columns=",".join(escaped_columns), table=table_name)
+                        print(query)
+                        cursor.execute(query)
 
-                    query = "SELECT {columns} FROM {table}".format(columns=",".join(escaped_columns), table=table_name)
-                    cursor.execute(query)
-
-                    logger.info(f"Fetched {cursor.rowcount} rows from table {table_name}.")
-                    for result in cursor.fetchall():
-                        message = airbyte_message_from_data(result, columns, table_name)
-                        if message:
-                            yield message
+                        logger.info(f"Fetched {cursor.rowcount} rows from table {table_name}.")
+                        for result in cursor.fetchall():
+                            message = airbyte_message_from_data(result, columns, table_name)
+                            if message:
+                                yield message
         logger.info("Data read complete.")

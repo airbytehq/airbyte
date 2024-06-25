@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Full Refresh - Overwrite
 
 ## Overview
@@ -15,31 +19,30 @@ On the nth sync of a full refresh connection:
 data in the destination _before_ the sync:
 
 | Languages |
-| :--- |
-| Python |
-| Java |
+| :-------- |
+| Python    |
+| Java      |
+| Bash      |
 
-new data:
-
-| Languages |
-| :--- |
-| Python |
-| Java |
-| Ruby |
-
-data in the destination _after_ the sync:
+new data in the source:
 
 | Languages |
-| :--- |
-| Python |
-| Java |
-| Ruby |
+| :-------- |
+| Python    |
+| Java      |
+| Ruby      |
 
-Note: This is how Singer target-bigquery does it.
+data in the destination _after_ the sync (note how the old value of "bash" is no longer present):
 
-## In the future
+| Languages |
+| :-------- |
+| Python    |
+| Java      |
+| Ruby      |
 
-We will consider making other flavors of full refresh configurable as first-class citizens in Airbyte. e.g. On new data, copy old data to a new table with a timestamp, and then replace the original table with the new data. As always, we will focus on adding these options in such a way that the behavior of each connector is both well documented and predictable.
+## Destination-specific mechanism for full refresh
+
+The mechanism by which a destination connector acomplishes the full refresh will vary wildly from destination to destinaton. For our certified database and data warehouse destinations, we will be recreating the final table each sync. This allows us leave the previous sync's data viewable by writing to a "final-table-tmp" location as the sync is running, and at the end dropping the olf "final" table, and renaming the new one into place. That said, this may not possible for all destinations, and we may need to erase the existing data at the start of each full-refresh sync.
 
 ## Related information
 

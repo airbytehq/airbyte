@@ -6,12 +6,13 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 
 public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   @Override
   protected Database setupDatabase() {
-    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04");
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
     return testdb.getDatabase();
   }
 

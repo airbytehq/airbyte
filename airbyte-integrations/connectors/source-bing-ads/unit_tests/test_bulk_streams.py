@@ -11,7 +11,7 @@ import source_bing_ads
 from freezegun import freeze_time
 from pendulum import UTC, DateTime
 from source_bing_ads.base_streams import Accounts
-from source_bing_ads.bulk_streams import AppInstallAds
+from source_bing_ads.bulk_streams import AppInstallAdLabels, AppInstallAds
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -78,6 +78,40 @@ def test_bulk_stream_read_with_chunks(mocked_client, config):
 
 
 @patch.object(source_bing_ads.source, "Client")
+def test_bulk_stream_read_with_chunks_app_install_ad_labels(mocked_client, config):
+    path_to_file = Path(__file__).parent / "app_install_ad_labels.csv"
+    path_to_file_base = Path(__file__).parent / "app_install_ad_labels_base.csv"
+    with open(path_to_file_base, "r") as f1, open(path_to_file, "a") as f2:
+        for line in f1:
+            f2.write(line)
+
+    app_install_ads = AppInstallAdLabels(mocked_client, config)
+    result = app_install_ads.read_with_chunks(path=path_to_file)
+    assert next(result) == {
+        'Ad Group': None,
+        'Campaign': None,
+        'Client Id': 'ClientIdGoesHere',
+        'Color': None,
+        'Description': None,
+        'Id': '-22',
+        'Label': None,
+        'Modified Time': None,
+        'Name': None,
+        'Parent Id': '-11112',
+        'Status': None,
+        'Type': 'App Install Ad Label'
+    }
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_bulk_stream_read_with_chunks_ioe_error(mocked_client, config, caplog):
+    app_install_ads = AppInstallAdLabels(mocked_client, config)
+    with pytest.raises(IOError):
+        list(app_install_ads.read_with_chunks(path=Path(__file__).parent / "non-existing-file.csv"))
+    assert "The IO/Error occurred while reading tmp data" in caplog.text
+
+
+@patch.object(source_bing_ads.source, "Client")
 @freeze_time("2023-11-01T12:00:00.000+00:00")
 @pytest.mark.parametrize(
     "stream_state, config_start_date, expected_start_date",
@@ -104,6 +138,28 @@ def test_bulk_stream_stream_state(mocked_client, config):
     assert stream.state == {"some_account_id": {"Modified Time": "2023-05-27T18:00:14.970+00:00"}}
     stream.state = {"Account Id": "some_account_id", "Modified Time": "05/25/2023 18:00:14.970"}
     assert stream.state == {"some_account_id": {"Modified Time": "2023-05-27T18:00:14.970+00:00"}}
+    # stream state saved to connection state
+    stream.state = {
+        "120342748234": {
+            "Modified Time": "2022-11-05T12:07:29.360+00:00"
+        },
+        "27364572345": {
+            "Modified Time": "2022-11-05T12:07:29.360+00:00"
+        },
+        "732645723": {
+            "Modified Time": "2022-11-05T12:07:29.360+00:00"
+        },
+        "837563864": {
+            "Modified Time": "2022-11-05T12:07:29.360+00:00"
+        }
+    }
+    assert stream.state == {
+        "120342748234": {"Modified Time": "2022-11-05T12:07:29.360+00:00"},
+        "27364572345": {"Modified Time": "2022-11-05T12:07:29.360+00:00"},
+        "732645723": {"Modified Time": "2022-11-05T12:07:29.360+00:00"},
+        "837563864": {"Modified Time": "2022-11-05T12:07:29.360+00:00"},
+        "some_account_id": {"Modified Time": "2023-05-27T18:00:14.970+00:00"},
+    }
 
 
 @patch.object(source_bing_ads.source, "Client")

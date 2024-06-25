@@ -3,6 +3,7 @@
 #
 import base64
 import hashlib
+import json
 from typing import Any, Optional
 
 
@@ -90,5 +91,19 @@ def base64decode(value: str) -> str:
     return base64.b64decode(value.encode("utf-8")).decode()
 
 
-_filters_list = [hash, base64encode, base64decode]
+def string(value: Any) -> str:
+    """
+    Converts the input value to a string.
+    If the value is already a string, it is returned as is.
+    Otherwise, the value is interpreted as a json object and wrapped in triple-quotes so it's evalued as a string by the JinjaInterpolation
+    :param value: the value to convert to a string
+    :return: string representation of the input value
+    """
+    if isinstance(value, str):
+        return value
+    ret = f'"""{json.dumps(value)}"""'
+    return ret
+
+
+_filters_list = [hash, base64encode, base64decode, string]
 filters = {f.__name__: f for f in _filters_list}

@@ -5,13 +5,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2e88fa20-a2f6-43cc-bba6-98a0a3f244fb
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-sendinblue
   documentationUrl: https://docs.airbyte.com/integrations/sources/sendinblue
   githubIssueLabel: source-sendinblue
   icon: sendinblue.svg
   license: MIT
   name: Sendinblue
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sendinblue
   registries:
     cloud:
       enabled: true
@@ -20,6 +24,14 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SENDINBLUE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

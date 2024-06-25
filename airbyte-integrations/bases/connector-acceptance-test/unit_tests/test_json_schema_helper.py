@@ -183,7 +183,7 @@ def test_json_schema_helper_pydantic_generated():
 
 
 @pytest.mark.parametrize(
-    "object, pathes",
+    "object, paths",
     [
         ({}, []),
         ({"a": 12}, ["/a"]),
@@ -197,12 +197,12 @@ def test_json_schema_helper_pydantic_generated():
         ({"a": [[[{"b": 12}, {"b": 15}]]]}, ["/a", "/a/[]", "/a/[]/[]", "/a/[]/[]/[]", "/a/[]/[]/[]/b"]),
     ],
 )
-def test_get_object_strucutre(object, pathes):
-    assert get_object_structure(object) == pathes
+def test_get_object_strucutre(object, paths):
+    assert get_object_structure(object) == paths
 
 
 @pytest.mark.parametrize(
-    "schema, pathes",
+    "schema, paths",
     [
         ({"type": "object", "properties": {"a": {"type": "string"}}}, ["/a"]),
         ({"properties": {"a": {"type": "string"}}}, ["/a"]),
@@ -229,8 +229,8 @@ def test_get_object_strucutre(object, pathes):
         ({"type": "array", "items": {"type": "object", "additionalProperties": {"type": "string"}}}, ["/[]"]),
     ],
 )
-def test_get_expected_schema_structure(schema, pathes):
-    assert get_expected_schema_structure(schema) == pathes
+def test_get_expected_schema_structure(schema, paths):
+    assert paths == get_expected_schema_structure(schema)
 
 
 @pytest.mark.parametrize(

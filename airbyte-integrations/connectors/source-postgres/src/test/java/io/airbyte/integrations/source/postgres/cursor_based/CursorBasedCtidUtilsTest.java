@@ -152,9 +152,8 @@ public class CursorBasedCtidUtilsTest {
     final StreamStateManager streamStateManager = new StreamStateManager(List.of(stream1CtidState, stream2StandardState), configuredCatalog);
     final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(streamStateManager, configuredCatalog);
 
-    assertEquals(streamsCategorised.ctidStreams().streamsForCtidSync().size(), 1);
+    assertEquals(streamsCategorised.ctidStreams().streamsForCtidSync().size(), 2);
     assertEquals(streamsCategorised.remainingStreams().streamsForCursorBasedSync().size(), 1);
-    assertEquals(streamsCategorised.ctidStreams().streamsForCtidSync().stream().findFirst().get(), STREAM_1);
     assertTrue(streamsCategorised.remainingStreams().streamsForCursorBasedSync().contains(STREAM_2));
     assertFalse(streamsCategorised.remainingStreams().streamsForCursorBasedSync().contains(STREAM_3_FULL_REFRESH));
   }

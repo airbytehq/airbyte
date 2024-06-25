@@ -1,4 +1,4 @@
-# Step  1: Generate the source connector project locally
+# Step 1: Generate the source connector project locally
 
 Let's start by cloning the Airbyte repository:
 

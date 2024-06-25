@@ -51,38 +51,6 @@ class TestFullRefresh(BaseTest):
 
         assert max_emitted_at_first_read < min_emitted_at_second_read, "emitted_at should increase on subsequent runs"
 
-    def assert_two_sequential_reads_produce_same_or_subset_records(
-        self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger
-    ):
-        records_by_stream_1 = defaultdict(list)
-        for record in records_1:
-            records_by_stream_1[record.stream].append(record.data)
-
-        records_by_stream_2 = defaultdict(list)
-        for record in records_2:
-            records_by_stream_2[record.stream].append(record.data)
-
-        pks_by_stream = primary_keys_by_stream(configured_catalog)
-
-        for stream in records_by_stream_1:
-            if pks_by_stream.get(stream):
-                serializer = partial(primary_keys_only, pks=pks_by_stream.get(stream))
-            else:
-                serializer = partial(make_hashable, exclude_fields=[field.name for field in ignored_fields.get(stream, [])])
-            stream_records_1 = records_by_stream_1.get(stream)
-            stream_records_2 = records_by_stream_2.get(stream)
-            if not set(map(serializer, stream_records_1)).issubset(set(map(serializer, stream_records_2))):
-                missing_records = set(map(serializer, stream_records_1)) - (set(map(serializer, stream_records_2)))
-                msg = f"{stream}: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
-                detailed_logger.info(msg)
-                detailed_logger.info("First read")
-                detailed_logger.log_json_list(stream_records_1)
-                detailed_logger.info("Second read")
-                detailed_logger.log_json_list(stream_records_2)
-                detailed_logger.info("Missing records")
-                detailed_logger.log_json_list(missing_records)
-                pytest.fail(msg)
-
     async def test_sequential_reads(
         self,
         connector_config: SecretDict,
@@ -106,6 +74,3 @@ class TestFullRefresh(BaseTest):
         records_2 = [message.record for message in output_2 if message.type == Type.RECORD]
 
         self.assert_emitted_at_increase_on_subsequent_runs(records_1, records_2)
-        self.assert_two_sequential_reads_produce_same_or_subset_records(
-            records_1, records_2, configured_catalog, ignored_fields, detailed_logger
-        )

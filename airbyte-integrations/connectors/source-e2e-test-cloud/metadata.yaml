@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 50bd8338-7c4e-46f1-8c7f-3ef95de19fdd
-  dockerImageTag: 2.1.5
+  dockerImageTag: 2.2.2
   dockerRepository: airbyte/source-e2e-test-cloud
   githubIssueLabel: source-e2e-test-cloud
   icon: airbyte.svg
@@ -21,4 +21,7 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

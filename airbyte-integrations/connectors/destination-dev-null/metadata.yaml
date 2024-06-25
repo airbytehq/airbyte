@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: a7bcc9d8-13b3-4e49-b80d-d020b90045e3
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.3
   dockerRepository: airbyte/destination-dev-null
   githubIssueLabel: destination-dev-null
   icon: airbyte.svg
@@ -21,4 +21,8 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  supportsRefreshes: true
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

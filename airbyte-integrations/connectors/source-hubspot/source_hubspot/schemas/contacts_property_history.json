@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "value": {
+      "description": "The value of the property at the specified timestamp.",
+      "type": ["null", "string"]
+    },
+    "source-type": {
+      "description": "The type or category of the data source.",
+      "type": ["null", "string"]
+    },
+    "source-id": {
+      "description": "The identifier of the data source that generated this historical entry.",
+      "type": ["null", "string"]
+    },
+    "source-label": {
+      "description": "The label representing the source of the data.",
+      "type": ["null", "string"]
+    },
+    "updated-by-user-id": {
+      "description": "The identifier of the user who last updated the property value.",
+      "type": ["null", "integer"]
+    },
+    "timestamp": {
+      "description": "The timestamp when the property value was last updated.",
+      "type": ["null", "integer"]
+    },
+    "selected": {
+      "description": "Indicates whether this property is currently selected or not.",
+      "type": ["null", "boolean"]
+    },
+    "is-contact": {
+      "description": "Indicates whether the data is associated with a contact record.",
+      "type": ["null", "boolean"]
+    },
+    "property": {
+      "description": "The specific property whose history is being tracked.",
+      "type": ["null", "string"]
+    },
+    "vid": {
+      "description": "The unique identifier for this historical data entry.",
+      "type": ["null", "integer"]
+    },
+    "canonical-vid": {
+      "description": "The unique identifier for the contact record that this historical data belongs to.",
+      "type": ["null", "integer"]
+    },
+    "portal-id": {
+      "description": "The identifier for the HubSpot portal that the data belongs to.",
+      "type": ["null", "integer"]
+    },
+    "source-vids": {
+      "description": "List of unique identifiers of the sources associated with this historical data.",
+      "type": ["array", "null"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    }
+  }
+}

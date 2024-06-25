@@ -20,13 +20,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
-        ignored_fields:
-          incremental_contacts_zoho_crm_stream:
-            - name: Contact_Auto_Number
-              bypass_reason: "depend on changing data"
         empty_streams:
           - name: incremental_notes_zoho_crm_stream
             bypass_reason: "no data"

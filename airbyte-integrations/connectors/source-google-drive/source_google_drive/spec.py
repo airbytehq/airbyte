@@ -6,8 +6,8 @@
 from typing import Any, Dict, Literal, Union
 
 import dpath.util
+from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
 
 
@@ -67,11 +67,6 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     def documentation_url(cls) -> str:
         return "https://docs.airbyte.com/integrations/sources/google-drive"
 
-    @staticmethod
-    def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
-
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
@@ -79,10 +74,12 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         """
         schema = super().schema(*args, **kwargs)
 
-        cls.remove_discriminator(schema)
-
         # Remove legacy settings
         dpath.util.delete(schema, "properties/streams/items/properties/legacy_prefix")
         dpath.util.delete(schema, "properties/streams/items/properties/format/oneOf/*/properties/inference_type")
+
+        # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
+        processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")
+        dpath.util.set(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf", processing_options[:1])
 
         return schema

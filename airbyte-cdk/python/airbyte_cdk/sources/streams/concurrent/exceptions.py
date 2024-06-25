@@ -13,3 +13,6 @@ class ExceptionWithDisplayMessage(Exception):
     def __init__(self, display_message: str, **kwargs: Any):
         super().__init__(**kwargs)
         self.display_message = display_message
+
+    def __str__(self) -> str:
+        return f'ExceptionWithDisplayMessage: "{self.display_message}"'

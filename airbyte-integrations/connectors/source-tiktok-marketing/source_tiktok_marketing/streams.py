@@ -430,6 +430,11 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
                 yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        if not self.cursor_field:
+            # BasicReports streams are incremental. However, report streams configured to use LIFETIME granularity only work as
+            # full refresh and don't have a cursor field. There is no state value to extract from the record
+            return {}
+
         # needs to save a last state if all advertisers are used before only
         current_stream_state_value = (self.select_cursor_field_value(current_stream_state)) or ""
 

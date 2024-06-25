@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-import time
+import threading
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Optional
 
 
 class ThreadPoolManager:
@@ -12,7 +12,6 @@ class ThreadPoolManager:
     Wrapper to abstract away the threadpool and the logic to wait for pending tasks to be completed.
     """
 
-    DEFAULT_SLEEP_TIME = 0.1
     DEFAULT_MAX_QUEUE_SIZE = 10_000
 
     def __init__(
@@ -20,55 +19,61 @@ class ThreadPoolManager:
         threadpool: ThreadPoolExecutor,
         logger: logging.Logger,
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
-        sleep_time: float = DEFAULT_SLEEP_TIME,
     ):
         """
         :param threadpool: The threadpool to use
         :param logger: The logger to use
         :param max_concurrent_tasks: The maximum number of tasks that can be pending at the same time
-        :param sleep_time: How long to sleep if there are too many pending tasks
         """
         self._threadpool = threadpool
         self._logger = logger
         self._max_concurrent_tasks = max_concurrent_tasks
-        self._sleep_time = sleep_time
         self._futures: List[Future[Any]] = []
+        self._lock = threading.Lock()
+        self._most_recently_seen_exception: Optional[Exception] = None
+
+        self._logging_threshold = max_concurrent_tasks * 2
+
+    def prune_to_validate_has_reached_futures_limit(self) -> bool:
+        self._prune_futures(self._futures)
+        if len(self._futures) > self._logging_threshold:
+            self._logger.warning(f"ThreadPoolManager: The list of futures is getting bigger than expected ({len(self._futures)})")
+        return len(self._futures) >= self._max_concurrent_tasks
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
-        # Submit a task to the threadpool, waiting if there are too many pending tasks
-        self._wait_while_too_many_pending_futures(self._futures)
         self._futures.append(self._threadpool.submit(function, *args))
-
-    def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
-        # Wait until the number of pending tasks is < self._max_concurrent_tasks
-        while True:
-            self._prune_futures(futures)
-            if len(futures) < self._max_concurrent_tasks:
-                break
-            self._logger.info("Main thread is sleeping because the task queue is full...")
-            time.sleep(self._sleep_time)
 
     def _prune_futures(self, futures: List[Future[Any]]) -> None:
         """
         Take a list in input and remove the futures that are completed. If a future has an exception, it'll raise and kill the stream
         operation.
 
-        Pruning this list safely relies on the assumptions that only the main thread can modify the list of futures.
+        We are using a lock here as without it, the algorithm would not be thread safe
         """
-        if len(futures) < self._max_concurrent_tasks:
-            return
+        with self._lock:
+            if len(futures) < self._max_concurrent_tasks:
+                return
 
-        for index in reversed(range(len(futures))):
-            future = futures[index]
-            optional_exception = future.exception()
-            if optional_exception:
-                exception = RuntimeError(f"Failed reading with error: {optional_exception}")
-                self._stop_and_raise_exception(exception)
+            for index in reversed(range(len(futures))):
+                future = futures[index]
 
-            if future.done():
-                futures.pop(index)
+                if future.done():
+                    # Only call future.exception() if the future is known to be done because it will block until the future is done.
+                    # See https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.Future.exception
+                    optional_exception = future.exception()
+                    if optional_exception:
+                        # Exception handling should be done in the main thread. Hence, we only store the exception and expect the main
+                        # thread to call raise_if_exception
+                        # We do not expect this error to happen. The futures created during concurrent syncs should catch the exception and
+                        # push it to the queue. If this exception occurs, please review the futures and how they handle exceptions.
+                        self._most_recently_seen_exception = RuntimeError(
+                            f"Failed processing a future: {optional_exception}. Please contact the Airbyte team."
+                        )
+                    futures.pop(index)
 
-    def shutdown(self) -> None:
+    def _shutdown(self) -> None:
+        # Without a way to stop the threads that have already started, this will not stop the Python application. We are fine today with
+        # this imperfect approach because we only do this in case of `self._most_recently_seen_exception` which we don't expect to happen
         self._threadpool.shutdown(wait=False, cancel_futures=True)
 
     def is_done(self) -> bool:
@@ -80,6 +85,13 @@ class ThreadPoolManager:
         If the futures are not done, raise an exception.
         :return:
         """
+        if self._most_recently_seen_exception:
+            self._logger.exception(
+                "An unknown exception has occurred while reading concurrently",
+                exc_info=self._most_recently_seen_exception,
+            )
+            self._stop_and_raise_exception(self._most_recently_seen_exception)
+
         exceptions_from_futures = [f for f in [future.exception() for future in self._futures] if f is not None]
         if exceptions_from_futures:
             exception = RuntimeError(f"Failed reading with errors: {exceptions_from_futures}")
@@ -90,8 +102,8 @@ class ThreadPoolManager:
                 exception = RuntimeError(f"Failed reading with futures not done: {futures_not_done}")
                 self._stop_and_raise_exception(exception)
             else:
-                self.shutdown()
+                self._shutdown()
 
     def _stop_and_raise_exception(self, exception: BaseException) -> None:
-        self.shutdown()
+        self._shutdown()
         raise exception

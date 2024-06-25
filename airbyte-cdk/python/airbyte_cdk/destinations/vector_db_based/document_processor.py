@@ -7,14 +7,14 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-import dpath.util
+import dpath
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, SeparatorSplitterConfigModel, TextSplitterConfigModel
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
-from langchain.document_loaders.base import Document
 from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
+from langchain_core.documents.base import Document
 
 METADATA_STREAM_FIELD = "_ab_stream"
 METADATA_RECORD_ID_FIELD = "_ab_record_id"
@@ -24,7 +24,7 @@ CDC_DELETED_FIELD = "_ab_cdc_deleted_at"
 
 @dataclass
 class Chunk:
-    page_content: str
+    page_content: Optional[str]
     metadata: Dict[str, Any]
     record: AirbyteRecordMessage
     embedding: Optional[List[float]] = None
@@ -74,6 +74,7 @@ class DocumentProcessor:
                 chunk_overlap=chunk_overlap,
                 separators=[json.loads(s) for s in splitter_config.separators],
                 keep_separator=splitter_config.keep_separator,
+                disallowed_special=(),
             )
         if splitter_config.mode == "markdown":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
@@ -82,12 +83,14 @@ class DocumentProcessor:
                 separators=headers_to_split_on[: splitter_config.split_level],
                 is_separator_regex=True,
                 keep_separator=True,
+                disallowed_special=(),
             )
         if splitter_config.mode == "code":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
                 separators=RecursiveCharacterTextSplitter.get_separators_for_language(Language(splitter_config.language)),
+                disallowed_special=(),
             )
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):
@@ -134,7 +137,7 @@ class DocumentProcessor:
         relevant_fields = {}
         if fields and len(fields) > 0:
             for field in fields:
-                values = dpath.util.values(record.data, field, separator=".")
+                values = dpath.values(record.data, field, separator=".")
                 if values and len(values) > 0:
                     relevant_fields[field] = values if len(values) > 1 else values[0]
         else:
@@ -159,7 +162,7 @@ class DocumentProcessor:
         primary_key = []
         for key in current_stream.primary_key:
             try:
-                primary_key.append(str(dpath.util.get(record.data, key)))
+                primary_key.append(str(dpath.get(record.data, key)))
             except KeyError:
                 primary_key.append("__not_found__")
         stringified_primary_key = "_".join(primary_key)

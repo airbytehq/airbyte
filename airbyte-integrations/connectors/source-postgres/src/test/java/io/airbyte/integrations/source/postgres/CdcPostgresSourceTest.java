@@ -6,9 +6,11 @@ package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_LSN;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.FAIL_SYNC_OPTION;
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.USE_TEST_CHUNK_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,14 +35,15 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcTargetPosition;
+import io.airbyte.integrations.source.postgres.cdc.PostgresReplicationConnection;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -62,6 +66,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,18 +74,36 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 @Order(1)
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, PostgresTestDatabase> {
+
+  protected BaseImage postgresImage;
+
+  protected void setBaseImage() {
+    this.postgresImage = getServerImage();
+  }
+
+  @Override
+  protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
+    AtomicLong count = new AtomicLong(0L);
+    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    assertEquals(totalCount, count.get());
+  }
 
   @Override
   protected PostgresTestDatabase createTestDatabase() {
-    return PostgresTestDatabase.in(getServerImageName(), "withConf").withReplicationSlot();
+    setBaseImage();
+    return PostgresTestDatabase.in(this.postgresImage, ContainerModifier.CONF).withReplicationSlot();
   }
 
   @Override
   protected PostgresSource source() {
-    final var source = new PostgresSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new PostgresSource();
+  }
+
+  @Override
+  protected boolean supportResumableFullRefresh() {
+    return true;
   }
 
   @Override
@@ -88,9 +111,15 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     return testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
         .withoutSsl()
-        .withCdcReplication("After loading Data in the destination")
+        .withCdcReplication("After loading Data in the destination", RESYNC_DATA_OPTION)
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .with("heartbeat_action_query", "")
         .build();
+  }
+
+  @Override
+  protected void addIsResumableFlagForNonPkTable(final AirbyteStream stream) {
+    stream.setIsResumable(true);
   }
 
   @Override
@@ -98,6 +127,28 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   protected void setup() {
     super.setup();
     testdb.withPublicationForAllTables();
+  }
+
+  // For legacy Postgres we will call advanceLsn() after we retrieved target LSN, so that debezium
+  // would not drop any record.
+  // However, that might cause unexpected state and cause failure in the test. Thus we need to bypass
+  // some check if they are on legacy postgres
+  // versions.
+  private boolean isOnLegacyPostgres() {
+    return postgresImage.majorVersion < 15;
+  }
+
+  @Test
+  void testDebugMode() {
+    final JsonNode invalidDebugConfig = testdb.testConfigBuilder()
+        .withSchemas(modelsSchema(), modelsSchema() + "_random")
+        .withoutSsl()
+        .withCdcReplication("While reading Data", RESYNC_DATA_OPTION)
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .with("debug_mode", true)
+        .build();
+    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
+    assertThrows(ConfigErrorException.class, () -> source().read(invalidDebugConfig, configuredCatalog, null));
   }
 
   @Test
@@ -120,6 +171,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     testdb
         .with("CREATE USER %s PASSWORD '%s';", cleanUserReplicationName, testdb.getPassword())
         .with("ALTER USER %s REPLICATION;", cleanUserReplicationName)
+        // the following GRANT statements guarantees check will not fail at table permission check stage
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", modelsSchema(), cleanUserReplicationName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", modelsSchema(), cleanUserReplicationName)
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", randomSchema(), cleanUserReplicationName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", randomSchema(), cleanUserReplicationName)
         .onClose("DROP OWNED BY %s;", cleanUserReplicationName)
         .onClose("DROP USER %s;", cleanUserReplicationName);
     final JsonNode testConfig = config();
@@ -133,6 +189,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final var cleanUserVanillaName = testdb.withNamespace("vanilla_user");
     testdb
         .with("CREATE USER %s PASSWORD '%s';", cleanUserVanillaName, testdb.getPassword())
+        // the following GRANT statements guarantees check will not fail at table permission check stage
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", modelsSchema(), cleanUserVanillaName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", modelsSchema(), cleanUserVanillaName)
+        .with("GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s;", randomSchema(), cleanUserVanillaName)
+        .with("GRANT USAGE ON SCHEMA %s TO %s;", randomSchema(), cleanUserVanillaName)
         .onClose("DROP OWNED BY %s;", cleanUserVanillaName)
         .onClose("DROP USER %s;", cleanUserVanillaName);
     final JsonNode testConfig = config();
@@ -161,18 +222,18 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
     assertStateTypes(stateMessages, 4);
   }
 
   @Override
-  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<? extends AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
     assertStateTypes(stateAfterFirstBatch, 24);
   }
 
-  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
+  private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -182,7 +243,12 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        // This validation is only true for versions on or after postgres 15. We execute
+        // EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS for earlier versions of
+        // Postgres. See https://github.com/airbytehq/airbyte/pull/33605 for details.
+        if (!isOnLegacyPostgres()) {
+          assertEquals(sharedState, global.getSharedState());
+        }
       }
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
@@ -196,7 +262,16 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
+  protected void validateStreamStateInResumableFullRefresh(final JsonNode streamStateToBeTested) {
+    assertEquals("ctid", streamStateToBeTested.get("state_type").asText());
+  }
+
+  @Override
+  @Test
+  protected void testCdcAndNonResumableFullRefreshInSameSync() throws Exception {}
+
+  @Override
+  protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size(), stateMessages.toString());
     for (int i = 0; i <= 4; i++) {
@@ -310,7 +385,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        // LSN will be advanced for postgres version before 15. See
+        // https://github.com/airbytehq/airbyte/pull/33605
+        if (!isOnLegacyPostgres()) {
+          assertEquals(sharedState, global.getSharedState());
+        }
       }
 
       if (Objects.isNull(firstStreamInState)) {
@@ -402,12 +481,12 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesForNoData(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(2, stateMessages.size());
   }
 
   @Override
-  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesFromIncrementalSync(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
   }
@@ -505,8 +584,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     // The stream that does not have an associated publication should not have support for
     // source-defined incremental sync.
     assertEquals(streamNotInPublication.getSupportedSyncModes(), List.of(SyncMode.FULL_REFRESH));
-    assertTrue(streamNotInPublication.getSourceDefinedPrimaryKey().isEmpty());
-    assertFalse(streamNotInPublication.getSourceDefinedCursor());
+    assertFalse(streamNotInPublication.getSourceDefinedPrimaryKey().isEmpty());
+    assertTrue(streamNotInPublication.getSourceDefinedCursor());
     testdb.query(ctx -> ctx.execute("DROP PUBLICATION " + testdb.getPublicationName() + ";"));
     testdb.query(ctx -> ctx.execute("CREATE PUBLICATION " + testdb.getPublicationName() + " FOR ALL TABLES"));
   }
@@ -563,6 +642,47 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
           "id", "name",
           recordJson.get("id").asInt(), recordJson.get("name").asText());
     }
+  }
+
+  @Test
+  void testSyncShouldFailPurgedLogs() throws Exception {
+    final int recordsToCreate = 20;
+
+    final JsonNode config = testdb.testConfigBuilder()
+        .withSchemas(modelsSchema(), modelsSchema() + "_random")
+        .withoutSsl()
+        .withCdcReplication("While reading Data", FAIL_SYNC_OPTION)
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .build();
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
+        .read(config, getConfiguredCatalog(), null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+    assertExpectedStateMessages(stateAfterFirstBatch);
+    // second batch of records again 20 being created
+    bulkInsertRecords(recordsToCreate);
+
+    // Extract the last state message
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source()
+        .read(config, getConfiguredCatalog(), state);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch);
+
+    for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "H-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    // Triggering sync with the first sync's state only which would mimic a scenario that the second
+    // sync failed on destination end, and we didn't save state
+    assertThrows(ConfigErrorException.class, () -> source().read(config, getConfiguredCatalog(), state));
   }
 
   @Test
@@ -741,7 +861,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     if (syncNumber == 1) {
       assertEquals(1, lsnPosition2.compareTo(lsnPosition1));
     } else if (syncNumber == 2) {
-      assertEquals(0, lsnPosition2.compareTo(lsnPosition1));
+      // Earlier Postgres version will advance lsn even if there is no sync records. See
+      // https://github.com/airbytehq/airbyte/pull/33605.
+      if (!isOnLegacyPostgres()) {
+        assertEquals(0, lsnPosition2.compareTo(lsnPosition1));
+      }
     } else {
       throw new RuntimeException("Unknown sync number " + syncNumber);
     }
@@ -777,7 +901,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
+    // lsn_commit only increases with a new transaction, we expect only one state message.
+    assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
@@ -816,7 +943,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
+    // lsn_commit only increases with a new transaction, we expect only one state message.
+    assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
@@ -859,7 +989,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     });
   }
 
-  private void bulkInsertRecords(int recordsToCreate) {
+  private void bulkInsertRecords(final int recordsToCreate) {
     testdb.with("""
                 INSERT INTO %s.%s (%s, %s, %s)
                 SELECT
@@ -888,8 +1018,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((PostgresCdcTargetPosition) targetPosition).targetLsn) >= 0);
   }
 
-  protected static String getServerImageName() {
-    return "postgres:16-bullseye";
+  protected static BaseImage getServerImage() {
+    return BaseImage.POSTGRES_16;
   }
 
 }

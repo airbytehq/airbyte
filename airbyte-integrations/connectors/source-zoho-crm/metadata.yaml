@@ -12,6 +12,10 @@ data:
   icon: zohocrm.svg
   license: MIT
   name: ZohoCRM
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zoho-crm
   registries:
     cloud:
       enabled: true
@@ -21,4 +25,21 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZOHO-CRM_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZOHO-CRM_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

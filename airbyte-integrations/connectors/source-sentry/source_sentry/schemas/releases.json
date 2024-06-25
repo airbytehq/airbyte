@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -68,6 +67,24 @@
           },
           "slug": {
             "type": ["null", "string"]
+          },
+          "hasHealthData": {
+            "type": ["null", "boolean"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "newGroups": {
+            "type": ["null", "integer"]
+          },
+          "platform": {
+            "type": ["null", "string"]
+          },
+          "platforms": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
           }
         }
       }

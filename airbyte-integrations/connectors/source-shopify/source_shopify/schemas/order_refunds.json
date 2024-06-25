@@ -3,33 +3,43 @@
   "additionalProperties": true,
   "properties": {
     "order_id": {
+      "description": "ID of the original order for which the refund was issued",
       "type": ["null", "integer"]
     },
     "restock": {
+      "description": "Indicates if the refund involves restocking items",
       "type": ["null", "boolean"]
     },
     "order_adjustments": {
+      "description": "Adjustments made to the original order as part of the refund",
       "items": {
         "properties": {
           "order_id": {
+            "description": "ID of the original order related to the adjustment",
             "type": ["null", "integer"]
           },
           "tax_amount": {
+            "description": "Amount of tax associated with the adjustment",
             "type": ["null", "string"]
           },
           "refund_id": {
+            "description": "ID of the refund associated with the adjustment",
             "type": ["null", "integer"]
           },
           "amount": {
+            "description": "Amount of the adjustment",
             "type": ["null", "string"]
           },
           "kind": {
+            "description": "Type of adjustment",
             "type": ["null", "string"]
           },
           "id": {
+            "description": "Unique identifier for the adjustment",
             "type": ["null", "integer"]
           },
           "reason": {
+            "description": "Reason for the adjustment",
             "type": ["null", "string"]
           }
         },
@@ -38,37 +48,48 @@
       "type": ["null", "array"]
     },
     "processed_at": {
+      "description": "Date and time when the refund was processed",
       "type": ["null", "string"]
     },
     "user_id": {
+      "description": "ID of the user who initiated the refund",
       "type": ["null", "integer"]
     },
     "note": {
+      "description": "Any additional notes or comments regarding the refund",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the order refund resource",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Date and time when the order refund was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "admin_graphql_api_id": {
+      "description": "ID of the Shopify API resource",
       "type": ["null", "string"]
     },
     "duties": {
+      "description": "Information about any duties associated with the refund",
       "type": ["null", "string"]
     },
     "refund_line_items": {
+      "description": "Line items included in the refund",
       "type": ["null", "array"],
       "items": {
         "properties": {
           "location_id": {
+            "description": "ID of the location related to the refund",
             "type": ["null", "integer"]
           },
           "subtotal_set": {
+            "description": "Details of the subtotal amount",
             "properties": {
               "shop_money": {
+                "description": "Subtotal amount in the shop's currency",
                 "properties": {
                   "currency_code": {
                     "type": ["null", "string"]
@@ -80,6 +101,7 @@
                 "type": ["null", "object"]
               },
               "presentment_money": {
+                "description": "Subtotal amount in the currency presented to the customer",
                 "properties": {
                   "currency_code": {
                     "type": ["null", "string"]
@@ -94,8 +116,10 @@
             "type": ["null", "object"]
           },
           "total_tax_set": {
+            "description": "Details of the total tax amount",
             "properties": {
               "shop_money": {
+                "description": "Total tax amount in the shop's currency",
                 "properties": {
                   "currency_code": {
                     "type": ["null", "string"]
@@ -107,6 +131,7 @@
                 "type": ["null", "object"]
               },
               "presentment_money": {
+                "description": "Total tax amount in the currency presented to the customer",
                 "properties": {
                   "currency_code": {
                     "type": ["null", "string"]
@@ -121,32 +146,42 @@
             "type": ["null", "object"]
           },
           "line_item_id": {
+            "description": "ID of the original line item being refunded",
             "type": ["null", "integer"]
           },
           "total_tax": {
+            "description": "Total tax amount for the line item",
             "type": ["null", "number"]
           },
           "quantity": {
+            "description": "Quantity being refunded",
             "type": ["null", "integer"]
           },
           "id": {
+            "description": "Unique identifier for the refund line item",
             "type": ["null", "integer"]
           },
           "line_item": {
+            "description": "Information about the original line item being refunded",
             "properties": {
               "gift_card": {
+                "description": "Indicates if the line item is a gift card",
                 "type": ["null", "boolean"]
               },
               "price": {
+                "description": "Price of the product after taxes",
                 "type": ["null", "number"]
               },
               "tax_lines": {
+                "description": "Tax details associated with the line item",
                 "type": ["null", "array"],
                 "items": {
                   "properties": {
                     "price_set": {
+                      "description": "Details of the tax price",
                       "properties": {
                         "shop_money": {
+                          "description": "Tax price in the shop's currency",
                           "properties": {
                             "currency_code": {
                               "type": ["null", "string"]
@@ -158,6 +193,7 @@
                           "type": ["null", "object"]
                         },
                         "presentment_money": {
+                          "description": "Tax price in the currency presented to the customer",
                           "properties": {
                             "currency_code": {
                               "type": ["null", "string"]
@@ -172,59 +208,69 @@
                       "type": ["null", "object"]
                     },
                     "price": {
+                      "description": "Price of the tax",
                       "type": ["null", "number"]
                     },
                     "title": {
+                      "description": "Title of the tax",
                       "type": ["null", "string"]
                     },
                     "rate": {
+                      "description": "Tax rate applied",
                       "type": ["null", "number"]
+                    },
+                    "channel_liable": {
+                      "description": "Indicates if the channel is liable for the tax",
+                      "type": ["null", "boolean"]
                     }
                   },
                   "type": ["null", "object"]
                 }
               },
               "fulfillment_service": {
+                "description": "Service responsible for fulfilling the item",
                 "type": ["null", "string"]
               },
               "sku": {
+                "description": "Stock Keeping Unit for the product",
                 "type": ["null", "string"]
               },
               "fulfillment_status": {
+                "description": "Status of fulfillment for the line item",
                 "type": ["null", "string"]
               },
               "properties": {
+                "description": "Additional properties of the line item",
                 "type": ["null", "array"],
                 "items": {
-                  "properties": {
-                    "name": {
-                      "type": ["null", "string"]
-                    },
-                    "value": {
-                      "type": ["null", "string"]
-                    }
-                  },
-                  "type": ["null", "object"]
+                  "type": ["null", "string"]
                 }
               },
               "quantity": {
+                "description": "Quantity of the line item",
                 "type": ["null", "integer"]
               },
               "variant_id": {
+                "description": "ID of the variant associated with the product",
                 "type": ["null", "integer"]
               },
               "grams": {
+                "description": "Weight of the line item",
                 "type": ["null", "integer"]
               },
               "requires_shipping": {
+                "description": "Indicates if the product requires shipping",
                 "type": ["null", "boolean"]
               },
               "vendor": {
+                "description": "Vendor of the product",
                 "type": ["null", "string"]
               },
               "price_set": {
+                "description": "Details of the price after taxes",
                 "properties": {
                   "shop_money": {
+                    "description": "Price after taxes in the shop's currency",
                     "properties": {
                       "currency_code": {
                         "type": ["null", "string"]
@@ -236,6 +282,7 @@
                     "type": ["null", "object"]
                   },
                   "presentment_money": {
+                    "description": "Price after taxes in the currency presented to the customer",
                     "properties": {
                       "currency_code": {
                         "type": ["null", "string"]
@@ -250,17 +297,22 @@
                 "type": ["null", "object"]
               },
               "variant_inventory_management": {
+                "description": "Manages the inventory for the variant",
                 "type": ["null", "string"]
               },
               "pre_tax_price": {
+                "description": "Price of the product before taxes",
                 "type": ["null", "number"]
               },
               "variant_title": {
+                "description": "Title of the variant",
                 "type": ["null", "string"]
               },
               "total_discount_set": {
+                "description": "Details of the total discount",
                 "properties": {
                   "shop_money": {
+                    "description": "Total discount in the shop's currency",
                     "properties": {
                       "currency_code": {
                         "type": ["null", "string"]
@@ -272,6 +324,7 @@
                     "type": ["null", "object"]
                   },
                   "presentment_money": {
+                    "description": "Total discount in the currency presented to the customer",
                     "properties": {
                       "currency_code": {
                         "type": ["null", "string"]
@@ -286,15 +339,19 @@
                 "type": ["null", "object"]
               },
               "discount_allocations": {
+                "description": "Discounts applied to the line item",
                 "type": ["null", "array"],
                 "items": {
                   "properties": {
                     "amount": {
+                      "description": "Amount of the discount",
                       "type": ["null", "number"]
                     },
                     "amount_set": {
+                      "description": "Details of the discount amount",
                       "properties": {
                         "shop_money": {
+                          "description": "Amount in the shop's currency",
                           "properties": {
                             "currency_code": {
                               "type": ["null", "string"]
@@ -306,6 +363,7 @@
                           "type": ["null", "object"]
                         },
                         "presentment_money": {
+                          "description": "Amount in the currency presented to the customer",
                           "properties": {
                             "currency_code": {
                               "type": ["null", "string"]
@@ -320,6 +378,7 @@
                       "type": ["null", "object"]
                     },
                     "discount_application_index": {
+                      "description": "Index of the discount application",
                       "type": ["null", "integer"]
                     }
                   },
@@ -327,8 +386,10 @@
                 }
               },
               "pre_tax_price_set": {
+                "description": "Details of the pre-tax price",
                 "properties": {
                   "shop_money": {
+                    "description": "Pre-tax price in the shop's currency",
                     "properties": {
                       "currency_code": {
                         "type": ["null", "string"]
@@ -340,6 +401,7 @@
                     "type": ["null", "object"]
                   },
                   "presentment_money": {
+                    "description": "Pre-tax price in the currency presented to the customer",
                     "properties": {
                       "currency_code": {
                         "type": ["null", "string"]
@@ -354,39 +416,94 @@
                 "type": ["null", "object"]
               },
               "fulfillable_quantity": {
+                "description": "Quantity that can be fulfilled",
                 "type": ["null", "integer"]
               },
               "id": {
+                "description": "Unique identifier for the line item",
                 "type": ["null", "integer"]
               },
               "admin_graphql_api_id": {
+                "description": "ID of the original line item in Shopify API",
                 "type": ["null", "string"]
               },
               "total_discount": {
+                "description": "Total discount applied to the line item",
                 "type": ["null", "number"]
               },
               "name": {
+                "description": "Name of the product",
                 "type": ["null", "string"]
               },
               "product_exists": {
+                "description": "Indicates if the product exists",
                 "type": ["null", "boolean"]
               },
               "taxable": {
+                "description": "Indicates if the product is taxable",
                 "type": ["null", "boolean"]
               },
               "product_id": {
+                "description": "ID of the associated product",
                 "type": ["null", "integer"]
               },
               "title": {
+                "description": "Title of the line item",
                 "type": ["null", "string"]
+              },
+              "duties": {
+                "description": "Information about any duties associated with the line item",
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "duty_id": {
+                      "description": "ID of the duty",
+                      "type": ["null", "integer"]
+                    },
+                    "amount_set": {
+                      "description": "Details of the duty amount",
+                      "properties": {
+                        "shop_money": {
+                          "description": "Amount in the shop's currency",
+                          "properties": {
+                            "currency_code": {
+                              "type": ["null", "string"]
+                            },
+                            "amount": {
+                              "type": ["null", "number"]
+                            }
+                          },
+                          "type": ["null", "object"]
+                        },
+                        "presentment_money": {
+                          "description": "Amount in the currency presented to the customer",
+                          "properties": {
+                            "currency_code": {
+                              "type": ["null", "string"]
+                            },
+                            "amount": {
+                              "type": ["null", "number"]
+                            }
+                          },
+                          "type": ["null", "object"]
+                        }
+                      },
+                      "type": ["null", "object"]
+                    }
+                  }
+                }
               }
             },
             "type": ["null", "object"]
           },
           "subtotal": {
+            "description": "Subtotal amount for the line item",
             "type": ["null", "number"]
           },
           "restock_type": {
+            "description": "Type of restocking for the line item",
             "type": ["null", "string"]
           }
         },
@@ -394,96 +511,175 @@
       }
     },
     "return": {
+      "description": "Details of the return associated with the refund",
       "type": ["null", "object"],
       "properties": {
         "admin_graphql_api_id": {
+          "description": "ID of the return resource in Shopify API",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the return",
           "type": ["null", "integer"]
         }
       }
     },
     "transactions": {
+      "description": "Payment transactions related to the refund",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the transaction",
             "type": ["null", "integer"]
           },
           "admin_graphql_api_id": {
+            "description": "ID of the transaction resource in Shopify API",
             "type": ["null", "string"]
           },
           "amount": {
+            "description": "Amount of the transaction",
             "type": ["null", "string"]
           },
           "authorization": {
+            "description": "Authorization details for the transaction",
             "type": ["null", "string"]
           },
           "created_at": {
+            "description": "Date and time when the transaction was created",
             "type": ["null", "string"]
           },
           "currency": {
+            "description": "Currency used for the transaction",
             "type": ["null", "string"]
           },
           "device_id": {
+            "description": "ID of the device used for the transaction",
             "type": ["null", "integer"]
           },
           "error_code": {
+            "description": "Error code associated with the transaction",
             "type": ["null", "string"]
           },
           "gateway": {
+            "description": "Payment gateway used for the transaction",
             "type": ["null", "string"]
           },
           "kind": {
+            "description": "Type of transaction",
             "type": ["null", "string"]
           },
           "location_id": {
+            "description": "ID of the location where the transaction occurred",
             "type": ["null", "integer"]
           },
           "message": {
+            "description": "Message related to the transaction",
             "type": ["null", "string"]
           },
           "order_id": {
+            "description": "ID of the order related to the transaction",
             "type": ["null", "integer"]
           },
           "parent_id": {
+            "description": "ID of the parent transaction, if applicable",
             "type": ["null", "integer"]
           },
           "processed_at": {
+            "description": "Date and time when the transaction was processed",
             "type": ["null", "string"]
           },
           "receipt": {
+            "description": "Details of the receipt for the transaction",
             "type": ["null", "object"],
             "properties": {
               "paid_amount": {
+                "description": "Amount paid in the receipt",
                 "type": ["null", "string"]
               }
             }
           },
           "source_name": {
+            "description": "Name of the payment source",
             "type": ["null", "string"]
           },
           "status": {
+            "description": "Status of the transaction",
             "type": ["null", "string"]
           },
           "test": {
+            "description": "Indicates if the transaction is a test",
             "type": ["null", "boolean"]
           },
           "user_id": {
+            "description": "ID of the user associated with the transaction",
             "type": ["null", "integer"]
+          },
+          "payment_details": {
+            "description": "Details about the payment for the transaction",
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "avs_result_code": {
+                "description": "AVS result code for the payment",
+                "type": ["null", "string"]
+              },
+              "buyer_action_info": {
+                "description": "Information about buyer's actions during payment",
+                "type": ["null", "string"]
+              },
+              "credit_card_bin": {
+                "description": "BIN number of the credit card",
+                "type": ["null", "string"]
+              },
+              "credit_card_company": {
+                "description": "Company associated with the credit card",
+                "type": ["null", "string"]
+              },
+              "credit_card_expiration_month": {
+                "description": "Expiration month of the credit card",
+                "type": ["null", "integer"]
+              },
+              "credit_card_expiration_year": {
+                "description": "Expiration year of the credit card",
+                "type": ["null", "integer"]
+              },
+              "credit_card_name": {
+                "description": "Name on the credit card",
+                "type": ["null", "string"]
+              },
+              "credit_card_number": {
+                "description": "Masked credit card number",
+                "type": ["null", "string"]
+              },
+              "credit_card_wallet": {
+                "description": "Information about the credit card wallet used",
+                "type": ["null", "string"]
+              },
+              "cvv_result_code": {
+                "description": "CVV result code for the payment",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "payment_id": {
+            "description": "ID of the payment associated with the transaction",
+            "type": ["null", "string"]
           }
         }
       }
     },
     "shop_url": {
+      "description": "URL of the shop where the refund was processed",
       "type": ["null", "string"]
     },
     "total_duties_set": {
+      "description": "Details of the total duties amount",
       "type": ["null", "object"],
       "properties": {
         "shop_money": {
+          "description": "Total duties amount in the shop's currency",
           "type": ["null", "object"],
           "properties": {
             "currency_code": {
@@ -495,6 +691,7 @@
           }
         },
         "presentment_money": {
+          "description": "Total duties amount in the currency presented to the customer",
           "type": ["null", "object"],
           "properties": {
             "currency_code": {

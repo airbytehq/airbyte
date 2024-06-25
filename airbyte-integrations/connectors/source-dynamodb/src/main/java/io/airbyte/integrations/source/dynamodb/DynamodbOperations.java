@@ -22,6 +22,8 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.ListTablesRequest;
+import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
 public class DynamodbOperations extends AbstractDatabase implements Closeable {
@@ -56,9 +58,24 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
   }
 
   public List<String> listTables() {
-    return dynamoDbClient.listTables()
-        // filter on table status?
-        .tableNames();
+    List<String> tableNames = new ArrayList<>();
+    ListTablesRequest listTablesRequest = ListTablesRequest.builder().build();
+    boolean completed = false;
+
+    while (!completed) {
+      ListTablesResponse listTablesResponse = dynamoDbClient.listTables(listTablesRequest);
+      tableNames.addAll(listTablesResponse.tableNames());
+
+      if (listTablesResponse.lastEvaluatedTableName() == null) {
+        completed = true;
+      } else {
+        listTablesRequest = listTablesRequest.toBuilder()
+            .exclusiveStartTableName(listTablesResponse.lastEvaluatedTableName())
+            .build();
+      }
+    }
+
+    return tableNames;
   }
 
   public List<String> primaryKey(String tableName) {

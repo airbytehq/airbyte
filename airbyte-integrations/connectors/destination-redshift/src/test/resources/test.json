@@ -1,0 +1,55 @@
+{
+  "employees": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "age": 35,
+      "salary": 7.50005e4,
+      "performance_rating": 4.5,
+      "department": "Engineering",
+      "skills": ["Java", "Python", "C++"],
+      "manager": {
+        "id": 101,
+        "name": "Jane Smith"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Alice Johnson",
+      "age": 28,
+      "salary": 5.500075e4,
+      "performance_rating": 4.2,
+      "department": "Marketing",
+      "skills": ["Marketing Strategy", "Social Media"],
+      "manager": {
+        "id": 102,
+        "name": "Bob Brown"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Michael Clark",
+      "age": 40,
+      "salary": 9.000025e4,
+      "performance_rating": 4.8,
+      "department": "Finance",
+      "skills": ["Accounting", "Financial Analysis"],
+      "manager": {
+        "id": 103,
+        "name": "Emily Davis"
+      }
+    }
+  ],
+  "company": {
+    "name": "Acme Corporation",
+    "address": "123 Main St, Anytown, USA",
+    "founded_year": 2000,
+    "revenue": 1.23456789987654321e8,
+    "stock_price": 5.25e3,
+    "employees_count": 5000,
+    "ceo": {
+      "id": 1001,
+      "name": "David Johnson"
+    }
+  }
+}

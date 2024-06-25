@@ -5,6 +5,18 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "accepts_marketing": {
+      "type": ["null", "boolean"]
+    },
+    "send_email_welcome": {
+      "type": ["null", "boolean"]
+    },
+    "verified_email": {
+      "type": ["null", "boolean"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
     "address_id": {
       "type": ["null", "integer"]
     },
@@ -33,6 +45,9 @@
           "type": ["null", "string"]
         },
         "country": {
+          "type": ["null", "string"]
+        },
+        "country_code": {
           "type": ["null", "string"]
         },
         "customer_id": {
@@ -75,6 +90,96 @@
     "browser_ip": {
       "type": ["null", "string"]
     },
+    "charge": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "external_transaction_id": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "payment_processor": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "payment_processor_name": {
+          "type": ["null", "string"]
+        },
+        "status": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "client_details": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "browser_ip": {
+          "type": ["null", "string"]
+        },
+        "user_agent": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "discounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "error": {
+      "type": ["null", "string"]
+    },
+    "external_cart_token": {
+      "type": ["null", "string"]
+    },
+    "external_order_id": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "external_order_name": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "external_order_number": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "order_attributes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "taxable": {
+      "type": ["null", "boolean"]
+    },
+    "total_duties": {
+      "type": ["null", "string"]
+    },
+    "total_weight_grams": {
+      "type": ["null", "integer"]
+    },
     "charge_id": {
       "type": ["null", "integer"]
     },
@@ -93,6 +198,27 @@
       "properties": {
         "id": {
           "type": ["null", "integer"]
+        },
+        "accepts_marketing": {
+          "type": ["null", "boolean"]
+        },
+        "send_email_welcome": {
+          "type": ["null", "boolean"]
+        },
+        "verified_email": {
+          "type": ["null", "boolean"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "external_customer_id": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "ecommerce": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "billing_address1": {
           "type": ["null", "string"]
@@ -203,8 +329,77 @@
           "external_inventory_policy": {
             "type": ["null", "string"]
           },
+          "external_product_id": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "ecommerce": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "external_variant_id": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "ecommerce": {
+                "type": ["null", "string"]
+              }
+            }
+          },
           "grams": {
             "type": ["null", "number"]
+          },
+          "handle": {
+            "type": ["null", "string"]
+          },
+          "purchase_item_id": {
+            "type": ["null", "integer"]
+          },
+          "purchase_item_type": {
+            "type": ["null", "string"]
+          },
+          "tax_due": {
+            "type": ["null", "string"]
+          },
+          "taxable_amount": {
+            "type": ["null", "string"]
+          },
+          "taxable": {
+            "type": ["null", "boolean"]
+          },
+          "total_price": {
+            "type": ["null", "string"]
+          },
+          "unit_price": {
+            "type": ["null", "string"]
+          },
+          "unit_price_includes_tax": {
+            "type": ["null", "boolean"]
+          },
+          "original_price": {
+            "type": ["null", "number"]
+          },
+          "product_title": {
+            "type": ["null", "string"]
+          },
+          "tax_lines": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "price": {
+                  "type": ["null", "string"]
+                },
+                "rate": {
+                  "type": ["null", "string"]
+                },
+                "title": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
           },
           "images": {
             "type": ["null", "object"]
@@ -285,6 +480,9 @@
           "type": ["null", "string"]
         },
         "country": {
+          "type": ["null", "string"]
+        },
+        "country_code": {
           "type": ["null", "string"]
         },
         "customer_id": {
@@ -378,6 +576,13 @@
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "shipping_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shopify_id": {
+      "type": ["null", "string"]
     }
   }
 }

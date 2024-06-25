@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.5.2
   dockerRepository: airbyte/source-oracle
   documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   githubIssueLabel: source-oracle
@@ -18,7 +18,7 @@ data:
   name: Oracle DB
   registries:
     cloud:
-      dockerImageTag: 0.3.17
+      dockerImageTag: 0.5.2
       dockerRepository: airbyte/source-oracle-strict-encrypt
       enabled: true
     oss:
@@ -27,5 +27,13 @@ data:
   supportLevel: community
   tags:
     - language:java
-    - language:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE_ORACLE_PERFORMANCE_TEST_CREDS
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

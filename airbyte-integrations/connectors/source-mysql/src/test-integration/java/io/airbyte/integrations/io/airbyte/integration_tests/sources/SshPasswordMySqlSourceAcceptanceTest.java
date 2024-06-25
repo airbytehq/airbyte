@@ -12,6 +12,8 @@ import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.integrations.source.mysql.MySqlSource;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -25,7 +27,7 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
 
   @Test
   public void sshTimeoutExceptionMarkAsConfigErrorTest() throws Exception {
-    try (final var testdb = MySQLTestDatabase.in("mysql:8.0", "withNetwork")) {
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, ContainerModifier.NETWORK)) {
       final SshBastionContainer bastion = new SshBastionContainer();
       bastion.initAndStartBastion(testdb.getContainer().getNetwork());
       final var config = testdb.integrationTestConfigBuilder()

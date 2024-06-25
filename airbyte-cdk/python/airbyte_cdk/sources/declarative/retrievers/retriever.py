@@ -4,10 +4,11 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import StreamState
 
 
 @dataclass
@@ -19,15 +20,14 @@ class Retriever:
     @abstractmethod
     def read_records(
         self,
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
         """
         Fetch a stream's records from an HTTP API source
 
-        :param sync_mode: Unused but currently necessary for integrating with HttpStream
-        :param cursor_field: Unused but currently necessary for integrating with HttpStream
+        :param records_schema: json schema to describe record
         :param stream_slice: The stream slice to read data for
-        :param stream_state: The initial stream state
         :return: The records read from the API source
         """
 

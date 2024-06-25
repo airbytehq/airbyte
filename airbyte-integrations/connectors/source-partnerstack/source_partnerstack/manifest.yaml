@@ -24,7 +24,7 @@ definitions:
       type: DefaultPaginator
       pagination_strategy:
         type: "CursorPagination"
-        cursor_value: "{{ last_records[-1]['key'] }}"
+        cursor_value: "{{ last_record['key'] }}"
         stop_condition: "{{ response.data.has_more is false }}"
         page_size: 250
       page_size_option:

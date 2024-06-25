@@ -66,6 +66,26 @@ class TestDestinationPinecone(unittest.TestCase):
         mock_embedder.check.assert_called_once()
         mock_indexer.check.assert_called_once()
 
+    def test_check_with_config_errors(self):
+        bad_config = {
+            "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
+            "embedding_2": {"mode": "openai", "openai_key": "mykey"},
+            "indexing": {
+                "pinecone_key": "mykey",
+                "pinecone_environment": "myenv",
+                "index": "myindex",
+            },
+        }
+        destination = DestinationPinecone()
+        result = destination.check(self.logger, bad_config)
+        self.assertEqual(result.status, Status.FAILED)
+
+    def test_check_with_init_indexer_errors(self):
+        destination = DestinationPinecone()
+        with patch("destination_pinecone.destination.PineconeIndexer", side_effect=Exception("Indexer Error")):
+            result = destination.check(self.logger, self.config)
+        self.assertEqual(result.status, Status.FAILED)
+
     @patch("destination_pinecone.destination.Writer")
     @patch("destination_pinecone.destination.PineconeIndexer")
     @patch("destination_pinecone.destination.create_from_config")
@@ -86,7 +106,7 @@ class TestDestinationPinecone(unittest.TestCase):
         destination = DestinationPinecone()
         list(destination.write(self.config, configured_catalog, input_messages))
 
-        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=32)
+        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=32, omit_raw_text=False)
         mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
 
     def test_spec(self):

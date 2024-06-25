@@ -52,6 +52,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": 1625596058 },
+      "stream_descriptor": { "name": "attached_item" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1625596058 },
       "stream_descriptor": { "name": "hosted_page" }
     }
   },
@@ -109,6 +116,34 @@
     "stream": {
       "stream_state": { "updated_at": 1625596058 },
       "stream_descriptor": { "name": "transaction" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "migrated_at": 1625596058 },
+      "stream_descriptor": { "name": "site_migration_detail" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": 1625596058 },
+      "stream_descriptor": { "name": "comment" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1625596058 },
+      "stream_descriptor": { "name": "item_family" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1625596058 },
+      "stream_descriptor": { "name": "differential_price" }
     }
   }
 ]

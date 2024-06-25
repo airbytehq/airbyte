@@ -244,25 +244,14 @@ class StreamFacadeTest(unittest.TestCase):
 
         assert actual_stream_data == expected_stream_data
 
-    def test_read_records_full_refresh(self):
+    def test_read_records(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
         records = [Record(data, "stream") for data in expected_stream_data]
         partition = Mock()
         partition.read.return_value = records
         self._abstract_stream.generate_partitions.return_value = [partition]
 
-        actual_stream_data = list(self._facade.read_full_refresh(None, None, None))
-
-        assert actual_stream_data == expected_stream_data
-
-    def test_read_records_incremental(self):
-        expected_stream_data = [{"data": 1}, {"data": 2}]
-        records = [Record(data, "stream") for data in expected_stream_data]
-        partition = Mock()
-        partition.read.return_value = records
-        self._abstract_stream.generate_partitions.return_value = [partition]
-
-        actual_stream_data = list(self._facade.read_incremental(None, None, None, None, None, None, None))
+        actual_stream_data = list(self._facade.read(None, None, None, None, None, None))
 
         assert actual_stream_data == expected_stream_data
 
@@ -358,7 +347,7 @@ class StreamFacadeTest(unittest.TestCase):
 
         display_message = facade.get_error_display_message(e)
 
-        assert expected_display_message == display_message
+        assert display_message == expected_display_message
 
     def test_get_error_display_message_with_display_message(self):
         self._stream.get_error_display_message.return_value = "display_message"
@@ -370,7 +359,7 @@ class StreamFacadeTest(unittest.TestCase):
 
         display_message = facade.get_error_display_message(e)
 
-        assert expected_display_message == display_message
+        assert display_message == expected_display_message
 
 
 @pytest.mark.parametrize(

@@ -1,22 +1,42 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 # HELPERS
+from __future__ import annotations
 
 import importlib
 import logging
 import os
 import sys
+from typing import TYPE_CHECKING
 
 import asyncclick as click
 import requests
 from pipelines import main_logger
+from pipelines.cli.confirm_prompt import confirm
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
 from pipelines.external_scripts.airbyte_ci_install import RELEASE_URL, get_airbyte_os_name
+
+if TYPE_CHECKING:
+    from typing import Callable
 
 __installed_version__ = importlib.metadata.version("pipelines")
 
 PROD_COMMAND = "airbyte-ci"
 DEV_COMMAND = "airbyte-ci-dev"
+AUTO_UPDATE_AGREE_KEY = "yes_auto_update"
+
+
+def pre_confirm_auto_update_flag(f: Callable) -> Callable:
+    """Decorator to add a --yes-auto-update flag to a command."""
+    return click.option(
+        "--yes-auto-update/--no-auto-update",
+        AUTO_UPDATE_AGREE_KEY,
+        is_flag=True,
+        default=True,
+        help="Skip prompts and automatically upgrade pipelines",
+    )(f)
 
 
 def _is_version_available(version: str, is_dev: bool) -> bool:
@@ -59,7 +79,7 @@ def is_dev_command() -> bool:
 def check_for_upgrade(
     require_update: bool = True,
     enable_auto_update: bool = True,
-):
+) -> None:
     """Check if the installed version of pipelines is up to date."""
     current_command = " ".join(sys.argv)
     latest_version = _get_latest_version()
@@ -102,7 +122,9 @@ def check_for_upgrade(
     logging.warning(upgrade_error_message)
 
     # Ask the user if they want to upgrade
-    if enable_auto_update and click.confirm("Do you want to automatically upgrade?", default=True):
+    if enable_auto_update and confirm(
+        "Do you want to automatically upgrade?", default=True, additional_pre_confirm_key=AUTO_UPDATE_AGREE_KEY
+    ):
         # if the current command contains `airbyte-ci-dev` is the dev version of the command
         logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
 

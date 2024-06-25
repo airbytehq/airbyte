@@ -61,9 +61,19 @@
           }
         ]
       },
-      "campaign_id": {
+      "start_date": {
+        "title": "Incremental Sync Start Date",
+        "description": "The date from which you want to start syncing data for Incremental streams. Only records that have been created or modified since this date will be synced. If left blank, all data will by synced.",
         "type": "string",
-        "title": "ID of a campaign to sync email activities",
+        "format": "date-time",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+        "pattern_descriptor": "YYYY-MM-DDTHH:MM:SS.000Z",
+        "examples": ["2020-01-01T00:00:00.000Z"]
+      },
+      "data_center": {
+        "title": "DataCenter",
+        "description": "Technical fields used to identify datacenter to send request to",
+        "type": "string",
         "airbyte_hidden": true
       }
     }

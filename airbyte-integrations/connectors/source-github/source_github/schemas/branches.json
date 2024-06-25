@@ -3,38 +3,71 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "Details about the repository associated with the branch.",
       "type": "string"
     },
     "name": {
+      "description": "The name of the branch.",
       "type": ["null", "string"]
     },
     "commit": {
+      "description": "Details about the commit associated with the branch.",
       "type": ["null", "object"],
       "properties": {
         "sha": {
+          "description": "The unique identifier of the commit.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "The URL to view details of the commit.",
           "type": ["null", "string"]
         }
       }
     },
     "protected": {
+      "description": "Indicates if the branch is protected.",
       "type": ["null", "boolean"]
     },
     "protection": {
+      "description": "Details about the protection settings of the branch.",
       "type": ["null", "object"],
       "properties": {
+        "enabled": {
+          "description": "Indicates if protection is enabled for the branch.",
+          "type": ["null", "boolean"]
+        },
         "required_status_checks": {
+          "description": "Settings for required status checks on the branch.",
           "type": ["null", "object"],
           "properties": {
             "enforcement_level": {
+              "description": "Level of enforcement for required status checks.",
               "type": ["null", "string"]
             },
             "contexts": {
+              "description": "List of contexts required for status checks to pass.",
               "type": ["null", "array"],
               "items": {
+                "description": "Name of a context.",
                 "type": ["null", "string"]
+              }
+            },
+            "checks": {
+              "description": "List of status checks that are required.",
+              "type": ["null", "array"],
+              "items": {
+                "description": "Details about a specific status check.",
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "description": "Context information of the status check.",
+                    "type": ["null", "string"]
+                  },
+                  "app_id": {
+                    "description": "ID of the application associated with the status check.",
+                    "type": ["null", "integer"]
+                  }
+                }
               }
             }
           }
@@ -42,6 +75,7 @@
       }
     },
     "protection_url": {
+      "description": "URL to manage protection settings for the branch.",
       "type": ["null", "string"]
     }
   }

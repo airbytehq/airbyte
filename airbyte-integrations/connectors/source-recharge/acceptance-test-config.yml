@@ -4,28 +4,27 @@ acceptance_tests:
       - config_path: secrets/config.json
         empty_streams:
           - name: collections
-            bypass_reason: "volatile data"
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: discounts
-            bypass_reason: "volatile data"
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: onetimes
-            bypass_reason: "no data from stream"
-          - name: orders
-            bypass_reason: "no data from stream"
-          - name: subscriptions
-            bypass_reason: "no data from stream"
-        ignored_fields:
-          shop:
-            - name: shop/updated_at
-              bypass_reason: "updated after login"
-            - name: store/updated_at
-              bypass_reason: "updated after login"
-        timeout_seconds: 7200
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: shop
+            bypass_reason: "The stream is not empty, but the primary key is the entire record, so it is constantly changing"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
-        fail_on_extra_columns: false
+      - config_path: secrets/config_order_modern_api.json
+        empty_streams:
+          - name: collections
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: discounts
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: onetimes
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: shop
+            bypass_reason: "The stream is not empty, but the primary key is the entire record, so it is constantly changing"
+        expect_records:
+          path: "integration_tests/expected_records_orders_modern_api.jsonl"
   connection:
     tests:
       - config_path: secrets/config.json
@@ -35,7 +34,7 @@ acceptance_tests:
   discovery:
     tests:
       - backward_compatibility_tests_config:
-          disable_for_version: 0.2.10
+          disable_for_version: 1.1.5
         config_path: secrets/config.json
   full_refresh:
     tests:

@@ -8,6 +8,21 @@ connectionSpecification:
     - credentials
   additionalProperties: true
   properties:
+    batch_size:
+      type: integer
+      title: Row Batch Size
+      description: >-
+        Default value is 200.
+        An integer representing row batch size for each sent request to Google Sheets API.
+        Row batch size means how many rows are processed from the google sheet, for example default value 200
+        would process rows 1-201, then 201-401 and so on.
+        Based on <a href='https://developers.google.com/sheets/api/limits'>Google Sheets API limits documentation</a>,
+        it is possible to send up to 300 requests per minute, but each individual request has to be processed under 180 seconds,
+        otherwise the request returns a timeout error. In regards to this information, consider network speed and
+        number of columns of the google sheet when deciding a batch_size value.
+        Default value should cover most of the cases, but if a google sheet has over 100,000 records or more,
+        consider increasing batch_size value.
+      default: 200
     spreadsheet_id:
       type: string
       title: Spreadsheet Link

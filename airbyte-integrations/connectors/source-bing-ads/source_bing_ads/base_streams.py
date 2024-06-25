@@ -162,6 +162,11 @@ class Accounts(BingAdsStream):
     # maximum page size
     page_size_limit: int = 1000
 
+    def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
+        super().__init__(client, config)
+        self._account_names = config.get("account_names", [])
+        self._unique_account_ids = set()
+
     def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
         if response is not None and hasattr(response, self.data_field):
@@ -169,29 +174,53 @@ class Accounts(BingAdsStream):
         else:
             return None
 
+    def stream_slices(
+        self,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        user_id_predicate = {
+            "Field": "UserId",
+            "Operator": "Equals",
+            "Value": self._user_id,
+        }
+        if self._account_names:
+            for account_config in self._account_names:
+                account_name_predicate = {"Field": "AccountName", "Operator": account_config["operator"], "Value": account_config["name"]}
+
+                yield {"predicates": {"Predicate": [user_id_predicate, account_name_predicate]}}
+        else:
+            yield {"predicates": {"Predicate": [user_id_predicate]}}
+
     def request_params(
         self,
         next_page_token: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
         **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
-        predicates = {
-            "Predicate": [
-                {
-                    "Field": "UserId",
-                    "Operator": "Equals",
-                    "Value": self._user_id,
-                }
-            ]
-        }
-
         paging = self._service.factory.create("ns5:Paging")
         paging.Index = next_page_token or 0
         paging.Size = self.page_size_limit
         return {
             "PageInfo": paging,
-            "Predicates": predicates,
+            "Predicates": stream_slice["predicates"],
             "ReturnAdditionalFields": self.additional_fields,
         }
+
+    def _transform_tax_fields(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        tax_certificates = record["TaxCertificate"].get("TaxCertificates", {}) if record.get("TaxCertificate") is not None else {}
+        if tax_certificates and not isinstance(tax_certificates, list):
+            tax_certificate_pairs = tax_certificates.get("KeyValuePairOfstringbase64Binary")
+            if tax_certificate_pairs:
+                record["TaxCertificate"]["TaxCertificates"] = tax_certificate_pairs
+        return record
+
+    def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
+        if response is not None and hasattr(response, self.data_field):
+            records = self.client.asdict(response)[self.data_field]
+            for record in records:
+                if record["Id"] not in self._unique_account_ids:
+                    self._unique_account_ids.add(record["Id"])
+                    yield self._transform_tax_fields(record)
 
 
 class Campaigns(BingAdsCampaignManagementStream):
@@ -241,8 +270,10 @@ class Campaigns(BingAdsCampaignManagementStream):
         self,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+        accounts = Accounts(self.client, self.config)
+        for _slice in accounts.stream_slices():
+            for account in accounts.read_records(SyncMode.full_refresh, _slice):
+                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
 
 class AdGroups(BingAdsCampaignManagementStream):
@@ -274,11 +305,13 @@ class AdGroups(BingAdsCampaignManagementStream):
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(self.client, self.config)
-        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            for campaign in campaigns.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
-            ):
-                yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+        accounts = Accounts(self.client, self.config)
+        for _slice in accounts.stream_slices():
+            for account in accounts.read_records(SyncMode.full_refresh, _slice):
+                for campaign in campaigns.read_records(
+                    sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+                ):
+                    yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
 
 class Ads(BingAdsCampaignManagementStream):

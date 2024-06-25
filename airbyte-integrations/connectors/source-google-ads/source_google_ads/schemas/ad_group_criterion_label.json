@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "ad_group.id": {
+      "description": "The ID of the ad group to which the criterion label belongs.",
       "type": ["null", "integer"]
     },
     "label.id": {
+      "description": "The ID of the label assigned to the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion_label.ad_group_criterion": {
+      "description": "The ad group criterion to which the label is applied.",
       "type": ["null", "string"]
     },
     "ad_group_criterion_label.label": {
+      "description": "The label assigned to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion_label.resource_name": {
+      "description": "The resource name of the ad group criterion label.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.criterion_id": {
+      "description": "The ID of the criterion associated with the ad group.",
       "type": ["null", "integer"]
     }
   }

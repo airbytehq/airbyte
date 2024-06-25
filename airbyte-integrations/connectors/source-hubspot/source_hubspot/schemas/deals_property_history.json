@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "updatedByUserId": {
+      "description": "The unique identifier of the user who made the update",
+      "type": ["null", "number"]
+    },
+    "timestamp": {
+      "description": "The date and time when the property was updated",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "property": {
+      "description": "The name of the property that was updated",
+      "type": ["null", "string"]
+    },
+    "dealId": {
+      "description": "The unique identifier of the deal associated with this property history",
+      "type": ["null", "string"]
+    },
+    "sourceType": {
+      "description": "The type of source that triggered this update",
+      "type": ["null", "string"]
+    },
+    "sourceId": {
+      "description": "The unique identifier of the source of this update",
+      "type": ["null", "string"]
+    },
+    "value": {
+      "description": "The new value of the property",
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "description": "Indicates if the deal property history is archived",
+      "type": ["null", "boolean"]
+    }
+  }
+}

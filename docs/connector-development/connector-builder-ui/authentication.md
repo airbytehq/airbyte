@@ -13,17 +13,19 @@ If your API doesn't need authentication, leave it set at "No auth". This means t
 ## Authentication methods
 
 Check the documentation of the API you want to integrate for the used authentication method. The following ones are supported in the connector builder:
-* [Basic HTTP](#basic-http)
-* [Bearer Token](#bearer-token)
-* [API Key](#api-key)
-* [OAuth](#oauth)
-* [Session Token](#session-token)
+
+- [Basic HTTP](#basic-http)
+- [Bearer Token](#bearer-token)
+- [API Key](#api-key)
+- [OAuth](#oauth)
+- [Session Token](#session-token)
 
 Select the matching authentication method for your API and check the sections below for more information about individual methods.
 
 ### Basic HTTP
 
 If requests are authenticated using the Basic HTTP authentication method, the documentation page will likely contain one of the following keywords:
+
 - "Basic Auth"
 - "Basic HTTP"
 - "Authorization: Basic"
@@ -39,6 +41,7 @@ Sometimes, only a username and no password is required, like for the [Chargebee 
 In the basic authentication scheme, the supplied username and password are concatenated with a colon `:` and encoded using the base64 algorithm. For username `user` and password `passwd`, the base64-encoding of `user:passwd` is `dXNlcjpwYXNzd2Q=`.
 
 When fetching records, this string is sent as part of the `Authorization` header:
+
 ```
 curl -X GET \
   -H "Authorization: Basic dXNlcjpwYXNzd2Q=" \
@@ -56,6 +59,7 @@ Like the Basic HTTP authentication it does not require further configuration. Th
 The [Sendgrid API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication) and the [Square API](https://developer.squareup.com/docs/build-basics/access-tokens) are supporting Bearer authentication.
 
 When fetching records, the token is sent along as the `Authorization` header:
+
 ```
 curl -X GET \
   -H "Authorization: Bearer <bearer token>" \
@@ -68,18 +72,19 @@ The API key authentication method is similar to the Bearer authentication but al
 
 The following table helps with which mechanism to use for which API:
 
-| Description | Injection mechanism |
-|----------|----------|
-|  (HTTP) header   |  `header`   |
-|  Query parameter / query string / request parameter / URL parameter  |  `request_parameter`   |
-|  Form encoded request body / form data   |  `body_data`   |
-|  JSON encoded request body   |  `body_json`   |
+| Description                                                        | Injection mechanism |
+| ------------------------------------------------------------------ | ------------------- |
+| (HTTP) header                                                      | `header`            |
+| Query parameter / query string / request parameter / URL parameter | `request_parameter` |
+| Form encoded request body / form data                              | `body_data`         |
+| JSON encoded request body                                          | `body_json`         |
 
 #### Example
 
 The [CoinAPI.io API](https://docs.coinapi.io/market-data/rest-api#authorization) is using API key authentication via the `X-CoinAPI-Key` header.
 
 When fetching records, the api token is included in the request using the configured header:
+
 ```
 curl -X GET \
   -H "X-CoinAPI-Key: <api-key>" \
@@ -90,18 +95,19 @@ In this case the injection mechanism is `header` and the field name is `X-CoinAP
 
 ### OAuth
 
-The OAuth authentication method implements authentication using an OAuth2.0 flow with a [refresh token grant type](https://oauth.net/2/grant-types/refresh-token/) and [client credentiuals grant type](https://oauth.net/2/grant-types/client-credentials/).
+The OAuth authentication method implements authentication using an OAuth2.0 flow with a [refresh token grant type](https://oauth.net/2/grant-types/refresh-token/) and [client credentials grant type](https://oauth.net/2/grant-types/client-credentials/).
 
 In this scheme, the OAuth endpoint of an API is called with client id and client secret and/or a long-lived refresh token that's provided by the end user when configuring this connector as a Source. These credentials are used to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.
 
 The connector needs to be configured with the endpoint to call to obtain access tokens with the client id/secret and/or the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as when configuring this connector as a Source.
 
 Depending on how the refresh endpoint is implemented exactly, additional configuration might be necessary to specify how to request an access token with the right permissions (configuring OAuth scopes and grant type) and how to extract the access token and the expiry date out of the response (configuring expiry date format and property name as well as the access key property name):
-* **Scopes** - the [OAuth scopes](https://oauth.net/2/scope/) the access token will have access to. if not specified, no scopes are sent along with the refresh token request
-* **Grant type** - the used OAuth grant type (either refresh token or client credentials). In case of refresh_token, a refresh token has to be provided by the end user when configuring the connector as a Source.
-* **Token expiry property name** - the name of the property in the response that contains token expiry information. If not specified, it's set to `expires_in`
-* **Token expire property date format** - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
-* **Access token property name** - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
+
+- **Scopes** - the [OAuth scopes](https://oauth.net/2/scope/) the access token will have access to. if not specified, no scopes are sent along with the refresh token request
+- **Grant type** - the used OAuth grant type (either refresh token or client credentials). In case of refresh_token, a refresh token has to be provided by the end user when configuring the connector as a Source.
+- **Token expiry property name** - the name of the property in the response that contains token expiry information. If not specified, it's set to `expires_in`
+- **Token expire property date format** - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
+- **Access token property name** - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
 
 If the API uses other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) for more information.
 
@@ -112,10 +118,12 @@ Keep in mind that the OAuth authentication method does not implement a single-cl
 The [Square API](https://developer.squareup.com/docs/build-basics/access-tokens#get-an-oauth-access-token) supports OAuth.
 
 In this case, the authentication method has to be configured like this:
-* "Token refresh endpoint" is `https://connect.squareup.com/oauth2/token`
-* "Token expiry property name" is `expires_at`
+
+- "Token refresh endpoint" is `https://connect.squareup.com/oauth2/token`
+- "Token expiry property name" is `expires_at`
 
 When running a sync, the connector is first sending client id, client secret and refresh token to the token refresh endpoint:
+
 ```
 
 curl -X POST \
@@ -125,6 +133,7 @@ curl -X POST \
 ```
 
 The response is a JSON object containing an `access_token` property and an `expires_at` property:
+
 ```
  {"access_token":"<access-token>", "expires_at": "2023-12-12T00:00:00"}
 ```
@@ -132,6 +141,7 @@ The response is a JSON object containing an `access_token` property and an `expi
 The `expires_at` date tells the connector how long the access token can be used - if this point in time is passed, a new access token is requested automatically.
 
 When fetching records, the access token is sent along as part of the `Authorization` header:
+
 ```
 curl -X GET \
   -H "Authorization: Bearer <access-token>" \
@@ -145,9 +155,11 @@ In a lot of cases, OAuth refresh tokens are long-lived and can be used to create
 This can be done using the "Overwrite config with refresh token response" setting. If enabled, the authenticator expects a new refresh token to be returned from the token refresh endpoint. By default, the property `refresh_token` is used to extract the new refresh token, but this can be configured using the "Refresh token property name" setting. The connector then updates its own configuration with the new refresh token and uses it the next time an access token needs to be generated. If this option is used, it's necessary to specify an initial access token along with its expiry date in the "Testing values" menu.
 
 ### Session Token
+
 Some APIs require callers to first fetch a unique token from one endpoint, then make the rest of their calls to all other endpoints using that token to authenticate themselves. These tokens usually have an expiration time, after which a new token needs to be re-fetched to continue making requests. This flow can be achieved through using the Session Token Authenticator.
 
 If requests are authenticated using the Session Token authentication method, the API documentation page will likely contain one of the following keywords:
+
 - "Session Token"
 - "Session ID"
 - "Auth Token"
@@ -155,16 +167,18 @@ If requests are authenticated using the Session Token authentication method, the
 - "Temporary Token"
 
 #### Configuration
+
 The configuration of a Session Token authenticator is a bit more involved than other authenticators, as you need to configure both how to make requests to the session token retrieval endpoint (which requires its own authentication method), as well as how the token is extracted from that response and used for the data requests.
 
 We will walk through each part of the configuration below. Throughout this, we will refer to the [Metabase API](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token) as an example of an API that uses session token authentication.
+
 - `Session Token Retrieval` - this is a group of fields which configures how the session token is fetched from the session token endpoint in your API. Once the session token is retrieved, your connector will reuse that token until it expires, at which point it will retrieve a new session token using this configuration.
   - `URL` - the full URL of the session token endpoint
     - For Metabase, this would be `https://<app_name>.metabaseapp.com/api/session`.
   - `HTTP Method` - the HTTP method that should be used when retrieving the session token endpoint, either `GET` or `POST`
     - Metabase requires `POST` for its `/api/session` requests.
   - `Authentication Method` - configures the method of authentication to use **for the session token retrieval request only**
-    - Note that this is separate from the parent Session Token Authenticator. It contains the same options as the parent Authenticator Method dropdown, except for OAuth (which is unlikely to be used for obtaining session tokens) and Session Token (as it does not make sense to nest). 
+    - Note that this is separate from the parent Session Token Authenticator. It contains the same options as the parent Authenticator Method dropdown, except for OAuth (which is unlikely to be used for obtaining session tokens) and Session Token (as it does not make sense to nest).
     - For Metabase, the `/api/session` endpoint takes in a `username` and `password` in the request body. Since this is a non-standard authentication method, we must set this inner `Authentication Method` to `No Auth`, and instead configure the `Request Body` to pass these credentials (discussed below).
   - `Query Parameters` - used to attach query parameters to the session token retrieval request
     - Metabase does not require any query parameters in the `/api/session` request, so this is left unset.

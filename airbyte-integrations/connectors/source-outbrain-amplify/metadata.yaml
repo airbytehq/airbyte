@@ -1,4 +1,8 @@
 data:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-outbrain-amplify
   registries:
     cloud:
       enabled: true
@@ -16,9 +20,19 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
   tags:
-    - language:low-code
+    - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-OUTBRAIN-AMPLIFY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

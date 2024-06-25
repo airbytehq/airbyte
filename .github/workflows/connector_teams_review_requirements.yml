@@ -9,15 +9,17 @@ on:
       - synchronize
     paths:
       - "airbyte-integrations/connectors/source-**"
+      - "airbyte-integrations/connectors/destination-**"
   pull_request_review:
     paths:
       - "airbyte-integrations/connectors/source-**"
+      - "airbyte-integrations/connectors/destination-**"
 jobs:
   check-review-requirements:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
 
-    if: ${{ github.repository == 'airbytehq/airbyte' && github.event.pull_request.draft == false }}
+    if: ${{ github.event.pull_request.head.repo.fork == false && github.event.pull_request.draft == false }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3

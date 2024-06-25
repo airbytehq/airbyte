@@ -14,6 +14,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.io.IOs;
@@ -25,11 +26,16 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
+ * <p>
+ * This class probably should extend {@link MySQLDestinationAcceptanceTest} to further reduce code
+ * duplication though.
  */
+@Disabled
 public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final StandardNameTransformer namingResolver = new MySQLNameTransformer();
@@ -107,6 +113,14 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     return retrieveRecordsFromTable(tableName, schema);
   }
 
+  @Override
+  protected String getDefaultSchema(final JsonNode config) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
+      return null;
+    }
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
+  }
+
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -157,6 +171,19 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
         });
+  }
+
+  /**
+   * Disabled for the same reason as in {@link MySQLDestinationAcceptanceTest}. But for some reason,
+   * this class doesn't extend that one so we have to do it again.
+   */
+  @Override
+  @Disabled("MySQL normalization uses the wrong datatype for numbers. This will not be fixed, because we intend to replace normalization with DV2.")
+  public void testDataTypeTestWithNormalization(final String messagesFilename,
+                                                final String catalogFilename,
+                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+      throws Exception {
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
 }

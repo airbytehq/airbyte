@@ -1,286 +1,2203 @@
-version: 0.51.16
+version: 0.78.1
 
 type: DeclarativeSource
+
 check:
   type: CheckStream
   stream_names:
     - contacts
+
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_freshsales/schemas/{{ parameters['name'] }}.json"
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: []
-  basic_requester:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sales_accounts/view/{{ stream_partition.view_id }}
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: All Accounts
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sales_accounts
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/sales_accounts_filter"
+                parent_key: id
+                partition_field: view_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts/view/{{ stream_partition.view_id }}
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: All Contacts
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/contacts_filters"
+                parent_key: id
+                partition_field: view_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    won_deals:
+      type: DeclarativeStream
+      name: won_deals
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /deals/view/{{ stream_partition.view_id }}
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: Won Deals
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - deals
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/deals_filter"
+                parent_key: id
+                partition_field: view_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/won_deals"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - fc_widget_collaboration
+    lost_deals:
+      type: DeclarativeStream
+      name: lost_deals
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /deals/view/{{ stream_partition.view_id }}
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: Lost Deals
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - deals
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/deals_filter"
+                parent_key: id
+                partition_field: view_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lost_deals"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - fc_widget_collaboration
+    open_deals:
+      type: DeclarativeStream
+      name: open_deals
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /deals/view/{{ stream_partition.view_id }}
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: Open Deals
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - deals
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/deals_filter"
+                parent_key: id
+                partition_field: view_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/open_deals"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - fc_widget_collaboration
+    open_tasks:
+      type: DeclarativeStream
+      name: open_tasks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: open
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasks
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/open_tasks"
+    deals_filter:
+      type: DeclarativeStream
+      name: deals_filter
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /deals/filters
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - filters
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals_filter"
+    completed_tasks:
+      type: DeclarativeStream
+      name: completed_tasks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: completed
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasks
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/completed_tasks"
+    contacts_filters:
+      type: DeclarativeStream
+      name: contacts_filters
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts/filters
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - filters
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_filters"
+    past_appointments:
+      type: DeclarativeStream
+      name: past_appointments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /appointments
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: past
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - appointments
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/past_appointments"
+    sales_accounts_filter:
+      type: DeclarativeStream
+      name: sales_accounts_filter
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sales_accounts/filters
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - filters
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sales_accounts_filter"
+    upcoming_appointments:
+      type: DeclarativeStream
+      name: upcoming_appointments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /appointments
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config['api_key'] }}
+          request_parameters:
+            sort: updated_at
+            filter: upcoming
+            sort_type: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - appointments
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/upcoming_appointments"
+  base_requester:
     type: HttpRequester
-    url_base: "https://{{ config['domain_name'] }}/crm/sales/api/"
-    http_method: "GET"
-    authenticator:
-      type: ApiKeyAuthenticator
-      header: "Authorization"
-      api_token: "Token token={{ config['api_key'] }}"
-  requester:
-    $ref: "#/definitions/basic_requester"
-    request_parameters:
-      page: "{{ parameters.get('page', None) }}"
-      filter: "{{ parameters.get('filter', None) }}"
-      sort_type: "asc"
-      sort: "updated_at"
-  default_paginator:
-    type: "DefaultPaginator"
-    page_size_option:
-      type: "RequestOption"
-      inject_into: "request_parameter"
-      field_name: "per_page"
-    pagination_strategy:
-      type: "PageIncrement"
-      page_size: 50
-      start_from_page: 1
-      inject_on_first_request: true
-    page_token_option:
-      type: "RequestOption"
-      inject_into: "request_parameter"
-      field_name: "page"
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    requester:
-      $ref: "#/definitions/requester"
-    paginator:
-      $ref: "#/definitions/default_paginator"
-  base_stream:
-    primary_key: "id"
-    retriever:
-      $ref: "#/definitions/retriever"
-  contacts_filters_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "contact_filters"
-      path: "contacts/filters"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/basic_requester"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - filters
-        record_filter:
-          condition: "{{ record['name'] == parameters['filter'] }}"
-  contacts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "contacts"
-      filter: "All Contacts"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "contacts/view/{{ stream_slice.view_id }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - contacts
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/contacts_filters_stream"
-            parent_key: "id"
-            partition_field: "view_id"
-  accounts_filters_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "sales_accounts_filter"
-      path: "sales_accounts/filters"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/basic_requester"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - filters
-        record_filter:
-          condition: "{{ record['name'] == parameters['filter'] }}"
-  accounts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "accounts"
-      filter: "All Accounts"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "sales_accounts/view/{{ stream_slice.view_id }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - sales_accounts
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/accounts_filters_stream"
-            parent_key: "id"
-            partition_field: "view_id"
-  deals_filters_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "deals_filter"
-      path: "deals/filters"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/basic_requester"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - filters
-        record_filter:
-          condition: "{{ record['name'] == parameters['filter'] }}"
-  open_deals_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "open_deals"
-      filter: "Open Deals"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "deals/view/{{ stream_slice.view_id }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - deals
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/deals_filters_stream"
-            parent_key: "id"
-            partition_field: "view_id"
-    transformations:
-      - type: RemoveFields
-        field_pointers:
-          - ["fc_widget_collaboration"]
-  won_deals_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "won_deals"
-      filter: "Won Deals"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "deals/view/{{ stream_slice.view_id }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - deals
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/deals_filters_stream"
-            parent_key: "id"
-            partition_field: "view_id"
-    transformations:
-      - type: RemoveFields
-        field_pointers:
-          - ["fc_widget_collaboration"]
-  lost_deals_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "lost_deals"
-      filter: "Lost Deals"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "deals/view/{{ stream_slice.view_id }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - deals
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/deals_filters_stream"
-            parent_key: "id"
-            partition_field: "view_id"
-    transformations:
-      - type: RemoveFields
-        field_pointers:
-          - ["fc_widget_collaboration"]
-  open_tasks_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "open_tasks"
-      path: "tasks"
-      filter: "open"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - tasks
-  completed_tasks_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "completed_tasks"
-      path: "tasks"
-      filter: "completed"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - tasks
-  past_appointments_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "past_appointments"
-      path: "appointments"
-      filter: "past"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - appointments
-  upcoming_appointments_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "upcoming_appointments"
-      path: "appointments"
-      filter: "upcoming"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          field_path:
-            - appointments
+    url_base: https://{{ config['domain_name'] }}/crm/sales/api
 
 streams:
-  - "#/definitions/contacts_stream"
-  - "#/definitions/accounts_stream"
-  - "#/definitions/open_deals_stream"
-  - "#/definitions/won_deals_stream"
-  - "#/definitions/lost_deals_stream"
-  - "#/definitions/open_tasks_stream"
-  - "#/definitions/completed_tasks_stream"
-  - "#/definitions/past_appointments_stream"
-  - "#/definitions/upcoming_appointments_stream"
+  - $ref: "#/definitions/streams/contacts_filters"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/sales_accounts_filter"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/deals_filter"
+  - $ref: "#/definitions/streams/open_deals"
+  - $ref: "#/definitions/streams/won_deals"
+  - $ref: "#/definitions/streams/lost_deals"
+  - $ref: "#/definitions/streams/open_tasks"
+  - $ref: "#/definitions/streams/completed_tasks"
+  - $ref: "#/definitions/streams/past_appointments"
+  - $ref: "#/definitions/streams/upcoming_appointments"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - domain_name
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        description: >-
+          Freshsales API Key. See <a
+          href="https://crmsupport.freshworks.com/support/solutions/articles/50000002503-how-to-find-my-api-key-">here</a>.
+          The key is case sensitive.
+        airbyte_secret: true
+      domain_name:
+        type: string
+        order: 0
+        title: Domain Name
+        examples:
+          - mydomain.myfreshworks.com
+        description: The Name of your Freshsales domain
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: false
+    contacts: false
+    won_deals: false
+    lost_deals: false
+    open_deals: false
+    open_tasks: false
+    deals_filter: false
+    completed_tasks: false
+    contacts_filters: false
+    past_appointments: false
+    sales_accounts_filter: false
+    upcoming_appointments: false
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - id
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      city:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+      email:
+        type:
+          - "null"
+          - string
+      links:
+        type:
+          - "null"
+          - object
+      phone:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      avatar:
+        type:
+          - "null"
+          - string
+      emails:
+        type:
+          - "null"
+          - array
+      medium:
+        type:
+          - "null"
+          - string
+      address:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      keyword:
+        type:
+          - "null"
+          - string
+      twitter:
+        type:
+          - "null"
+          - string
+      website:
+        type:
+          - "null"
+          - string
+      zipcode:
+        type:
+          - "null"
+          - string
+      facebook:
+        type:
+          - "null"
+          - string
+      linkedin:
+        type:
+          - "null"
+          - string
+      owner_id:
+        type:
+          - "null"
+          - integer
+      job_title:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      last_seen:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      lead_score:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+      work_email:
+        type:
+          - "null"
+          - string
+      external_id:
+        type:
+          - "null"
+          - string
+      recent_note:
+        type:
+          - "null"
+          - string
+      work_number:
+        type:
+          - "null"
+          - string
+      custom_field:
+        type:
+          - "null"
+          - object
+      customer_fit:
+        type:
+          - "null"
+          - string
+      display_name:
+        type:
+          - "null"
+          - string
+      territory_id:
+        type:
+          - "null"
+          - integer
+      web_form_ids:
+        type:
+          - "null"
+          - array
+      mobile_number:
+        type:
+          - "null"
+          - string
+      phone_numbers:
+        type:
+          - "null"
+          - array
+      team_user_ids:
+        type:
+          - "null"
+          - array
+      annual_revenue:
+        type:
+          - "null"
+          - number
+      last_contacted:
+        type:
+          - "null"
+          - string
+      won_deals_count:
+        type:
+          - "null"
+          - integer
+      business_type_id:
+        type:
+          - "null"
+          - integer
+      industry_type_id:
+        type:
+          - "null"
+          - integer
+      last_assigned_at:
+        type:
+          - "null"
+          - string
+      open_deals_count:
+        type:
+          - "null"
+          - integer
+      won_deals_amount:
+        type:
+          - "null"
+          - string
+      open_deals_amount:
+        type:
+          - "null"
+          - string
+      subscription_types:
+        type:
+          - "null"
+          - string
+      last_contacted_mode:
+        type:
+          - "null"
+          - string
+      number_of_employees:
+        type:
+          - "null"
+          - integer
+      subscription_status:
+        type:
+          - "null"
+          - integer
+      active_sales_sequences:
+        type:
+          - "null"
+          - string
+      parent_sales_account_id:
+        type:
+          - "null"
+          - integer
+      completed_sales_sequences:
+        type:
+          - "null"
+          - string
+      whatsapp_subscription_status:
+        type:
+          - "null"
+          - string
+      last_contacted_via_sales_activity:
+        type:
+          - "null"
+          - string
+      last_contacted_sales_activity_mode:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - id
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      city:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+      email:
+        type:
+          - "null"
+          - string
+      links:
+        type:
+          - "null"
+          - object
+      state:
+        type:
+          - "null"
+          - string
+      avatar:
+        type:
+          - "null"
+          - string
+      emails:
+        type:
+          - "null"
+          - array
+      locale:
+        type:
+          - "null"
+          - string
+      mcr_id:
+        type:
+          - "null"
+          - integer
+      medium:
+        type:
+          - "null"
+          - string
+      address:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      keyword:
+        type:
+          - "null"
+          - string
+      twitter:
+        type:
+          - "null"
+          - string
+      zipcode:
+        type:
+          - "null"
+          - string
+      facebook:
+        type:
+          - "null"
+          - string
+      linkedin:
+        type:
+          - "null"
+          - string
+      owner_id:
+        type:
+          - "null"
+          - integer
+      job_title:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      last_seen:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      lead_score:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+      work_email:
+        type:
+          - "null"
+          - string
+      campaign_id:
+        type:
+          - "null"
+          - integer
+      external_id:
+        type:
+          - "null"
+          - string
+      last_medium:
+        type:
+          - "null"
+          - string
+      last_source:
+        type:
+          - "null"
+          - string
+      recent_note:
+        type:
+          - "null"
+          - string
+      system_tags:
+        type:
+          - "null"
+          - array
+      work_number:
+        type:
+          - "null"
+          - string
+      custom_field:
+        type:
+          - "null"
+          - object
+      customer_fit:
+        type:
+          - "null"
+          - integer
+      display_name:
+        type:
+          - "null"
+          - string
+      first_medium:
+        type:
+          - "null"
+          - string
+      first_source:
+        type:
+          - "null"
+          - string
+      territory_id:
+        type:
+          - "null"
+          - integer
+      web_form_ids:
+        type:
+          - "null"
+          - string
+      last_campaign:
+        type:
+          - "null"
+          - string
+      latest_medium:
+        type:
+          - "null"
+          - string
+      latest_source:
+        type:
+          - "null"
+          - string
+      mobile_number:
+        type:
+          - "null"
+          - string
+      phone_numbers:
+        type:
+          - "null"
+          - array
+      team_user_ids:
+        type:
+          - "null"
+          - string
+      first_campaign:
+        type:
+          - "null"
+          - string
+      last_contacted:
+        type:
+          - "null"
+          - string
+      last_seen_chat:
+        type:
+          - "null"
+          - string
+      lead_source_id:
+        type:
+          - "null"
+          - integer
+      sales_accounts:
+        type:
+          - "null"
+          - array
+      total_sessions:
+        type:
+          - "null"
+          - string
+      first_seen_chat:
+        type:
+          - "null"
+          - string
+      latest_campaign:
+        type:
+          - "null"
+          - string
+      won_deals_count:
+        type:
+          - "null"
+          - integer
+      last_assigned_at:
+        type:
+          - "null"
+          - string
+      open_deals_count:
+        type:
+          - "null"
+          - integer
+      sales_account_id:
+        type:
+          - "null"
+          - integer
+      won_deals_amount:
+        type:
+          - "null"
+          - string
+      contact_status_id:
+        type:
+          - "null"
+          - integer
+      open_deals_amount:
+        type:
+          - "null"
+          - string
+      lifecycle_stage_id:
+        type:
+          - "null"
+          - integer
+      subscription_types:
+        type:
+          - "null"
+          - string
+      last_contacted_mode:
+        type:
+          - "null"
+          - string
+      subscription_status:
+        type:
+          - "null"
+          - integer
+      unsubscription_reason:
+        type:
+          - "null"
+          - string
+      active_sales_sequences:
+        type:
+          - "null"
+          - string
+      sms_subscription_status:
+        type:
+          - "null"
+          - integer
+      completed_sales_sequences:
+        type:
+          - "null"
+          - string
+      other_unsubscription_reason:
+        type:
+          - "null"
+          - string
+      whatsapp_subscription_status:
+        type:
+          - "null"
+          - integer
+      last_contacted_via_sales_activity:
+        type:
+          - "null"
+          - string
+      last_contacted_sales_activity_mode:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  won_deals:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - id
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      amount:
+        type:
+          - "null"
+          - string
+      currency_id:
+        type:
+          - "null"
+          - integer
+      base_currency_amount:
+        type:
+          - "null"
+          - string
+      sales_account_id:
+        type:
+          - "null"
+          - integer
+      deal_stage_id:
+        type:
+          - "null"
+          - integer
+      deal_reason_id:
+        type:
+          - "null"
+          - integer
+      deal_type_id:
+        type:
+          - "null"
+          - integer
+      owner_id:
+        type:
+          - "null"
+          - integer
+      expected_close:
+        type:
+          - "null"
+          - string
+      closed_date:
+        type:
+          - "null"
+          - string
+      lead_source_id:
+        type:
+          - "null"
+          - integer
+      campaign_id:
+        type:
+          - "null"
+          - integer
+      deal_product_id:
+        type:
+          - "null"
+          - integer
+      deal_payment_status_id:
+        type:
+          - "null"
+          - integer
+      probability:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      territory_id:
+        type:
+          - "null"
+          - integer
+      deal_pipeline_id:
+        type: integer
+      stage_updated_time:
+        type:
+          - "null"
+          - string
+      custom_field:
+        type:
+          - "null"
+          - object
+      age:
+        type:
+          - "null"
+          - integer
+      links:
+        type:
+          - "null"
+          - object
+      recent_note:
+        type:
+          - "null"
+          - string
+      completed_sales_sequences:
+        type:
+          - "null"
+          - string
+      active_sales_sequences:
+        type:
+          - "null"
+          - string
+      web_form_id:
+        type:
+          - "null"
+          - integer
+      upcoming_activities_time:
+        type:
+          - "null"
+          - string
+      collaboration:
+        type:
+          - "null"
+          - object
+      last_assigned_at:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+      last_contacted_sales_activity_mode:
+        type:
+          - "null"
+          - string
+      last_contacted_via_sales_activity:
+        type:
+          - "null"
+          - string
+      expected_deal_value:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      team_user_ids:
+        type:
+          - "null"
+          - string
+      avatar:
+        type:
+          - "null"
+          - string
+      fc_widget_collaboration:
+        type:
+          - "null"
+          - object
+      forecast_category:
+        type:
+          - "null"
+          - integer
+      deal_prediction_last_updated_at:
+        type:
+          - "null"
+          - string
+      rotten_days:
+        type:
+          - "null"
+          - integer
+      has_products:
+        type:
+          - "null"
+          - boolean
+      products:
+        type:
+          - "null"
+          - string
+      last_deal_prediction:
+        type:
+          - "null"
+          - string
+      deal_prediction:
+        type:
+          - "null"
+          - integer
+      freddy_forecast_metrics:
+        type:
+          - "null"
+          - string
+  lost_deals:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - id
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      amount:
+        type:
+          - "null"
+          - string
+      currency_id:
+        type:
+          - "null"
+          - integer
+      base_currency_amount:
+        type:
+          - "null"
+          - string
+      sales_account_id:
+        type:
+          - "null"
+          - integer
+      deal_stage_id:
+        type:
+          - "null"
+          - integer
+      deal_reason_id:
+        type:
+          - "null"
+          - integer
+      deal_type_id:
+        type:
+          - "null"
+          - integer
+      owner_id:
+        type:
+          - "null"
+          - integer
+      expected_close:
+        type:
+          - "null"
+          - string
+      closed_date:
+        type:
+          - "null"
+          - string
+      lead_source_id:
+        type:
+          - "null"
+          - integer
+      campaign_id:
+        type:
+          - "null"
+          - integer
+      deal_product_id:
+        type:
+          - "null"
+          - integer
+      deal_payment_status_id:
+        type:
+          - "null"
+          - integer
+      probability:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      territory_id:
+        type:
+          - "null"
+          - integer
+      deal_pipeline_id:
+        type: integer
+      stage_updated_time:
+        type:
+          - "null"
+          - string
+      custom_field:
+        type:
+          - "null"
+          - object
+      age:
+        type:
+          - "null"
+          - integer
+      links:
+        type:
+          - "null"
+          - object
+      recent_note:
+        type:
+          - "null"
+          - string
+      completed_sales_sequences:
+        type:
+          - "null"
+          - string
+      active_sales_sequences:
+        type:
+          - "null"
+          - string
+      web_form_id:
+        type:
+          - "null"
+          - integer
+      upcoming_activities_time:
+        type:
+          - "null"
+          - string
+      collaboration:
+        type:
+          - "null"
+          - object
+      last_assigned_at:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+      last_contacted_sales_activity_mode:
+        type:
+          - "null"
+          - string
+      last_contacted_via_sales_activity:
+        type:
+          - "null"
+          - string
+      expected_deal_value:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      team_user_ids:
+        type:
+          - "null"
+          - string
+      avatar:
+        type:
+          - "null"
+          - string
+      fc_widget_collaboration:
+        type:
+          - "null"
+          - object
+      forecast_category:
+        type:
+          - "null"
+          - integer
+      deal_prediction_last_updated_at:
+        type:
+          - "null"
+          - string
+      rotten_days:
+        type:
+          - "null"
+          - integer
+      has_products:
+        type:
+          - "null"
+          - boolean
+      products:
+        type:
+          - "null"
+          - string
+      last_deal_prediction:
+        type:
+          - "null"
+          - string
+      deal_prediction:
+        type:
+          - "null"
+          - integer
+      freddy_forecast_metrics:
+        type:
+          - "null"
+          - string
+  open_deals:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - id
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      amount:
+        type:
+          - "null"
+          - string
+      currency_id:
+        type:
+          - "null"
+          - integer
+      base_currency_amount:
+        type:
+          - "null"
+          - string
+      sales_account_id:
+        type:
+          - "null"
+          - integer
+      deal_stage_id:
+        type:
+          - "null"
+          - integer
+      deal_reason_id:
+        type:
+          - "null"
+          - integer
+      deal_type_id:
+        type:
+          - "null"
+          - integer
+      owner_id:
+        type:
+          - "null"
+          - integer
+      expected_close:
+        type:
+          - "null"
+          - string
+      closed_date:
+        type:
+          - "null"
+          - string
+      lead_source_id:
+        type:
+          - "null"
+          - integer
+      campaign_id:
+        type:
+          - "null"
+          - integer
+      deal_product_id:
+        type:
+          - "null"
+          - integer
+      deal_payment_status_id:
+        type:
+          - "null"
+          - integer
+      probability:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      territory_id:
+        type:
+          - "null"
+          - integer
+      deal_pipeline_id:
+        type: integer
+      stage_updated_time:
+        type:
+          - "null"
+          - string
+      custom_field:
+        type:
+          - "null"
+          - object
+      age:
+        type:
+          - "null"
+          - integer
+      links:
+        type:
+          - "null"
+          - object
+      recent_note:
+        type:
+          - "null"
+          - string
+      completed_sales_sequences:
+        type:
+          - "null"
+          - string
+      active_sales_sequences:
+        type:
+          - "null"
+          - string
+      web_form_id:
+        type:
+          - "null"
+          - integer
+      upcoming_activities_time:
+        type:
+          - "null"
+          - string
+      collaboration:
+        type:
+          - "null"
+          - object
+      last_assigned_at:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+      last_contacted_sales_activity_mode:
+        type:
+          - "null"
+          - string
+      last_contacted_via_sales_activity:
+        type:
+          - "null"
+          - string
+      expected_deal_value:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      team_user_ids:
+        type:
+          - "null"
+          - string
+      avatar:
+        type:
+          - "null"
+          - string
+      fc_widget_collaboration:
+        type:
+          - "null"
+          - object
+      forecast_category:
+        type:
+          - "null"
+          - integer
+      deal_prediction_last_updated_at:
+        type:
+          - "null"
+          - string
+      rotten_days:
+        type:
+          - "null"
+          - integer
+      has_products:
+        type:
+          - "null"
+          - boolean
+      products:
+        type:
+          - "null"
+          - string
+      last_deal_prediction:
+        type:
+          - "null"
+          - string
+      deal_prediction:
+        type:
+          - "null"
+          - integer
+      freddy_forecast_metrics:
+        type:
+          - "null"
+          - string
+  open_tasks:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - id
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      title:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      due_date:
+        type:
+          - "null"
+          - string
+      targetable_id:
+        type:
+          - "null"
+          - integer
+      targetable_type:
+        type:
+          - "null"
+          - string
+      Possible:
+        type:
+          - "null"
+          - string
+      owner_id:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - integer
+      creater_id:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      outcome_id:
+        type:
+          - "null"
+          - integer
+      task_type_id:
+        type:
+          - "null"
+          - integer
+      updater_id:
+        type:
+          - "null"
+          - integer
+      targetables:
+        type:
+          - "null"
+          - array
+      completed_date:
+        type:
+          - "null"
+          - string
+  deals_filter:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  completed_tasks:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - id
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      title:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      due_date:
+        type:
+          - "null"
+          - string
+      targetable_id:
+        type:
+          - "null"
+          - integer
+      targetable_type:
+        type:
+          - "null"
+          - string
+      Possible:
+        type:
+          - "null"
+          - string
+      owner_id:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - integer
+      creater_id:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      outcome_id:
+        type:
+          - "null"
+          - integer
+      task_type_id:
+        type:
+          - "null"
+          - integer
+      updater_id:
+        type:
+          - "null"
+          - integer
+      targetables:
+        type:
+          - "null"
+          - array
+      completed_date:
+        type:
+          - "null"
+          - string
+  contacts_filters:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  past_appointments:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - id
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      from_date:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      Start:
+        type:
+          - "null"
+          - string
+      end_date:
+        type:
+          - "null"
+          - string
+      End:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      creater_id:
+        type:
+          - "null"
+          - integer
+      targetable_id:
+        type:
+          - "null"
+          - integer
+      targetable_type:
+        type:
+          - "null"
+          - string
+      Possible:
+        type:
+          - "null"
+          - string
+      location:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      is_allday:
+        type:
+          - "null"
+          - boolean
+      appointment_attendees_attributes:
+        type:
+          - "null"
+          - array
+      outcome_id:
+        type:
+          - "null"
+          - integer
+      latitude:
+        type:
+          - "null"
+          - string
+      longitude:
+        type:
+          - "null"
+          - string
+      checkedin_at:
+        type:
+          - "null"
+          - string
+      checkedout_location:
+        type:
+          - "null"
+          - string
+      can_checkin_checkout:
+        type:
+          - "null"
+          - boolean
+      checkedout_latitude:
+        type:
+          - "null"
+          - string
+      checkedin_duration:
+        type:
+          - "null"
+          - string
+      checkedout_longitude:
+        type:
+          - "null"
+          - string
+      targetables:
+        type:
+          - "null"
+          - array
+      can_checkin:
+        type:
+          - "null"
+          - boolean
+      provider:
+        type:
+          - "null"
+          - string
+      checkedout_at:
+        type:
+          - "null"
+          - string
+      conference_id:
+        type:
+          - "null"
+          - string
+  sales_accounts_filter:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  upcoming_appointments:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - id
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      from_date:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      Start:
+        type:
+          - "null"
+          - string
+      end_date:
+        type:
+          - "null"
+          - string
+      End:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      creater_id:
+        type:
+          - "null"
+          - integer
+      targetable_id:
+        type:
+          - "null"
+          - integer
+      targetable_type:
+        type:
+          - "null"
+          - string
+      Possible:
+        type:
+          - "null"
+          - string
+      location:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      is_allday:
+        type:
+          - "null"
+          - boolean
+      appointment_attendees_attributes:
+        type:
+          - "null"
+          - array
+      outcome_id:
+        type:
+          - "null"
+          - integer
+      latitude:
+        type:
+          - "null"
+          - string
+      longitude:
+        type:
+          - "null"
+          - string
+      checkedin_at:
+        type:
+          - "null"
+          - string
+      checkedout_location:
+        type:
+          - "null"
+          - string
+      can_checkin_checkout:
+        type:
+          - "null"
+          - boolean
+      checkedout_latitude:
+        type:
+          - "null"
+          - string
+      checkedin_duration:
+        type:
+          - "null"
+          - string
+      checkedout_longitude:
+        type:
+          - "null"
+          - string
+      targetables:
+        type:
+          - "null"
+          - array
+      can_checkin:
+        type:
+          - "null"
+          - boolean
+      provider:
+        type:
+          - "null"
+          - string
+      checkedout_at:
+        type:
+          - "null"
+          - string
+      conference_id:
+        type:
+          - "null"
+          - string

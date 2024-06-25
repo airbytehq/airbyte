@@ -3,23 +3,29 @@
   "type": "object",
   "properties": {
     "Account Id": {
+      "description": "Unique identifier for the account associated with the keyword label.",
       "type": ["null", "integer"]
     },
     "Client Id": {
+      "description": "Unique identifier for the client associated with the keyword label.",
       "type": ["null", "string"]
     },
     "Id": {
+      "description": "Unique identifier for the keyword label.",
       "type": ["null", "integer"]
     },
     "Parent Id": {
+      "description": "Unique identifier for the parent entity related to the keyword label.",
       "type": ["null", "integer"]
     },
     "Modified Time": {
+      "description": "Timestamp indicating when the keyword label was last modified.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "Status": {
+      "description": "Current status of the keyword label.",
       "type": ["null", "string"]
     }
   }

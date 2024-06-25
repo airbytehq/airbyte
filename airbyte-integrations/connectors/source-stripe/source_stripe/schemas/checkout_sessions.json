@@ -2,141 +2,302 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": ["null", "object"],
   "properties": {
-    "id": { "type": ["null", "string"] },
-    "object": { "type": ["null", "string"] },
+    "id": {
+      "description": "Unique identifier for the session.",
+      "type": ["null", "string"]
+    },
+    "object": {
+      "description": "Type of object.",
+      "type": ["null", "string"]
+    },
     "after_expiration": {
+      "description": "Information related to the recovery options after the session expiration.",
       "type": ["null", "object"],
       "properties": {
         "recovery": {
+          "description": "Details about the recovery process.",
           "type": ["null", "object"],
           "properties": {
-            "allow_promotion_codes": { "type": ["null", "boolean"] },
-            "enabled": { "type": ["null", "boolean"] },
-            "expires_at": { "type": ["null", "integer"] },
-            "url": { "type": ["null", "string"] }
-          }
-        }
-      }
-    },
-    "allow_promotion_codes": { "type": ["null", "boolean"] },
-    "amount_subtotal": { "type": ["null", "integer"] },
-    "amount_total": { "type": ["null", "integer"] },
-    "automatic_tax": {
-      "type": ["null", "object"],
-      "properties": {
-        "enabled": { "type": ["null", "boolean"] },
-        "status": { "type": ["null", "string"] }
-      }
-    },
-    "billing_address_collection": { "type": ["null", "string"] },
-    "cancel_url": { "type": ["null", "string"] },
-    "client_reference_id": { "type": ["null", "string"] },
-    "consent": {
-      "type": ["null", "object"],
-      "properties": {
-        "promotions": { "type": ["null", "string"] }
-      }
-    },
-    "consent_collection": {
-      "type": ["null", "object"],
-      "properties": {
-        "promotions": { "type": ["null", "string"] }
-      }
-    },
-    "currency": { "type": ["null", "string"] },
-    "customer": { "type": ["null", "string"] },
-    "customer_details": {
-      "type": ["null", "object"],
-      "properties": {
-        "email": { "type": ["null", "string"] },
-        "phone": { "type": ["null", "string"] },
-        "tax_exempt": { "type": ["null", "string"] },
-        "tax_ids": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "object"],
-            "properties": {
-              "type": { "type": ["null", "string"] },
-              "value": { "type": ["null", "string"] }
+            "allow_promotion_codes": {
+              "description": "Flag indicating whether to allow promotion codes during recovery.",
+              "type": ["null", "boolean"]
+            },
+            "enabled": {
+              "description": "Flag indicating whether recovery is enabled.",
+              "type": ["null", "boolean"]
+            },
+            "expires_at": {
+              "description": "Timestamp indicating the expiration time for recovery.",
+              "type": ["null", "integer"]
+            },
+            "url": {
+              "description": "URL for the recovery process.",
+              "type": ["null", "string"]
             }
           }
         }
       }
     },
-    "customer_email": { "type": ["null", "string"] },
-    "expires_at": { "type": ["null", "integer"] },
-    "livemode": { "type": ["null", "boolean"] },
-    "locale": { "type": ["null", "string"] },
+    "allow_promotion_codes": {
+      "description": "Flag indicating whether promotion codes are allowed.",
+      "type": ["null", "boolean"]
+    },
+    "amount_subtotal": {
+      "description": "Subtotal amount for the session.",
+      "type": ["null", "integer"]
+    },
+    "amount_total": {
+      "description": "Total amount for the session.",
+      "type": ["null", "integer"]
+    },
+    "automatic_tax": {
+      "description": "Configuration for automatic tax calculation.",
+      "type": ["null", "object"],
+      "properties": {
+        "enabled": {
+          "description": "Flag indicating whether automatic tax calculation is enabled.",
+          "type": ["null", "boolean"]
+        },
+        "liability": {
+          "description": "Details about tax liability.",
+          "type": ["null", "object"],
+          "properties": {
+            "account": {
+              "description": "Account associated with tax liability.",
+              "type": ["null", "string"]
+            },
+            "type": {
+              "description": "Type of tax liability.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "status": {
+          "description": "Status of automatic tax calculation.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "billing_address_collection": {
+      "description": "Configuration for collecting billing address information.",
+      "type": ["null", "string"]
+    },
+    "cancel_url": {
+      "description": "URL to redirect to if the session is canceled.",
+      "type": ["null", "string"]
+    },
+    "client_reference_id": {
+      "description": "Client reference ID for the session.",
+      "type": ["null", "string"]
+    },
+    "consent": {
+      "description": "Consent information for the session.",
+      "type": ["null", "object"],
+      "properties": {
+        "promotions": {
+          "description": "Consent for receiving promotions.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "consent_collection": {
+      "description": "Configuration for collecting consent information.",
+      "type": ["null", "object"],
+      "properties": {
+        "promotions": {
+          "description": "Consent for receiving promotions.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "currency": {
+      "description": "Currency used for the session.",
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "description": "Customer information associated with the session.",
+      "type": ["null", "string"]
+    },
+    "customer_details": {
+      "description": "Details of the customer associated with the session.",
+      "type": ["null", "object"],
+      "properties": {
+        "email": {
+          "description": "Customer's email address.",
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "description": "Customer's phone number.",
+          "type": ["null", "string"]
+        },
+        "tax_exempt": {
+          "description": "Flag indicating if the customer is tax exempt.",
+          "type": ["null", "string"]
+        },
+        "tax_ids": {
+          "description": "Tax IDs associated with the customer.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "type": {
+                "description": "Type of tax ID.",
+                "type": ["null", "string"]
+              },
+              "value": {
+                "description": "Value of tax ID.",
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "customer_email": {
+      "description": "Customer's email address.",
+      "type": ["null", "string"]
+    },
+    "expires_at": {
+      "description": "Timestamp indicating the expiration time of the session.",
+      "type": ["null", "integer"]
+    },
+    "livemode": {
+      "description": "Flag indicating if the session is in live mode.",
+      "type": ["null", "boolean"]
+    },
+    "locale": {
+      "description": "Locale settings for the session.",
+      "type": ["null", "string"]
+    },
     "metadata": {
+      "description": "Additional metadata for the session.",
       "type": ["null", "object"],
       "properties": {}
     },
-    "mode": { "type": ["null", "string"] },
-    "payment_intent": { "type": ["null", "string"] },
+    "mode": {
+      "description": "Mode of the session.",
+      "type": ["null", "string"]
+    },
+    "payment_intent": {
+      "description": "Payment intent associated with the session.",
+      "type": ["null", "string"]
+    },
     "payment_method_options": {
+      "description": "Options for different payment methods.",
       "type": ["null", "object"],
       "properties": {
         "acss_debit": {
+          "description": "Options for ACSS debit payments.",
           "type": ["null", "object"],
           "properties": {
-            "currency": { "type": ["null", "string"] },
+            "currency": {
+              "description": "Currency for the payment.",
+              "type": ["null", "string"]
+            },
             "mandate_options": {
+              "description": "Options for mandate setup.",
               "type": ["null", "object"],
               "properties": {
-                "custom_mandate_url": { "type": ["null", "string"] },
+                "custom_mandate_url": {
+                  "description": "Custom URL for mandate setup.",
+                  "type": ["null", "string"]
+                },
                 "default_for": {
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
                   }
                 },
-                "interval_description": { "type": ["null", "string"] },
-                "payment_schedule": { "type": ["null", "string"] },
-                "transaction_type": { "type": ["null", "string"] }
+                "interval_description": {
+                  "description": "Description of payment interval.",
+                  "type": ["null", "string"]
+                },
+                "payment_schedule": {
+                  "description": "Schedule for payments.",
+                  "type": ["null", "string"]
+                },
+                "transaction_type": {
+                  "description": "Type of transaction.",
+                  "type": ["null", "string"]
+                }
               }
             },
-            "verification_method": { "type": ["null", "string"] }
+            "verification_method": {
+              "description": "Verification method for the payment.",
+              "type": ["null", "string"]
+            }
           }
         },
         "boleto": {
+          "description": "Options for Boleto payments.",
           "type": ["null", "object"],
           "properties": {
-            "expires_after_days": { "type": ["null", "integer"] }
+            "expires_after_days": {
+              "description": "Expiration period for the Boleto.",
+              "type": ["null", "integer"]
+            }
           }
         },
         "oxxo": {
+          "description": "Options for OXXO payments.",
           "type": ["null", "object"],
           "properties": {
-            "expires_after_days": { "type": ["null", "integer"] }
+            "expires_after_days": {
+              "description": "Expiration period for the OXXO.",
+              "type": ["null", "integer"]
+            }
           }
         }
       }
     },
     "payment_method_types": {
+      "description": "Types of payment methods accepted.",
       "type": ["null", "array"],
       "items": {
-        "card": { "type": ["null", "string"] }
+        "card": {
+          "description": "Credit card payment method.",
+          "type": ["null", "string"]
+        }
       }
     },
-    "payment_status": { "type": ["null", "string"] },
+    "payment_status": {
+      "description": "Status of the payment.",
+      "type": ["null", "string"]
+    },
     "phone_number_collection": {
+      "description": "Configuration for collecting phone numbers.",
       "type": ["null", "object"],
       "properties": {
-        "enabled": { "type": ["null", "boolean"] }
+        "enabled": {
+          "description": "Flag indicating if phone number collection is enabled.",
+          "type": ["null", "boolean"]
+        }
       }
     },
-    "recovered_from": { "type": ["null", "string"] },
-    "setup_intent": { "type": ["null", "string"] },
+    "recovered_from": {
+      "description": "Information about the recovery source.",
+      "type": ["null", "string"]
+    },
+    "setup_intent": {
+      "description": "Setup intent associated with the session.",
+      "type": ["null", "string"]
+    },
     "shipping": {
+      "description": "Shipping information for the session.",
       "type": ["null", "object"],
       "properties": {
         "address": {
+          "description": "Shipping address.",
           "$ref": "address.json"
         },
-        "name": { "type": ["null", "string"] }
+        "name": {
+          "description": "Recipient name.",
+          "type": ["null", "string"]
+        }
       }
     },
     "shipping_address_collection": {
+      "description": "Configuration for collecting shipping address information.",
       "type": ["null", "object"],
       "properties": {
         "allowed_countries": {
@@ -147,31 +308,60 @@
         }
       }
     },
-    "submit_type": { "type": ["null", "string"] },
-    "subscription": { "type": ["null", "string"] },
-    "success_url": { "type": ["null", "string"] },
+    "submit_type": {
+      "description": "Type of submission.",
+      "type": ["null", "string"]
+    },
+    "subscription": {
+      "description": "Subscription associated with the session.",
+      "type": ["null", "string"]
+    },
+    "success_url": {
+      "description": "URL to redirect to upon successful completion.",
+      "type": ["null", "string"]
+    },
     "tax_id_collection": {
+      "description": "Configuration for collecting tax IDs.",
       "type": ["null", "object"],
       "properties": {
-        "enabled": { "type": ["null", "boolean"] }
+        "enabled": {
+          "description": "Flag indicating if tax ID collection is enabled.",
+          "type": ["null", "boolean"]
+        }
       }
     },
     "total_details": {
+      "description": "Details about the total amount.",
       "type": ["null", "object"],
       "properties": {
-        "amount_discount": { "type": ["null", "integer"] },
-        "amount_shipping": { "type": ["null", "integer"] },
-        "amount_tax": { "type": ["null", "integer"] },
+        "amount_discount": {
+          "description": "Discount amount.",
+          "type": ["null", "integer"]
+        },
+        "amount_shipping": {
+          "description": "Shipping amount.",
+          "type": ["null", "integer"]
+        },
+        "amount_tax": {
+          "description": "Tax amount.",
+          "type": ["null", "integer"]
+        },
         "breakdown": {
+          "description": "Breakdown of total amount.",
           "type": ["null", "object"],
           "properties": {
             "discounts": {
+              "description": "Details of discounts applied.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "object"],
                 "properties": {
-                  "amount": { "type": ["null", "integer"] },
+                  "amount": {
+                    "description": "Discount amount.",
+                    "type": ["null", "integer"]
+                  },
                   "discount": {
+                    "description": "Details of discount.",
                     "type": ["null", "object"],
                     "properties": {}
                   }
@@ -179,31 +369,76 @@
               }
             },
             "taxes": {
+              "description": "Details of taxes applied.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "object"],
                 "properties": {
-                  "amount": { "type": ["null", "integer"] },
+                  "amount": {
+                    "description": "Tax amount.",
+                    "type": ["null", "integer"]
+                  },
                   "rate": {
+                    "description": "Tax rate details.",
                     "type": ["null", "object"],
                     "properties": {
-                      "id": { "type": ["null", "string"] },
-                      "object": { "type": ["null", "string"] },
-                      "active": { "type": ["null", "boolean"] },
-                      "country": { "type": ["null", "string"] },
-                      "created": { "type": ["null", "integer"] },
-                      "description": { "type": ["null", "string"] },
-                      "display_name": { "type": ["null", "string"] },
-                      "inclusive": { "type": ["null", "boolean"] },
-                      "jurisdiction": { "type": ["null", "string"] },
-                      "livemode": { "type": ["null", "boolean"] },
+                      "id": {
+                        "description": "Unique identifier for tax rate.",
+                        "type": ["null", "string"]
+                      },
+                      "object": {
+                        "description": "Type of object.",
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "description": "Flag indicating if tax rate is active.",
+                        "type": ["null", "boolean"]
+                      },
+                      "country": {
+                        "description": "Country for the tax rate.",
+                        "type": ["null", "string"]
+                      },
+                      "created": {
+                        "description": "Timestamp indicating creation time.",
+                        "type": ["null", "integer"]
+                      },
+                      "description": {
+                        "description": "Description of tax rate.",
+                        "type": ["null", "string"]
+                      },
+                      "display_name": {
+                        "description": "Display name of tax rate.",
+                        "type": ["null", "string"]
+                      },
+                      "inclusive": {
+                        "description": "Flag indicating if tax is inclusive.",
+                        "type": ["null", "boolean"]
+                      },
+                      "jurisdiction": {
+                        "description": "Jurisdiction of the tax rate.",
+                        "type": ["null", "string"]
+                      },
+                      "livemode": {
+                        "description": "Flag indicating if tax rate is in live mode.",
+                        "type": ["null", "boolean"]
+                      },
                       "metadata": {
+                        "description": "Additional metadata for the tax rate.",
                         "type": ["null", "object"],
                         "properties": {}
                       },
-                      "percentage": { "type": ["null", "number"] },
-                      "state": { "type": ["null", "string"] },
-                      "tax_type": { "type": ["null", "string"] }
+                      "percentage": {
+                        "description": "Percentage of the tax rate.",
+                        "type": ["null", "number"]
+                      },
+                      "state": {
+                        "description": "State of the tax rate.",
+                        "type": ["null", "string"]
+                      },
+                      "tax_type": {
+                        "description": "Type of tax.",
+                        "type": ["null", "string"]
+                      }
                     }
                   }
                 }
@@ -213,134 +448,182 @@
         }
       }
     },
-    "url": { "type": ["null", "string"] },
-    "updated": { "type": ["null", "integer"] },
-    "created": { "type": ["null", "integer"] },
+    "url": {
+      "description": "URL for the session.",
+      "type": ["null", "string"]
+    },
+    "updated": {
+      "description": "Timestamp indicating the last update time.",
+      "type": ["null", "integer"]
+    },
+    "created": {
+      "description": "Timestamp indicating the creation time of the session.",
+      "type": ["null", "integer"]
+    },
     "currency_conversion": {
+      "description": "Details of currency conversion for the session.",
       "type": ["null", "object"],
       "properties": {
         "amount_subtotal": {
+          "description": "Subtotal amount after currency conversion.",
           "type": ["null", "integer"]
         },
         "amount_total": {
+          "description": "Total amount after currency conversion.",
           "type": ["null", "integer"]
         },
         "fix_rate": {
+          "description": "Fixed exchange rate used for conversion.",
           "type": ["null", "string"]
         },
         "source_currency": {
+          "description": "Source currency before conversion.",
           "type": ["null", "string"]
         }
       }
     },
     "custom_fields": {
+      "description": "Custom fields configured for the session.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "dropdown": {
+            "description": "Dropdown field configuration.",
             "type": ["null", "object"],
             "properties": {
               "options": {
+                "description": "Dropdown options.",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"]
                 }
               },
               "value": {
+                "description": "Selected value.",
                 "type": ["null", "string"]
               }
             }
           },
           "key": {
+            "description": "Key for the custom field.",
             "type": ["null", "string"]
           },
           "label": {
+            "description": "Label field configuration.",
             "type": ["null", "object"],
             "properties": {
               "custom": {
+                "description": "Custom label.",
                 "type": ["null", "string"]
               },
               "type": {
+                "description": "Type of label.",
                 "type": ["null", "string"]
               }
             }
           },
           "numeric": {
+            "description": "Numeric field configuration.",
             "type": ["null", "object"],
             "properties": {
               "maximum_length": {
+                "description": "Maximum length for numeric value.",
                 "type": ["null", "integer"]
               },
               "minimum_length": {
+                "description": "Minimum length for numeric value.",
                 "type": ["null", "integer"]
               },
               "value": {
+                "description": "Numeric value.",
                 "type": ["null", "string"]
               }
             }
           },
           "optional": {
+            "description": "Flag indicating if the field is optional.",
             "type": ["null", "boolean"]
           },
           "text": {
+            "description": "Text field configuration.",
             "type": ["null", "object"],
             "properties": {
               "maximum_length": {
+                "description": "Maximum length for text value.",
                 "type": ["null", "integer"]
               },
               "minimum_length": {
+                "description": "Minimum length for text value.",
                 "type": ["null", "integer"]
               },
               "value": {
+                "description": "Text value.",
                 "type": ["null", "string"]
               }
             }
           },
           "type": {
+            "description": "Type of custom field.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "custom_text": {
+      "description": "Custom text configurations for different sections.",
       "type": ["null", "object"],
       "properties": {
         "shipping_address": {
+          "description": "Custom text for shipping address section.",
           "type": ["null", "object"],
           "properties": {
             "message": {
+              "description": "Message for shipping address section.",
               "type": ["null", "string"]
             }
           }
         },
         "submit": {
+          "description": "Custom text for submit button.",
           "type": ["null", "string"],
           "properties": {
             "message": {
+              "description": "Message for submit button.",
               "type": ["null", "string"]
             }
           }
         },
         "terms_of_service": {
+          "description": "Custom text for terms of service section.",
           "type": ["null", "object"],
           "properties": {
             "message": {
+              "description": "Message for terms of service section.",
               "type": ["null", "string"]
             }
           }
         }
       }
     },
-    "customer_creation": { "type": ["null", "string"] },
-    "invoice": { "type": ["null", "string"] },
+    "customer_creation": {
+      "description": "Configuration for customer creation during the session.",
+      "type": ["null", "string"]
+    },
+    "invoice": {
+      "description": "Invoice associated with the session.",
+      "type": ["null", "string"]
+    },
     "invoice_creation": {
+      "description": "Configuration for invoice creation.",
       "type": ["null", "object"],
       "properties": {
         "enabled": {
+          "description": "Flag indicating if invoice creation is enabled.",
           "type": ["null", "boolean"]
         },
         "invoice_data": {
+          "description": "Data related to invoice generation.",
           "type": ["null", "object"],
           "properties": {
             "account_tax_ids": {
@@ -350,32 +633,54 @@
               }
             },
             "custom_fields": {
+              "description": "Custom fields for the invoice.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "object"],
                 "properties": {
                   "name": {
+                    "description": "Name of custom field.",
                     "type": ["null", "string"]
                   },
                   "value": {
+                    "description": "Value of custom field.",
                     "type": ["null", "string"]
                   }
                 }
               }
             },
             "description": {
+              "description": "Description for the invoice.",
               "type": ["null", "string"]
             },
             "footer": {
+              "description": "Footer content for the invoice.",
               "type": ["null", "string"]
             },
+            "issuer": {
+              "description": "Details of the entity issuing the invoice.",
+              "type": ["null", "object"],
+              "properties": {
+                "account": {
+                  "description": "Account associated with the issuer.",
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "description": "Type of issuer.",
+                  "type": ["null", "string"]
+                }
+              }
+            },
             "metadata": {
+              "description": "Additional metadata for the invoice.",
               "type": ["null", "object"]
             },
             "rendering_options": {
+              "description": "Options for rendering the invoice.",
               "type": ["null", "object"],
               "properties": {
                 "amount_tax_display": {
+                  "description": "Display format for tax amount.",
                   "type": ["null", "string"]
                 }
               }
@@ -384,38 +689,54 @@
         }
       }
     },
-    "payment_link": { "type": ["null", "string"] },
-    "payment_method_collection": { "type": ["null", "string"] },
+    "payment_link": {
+      "description": "Payment link for the session.",
+      "type": ["null", "string"]
+    },
+    "payment_method_collection": {
+      "description": "Configuration for collecting payment methods.",
+      "type": ["null", "string"]
+    },
     "shipping_cost": {
+      "description": "Cost details for shipping.",
       "type": ["null", "object"],
       "properties": {
         "amount_total": {
+          "description": "Total amount for shipping.",
           "type": ["null", "integer"]
         },
         "amount_subtotal": {
+          "description": "Subtotal amount for shipping.",
           "type": ["null", "integer"]
         },
         "amount_tax": {
+          "description": "Tax amount for shipping.",
           "type": ["null", "integer"]
         },
         "shipping_rate": {
+          "description": "Rate for shipping.",
           "type": ["null", "string"]
         },
         "taxes": {
+          "description": "Tax details for shipping.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "amount": {
+                "description": "Tax amount.",
                 "type": ["null", "integer"]
               },
               "rate": {
+                "description": "Tax rate details.",
                 "$ref": "tax_rate.json"
               },
               "taxability_reason": {
+                "description": "Reason for taxability.",
                 "type": ["null", "string"]
               },
               "taxable_amount": {
+                "description": "Taxable amount.",
                 "type": ["null", "integer"]
               }
             }
@@ -424,38 +745,50 @@
       }
     },
     "shipping_details": {
+      "description": "Details of shipping information.",
       "type": ["null", "object"],
       "properties": {
         "address": {
+          "description": "Shipping address.",
           "$ref": "address.json"
         },
         "name": {
+          "description": "Recipient name.",
           "type": ["null", "string"]
         }
       }
     },
     "shipping_options": {
+      "description": "Available shipping options.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "shipping_amount": {
+            "description": "Shipping amount.",
             "type": ["null", "integer"]
           },
           "shipping_rate": {
+            "description": "Rate for shipping.",
             "type": ["null", "string"]
           }
         }
       }
     },
-    "status": { "type": ["null", "string"] },
+    "status": {
+      "description": "Overall status of the session.",
+      "type": ["null", "string"]
+    },
     "payment_method_configuration_details": {
+      "description": "Details of payment method configuration.",
       "$ref": "payment_method_configuration_details.json"
     },
     "client_secret": {
+      "description": "Client secret used for authentication.",
       "type": ["null", "string"]
     },
     "ui_mode": {
+      "description": "UI mode for displaying the session.",
       "type": ["null", "string"]
     }
   }
