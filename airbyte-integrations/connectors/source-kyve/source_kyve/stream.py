@@ -80,19 +80,19 @@ class KYVEStream(HttpStream, IncrementalMixin):
                 "type": "object",
                 "properties": {
                     "height": {"type": "integer"},
-                    "value": {"type": "any"},
+                    "value": {},
                     "type": {"type": "string"},
                     "array_index": {"type": "integer"},
                     "offset": {"type": "string"},
                 },
-                "required": ["key", "value"],
+                "required": ["height", "value"],
             }
         else:
             # This is KYVE's default schema and won't be changed.
             schema = {
                 "$schema": "http://json-schema.org/draft-04/schema#",
                 "type": "object",
-                "properties": {"key": {"type": "string"}, "value": {"type": "any"}, "offset": {"type": "string"}},
+                "properties": {"key": {"type": "string"}, "value": {}, "offset": {"type": "string"}},
                 "required": ["key", "value"],
             }
 

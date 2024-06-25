@@ -4,7 +4,7 @@
 config = {
     "pool_ids": "0",
     "start_ids": "0",
-    "url_base": "https://api.korellia.kyve.network",
+    "url_base": "https://api.kyve.network",
     "start_keys": "0",
     "end_keys": "9999999999",
     "tendermint_normalization": False,
