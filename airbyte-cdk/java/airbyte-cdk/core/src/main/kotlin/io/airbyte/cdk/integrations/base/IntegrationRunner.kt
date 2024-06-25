@@ -217,6 +217,10 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
+            //if (typeof e is DebeziumException) {
+             //   e = e.getFirstExcption
+            //}
+
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
             // attempt is made
             // to

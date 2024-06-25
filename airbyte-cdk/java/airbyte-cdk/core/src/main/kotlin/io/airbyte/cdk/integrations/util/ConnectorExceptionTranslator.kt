@@ -8,6 +8,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.exceptions.TransientErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.ObjectInputFilter.Config
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -17,21 +18,20 @@ const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
 const val DATABASE_CONNECTION_ERROR: String =
     "Encountered an error while connecting to the database error"
 
+
 class ConnectorErrorProfile {
-    var id: Int = 0
     var errorClass: String? = null
     var regexMatchingPattern: String? = null
-    var errorType: String? = null // config, transient, system
+    var failureType: String? = null // config, transient, system
     var externalMessage: String? = null
     var sampleInternalMessage: String? = null
     var referenceLink: List<String>? = null
 
-    constructor(id: Int, errorClass: String?, regexMatchingPattern: String?,
-                errorType: String?, externalMessage: String?, sampleInternalMessage: String?, referenceLink: List<String>?) {
-        this.id = id
+    constructor(errorClass: String?, regexMatchingPattern: String?,
+                failureType: String?, externalMessage: String?, sampleInternalMessage: String?, referenceLink: List<String>?) {
         this.errorClass = errorClass
         this.regexMatchingPattern = regexMatchingPattern
-        this.errorType = errorType
+        this.failureType = failureType
         this.externalMessage = externalMessage
         this.sampleInternalMessage = sampleInternalMessage
         this.referenceLink = referenceLink
@@ -43,7 +43,9 @@ class ConnectorErrorProfile {
  *  translating internal exception error messages to external user-friendly error messages.
  */
 abstract class ConnectorExceptionTranslator {
-
+    @kotlin.jvm.JvmField
+    var DATABASE_READ_ERROR: String =
+        "Encountered an error while reading the database"
 
     /**
      * Translates an internal exception message to an external user-friendly message.
@@ -74,7 +76,7 @@ abstract class ConnectorExceptionTranslator {
      * This method should be implemented by individual connectors that wish to translate
      * connector specific error messages.
      */
-    open fun initializeErrorDictionary() {}
+    //open fun initializeErrorDictionary() {}
 
     /**
      * Translates a connector specific error message to an external user-friendly message.
@@ -87,4 +89,19 @@ abstract class ConnectorExceptionTranslator {
 
     public open var connectorErrorDictionary: List<ConnectorErrorProfile> = listOf()
 
+    fun checkErrorType(e: Throwable?, failureType: String?): Boolean {
+        for (error in connectorErrorDictionary) {
+            if (error.failureType == failureType && e!!.message!!.matches(error.regexMatchingPattern!!.toRegex()))
+                return true
+        }
+        return false
+    }
+
+    fun isTransientError(e: Throwable?): Boolean {
+        return (e is TransientErrorException) || checkErrorType(e, "transient")
+    }
+
+    fun isConfigError(e: Throwable?): Boolean {
+        return  (e is ConfigErrorException)  ||  checkErrorType(e, "config")
+    }
 }

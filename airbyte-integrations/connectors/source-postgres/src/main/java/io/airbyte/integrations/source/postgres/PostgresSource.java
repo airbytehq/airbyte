@@ -702,10 +702,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   public static void main(final String[] args) throws Exception {
     final Source source = PostgresSource.sshWrappedSource(new PostgresSource());
-
-    final PostgresExceptionTranslator pgSourceExceptionTranslator = new PostgresExceptionTranslator();
+    final PostgresSourceExceptionTranslator exceptionTranslator = new PostgresSourceExceptionTranslator();
     LOGGER.info("starting source: {}", PostgresSource.class);
-    new IntegrationRunner(source).run(args, pgSourceExceptionTranslator);
+    new IntegrationRunner(source).run(args, exceptionTranslator);
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
 

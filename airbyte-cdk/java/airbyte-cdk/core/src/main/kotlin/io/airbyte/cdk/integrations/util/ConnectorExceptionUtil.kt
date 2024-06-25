@@ -135,16 +135,16 @@ object ConnectorExceptionUtil {
 
     private val TRANSIENT_SQL_EXCEPTION_MESSAGE: Array<String> =
         arrayOf(
-            "an i/o error occurred while sending to the backend",
-            "temporary file size exceeds temp_file_limit"
+            "an i/o error occurred while sending to the backend",  // postgres
+            "temporary file size exceeds temp_file_limit" //postgres
         )
     private val TRANSIENT_EOF_EXCEPTION_MESSAGE: Array<String> =
         arrayOf(
-            "connection was unexpectedly lost",
-            "can not read response from server. expected to read"
+            "connection was unexpectedly lost",  // mysql
+            "can not read response from server. expected to read"    // mysql
         )
     private val RECOVERY_CONNECTION_EXCEPTION_MESSAGE: Array<String> =
-        arrayOf("due to conflict with recovery")
+        arrayOf("due to conflict with recovery") // postgres
 
     private fun isTransientErrorException(e: Throwable?): Boolean {
         return e is TransientErrorException
