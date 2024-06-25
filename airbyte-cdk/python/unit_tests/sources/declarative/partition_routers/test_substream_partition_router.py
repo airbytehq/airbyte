@@ -22,12 +22,21 @@ all_parent_data = data_first_parent_slice + data_second_parent_slice + data_thir
 parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
 second_parent_stream_slice = [StreamSlice(partition={"slice": "second_parent"}, cursor_slice={})]
 
+data_first_parent_slice_with_cursor = [
+    {"id": 0, "slice": "first", "data": "A", "cursor": "first_cursor_0"},
+    {"id": 1, "slice": "first", "data": "B", "cursor": "first_cursor_1"},
+]
+data_second_parent_slice_with_cursor = [{"id": 2, "slice": "second", "data": "C", "cursor": "second_cursor_2"}]
+all_parent_data_with_cursor = data_first_parent_slice_with_cursor + data_second_parent_slice_with_cursor
+
 
 class MockStream(DeclarativeStream):
-    def __init__(self, slices, records, name):
+    def __init__(self, slices, records, name, cursor_field=None):
         self._slices = slices
         self._records = records
+        self._cursor_field = cursor_field
         self._name = name
+        self._state = {"states": []}
 
     @property
     def name(self) -> str:
@@ -36,6 +45,14 @@ class MockStream(DeclarativeStream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return "id"
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]) -> None:
+        self._state = value
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -55,10 +72,17 @@ class MockStream(DeclarativeStream):
     ) -> Iterable[Mapping[str, Any]]:
         # The parent stream's records should always be read as full refresh
         assert sync_mode == SyncMode.full_refresh
+
         if not stream_slice:
-            yield from self._records
+            result = self._records
         else:
-            yield from [r for r in self._records if r["slice"] == stream_slice["slice"]]
+            result = [r for r in self._records if r["slice"] == stream_slice["slice"]]
+
+        yield from result
+
+        # Update the state only after reading the full slice
+        if stream_slice and self._cursor_field and result:
+            self._state["states"].append({self._cursor_field: result[-1][self._cursor_field], "partition": stream_slice["slice"]})
 
 
 @pytest.mark.parametrize(
@@ -106,20 +130,24 @@ class MockStream(DeclarativeStream):
             ],
         ),
         (
-                [
-                    ParentStreamConfig(
-                        stream=MockStream([StreamSlice(partition=p, cursor_slice={"start": 0, "end": 1}) for p in parent_slices], all_parent_data, "first_stream"),
-                        parent_key="id",
-                        partition_field="first_stream_id",
-                        parameters={},
-                        config={},
-                    )
-                ],
-                [
-                    {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
-                    {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
-                    {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
-                ],
+            [
+                ParentStreamConfig(
+                    stream=MockStream(
+                        [StreamSlice(partition=p, cursor_slice={"start": 0, "end": 1}) for p in parent_slices],
+                        all_parent_data,
+                        "first_stream",
+                    ),
+                    parent_key="id",
+                    partition_field="first_stream_id",
+                    parameters={},
+                    config={},
+                )
+            ],
+            [
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
+                {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
+            ],
         ),
         (
             [
@@ -299,6 +327,41 @@ def test_request_option(
     assert partition_router.get_request_headers(stream_slice=stream_slice) == expected_headers
     assert partition_router.get_request_body_json(stream_slice=stream_slice) == expected_body_json
     assert partition_router.get_request_body_data(stream_slice=stream_slice) == expected_body_data
+
+
+@pytest.mark.parametrize(
+    "parent_stream_config, expected_state",
+    [
+        (
+            ParentStreamConfig(
+                stream=MockStream(parent_slices, all_parent_data_with_cursor, "first_stream", cursor_field="cursor"),
+                parent_key="id",
+                partition_field="first_stream_id",
+                parameters={},
+                config={},
+                incremental_dependency=True,
+            ),
+            {
+                "first_stream": {
+                    "states": [{"cursor": "first_cursor_1", "partition": "first"}, {"cursor": "second_cursor_2", "partition": "second"}]
+                }
+            },
+        ),
+    ],
+    ids=[
+        "test_incremental_dependency_state_update_with_cursor",
+    ],
+)
+def test_substream_slicer_parent_state_update_with_cursor(parent_stream_config, expected_state):
+    partition_router = SubstreamPartitionRouter(parent_stream_configs=[parent_stream_config], parameters={}, config={})
+
+    # Simulate reading the records and updating the state
+    for _ in partition_router.stream_slices():
+        pass  # This will process the slices and should update the parent state
+
+    # Check if the parent state has been updated correctly
+    parent_state = partition_router.get_stream_state()
+    assert parent_state == expected_state
 
 
 @pytest.mark.parametrize(

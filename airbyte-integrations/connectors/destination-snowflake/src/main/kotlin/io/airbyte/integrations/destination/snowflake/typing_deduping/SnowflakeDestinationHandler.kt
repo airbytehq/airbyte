@@ -25,7 +25,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
@@ -86,16 +85,8 @@ class SnowflakeDestinationHandler(
     @Throws(Exception::class)
     private fun getInitialRawTableState(
         id: StreamId,
-        destinationSyncMode: DestinationSyncMode
     ): InitialRawTableStatus {
         // Short-circuit for overwrite, table will be truncated anyway
-        if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-            return InitialRawTableStatus(
-                rawTableExists = false,
-                hasUnprocessedRecords = false,
-                maxProcessedTimestamp = Optional.empty()
-            )
-        }
         val tableExists =
             database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
                 LOGGER.info("Retrieving table from Db metadata: {} {}", id.rawNamespace, id.rawName)
@@ -397,8 +388,7 @@ class SnowflakeDestinationHandler(
                             !existingSchemaMatchesStreamConfig(streamConfig, existingTable!!)
                         isFinalTableEmpty = hasRowCount && tableRowCounts[namespace]!![name] == 0
                     }
-                    val initialRawTableState =
-                        getInitialRawTableState(streamConfig.id, streamConfig.destinationSyncMode)
+                    val initialRawTableState = getInitialRawTableState(streamConfig.id)
                     val destinationState =
                         destinationStates.getOrDefault(
                             streamConfig.id.asPair(),
