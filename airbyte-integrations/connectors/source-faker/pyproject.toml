@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "6.1.4"
+version = "6.2.0"
 name = "source-faker"
 description = "Source implementation for fake but realistic looking data."
 authors = [ "Airbyte <evan@airbyte.io>",]
@@ -16,9 +16,9 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_faker"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = ">=0.73.0,<2.0"
-mimesis = "==6.1.1"
+python = "^3.9,<4.0"
+airbyte-cdk = "^2.0"
+mimesis = "^11.0"
 
 [tool.poetry.scripts]
 source-faker = "source_faker.run:run"
