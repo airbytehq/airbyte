@@ -15,6 +15,13 @@ private val logger = KotlinLogging.logger {}
 class AirbyteMessageDeserializer(
     private val dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
 ) {
+    class UnrecognizedAirbyteMessageTypeException(private val unrecognizedType: String) :
+        Exception(unrecognizedType) {
+        override fun toString(): String {
+            return "Could not deserialize AirbyteMessage: unrecognized type: $unrecognizedType"
+        }
+    }
+
     /**
      * Deserializes to a [PartialAirbyteMessage] which can represent both a Record, State, or Trace
      * Message.
@@ -32,34 +39,33 @@ class AirbyteMessageDeserializer(
      */
     fun deserializeAirbyteMessage(
         message: String?,
-    ): PartialAirbyteMessage? {
+    ): PartialAirbyteMessage {
         // TODO: This is doing some sketchy assumptions by deserializing either the whole or the
         // partial based on type.
         // Use JsonSubTypes and extend StdDeserializer to properly handle this.
         // Make immutability a first class citizen in the PartialAirbyteMessage class.
         val partial =
             try {
-                try {
-                    Jsons.deserializeExactUnchecked(message, PartialAirbyteMessage::class.java)
-                } catch (e: ValueInstantiationException) {
-                    // This is a hack to catch unrecognized message types. Jackson supports
-                    // the equivalent via annotations, but we cannot use them because the
-                    // AirbyteMessage
-                    // is generated from json-schema.
-                    val pat =
-                        Regex(
-                            "Cannot construct instance of .*AirbyteMessage.Type., problem: ([_A-Z]+)"
-                        )
-                    val match = pat.find(e.message!!)
-                    if (match != null) {
-                        val unrecognized = match.groups[1]?.value
-                        logger.warn { "Unrecognized message type: $unrecognized" }
-                        return null
-                    } else {
-                        throw e
-                    }
+                Jsons.deserializeExactUnchecked(message, PartialAirbyteMessage::class.java)
+            } catch (e: ValueInstantiationException) {
+                // This is a hack to catch unrecognized message types. Jackson supports
+                // the equivalent via annotations, but we cannot use them because the
+                // AirbyteMessage
+                // is generated from json-schema.
+                val pat =
+                    Regex("Cannot construct instance of .*AirbyteMessage.Type., problem: ([_A-Z]+)")
+                val match = pat.find(e.message!!)
+                if (match != null) {
+                    val unrecognized = match.groups[1]?.value
+                    logger.warn { "Unrecognized message type: $unrecognized" }
+                    throw UnrecognizedAirbyteMessageTypeException(unrecognized!!)
+                } else {
+                    val obfuscated = Jsons.obfuscate(e)
+                    throw RuntimeException(
+                        "ValueInstantiationException when deserializing PartialAirbyteMessage: $obfuscated"
+                    )
                 }
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
                 val obfuscated = Jsons.obfuscate(e)
                 throw RuntimeException("Could not deserialize PartialAirbyteMessage: $obfuscated")
             }
