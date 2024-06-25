@@ -10,9 +10,6 @@ import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.functional.Either
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.EOFException
-import java.sql.SQLException
-import java.sql.SQLSyntaxErrorException
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 private val LOGGER = KotlinLogging.logger {}
