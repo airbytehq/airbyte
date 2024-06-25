@@ -23,6 +23,7 @@ The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
+| 0.2.3 | 2024-06-25 | [40476](https://github.com/airbytehq/airbyte/pull/40476) | Update dependencies |
 | 0.2.2 | 2024-06-22 | [40059](https://github.com/airbytehq/airbyte/pull/40059) | Update dependencies |
 | 0.2.1 | 2024-06-11 | [39407](https://github.com/airbytehq/airbyte/pull/39407) | Fix Organic In-App Events Stream |
 | 0.2.0 | 2024-05-19 | [38339](https://github.com/airbytehq/airbyte/pull/38339) | Migrate to [AppyFlyer API V2](https://support.appsflyer.com/hc/en-us/articles/12399683708305-Bulletin-API-token-changes?query=token) |
