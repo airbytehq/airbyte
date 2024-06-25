@@ -36,12 +36,8 @@ public class MySQLDestinationStrictEncrypt extends SpecModifyingDestination impl
     LOGGER.info("starting destination: {}", MySQLDestinationStrictEncrypt.class);
     try {
       new IntegrationRunner(destination).run(args);
-    } catch (SQLSyntaxErrorException e) {
-      if (e.getMessage().toLowerCase().contains("access denied")) {
-        throw new ConfigErrorException("Acces denied. Please check your configuration", e);
-      } else {
-        throw e;
-      }
+    } catch (Exception e) {
+      MySQLDestination.handleException(e);
     }
     LOGGER.info("completed destination: {}", MySQLDestinationStrictEncrypt.class);
   }

@@ -187,17 +187,23 @@ public class MySQLDestination extends AbstractJdbcDestination<MinimumDestination
     return true;
   }
 
+  static void handleException(Exception e) throws Exception {
+    if (e instanceof SQLSyntaxErrorException s) {
+      if (s.getMessage().toLowerCase().contains("access denied")) {
+        throw new ConfigErrorException("Access denied. Please check your configuration", s);
+      }
+    }
+
+    throw e;
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = MySQLDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MySQLDestination.class);
     try {
       new IntegrationRunner(destination).run(args);
-    } catch (SQLSyntaxErrorException e) {
-      if (e.getMessage().toLowerCase().contains("access denied")) {
-        throw new ConfigErrorException("Acces denied. Please check your configuration", e);
-      } else {
-        throw e;
-      }
+    } catch (Exception e) {
+      handleException(e);
     }
     LOGGER.info("completed destination: {}", MySQLDestination.class);
   }
