@@ -26,6 +26,6 @@ class HourlyDatetimeBasedCursor(DatetimeBasedCursor):
 
         :return:
         """
-        end_datetime = self._select_best_end_datetime()
-        start_datetime = self._calculate_earliest_possible_value(self._select_best_end_datetime()).replace(hour=0, minute=0, second=0)
+        end_datetime = self.select_best_end_datetime()
+        start_datetime = self._calculate_earliest_possible_value(self.select_best_end_datetime()).replace(hour=0, minute=0, second=0)
         return self._partition_daterange(start_datetime, end_datetime, self._step)

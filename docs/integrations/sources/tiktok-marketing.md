@@ -126,7 +126,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
-| 4.0.0   | 2024-05-22 | [38316](https://github.com/airbytehq/airbyte/pull/38316) | Migration to low-code CDK; Support include deleted statuses for Ads, Ad Groups and Campaign streams.        |
+| 4.0.0   | 2024-06-25 | [38316](https://github.com/airbytehq/airbyte/pull/38316) | Migration to low-code CDK; Support include deleted statuses for Ads, Ad Groups and Campaign streams.        |
+| 3.9.9   | 2024-06-22 | [40133](https://github.com/airbytehq/airbyte/pull/40133) | Update dependencies                                                                                         |
 | 3.9.8   | 2024-06-06 | [39253](https://github.com/airbytehq/airbyte/pull/39253) | [autopull] Upgrade base image to v1.2.2                                                                     |
 | 3.9.7   | 2024-05-15 | [38250](https://github.com/airbytehq/airbyte/pull/38250) | Replace AirbyteLogger with logging.Logger and upgrade to latest base image                                  |
 | 3.9.6   | 2024-04-19 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Updating to 0.80.0 CDK                                                                                      |

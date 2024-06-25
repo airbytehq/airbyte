@@ -198,9 +198,11 @@ For more information regarding configuration parameters, please see [MongoDb Doc
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| 1.3.15  | 2024-05-30 | [38781](https://github.com/airbytehq/airbyte/pull/38781) | Sync sending trace status messages indicating progress.                                                       |
-| 1.3.14  | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                                                              |
+|:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------|
+| 1.4.1   | 2024-06-11 | [39530](https://github.com/airbytehq/airbyte/pull/39530) | Adopt new CDK.                                                                                            |
+| 1.4.0   | 2024-06-11 | [38238](https://github.com/airbytehq/airbyte/pull/38238) | Update mongodbv2 to use dbz 2.6.2                                                                         |
+| 1.3.15  | 2024-05-30 | [38781](https://github.com/airbytehq/airbyte/pull/38781) | Sync sending trace status messages indicating progress.                                                   |
+| 1.3.14  | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                        |
 | 1.3.13  | 2024-05-09 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Support reading collection with a binary \_id type.                                                       |
 | 1.3.12  | 2024-05-07 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Upgrade debezium to version 2.5.1.                                                                        |
 | 1.3.11  | 2024-05-02 | [37753](https://github.com/airbytehq/airbyte/pull/37753) | Chunk size(limit) should correspond to ~1GB of data.                                                      |

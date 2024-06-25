@@ -87,6 +87,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                    | Subject                                                  |
 | :------ | :--------- | :---------------------------------------------- | :------------------------------------------------------- |
+| 0.1.6   | 2024-06-24 | https://github.com/airbytehq/airbyte/pull/39455 | Fix for Parameter 2 length size                          |
 | 0.1.5   | 2024-01-12 | https://github.com/airbytehq/airbyte/pull/33872 | Added Primary Index on \_airbyte_ab_id to fix NoPI issue |
 | 0.1.4   | 2023-12-04 | https://github.com/airbytehq/airbyte/pull/28667 | Make connector available on Airbyte Cloud                |
 | 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation                         |

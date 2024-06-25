@@ -1363,6 +1363,9 @@
       "description": "ID of the product set linked to the ad creative.",
       "type": ["null", "string"]
     },
+    "source_instagram_media_id": {
+      "type": ["null", "string"]
+    },
     "status": {
       "description": "Status of the ad creative.",
       "type": ["null", "string"]
