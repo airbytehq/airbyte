@@ -9,8 +9,10 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import java.sql.SQLSyntaxErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,15 @@ public class MySQLDestinationStrictEncrypt extends SpecModifyingDestination impl
   public static void main(final String[] args) throws Exception {
     final Destination destination = new MySQLDestinationStrictEncrypt();
     LOGGER.info("starting destination: {}", MySQLDestinationStrictEncrypt.class);
-    new IntegrationRunner(destination).run(args);
+    try {
+      new IntegrationRunner(destination).run(args);
+    } catch (SQLSyntaxErrorException e) {
+      if (e.getMessage().toLowerCase().contains("access denied")) {
+        throw new ConfigErrorException("Acces denied. Please check your configuration", e);
+      } else {
+        throw e;
+      }
+    }
     LOGGER.info("completed destination: {}", MySQLDestinationStrictEncrypt.class);
   }
 
