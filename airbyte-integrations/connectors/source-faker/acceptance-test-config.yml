@@ -18,6 +18,8 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
+        setup_script_path: integration_tests/setup.sh
+        teardown_script_path: integration_tests/teardown.sh
         expect_records:
           path: integration_tests/expected_records.jsonl
   full_refresh:

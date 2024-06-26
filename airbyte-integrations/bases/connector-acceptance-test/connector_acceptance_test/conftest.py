@@ -127,6 +127,24 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
     return SecretDict(json.loads(contents))
 
 
+@pytest.fixture(name="setup_script_path")
+def setup_script_path_fixture(inputs, base_path, acceptance_test_config) -> Optional[Path]:
+    """Fixture with connector's setup script path, if it exists."""
+    if hasattr(inputs, "setup_script_path"):
+        filepath = getattr(inputs, "setup_script_path")
+        if filepath:
+            return Path(base_path) / filepath
+
+
+@pytest.fixture(name="teardown_script_path")
+def teardown_script_path_fixture(inputs, base_path, acceptance_test_config) -> Optional[Path]:
+    """Fixture with connector's teardown script path, if it exists."""
+    if hasattr(inputs, "teardown_script_path"):
+        filepath = getattr(inputs, "teardown_script_path")
+        if filepath:
+            return Path(base_path) / filepath
+
+
 @pytest.fixture(name="invalid_connector_config")
 def invalid_connector_config_fixture(base_path, invalid_connector_config_path) -> MutableMapping[str, Any]:
     """TODO: implement default value - generate from valid config"""
@@ -190,15 +208,22 @@ def docker_runner_fixture(
 
 
 @pytest.fixture(autouse=True)
-async def setup_and_teardown(request: "SubRequest", connector_container: dagger.Container, connector_config: SecretDict, docker_runner: connector_runner.ConnectorRunner):
-    if request.node.get_closest_marker("setup"):  # TODO: AND path to setup script exists in acceptance_test_config
+async def setup_and_teardown(
+    request: "SubRequest",
+    connector_container: dagger.Container,
+    connector_config: SecretDict,
+    docker_runner: connector_runner.ConnectorRunner,
+    dagger_client: dagger.Client,
+    setup_script_path: Optional[Path],
+    teardown_script_path: Optional[Path],
+):
+    if request.node.get_closest_marker("setup") and setup_script_path:
         print("Running setup")
-        # TODO: get filepath from acceptance-test-config.yml
-        await docker_runner.do_setup(connector_container, connector_config)
+        await docker_runner.do_setup(dagger_client, connector_container, connector_config, setup_script_path)
     yield None
-    if request.node.get_closest_marker("teardown"):  # TODO: AND path to teardown script exists in acceptance_test_config
+    if request.node.get_closest_marker("teardown") and teardown_script_path:
         print("Running teardown")
-        await docker_runner.do_teardown(connector_container, connector_config)
+        await docker_runner.do_teardown(dagger_client, connector_container, connector_config, teardown_script_path)
 
 
 @pytest.fixture(name="previous_connector_image_name")
