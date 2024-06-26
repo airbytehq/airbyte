@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - Accounts
+    - accounts
 
 definitions:
   base_requester:
@@ -18,7 +18,7 @@ definitions:
   streams:
     Accounts:
       type: DeclarativeStream
-      name: Accounts
+      name: accounts
       primary_key:
         - sid
       retriever:
@@ -39,7 +39,7 @@ definitions:
           $ref: "#/schemas/Accounts"
     Addresses:
       type: DeclarativeStream
-      name: Addresses
+      name: addresses
       primary_key:
         - sid
       retriever:
@@ -93,7 +93,7 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - username
+      - account_sid
       - base_api_url
       - studio_base_api_url
       - start_date
