@@ -7,9 +7,9 @@ from typing import Any
 
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
-from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
+from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase, apply_airbyte_docker_labels
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.dagger.actions.python.common import with_python_connector_installed
+from pipelines.consts import MANIFEST_FILE_PATH
 from pipelines.models.steps import StepResult
 from pydash.objects import get
 
@@ -42,25 +42,14 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             Container: The connector container built from the base image.
         """
         self.logger.info(f"Building connector from base image in metadata for {platform}")
-        base = self._get_base_container(platform)
 
-        customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
-        entrypoint = build_customization.get_entrypoint(self.context.connector)
-
-        manifest_file_name = "manifest.yaml"
-
-        connector_container = (
-            customized_base.with_file(
-                f"source_declarative_manifest/{manifest_file_name}",
-                (await self.context.get_connector_dir(include=[manifest_file_name])).file(manifest_file_name),
-            )
-            .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
-            .with_entrypoint(entrypoint)
-            .with_label("io.airbyte.version", self.context.connector.metadata["dockerImageTag"])
-            .with_label("io.airbyte.name", self.context.connector.metadata["dockerRepository"])
+        base_container = self._get_base_container(platform).with_file(
+            f"source_declarative_manifest/{MANIFEST_FILE_PATH}",
+            (await self.context.get_connector_dir(include=[MANIFEST_FILE_PATH])).file(MANIFEST_FILE_PATH),
         )
-        customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
-        return customized_connector
+
+        connector_container = build_customization.apply_airbyte_entrypoint(base_container, self.context.connector)
+        return connector_container
 
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:
