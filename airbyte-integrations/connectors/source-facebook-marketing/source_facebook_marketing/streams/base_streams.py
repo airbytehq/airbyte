@@ -275,7 +275,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         """Additional filters associated with state if any set"""
 
         state_value = stream_state.get(self.cursor_field)
-        if stream_state:
+        if stream_state and state_value:
             filter_value = pendulum.parse(state_value)
         elif self._start_date:
             filter_value = self._start_date
