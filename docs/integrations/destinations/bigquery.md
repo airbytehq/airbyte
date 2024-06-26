@@ -223,6 +223,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.1   | 2024-06-25 | [39379](https://github.com/airbytehq/airbyte/pull/38331)   | Removing requirement of a redundant permission bigquery.datasets.create permission                                                                              |
 | 2.8.0   | 2024-06-21 | [39904](https://github.com/airbytehq/airbyte/pull/39904)   | Convert all production code to kotlin                   |
 | 2.7.1   | 2024-06-17 | [39526](https://github.com/airbytehq/airbyte/pull/39526)   | Internal code change for improved error reporting in case of source/platform failure (`INCOMPLETE` stream status / empty ConfiguredCatalog).                    |
 | 2.7.0   | 2024-06-17 | [38713](https://github.com/airbytehq/airbyte/pull/38713)   | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.0 before upgrading to this connector version. |
