@@ -225,6 +225,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4.5 | 2024-06-25 | [40404](https://github.com/airbytehq/airbyte/pull/40404) | Update dependencies |
 | 5.4.4 | 2024-06-22 | [40040](https://github.com/airbytehq/airbyte/pull/40040) | Update dependencies |
 | 5.4.3 | 2024-06-06 | [39284](https://github.com/airbytehq/airbyte/pull/39284) | [autopull] Upgrade base image to v1.2.2 |
 | 5.4.2 | 2024-06-11 | [39412](https://github.com/airbytehq/airbyte/pull/39412) | Removed `invoice.upcomming` event type from (incremental sync) for `Invoices` stream |
