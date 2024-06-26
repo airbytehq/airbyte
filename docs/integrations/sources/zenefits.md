@@ -53,6 +53,8 @@ You can replicate the following tables using the Zenefits connector:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.7 | 2024-06-25 | [40264](https://github.com/airbytehq/airbyte/pull/40264) | Update dependencies |
+| 0.2.6 | 2024-06-22 | [40055](https://github.com/airbytehq/airbyte/pull/40055) | Update dependencies |
 | 0.2.5 | 2024-06-04 | [39086](https://github.com/airbytehq/airbyte/pull/39086) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.4 | 2024-04-19 | [37303](https://github.com/airbytehq/airbyte/pull/37303) | Updating to 0.80.0 CDK |
 | 0.2.3 | 2024-04-18 | [37303](https://github.com/airbytehq/airbyte/pull/37303) | Manage dependencies with Poetry. |

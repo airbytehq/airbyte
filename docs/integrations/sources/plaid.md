@@ -73,6 +73,8 @@ This guide will walk through how to create the credentials you need to run this 
 
 | Version | Date       | Pull Request                                             | Subject                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------ |
+| 0.4.4 | 2024-06-25 | [40379](https://github.com/airbytehq/airbyte/pull/40379) | Update dependencies |
+| 0.4.3 | 2024-06-22 | [40147](https://github.com/airbytehq/airbyte/pull/40147) | Update dependencies |
 | 0.4.2 | 2024-06-04 | [38963](https://github.com/airbytehq/airbyte/pull/38963) | [autopull] Upgrade base image to v1.2.1 |
 | 0.4.1 | 2024-05-31 | [38810](https://github.com/airbytehq/airbyte/pull/38810) | [autopull] Migrate to base image and poetry |
 | 0.4.0 | 2023-08-17 | [29127](https://github.com/airbytehq/airbyte/pull/29127) | Rewrote connector to no-code SDK |

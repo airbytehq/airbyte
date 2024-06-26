@@ -84,6 +84,9 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.6 | 2024-06-25 | [40468](https://github.com/airbytehq/airbyte/pull/40468) | Update dependencies |
+| 0.2.5 | 2024-06-23 | [40225](https://github.com/airbytehq/airbyte/pull/40225) | Update dependencies |
+| 0.2.4 | 2024-06-22 | [40047](https://github.com/airbytehq/airbyte/pull/40047) | Update dependencies |
 | 0.2.3 | 2024-06-04 | [38955](https://github.com/airbytehq/airbyte/pull/38955) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.2 | 2024-06-04 | [#39092](https://github.com/airbytehq/airbyte/pull/39092) | Fix writing when multiple chunks exist for a document.
 | 0.2.1 | 2024-06-03 | [#38830](https://github.com/airbytehq/airbyte/pull/38830) | Add handling for unexpected/undefined state codes.
