@@ -9,6 +9,8 @@ The Airbyte Source for [Yahoo Finance Price](https://finance.yahoo.com/)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.8 | 2024-06-25 | [40433](https://github.com/airbytehq/airbyte/pull/40433) | Update dependencies |
+| 0.2.7 | 2024-06-21 | [39928](https://github.com/airbytehq/airbyte/pull/39928) | Update dependencies |
 | 0.2.6 | 2024-06-06 | [39274](https://github.com/airbytehq/airbyte/pull/39274) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.5 | 2024-05-28 | [38602](https://github.com/airbytehq/airbyte/pull/38602) | Remove parameters macro and make compatible with builder |
 | 0.2.4 | 2024-04-19 | [37295](https://github.com/airbytehq/airbyte/pull/37295) | Updating to 0.80.0 CDK |

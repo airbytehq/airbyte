@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 982eaa4c-bba1-4cce-a971-06a41f700b8c
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-zendesk-sell
   githubIssueLabel: source-zendesk-sell
   icon: zendesk.svg

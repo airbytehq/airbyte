@@ -65,8 +65,10 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 | Version | Date       | Pull Request                                            | Subject                                     |
 | :------ |:-----------| :------------------------------------------------------ |:--------------------------------------------|
-| 0.1.3 | 2024-06-15 | [39508](https://github.com/airbytehq/airbyte/pull/39508) | Make connector compatible with Builder      |
-| 0.1.2 | 2024-06-04 | [38951](https://github.com/airbytehq/airbyte/pull/38951) | [autopull] Upgrade base image to v1.2.1     |
+| 0.1.5 | 2024-06-25 | [40486](https://github.com/airbytehq/airbyte/pull/40486) | Update dependencies |
+| 0.1.4 | 2024-06-21 | [39929](https://github.com/airbytehq/airbyte/pull/39929) | Update dependencies |
+| 0.1.3 | 2024-06-15 | [39508](https://github.com/airbytehq/airbyte/pull/39508) | Make connector compatible with Builder |
+| 0.1.2 | 2024-06-04 | [38951](https://github.com/airbytehq/airbyte/pull/38951) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.1 | 2024-05-20 | [38374](https://github.com/airbytehq/airbyte/pull/38374) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2023-04-15 | [Init](https://github.com/airbytehq/airbyte/pull/25230) | Initial commit                              |
 

@@ -43,6 +43,8 @@ Please read [How to find your API key](https://apidocs.persistiq.com/#introducti
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------|
+| 0.2.5 | 2024-06-25 | [40377](https://github.com/airbytehq/airbyte/pull/40377) | Update dependencies |
+| 0.2.4 | 2024-06-22 | [40039](https://github.com/airbytehq/airbyte/pull/40039) | Update dependencies |
 | 0.2.3 | 2024-06-15 | [38789](https://github.com/airbytehq/airbyte/pull/38789) | Make connector compatible with builder |
 | 0.2.2 | 2024-06-06 | [39288](https://github.com/airbytehq/airbyte/pull/39288) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.1 | 2024-05-13 | [37596](https://github.com/airbytehq/airbyte/pull/37596) | Change `last_records` to `last_record` |

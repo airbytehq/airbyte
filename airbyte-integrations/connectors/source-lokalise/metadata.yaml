@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 45e0b135-615c-40ac-b38e-e65b0944197f
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-lokalise
   githubIssueLabel: source-lokalise
   icon: lokalise.svg

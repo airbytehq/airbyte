@@ -35,6 +35,8 @@ This source is capable of syncing the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
+| 0.1.5 | 2024-06-25 | [40370](https://github.com/airbytehq/airbyte/pull/40370) | Update dependencies |
+| 0.1.4 | 2024-06-21 | [39946](https://github.com/airbytehq/airbyte/pull/39946) | Update dependencies |
 | 0.1.3 | 2024-06-06 | [39207](https://github.com/airbytehq/airbyte/pull/39207) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.2 | 2024-06-05 | [38818](https://github.com/airbytehq/airbyte/pull/38818) | Make compatible with the builder |
 | 0.1.1 | 2024-05-20 | [38425](https://github.com/airbytehq/airbyte/pull/38425) | [autopull] base image + poetry + up_to_date |

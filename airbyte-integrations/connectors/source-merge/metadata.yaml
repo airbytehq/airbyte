@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 23240e9e-d14a-43bc-899f-72ea304d1994
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-merge
   githubIssueLabel: source-merge
   icon: merge.svg
