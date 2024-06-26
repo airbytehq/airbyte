@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-postmarkapp
   documentationUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
   githubIssueLabel: source-postmarkapp

@@ -132,6 +132,8 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 5.0.5 | 2024-06-25 | [40403](https://github.com/airbytehq/airbyte/pull/40403) | Update dependencies |
+| 5.0.4 | 2024-06-21 | [39926](https://github.com/airbytehq/airbyte/pull/39926) | Update dependencies |
 | 5.0.3 | 2024-06-04 | [38962](https://github.com/airbytehq/airbyte/pull/38962) | [autopull] Upgrade base image to v1.2.1 |
 | 5.0.2 | 2024-05-29 | [38737](https://github.com/airbytehq/airbyte/pull/38737) | Update authenticator to `requests_native_auth` package |
 | 5.0.1 | 2024-04-29 | [37655](https://github.com/airbytehq/airbyte/pull/37655) | Update error messages and spec with info about `agency` profile type. |

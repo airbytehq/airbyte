@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 81ca39dc-4534-4dd2-b848-b0cfd2c11fce
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.5
   dockerRepository: airbyte/source-aha
   documentationUrl: https://docs.airbyte.com/integrations/sources/aha
   githubIssueLabel: source-aha

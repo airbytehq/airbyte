@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e300ece7-b073-43a3-852e-8aff36a57f13
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-k6-cloud
   documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
   githubIssueLabel: source-k6-cloud

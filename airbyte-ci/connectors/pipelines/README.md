@@ -164,25 +164,22 @@ At this point you can run `airbyte-ci` commands.
     - [Options](#options-4)
       - [What it runs](#what-it-runs-2)
       - [Python registry publishing](#python-registry-publishing)
-    - [`connectors up_to_date` command](#connectors-up_to_date-command)
+    - [`connectors up-to-date` command](#connectors-up-to-date-command)
     - [Examples](#examples-3)
     - [Other things it could do](#other-things-it-could-do)
-    - [`connectors bump_version` command](#connectors-bump_version-command)
+    - [`connectors bump-version` command](#connectors-bump-version-command)
     - [Examples](#examples-4)
       - [Arguments](#arguments)
     - [`connectors upgrade_cdk` command](#connectors-upgrade_cdk-command)
     - [Examples](#examples-5)
       - [Arguments](#arguments-1)
-    - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image-command)
-    - [Examples](#examples-6)
-    - [Options](#options-5)
-    - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image-command)
+    - [`connectors migrate-to-base-image` command](#connectors-migrate-to-base-image-command)
       - [Examples](#examples-7)
     - [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry-command)
       - [Examples](#examples-8)
-    - [`connectors migrate_to_inline_schemas` command](#connectors-migrate_to_inline_schemas-command)
+    - [`connectors migrate-to-inline-schemas` command](#connectors-migrate-to-inline-schemas-command)
       - [Examples](#examples-9)
-    - [`connectors pull_request` command](#connectors-pull_request-command)
+    - [`connectors pull-request` command](#connectors-pull-request-command)
       - [Examples](#examples-10)
     - [`format` command subgroup](#format-command-subgroup)
     - [Options](#options-6)
@@ -232,7 +229,7 @@ options to the `airbyte-ci` command group.**
 | `--git-revision`                               | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
 | `--diffed-branch`                              | `master`                        |                               | Branch to which the git diff will happen to detect new or modified files.                   |
 | `--gha-workflow-run-id`                        |                                 |                               | GHA CI only - The run id of the GitHub action workflow                                      |
-| `--ci-context`                                 | `manual`                        |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
+| `--ci-context`                                 | `manual`                        |                               | The current CI context: `manual` for manual run, `pull-request`, `nightly_builds`, `master` |
 | `--pipeline-start-timestamp`                   | Current epoch time              | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
 | `--show-dagger-logs/--hide-dagger-logs`        | `--hide-dagger-logs`            |                               | Flag to show or hide the dagger logs.                                                       |
 
@@ -503,24 +500,27 @@ remoteRegistries:
     packageName: airbyte-source-pokeapi
 ```
 
-### <a id="connectors-up_to_date"></a>`connectors up_to_date` command
+### <a id="connectors-up-to-date"></a>`connectors up-to-date` command
 
 Meant to be run on a cron script.
 
 Actions:
 
-- Upgrades dependecies to the current versions
-- Can make a pull request and bump version, changelog
+- Set the latest base image version on selected connectors
+- Run `poetry update` on selected connectors
+- Bump the connector version and update the changelog
+- Open a PR with the changes, set `auto-merge` label on it.
 
 ```
-Usage: airbyte-ci connectors up_to_date [OPTIONS]
+Usage: airbyte-ci connectors up-to-date [OPTIONS]
 
 Options:
-  --dev       Force update when there are only dev changes.
+  --no-bump    Don't bump the version or changelog.
   --dep TEXT  Give a specific set of `poetry add` dependencies to update. For
               example: --dep airbyte-cdk==0.80.0 --dep pytest@^6.2
-  --report    Auto open report browser.
-  --pull      Create a pull request.
+  --open-reports    Auto open reports in the browser.
+  --create-prs      Create pull requests for each updated connector.
+  --auto-merge    Set the auto-merge label on created PRs.
   --help      Show this message and exit.
 ```
 
@@ -528,37 +528,29 @@ Options:
 
 Get source-openweather up to date. If there are changes, bump the version and add to changelog:
 
-- `airbyte-ci connectors --name=source-openweather up_to_date`: upgrades main dependecies
-- `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
-- `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
-- `airbyte-ci connectors --name=source-openweather up_to_date --pull`: make a pull request for it
-- `airbyte-ci connectors --name=source-openweather up_to_date --no-bump`: don't change the version or changelog
+- `airbyte-ci connectors --name=source-openweather up-to-date`: upgrades main dependecies
+- `airbyte-ci connectors --name=source-openweather up-to-date`
+- `airbyte-ci connectors --name=source-openweather up-to-date --create-prs`: make a pull request for it
+- `airbyte-ci connectors --name=source-openweather up-to-date --no-bump`: don't change the version or changelog
 
-### Other things it could do
 
-- upgrade it the latest base image
-- make sure it's the newest version of pytest
-- do a `poetry update` to update everything else
-- make the pull requests on a well known branch, replacing the last one if still open
-- bump the toml and metadata and changelog
-- also bump the manifest version of the CDK
-
-### <a id="connectors-bump_version"></a>`connectors bump_version` command
+### <a id="connectors-bump-version"></a>`connectors bump-version` command
 
 Bump the version of the selected connectors.
+A placeholder will be added to the changelog file for the new entry PR number.
+Use the `connectors pull-request` command to create a PR, it will update the changelog entry with the PR number.
 
 ### Examples
 
 Bump source-openweather:
-`airbyte-ci connectors --name=source-openweather bump_version patch <pr-number> "<changelog-entry>"`
+`airbyte-ci connectors --name=source-openweather bump-version patch "<changelog-entry>"`
 
 #### Arguments
 
-| Argument              | Description                                                            |
-| --------------------- | ---------------------------------------------------------------------- |
-| `BUMP_TYPE`           | major, minor or patch                                                  |
-| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
-| `CHANGELOG_ENTRY`     | The changelog entry that will get added to the connector documentation |
+| Argument          | Description                                                            |
+| ----------------- | ---------------------------------------------------------------------- |
+| `BUMP_TYPE`       | major, minor or patch                                                  |
+| `CHANGELOG_ENTRY` | The changelog entry that will get added to the connector documentation |
 
 ### <a id="connectors-upgrade_cdk"></a>`connectors upgrade_cdk` command
 
@@ -575,25 +567,7 @@ Upgrade for source-openweather:
 | ------------- | ------------------------------------------------------- |
 | `CDK_VERSION` | CDK version to set (default to the most recent version) |
 
-### <a id="connectors-upgrade_base_image"></a>`connectors upgrade_base_image` command
-
-Modify the selected connector metadata to use the latest base image version.
-
-### Examples
-
-Upgrade the base image for source-openweather:
-`airbyte-ci connectors --name=source-openweather upgrade_base_image`
-`airbyte-ci connectors --name=source-openweather upgrade_base_image --changelog --bump patch --pull-request-number 123`
-
-### Options
-
-| Option                  | Required | Default | Mapped environment variable | Description                                                                                                     |
-| ----------------------- | -------- | ------- | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `--docker-hub-username` | True     |         | `DOCKER_HUB_USERNAME`       | Your username to connect to DockerHub. It's used to read the base image registry.                               |
-| `--docker-hub-password` | True     |         | `DOCKER_HUB_PASSWORD`       | Your password to connect to DockerHub. It's used to read the base image registry.                               |
-| `--set-if-not-exists`   | False    | True    |                             | Whether to set or not the baseImage metadata if no connectorBuildOptions is declared in the connector metadata. |
-
-### <a id="connectors-migrate_to_base_image"></a>`connectors migrate_to_base_image` command
+### <a id="connectors-migrate-to-base-image"></a>`connectors migrate-to-base-image` command
 
 Make a connector using a Dockerfile migrate to the base image by:
 
@@ -605,7 +579,7 @@ Make a connector using a Dockerfile migrate to the base image by:
 #### Examples
 
 Migrate source-openweather to use the base image:
-`airbyte-ci connectors --name=source-openweather migrate_to_base_image`
+`airbyte-ci connectors --name=source-openweather migrate-to-base-image`
 
 ### <a id="connectors-migrate-to-poetry"></a>`connectors migrate-to-poetry` command
 
@@ -617,12 +591,12 @@ Migrate source-openweather to use the base image:
 `airbyte-ci connectors --name=source-openweather migrate-to-poetry`
 `airbyte-ci connectors --name=source-openweather migrate-to-poetry --changelog --bump patch`
 
-### <a id="connectors-migrate_to_inline_schemas"></a>`connectors migrate_to_inline_schemas` command
+### <a id="connectors-migrate-to-inline-schemas"></a>`connectors migrate-to-inline-schemas` command
 
 Migrate `.json` schemas into `manifest.yaml` files, when present.
 
 ```
-Usage: airbyte-ci connectors migrate_to_inline_schemas [OPTIONS]
+Usage: airbyte-ci connectors migrate-to-inline-schemas [OPTIONS]
 
 Options:
   --report  Auto open report browser.
@@ -632,14 +606,14 @@ Options:
 #### Examples
 
 Migrate source-quickbooks to use inline schemas:
-`airbyte-ci connectors --name=source-quickbooks migrate_to_inline_schemas`
+`airbyte-ci connectors --name=source-quickbooks migrate-to-inline-schemas`
 
-### <a id="connectors-pull_request"></a>`connectors pull_request` command
+### <a id="connectors-pull-request"></a>`connectors pull-request` command
 
 Makes a pull request for all changed connectors. If the branch already exists, it will update the existing one.
 
 ```
-Usage: airbyte-ci connectors pull_request [OPTIONS]
+Usage: airbyte-ci connectors pull-request [OPTIONS]
 
 Options:
   -m, --message TEXT          Commit message and pull request title and
@@ -652,24 +626,19 @@ Options:
                               (optional - defaults to message or no change).
   --body TEXT                 Body of the PR to be created or edited (optional
                               - defaults to empty or not change).
-  --changelog                 Add message to the changelog for this version.
-  --bump [patch|minor|major]  Bump the metadata.yaml version. Can be `major`,
-                              `minor`, or `patch`.
-  --dry-run                   Don't actually make the pull requests. Just
-                              print the files that would be changed.
   --help                      Show this message and exit.
 ```
 
 #### Examples
 
 Make a PR for all changes, bump the version and make a changelog in those PRs. They will be on the branch ci_update/round2/<connector-name>:
-`airbyte-ci connectors --modified pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
+`airbyte-ci connectors --modified pull-request -m "upgrading connectors" -b ci_update/round2`
 
 Do it just for a few connectors:
-`airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
+`airbyte-ci connectors --name source-aha --name source-quickbooks pull-request -m "upgrading connectors" -b ci_update/round2`
 
 You can also set or set/change the title or body of the PR:
-`airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --title "New title" --body "full body\n\ngoes here"`
+`airbyte-ci connectors --name source-aha --name source-quickbooks pull-request -m "upgrading connectors" -b ci_update/round2 --title "New title" --body "full body\n\ngoes here"`
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
@@ -791,7 +760,9 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-|---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.20.0  | [#38816](https://github.com/airbytehq/airbyte/pull/38816)  | Add command for running all live tests (validation + regression).                                                            |
+| 4.19.0  | [#39600](https://github.com/airbytehq/airbyte/pull/39600)  | Productionize the `up-to-date` command                                                                                       |
 | 4.18.3  | [#39341](https://github.com/airbytehq/airbyte/pull/39341)  | Fix `--use-local-cdk` option: change `no-deps` to `force-reinstall`                                                          |
 | 4.18.2  | [#39483](https://github.com/airbytehq/airbyte/pull/39483)  | Skip IncrementalAcceptanceTests when AcceptanceTests succeed.                                                                |
 | 4.18.1  | [#39457](https://github.com/airbytehq/airbyte/pull/39457)  | Make slugify consistent with live-test                                                                                       |
@@ -799,14 +770,14 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 | 4.17.0  | [#39321](https://github.com/airbytehq/airbyte/pull/39321)  | Bust the java connector build cache flow to get fresh yum packages on a daily basis.                                         |
 | 4.16.0  | [#38772](https://github.com/airbytehq/airbyte/pull/38232)  | Add pipeline to replace usage of AirbyteLogger.                                                                              |
 | 4.15.7  | [#38772](https://github.com/airbytehq/airbyte/pull/38772)  | Fix regression test connector image retrieval.                                                                               |
-| 4.15.6  | [#38783](https://github.com/airbytehq/airbyte/pull/38783)  | Fix a variable access error with `repo_dir` in the `bump_version` command.                                                   |
+| 4.15.6  | [#38783](https://github.com/airbytehq/airbyte/pull/38783)  | Fix a variable access error with `repo_dir` in the `bump-version` command.                                                   |
 | 4.15.5  | [#38732](https://github.com/airbytehq/airbyte/pull/38732)  | Update metadata deploy pipeline to 3.10                                                                                      |
 | 4.15.4  | [#38646](https://github.com/airbytehq/airbyte/pull/38646)  | Make airbyte-ci able to test external repos.                                                                                 |
 | 4.15.3  | [#38645](https://github.com/airbytehq/airbyte/pull/38645)  | Fix typo preventing correct secret mounting on Python connectors integration tests.                                          |
 | 4.15.2  | [#38628](https://github.com/airbytehq/airbyte/pull/38628)  | Introduce ConnectorTestContext to avoid trying fetching connector secret in the PublishContext.                              |
 | 4.15.1  | [#38615](https://github.com/airbytehq/airbyte/pull/38615)  | Do not eagerly fetch connector secrets.                                                                                      |
 | 4.15.0  | [#38322](https://github.com/airbytehq/airbyte/pull/38322)  | Introduce a SecretStore abstraction to fetch connector secrets from metadata files.                                          |
-| 4.14.1  | [#38582](https://github.com/airbytehq/airbyte/pull/38582)  | Fixed bugs in `up_to_date` flags, `pull_request` version change logic.                                                       |
+| 4.14.1  | [#38582](https://github.com/airbytehq/airbyte/pull/38582)  | Fixed bugs in `up-to-date` flags, `pull-request` version change logic.                                                       |
 | 4.14.0  | [#38281](https://github.com/airbytehq/airbyte/pull/38281)  | Conditionally run test suites according to `connectorTestSuitesOptions` in metadata files.                                   |
 | 4.13.3  | [#38221](https://github.com/airbytehq/airbyte/pull/38221)  | Add dagster cloud dev deployment pipeline opitions                                                                           |
 | 4.13.2  | [#38246](https://github.com/airbytehq/airbyte/pull/38246)  | Remove invalid connector test step options.                                                                                  |
@@ -824,7 +795,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 | 4.10.5  | [#37641](https://github.com/airbytehq/airbyte/pull/37641)  | Reintroduce changes from 4.10.0 with a fix.                                                                                  |
 | 4.10.4  | [#37641](https://github.com/airbytehq/airbyte/pull/37641)  | Temporarily revert changes from version 4.10.0                                                                               |
 | 4.10.3  | [#37615](https://github.com/airbytehq/airbyte/pull/37615)  | Fix `KeyError` when running `migrate-to-poetry`                                                                              |
-| 4.10.2  | [#37614](https://github.com/airbytehq/airbyte/pull/37614)  | Fix `UnboundLocalError: local variable 'add_changelog_entry_result' referenced before assignment` in `migrate_to_base_image` |
+| 4.10.2  | [#37614](https://github.com/airbytehq/airbyte/pull/37614)  | Fix `UnboundLocalError: local variable 'add_changelog_entry_result' referenced before assignment` in `migrate-to-base-image` |
 | 4.10.1  | [#37622](https://github.com/airbytehq/airbyte/pull/37622)  | Temporarily disable regression tests in CI                                                                                   |
 | 4.10.0  | [#37616](https://github.com/airbytehq/airbyte/pull/37616)  | Improve modified files comparison when the target branch is from a fork.                                                     |
 | 4.9.0   | [#37440](https://github.com/airbytehq/airbyte/pull/37440)  | Run regression tests with `airbyte-ci connectors test`                                                                       |
@@ -842,7 +813,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 | 4.6.0   | [#35583](https://github.com/airbytehq/airbyte/pull/35583)  | Implement the `airbyte-ci connectors migrate-to-poetry` command.                                                             |
 | 4.5.4   | [#36206](https://github.com/airbytehq/airbyte/pull/36206)  | Revert poetry cache removal during nightly builds                                                                            |
 | 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                            |
-| 4.5.2   | [#35802](https://github.com/airbytehq/airbyte/pull/35802)  | Fix bug with connectors bump_version command                                                                                 |
+| 4.5.2   | [#35802](https://github.com/airbytehq/airbyte/pull/35802)  | Fix bug with connectors bump-version command                                                                                 |
 | 4.5.1   | [#35786](https://github.com/airbytehq/airbyte/pull/35786)  | Declare `live_tests` as an internal poetry package.                                                                          |
 | 4.5.0   | [#35784](https://github.com/airbytehq/airbyte/pull/35784)  | Format command supports kotlin                                                                                               |
 | 4.4.0   | [#35317](https://github.com/airbytehq/airbyte/pull/35317)  | Augment java connector reports to include full logs and junit test results                                                   |
@@ -944,14 +915,14 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 | 2.0.4   | [#31487](https://github.com/airbytehq/airbyte/pull/31487)  | Allow for third party connector selections                                                                                   |
 | 2.0.3   | [#31525](https://github.com/airbytehq/airbyte/pull/31525)  | Refactor folder structure                                                                                                    |
 | 2.0.2   | [#31533](https://github.com/airbytehq/airbyte/pull/31533)  | Pip cache volume by python version.                                                                                          |
-| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate_to_base_image`.                                                               |
+| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate-to-base-image`.                                                               |
 | 2.0.0   | [#31424](https://github.com/airbytehq/airbyte/pull/31424)  | Remove `airbyte-ci connectors format` command.                                                                               |
 | 1.9.4   | [#31478](https://github.com/airbytehq/airbyte/pull/31478)  | Fix running tests for connector-ops package.                                                                                 |
 | 1.9.3   | [#31457](https://github.com/airbytehq/airbyte/pull/31457)  | Improve the connector documentation for connectors migrated to our base image.                                               |
 | 1.9.2   | [#31426](https://github.com/airbytehq/airbyte/pull/31426)  | Concurrent execution of java connectors tests.                                                                               |
 | 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                                                                                    |
-| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                                                 |
-| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                                                 |
+| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade_base_image`, `migrate-to-base-image`.                                                 |
+| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade_base_image`, `migrate-to-base-image`.                                                 |
 | 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                                               |
 | 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                                              |
 | 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                                    |

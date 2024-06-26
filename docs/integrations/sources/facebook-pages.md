@@ -88,6 +88,8 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.0.3 | 2024-06-25 | [40500](https://github.com/airbytehq/airbyte/pull/40500) | Update dependencies |
+| 1.0.2 | 2024-06-22 | [40058](https://github.com/airbytehq/airbyte/pull/40058) | Update dependencies |
 | 1.0.1 | 2024-06-06 | [39243](https://github.com/airbytehq/airbyte/pull/39243) | [autopull] Upgrade base image to v1.2.2 |
 | 1.0.0 | 2024-03-14 | [36015](https://github.com/airbytehq/airbyte/pull/36015) | Upgrade Facebook API to v19.0 |
 | 0.3.0 | 2023-06-26 | [27728](https://github.com/airbytehq/airbyte/pull/27728) | License Update: Elv2 |
