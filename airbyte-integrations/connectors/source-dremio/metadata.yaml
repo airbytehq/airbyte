@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d99e9ace-8621-46c2-9144-76ae4751d64b
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-dremio
   githubIssueLabel: source-dremio
   icon: dremio.svg

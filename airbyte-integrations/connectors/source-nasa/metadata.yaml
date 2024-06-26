@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1a8667d7-7978-43cd-ba4d-d32cbd478971
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-nasa
   githubIssueLabel: source-nasa
   icon: nasa.svg

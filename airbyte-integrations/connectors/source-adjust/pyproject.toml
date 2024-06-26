@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.2"
+version = "0.1.5"
 name = "source-adjust"
 description = "Source implementation for Adjust."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -12,12 +12,11 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/adjust"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-[[tool.poetry.packages]]
-include = "source_adjust"
+packages = [ { include = "source_adjust" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "1.0.0"
 
 [tool.poetry.scripts]
 source-adjust = "source_adjust.run:run"

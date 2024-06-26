@@ -39,11 +39,7 @@ import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categor
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.postgresql.PGProperty.ADAPTIVE_FETCH;
-import static org.postgresql.PGProperty.ADAPTIVE_FETCH_MAXIMUM;
 import static org.postgresql.PGProperty.CURRENT_SCHEMA;
-import static org.postgresql.PGProperty.DEFAULT_ROW_FETCH_SIZE;
-import static org.postgresql.PGProperty.MAX_RESULT_BUFFER;
 import static org.postgresql.PGProperty.PREPARE_THRESHOLD;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -58,6 +54,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -161,18 +158,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
       // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
       // https://github.com/airbytehq/airbyte/issues/24796
-      PREPARE_THRESHOLD, "0",
-      DEFAULT_ROW_FETCH_SIZE, "1",
-      ADAPTIVE_FETCH, "true",
-      MAX_RESULT_BUFFER, "10percent",
-      // The implementation of adaptive fetching in the PG JDBC driver is very optimistic in its
-      // predictions. It determines the fetchSize by taking the maxResultBuffer value and dividing
-      // it by the largest row byte size encountered so far. This fails spectacularly when
-      // streaming from a table whose initial rows are smaller than the rest and therefore requires
-      // setting an upper bound on the fetchSize. Consequently, this adaptive fetching scheme is
-      // only useful to us to avoid OOMing when streaming from tables with particularly large rows,
-      // an edge case where we need to read less than 1000 rows at a time.
-      ADAPTIVE_FETCH_MAXIMUM, "1000");
+      PREPARE_THRESHOLD, "0");
 
   private List<String> schemas;
 
@@ -185,7 +171,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, PostgresStreamingQueryConfig::new, new PostgresSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 

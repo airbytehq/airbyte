@@ -70,6 +70,8 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.4 | 2024-06-25 | [40319](https://github.com/airbytehq/airbyte/pull/40319) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [39961](https://github.com/airbytehq/airbyte/pull/39961) | Update dependencies |
 | 0.2.2 | 2024-05-20 | [38449](https://github.com/airbytehq/airbyte/pull/38449) | [autopull] base image + poetry + up_to_date |
 | 0.2.1 | 2023-05-30 | [27236](https://github.com/airbytehq/airbyte/pull/27236) | Autoformat code |
 | 0.2.0 | 2023-05-30 | [26775](https://github.com/airbytehq/airbyte/pull/26775) | Remove `authSpecification` from spec; update stream schemas. |
