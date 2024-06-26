@@ -646,11 +646,11 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             base_url=f"{self.url_base}{self.path()}",
             stream_name=self.name,
             query=self.query,
+            job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
+            # overide the default job slice size, if provided (it's auto-adjusted, later on)
+            job_size=config.get("bulk_window_in_days", 0.0),
         )
-        # overide the default job slice size, if provided (it's auto-adjusted, later on)
-        self.bulk_window_in_days = config.get("bulk_window_in_days")
-        if self.bulk_window_in_days:
-            self.job_manager.job_size = self.bulk_window_in_days
+
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
 
@@ -729,7 +729,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             return self.config.get("start_date")
 
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
-        slice_size_message = f"Slice size: `P{round(self.job_manager.job_size, 1)}D`"
+        slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
         self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}")
 
     @stream_state_cache.cache_stream_state
