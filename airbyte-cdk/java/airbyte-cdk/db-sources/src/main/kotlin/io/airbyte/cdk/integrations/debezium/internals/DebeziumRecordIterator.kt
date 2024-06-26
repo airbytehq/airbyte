@@ -5,7 +5,6 @@ package io.airbyte.cdk.integrations.debezium.internals
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.AbstractIterator
-import io.airbyte.cdk.db.DbAnalyticsUtils
 import io.airbyte.cdk.db.DbAnalyticsUtils.debeziumCloseReasonMessage
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition
@@ -39,6 +38,7 @@ class DebeziumRecordIterator<T>(
     private val publisherStatusSupplier: Supplier<Boolean>,
     private val debeziumShutdownProcedure: DebeziumShutdownProcedure<ChangeEvent<String?, String?>>,
     private val firstRecordWaitTime: Duration,
+    private val shouldIgnoreHeartbeat: Boolean
 ) : AbstractIterator<ChangeEventWithMetadata>(), AutoCloseableIterator<ChangeEventWithMetadata> {
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
@@ -196,8 +196,13 @@ class DebeziumRecordIterator<T>(
         LOGGER.info {
             "Time since last hb_pos change ${timeElapsedSinceLastHeartbeatTs.toSeconds()}s"
         }
+
         // wait time for no change in heartbeat position is half of initial waitTime
-        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
+        if (shouldIgnoreHeartbeat) {
+            return false
+        } else {
+            return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
+        }
     }
 
     private fun requestClose(closeLogMessage: String) {
