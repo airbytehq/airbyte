@@ -11,6 +11,7 @@ import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE;
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+import static java.lang.Long.min;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -58,6 +59,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
   private final Optional<Function<AirbyteStreamNameNamespacePair, JsonNode>> streamStateForIncrementalRunSupplier;
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
+  private long MAX_CHUNK_SIZE = Long.MAX_VALUE;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MssqlInitialLoadHandler(
@@ -75,6 +77,15 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
     this.initialLoadStateManager = initialLoadStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tableSizeInfoMap = tableSizeInfoMap;
+    adjustChunkSizeLimitForMySQLVariants();
+  }
+
+  private void adjustChunkSizeLimitForMySQLVariants() {
+    // For PSDB, we need to limit the chunk size to 100k rows to avoid the query being killed by the server.
+    // Reference:
+    // https://planetscale.com/docs/reference/planetscale-system-limits
+    if (config.get(JdbcUtils.HOST_KEY).asText().toLowerCase().contains("psdb.cloud"))
+        MAX_CHUNK_SIZE = 100_000;
   }
 
   private static String getCatalog(final SqlDatabase database) {
@@ -244,16 +255,16 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
     return stream.getStream().getSourceDefinedPrimaryKey().size() > 1;
   }
 
-  public static long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
+  public long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
     // If table size info could not be calculated, a default chunk size will be provided.
     if (tableSizeInfo == null || tableSizeInfo.tableSize() == 0 || tableSizeInfo.avgRowLength() == 0) {
       LOGGER.info("Chunk size could not be determined for pair: {}, defaulting to {} rows", pair, DEFAULT_CHUNK_SIZE);
-      return DEFAULT_CHUNK_SIZE;
+      return min(DEFAULT_CHUNK_SIZE, MAX_CHUNK_SIZE);
     }
     final long avgRowLength = tableSizeInfo.avgRowLength();
     final long chunkSize = QUERY_TARGET_SIZE_GB / avgRowLength;
     LOGGER.info("Chunk size determined for pair: {}, is {}", pair, chunkSize);
-    return chunkSize;
+    return min(chunkSize, MAX_CHUNK_SIZE);
   }
 
 }
