@@ -133,7 +133,7 @@ Make sure to complete the auth flow quickly, as the initial token granted by Zoh
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
-| 0.1.3 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 0.1.3 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 0.1.2 | 2023-03-09 | [23906](https://github.com/airbytehq/airbyte/pull/23906) | added support for the latest CDK, fixed SAT |
 | 0.1.1 | 2023-03-13 | [23818](https://github.com/airbytehq/airbyte/pull/23818) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix |
 | 0.1.0 | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |

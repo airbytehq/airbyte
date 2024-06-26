@@ -65,7 +65,7 @@ Specify credentials and a start date.
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
-| 0.1.3 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 0.1.3 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 0.1.2 | 2022-08-25 | [15667](https://github.com/airbytehq/airbyte/pull/15667) | Add message when no data available |
 | 0.1.1 | 2022-05-30 | [11732](https://github.com/airbytehq/airbyte/pull/11732) | Fix docs |
 | 0.1.0 | 2022-05-30 | [11732](https://github.com/airbytehq/airbyte/pull/11732) | Initial Release |

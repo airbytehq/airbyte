@@ -127,7 +127,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.4 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 3.0.4 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 3.0.3 | 2024-06-25 | [40444](https://github.com/airbytehq/airbyte/pull/40444) | Update dependencies |
 | 3.0.2 | 2024-06-21 | [40121](https://github.com/airbytehq/airbyte/pull/40121) | Update dependencies |
 | 3.0.1 | 2024-06-13 | [39458](https://github.com/airbytehq/airbyte/pull/39458) | Fix skipping custom_field_options entities when schema.items is options |

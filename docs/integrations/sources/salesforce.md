@@ -217,7 +217,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 2.5.18 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 2.5.18 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 2.5.17 | 2024-06-25 | [40329](https://github.com/airbytehq/airbyte/pull/40329) | Update dependencies |
 | 2.5.16 | 2024-06-21 | [39927](https://github.com/airbytehq/airbyte/pull/39927) | Update dependencies |
 | 2.5.15 | 2024-06-16 | [39517](https://github.com/airbytehq/airbyte/pull/39517) | Salesforce refactor: add CheckpointMixin for state management |

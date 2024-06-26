@@ -61,7 +61,7 @@ The Pardot connector should not run into Pardot API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 0.1.6 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 0.1.6 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 0.1.5 | 2024-06-25 | [40339](https://github.com/airbytehq/airbyte/pull/40339) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40118](https://github.com/airbytehq/airbyte/pull/40118) | Update dependencies |
 | 0.1.3 | 2024-06-04 | [39087](https://github.com/airbytehq/airbyte/pull/39087) | [autopull] Upgrade base image to v1.2.1 |

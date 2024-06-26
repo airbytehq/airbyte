@@ -86,7 +86,7 @@ Quota usage is not an issue because data is retrieved once and then filtered, so
 
 | Version | Date       | Pull Request                                             | Subject                                        |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
-| 0.1.8 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 0.1.8 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 0.1.6 | 2024-06-17 | [39529](https://github.com/airbytehq/airbyte/pull/39529) | Pin CDK version to 0.38.0 |
 | 0.1.5 | 2024-05-21 | [38546](https://github.com/airbytehq/airbyte/pull/38546) | [autopull] base image + poetry + up_to_date |
 | 0.1.4 | 2023-05-22 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth |

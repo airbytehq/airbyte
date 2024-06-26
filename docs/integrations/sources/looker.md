@@ -81,7 +81,7 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
-| 0.2.14 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 0.2.14 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 0.2.12 | 2024-06-06 | [39191](https://github.com/airbytehq/airbyte/pull/39191) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.11 | 2024-06-03 | [38914](https://github.com/airbytehq/airbyte/pull/38914) | Replace AirbyteLogger with logging.Logger |
 | 0.2.10 | 2024-06-03 | [38914](https://github.com/airbytehq/airbyte/pull/38914) | Replace AirbyteLogger with logging.Logger |

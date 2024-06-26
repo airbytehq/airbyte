@@ -53,7 +53,7 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| 0.3.7 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 0.3.7 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 0.3.5 | 2024-04-19 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Updating to 0.80.0 CDK |
 | 0.3.4 | 2024-04-18 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Manage dependencies with Poetry. |
 | 0.3.3 | 2024-04-15 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Base image migration: remove Dockerfile and use the python-connector-base image |

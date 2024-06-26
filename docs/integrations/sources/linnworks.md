@@ -74,7 +74,7 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| 0.1.13 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
+| 0.1.13 | 2024-06-25 | [40520](https://github.com/airbytehq/airbyte/pull/40520) | Migrate off deprecated authenticator |
 | 0.1.12 | 2024-06-25 | [40275](https://github.com/airbytehq/airbyte/pull/40275) | Update dependencies |
 | 0.1.11 | 2024-06-22 | [40146](https://github.com/airbytehq/airbyte/pull/40146) | Update dependencies |
 | 0.1.10 | 2024-06-06 | [39196](https://github.com/airbytehq/airbyte/pull/39196) | [autopull] Upgrade base image to v1.2.2 |
