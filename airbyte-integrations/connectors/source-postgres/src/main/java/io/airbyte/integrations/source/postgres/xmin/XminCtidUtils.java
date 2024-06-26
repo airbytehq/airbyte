@@ -55,7 +55,7 @@ public class XminCtidUtils {
       rawStateMessages.forEach(stateMessage -> {
         final JsonNode streamState = stateMessage.getStream().getStreamState();
         final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
-        if (streamState == null || streamDescriptor == null || !streamState.has(STATE_TYPE_KEY) ) {
+        if (streamState == null || streamDescriptor == null || !streamState.has(STATE_TYPE_KEY)) {
           return;
         }
 
