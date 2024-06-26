@@ -739,22 +739,28 @@ class ModelToComponentFactory:
         config: Config,
         *,
         url_base: str,
-        decoder: Decoder,
+        decoder: Optional[Decoder] = None,
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
+        if decoder:
+            decoder_to_use = decoder
+        elif model.decoder:
+            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
+        else:
+            decoder_to_use = JsonDecoder(parameters={})
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
         page_token_option = (
             self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
         )
-        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder)
+        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder_to_use)
         if cursor_used_for_stop_condition:
             pagination_strategy = StopConditionPaginationStrategyDecorator(
                 pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
             )
         paginator = DefaultPaginator(
-            decoder=decoder,
+            decoder=decoder_to_use,
             page_size_option=page_size_option,
             page_token_option=page_token_option,
             pagination_strategy=pagination_strategy,
@@ -766,9 +772,17 @@ class ModelToComponentFactory:
             return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
         return paginator
 
-    def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, decoder: Decoder, **kwargs: Any) -> DpathExtractor:
+    def create_dpath_extractor(
+        self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder] = None, **kwargs: Any
+    ) -> DpathExtractor:
+        if decoder:
+            decoder_to_use = decoder
+        elif model.decoder:
+            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
+        else:
+            decoder_to_use = JsonDecoder(parameters={})
         model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
-        return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
+        return DpathExtractor(decoder=decoder_to_use, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
