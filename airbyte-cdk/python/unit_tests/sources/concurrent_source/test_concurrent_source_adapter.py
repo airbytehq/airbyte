@@ -1,19 +1,28 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+import datetime
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 from unittest.mock import Mock
 
 import freezegun
+import pytest
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
+    StreamDescriptor,
     SyncMode,
+    TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
@@ -21,6 +30,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class _MockSource(ConcurrentSourceAdapter):
@@ -88,6 +98,7 @@ def _mock_stream(name: str, data=[], available: bool = True):
         supported_sync_modes=[SyncMode.full_refresh],
     )
     s.check_availability.return_value = (True, None) if available else (False, "not available")
+    s.get_json_schema.return_value = {}
     s.read.return_value = iter(data)
     s.primary_key = None
     return s
@@ -104,3 +115,27 @@ def _configured_catalog(streams: List[Stream]):
             for stream in streams
         ]
     )
+
+
+def test_read_nonexistent_concurrent_stream_emit_incomplete_stream_status(mocker, remove_stack_trace, as_stream_status):
+    """
+    Tests that attempting to sync a stream which the source does not return from the `streams` method emit incomplete stream status
+    """
+    logger = Mock()
+
+    s1 = _mock_stream("s1", [])
+    s2 = _mock_stream("this_stream_doesnt_exist_in_the_source", [])
+
+    concurrent_source = Mock()
+    concurrent_source.read.return_value = []
+    adapter = _MockSource(concurrent_source, {s1: True}, logger)
+
+    expected = [as_stream_status("this_stream_doesnt_exist_in_the_source", AirbyteStreamStatus.INCOMPLETE)]
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        messages = [remove_stack_trace(message) for message in adapter.read(logger, {}, _configured_catalog([s2]))]
+
+        assert messages == expected
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "not found in the source" in exc_info.value.internal_message

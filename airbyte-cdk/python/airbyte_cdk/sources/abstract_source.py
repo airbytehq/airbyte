@@ -117,7 +117,7 @@ class AbstractSource(Source, ABC):
                         f"The stream '{configured_stream.stream.name}' in your connection configuration was not found in the source. "
                         f"Refresh the schema in your replication settings and remove this stream from future sync attempts."
                     )
-
+                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
                     raise AirbyteTracedException(
                         message="A stream listed in your configuration was not found in the source. Please check the logs for more details.",
                         internal_message=error_message,

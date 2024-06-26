@@ -1,16 +1,18 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from abc import ABC
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, FailureType
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -33,7 +35,11 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         catalog: ConfiguredAirbyteCatalog,
         state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
-        abstract_streams = self._select_abstract_streams(config, catalog)
+        try:
+            abstract_streams = self._select_abstract_streams(config, catalog)
+        except AirbyteTracedException as e:
+            yield stream_status_as_airbyte_message(e._stream_descriptor, AirbyteStreamStatus.INCOMPLETE)
+            raise e
         concurrent_stream_names = {stream.name for stream in abstract_streams}
         configured_catalog_for_regular_streams = ConfiguredAirbyteCatalog(
             streams=[stream for stream in catalog.streams if stream.stream.name not in concurrent_stream_names]
@@ -65,6 +71,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
                     message="A stream listed in your configuration was not found in the source. Please check the logs for more details.",
                     internal_message=error_message,
                     failure_type=FailureType.config_error,
+                    stream_descriptor=configured_stream.stream,
                 )
 
             if isinstance(stream_instance, AbstractStreamFacade):
