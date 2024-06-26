@@ -46,10 +46,8 @@ class HttpResponseFilter:
             elif isinstance(self.action, str):
                 self.action = ResponseAction[self.action]
         self.http_codes = self.http_codes or set()
-        if self.predicate and isinstance(self.predicate, str):
+        if isinstance(self.predicate, str):
             self.predicate = InterpolatedBoolean(condition=self.predicate, parameters=parameters)
-        else:
-            self.predicate = ""
         self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, parameters=parameters)
         self._error_message_parser = JsonErrorMessageParser()
 
