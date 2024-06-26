@@ -22,7 +22,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.4
   dockerRepository: airbyte/source-chartmogul
   githubIssueLabel: source-chartmogul
   icon: chartmogul.svg

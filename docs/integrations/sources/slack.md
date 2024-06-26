@@ -171,7 +171,9 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------|
-| 1.1.7   | 2025-06-14 | [39343](https://github.com/airbytehq/airbyte/pull/39343) | Update state handling for `threads` Python stream                                     |
+| 1.1.9 | 2024-06-25 | [40347](https://github.com/airbytehq/airbyte/pull/40347) | Update dependencies |
+| 1.1.8 | 2024-06-22 | [40166](https://github.com/airbytehq/airbyte/pull/40166) | Update dependencies |
+| 1.1.7 | 2025-06-14 | [39343](https://github.com/airbytehq/airbyte/pull/39343) | Update state handling for `threads` Python stream |
 | 1.1.6   | 2024-06-12 | [39132](https://github.com/airbytehq/airbyte/pull/39416) | Respect `include_private_channels` option in `threads` stream                         |
 | 1.1.5   | 2024-06-10 | [39132](https://github.com/airbytehq/airbyte/pull/39132) | Convert string state to float for `threads` stream                                    |
 | 1.1.4   | 2024-06-06 | [39271](https://github.com/airbytehq/airbyte/pull/39271) | [autopull] Upgrade base image to v1.2.2 |

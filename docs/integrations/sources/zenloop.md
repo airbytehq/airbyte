@@ -77,6 +77,8 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.17 | 2024-06-25 | [40421](https://github.com/airbytehq/airbyte/pull/40421) | Update dependencies |
+| 0.1.16 | 2024-06-22 | [40180](https://github.com/airbytehq/airbyte/pull/40180) | Update dependencies |
 | 0.1.15 | 2024-06-04 | [38961](https://github.com/airbytehq/airbyte/pull/38961) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.14 | 2024-04-19 | [37304](https://github.com/airbytehq/airbyte/pull/37304) | Updating to 0.80.0 CDK |
 | 0.1.13 | 2024-04-18 | [37304](https://github.com/airbytehq/airbyte/pull/37304) | Manage dependencies with Poetry. |

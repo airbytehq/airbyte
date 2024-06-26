@@ -40,6 +40,8 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.1.7 | 2024-06-25 | [40281](https://github.com/airbytehq/airbyte/pull/40281) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [40196](https://github.com/airbytehq/airbyte/pull/40196) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39188](https://github.com/airbytehq/airbyte/pull/39188) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-05-20 | [38394](https://github.com/airbytehq/airbyte/pull/38394) | [autopull] base image + poetry + up_to_date |
 | 0.1.3 | 2022-12-16 | [21322](https://github.com/airbytehq/airbyte/pull/21322) | Reorganize manifest inline stream schemas |

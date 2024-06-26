@@ -56,6 +56,8 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.1.5 | 2024-06-25 | [40450](https://github.com/airbytehq/airbyte/pull/40450) | Update dependencies |
+| 0.1.4 | 2024-06-22 | [40097](https://github.com/airbytehq/airbyte/pull/40097) | Update dependencies |
 | 0.1.3 | 2024-06-04 | [39072](https://github.com/airbytehq/airbyte/pull/39072) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.2 | 2024-05-30 | [38399](https://github.com/airbytehq/airbyte/pull/38399) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2024-05-28 | [38688](https://github.com/airbytehq/airbyte/pull/38688) | Make connector builder compatible |

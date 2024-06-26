@@ -73,8 +73,8 @@ jobs:
           if [ -z "${{ github.event.inputs.streams }}" ]; then
             echo "STREAM_PARAMS=" >> $GITHUB_ENV
           else
-            STREAMS=$(echo "${{ github.event.inputs.streams }}" | sed 's/,/ --connector_regression_tests.selected-streams=/g')
-            echo "STREAM_PARAMS=--connector_regression_tests.selected-streams=$STREAMS" >> $GITHUB_ENV
+            STREAMS=$(echo "${{ github.event.inputs.streams }}" | sed 's/,/ --connector_live_tests.selected-streams=/g')
+            echo "STREAM_PARAMS=--connector_live_tests.selected-streams=$STREAMS" >> $GITHUB_ENV
           fi
 
       - name: Setup Local CDK Flag
@@ -102,4 +102,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_regression_tests --connector_regression_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_regression_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.STREAM_PARAMS }}
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.STREAM_PARAMS }}
