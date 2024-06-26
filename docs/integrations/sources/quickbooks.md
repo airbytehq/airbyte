@@ -108,6 +108,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 3.0.7 | 2024-06-25 | [40355](https://github.com/airbytehq/airbyte/pull/40355) | Update dependencies |
 | 3.0.6 | 2024-06-22 | [39955](https://github.com/airbytehq/airbyte/pull/39955) | Update dependencies |
 | 3.0.5 | 2024-06-06 | [39285](https://github.com/airbytehq/airbyte/pull/39285) | [autopull] Upgrade base image to v1.2.2 |
 | 3.0.4 | 2024-05-21 | [38518](https://github.com/airbytehq/airbyte/pull/38518) | [autopull] base image + poetry + up_to_date |
