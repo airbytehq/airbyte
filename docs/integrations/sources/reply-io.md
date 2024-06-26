@@ -41,6 +41,7 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                       |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
+| 0.1.5 | 2024-06-25 | [40283](https://github.com/airbytehq/airbyte/pull/40283) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40137](https://github.com/airbytehq/airbyte/pull/40137) | Update dependencies |
 | 0.1.3 | 2024-06-17 | [38661](https://github.com/airbytehq/airbyte/pull/38661) | Make connector compatible with Builder |
 | 0.1.2 | 2024-06-04 | [39012](https://github.com/airbytehq/airbyte/pull/39012) | [autopull] Upgrade base image to v1.2.1 |
