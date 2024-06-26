@@ -184,6 +184,12 @@ class RedshiftDestination : BaseConnector(), Destination {
                                 hasUnprocessedRecords = true,
                                 maxProcessedTimestamp = Optional.empty(),
                             ),
+                        initialTempRawTableStatus =
+                            InitialRawTableStatus(
+                                rawTableExists = false,
+                                hasUnprocessedRecords = true,
+                                maxProcessedTimestamp = Optional.empty(),
+                            ),
                         isSchemaMismatch = true,
                         isFinalTableEmpty = true,
                         destinationState =
@@ -284,7 +290,8 @@ class RedshiftDestination : BaseConnector(), Destination {
         )
     }
 
-    private fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    @VisibleForTesting
+    fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
 
