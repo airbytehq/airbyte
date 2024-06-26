@@ -103,15 +103,14 @@ constructor(
          * do it without touching buffer manager.
          */
         val partialAirbyteMessage =
-            airbyteMessageDeserializer.deserializeAirbyteMessage(
-                message,
-            )
-
-        // The message had an unrecognized type, presumably because
-        // upstream is head. Just skip it.
-        if (partialAirbyteMessage == null) {
-            return
-        }
+            try {
+                airbyteMessageDeserializer.deserializeAirbyteMessage(
+                    message,
+                )
+            } catch (e: AirbyteMessageDeserializer.UnrecognizedAirbyteMessageTypeException) {
+                logger.warn { "Ignoring unrecognized message type: ${e.message}" }
+                return
+            }
 
         when (partialAirbyteMessage.type) {
             AirbyteMessage.Type.RECORD -> {

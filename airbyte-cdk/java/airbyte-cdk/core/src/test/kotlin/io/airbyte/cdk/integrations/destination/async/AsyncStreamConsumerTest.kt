@@ -457,7 +457,7 @@ class AsyncStreamConsumerTest {
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 serializedAirbyteMessage,
             )
-        assertEquals(airbyteRecordString, partial!!.serialized)
+        assertEquals(airbyteRecordString, partial.serialized)
     }
 
     @Test
@@ -483,7 +483,7 @@ class AsyncStreamConsumerTest {
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 serializedAirbyteMessage,
             )
-        assertEquals(airbyteRecordString, partial!!.serialized)
+        assertEquals(airbyteRecordString, partial.serialized)
     }
 
     @Test
@@ -503,7 +503,7 @@ class AsyncStreamConsumerTest {
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 serializedAirbyteMessage,
             )
-        assertEquals(emptyMap.toString(), partial!!.serialized)
+        assertEquals(emptyMap.toString(), partial.serialized)
     }
 
     @Test
@@ -513,7 +513,7 @@ class AsyncStreamConsumerTest {
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 serializedAirbyteMessage,
             )
-        assertEquals(serializedAirbyteMessage, partial!!.serialized)
+        assertEquals(serializedAirbyteMessage, partial.serialized)
     }
 
     @Test
@@ -742,7 +742,8 @@ class AsyncStreamConsumerTest {
         val retyped =
             serialized.replace(AirbyteMessage.Type.RECORD.toString(), "__UNKNOWN_TYPE_OF_MESSAGE__")
         // Assert that this doesn't throw an exception
-        assertDoesNotThrow { airbyteMessageDeserializer.deserializeAirbyteMessage(retyped) }
+        consumer.start()
+        assertDoesNotThrow { consumer.accept(retyped, retyped.length) }
     }
 
     @Test
@@ -757,13 +758,12 @@ class AsyncStreamConsumerTest {
                 )
         val serialized = Jsons.serialize(airbyteMessage)
         // Fake an upstream protocol change
-        val offender = "__UNKNOWN_NONTTYPE_ENUM__"
+        val offender = "__UNKNOWN_NONTYPE_ENUM__"
         val retyped = serialized.replace("STREAM", offender)
         // Assert that this doesn't throw an exception
+        consumer.start()
         val throwable =
-            assertThrows(RuntimeException::class.java) {
-                airbyteMessageDeserializer.deserializeAirbyteMessage(retyped)
-            }
+            assertThrows(RuntimeException::class.java) { consumer.accept(retyped, retyped.length) }
         // Ensure that the offending data has been scrubbed from the error message
         assertFalse(throwable.message!!.contains(offender))
     }

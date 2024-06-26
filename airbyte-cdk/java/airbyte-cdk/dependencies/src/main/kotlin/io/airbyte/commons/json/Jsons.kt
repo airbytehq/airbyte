@@ -430,7 +430,7 @@ object Jsons {
      * potentially-sensitive information. </snip...>
      */
     private fun <T : Any> handleDeserThrowable(throwable: Throwable): Optional<T> {
-        val obfuscated = obfuscate(throwable)
+        val obfuscated = obfuscateDeserializationException(throwable)
         LOGGER.warn { "Failed to deserialize json due to $obfuscated" }
         return Optional.empty()
     }
@@ -440,7 +440,7 @@ object Jsons {
      * sensitive information in the exception message (which would be exposed with eg,
      * ExceptionUtils.getStackTrace(t).)
      */
-    fun obfuscate(throwable: Throwable): String {
+    fun obfuscateDeserializationException(throwable: Throwable): String {
         var t: Throwable = throwable
         val sb = StringBuilder()
         sb.append(t.javaClass)

@@ -8,7 +8,6 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
@@ -27,15 +26,15 @@ class AirbyteMessageDeserializer(
      * Message.
      *
      * Throws on deserialization errors, obfuscating the error message to avoid data leakage. In
-     * recoverable cases (currently only when the top-level message type is unrecognized), returns
-     * null, logging a warning.
+     * recoverable cases (currently only when the top-level message type is unrecognized), throws
+     * a dedicated exception.
      *
      * PartialAirbyteMessage holds either:
      * * entire serialized message string when message is a valid State Message
      * * serialized AirbyteRecordMessage when message is a valid Record Message
      *
      * @param message the string to deserialize
-     * @return PartialAirbyteMessage if the message is valid, null if there was a recoverable error
+     * @return PartialAirbyteMessage if the message is valid
      */
     fun deserializeAirbyteMessage(
         message: String?,
@@ -60,13 +59,13 @@ class AirbyteMessageDeserializer(
                     logger.warn { "Unrecognized message type: $unrecognized" }
                     throw UnrecognizedAirbyteMessageTypeException(unrecognized!!)
                 } else {
-                    val obfuscated = Jsons.obfuscate(e)
+                    val obfuscated = Jsons.obfuscateDeserializationException(e)
                     throw RuntimeException(
                         "ValueInstantiationException when deserializing PartialAirbyteMessage: $obfuscated"
                     )
                 }
             } catch (e: Exception) {
-                val obfuscated = Jsons.obfuscate(e)
+                val obfuscated = Jsons.obfuscateDeserializationException(e)
                 throw RuntimeException("Could not deserialize PartialAirbyteMessage: $obfuscated")
             }
 
