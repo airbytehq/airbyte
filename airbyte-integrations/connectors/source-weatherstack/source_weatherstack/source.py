@@ -9,7 +9,6 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 from .constants import url_base
 
@@ -320,7 +319,7 @@ class SourceWeatherstack(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = NoAuth()
+        auth = None
         streams = [
             CurrentWeather(authenticator=auth, config=config),
             Forecast(authenticator=auth, config=config),
