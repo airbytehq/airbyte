@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-confluence
   documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
   githubIssueLabel: source-confluence

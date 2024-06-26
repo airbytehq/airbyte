@@ -15,6 +15,7 @@ from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStreamState,
     Level,
@@ -500,7 +501,7 @@ def test_get_grouped_messages_with_many_slices(mock_entrypoint_read: Mock) -> No
     assert len(stream_read.slices[1].pages[1].records) == 1
     assert len(stream_read.slices[1].pages[2].records) == 0
 
-    assert stream_read.slices[1].state[0].stream.stream_state == {"a_timestamp": 123}
+    assert stream_read.slices[1].state[0].stream.stream_state == AirbyteStateBlob(a_timestamp=123)
 
 
 @patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")

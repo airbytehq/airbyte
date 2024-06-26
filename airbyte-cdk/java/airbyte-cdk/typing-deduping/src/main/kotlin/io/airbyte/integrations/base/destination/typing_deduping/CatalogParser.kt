@@ -25,10 +25,16 @@ constructor(
     private val defaultNamespace: String,
     private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
 ) {
-    fun parseCatalog(orginalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+    fun parseCatalog(originalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+        if (originalCatalog.streams.isEmpty()) {
+            throw ConfigErrorException(
+                "The catalog contained no streams. This likely indicates a platform/configuration error."
+            )
+        }
+
         // Don't mutate the original catalog, just operate on a copy of it
         // This is... probably the easiest way we have to deep clone a protocol model object?
-        val catalog = Jsons.clone(orginalCatalog)
+        val catalog = Jsons.clone(originalCatalog)
         catalog.streams.onEach {
             // Overwrite null namespaces
             if (it.stream.namespace.isNullOrEmpty()) {

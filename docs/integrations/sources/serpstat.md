@@ -52,6 +52,9 @@ The maximum sync speed is limited by the number of requests per second per API k
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
-| 0.1.0   | 2023-08-21 | [28147](https://github.com/airbytehq/airbyte/pull/28147) | Release Serpstat Connector |
+| 0.1.3 | 2024-06-25 | [40400](https://github.com/airbytehq/airbyte/pull/40400) | Update dependencies |
+| 0.1.2 | 2024-06-23 | [40221](https://github.com/airbytehq/airbyte/pull/40221) | Update dependencies |
+| 0.1.1 | 2024-05-30 | [38690](https://github.com/airbytehq/airbyte/pull/38690) | Make compatible with the builder |
+| 0.1.0 | 2023-08-21 | [28147](https://github.com/airbytehq/airbyte/pull/28147) | Release Serpstat Connector |
 
 </details>

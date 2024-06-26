@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2707d529-3c04-46eb-9c7e-40d4038df6f7
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-mailersend
   githubIssueLabel: source-mailersend
   icon: mailersend.svg

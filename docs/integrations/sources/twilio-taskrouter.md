@@ -61,8 +61,10 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.1.5   | 2024-06-10 | [38788](https://github.com/airbytehq/airbyte/pull/38788) | Make compatible with the builder                                                |
-| 0.1.4   | 2024-06-04 | [39067](https://github.com/airbytehq/airbyte/pull/39067) | [autopull] Upgrade base image to v1.2.1                                         |
+| 0.1.7 | 2024-06-25 | [40295](https://github.com/airbytehq/airbyte/pull/40295) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [39965](https://github.com/airbytehq/airbyte/pull/39965) | Update dependencies |
+| 0.1.5 | 2024-06-10 | [38788](https://github.com/airbytehq/airbyte/pull/38788) | Make compatible with the builder |
+| 0.1.4 | 2024-06-04 | [39067](https://github.com/airbytehq/airbyte/pull/39067) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3.  | 2024-04-19 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
 | 0.1.2   | 2024-04-15 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1   | 2024-04-12 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | schema descriptions                                                             |

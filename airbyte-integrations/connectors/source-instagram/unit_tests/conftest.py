@@ -80,16 +80,6 @@ def api_fixture(some_config, requests_mock, fb_account_response):
     return api
 
 
-@fixture(name="user_data")
-def user_data_fixture():
-    return {
-        "biography": "Dino data crunching app",
-        "id": "17841405822304914",
-        "username": "metricsaurus",
-        "website": "http://www.metricsaurus.com/",
-    }
-
-
 @fixture(name="user_insight_data")
 def user_insight_data_fixture():
     return {
@@ -100,51 +90,6 @@ def user_insight_data_fixture():
         "description": "Total number of times this profile has been seen",
         "id": "17841400008460056/insights/impressions/day",
     }
-
-
-@fixture(name="user_lifetime_insight_data")
-def user_lifetime_insight_data_fixture():
-    return {
-        "name": "impressions",
-        "period": "day",
-        "total_value": {"breakdowns": [
-            {"dimension_keys": ["city"], "results": [{"dimension_values": ["London, England"], "value": 22},
-                                                     {"dimension_values": ["Sydney, New South Wales"], "value": 33}
-                                                     ]}
-        ]},
-        "title": "Impressions",
-        "description": "Total number of times this profile has been seen",
-        "id": "17841400008460056/insights/impressions/day",
-    }
-
-
-@fixture(name="user_lifetime_insights")
-def user_lifetime_insights():
-    class UserLiftimeInsightEntityMock:
-        def __new__(cls, values: dict):
-            cls.insights = [
-                # No `end_time` Key, reference to this issue:
-                # https://github.com/airbytehq/airbyte/issues/22929
-                {
-                    "description": "Test_no_end_time",
-                    "id": "18/insights/audience_gender_age/lifetime",
-                    "name": "audience_gender_age",
-                    "period": "lifetime",
-                    "title": "Gender and Age",
-                    "values": [values],
-                },
-            ]
-
-        @classmethod
-        def get(cls, element):
-            for insight in cls.insights:
-                return insight[element]
-
-        @classmethod
-        def get_insights(cls, **kwargs) -> List[dict]:
-            return cls.insights
-
-    return UserLiftimeInsightEntityMock
 
 
 @fixture(name="user_insights")

@@ -174,6 +174,10 @@ class AvroParser(FileTypeParser):
             return str(record_value)
         elif record_type.get("logicalType") == "date":
             return record_value.isoformat()
+        elif record_type.get("logicalType") == "timestamp-millis":
+            return record_value.isoformat(sep="T", timespec="milliseconds")
+        elif record_type.get("logicalType") == "timestamp-micros":
+            return record_value.isoformat(sep="T", timespec="microseconds")
         elif record_type.get("logicalType") == "local-timestamp-millis":
             return record_value.isoformat(sep="T", timespec="milliseconds")
         elif record_type.get("logicalType") == "local-timestamp-micros":
