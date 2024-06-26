@@ -106,13 +106,19 @@ async def generate(
         logger.info(f"Generating insights for {len(connectors)} connectors.")
 
     semaphore = Semaphore(concurrency)
+    soon_results = []
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         async with asyncer.create_task_group() as connector_task_group:
             for connector in connectors:
-                connector_task_group.soonify(generate_insights_for_connector)(
-                    dagger_client.pipeline(connector.technical_name),
-                    connector,
-                    semaphore,
-                    rewrite,
-                    result_backends=result_backends,
+                soon_results.append(
+                    connector_task_group.soonify(generate_insights_for_connector)(
+                        dagger_client.pipeline(connector.technical_name),
+                        connector,
+                        semaphore,
+                        rewrite,
+                        result_backends=result_backends,
+                    )
                 )
+    failing_connector_names = [soon_result.value[1].technical_name for soon_result in soon_results if not soon_result.value[0]]
+    if failing_connector_names:
+        raise click.ClickException("Failed to generate insights for the following connectors: " + ", ".join(failing_connector_names))

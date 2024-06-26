@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-toggl
   githubIssueLabel: source-toggl
   icon: toggl.svg

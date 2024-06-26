@@ -126,6 +126,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| 3.9.10 | 2024-06-25 | [40373](https://github.com/airbytehq/airbyte/pull/40373) | Update dependencies |
+| 3.9.9 | 2024-06-22 | [40133](https://github.com/airbytehq/airbyte/pull/40133) | Update dependencies |
 | 3.9.8 | 2024-06-06 | [39253](https://github.com/airbytehq/airbyte/pull/39253) | [autopull] Upgrade base image to v1.2.2 |
 | 3.9.7 | 2024-05-15 | [38250](https://github.com/airbytehq/airbyte/pull/38250) | Replace AirbyteLogger with logging.Logger and upgrade to latest base image |
 | 3.9.6 | 2024-04-19 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Updating to 0.80.0 CDK |

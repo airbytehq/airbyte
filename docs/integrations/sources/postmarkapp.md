@@ -58,6 +58,8 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.6 | 2024-06-25 | [40483](https://github.com/airbytehq/airbyte/pull/40483) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [39970](https://github.com/airbytehq/airbyte/pull/39970) | Update dependencies |
 | 0.1.4 | 2024-06-04 | [39062](https://github.com/airbytehq/airbyte/pull/39062) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-04-19 | [37232](https://github.com/airbytehq/airbyte/pull/37232) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
 | 0.1.2 | 2024-04-15 | [37232](https://github.com/airbytehq/airbyte/pull/37232) | Base image migration: remove Dockerfile and use the python-connector-base image |

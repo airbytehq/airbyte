@@ -31,6 +31,8 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.7 | 2024-06-25 | [40459](https://github.com/airbytehq/airbyte/pull/40459) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [39952](https://github.com/airbytehq/airbyte/pull/39952) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39152](https://github.com/airbytehq/airbyte/pull/39152) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-05-28 | [38702](https://github.com/airbytehq/airbyte/pull/38702) | Make connector compatible with the builder |
 | 0.1.3 | 2024-04-19 | [37237](https://github.com/airbytehq/airbyte/pull/37237) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |

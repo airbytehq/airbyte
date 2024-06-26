@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4e8c9fa0-3634-499b-b948-11581b5c3efa
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg

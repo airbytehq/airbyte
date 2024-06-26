@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 921d9608-3915-450b-8078-0af18801ea1b
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-rocket-chat
   githubIssueLabel: source-rocket-chat
   icon: rocket-chat.svg

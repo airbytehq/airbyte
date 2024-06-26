@@ -68,6 +68,8 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 1.0.5 | 2024-06-25 | [40304](https://github.com/airbytehq/airbyte/pull/40304) | Update dependencies |
+| 1.0.4 | 2024-06-21 | [39925](https://github.com/airbytehq/airbyte/pull/39925) | Update dependencies |
 | 1.0.3 | 2024-06-04 | [39065](https://github.com/airbytehq/airbyte/pull/39065) | [autopull] Upgrade base image to v1.2.1 |
 | 1.0.2 | 2024-05-21 | [38548](https://github.com/airbytehq/airbyte/pull/38548) | Upgrade to CDK 1.0.0 |
 | 1.0.1 | 2024-05-28 | [38153](https://github.com/airbytehq/airbyte/pull/38153) | Make connector compatible with builder |
