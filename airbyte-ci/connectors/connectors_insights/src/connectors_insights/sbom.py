@@ -46,4 +46,4 @@ async def get_json_sbom(dagger_client: dagger.Client, connector: Connector) -> s
         str: The SBOM in JSON format.
     """
     syft_container = get_syft_container(dagger_client)
-    return await syft_container.with_exec([connector.image_address, "-o", "syft-json"]).stdout()
+    return await syft_container.with_exec([connector.image_address, "-o", "syft-json=/sbom.json"]).file("/sbom.json").contents()
