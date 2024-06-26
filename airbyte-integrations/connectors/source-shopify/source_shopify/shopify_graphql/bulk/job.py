@@ -29,6 +29,8 @@ class ShopifyBulkManager:
     base_url: str
     stream_name: str
     query: ShopifyBulkQuery
+    job_termination_threshold: float
+    job_size: float
 
     # default logger
     logger: Final[logging.Logger] = logging.getLogger("airbyte")
@@ -66,8 +68,7 @@ class ShopifyBulkManager:
     _job_size_min: Final[float] = 0.1
     # P365D, upper boundary for slice size
     _job_size_max: Final[float] = 365.0
-    # dynamically adjusted slice interval
-    job_size: float = field(init=False, default=0.0)
+
     # expand slice factor
     _job_size_expand_factor: int = field(init=False, default=2)
     # reduce slice factor
@@ -75,15 +76,17 @@ class ShopifyBulkManager:
     # whether or not the slicer should revert the previous start value
     _job_should_revert_slice: bool = field(init=False, default=False)
 
-    # Each job ideally should be executed within the specified time (in sec),
-    # to maximize the performance for multi-connection syncs and control the bulk job size within +- 1 hours (3600 sec),
-    # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
-    _job_max_elapsed_time: Final[float] = 2700.0
     # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
     _job_last_elapsed_time: float = field(init=False, default=2.0)
 
     def __post_init__(self):
         self._http_client = HttpClient(self.stream_name, self.logger, ShopifyErrorHandler(), session=self.session)
+        self._job_size = self.job_size
+        # Each job ideally should be executed within the specified time (in sec),
+        # to maximize the performance for multi-connection syncs and control the bulk job size within +- 1 hours (3600 sec),
+        # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
+        # This behaviour could be overidden by providing the `BULK Job termination threshold` option in the `config`.
+        self._job_max_elapsed_time = self.job_termination_threshold
 
     @property
     def _tools(self) -> BulkTools:
@@ -141,10 +144,10 @@ class ShopifyBulkManager:
         return False
 
     def _expand_job_size(self) -> None:
-        self.job_size += self._job_size_adjusted_expand_factor
+        self._job_size += self._job_size_adjusted_expand_factor
 
     def _reduce_job_size(self) -> None:
-        self.job_size /= self._job_size_adjusted_reduce_factor
+        self._job_size /= self._job_size_adjusted_reduce_factor
 
     def _job_size_reduce_next(self) -> None:
         # revert the flag
@@ -162,7 +165,7 @@ class ShopifyBulkManager:
             # set the last job time
             self._job_last_elapsed_time = job_current_elapsed_time
             # check the job size slice interval are acceptable
-            self.job_size = max(self._job_size_min, min(self.job_size, self._job_size_max))
+            self._job_size = max(self._job_size_min, min(self._job_size, self._job_size_max))
 
     def __reset_state(self) -> None:
         # reset the job state to default
@@ -251,7 +254,7 @@ class ShopifyBulkManager:
     def _on_running_job(self, **kwargs) -> None:
         if self._is_long_running_job:
             self.logger.info(
-                f"Stream: `{self.stream_name}` the BULK Job: {self._job_id} runs longer than expected. Retry with the reduced `Slice Size` after self-cancelation."
+                f"Stream: `{self.stream_name}` the BULK Job: {self._job_id} runs longer than expected ({self._job_max_elapsed_time} sec). Retry with the reduced `Slice Size` after self-cancelation."
             )
             # cancel the long-running bulk job
             self._job_cancel()
@@ -387,10 +390,10 @@ class ShopifyBulkManager:
         # adjust slice size when it's bigger than the loop point when it should end,
         # to preserve correct job size adjustments when this is the only job we need to run, based on STATE provided
         requested_slice_size = (end - start).total_days()
-        self.job_size = requested_slice_size if requested_slice_size < self.job_size else self.job_size
+        self._job_size = requested_slice_size if requested_slice_size < self._job_size else self._job_size
 
     def get_adjusted_job_start(self, slice_start: datetime) -> datetime:
-        step = self.job_size if self.job_size else self._job_size_min
+        step = self._job_size if self._job_size else self._job_size_min
         return slice_start.add(days=step)
 
     def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime) -> datetime:
