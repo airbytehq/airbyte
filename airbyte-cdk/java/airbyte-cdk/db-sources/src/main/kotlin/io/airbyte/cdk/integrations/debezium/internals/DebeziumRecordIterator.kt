@@ -85,7 +85,8 @@ class DebeziumRecordIterator<T>(
                         String.format(
                             "No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
                             waitTime.seconds
-                        )
+                        ),
+                        DebeziumCloseReason.TIMEOUT
                     )
                 }
                 LOGGER.info { "no record found. polling again." }
@@ -104,12 +105,16 @@ class DebeziumRecordIterator<T>(
                 // too long
                 if (targetPosition.reachedTargetPosition(heartbeatPos)) {
                     requestClose(
-                        "Closing: Heartbeat indicates sync is done by reaching the target position"
+                        "Closing: Heartbeat indicates sync is done by reaching the target position",
+                        DebeziumCloseReason.HEARTBEAT_REACHED_TARGET_POSITION
                     )
                 } else if (
                     heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging()
                 ) {
-                    requestClose("Closing: Heartbeat indicates sync is not progressing")
+                    requestClose(
+                        "Closing: Heartbeat indicates sync is not progressing",
+                        DebeziumCloseReason.HEARTBEAT_NOT_PROGRESSING
+                    )
                 }
 
                 if (heartbeatPos != lastHeartbeatPosition) {
@@ -125,7 +130,10 @@ class DebeziumRecordIterator<T>(
             // if the last record matches the target file position, it is time to tell the producer
             // to shutdown.
             if (targetPosition.reachedTargetPosition(changeEventWithMetadata)) {
-                requestClose("Closing: Change event reached target position")
+                requestClose(
+                    "Closing: Change event reached target position",
+                    DebeziumCloseReason.CHANGE_EVENT_REACHED_TARGET_POSITION
+                )
             }
             this.tsLastHeartbeat = null
             this.receivedFirstRecord = true
@@ -178,7 +186,7 @@ class DebeziumRecordIterator<T>(
      */
     @Throws(Exception::class)
     override fun close() {
-        requestClose("Closing: Iterator closing")
+        requestClose("Closing: Iterator closing", DebeziumCloseReason.ITERATOR_CLOSE)
     }
 
     private fun isHeartbeatEvent(event: ChangeEvent<String?, String?>): Boolean {
@@ -205,12 +213,14 @@ class DebeziumRecordIterator<T>(
         }
     }
 
-    private fun requestClose(closeLogMessage: String) {
+    private fun requestClose(closeLogMessage: String, closeReason: DebeziumCloseReason) {
         if (signalledDebeziumEngineShutdown) {
             return
         }
         LOGGER.info { closeLogMessage }
-        AirbyteTraceMessageUtility.emitAnalyticsTrace(debeziumCloseReasonMessage(closeLogMessage))
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(
+            debeziumCloseReasonMessage(closeReason.toString())
+        )
         debeziumShutdownProcedure.initiateShutdownProcedure()
         signalledDebeziumEngineShutdown = true
     }
@@ -253,6 +263,14 @@ class DebeziumRecordIterator<T>(
             LOGGER.info { "failed to get heartbeat source offset" }
             throw RuntimeException(e)
         }
+    }
+
+    enum class DebeziumCloseReason() {
+        TIMEOUT,
+        ITERATOR_CLOSE,
+        HEARTBEAT_REACHED_TARGET_POSITION,
+        CHANGE_EVENT_REACHED_TARGET_POSITION,
+        HEARTBEAT_NOT_PROGRESSING
     }
 
     companion object {}
