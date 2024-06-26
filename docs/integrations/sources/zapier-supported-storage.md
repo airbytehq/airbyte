@@ -25,6 +25,8 @@ The Zapier Supported Storage Connector can be used to sync your [Zapier](https:/
 
 | Version | Date | Pull Request | Subject |
 |:--------|:-----------|:---------------------------------------------------------| |
+| 0.1.7 | 2024-06-25 | [40462](https://github.com/airbytehq/airbyte/pull/40462) | Update dependencies |
+| 0.1.6 | 2024-06-21 | [39918](https://github.com/airbytehq/airbyte/pull/39918) | Update dependencies |
 | 0.1.5 | 2024-06-04 | [39041](https://github.com/airbytehq/airbyte/pull/39041) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.4 | 2024-05-28 | [38728](https://github.com/airbytehq/airbyte/pull/38728) | Make connector compatible with builder |
 | 0.1.3 | 2024-04-19 | [37300](https://github.com/airbytehq/airbyte/pull/37300) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |

@@ -15,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f95337f1-2ad1-4baf-922f-2ca9152de630
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-flexport
   githubIssueLabel: source-flexport
   icon: flexport.svg

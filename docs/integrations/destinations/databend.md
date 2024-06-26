@@ -69,6 +69,8 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 
 | Version                                                  | Date                                     | Pull Request                                              | Subject                                                  |
 | :------------------------------------------------------- | :--------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------- | ----------- |
+| 0.1.7 | 2024-06-25 | [40301](https://github.com/airbytehq/airbyte/pull/40301) | Update dependencies |
+| 0.1.6 | 2024-06-21 | [39936](https://github.com/airbytehq/airbyte/pull/39936) | Update dependencies |
 | 0.1.5 | 2024-06-04 | [39090](https://github.com/airbytehq/airbyte/pull/39090) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.4 | 2024-05-21 | [38510](https://github.com/airbytehq/airbyte/pull/38510) | [autopull] base image + poetry + up_to_date |
 | 0.1.3                                                    | 2024-03-05                               | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                     |

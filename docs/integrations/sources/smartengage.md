@@ -31,6 +31,8 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.7 | 2024-06-25 | [40432](https://github.com/airbytehq/airbyte/pull/40432) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [40103](https://github.com/airbytehq/airbyte/pull/40103) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39155](https://github.com/airbytehq/airbyte/pull/39155) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-05-31 | [38787](https://github.com/airbytehq/airbyte/pull/38787) | Make compatible with the builder |
 | 0.1.3 | 2024-04-19 | [37261](https://github.com/airbytehq/airbyte/pull/37261) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |

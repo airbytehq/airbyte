@@ -57,8 +57,10 @@ Here are some optional fields for different streams:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.4 | 2024-06-25 | [40478](https://github.com/airbytehq/airbyte/pull/40478) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40061](https://github.com/airbytehq/airbyte/pull/40061) | Update dependencies |
 | 0.1.2 | 2024-05-21 | [38501](https://github.com/airbytehq/airbyte/pull/38501) | [autopull] base image + poetry + up_to_date |
-| 0.1.1   | 2023-02-10 | [23951](https://github.com/airbytehq/airbyte/pull/23951) | Add optional include Closed Tasks |
-| 0.1.0   | 2022-11-07 | [17770](https://github.com/airbytehq/airbyte/pull/17770) | New source                        |
+| 0.1.1 | 2023-02-10 | [23951](https://github.com/airbytehq/airbyte/pull/23951) | Add optional include Closed Tasks |
+| 0.1.0 | 2022-11-07 | [17770](https://github.com/airbytehq/airbyte/pull/17770) | New source |
 
 </details>

@@ -21,6 +21,7 @@ import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransf
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -36,6 +37,7 @@ import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerat
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlV1V2Migrator;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import java.sql.SQLSyntaxErrorException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -185,10 +187,24 @@ public class MySQLDestination extends AbstractJdbcDestination<MinimumDestination
     return true;
   }
 
+  static void handleException(Exception e) throws Exception {
+    if (e instanceof SQLSyntaxErrorException s) {
+      if (s.getMessage().toLowerCase().contains("access denied")) {
+        throw new ConfigErrorException("Access denied. Please check your configuration", s);
+      }
+    }
+
+    throw e;
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = MySQLDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MySQLDestination.class);
-    new IntegrationRunner(destination).run(args);
+    try {
+      new IntegrationRunner(destination).run(args);
+    } catch (Exception e) {
+      handleException(e);
+    }
     LOGGER.info("completed destination: {}", MySQLDestination.class);
   }
 
