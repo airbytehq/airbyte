@@ -100,6 +100,7 @@ class UploadDependenciesToMetadataService(Step):
         ], "This step can only run for Python connectors."
         built_container = built_containers_per_platform[LOCAL_BUILD_PLATFORM]
         pip_freeze_output = await built_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
+        # TODO CDK version for manifest only connectors
         dependencies = [
             {"package_name": line.split("==")[0], "version": line.split("==")[1]} for line in pip_freeze_output.splitlines() if "==" in line
         ]

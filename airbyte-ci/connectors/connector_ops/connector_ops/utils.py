@@ -358,8 +358,19 @@ class Connector:
         return self.code_directory / self.technical_name.replace("-", "_")
 
     @property
-    def manifest_path(self) -> Path:
+    def _manifest_only_path(self) -> Path:
+        return self.code_directory / MANIFEST_FILE_NAME
+
+    @property
+    def _manifest_low_code_path(self) -> Path:
         return self.python_source_dir_path / MANIFEST_FILE_NAME
+
+    @property
+    def manifest_path(self) -> Path:
+        if self._manifest_only_path.is_file():
+            return self._manifest_only_path
+
+        return self._manifest_low_code_path
 
     @property
     def has_dockerfile(self) -> bool:
