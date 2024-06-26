@@ -208,6 +208,20 @@ class ConnectorRunner:
             enable_caching=enable_caching,
         )
 
+    async def do_setup(self, container: dagger.Container, config: SecretDict):
+        container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)))
+        command = [
+                "echo", "Setting up !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        ]
+        return await container.with_exec(command, skip_entrypoint=True).stdout()
+
+    async def do_teardown(self, container: dagger.Container, config: SecretDict):
+        container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)))
+        command = [
+                "echo", "Tearing down !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        ]
+        return await container.with_exec(command, skip_entrypoint=True).stdout()
+
     async def get_container_env_variable_value(self, name: str) -> str:
         return await self._connector_under_test_container.env_variable(name)
 

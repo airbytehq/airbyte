@@ -13,7 +13,7 @@ from glob import glob
 from logging import Logger
 from pathlib import Path
 from subprocess import STDOUT, check_output, run
-from typing import Any, List, Mapping, MutableMapping, Optional, Set
+from typing import TYPE_CHECKING, Any, List, Mapping, MutableMapping, Optional, Set
 
 import dagger
 import pytest
@@ -30,6 +30,9 @@ from connector_acceptance_test.utils import (
     load_config,
     load_yaml_or_json_path,
 )
+
+if TYPE_CHECKING:
+    from _pytest.fixtures import SubRequest
 
 
 @pytest.fixture(name="acceptance_test_config", scope="session")
@@ -184,6 +187,18 @@ def docker_runner_fixture(
         custom_environment_variables=custom_environment_variables,
         deployment_mode=deployment_mode,
     )
+
+
+@pytest.fixture(autouse=True)
+async def setup_and_teardown(request: "SubRequest", connector_container: dagger.Container, connector_config: SecretDict, docker_runner: connector_runner.ConnectorRunner):
+    if request.node.get_closest_marker("setup"):  # TODO: AND path to setup script exists in acceptance_test_config
+        print("Running setup")
+        # TODO: get filepath from acceptance-test-config.yml
+        await docker_runner.do_setup(connector_container, connector_config)
+    yield None
+    if request.node.get_closest_marker("teardown"):  # TODO: AND path to teardown script exists in acceptance_test_config
+        print("Running teardown")
+        await docker_runner.do_teardown(connector_container, connector_config)
 
 
 @pytest.fixture(name="previous_connector_image_name")

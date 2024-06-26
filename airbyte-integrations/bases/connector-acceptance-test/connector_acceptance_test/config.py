@@ -181,6 +181,8 @@ class BasicReadTestConfig(BaseConfig):
         default_factory=FileTypesConfig,
         description="For file-based connectors, unsupported by source file types can be configured or a test can be skipped at all",
     )
+    setup_script_path: Optional[str] = Field(None, description="Path to script to run before each test marked with @pytest.mark.setup.")
+    teardown_script_path: Optional[str] = Field(None, description="Path to script to run after each test marked with @pytest.mark.teardown.")
 
 
 class FullRefreshConfig(BaseConfig):
@@ -197,6 +199,8 @@ class FullRefreshConfig(BaseConfig):
     ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
         description="For each stream, list of fields path ignoring in sequential reads test"
     )
+    setup_script_path: Optional[str] = Field(None, description="Path to script to run before each test marked with @pytest.mark.setup.")
+    teardown_script_path: Optional[str] = Field(None, description="Path to script to run after each test marked with @pytest.mark.teardown.")
 
 
 class FutureStateCursorFormatStreamConfiguration(BaseConfig):
@@ -233,6 +237,8 @@ class IncrementalConfig(BaseConfig):
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
     )
+    setup_script_path: Optional[str] = Field(None, description="Path to script to run before each test marked with @pytest.mark.setup.")
+    teardown_script_path: Optional[str] = Field(None, description="Path to script to run after each test marked with @pytest.mark.teardown.")
 
     class Config:
         smart_union = True

@@ -24,6 +24,8 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
+        setup_script_path: integration_tests/setup.sh
+        teardown_script_path: integration_tests/teardown.sh
         ignored_fields:
           users:
             - name: updated_at
