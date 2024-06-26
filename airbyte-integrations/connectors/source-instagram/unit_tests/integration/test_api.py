@@ -31,7 +31,7 @@ _STREAM_NAME = "Api"
 
 def _get_response() -> HttpResponseBuilder:
     return create_response_builder(
-        response_template=find_template(_STREAM_NAME, __file__),
+        response_template=find_template(_STREAM_NAME.lower(), __file__),
         records_path=FieldPath("data"),
         pagination_strategy=InstagramPaginationStrategy(request=get_account_request().build(), next_page_token=NEXT_PAGE_TOKEN),
     )
@@ -39,7 +39,7 @@ def _get_response() -> HttpResponseBuilder:
 
 def _record() -> RecordBuilder:
     return create_record_builder(
-        response_template=find_template(_STREAM_NAME, __file__),
+        response_template=find_template(_STREAM_NAME.lower(), __file__),
         records_path=FieldPath("data"),
         record_id_path=FieldPath("id"),
     )
