@@ -405,10 +405,10 @@ definitions:
             type: PageIncrement
             start_from_page: 1
             page_size: 125
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/workflows"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows"
   base_requester:
     type: HttpRequester
     url_base: https://api.rd.services
