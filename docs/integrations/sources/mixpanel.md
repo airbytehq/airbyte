@@ -58,6 +58,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.4 | 2024-06-25 | [40376](https://github.com/airbytehq/airbyte/pull/40376) | Update dependencies |
 | 3.1.3 | 2024-06-22 | [40138](https://github.com/airbytehq/airbyte/pull/40138) | Update dependencies |
 | 3.1.2 | 2024-06-18 | [38710](https://github.com/airbytehq/airbyte/pull/38710) | Update authenticator CDK package |
 | 3.1.1 | 2024-06-04 | [39006](https://github.com/airbytehq/airbyte/pull/39006) | [autopull] Upgrade base image to v1.2.1 |
