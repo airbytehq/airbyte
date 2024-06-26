@@ -268,7 +268,10 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
-| 2.4.5 | 2024-06-06 | [38884](https://github.com/airbytehq/airbyte/pull/38884) | Make lookback window configurable.                                                     |
+| 2.4.8 | 2024-06-25 | [40429](https://github.com/airbytehq/airbyte/pull/40429) | Update dependencies |
+| 2.4.7 | 2024-06-22 | [40140](https://github.com/airbytehq/airbyte/pull/40140) | Update dependencies |
+| 2.4.6 | 2024-06-21 | [39916](https://github.com/airbytehq/airbyte/pull/39916) | Added ability to skip `missing stream` in the CATALOG |
+| 2.4.5 | 2024-06-06 | [38884](https://github.com/airbytehq/airbyte/pull/38884) | Make lookback window configurable. |
 | 2.4.4 | 2024-06-06 | [39209](https://github.com/airbytehq/airbyte/pull/39209) | [autopull] Upgrade base image to v1.2.2 |
 | 2.4.3 | 2024-06-03 | [38865](https://github.com/airbytehq/airbyte/pull/38865) | Enforce unique property IDs |
 | 2.4.2 | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field |

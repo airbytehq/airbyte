@@ -56,6 +56,8 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.0.3 | 2024-06-25 | [40341](https://github.com/airbytehq/airbyte/pull/40341) | Update dependencies |
+| 1.0.2 | 2024-06-22 | [39977](https://github.com/airbytehq/airbyte/pull/39977) | Update dependencies |
 | 1.0.1 | 2024-06-04 | [38972](https://github.com/airbytehq/airbyte/pull/38972) | [autopull] Upgrade base image to v1.2.1 |
 | 1.0.0 | 2024-04-15 | [36602](https://github.com/airbytehq/airbyte/pull/36602) | Migrate to low code |
 | 0.5.4 | 2024-04-19 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Updating to 0.80.0 CDK |

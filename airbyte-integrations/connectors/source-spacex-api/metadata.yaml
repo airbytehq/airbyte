@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 62235e65-af7a-4138-9130-0bda954eb6a8
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-spacex-api
   githubIssueLabel: source-spacex-api
   icon: spacex.svg
