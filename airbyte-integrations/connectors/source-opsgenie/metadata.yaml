@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 06bdb480-2598-40b8-8b0f-fc2e2d2abdda
-  dockerImageTag: 0.3.6
+  dockerImageTag: 0.3.8
   dockerRepository: airbyte/source-opsgenie
   documentationUrl: https://docs.airbyte.com/integrations/sources/opsgenie
   githubIssueLabel: source-opsgenie

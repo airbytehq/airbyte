@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eaf50f04-21dd-4620-913b-2a83f5635227
-  dockerImageTag: 1.1.1
+  dockerImageTag: 1.1.3
   dockerRepository: airbyte/source-microsoft-teams
   githubIssueLabel: source-microsoft-teams
   icon: microsoft-teams.svg
