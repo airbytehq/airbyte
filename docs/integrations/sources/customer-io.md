@@ -52,6 +52,7 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                    |
 | :------ | :--------- | :------------------------------------------------------------- | :------------------------- |
+| 0.2.4 | 2024-06-25 | [40369](https://github.com/airbytehq/airbyte/pull/40369) | Update dependencies |
 | 0.2.3 | 2024-06-22 | [39953](https://github.com/airbytehq/airbyte/pull/39953) | Update dependencies |
 | 0.2.2 | 2024-06-04 | [38980](https://github.com/airbytehq/airbyte/pull/38980) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.1 | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |
