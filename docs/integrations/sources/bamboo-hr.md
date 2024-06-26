@@ -89,6 +89,8 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 0.3.3 | 2024-06-25 | [40288](https://github.com/airbytehq/airbyte/pull/40288) | Update dependencies |
+| 0.3.2 | 2024-06-22 | [40156](https://github.com/airbytehq/airbyte/pull/40156) | Update dependencies |
 | 0.3.1 | 2024-06-06 | [39201](https://github.com/airbytehq/airbyte/pull/39201) | [autopull] Upgrade base image to v1.2.2 |
 | 0.3.0 | 2024-05-25 | [37452](https://github.com/airbytehq/airbyte/pull/37452) | Migrate to Low Code |
 | 0.2.6 | 2024-04-19 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Updating to 0.80.0 CDK |

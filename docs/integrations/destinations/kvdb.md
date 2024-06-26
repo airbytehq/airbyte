@@ -25,6 +25,8 @@ TODO
 
 | Version | Date       | Pull Request                                              | Subject                                                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------- |
+| 0.1.8 | 2024-06-25 | [40409](https://github.com/airbytehq/airbyte/pull/40409) | Update dependencies |
+| 0.1.7 | 2024-06-22 | [40016](https://github.com/airbytehq/airbyte/pull/40016) | Update dependencies |
 | 0.1.6 | 2024-06-06 | [39236](https://github.com/airbytehq/airbyte/pull/39236) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.5 | 2024-06-03 | [38894](https://github.com/airbytehq/airbyte/pull/38894) | Replace AirbyteLogger with logging.Logger |
 | 0.1.4   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                                       |

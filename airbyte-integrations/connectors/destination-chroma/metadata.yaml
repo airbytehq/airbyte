@@ -5,11 +5,11 @@ data:
     cloud:
       enabled: false
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 0b75218b-f702-4a28-85ac-34d3d84c0fc2
-  dockerImageTag: 0.0.10
+  dockerImageTag: 0.0.13
   dockerRepository: airbyte/destination-chroma
   githubIssueLabel: destination-chroma
   icon: chroma.svg

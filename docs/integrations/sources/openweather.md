@@ -38,6 +38,8 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.7 | 2024-06-25 | [40408](https://github.com/airbytehq/airbyte/pull/40408) | Update dependencies |
+| 0.2.6 | 2024-06-22 | [40005](https://github.com/airbytehq/airbyte/pull/40005) | Update dependencies |
 | 0.2.5 | 2024-06-06 | [39170](https://github.com/airbytehq/airbyte/pull/39170) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.4 | 2024-05-25 | [38601](https://github.com/airbytehq/airbyte/pull/38601) | Make compatible with the builder. |
 | 0.2.3 | 2024-04-19 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |

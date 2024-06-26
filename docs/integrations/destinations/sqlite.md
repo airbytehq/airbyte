@@ -77,6 +77,8 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.1.5 | 2024-06-25 | [40323](https://github.com/airbytehq/airbyte/pull/40323) | Update dependencies |
+| 0.1.4 | 2024-06-22 | [40070](https://github.com/airbytehq/airbyte/pull/40070) | Update dependencies |
 | 0.1.3 | 2024-06-04 | [38975](https://github.com/airbytehq/airbyte/pull/38975) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.2 | 2024-05-22 | [38539](https://github.com/airbytehq/airbyte/pull/38539) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2024-05-21 | [38539](https://github.com/airbytehq/airbyte/pull/38539) | [autopull] base image + poetry + up_to_date |

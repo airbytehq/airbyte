@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-ip2whois
   documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
   githubIssueLabel: source-ip2whois
