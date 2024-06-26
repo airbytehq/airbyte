@@ -15,7 +15,7 @@ GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["
 
 
 def get_account_request() -> RequestBuilder:
-    return RequestBuilder.get_account_endpoint()
+    return RequestBuilder.get_account_endpoint().with_limit(100)
 
 
 class RequestBuilder:

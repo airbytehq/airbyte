@@ -341,15 +341,36 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+          record_filter:
+            type: RecordFilter
+            condition: '{{ "instagram_business_account" in record }}'
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get("paging", {}).get("cursors", {}).get("after", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("paging", {}).get("cursors", {}).get("after",
+              {}) }}
       transformations:
         - type: AddFields
           fields:
             - path:
                 - account
               value: >-
-                {{ { "business_account_id":
-                record["instagram_business_account"]["id"], "page_id":
-                record["id"] } }}
+                {{ { "business_account_id": record.get("instagram_business_account",
+                {}).get("id"), "page_id": record["id"] } }}
         - type: RemoveFields
           field_pointers:
             - - instagram_business_account
