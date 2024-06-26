@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, Dec
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, PageIncrement
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, SimpleRetrieverTestReadDecorator
