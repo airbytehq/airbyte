@@ -10,8 +10,6 @@ from pathlib import Path
 import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.sources.streams.http.auth import NoAuth
-
 
 def read_file(file_name):
     parent_location = Path(__file__).absolute().parent
@@ -107,7 +105,7 @@ def test_config():
     test_conf = {
         "view_id": "1234567",
         "window_in_days": 1,
-        "authenticator": NoAuth(),
+        "authenticator": None,
         "metrics": [],
         "start_date": pendulum.now().subtract(days=2).date().strftime("%Y-%m-%d"),
         "dimensions": [],

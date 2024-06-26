@@ -213,6 +213,6 @@ class SourceUsCensus(AbstractSource):
                 query_params=config.get("query_params"),
                 query_path=config.get("query_path"),
                 api_key=config.get("api_key"),
-                authenticator=NoAuth(),
+                authenticator=None,
             )
         ]

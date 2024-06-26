@@ -6,7 +6,6 @@ import json
 import os
 from unittest.mock import MagicMock
 
-from airbyte_cdk.sources.streams.http.auth.core import NoAuth
 from source_youtube_analytics.source import SourceYoutubeAnalytics
 
 
@@ -31,7 +30,7 @@ def test_streams(requests_mock):
         channel_reports = json.load(fp)
 
     source = SourceYoutubeAnalytics()
-    source.get_authenticator = MagicMock(return_value=NoAuth())
+    source.get_authenticator = MagicMock(return_value=None)
     config_mock = MagicMock()
     streams = source.streams(config_mock)
     assert len(streams) == len(channel_reports)

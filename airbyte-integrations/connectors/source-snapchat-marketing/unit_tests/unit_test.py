@@ -7,7 +7,6 @@
 import pytest
 import source_snapchat_marketing
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_snapchat_marketing.source import (
     Adaccounts,
     AdaccountsStatsDaily,
@@ -20,7 +19,7 @@ from source_snapchat_marketing.source import (
 )
 
 config_mock = {
-    "authenticator": NoAuth(),
+    "authenticator": None,
     "start_date": "2000-01-01",
     "end_date": "2000-02-10",
     "action_report_time": "impression",
