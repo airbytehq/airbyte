@@ -67,8 +67,8 @@ Using this feature requires additional configuration, when creating the source. 
 
 1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
 2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
-    1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel \(see below for more information on generating this key\).
-    2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
+   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel \(see below for more information on generating this key\).
+   2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
 3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
 4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
 5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the TiDB username.
@@ -79,42 +79,41 @@ Using this feature requires additional configuration, when creating the source. 
 
 [TiDB data types](https://docs.pingcap.com/tidb/stable/data-type-overview) are mapped to the following data types when synchronizing data:
 
-| TiDB Type                                 | Resulting Type         | Notes                                                        |
-| :---------------------------------------- |:-----------------------| :----------------------------------------------------------- |
-| `bit(1)`                                  | boolean                |                                                              |
-| `bit(>1)`                                 | base64 binary string   |                                                              |
-| `boolean`                                 | boolean                |                                                              |
-| `tinyint(1)`                              | boolean                |                                                              |
-| `tinyint`                                 | number                 |                                                              |
-| `smallint`                                | number                 |                                                              |
-| `mediumint`                               | number                 |                                                              |
-| `int`                                     | number                 |                                                              |
-| `bigint`                                  | number                 |                                                              |
-| `float`                                   | number                 |                                                              |
-| `double`                                  | number                 |                                                              |
-| `decimal`                                 | number                 |                                                              |
-| `binary`                                  | base64 binary string   |                                                              |
-| `blob`                                    | base64 binary string   |                                                              |
-| `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
+| TiDB Type                                 | Resulting Type         | Notes                                                                                                          |
+| :---------------------------------------- | :--------------------- | :------------------------------------------------------------------------------------------------------------- |
+| `bit(1)`                                  | boolean                |                                                                                                                |
+| `bit(>1)`                                 | base64 binary string   |                                                                                                                |
+| `boolean`                                 | boolean                |                                                                                                                |
+| `tinyint(1)`                              | boolean                |                                                                                                                |
+| `tinyint`                                 | number                 |                                                                                                                |
+| `smallint`                                | number                 |                                                                                                                |
+| `mediumint`                               | number                 |                                                                                                                |
+| `int`                                     | number                 |                                                                                                                |
+| `bigint`                                  | number                 |                                                                                                                |
+| `float`                                   | number                 |                                                                                                                |
+| `double`                                  | number                 |                                                                                                                |
+| `decimal`                                 | number                 |                                                                                                                |
+| `binary`                                  | base64 binary string   |                                                                                                                |
+| `blob`                                    | base64 binary string   |                                                                                                                |
+| `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH.     |
 | `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
-| `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59. |
-| `year`                                    | year string            | [Doc](https://docs.pingcap.com/tidb/stable/data-type-date-and-time#year-type)     |
-| `char`, `varchar` with non-binary charset | string                 |                                                              |
-| `char`, `varchar` with binary charset     | base64 binary string   |                                                              |
-| `tinyblob`                                | base64 binary string   |                                                              |
-| `blob`                                    | base64 binary string   |                                                              |
-| `mediumblob`                              | base64 binary string   |                                                              |
-| `longblob`                                | base64 binary string   |                                                              |
-| `binary`                                  | base64 binary string   |                                                              |
-| `varbinary`                               | base64 binary string   |                                                              |
-| `tinytext`                                | string                 |                                                              |
-| `text`                                    | string                 |                                                              |
-| `mediumtext`                              | string                 |                                                              |
-| `longtext`                                | string                 |                                                              |
-| `json`                                    | serialized json string | E.g. `{"a": 10, "b": 15}`                                    |
-| `enum`                                    | string                 |                                                              |
-| `set`                                     | string                 | E.g. `blue,green,yellow`                                     |
-
+| `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                       |
+| `year`                                    | year string            | [Doc](https://docs.pingcap.com/tidb/stable/data-type-date-and-time#year-type)                                  |
+| `char`, `varchar` with non-binary charset | string                 |                                                                                                                |
+| `char`, `varchar` with binary charset     | base64 binary string   |                                                                                                                |
+| `tinyblob`                                | base64 binary string   |                                                                                                                |
+| `blob`                                    | base64 binary string   |                                                                                                                |
+| `mediumblob`                              | base64 binary string   |                                                                                                                |
+| `longblob`                                | base64 binary string   |                                                                                                                |
+| `binary`                                  | base64 binary string   |                                                                                                                |
+| `varbinary`                               | base64 binary string   |                                                                                                                |
+| `tinytext`                                | string                 |                                                                                                                |
+| `text`                                    | string                 |                                                                                                                |
+| `mediumtext`                              | string                 |                                                                                                                |
+| `longtext`                                | string                 |                                                                                                                |
+| `json`                                    | serialized json string | E.g. `{"a": 10, "b": 15}`                                                                                      |
+| `enum`                                    | string                 |                                                                                                                |
+| `set`                                     | string                 | E.g. `blue,green,yellow`                                                                                       |
 
 **Note:** arrays for all the above types as well as custom types are supported, although they may be de-nested depending on the destination.
 
@@ -126,15 +125,18 @@ Now that you have set up the TiDB source connector, check out the following TiDB
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                                                                                   |
-|:--------|:-----------| :----------- |-------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.2 | 2024-02-13 | [35218](https://github.com/airbytehq/airbyte/pull/35218) | Adopt CDK 0.20.4 |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
+| :------ | :--------- | :------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.3.2   | 2024-02-13 | [35218](https://github.com/airbytehq/airbyte/pull/35218) | Adopt CDK 0.20.4                                                                                                                          |
 | 0.3.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
 | 0.3.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state                                                                                                                       |
 | 0.2.5   | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                  |
 | 0.2.4   | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting                                                                                          |
-| 0.2.3   | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455)   | For network isolation, source connector accepts a list of hosts it is allowed to connect to                                               |
-| 0.2.2   | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                                                                                     |
+| 0.2.3   | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to                                               |
+| 0.2.2   | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                                                                                     |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.2.1   | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently                                                                                                       |
 | 0.2.0   | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                                                      |
@@ -144,3 +146,5 @@ Now that you have set up the TiDB source connector, check out the following TiDB
 | 0.1.2   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                                                                    |
 | 0.1.1   | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption                                                                 |
 | 0.1.0   | 2022-04-19 | [11283](https://github.com/airbytehq/airbyte/pull/11283) | Initial Release                                                                                                                           |
+
+</details>

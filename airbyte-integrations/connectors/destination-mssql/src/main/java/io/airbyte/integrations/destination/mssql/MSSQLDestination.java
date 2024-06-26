@@ -7,16 +7,28 @@ package io.airbyte.integrations.destination.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.NoOpJdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.RawOnlySqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.jetbrains.annotations.NotNull;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +42,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     super(DRIVER_CLASS, new MSSQLNameTransformer(), new SqlServerOperations());
   }
 
+  @NotNull
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     final HashMap<String, String> properties = new HashMap<>();
@@ -57,6 +70,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     return properties;
   }
 
+  @NotNull
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
@@ -81,6 +95,22 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  @Override
+  protected JdbcDestinationHandler<? extends MinimumDestinationState> getDestinationHandler(final String databaseName,
+                                                                                            final JdbcDatabase database,
+                                                                                            final String rawTableSchema) {
+    return new NoOpJdbcDestinationHandler<>(databaseName, database, rawTableSchema, SQLDialect.DEFAULT);
+  }
+
+  @NotNull
+  @Override
+  protected List<Migration> getMigrations(final JdbcDatabase database,
+                                          final String databaseName,
+                                          final SqlGenerator sqlGenerator,
+                                          final DestinationHandler destinationHandler) {
+    return List.of();
+  }
+
   private String getTrustStoreLocation() {
     // trust store location code found at https://stackoverflow.com/a/56570588
     final String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
@@ -102,6 +132,22 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     LOGGER.info("starting destination: {}", MSSQLDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MSSQLDestination.class);
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
+  @Override
+  protected boolean shouldAlwaysDisableTypeDedupe() {
+    return true;
+  }
+
+  @NotNull
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator(@NotNull final JsonNode config) {
+    return new RawOnlySqlGenerator(new MSSQLNameTransformer());
   }
 
 }

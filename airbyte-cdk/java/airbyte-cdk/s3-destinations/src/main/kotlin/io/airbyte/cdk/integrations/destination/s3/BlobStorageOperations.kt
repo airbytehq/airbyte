@@ -12,7 +12,7 @@ abstract class BlobStorageOperations protected constructor() {
     protected val blobDecorators: MutableList<BlobDecorator> = ArrayList()
 
     abstract fun getBucketObjectPath(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         writeDatetime: DateTime,
         customFormat: String
@@ -29,7 +29,7 @@ abstract class BlobStorageOperations protected constructor() {
     @Throws(Exception::class)
     abstract fun uploadRecordsToBucket(
         recordsData: SerializableBuffer,
-        namespace: String,
+        namespace: String?,
         objectPath: String
     ): String?
 
@@ -46,7 +46,7 @@ abstract class BlobStorageOperations protected constructor() {
      * @param pathFormat formatted string for the path
      */
     abstract fun cleanUpBucketObject(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         objectPath: String,
         pathFormat: String

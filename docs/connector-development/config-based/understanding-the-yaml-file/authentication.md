@@ -5,14 +5,14 @@ The `Authenticator` defines how to configure outgoing HTTP requests to authentic
 Schema:
 
 ```yaml
-  Authenticator:
-    type: object
-    description: "Authenticator type"
-    anyOf:
-      - "$ref": "#/definitions/OAuth"
-      - "$ref": "#/definitions/ApiKeyAuthenticator"
-      - "$ref": "#/definitions/BearerAuthenticator"
-      - "$ref": "#/definitions/BasicHttpAuthenticator"
+Authenticator:
+  type: object
+  description: "Authenticator type"
+  anyOf:
+    - "$ref": "#/definitions/OAuth"
+    - "$ref": "#/definitions/ApiKeyAuthenticator"
+    - "$ref": "#/definitions/BearerAuthenticator"
+    - "$ref": "#/definitions/BasicHttpAuthenticator"
 ```
 
 ## Authenticators
@@ -25,19 +25,19 @@ The following definition will set the header "Authorization" with a value "Beare
 Schema:
 
 ```yaml
-  ApiKeyAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - header
-      - api_token
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      header:
-        type: string
-      api_token:
-        type: string
+ApiKeyAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - header
+    - api_token
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    header:
+      type: string
+    api_token:
+      type: string
 ```
 
 Example:
@@ -57,16 +57,16 @@ The following definition will set the header "Authorization" with a value "Beare
 Schema:
 
 ```yaml
-  BearerAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - api_token
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      api_token:
-        type: string
+BearerAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - api_token
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    api_token:
+      type: string
 ```
 
 Example:
@@ -87,18 +87,18 @@ The following definition will set the header "Authorization" with a value `Basic
 Schema:
 
 ```yaml
-  BasicHttpAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - username
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      username:
-        type: string
-      password:
-        type: string
+BasicHttpAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - username
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    username:
+      type: string
+    password:
+      type: string
 ```
 
 Example:
@@ -138,45 +138,45 @@ OAuth authentication is supported through the `OAuthAuthenticator`, which requir
 Schema:
 
 ```yaml
-  OAuth:
-    type: object
-    additionalProperties: true
-    required:
-      - token_refresh_endpoint
-      - client_id
-      - client_secret
-      - refresh_token
-      - access_token_name
-      - expires_in_name
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      token_refresh_endpoint:
+OAuth:
+  type: object
+  additionalProperties: true
+  required:
+    - token_refresh_endpoint
+    - client_id
+    - client_secret
+    - refresh_token
+    - access_token_name
+    - expires_in_name
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    token_refresh_endpoint:
+      type: string
+    client_id:
+      type: string
+    client_secret:
+      type: string
+    refresh_token:
+      type: string
+    scopes:
+      type: array
+      items:
         type: string
-      client_id:
-        type: string
-      client_secret:
-        type: string
-      refresh_token:
-        type: string
-      scopes:
-        type: array
-        items:
-          type: string
-        default: [ ]
-      token_expiry_date:
-        type: string
-      access_token_name:
-        type: string
-        default: "access_token"
-      expires_in_name:
-        type: string
-        default: "expires_in"
-      refresh_request_body:
-        type: object
-      grant_type:
-        type: string
-        default: "refresh_token"
+      default: []
+    token_expiry_date:
+      type: string
+    access_token_name:
+      type: string
+      default: "access_token"
+    expires_in_name:
+      type: string
+      default: "expires_in"
+    refresh_request_body:
+      type: object
+    grant_type:
+      type: string
+      default: "refresh_token"
 ```
 
 Example:
@@ -188,6 +188,159 @@ authenticator:
   client_id: "{{ config['api_key'] }}"
   client_secret: "{{ config['client_secret'] }}"
   refresh_token: ""
+```
+
+### JWT Authenticator
+
+JSON Web Token (JWT) authentication is supported through the `JwtAuthenticator`.
+
+Schema
+
+```yaml
+JwtAuthenticator:
+  title: JWT Authenticator
+  description: Authenticator for requests using JWT authentication flow.
+  type: object
+  required:
+    - type
+    - secret_key
+    - algorithm
+  properties:
+    type:
+      type: string
+      enum: [JwtAuthenticator]
+    secret_key:
+      type: string
+      description: Secret used to sign the JSON web token.
+      examples:
+        - "{{ config['secret_key'] }}"
+    base64_encode_secret_key:
+      type: boolean
+      description: When set to true, the secret key will be base64 encoded prior to being encoded as part of the JWT. Only set to "true" when required by the API.
+      default: False
+    algorithm:
+      type: string
+      description: Algorithm used to sign the JSON web token.
+      enum:
+        [
+          "HS256",
+          "HS384",
+          "HS512",
+          "ES256",
+          "ES256K",
+          "ES384",
+          "ES512",
+          "RS256",
+          "RS384",
+          "RS512",
+          "PS256",
+          "PS384",
+          "PS512",
+          "EdDSA",
+        ]
+      examples:
+        - ES256
+        - HS256
+        - RS256
+        - "{{ config['algorithm'] }}"
+    token_duration:
+      type: integer
+      title: Token Duration
+      description: The amount of time in seconds a JWT token can be valid after being issued.
+      default: 1200
+      examples:
+        - 1200
+        - 3600
+    header_prefix:
+      type: string
+      title: Header Prefix
+      description: The prefix to be used within the Authentication header.
+      examples:
+        - "Bearer"
+        - "Basic"
+    jwt_headers:
+      type: object
+      title: JWT Headers
+      description: JWT headers used when signing JSON web token.
+      additionalProperties: false
+      properties:
+        kid:
+          type: string
+          title: Key Identifier
+          description: Private key ID for user account.
+          examples:
+            - "{{ config['kid'] }}"
+        typ:
+          type: string
+          title: Type
+          description: The media type of the complete JWT.
+          default: JWT
+          examples:
+            - JWT
+        cty:
+          type: string
+          title: Content Type
+          description: Content type of JWT header.
+          examples:
+            - JWT
+    additional_jwt_headers:
+      type: object
+      title: Additional JWT Headers
+      description: Additional headers to be included with the JWT headers object.
+      additionalProperties: true
+    jwt_payload:
+      type: object
+      title: JWT Payload
+      description: JWT Payload used when signing JSON web token.
+      additionalProperties: false
+      properties:
+        iss:
+          type: string
+          title: Issuer
+          description: The user/principal that issued the JWT. Commonly a value unique to the user.
+          examples:
+            - "{{ config['iss'] }}"
+        sub:
+          type: string
+          title: Subject
+          description: The subject of the JWT. Commonly defined by the API.
+        aud:
+          type: string
+          title: Audience
+          description: The recipient that the JWT is intended for. Commonly defined by the API.
+          examples:
+            - "appstoreconnect-v1"
+    additional_jwt_payload:
+      type: object
+      title: Additional JWT Payload Properties
+      description: Additional properties to be added to the JWT payload.
+      additionalProperties: true
+    $parameters:
+      type: object
+      additionalProperties: true
+```
+
+Example:
+
+```yaml
+authenticator:
+  type: JwtAuthenticator
+  secret_key: "{{ config['secret_key'] }}"
+  base64_encode_secret_key: True
+  algorithm: RS256
+  token_duration: 3600
+  header_prefix: Bearer
+  jwt_headers:
+    kid: "{{ config['kid'] }}"
+    cty: "JWT"
+  additional_jwt_headers:
+    test: "{{ config['test']}}"
+  jwt_payload:
+    iss: "{{ config['iss'] }}"
+    sub: "sub value"
+    aud: "aud value"
+  additional_jwt_payload:
+    test: "test custom payload"
 ```
 
 ## More readings

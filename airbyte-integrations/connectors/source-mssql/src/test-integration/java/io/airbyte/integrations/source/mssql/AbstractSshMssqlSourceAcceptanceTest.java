@@ -38,8 +38,9 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   static private final Logger LOGGER = LoggerFactory.getLogger(AbstractSshMssqlSourceAcceptanceTest.class);
 
-  private static final String STREAM_NAME = "dbo.id_and_name";
-  private static final String STREAM_NAME2 = "dbo.starships";
+  private static final String SCHEMA_NAME = "dbo";
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME2 = "starships";
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -126,7 +127,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
+                STREAM_NAME, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
@@ -136,7 +137,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
+                STREAM_NAME2, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(

@@ -24,14 +24,12 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.OutputStream
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 import org.apache.commons.io.FilenameUtils
-import org.apache.commons.lang3.StringUtils
-import org.apache.logging.log4j.util.Strings
 import org.joda.time.DateTime
 
 private val logger = KotlinLogging.logger {}
@@ -46,13 +44,13 @@ open class S3StorageOperations(
     private val partCounts: ConcurrentMap<String, AtomicInteger> = ConcurrentHashMap()
 
     override fun getBucketObjectPath(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         writeDatetime: DateTime,
         customFormat: String
     ): String {
         val namespaceStr: String =
-            nameTransformer.getNamespace(if (Strings.isNotBlank(namespace)) namespace else "")
+            nameTransformer.getNamespace(if (!namespace.isNullOrBlank()) namespace else "")
         val streamNameStr: String = nameTransformer.getIdentifier(streamName)
         return nameTransformer.applyDefaultCase(
             customFormat
@@ -100,7 +98,7 @@ open class S3StorageOperations(
 
     /** Create a directory object at the specified location. Creates the bucket if necessary. */
     override fun createBucketIfNotExists() {
-        val bucket: String = s3Config.bucketName
+        val bucket: String? = s3Config.bucketName
         if (!doesBucketExist(bucket)) {
             logger.info { "Bucket $bucket does not exist; creating..." }
             s3Client.createBucket(bucket)
@@ -114,7 +112,7 @@ open class S3StorageOperations(
 
     override fun uploadRecordsToBucket(
         recordsData: SerializableBuffer,
-        namespace: String,
+        namespace: String?,
         objectPath: String
     ): String {
         val exceptionsThrown: MutableList<Exception> = ArrayList()
@@ -143,17 +141,15 @@ open class S3StorageOperations(
         // issue reduces risk of misidentifying errors or reporting a transient error.
         val areAllExceptionsAuthExceptions: Boolean =
             exceptionsThrown
-                .stream()
-                .filter { e: Exception -> e is AmazonS3Exception }
+                .filterIsInstance<AmazonS3Exception>()
                 .map { s3e: Exception -> (s3e as AmazonS3Exception).statusCode }
-                .filter { o: Int? ->
+                .count { o: Int ->
                     ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(
                         o,
                     )
-                }
-                .count() == exceptionsThrown.size.toLong()
+                } == exceptionsThrown.size
         if (areAllExceptionsAuthExceptions) {
-            throw ConfigErrorException(exceptionsThrown[0].message, exceptionsThrown[0])
+            throw ConfigErrorException(exceptionsThrown[0].message!!, exceptionsThrown[0])
         } else {
             throw RuntimeException(
                 "Exceptions thrown while uploading records into storage: ${exceptionsThrown.joinToString(separator = "\n")}",
@@ -170,11 +166,11 @@ open class S3StorageOperations(
     @Throws(IOException::class)
     private fun loadDataIntoBucket(objectPath: String, recordsData: SerializableBuffer): String {
         val partSize: Long = DEFAULT_PART_SIZE.toLong()
-        val bucket: String = s3Config.bucketName
+        val bucket: String? = s3Config.bucketName
         val partId: String = getPartId(objectPath)
         val fileExtension: String = getExtension(recordsData.filename)
         val fullObjectKey: String =
-            if (StringUtils.isNotBlank(s3Config.fileNamePattern)) {
+            if (!s3Config.fileNamePattern.isNullOrBlank()) {
                 s3FilenameTemplateManager.applyPatternToFilename(
                     S3FilenameTemplateParameterObject.builder()
                         .partId(partId)
@@ -261,7 +257,7 @@ open class S3StorageOperations(
             var objects: ObjectListing?
             var objectCount = 0
 
-            val bucket: String = s3Config.bucketName
+            val bucket: String? = s3Config.bucketName
             objects = s3Client.listObjects(bucket, objectPath)
 
             if (objects != null) {
@@ -291,18 +287,18 @@ open class S3StorageOperations(
     }
 
     override fun cleanUpBucketObject(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         objectPath: String,
         pathFormat: String
     ) {
-        val bucket: String = s3Config.bucketName
+        val bucket: String? = s3Config.bucketName
         var objects: ObjectListing =
             s3Client.listObjects(
                 ListObjectsRequest()
                     .withBucketName(bucket)
                     .withPrefix(
-                        objectPath
+                        objectPath,
                     ) // pathFormat may use subdirectories under the objectPath to organize files
                     // so we need to recursively list them and filter files matching the pathFormat
                     .withDelimiter(""),
@@ -312,7 +308,6 @@ open class S3StorageOperations(
         while (objects.objectSummaries.size > 0) {
             val keysToDelete: List<DeleteObjectsRequest.KeyVersion> =
                 objects.objectSummaries
-                    .stream()
                     .filter { obj: S3ObjectSummary ->
                         regexFormat
                             .matcher(
@@ -325,7 +320,7 @@ open class S3StorageOperations(
                             obj.key,
                         )
                     }
-                    .toList()
+
             cleanUpObjects(bucket, keysToDelete)
             logger.info {
                 "Storage bucket $objectPath has been cleaned-up (${keysToDelete.size} objects matching $regexFormat were deleted)..."
@@ -360,12 +355,11 @@ open class S3StorageOperations(
     }
 
     override fun cleanUpBucketObject(objectPath: String, stagedFiles: List<String>) {
-        val bucket: String = s3Config.bucketName
+        val bucket: String? = s3Config.bucketName
         var objects: ObjectListing = s3Client.listObjects(bucket, objectPath)
         while (objects.objectSummaries.size > 0) {
             val keysToDelete: List<DeleteObjectsRequest.KeyVersion> =
                 objects.objectSummaries
-                    .stream()
                     .filter { obj: S3ObjectSummary ->
                         stagedFiles.isEmpty() ||
                             stagedFiles.contains(
@@ -377,7 +371,7 @@ open class S3StorageOperations(
                             obj.key,
                         )
                     }
-                    .toList()
+
             cleanUpObjects(bucket, keysToDelete)
             logger.info {
                 "Storage bucket $objectPath has been cleaned-up (${keysToDelete.size} objects were deleted)..."
@@ -396,8 +390,8 @@ open class S3StorageOperations(
     ) {
         if (keysToDelete.isNotEmpty()) {
             logger.info {
-                "Deleting objects ${keysToDelete.stream().map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
-                .toList().joinToString(separator = ", ")}"
+                "Deleting objects ${keysToDelete.map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
+                .joinToString(separator = ", ")}"
             }
             s3Client.deleteObjects(DeleteObjectsRequest(bucket).withKeys(keysToDelete))
         }
@@ -414,6 +408,10 @@ open class S3StorageOperations(
             AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR,
             "x-amz-iv",
         )
+    }
+
+    fun uploadManifest(manifestFilePath: String, manifestContents: String) {
+        s3Client.putObject(s3Config.bucketName, manifestFilePath, manifestContents)
     }
 
     companion object {

@@ -28,6 +28,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from jsonschema.exceptions import ValidationError
+from pydantic import AnyUrl
 
 logger = logging.getLogger("airbyte")
 
@@ -206,7 +207,7 @@ class TestManifestDeclarativeSource:
         source = ManifestDeclarativeSource(source_config=manifest)
         connector_specification = source.spec(logger)
         assert connector_specification is not None
-        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-manifest"
+        assert connector_specification.documentationUrl == AnyUrl("https://airbyte.com/#yaml-from-manifest")
         assert connector_specification.connectionSpecification["title"] == "Test Spec"
         assert connector_specification.connectionSpecification["required"][0] == "api_key"
         assert connector_specification.connectionSpecification["additionalProperties"] is False
@@ -273,7 +274,7 @@ class TestManifestDeclarativeSource:
 
         connector_specification = source.spec(logger)
 
-        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-external"
+        assert connector_specification.documentationUrl == AnyUrl("https://airbyte.com/#yaml-from-external")
         assert connector_specification.connectionSpecification == EXTERNAL_CONNECTION_SPECIFICATION
 
     def test_source_is_not_created_if_toplevel_fields_are_unknown(self):
@@ -837,7 +838,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0}, {"AED": 1}],
-            [call({}, {}, None)],
+            [call({}, {})],
         ),
         (
             "test_read_manifest_with_added_fields",
@@ -906,7 +907,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
-            [call({}, {}, None)],
+            [call({}, {})],
         ),
         (
             "test_read_with_pagination_no_partitions",
@@ -980,7 +981,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0}, {"AED": 1}, {"USD": 2}],
-            [call({}, {}, None), call({}, {}, {"next_page_token": "next"})],
+            [call({}, {}), call({"next_page_token": "next"}, {"next_page_token": "next"})],
         ),
         (
             "test_no_pagination_with_partition_router",
@@ -1123,7 +1124,7 @@ def test_read_manifest_declarative_source(test_name, manifest, pages, expected_r
     _stream_name = "Rates"
     with patch.object(SimpleRetriever, "_fetch_next_page", side_effect=pages) as mock_retriever:
         output_data = [message.record.data for message in _run_read(manifest, _stream_name) if message.record]
-        assert expected_records == output_data
+        assert output_data == expected_records
         mock_retriever.assert_has_calls(expected_calls)
 
 

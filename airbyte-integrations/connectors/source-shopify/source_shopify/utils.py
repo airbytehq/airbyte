@@ -4,6 +4,7 @@
 
 
 import enum
+import logging
 from functools import wraps
 from time import sleep
 from typing import Any, Callable, Dict, List, Mapping, Optional
@@ -42,7 +43,7 @@ class ShopifyBadJsonError(AirbyteTracedException):
 
     def __init__(self, message, **kwargs) -> None:
         self.message = f"Reason: Bad JSON Response from the Shopify server. Details: {message}."
-        super().__init__(internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
+        super().__init__(internal_message=self.message, failure_type=FailureType.transient_error, **kwargs)
 
 
 class ShopifyConnectionError(AirbyteTracedException):
@@ -85,9 +86,30 @@ class ShopifyRateLimiter:
     """
 
     on_unknown_load: float = 1.0
+    on_very_low_load: float = 0.0
     on_low_load: float = 0.2
     on_mid_load: float = 1.5
     on_high_load: float = 5.0
+
+    logger = logging.getLogger("airbyte")
+
+    log_message_count = 0
+    log_message_frequency = 3
+
+    def log_message_counter(message: str) -> None:
+        """
+        Print the rate-limit info message every `log_message_frequency` request, to minimize the noise in the logs.
+        """
+        if ShopifyRateLimiter.log_message_count < ShopifyRateLimiter.log_message_frequency:
+            ShopifyRateLimiter.log_message_count += 1
+        else:
+            ShopifyRateLimiter.logger.info(message)
+            ShopifyRateLimiter.log_message_count = 0
+
+    def get_response_from_args(*args) -> Optional[requests.Response]:
+        for arg in args:
+            if isinstance(arg, requests.models.Response):
+                return arg
 
     @staticmethod
     def _convert_load_to_time(load: Optional[float], threshold: float) -> float:
@@ -101,20 +123,34 @@ class ShopifyRateLimiter:
         :: wait_time - time to wait between each request in seconds
 
         """
-        mid_load = threshold / 2  # average load based on threshold
+
+        half_of_threshold = threshold / 2  # average load based on threshold
+        quarter_of_threshold = threshold / 4  # low load based on threshold
+
         if not load:
             # when there is no rate_limits from header, use the `sleep_on_unknown_load`
             wait_time = ShopifyRateLimiter.on_unknown_load
-        elif load >= threshold:
+            ShopifyRateLimiter.log_message_counter("API Load: `REGULAR`")
+        elif threshold <= load:
             wait_time = ShopifyRateLimiter.on_high_load
-        elif load >= mid_load:
+            ShopifyRateLimiter.log_message_counter("API Load: `HIGH`")
+        elif half_of_threshold <= load < threshold:
             wait_time = ShopifyRateLimiter.on_mid_load
-        elif load < mid_load:
+            ShopifyRateLimiter.log_message_counter("API Load: `MID`")
+        elif quarter_of_threshold <= load < half_of_threshold:
             wait_time = ShopifyRateLimiter.on_low_load
+            ShopifyRateLimiter.log_message_counter("API Load: `LOW`")
+        elif load < quarter_of_threshold:
+            wait_time = ShopifyRateLimiter.on_very_low_load
+
         return wait_time
 
     @staticmethod
-    def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit") -> float:
+    def get_rest_api_wait_time(
+        *args,
+        threshold: float = 0.9,
+        rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit",
+    ) -> float:
         """
         To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
@@ -131,8 +167,7 @@ class ShopifyRateLimiter:
         More information: https://shopify.dev/api/usage/rate-limits
         """
         # find the requests.Response inside args list
-        for arg in args:
-            response = arg if isinstance(arg, requests.models.Response) else None
+        response = ShopifyRateLimiter.get_response_from_args(*args)
         # Get the rate_limits from response
         rate_limits = response.headers.get(rate_limit_header) if response else None
         # define current load from rate_limits
@@ -173,8 +208,7 @@ class ShopifyRateLimiter:
         More information: https://shopify.dev/api/usage/rate-limits
         """
         # find the requests.Response inside args list
-        for arg in args:
-            response = arg if isinstance(arg, requests.models.Response) else None
+        response = ShopifyRateLimiter.get_response_from_args(*args)
 
         # Get the rate limit info from response
         if response:

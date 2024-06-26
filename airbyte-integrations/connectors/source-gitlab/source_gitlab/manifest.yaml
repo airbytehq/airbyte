@@ -1,0 +1,613 @@
+version: 0.78.1
+type: DeclarativeSource
+
+definitions:
+  # Authenticators
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    token_refresh_endpoint: "https://{{ config.get('api_url', 'gitlab.com') }}/oauth/token"
+    refresh_token_updater:
+      refresh_token_error_status_codes: [400, 401]
+      refresh_token_error_key: "error"
+      refresh_token_error_values: ["invalid_grant"]
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2.0: "#/definitions/oauth_authenticator"
+      access_token: "#/definitions/bearer_authenticator"
+
+  # Requester
+  requester:
+    type: HttpRequester
+    url_base: >-
+      {% set parts = config.get('api_url', 'gitlab.com').split('://') %}
+      {{ parts[0] if parts|length > 1 else 'https' }}://{{ parts[1] if parts[1] else parts[0] }}/api/v4/
+    http_method: GET
+    authenticator: "#/definitions/authenticator"
+    use_cache: true
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes: [403]
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401]
+          error_message: Unable to refresh the `access_token`, please re-authenticate in Sources > Settings.
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes: [500]
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [404]
+          error_message: Groups and/or projects that you provide are invalid or you don't have permission to view it.
+    request_parameters: "{{ parameters.get('request_parameters', {}) }}"
+
+  # Selector
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  # Paginator
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 50
+      start_from_page: 1
+      inject_on_first_request: false
+    page_size_option:
+      type: RequestOption
+      field_name: per_page
+      inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: page
+      inject_into: request_parameter
+
+  # Retrievers
+  retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/paginator"
+
+  group_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: CustomPartitionRouter
+      class_name: source_gitlab.components.partition_routers.GroupStreamsPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_list_stream"
+          partition_field: "id"
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/include_descendant_groups_stream"
+          partition_field: "id"
+
+  group_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_stream"
+          partition_field: "id"
+
+  projects_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: CustomPartitionRouter
+      class_name: source_gitlab.components.partition_routers.ProjectStreamsPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_stream"
+          partition_field: "id"
+
+  projects_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/projects_stream"
+          partition_field: "id"
+
+  pipelines_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/pipelines_stream"
+          partition_field: "id"
+
+  # Transformations
+  add_project_id_field:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["project_id"]
+        value: "{{ stream_slice.id }}"
+
+  add_group_id_field:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["group_id"]
+        value: "{{ stream_slice.id }}"
+
+  # Service streams
+  base_full_refresh_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+
+  base_groups_child_stream:
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_child_streams_retriever"
+
+  base_projects_child_stream:
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/projects_child_streams_retriever"
+
+  base_projects_incremental_child_stream:
+    $ref: "#/definitions/base_projects_child_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
+      start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: "PT1S"
+      step: "P180DT1S"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('lower_bound_filter', 'updated_after') }}"
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('upper_bound_filter', 'updated_before') }}"
+        inject_into: request_parameter
+
+  groups_list_stream:
+    name: "groups_list"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/retriever"
+    $parameters:
+      path: "groups"
+      request_parameters: {}
+
+  include_descendant_groups_stream:
+    name: "include_descendant_groups"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: "slice"
+        values: |
+          {% set slices = [] %}
+          {% for group_id in config.get('groups_list', []) %}
+          {% set _ = slices.append({'path': 'groups/' + group_id}) %}
+          {% set _ = slices.append({'path': 'groups/' + group_id + '/descendant_groups'}) %}
+          {% endfor %}
+          {{ slices }}
+    $parameters:
+      path: "{{ stream_slice.slice.path }}"
+      request_parameters: {}
+
+  # Full refresh streams
+  ## Groups-based streams
+  groups_stream:
+    name: "groups"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_streams_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - projects
+            value: |
+              {% set projects = [] %}
+              {% for project in (record.get('projects') or []): %}
+              {% set _ = projects.append({'id': project['id'], 'path_with_namespace': project['path_with_namespace']}) %}
+              {% endfor %}
+              {{ projects }}
+    $parameters:
+      path: "groups/{{ stream_slice.id }}"
+      request_parameters: {}
+
+  group_milestones_stream:
+    name: "group_milestones"
+    $ref: "#/definitions/base_groups_child_stream"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/milestones"
+
+  group_members_stream:
+    name: "group_members"
+    $ref: "#/definitions/base_groups_child_stream"
+    primary_key: ["group_id", "id"]
+    transformations:
+      - "#/definitions/add_group_id_field"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/members"
+
+  group_labels_stream:
+    name: "group_labels"
+    $ref: "#/definitions/base_groups_child_stream"
+    primary_key: ["group_id", "id"]
+    transformations:
+      - "#/definitions/add_group_id_field"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/labels"
+
+  group_issue_boards_stream:
+    name: "group_issue_boards"
+    $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - "#/definitions/add_group_id_field"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/boards"
+
+  epics_stream:
+    name: "epics"
+    $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+    primary_key: "iid"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/epics"
+
+  epic_issues_stream:
+    name: "epic_issues"
+    $ref: "#/definitions/base_groups_child_stream"
+    primary_key: "iid"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["milestone_id"]
+            value: "{{ (record.get('milestone') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignee_id"]
+            value: "{{ (record.get('assignee') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignees"]
+            value: |
+              {% set ids = [] %}
+              {% for data in (record.get('assignees') or []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "iid"
+            stream: "#/definitions/epics_stream"
+            partition_field: "iid"
+    $parameters:
+      path: "groups/{{ stream_slice.parent_slice.id }}/epics/{{ stream_slice.iid }}/issues"
+
+  ## Projects-based streams
+  projects_stream:
+    name: "projects"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/projects_streams_retriever"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}"
+      request_parameters:
+        statistics: 1
+
+  project_milestones_stream:
+    name: "project_milestones"
+    $ref: "#/definitions/base_projects_child_stream"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/milestones"
+
+  project_members_stream:
+    name: "project_members"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id", "id"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/members"
+
+  project_labels_stream:
+    name: "project_labels"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id", "id"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/labels"
+
+  branches_stream:
+    name: "branches"
+    $ref: "#/definitions/base_projects_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    primary_key: ["project_id", "name"]
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/repository/branches"
+
+  releases_stream:
+    name: "releases"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: "name"
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["milestones"]
+            value: |
+              {% set ids = [] %}
+              {% for data in record.get('milestones', []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/releases"
+
+  tags_stream:
+    name: "tags"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id", "name"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/repository/tags"
+
+  users_stream:
+    name: "users"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: "name"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/users"
+
+  deployments_stream:
+    name: "deployments"
+    $ref: "#/definitions/base_projects_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["user_username"]
+            value: "{{ (record.get('user') or {}).get('username') }}"
+          - type: AddedFieldDefinition
+            path: ["user_full_name"]
+            value: "{{ (record.get('user') or {}).get('name') }}"
+          - type: AddedFieldDefinition
+            path: ["environment_name"]
+            value: "{{ (record.get('environment') or {}).get('name') }}"
+          - type: AddedFieldDefinition
+            path: ["user_id"]
+            value: "{{ (record.get('user') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["environment_id"]
+            value: "{{ (record.get('environment') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/deployments"
+
+  merge_request_commits_stream:
+    name: "merge_request_commits"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "iid"
+            stream: "#/definitions/merge_requests_stream"
+            partition_field: "iid"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - type: AddedFieldDefinition
+            path: ["merge_request_iid"]
+            value: "{{ stream_slice.iid }}"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/merge_requests/{{ stream_slice.iid }}/commits"
+
+  pipelines_extended_stream:
+    name: "pipelines_extended"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}"
+
+  jobs_stream:
+    name: "jobs"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - type: AddedFieldDefinition
+            path: ["user_id"]
+            value: "{{ (record.get('user') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["pipeline_id"]
+            value: "{{ (record.get('pipeline') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["runner_id"]
+            value: "{{ (record.get('runner') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
+
+  # Incremental streams
+  commits_stream:
+    name: "commits"
+    $ref: "#/definitions/base_projects_incremental_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/repository/commits"
+      cursor_field: "created_at"
+      lower_bound_filter: "since"
+      upper_bound_filter: "until"
+      request_parameters:
+        with_stats: "true"
+
+  issues_stream:
+    name: "issues"
+    $ref: "#/definitions/base_projects_incremental_child_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignee_id"]
+            value: "{{ (record.get('assignee') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["closed_by_id"]
+            value: "{{ (record.get('closed_by') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["milestone_id"]
+            value: "{{ (record.get('milestone') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignees"]
+            value: |
+              {% set ids = [] %}
+              {% for data in record.get('assignees', []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/issues"
+      request_parameters:
+        scope: "all"
+
+  merge_requests_stream:
+    name: "merge_requests"
+    $ref: "#/definitions/base_projects_incremental_child_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignee_id"]
+            value: "{{ (record.get('assignee') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["closed_by_id"]
+            value: "{{ (record.get('closed_by') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["milestone_id"]
+            value: "{{ (record.get('milestone') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["merged_by_id"]
+            value: "{{ (record.get('merged_by') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignees"]
+            value: |
+              {% set ids = [] %}
+              {% for data in record.get('assignees', []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/merge_requests"
+      request_parameters:
+        scope: "all"
+
+  pipelines_stream:
+    name: "pipelines"
+    $ref: "#/definitions/base_projects_incremental_child_stream"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/pipelines"
+
+streams:
+  # Groups-based streams
+  - "#/definitions/groups_stream"
+  - "#/definitions/group_milestones_stream"
+  - "#/definitions/group_members_stream"
+  - "#/definitions/group_labels_stream"
+  - "#/definitions/group_issue_boards_stream"
+  - "#/definitions/epics_stream"
+  - "#/definitions/epic_issues_stream"
+
+  # Projects-based streams
+  - "#/definitions/projects_stream"
+  - "#/definitions/project_milestones_stream"
+  - "#/definitions/project_members_stream"
+  - "#/definitions/project_labels_stream"
+  - "#/definitions/branches_stream"
+  - "#/definitions/releases_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/deployments_stream"
+  - "#/definitions/commits_stream"
+  - "#/definitions/issues_stream"
+  - "#/definitions/merge_requests_stream"
+  - "#/definitions/merge_request_commits_stream"
+  - "#/definitions/pipelines_stream"
+  - "#/definitions/pipelines_extended_stream"
+  - "#/definitions/jobs_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects

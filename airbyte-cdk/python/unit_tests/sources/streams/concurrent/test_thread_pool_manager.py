@@ -21,27 +21,6 @@ class ThreadPoolManagerTest(TestCase):
 
         assert len(self._thread_pool_manager._futures) == 1
 
-    def test_given_no_exceptions_when_shutdown_if_exception_then_do_not_raise(self):
-        future = Mock(spec=Future)
-        future.exception.return_value = None
-        future.done.side_effect = [True, True]
-
-        self._thread_pool_manager._futures = [future]
-        self._thread_pool_manager.prune_to_validate_has_reached_futures_limit()
-
-        self._thread_pool_manager.shutdown_if_exception()  # do not raise
-
-    def test_given_exception_when_shutdown_if_exception_then_raise(self):
-        future = Mock(spec=Future)
-        future.exception.return_value = RuntimeError
-        future.done.side_effect = [True, True]
-
-        self._thread_pool_manager._futures = [future]
-        self._thread_pool_manager.prune_to_validate_has_reached_futures_limit()
-
-        with self.assertRaises(RuntimeError):
-            self._thread_pool_manager.shutdown_if_exception()
-
     def test_given_exception_during_pruning_when_check_for_errors_and_shutdown_then_shutdown_and_raise(self):
         future = Mock(spec=Future)
         future.exception.return_value = RuntimeError
@@ -52,10 +31,6 @@ class ThreadPoolManagerTest(TestCase):
 
         with self.assertRaises(RuntimeError):
             self._thread_pool_manager.check_for_errors_and_shutdown()
-        self._threadpool.shutdown.assert_called_with(wait=False, cancel_futures=True)
-
-    def test_shutdown(self):
-        self._thread_pool_manager.shutdown()
         self._threadpool.shutdown.assert_called_with(wait=False, cancel_futures=True)
 
     def test_is_done_is_false_if_not_all_futures_are_done(self):

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.mysql;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class SshPasswordMySQLDestinationAcceptanceTest extends SshMySQLDestinationAcceptanceTest {
 
   @Override

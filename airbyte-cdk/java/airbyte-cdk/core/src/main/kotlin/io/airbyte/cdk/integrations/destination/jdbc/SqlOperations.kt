@@ -5,9 +5,7 @@ package io.airbyte.cdk.integrations.destination.jdbc
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 
 /**
  * SQL queries required for successfully syncing to a destination connector. These operations
@@ -29,7 +27,7 @@ interface SqlOperations {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String?)
+    fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String)
 
     /**
      * Denotes whether the schema exists in destination database
@@ -52,7 +50,7 @@ interface SqlOperations {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun createTableIfNotExists(database: JdbcDatabase?, schemaName: String?, tableName: String?)
+    fun createTableIfNotExists(database: JdbcDatabase, schemaName: String?, tableName: String?)
 
     /**
      * Query to create a table with provided name in provided schema if it does not already exist.
@@ -72,7 +70,7 @@ interface SqlOperations {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun dropTableIfExists(database: JdbcDatabase?, schemaName: String?, tableName: String?)
+    fun dropTableIfExists(database: JdbcDatabase, schemaName: String?, tableName: String?)
 
     /**
      * Query to remove all records from a table. Assumes the table exists.
@@ -82,11 +80,7 @@ interface SqlOperations {
      * @param tableName Name of table
      * @return Query
      */
-    fun truncateTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        tableName: String?
-    ): String?
+    fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String
 
     /**
      * Insert records into table. Assumes the table exists.
@@ -99,8 +93,8 @@ interface SqlOperations {
      */
     @Throws(Exception::class)
     fun insertRecords(
-        database: JdbcDatabase?,
-        records: List<PartialAirbyteMessage?>?,
+        database: JdbcDatabase,
+        records: List<PartialAirbyteMessage>,
         schemaName: String?,
         tableName: String?
     )
@@ -131,8 +125,7 @@ interface SqlOperations {
      * @param queries Queries to execute
      * @throws Exception exception
      */
-    @Throws(Exception::class)
-    fun executeTransaction(database: JdbcDatabase?, queries: List<String?>?)
+    @Throws(Exception::class) fun executeTransaction(database: JdbcDatabase, queries: List<String>)
 
     /** Check if the data record is valid and ok to be written to destination */
     fun isValidData(data: JsonNode?): Boolean
@@ -144,7 +137,5 @@ interface SqlOperations {
      */
     val isSchemaRequired: Boolean
 
-    companion object {
-        val LOGGER: Logger = LoggerFactory.getLogger(SqlOperations::class.java)
-    }
+    companion object {}
 }

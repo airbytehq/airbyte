@@ -299,6 +299,8 @@ async def discovered_catalog_fixture(
 
     output = await docker_runner.call_discover(config=connector_config)
     catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+    if len(catalogs) == 0:
+        raise ValueError("No catalog message was emitted")
     return {stream.name: stream for stream in catalogs[-1].streams}
 
 
@@ -322,6 +324,8 @@ async def previous_discovered_catalog_fixture(
         )
         return None
     catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+    if len(catalogs) == 0:
+        raise ValueError("No catalog message was emitted")
     return {stream.name: stream for stream in catalogs[-1].streams}
 
 

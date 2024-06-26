@@ -28,8 +28,8 @@ internal class SshTunnelTest {
     @ParameterizedTest
     @ValueSource(strings = [HOST_PORT_CONFIG, URL_CONFIG_WITH_PORT, URL_CONFIG_NO_PORT])
     @Throws(Exception::class)
-    fun testConfigInTunnel(configString: String?) {
-        val config = ObjectMapper().readTree(String.format(configString!!, SSH_RSA_PRIVATE_KEY))
+    fun testConfigInTunnel(configString: String) {
+        val config = ObjectMapper().readTree(String.format(configString, SSH_RSA_PRIVATE_KEY))
         val endPointURL = Jsons.getStringOrNull(config, "endpoint")
         val sshTunnel: SshTunnel =
             object :
@@ -56,13 +56,13 @@ internal class SshTunnelTest {
 
         val configInTunnel = sshTunnel.configInTunnel
         if (endPointURL == null) {
-            Assertions.assertTrue(configInTunnel!!.has("port"))
+            Assertions.assertTrue(configInTunnel.has("port"))
             Assertions.assertTrue(configInTunnel.has("host"))
             Assertions.assertFalse(configInTunnel.has("endpoint"))
-            Assertions.assertEquals(8080, configInTunnel!!["port"].asInt())
+            Assertions.assertEquals(8080, configInTunnel["port"].asInt())
             Assertions.assertEquals("127.0.0.1", configInTunnel["host"].asText())
         } else {
-            Assertions.assertFalse(configInTunnel!!.has("port"))
+            Assertions.assertFalse(configInTunnel.has("port"))
             Assertions.assertFalse(configInTunnel.has("host"))
             Assertions.assertTrue(configInTunnel.has("endpoint"))
             Assertions.assertEquals(

@@ -16,8 +16,9 @@ following command from this directory:
 pipx install .
 ```
 
-This will make `connectors-qa` available in your `PATH`. Run `connectors-qa --help` to see the
-available commands and options.
+This will make `connectors-qa` available in your `PATH`.
+
+Feel free to run `connectors-qa --help` to see the available commands and options.
 
 ### Examples
 
@@ -63,7 +64,7 @@ connectors-qa generate-documentation qa_checks.md
 ## Development
 
 ```bash
-poetry install
+poetry install --with dev
 ```
 
 ### Dependencies
@@ -106,6 +107,32 @@ poe lint
 ```
 
 ## Changelog
+
+### 1.4.0
+
+Added the `IntegrationTestsEnabledCheck` check that verifies if the integration tests are enabled for connectors with higher cloud usage.
+
+### 1.3.2
+
+Removed documentation checks in `MedatadaCheck` since it's already verified in `DocumentationCheck`.
+
+### 1.3.1
+
+Remove requirements on DockerHub credentials to run metadata validation.
+
+### 1.3.0
+
+Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presence of
+`maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
+
+### 1.2.0
+
+Added `ValidateBreakingChangesDeadlines` check that verifies the minimal compliance of breaking
+change rollout deadline.
+
+### 1.1.0
+
+Introduced the `Check.run_on_released_connectors` flag.
 
 ### 1.0.4
 

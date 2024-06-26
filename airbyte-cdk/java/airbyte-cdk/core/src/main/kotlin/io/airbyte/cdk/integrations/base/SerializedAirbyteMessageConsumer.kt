@@ -53,7 +53,7 @@ interface SerializedAirbyteMessageConsumer :
         fun appendOnClose(
             consumer: SerializedAirbyteMessageConsumer?,
             voidCallable: VoidCallable
-        ): SerializedAirbyteMessageConsumer? {
+        ): SerializedAirbyteMessageConsumer {
             return object : SerializedAirbyteMessageConsumer {
                 @Throws(Exception::class)
                 override fun start() {

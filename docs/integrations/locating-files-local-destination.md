@@ -35,9 +35,8 @@ Note that this method does not allow direct access to any files directly, instea
 3. This will copy the entire `airbyte_local` folder to your host machine.
 
 Note that if you know the specific filename or wildcard, you can add append it to the source path of the `docker cp` command.
-   
+
 ## Notes
 
 1. Local JSON and Local CSV files do not persist between Docker restarts. This means that once you turn off your Docker image, your data is lost. This is consistent with the `tmp` nature of the folder.
 2. In the root folder of your docker files, it might generate tmp and var folders that only have empty folders inside.
-

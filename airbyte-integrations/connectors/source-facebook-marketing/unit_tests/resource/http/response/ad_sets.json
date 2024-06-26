@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "id": "0000000000",
+      "name": "New Test Ad Set",
+      "promoted_object": {
+        "page_id": "112704783733939"
+      },
+      "account_id": "111111111111111",
+      "updated_time": "2024-03-02T15:02:47-0700",
+      "daily_budget": 600.0,
+      "budget_remaining": 600.0,
+      "effective_status": "ARCHIVED",
+      "campaign_id": "120208325579370399",
+      "created_time": "2024-03-12T15:02:47-0700",
+      "start_time": "2024-03-12T15:02:47-0700",
+      "lifetime_budget": 0.0,
+      "targeting": {
+        "age_max": 65,
+        "age_min": 18,
+        "geo_locations": {
+          "countries": ["US"],
+          "location_types": ["home", "recent"]
+        },
+        "brand_safety_content_filter_levels": [
+          "FACEBOOK_STANDARD",
+          "AN_STANDARD"
+        ],
+        "targeting_automation": {
+          "advantage_audience": 1
+        }
+      },
+      "bid_info": {
+        "REACH": 99
+      },
+      "bid_strategy": "COST_CAP",
+      "bid_amount": 99.0
+    }
+  ]
+}

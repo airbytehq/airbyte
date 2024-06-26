@@ -396,13 +396,7 @@ class AirbyteTypeTest {
             Union(
                 List.of(
                     AirbyteProtocolType.STRING,
-                    Struct(
-                        object : LinkedHashMap<String, AirbyteType>() {
-                            init {
-                                put("foo", AirbyteProtocolType.STRING)
-                            }
-                        }
-                    ),
+                    Struct(linkedMapOf("foo" to AirbyteProtocolType.STRING)),
                     Array(AirbyteProtocolType.STRING)
                 )
             )
@@ -533,13 +527,7 @@ class AirbyteTypeTest {
             Union(
                 List.of(
                     AirbyteProtocolType.STRING,
-                    Struct(
-                        object : LinkedHashMap<String, AirbyteType>() {
-                            init {
-                                put("foo", AirbyteProtocolType.STRING)
-                            }
-                        }
-                    ),
+                    Struct(linkedMapOf("foo" to AirbyteProtocolType.STRING)),
                     Array(
                         AirbyteProtocolType.STRING
                     ), // This is bad behavior, but it matches current behavior so we'll test it.

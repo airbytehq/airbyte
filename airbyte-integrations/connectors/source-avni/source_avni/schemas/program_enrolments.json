@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "type": "string"
+    },
+    "External ID": {
+      "type": ["null", "string"]
+    },
+    "Voided": {
+      "type": "boolean"
+    },
+    "Subject ID": {
+      "type": "string"
+    },
+    "Subject type": {
+      "type": "string"
+    },
+    "Subject external ID": {
+      "type": ["null", "string"]
+    },
+    "Program": {
+      "type": ["null", "string"]
+    },
+    "Enrolment datetime": {
+      "type": ["null", "string"]
+    },
+    "Enrolment location": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "X": {
+          "type": ["null", "number"]
+        },
+        "Y": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "Exit datetime": {
+      "type": ["null", "string"]
+    },
+    "Exit location": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "X": {
+          "type": ["null", "number"]
+        },
+        "Y": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "observations": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "exitObservations": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "encounters": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "last_modified_at": {
+      "type": "string",
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
+    "audit": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "Created at": {
+          "type": ["null", "string"],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+        },
+        "Last modified at": {
+          "type": ["null", "string"],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+        },
+        "Created by": {
+          "type": ["null", "string"]
+        },
+        "Last modified by": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

@@ -6,11 +6,16 @@ package io.airbyte.cdk.integrations.destination.s3
 import com.fasterxml.jackson.databind.JsonNode
 import javax.annotation.Nonnull
 
-class S3DestinationConfigFactory {
-    fun getS3DestinationConfig(
+open class S3DestinationConfigFactory {
+    open fun getS3DestinationConfig(
         config: JsonNode,
-        @Nonnull storageProvider: StorageProvider
+        @Nonnull storageProvider: StorageProvider,
+        environment: Map<String, String>
     ): S3DestinationConfig {
-        return S3DestinationConfig.Companion.getS3DestinationConfig(config, storageProvider)
+        return S3DestinationConfig.Companion.getS3DestinationConfig(
+            config = config,
+            storageProvider = storageProvider,
+            environment = environment
+        )
     }
 }

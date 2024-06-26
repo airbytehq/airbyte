@@ -4,59 +4,76 @@
   "type": ["null", "object"],
   "properties": {
     "agent_conditions": {
+      "description": "Conditions that restrict when the ticket form is available to agents.",
       "type": ["null", "array"]
     },
     "end_user_conditions": {
+      "description": "Conditions that restrict when the ticket form is available to end users.",
       "type": ["null", "array"]
     },
     "created_at": {
+      "description": "The date and time when the ticket form was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "The name of the ticket form.",
       "type": ["null", "string"]
     },
     "display_name": {
+      "description": "The display name of the ticket form.",
       "type": ["null", "string"]
     },
     "raw_display_name": {
+      "description": "The raw display name of the ticket form.",
       "type": ["null", "string"]
     },
     "position": {
+      "description": "The order position of the ticket form within a list.",
       "type": ["null", "integer"]
     },
     "raw_name": {
+      "description": "The raw name of the ticket form.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the ticket form was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "active": {
+      "description": "Indicates if the ticket form is currently active.",
       "type": ["null", "boolean"]
     },
     "default": {
+      "description": "Indicates if the ticket form is the default form.",
       "type": ["null", "boolean"]
     },
     "in_all_brands": {
+      "description": "Indicates if the ticket form is available in all brands.",
       "type": ["null", "boolean"]
     },
     "end_user_visible": {
+      "description": "Indicates if the ticket form is visible to end users.",
       "type": ["null", "boolean"]
     },
     "url": {
+      "description": "The URL to access the ticket form.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the ticket form.",
       "type": ["null", "integer"]
     },
     "restricted_brand_ids": {
+      "description": "An array of brand IDs under which the ticket form is restricted to be used.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "ticket_field_ids": {
+      "description": "An array of ticket field IDs that are associated with the ticket form.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]

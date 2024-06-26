@@ -1,11 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+
 from datetime import datetime
 from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
     FileReadMode,
@@ -452,3 +454,86 @@ def test_get_shared_drive_object(
     else:
         result = list(reader._get_shared_drive_object("dummy_drive_id", "dummy_object_id", initial_path))
         assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "auth_type, user_principal_name, has_refresh_token",
+    [
+        ("Client", None, True),
+        ("Client", None, False),
+        ("User", "user@example.com", False),
+    ],
+)
+def test_drives_property(auth_type, user_principal_name, has_refresh_token):
+    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query, patch(
+        "source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client"
+    ) as mock_one_drive_client:
+        refresh_token = "dummy_refresh_token" if has_refresh_token else None
+        # Setup for different authentication types
+        config_mock = MagicMock(
+            credentials=MagicMock(auth_type=auth_type, user_principal_name=user_principal_name, refresh_token=refresh_token)
+        )
+
+        # Mock responses for the drives list and a single drive (my_drive)
+        drives_response = MagicMock()
+        my_drive = MagicMock()
+        drives_response.add_child = MagicMock()
+
+        # Set up mock responses for the two different calls within the property based on auth_type
+        if auth_type == "Client":
+            mock_execute_query.side_effect = [drives_response, my_drive] if has_refresh_token else [drives_response]
+        else:
+            # For User auth_type, assume a call to get user's principal name drive
+            mock_execute_query.side_effect = [drives_response, my_drive]
+
+        # Create an instance of the reader and set its config mock
+        reader = SourceMicrosoftSharePointStreamReader()
+        reader._config = config_mock
+
+        # Access the drives property to trigger the retrieval and caching logic
+        drives = reader.drives
+
+        # Assertions
+        assert drives is not None
+        # mock_execute_query.assert_called()
+        if auth_type == "Client" and not has_refresh_token:
+            assert mock_execute_query.call_count == 1
+            drives_response.add_child.assert_not_called()
+        else:
+            assert mock_execute_query.call_count == 2
+            drives_response.add_child.assert_called_once_with(my_drive)
+
+    #  Retrieve files from accessible drives when search_scope is 'ACCESSIBLE_DRIVES' or 'ALL'
+
+
+@pytest.mark.parametrize(
+    "refresh_token, auth_type, search_scope, expected_methods_called",
+    [
+        (None, "Client", "ACCESSIBLE_DRIVES", ["_get_files_by_drive_name"]),
+        (None, "Client", "ALL", ["_get_files_by_drive_name"]),
+        ("dummy_refresh_token", "Client", "ACCESSIBLE_DRIVES", ["_get_files_by_drive_name"]),
+        ("dummy_refresh_token", "Client", "ALL", ["_get_files_by_drive_name", "_get_shared_files_from_all_drives"]),
+        (None, "User", "ACCESSIBLE_DRIVES", ["_get_files_by_drive_name"]),
+        (None, "User", "ALL", ["_get_files_by_drive_name", "_get_shared_files_from_all_drives"]),
+        (None, "Client", "SHARED_ITEMS", []),
+        ("dummy_refresh_token", "Client", "SHARED_ITEMS", ["_get_shared_files_from_all_drives"]),
+    ],
+)
+def test_retrieve_files_from_accessible_drives(mocker, refresh_token, auth_type, search_scope, expected_methods_called):
+    # Set up the reader class
+    reader = SourceMicrosoftSharePointStreamReader()
+    config = MagicMock(credentials=MagicMock(auth_type=auth_type, refresh_token=refresh_token), search_scope=search_scope)
+
+    reader._config = config
+
+    # Mock the necessary methods
+    with patch.object(SourceMicrosoftSharePointStreamReader, "drives", return_value=[]) as mock_drives:
+        mocker.patch.object(reader, "_get_files_by_drive_name")
+        mocker.patch.object(reader, "_get_shared_files_from_all_drives")
+
+        # Call the method under test
+        files = list(reader.get_all_files())
+
+        # Assert that only the desired methods were called
+        assert reader._get_files_by_drive_name.called == ("_get_files_by_drive_name" in expected_methods_called)
+        assert reader._get_shared_files_from_all_drives.called == ("_get_shared_files_from_all_drives" in expected_methods_called)

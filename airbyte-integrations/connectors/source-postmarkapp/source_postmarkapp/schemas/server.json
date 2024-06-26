@@ -3,72 +3,94 @@
   "type": "object",
   "properties": {
     "ID": {
+      "description": "Unique identifier for the server",
       "type": "integer"
     },
     "Name": {
+      "description": "Name of the server",
       "type": "string"
     },
     "ApiTokens": {
+      "description": "Array of API tokens associated with the server",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "Color": {
+      "description": "Color code associated with the server for visualization purposes",
       "type": "string"
     },
     "SmtpApiActivated": {
+      "description": "Flag to indicate if SMTP API is activated for the server",
       "type": "boolean"
     },
     "RawEmailEnabled": {
+      "description": "Flag to enable/disable raw email processing",
       "type": "boolean"
     },
     "DeliveryType": {
+      "description": "Type of delivery mechanism used by the server",
       "type": "string"
     },
     "ServerLink": {
+      "description": "Link to access server details or dashboard",
       "type": "string"
     },
     "InboundAddress": {
+      "description": "Email address for inbound processing",
       "type": "string"
     },
     "InboundHookUrl": {
+      "description": "URL to which inbound events are sent for processing",
       "type": "string"
     },
     "BounceHookUrl": {
+      "description": "URL to which bounce events are sent for processing",
       "type": "string"
     },
     "OpenHookUrl": {
+      "description": "URL to which open events are sent for processing",
       "type": "string"
     },
     "DeliveryHookUrl": {
+      "description": "URL to which delivery events are sent for processing",
       "type": "string"
     },
     "PostFirstOpenOnly": {
+      "description": "Flag to track opens only after the first open event",
       "type": "boolean"
     },
     "InboundDomain": {
+      "description": "Domain for inbound email processing",
       "type": "string"
     },
     "InboundHash": {
+      "description": "Hash value associated with inbound processing",
       "type": "string"
     },
     "InboundSpamThreshold": {
+      "description": "Spam threshold limit for inbound emails",
       "type": "integer"
     },
     "TrackOpens": {
+      "description": "Flag to enable/disable open tracking",
       "type": "boolean"
     },
     "TrackLinks": {
+      "description": "Flag to enable/disable link tracking",
       "type": "string"
     },
     "IncludeBounceContentInHook": {
+      "description": "Flag to include bounce content in the hook data",
       "type": "boolean"
     },
     "ClickHookUrl": {
+      "description": "URL to which click events are sent for processing",
       "type": "string"
     },
     "EnableSmtpApiErrorHooks": {
+      "description": "Flag to enable/disable SMTP API error hooks",
       "type": "boolean"
     }
   }

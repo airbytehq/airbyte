@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "key": {
+      "description": "Unique key identifier for the permission",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the permission",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of permission",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the permission",
       "type": ["null", "string"]
     }
   },

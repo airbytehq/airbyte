@@ -20,7 +20,6 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
-import java.util.stream.Collectors
 
 private val logger = KotlinLogging.logger {}
 
@@ -124,9 +123,7 @@ constructor(
         val queueSize = threadPoolExecutor.queue.size
         val activeCount = threadPoolExecutor.activeCount
 
-        workerInfo.append(
-            String.format("Pool queue size: %d, Active threads: %d", queueSize, activeCount),
-        )
+        workerInfo.append("Pool queue size: $queueSize, Active threads: $activeCount")
         logger.info { workerInfo.toString() }
     }
 
@@ -155,14 +152,10 @@ constructor(
                     )
                     val stateIdToCount =
                         batch.data
-                            .stream()
                             .map(StreamAwareQueue.MessageWithMeta::stateId)
-                            .collect(
-                                Collectors.groupingBy(
-                                    { stateId: Long -> stateId },
-                                    Collectors.counting(),
-                                ),
-                            )
+                            .groupingBy { it }
+                            .eachCount()
+                            .mapValues { it.value.toLong() }
                     logger.info {
                         "Flush Worker (${humanReadableFlushWorkerId(
                                 flushWorkerId,
@@ -171,14 +164,7 @@ constructor(
                             )} bytes."
                     }
 
-                    flusher.flush(
-                        desc,
-                        batch.data
-                            .stream()
-                            .map(
-                                StreamAwareQueue.MessageWithMeta::message,
-                            ),
-                    )
+                    flusher.flush(desc, batch.data.map { it.message }.stream())
                     batch.flushStates(stateIdToCount, outputRecordCollector)
                 }
                 logger.info {
@@ -209,21 +195,11 @@ constructor(
         // wait for all buffers to be flushed.
         while (true) {
             val streamDescriptorToRemainingRecords =
-                bufferDequeue.bufferedStreams
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { desc: StreamDescriptor -> desc },
-                            { desc: StreamDescriptor ->
-                                bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()
-                            },
-                        ),
-                    )
-
-            val anyRecordsLeft =
-                streamDescriptorToRemainingRecords.values.stream().anyMatch { size: Long ->
-                    size > 0
+                bufferDequeue.bufferedStreams.associateWith { desc: StreamDescriptor ->
+                    bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()
                 }
+
+            val anyRecordsLeft = streamDescriptorToRemainingRecords.values.any { it > 0 }
 
             if (!anyRecordsLeft) {
                 break
@@ -236,7 +212,6 @@ constructor(
                     )
                     .append(System.lineSeparator())
             streamDescriptorToRemainingRecords.entries
-                .stream()
                 .filter { entry: Map.Entry<StreamDescriptor, Long> -> entry.value > 0 }
                 .forEach { entry: Map.Entry<StreamDescriptor, Long> ->
                     workerInfo.append(

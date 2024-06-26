@@ -5,6 +5,7 @@
 import datetime
 
 import pytest
+from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from freezegun import freeze_time
 from jinja2.exceptions import TemplateSyntaxError
@@ -253,7 +254,7 @@ def test_undeclared_variables(template_string, expected_error, expected_value):
             id="test_now_utc_with_duration_and_format",
         ),
         pytest.param("{{ 1 | string }}", "1", id="test_int_to_string"),
-        pytest.param("{{ [\"hello\", \"world\"] | string }}", "[\"hello\", \"world\"]", id="test_int_to_string"),
+        pytest.param("{{ [\"hello\", \"world\"] | string }}", "[\"hello\", \"world\"]", id="test_array_to_string"),
     ],
 )
 def test_macros_examples(template_string, expected_value):
@@ -261,3 +262,15 @@ def test_macros_examples(template_string, expected_value):
     # If you change the expected output, you must also change the expected output in declarative_component_schema.yaml
     now_utc = interpolation.eval(template_string, {})
     assert now_utc == expected_value
+
+
+def test_interpolation_private_partition_attribute():
+    inner_partition = StreamSlice(partition={}, cursor_slice={})
+    expected_output = "value"
+    setattr(inner_partition, "parent_stream_fields", expected_output)
+    stream_slice = StreamSlice(partition=inner_partition, cursor_slice={})
+    template = "{{ stream_slice._partition.parent_stream_fields }}"
+
+    actual_output = JinjaInterpolation().eval(template, {}, **{"stream_slice": stream_slice})
+
+    assert actual_output == expected_output

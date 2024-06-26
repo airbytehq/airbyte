@@ -2,6 +2,7 @@
 
 
 import os
+from datetime import datetime, timedelta
 
 import toml
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
@@ -17,25 +18,8 @@ class MetadataCheck(Check):
 class ValidateMetadata(MetadataCheck):
     name = f"Connectors must have valid {consts.METADATA_FILE_NAME} file"
     description = f"Connectors must have a `{consts.METADATA_FILE_NAME}` file at the root of their directory. This file is used to build our connector registry. Its structure must follow our metadata schema. Field values are also validated. This is to ensure that all connectors have the required metadata fields and that the metadata is valid. More details in this [documentation]({consts.METADATA_DOCUMENTATION_URL})."
-    # Metadata lib required the following env var to be set
-    # to check if the base image is on DockerHub
-    required_env_vars = {
-        consts.DOCKER_HUB_USERNAME_ENV_VAR_NAME,
-        consts.DOCKER_HUB_PASSWORD_ENV_VAR_NAME,
-    }
-
-    def __init__(self) -> None:
-        for env_var in self.required_env_vars:
-            if env_var not in os.environ:
-                raise ValueError(f"Environment variable {env_var} is required for this check")
-        super().__init__()
 
     def _run(self, connector: Connector) -> CheckResult:
-        if not connector.documentation_file_path or not connector.documentation_file_path.exists():
-            return self.fail(
-                connector=connector,
-                message="User facing documentation file is missing. Please create it",
-            )
         deserialized_metadata, error = validate_and_load(
             connector.metadata_file_path,
             PRE_UPLOAD_VALIDATORS,
@@ -149,8 +133,88 @@ class CheckConnectorCDKTag(MetadataCheck):
         )
 
 
+class ValidateBreakingChangesDeadlines(MetadataCheck):
+    """
+    Verify that _if_ the most recent connector version has a breaking change,
+    it's deadline is at least a week in the future.
+    """
+
+    name = "Breaking change deadline should be a week in the future"
+    description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future."
+    runs_on_released_connectors = False
+    minimum_days_until_deadline = 7
+
+    def _run(self, connector: Connector) -> CheckResult:
+
+        # fetch the current branch version of the connector first.
+        # we'll try and see if there are any breaking changes associated
+        # with it next.
+        current_version = connector.version
+        if current_version is None:
+            return self.fail(
+                connector=connector,
+                message="Can't verify breaking changes deadline: connector version is not defined.",
+            )
+
+        breaking_changes = connector.metadata.get("releases", {}).get("breakingChanges")
+
+        if not breaking_changes:
+            return self.pass_(
+                connector=connector,
+                message="No breaking changes found on this connector.",
+            )
+
+        current_version_breaking_changes = breaking_changes.get(current_version)
+
+        if not current_version_breaking_changes:
+            return self.pass_(
+                connector=connector,
+                message="No breaking changes found for the current version.",
+            )
+
+        upgrade_deadline = current_version_breaking_changes.get("upgradeDeadline")
+
+        if not upgrade_deadline:
+            return self.fail(
+                connector=connector,
+                message=f"No upgrade deadline found for the breaking changes in {current_version}.",
+            )
+
+        upgrade_deadline_datetime = datetime.strptime(upgrade_deadline, "%Y-%m-%d")
+        one_week_from_now = datetime.utcnow() + timedelta(days=self.minimum_days_until_deadline)
+
+        if upgrade_deadline_datetime <= one_week_from_now:
+            return self.fail(
+                connector=connector,
+                message=f"The upgrade deadline for the breaking changes in {current_version} is less than {self.minimum_days_until_deadline} days from today. Please extend the deadline",
+            )
+
+        return self.pass_(connector=connector, message="The upgrade deadline is set to at least a week in the future")
+
+
+class CheckConnectorMaxSecondsBetweenMessagesValue(MetadataCheck):
+    name = "Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata"
+    description = "Certified source connectors must have a value filled out for `maxSecondsBetweenMessages` in metadata. This value represents the maximum number of seconds we could expect between messages for API connectors. And it's used by platform to tune connectors heartbeat timeout. The value must be set in the 'data' field in connector's `metadata.yaml` file."
+    applies_to_connector_types = ["source"]
+    applies_to_connector_support_levels = ["certified"]
+
+    def _run(self, connector: Connector) -> CheckResult:
+        max_seconds_between_messages = connector.metadata.get("maxSecondsBetweenMessages")
+        if not max_seconds_between_messages:
+            return self.fail(
+                connector=connector,
+                message="Missing required for certified connectors field 'maxSecondsBetweenMessages'",
+            )
+        return self.pass_(
+            connector=connector,
+            message="Value for maxSecondsBetweenMessages is set",
+        )
+
+
 ENABLED_CHECKS = [
     ValidateMetadata(),
     CheckConnectorLanguageTag(),
     CheckConnectorCDKTag(),
+    ValidateBreakingChangesDeadlines(),
+    CheckConnectorMaxSecondsBetweenMessagesValue(),
 ]

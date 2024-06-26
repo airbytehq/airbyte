@@ -78,7 +78,6 @@ def _job_start_request(
             "catalog_segment_value_omni_purchase_roas",
             "catalog_segment_value_website_purchase_roas",
             "clicks",
-            "conversion_lead_rate",
             "conversion_rate_ranking",
             "conversion_values",
             "conversions",
@@ -89,7 +88,6 @@ def _job_start_request(
             "cost_per_action_type",
             "cost_per_ad_click",
             "cost_per_conversion",
-            "cost_per_conversion_lead",
             "cost_per_estimated_ad_recallers",
             "cost_per_inline_link_click",
             "cost_per_inline_post_engagement",
@@ -155,10 +153,29 @@ def _job_start_request(
             "video_time_watched_actions",
             "website_ctr",
             "website_purchase_roas",
-            "wish_bid",
         ],
         "time_increment": 1,
         "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view", "7d_view", "28d_view"],
+        "filtering": [
+            {
+                "field": f"ad.effective_status",
+                "operator": "IN",
+                "value": [
+                    "ACTIVE",
+                    "ADSET_PAUSED",
+                    "ARCHIVED",
+                    "CAMPAIGN_PAUSED",
+                    "DELETED",
+                    "DISAPPROVED",
+                    "IN_PROCESS",
+                    "PAUSED",
+                    "PENDING_BILLING_INFO",
+                    "PENDING_REVIEW",
+                    "PREAPPROVED",
+                    "WITH_ISSUES"
+                ],
+            },
+        ],
         "time_range": {"since": since, "until": until},
     }
     return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id).with_body(encode_request_body(body))

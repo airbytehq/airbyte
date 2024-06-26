@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.2.8"
+version = "2.6.5"
 name = "source-zendesk-support"
 description = "Source implementation for Zendesk Support."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_zendesk_support"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.60.2"
+airbyte-cdk = "0.81.4"
 pytz = "==2024.1"
 
 [tool.poetry.scripts]

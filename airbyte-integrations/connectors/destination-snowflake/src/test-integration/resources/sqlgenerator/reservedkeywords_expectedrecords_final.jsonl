@@ -1,2 +1,2 @@
 // Note that we prefix `current_date` with an underscore (to `_CURRENT_DATE`). This is because even if you quote `CURRENT_DATE`, Snowflake rejects it as a column name.
-{"_AIRBYTE_RAW_ID":"b2e0efc4-38a8-47ba-970c-8103f09f08d5","_AIRBYTE_EXTRACTED_AT":"2023-01-01T00:00:00.000000000Z","_AIRBYTE_META":{"errors":[]}, "_CURRENT_DATE": "foo", "JOIN":  "bar"}
+{"_AIRBYTE_RAW_ID":"b2e0efc4-38a8-47ba-970c-8103f09f08d5","_AIRBYTE_EXTRACTED_AT":"2023-01-01T00:00:00.000000000Z","_AIRBYTE_META":{"changes":[]}, "_CURRENT_DATE": "foo", "JOIN":  "bar"}

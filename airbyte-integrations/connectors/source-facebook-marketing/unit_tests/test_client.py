@@ -8,6 +8,7 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives, Campaigns, Videos
@@ -104,6 +105,31 @@ class TestBackoff:
             assert records
         except FacebookRequestError:
             pytest.fail("Call rate error has not being handled")
+
+    def test_given_rate_limit_reached_when_read_then_raise_transient_traced_exception(self, requests_mock, api, fb_call_rate_response, account_id, some_config):
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns",
+            [fb_call_rate_response],
+        )
+
+        stream = Campaigns(
+            api=api,
+            account_ids=[account_id],
+            start_date=pendulum.now(),
+            end_date=pendulum.now(),
+        )
+
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
+
+        assert exception.value.failure_type == FailureType.transient_error
 
     def test_batch_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""

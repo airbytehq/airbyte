@@ -18,14 +18,19 @@ definitions:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
 
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2_access_token: "#/definitions/bearer_authenticator"
+      oauth2_confidential_application: "#/definitions/oauth_authenticator"
+
   requester:
     type: HttpRequester
     url_base: "{{ config['base_url'] }}/api/v2"
     http_method: "GET"
     authenticator:
-      class_name: source_auth0.components.AuthenticatorAuth0
-      bearer: "#/definitions/bearer_authenticator"
-      oauth: "#/definitions/oauth_authenticator"
+      $ref: "#/definitions/authenticator"
 
   paginator:
     type: "DefaultPaginator"
@@ -79,9 +84,7 @@ definitions:
         path: "users"
         http_method: "GET"
         authenticator:
-          class_name: source_auth0.components.AuthenticatorAuth0
-          bearer: "#/definitions/bearer_authenticator"
-          oauth: "#/definitions/oauth_authenticator"
+          $ref: "#/definitions/authenticator"
         request_parameters:
           sort: "updated_at:1"
           include_totals: "false"

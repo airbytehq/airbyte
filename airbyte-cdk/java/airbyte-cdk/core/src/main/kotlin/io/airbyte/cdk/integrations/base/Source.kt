@@ -8,7 +8,6 @@ import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import java.util.List
 
 interface Source : Integration {
     /**
@@ -21,7 +20,7 @@ interface Source : Integration {
      * @throws Exception
      * - any exception.
      */
-    @Throws(Exception::class) fun discover(config: JsonNode): AirbyteCatalog?
+    @Throws(Exception::class) fun discover(config: JsonNode): AirbyteCatalog
 
     /**
      * Return a iterator of messages pulled from the source.
@@ -42,7 +41,7 @@ interface Source : Integration {
     @Throws(Exception::class)
     fun read(
         config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog?,
+        catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): AutoCloseableIterator<AirbyteMessage>
 
@@ -65,9 +64,9 @@ interface Source : Integration {
     @Throws(Exception::class)
     fun readStreams(
         config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog?,
+        catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {
-        return List.of(read(config, catalog, state))
+        return listOf(read(config, catalog, state))
     }
 }

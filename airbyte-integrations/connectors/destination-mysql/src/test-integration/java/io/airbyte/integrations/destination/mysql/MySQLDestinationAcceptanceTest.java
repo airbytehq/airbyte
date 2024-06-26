@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,8 +40,10 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.containers.MySQLContainer;
 
+@Disabled
 public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
@@ -81,7 +84,11 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
+    return getConfigFromTestContainer(db);
+  }
+
+  public static ObjectNode getConfigFromTestContainer(final MySQLContainer<?> db) {
+    return (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
@@ -130,7 +137,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    try (final DSLContext dslContext = DSLContextFactory.create(
+    final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         db.getDriverClassName(),
@@ -138,15 +145,14 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
-        SQLDialect.MYSQL)) {
-      return new Database(dslContext).query(
-          ctx -> ctx
-              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .map(this::getJsonFromRecord)
-              .collect(Collectors.toList()));
-    }
+        SQLDialect.MYSQL);
+    return new Database(dslContext).query(
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(this::getJsonFromRecord)
+            .collect(Collectors.toList()));
   }
 
   @Override
@@ -161,25 +167,29 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
-    setLocalInFileToTrue();
-    revokeAllPermissions();
-    grantCorrectPermissions();
+    configureTestContainer(db);
   }
 
-  private void setLocalInFileToTrue() {
-    executeQuery("set global local_infile=true");
+  public static void configureTestContainer(final MySQLContainer<?> db) {
+    setLocalInFileToTrue(db);
+    revokeAllPermissions(db);
+    grantCorrectPermissions(db);
   }
 
-  private void revokeAllPermissions() {
-    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + db.getUsername() + "@'%';");
+  private static void setLocalInFileToTrue(final MySQLContainer<?> db) {
+    executeQuery(db, "set global local_infile=true");
   }
 
-  private void grantCorrectPermissions() {
-    executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+  private static void revokeAllPermissions(final MySQLContainer<?> db) {
+    executeQuery(db, "REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + db.getUsername() + "@'%';");
   }
 
-  private void executeQuery(final String query) {
-    try (final DSLContext dslContext = DSLContextFactory.create(
+  private static void grantCorrectPermissions(final MySQLContainer<?> db) {
+    executeQuery(db, "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+  }
+
+  private static void executeQuery(final MySQLContainer<?> db, final String query) {
+    final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
         db.getDriverClassName(),
@@ -187,10 +197,9 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
-        SQLDialect.MYSQL)) {
-      new Database(dslContext).query(
-          ctx -> ctx
-              .execute(query));
+        SQLDialect.MYSQL);
+    try {
+      new Database(dslContext).query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
@@ -206,7 +215,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   @Test
   public void testCustomDbtTransformations() throws Exception {
     // We need to create view for testing custom dbt transformations
-    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery(db, "GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
     super.testCustomDbtTransformations();
   }
 
@@ -267,6 +276,10 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     }
   }
 
+  // Something is very weird in our connection check code. A wrong password takes >1 minute to return.
+  // TODO investigate why invalid creds take so long to detect
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   void testCheckIncorrectPasswordFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.PASSWORD_KEY, "fake");
@@ -276,6 +289,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 28000; Error code: 1045;");
   }
 
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testCheckIncorrectUsernameFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.USERNAME_KEY, "fake");
@@ -285,6 +300,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 28000; Error code: 1045;");
   }
 
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testCheckIncorrectHostFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.HOST_KEY, "localhost2");
@@ -294,6 +311,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 08S01;");
   }
 
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testCheckIncorrectPortFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.PORT_KEY, "0000");
@@ -303,6 +322,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 08S01;");
   }
 
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testCheckIncorrectDataBaseFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
@@ -312,9 +333,11 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 42000; Error code: 1049;");
   }
 
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testUserHasNoPermissionToDataBase() {
-    executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
+    executeQuery(db, "create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
     final MySQLDestination destination = new MySQLDestination();

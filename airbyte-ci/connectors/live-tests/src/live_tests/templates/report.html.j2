@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <script>
+        hljs.highlightAll();
+        function copyToClipboard(elementId) {
+            var toCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(toCopy);
+        }
+        function refreshPage() {
+            {% if not fully_generated %}
+            window.location.reload();
+            {% else %}
+            console.log("Report is fully generated");
+            {% endif %}
+        }
+
+        setInterval(refreshPage, 10000);
+    </script>
+    <style>
+        body {
+            font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            padding: 16px;
+            font-size: 14px;
+        }
+
+        a {
+            color: #4493f8;
+            text-decoration: underline;
+            text-underline-offset: .2rem;
+        }
+
+        button {
+            border: 1px solid #30363d;
+            background-color: #1a1c26;
+            padding: 5px;
+            cursor: pointer;
+            opacity: 0.7;
+            border-radius: 5px;
+            transition: opacity 0.5s;
+        }
+
+        button:hover {
+            opacity: 1;
+        }
+
+        section {
+            margin-bottom: 30px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+        }
+
+        h1 {
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-size: 2rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            margin: 0;
+            display: block;
+            background-color: #161b22;
+            padding-left: 15px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            margin: 0;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            font-size: 1rem;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            margin: 0;
+            margin-top: 15px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 15px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #30363d;
+            padding: 8px;
+            text-align: left;
+            min-width: 15px;
+            max-width: 400px;
+            overflow-x: auto;
+            scrollbar-color: hotpink #0d1116;
+        }
+
+        th {
+            text-align: center;
+        }
+
+        code {
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            max-height: 500px;
+            scrollbar-color: hotpink #1a1b26;
+            white-space: pre-wrap;
+        }
+
+        .monospace {
+            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+            margin: 0;
+            font-size: 85%;
+            color: #fff;
+        }
+
+        .test-name {
+            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+            font-size: 1.15rem
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .highlighted {
+            background-color: #212c36;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        .section_content {
+            padding: 15px;
+        }
+
+        .no-border {
+            border: none;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #FFF;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        .loader::after,
+        .loader::before {
+            content: '';
+            box-sizing: border-box;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #FF3D00;
+            width: 6px;
+            height: 6px;
+            transform: translate(150%, 150%);
+            border-radius: 50%;
+        }
+
+        .loader::before {
+            left: auto;
+            top: auto;
+            right: 0;
+            bottom: 0;
+            transform: translate(-150%, -150%);
+        }
+
+        .clipped {
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-color: hotpink #0d1116;
+        }
+
+        .testDescription {
+            color: #9c9c9c;
+        }
+
+        .secondaryButton {
+            font-size: 0.75rem;
+            padding: 2px 10px;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">Regression test report</h1>
+        <section>
+            <h2>Context</h2>
+            <div class="section_content">
+                <ul>
+                    <li><b><a href="{{connection_url}}" target="_blank">Connection</a></b></li>
+                    <li>Tester: <span class="monospace">{{ user }}</span></li>
+                    <li>Test date: <span class="monospace">{{ test_date }}</span></li>
+                    <li>Workspace ID: <span class="monospace">{{ workspace_id }}</span></li>
+                    <li>Connection ID: <span class="monospace">{{ connection_id }}</span></li>
+                    <li>Connector image: <span class="monospace">{{ connector_image }}</span></li>
+                    <li>Control version: <span class="monospace">{{ control_version }}</span></li>
+                    <li>Target version: <span class="monospace">{{ target_version }}</span></li>
+                </ul>
+            </div>
+        </section>
+        <section>
+            <h2>Connection coverage metadata</h2>
+            <div class="section_content">
+                <h3>Stream coverage</h3>
+                <table>
+                    <tbody>
+                        <tr>
+                            {% for metric_name, metric_value in stream_coverage_metrics.items() %}
+                            <td>{{ metric_name}}</td>
+                            <td class="monospace metric highlighted">{{ metric_value }}</td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+                <h3>Sync mode coverage</h3>
+                <table>
+                    <tbody>
+                        <tr>
+                            {% for sync_mode, count in sync_mode_coverage.items() %}
+                                <td class="monospace">{{ sync_mode.value }}</td>
+                                <td class="monospace metric highlighted">{{ count }}</td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Selected stream</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Stream</th>
+                            <th>Sync mode</th>
+                            <th>Has data</th>
+                        </tr>
+                    <tbody>
+                        {% for stream_name in selected_streams %}
+                        <tr>
+                            <td>{{ stream_name }}</td>
+                            <td class="monospace">{{ selected_streams[stream_name]['sync_mode'].value }}</td>
+                            {% if selected_streams[stream_name]['has_data'] %}
+                            <td class="monospace">{{ selected_streams[stream_name]['has_data'] }}</td>
+                            {% else %}
+                            <td class="monospace" style="color: red;">{{ selected_streams[stream_name]['has_data'] }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if untested_streams %}
+                <h3>Untested streams (not in configured catalog or without data)</h3>
+                <ul>
+                    {% for stream_name in untested_streams %}
+                    <li>{{ stream_name }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </section>
+        <section>
+            <h2>Connection objects</h2>
+            <div class="section_content">
+                <p class="testDescription">Each object below relates to an "argument" passed to one (or many) of the Connectors standard commands (spec/check/discover/read). The source of these arguments is either the connector itself (catalog), the connection (config/state) or both (configured catalog). To learn more checkout the <a href="https://docs.airbyte.com/understanding-airbyte/airbyte-protocol" target="_blank">Airbyte Protocol Documentation</a></p>
+                <h3>Source configuration <button class="monospace secondaryButton" onclick="copyToClipboard('config')">📋 copy</button></h3>
+                <p class="testDescription">The configuration object taken from the given connection that was passed to each version of the connector during the test.</p>
+                <pre><code class="language-json" id="config">{{ source_config }}</code></pre>
+                {% if state %}
+                <h3>State <button class="monospace secondaryButton" onclick="copyToClipboard('state')">📋 copy</button></h3>
+                <p class="testDescription">The state object taken from the given connection that was passed to each version of the connector during the test.</p>
+                <pre><code class="language-json" id="state">{{ state }}</code>
+                </pre>
+                {% endif %}
+                <h3>Configured catalog <button class="monospace secondaryButton" onclick="copyToClipboard('configured-catalog')">📋 copy</button></h3>
+                <p class="testDescription">The configured catalog object taken returned by the connector given the connection config.</p>
+                <pre><code class="language-json" id="configured-catalog">{{ configured_catalog }}</code></pre>
+                <h3>Catalog <button class="monospace secondaryButton" onclick="copyToClipboard('catalog')">📋 copy</button></h3>
+                <p class="testDescription">The catalog object returned by the connector.</p>
+                <pre><code class="language-json" id="catalog">{{ catalog }}</code></pre>
+            </div>
+        </section>
+        <section>
+            {% if not fully_generated %}
+            <h2><span class="loader"></span>Command execution metrics</h2>
+            {% else%}
+             <h2>Command execution metrics</h2>
+            {% endif %}
+            <div class="section_content">
+                {% if message_count_per_type[0] %}
+                <h3>Message types</h3>
+                <table>
+                <thead>
+                    <tr>
+                        <th class="no-border"></th>
+                        {% for command in message_count_per_type[0] %}
+                        <th colspan=3 class="monospace">{{ command.value.upper() }}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th class="no-border"></th>
+                        {% for command in message_count_per_type[0] %}
+                        <th>control</th>
+                        <th>target</th>
+                        <th>Δ</th>
+                        {% endfor %}
+                </thead>
+                {% for message_type in message_count_per_type[1] %}
+                    <tr>
+                        <td class="monospace">{{ message_type.value }}</td>
+                        {% for command in message_count_per_type[1][message_type] %}
+                        <td class="monospace metric">{{ message_count_per_type[1][message_type][command]["control"] }}</td>
+                        <td class="monospace metric">{{ message_count_per_type[1][message_type][command]["target"] }}</td>
+                        {% if message_count_per_type[1][message_type][command]["difference"] != 0 %}
+                        <td class="monospace metric highlighted">{{ message_count_per_type[1][message_type][command]["difference"] }}</td>
+                        {% else %}
+                        <td class="monospace metric">{{ message_count_per_type[1][message_type][command]["difference"] }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </table>
+                {% endif %}
+                {% if record_count_per_command_and_stream %}
+                <h3>Record count per stream</h3>
+                {% for command, record_count_per_stream in record_count_per_command_and_stream.items() %}
+                <h4>{{ command.value.upper() }}</h4>
+                <table>
+                <thead>
+                    <tr>
+                        <th>stream</th>
+                        <th>control record count</th>
+                        <th>target record count</th>
+                        <th>Δ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stream, record_count in record_count_per_stream.items() %}
+                    <tr>
+                        <td class="monospace">{{ stream }}</td>
+                        <td class="monospace metric">{{ record_count.get("control", 0) }}</td>
+                        <td class="monospace metric">{{ record_count.get("target", 0) }}</td>
+                        {% if record_count.get("difference", 0) != 0 %}
+                        <td class="monospace metric highlighted">{{ record_count.get("difference", 0) }}</td>
+                        {% else %}
+                        <td class="monospace metric">{{ record_count.get("difference", 0) }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+                {% endfor %}
+                {% endif %}
+                {% if http_metrics_per_command %}
+                <h3>HTTP traffic</h3>
+                <table>
+                <thead>
+                    <tr>
+                        <th class="no-border"></th>
+                        <th colspan="2">control</th>
+                        <th colspan="3">target</th>
+                        <th>Δ</th>
+                    </tr>
+                    <tr>
+                        <th>command</th>
+                        <th>request count</th>
+                        <th>duplicate request count</th>
+                        <th>request count</th>
+                        <th>duplicate request count</th>
+                        <th>cache hit ratio</th>
+                        <th>request count</th>
+                    </tr>
+                <tbody>
+                {% for command in http_metrics_per_command %}
+                    <tr>
+                        <td class="monospace">{{ command.value.upper() }}</td>
+                        <td class="monospace metric">{{ http_metrics_per_command[command].get("control", {}).get("flow_count", "0")}}</td>
+                        <td class="monospace metric">{{ http_metrics_per_command[command].get("control", {}).get("duplicate_flow_count", "0")}}</td>
+                        <td class="monospace metric">{{ http_metrics_per_command[command].get("target", {}).get("flow_count", "0")}}</td>
+                        <td class="monospace metric">{{ http_metrics_per_command[command].get("target", {}).get("duplicate_flow_count", "0")}}</td>
+                        <td class="monospace metric">{{ http_metrics_per_command[command].get("target", {}).get("cache_hit_ratio", "0%")}}</td>
+                        {% if http_metrics_per_command[command].get("difference", 0) != 0 %}
+                        <td class="monospace metric highlighted">{{ http_metrics_per_command[command].get("difference", 0)}}</td>
+                        {% else %}
+                        <td class="monospace metric">{{ http_metrics_per_command[command].get("difference", 0)}}</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </section>
+        <section>
+            {% if not fully_generated %}
+            <h2><span class="loader"></span>Requested URLs</h2>
+            {% else%}
+             <h2>Requested URLs</h2>
+            {% endif %}
+            <div class="section_content">
+                {% for command, flows in requested_urls_per_command.items() %}
+                <h3>{{ command.value.upper() }}</h3>
+                {% if flows %}
+                <div class="clipped">
+                    <table class="full-width">
+                        <thead>
+                            <tr>
+                                <th class="no-border"></th>
+                                <th>Control URL</th>
+                                <th>Target URL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, control_url, target_url in flows %}
+                            <tr>
+                                <td class="monospace highlighted metric">{{ index }}</td>
+                                <td class="monospace">{{ control_url }}</td>
+                                <td class="monospace">{{ target_url }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No URLs requested</p>
+                {% endif %}
+                {% endfor%}
+            </div>
+        </section>
+        <section>
+        {% if not fully_generated %}
+        <h2><span class="loader"></span>Test results</h2>
+        {% else%}
+            <h2>Test results</h2>
+        {% endif %}
+        <div class="section_content">
+            {% for test in test_results %}
+                <div class="test-result">
+                    {% if test["result"] == "passed" %}
+                    <h3 class="test-name" style="color: #7ee787;">{{ test["name"] }} [{{ test["result"] }}]</h3>
+                    {% elif  test["result"] == "failed" %}
+                    <h3 class="test-name" style="color: crimson;">{{ test["name"] }} [{{ test["result"] }}]</h3>
+                    {% else %}
+                    <h3 class="test-name" style="color: #fddf68;">{{ test["name"] }} [{{ test["result"] }}]</h3>
+                    {% endif %}
+                    {% if test["documentation"] %}
+                    <p class="testDescription">{{ test["documentation"] }}</p>
+                    {% endif %}
+                    {% if test["output"] %}
+                    <pre>
+                    <code class="language-python">{{ test["output"] }}</code>
+                    </pre>
+                    {% endif %}
+                    {% if test["properties"]%}
+                    {% for property_name, property_value in test["properties"] %}
+                        {% if property_value %}
+                        <h4>{{ property_name }}</h4>
+                        <pre>
+                        <code class="language-json">{{ property_value }}</code>
+                        </pre>
+                        {% else%}
+                        <!-- Do not display empty properties -->
+                        {% endif %}
+                    {% endfor%}
+                    {% endif %}
+                </div>
+            {% endfor%}
+        </div>
+        </section>
+    </div>
+</body>
+</html>

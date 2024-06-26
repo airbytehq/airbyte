@@ -149,7 +149,9 @@ def cdkPath = rootDir.toPath().resolve('airbyte-cdk/java/airbyte-cdk')
 cdkPath.eachDir { dir ->
     def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
     if (buildFiles.length == 1) {
-        include ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
+        def path = ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
+        include path
+        project(path).name = "airbyte-cdk-${dir.getFileName()}"
     }
 }
 

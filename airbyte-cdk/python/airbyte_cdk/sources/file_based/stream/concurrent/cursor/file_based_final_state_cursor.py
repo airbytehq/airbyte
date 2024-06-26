@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor.abstract_concurrent_file_based_cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams import FULL_REFRESH_SENTINEL_STATE_KEY
+from airbyte_cdk.sources.streams import NO_CURSOR_STATE_KEY
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
@@ -36,7 +36,7 @@ class FileBasedFinalStateCursor(AbstractConcurrentFileBasedCursor):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+        return {NO_CURSOR_STATE_KEY: True}
 
     def observe(self, record: Record) -> None:
         pass

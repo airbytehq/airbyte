@@ -3,16 +3,20 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "The repository that was starred by a user.",
       "type": "string"
     },
     "user_id": {
+      "description": "The unique identifier of the user who starred the repository.",
       "type": ["null", "integer"]
     },
     "starred_at": {
+      "description": "The date and time when the user starred the repository.",
       "type": "string",
       "format": "date-time"
     },
     "user": {
+      "description": "The user who starred the repository.",
       "$ref": "user.json"
     }
   }

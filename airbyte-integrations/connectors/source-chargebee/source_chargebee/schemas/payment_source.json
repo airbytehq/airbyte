@@ -4,186 +4,243 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the payment source",
       "type": ["string", "null"]
     },
     "resource_version": {
+      "description": "Version of the payment source resource",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "Timestamp indicating when the payment source was last updated",
       "type": ["integer", "null"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the payment source was created",
       "type": ["integer", "null"]
     },
     "customer_id": {
+      "description": "Unique identifier for the customer associated with the payment source",
       "type": ["string", "null"]
     },
     "object": {
+      "description": "Type of object, e.g., payment_source",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "Type of payment source, e.g., card, bank_account",
       "type": ["string", "null"]
     },
     "reference_id": {
+      "description": "Reference identifier for the payment source",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "Status of the payment source, e.g., active or inactive",
       "type": ["string", "null"]
     },
     "gateway": {
+      "description": "Name of the payment gateway used for the payment source",
       "type": ["string", "null"]
     },
     "gateway_account_id": {
+      "description": "Identifier for the gateway account tied to the payment source",
       "type": ["string", "null"]
     },
     "ip_address": {
+      "description": "IP address associated with the payment source",
       "type": ["string", "null"]
     },
     "issuing_country": {
+      "description": "Country where the payment source was issued",
       "type": ["string", "null"]
     },
     "deleted": {
+      "description": "Indicates if the payment source has been deleted",
       "type": ["boolean", "null"]
     },
     "business_entity_id": {
+      "description": "Identifier for the business entity associated with the payment source",
       "type": ["string", "null"]
     },
     "card": {
+      "description": "Data related to card payment source",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
+          "description": "First name of the cardholder",
           "type": ["string", "null"]
         },
         "last_name": {
+          "description": "Last name of the cardholder",
           "type": ["string", "null"]
         },
         "iin": {
+          "description": "Issuer Identification Number of the card",
           "type": ["string", "null"]
         },
         "last4": {
+          "description": "Last four digits of the card number",
           "type": ["string", "null"]
         },
         "brand": {
+          "description": "Brand of the card, e.g., Visa, Mastercard",
           "type": ["string", "null"]
         },
         "funding_type": {
+          "description": "Type of funding, e.g., credit or debit",
           "type": ["string", "null"]
         },
         "expiry_month": {
+          "description": "Expiry month of the card",
           "type": ["integer", "null"]
         },
         "expiry_year": {
+          "description": "Expiry year of the card",
           "type": ["integer", "null"]
         },
         "billing_addr1": {
+          "description": "First line of the billing address",
           "type": ["string", "null"]
         },
         "billing_addr2": {
+          "description": "Second line of the billing address",
           "type": ["string", "null"]
         },
         "billing_city": {
+          "description": "City of the billing address",
           "type": ["string", "null"]
         },
         "billing_state_code": {
+          "description": "State code of the billing address",
           "type": ["string", "null"]
         },
         "billing_state": {
+          "description": "State of the billing address",
           "type": ["string", "null"]
         },
         "billing_country": {
+          "description": "Country of the billing address",
           "type": ["string", "null"]
         },
         "billing_zip": {
+          "description": "ZIP or postal code of the billing address",
           "type": ["string", "null"]
         },
         "masked_number": {
+          "description": "Masked card number for security purposes",
           "type": ["string", "null"]
         },
         "object": {
+          "description": "Type of payment source object, e.g., card",
           "type": ["string", "null"]
         }
       }
     },
     "bank_account": {
+      "description": "Data related to bank account payment source",
       "type": ["object", "null"],
       "properties": {
         "last4": {
+          "description": "Last four digits of the bank account number",
           "type": ["string", "null"]
         },
         "name_on_account": {
+          "description": "Name on the bank account",
           "type": ["string", "null"]
         },
         "first_name": {
+          "description": "First name of the account holder",
           "type": ["string", "null"]
         },
         "last_name": {
+          "description": "Last name of the account holder",
           "type": ["string", "null"]
         },
         "bank_name": {
+          "description": "Name of the bank associated with the account",
           "type": ["string", "null"]
         },
         "mandate_id": {
+          "description": "Unique identifier for the mandate related to the bank account",
           "type": ["string", "null"]
         },
         "account_type": {
+          "description": "Type of bank account, e.g., checking or savings",
           "type": ["string", "null"]
         },
         "echeck_type": {
+          "description": "Type of eCheck, if applicable",
           "type": ["string", "null"]
         },
         "account_holder_type": {
+          "description": "Type of account holder, e.g., individual or business",
           "type": ["string", "null"]
         },
         "email": {
+          "description": "Email associated with the bank account",
           "type": ["string", "null"]
         }
       }
     },
     "amazon_payment": {
+      "description": "Data related to Amazon Pay payment source",
       "type": ["object", "null"],
       "properties": {
         "email": {
+          "description": "Email associated with the Amazon payment method",
           "type": ["string", "null"]
         },
         "agreement_id": {
+          "description": "Unique identifier for the Amazon payment agreement",
           "type": ["string", "null"]
         }
       }
     },
     "upi": {
+      "description": "Data related to UPI payment source",
       "type": ["object", "null"],
       "properties": {
         "vpa": {
+          "description": "Virtual Payment Address associated with the UPI payment method",
           "type": ["string", "null"]
         }
       }
     },
     "paypal": {
+      "description": "Data related to PayPal payment source",
       "type": ["object", "null"],
       "properties": {
         "email": {
+          "description": "Email associated with the PayPal account",
           "type": ["string", "null"]
         },
         "agreement_id": {
+          "description": "Unique identifier for the PayPal billing agreement",
           "type": ["string", "null"]
         }
       }
     },
     "mandates": {
+      "description": "Data related to mandates for payments",
       "type": ["object", "null"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the mandate related to the payment source",
           "type": ["string", "null"]
         },
         "subscription_id": {
+          "description": "Unique identifier for the subscription associated with the mandate",
           "type": ["string", "null"]
         },
         "created_at": {
+          "description": "Timestamp indicating when the mandate associated with the payment source was created",
           "type": ["integer", "null"]
         }
       }
     },
     "custom_fields": {
+      "description": "Custom fields associated with the payment source",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }

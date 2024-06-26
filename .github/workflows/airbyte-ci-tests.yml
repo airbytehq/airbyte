@@ -24,37 +24,38 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: changes
         uses: dorny/paths-filter@v2
         with:
           # Note: expressions within a filter are OR'ed
           filters: |
+            # This list is duplicated in `pipelines/airbyte_ci/test/__init__.py`
             internal_poetry_packages:
-            - airbyte-lib/**
             - airbyte-ci/connectors/pipelines/**
             - airbyte-ci/connectors/base_images/**
             - airbyte-ci/connectors/common_utils/**
+            - airbyte-ci/connectors/connectors_insights/**
             - airbyte-ci/connectors/connector_ops/**
             - airbyte-ci/connectors/connectors_qa/**
             - airbyte-ci/connectors/ci_credentials/**
             - airbyte-ci/connectors/metadata_service/lib/**
             - airbyte-ci/connectors/metadata_service/orchestrator/**
+            - airbyte-cdk/python/**
             - airbyte-integrations/bases/connector-acceptance-test/**
 
   run-tests:
     needs: changes
-    if: needs.changes.outputs.internal_poetry_packages == 'true'
-    #name: Internal Poetry packages CI
-    # To rename in a follow up PR
-    name: Run Airbyte CI tests
+    # We only run the Internal Poetry packages CI job if there are changes to the packages on a non-forked PR
+    if: needs.changes.outputs.internal_poetry_packages == 'true' && github.event.pull_request.head.repo.fork != true
+    name: Internal Poetry packages CI
     runs-on: tooling-test-large
     permissions:
       pull-requests: read
       statuses: write
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
@@ -86,7 +87,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "test --modified"
 
@@ -103,6 +104,6 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "test ${{ inputs.airbyte_ci_subcommand}}"

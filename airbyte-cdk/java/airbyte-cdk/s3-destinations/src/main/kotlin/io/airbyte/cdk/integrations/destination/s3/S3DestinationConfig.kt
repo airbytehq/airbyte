@@ -11,29 +11,27 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.s3.constant.S3Constants
-import io.airbyte.cdk.integrations.destination.s3.credential.S3AWSDefaultProfileCredentialConfig
-import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig
-import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialConfig
-import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialType
+import io.airbyte.cdk.integrations.destination.s3.credential.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import javax.annotation.Nonnull
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * An S3 configuration. Typical usage sets at most one of `bucketPath` (necessary for more delicate
  * data syncing to S3)
  */
 open class S3DestinationConfig {
-    @JvmField val endpoint: String?
-    @JvmField val bucketName: String
-    @JvmField val bucketPath: String
-    @JvmField val bucketRegion: String?
-    @JvmField val pathFormat: String
-    val s3CredentialConfig: S3CredentialConfig
-    @JvmField val formatConfig: S3FormatConfig?
+    val endpoint: String?
+    val bucketName: String?
+    val bucketPath: String?
+    val bucketRegion: String?
+    val pathFormat: String?
+    val s3CredentialConfig: S3CredentialConfig?
+    val formatConfig: UploadFormatConfig?
     var fileNamePattern: String? = null
         private set
+    var environment: Map<String, String>
 
     private val lock = Any()
     private var s3Client: AmazonS3?
@@ -55,11 +53,11 @@ open class S3DestinationConfig {
     constructor(
         endpoint: String?,
         bucketName: String,
-        bucketPath: String,
+        bucketPath: String?,
         bucketRegion: String?,
-        pathFormat: String,
-        credentialConfig: S3CredentialConfig,
-        formatConfig: S3FormatConfig?,
+        pathFormat: String?,
+        credentialConfig: S3CredentialConfig?,
+        formatConfig: UploadFormatConfig?,
         s3Client: AmazonS3
     ) {
         this.endpoint = endpoint
@@ -70,20 +68,22 @@ open class S3DestinationConfig {
         this.s3CredentialConfig = credentialConfig
         this.formatConfig = formatConfig
         this.s3Client = s3Client
+        this.environment = System.getenv()
     }
 
     constructor(
         endpoint: String?,
-        bucketName: String,
-        bucketPath: String,
+        bucketName: String?,
+        bucketPath: String?,
         bucketRegion: String?,
-        pathFormat: String,
-        credentialConfig: S3CredentialConfig,
-        formatConfig: S3FormatConfig?,
+        pathFormat: String?,
+        credentialConfig: S3CredentialConfig?,
+        formatConfig: UploadFormatConfig?,
         s3Client: AmazonS3?,
         fileNamePattern: String?,
         checkIntegrity: Boolean,
-        uploadThreadsCount: Int
+        uploadThreadsCount: Int,
+        environment: Map<String, String> = System.getenv()
     ) {
         this.endpoint = endpoint
         this.bucketName = bucketName
@@ -96,6 +96,7 @@ open class S3DestinationConfig {
         this.fileNamePattern = fileNamePattern
         this.isCheckIntegrity = checkIntegrity
         this.uploadThreadsCount = uploadThreadsCount
+        this.environment = environment
     }
 
     fun resetS3Client(): AmazonS3 {
@@ -108,51 +109,53 @@ open class S3DestinationConfig {
     }
 
     protected open fun createS3Client(): AmazonS3 {
-        LOGGER.info("Creating S3 client...")
+        LOGGER.info { "Creating S3 client..." }
 
-        val credentialsProvider = s3CredentialConfig.s3CredentialsProvider
+        val credentialsProvider = s3CredentialConfig!!.s3CredentialsProvider
         val credentialType = s3CredentialConfig.credentialType
 
-        if (S3CredentialType.DEFAULT_PROFILE == credentialType) {
-            return AmazonS3ClientBuilder.standard()
-                .withRegion(bucketRegion)
-                .withCredentials(credentialsProvider) // the SDK defaults to RetryMode.LEGACY
-                // (https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html)
-                // this _can_ be configured via environment variable, but it seems more reliable to
-                // configure it
-                // programmatically
-                .withClientConfiguration(ClientConfiguration().withRetryMode(RetryMode.STANDARD))
-                .build()
+        val clientBuilder = AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider)
+        when (credentialType) {
+            S3CredentialType.DEFAULT_PROFILE,
+            S3CredentialType.ASSUME_ROLE ->
+                clientBuilder
+                    .withRegion(bucketRegion)
+                    // the SDK defaults to RetryMode.LEGACY
+                    // (https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html)
+                    // this _can_ be configured via environment variable, but it seems more reliable
+                    // to
+                    // configure it
+                    // programmatically
+                    .withClientConfiguration(
+                        ClientConfiguration().withRetryMode(RetryMode.STANDARD)
+                    )
+            S3CredentialType.ACCESS_KEY -> {
+                if (null == endpoint || endpoint.isEmpty()) {
+                    clientBuilder.withRegion(bucketRegion)
+                } else {
+                    val clientConfiguration = ClientConfiguration().withProtocol(Protocol.HTTPS)
+                    clientConfiguration.signerOverride = "AWSS3V4SignerType"
+
+                    clientBuilder
+                        .withEndpointConfiguration(
+                            AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion)
+                        )
+                        .withPathStyleAccessEnabled(true)
+                        .withClientConfiguration(clientConfiguration)
+                }
+            }
         }
-
-        if (null == endpoint || endpoint.isEmpty()) {
-            return AmazonS3ClientBuilder.standard()
-                .withCredentials(credentialsProvider)
-                .withRegion(bucketRegion)
-                .build()
-        }
-
-        val clientConfiguration = ClientConfiguration().withProtocol(Protocol.HTTPS)
-        clientConfiguration.signerOverride = "AWSS3V4SignerType"
-
-        return AmazonS3ClientBuilder.standard()
-            .withEndpointConfiguration(
-                AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion)
-            )
-            .withPathStyleAccessEnabled(true)
-            .withClientConfiguration(clientConfiguration)
-            .withCredentials(credentialsProvider)
-            .build()
+        return clientBuilder.build()
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as S3DestinationConfig
+        val that = other as S3DestinationConfig
         return endpoint == that.endpoint &&
             bucketName == that.bucketName &&
             bucketPath == that.bucketPath &&
@@ -173,7 +176,7 @@ open class S3DestinationConfig {
     }
 
     class Builder(
-        private var bucketName: String,
+        private var bucketName: String?,
         private var bucketPath: String,
         private var bucketRegion: String?
     ) {
@@ -181,13 +184,14 @@ open class S3DestinationConfig {
         private var pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT
 
         private lateinit var credentialConfig: S3CredentialConfig
-        private var formatConfig: S3FormatConfig? = null
+        private var formatConfig: UploadFormatConfig? = null
         private var s3Client: AmazonS3? = null
         private var fileNamePattern: String? = null
 
         private var checkIntegrity = true
 
         private var uploadThreadsCount = S3StorageOperations.DEFAULT_UPLOAD_THREADS
+        private var environment: Map<String, String> = System.getenv()
 
         fun withBucketName(bucketName: String): Builder {
             this.bucketName = bucketName
@@ -219,7 +223,7 @@ open class S3DestinationConfig {
             return this
         }
 
-        fun withFormatConfig(formatConfig: S3FormatConfig?): Builder {
+        fun withFormatConfig(formatConfig: UploadFormatConfig?): Builder {
             this.formatConfig = formatConfig
             return this
         }
@@ -249,6 +253,11 @@ open class S3DestinationConfig {
             return this
         }
 
+        fun withEnvironment(environment: Map<String, String>): Builder {
+            this.environment = environment
+            return this
+        }
+
         fun get(): S3DestinationConfig {
             return S3DestinationConfig(
                 endpoint,
@@ -261,37 +270,42 @@ open class S3DestinationConfig {
                 s3Client,
                 fileNamePattern,
                 checkIntegrity,
-                uploadThreadsCount
+                uploadThreadsCount,
+                environment
             )
         }
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(S3DestinationConfig::class.java)
+
         private const val R2_INSTANCE_URL = "https://%s.r2.cloudflarestorage.com"
 
         @JvmStatic
-        fun create(bucketName: String, bucketPath: String, bucketRegion: String?): Builder {
+        fun create(bucketName: String?, bucketPath: String, bucketRegion: String?): Builder {
             return Builder(bucketName, bucketPath, bucketRegion)
         }
 
         @JvmStatic
         fun create(config: S3DestinationConfig): Builder {
-            return Builder(config.bucketName, config.bucketPath, config.bucketRegion)
+            return Builder(config.bucketName, config.bucketPath!!, config.bucketRegion)
                 .withEndpoint(config.endpoint)
-                .withCredentialConfig(config.s3CredentialConfig)
+                .withCredentialConfig(config.s3CredentialConfig!!)
                 .withFormatConfig(config.formatConfig)
-        }
-
-        @JvmStatic
-        fun getS3DestinationConfig(@Nonnull config: JsonNode): S3DestinationConfig {
-            return getS3DestinationConfig(config, StorageProvider.AWS_S3)
         }
 
         @JvmStatic
         fun getS3DestinationConfig(
             @Nonnull config: JsonNode,
-            @Nonnull storageProvider: StorageProvider
+            environment: Map<String, String> = System.getenv()
+        ): S3DestinationConfig {
+            return getS3DestinationConfig(config, StorageProvider.AWS_S3, environment)
+        }
+
+        @JvmStatic
+        fun getS3DestinationConfig(
+            @Nonnull config: JsonNode,
+            @Nonnull storageProvider: StorageProvider = StorageProvider.AWS_S3,
+            environment: Map<String, String> = System.getenv()
         ): S3DestinationConfig {
             var builder =
                 create(
@@ -300,7 +314,7 @@ open class S3DestinationConfig {
                     getProperty(config, S3Constants.S_3_BUCKET_REGION)
                 )
 
-            if (config!!.has(S3Constants.S_3_BUCKET_PATH)) {
+            if (config.has(S3Constants.S_3_BUCKET_PATH)) {
                 builder = builder.withBucketPath(config[S3Constants.S_3_BUCKET_PATH].asText())
             }
 
@@ -343,6 +357,11 @@ open class S3DestinationConfig {
                         getProperty(config, S3Constants.ACCESS_KEY_ID),
                         getProperty(config, S3Constants.SECRET_ACCESS_KEY)
                     )
+                } else if (config.has(S3Constants.ROLE_ARN)) {
+                    S3AssumeRoleCredentialConfig(
+                        getProperty(config, S3Constants.ROLE_ARN)!!,
+                        environment
+                    )
                 } else {
                     S3AWSDefaultProfileCredentialConfig()
                 }
@@ -352,15 +371,18 @@ open class S3DestinationConfig {
             // Snowflake copy
             // destinations don't set a Format config.
             if (config.has("format")) {
-                builder = builder.withFormatConfig(S3FormatConfigs.getS3FormatConfig(config))
+                builder =
+                    builder.withFormatConfig(
+                        UploadFormatConfigFactory.getUploadFormatConfig(config)
+                    )
             }
-
+            builder.withEnvironment(environment)
             return builder.get()
         }
 
-        private fun getProperty(config: JsonNode, @Nonnull key: String): String {
-            val node = config.get(key)
-            return node.asText()
+        private fun getProperty(config: JsonNode, @Nonnull key: String): String? {
+            val node: JsonNode? = config.get(key)
+            return node?.asText()
         }
     }
 }

@@ -4,38 +4,49 @@
   "additionalProperties": true,
   "properties": {
     "createdAt": {
+      "description": "The date and time when the segmentation was created.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the segmentation was last updated.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "id": {
+      "description": "The unique identifier for the segmentation.",
       "type": ["integer", "null"]
     },
     "description": {
+      "description": "A brief description of the segmentation.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the segmentation.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL for accessing the segmentation data.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the segmentation.",
       "type": ["null", "string"]
     },
     "folder": {
+      "description": "Information about the folder where the segmentation is stored.",
       "type": ["null", "object"],
       "properties": {
         "type": {
+          "description": "The type of folder.",
           "type": ["null", "string"]
         },
         "value": {
+          "description": "The value associated with the folder.",
           "type": ["null", "integer"]
         },
         "folderName": {
+          "description": "The name of the folder.",
           "type": ["null", "string"]
         }
       }

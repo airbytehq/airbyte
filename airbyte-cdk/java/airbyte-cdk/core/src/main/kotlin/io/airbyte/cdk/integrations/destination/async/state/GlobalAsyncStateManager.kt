@@ -5,9 +5,8 @@
 package io.airbyte.cdk.integrations.destination.async.state
 
 import com.google.common.base.Preconditions
-import com.google.common.base.Strings
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -23,10 +22,7 @@ import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import org.apache.commons.io.FileUtils
-import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.mina.util.ConcurrentHashSet
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -76,8 +72,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private val stateIdToCounter: ConcurrentMap<Long, AtomicLong> = ConcurrentHashMap()
     private val stateIdToCounterForPopulatingDestinationStats: ConcurrentMap<Long, AtomicLong> =
         ConcurrentHashMap()
-    private val stateIdToState:
-        ConcurrentMap<Long, ImmutablePair<StateMessageWithArrivalNumber, Long>> =
+    private val stateIdToState: ConcurrentMap<Long, Pair<StateMessageWithArrivalNumber, Long>> =
         ConcurrentHashMap()
 
     // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to
@@ -108,7 +103,6 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     fun trackState(
         message: PartialAirbyteMessage,
         sizeInBytes: Long,
-        defaultNamespace: String,
     ) {
         if (preState) {
             convertToGlobalIfNeeded(message)
@@ -117,7 +111,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         // stateType should not change after a conversion.
         Preconditions.checkArgument(stateType == extractStateType(message))
 
-        closeState(message, sizeInBytes, defaultNamespace)
+        closeState(message, sizeInBytes)
     }
 
     /**
@@ -158,7 +152,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         var bytesFlushed: Long = 0L
         logger.info { "Flushing states" }
         synchronized(lock) {
-            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in
+            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>> in
                 descToStateIdQ.entries) {
                 // Remove all states with 0 counters.
                 // Per-stream synchronized is required to make sure the state (at the head of the
@@ -174,13 +168,13 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                     // This can be if you call the flush method if there are 0 records/states
                     val oldestStateCounter: AtomicLong = stateIdToCounter[oldestStateId] ?: break
 
-                    val oldestState: ImmutablePair<StateMessageWithArrivalNumber, Long> =
+                    val oldestState: Pair<StateMessageWithArrivalNumber, Long> =
                         stateIdToState[oldestStateId] ?: break
                     // no state to flush for this stream
 
                     val allRecordsCommitted: Boolean = oldestStateCounter.get() == 0L
                     if (allRecordsCommitted) {
-                        val stateMessage: StateMessageWithArrivalNumber = oldestState.getLeft()
+                        val stateMessage: StateMessageWithArrivalNumber = oldestState.first
                         val flushedRecordsAssociatedWithState: Double =
                             stateIdToCounterForPopulatingDestinationStats[oldestStateId]!!
                                 .toDouble()
@@ -197,10 +191,10 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                             AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState)
                         outputRecordCollector.accept(message)
 
-                        bytesFlushed += oldestState.getRight()
+                        bytesFlushed += oldestState.second
 
                         // cleanup
-                        entry.value!!.poll()
+                        entry.value.poll()
                         stateIdToState.remove(oldestStateId)
                         stateIdToCounter.remove(oldestStateId)
                         stateIdToCounterForPopulatingDestinationStats.remove(oldestStateId)
@@ -259,21 +253,20 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * @param bytesFlushed bytes that were flushed (and should be removed from memory used).
      */
     private fun freeBytes(bytesFlushed: Long) {
-        LOGGER.debug(
-            "Bytes flushed memory to store state message. Allocated: {}, Used: {}, Flushed: {}, % Used: {}",
-            FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-            FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-            FileUtils.byteCountToDisplaySize(bytesFlushed),
-            memoryUsed.get().toDouble() / memoryAllocated.get(),
-        )
+        logger.debug {
+            "Bytes flushed memory to store state message. Allocated: " +
+                "${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, " +
+                "Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, " +
+                "Flushed: ${FileUtils.byteCountToDisplaySize(bytesFlushed)}, " +
+                "% Used: ${memoryUsed.get().toDouble() / memoryAllocated.get()}"
+        }
 
         memoryManager.free(bytesFlushed)
         memoryAllocated.addAndGet(-bytesFlushed)
         memoryUsed.addAndGet(-bytesFlushed)
-        LOGGER.debug(
-            "Returned {} of memory back to the memory manager.",
-            FileUtils.byteCountToDisplaySize(bytesFlushed),
-        )
+        logger.debug {
+            "Returned ${FileUtils.byteCountToDisplaySize(bytesFlushed)} of memory back to the memory manager."
+        }
     }
 
     private fun convertToGlobalIfNeeded(message: PartialAirbyteMessage) {
@@ -286,10 +279,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             // into the non-STREAM world for correctness.
             synchronized(lock) {
                 aliasIds.addAll(
-                    descToStateIdQ.values
-                        .stream()
-                        .flatMap { obj: LinkedBlockingDeque<Long> -> obj.stream() }
-                        .toList(),
+                    descToStateIdQ.values.flatMap { obj: LinkedBlockingDeque<Long> -> obj },
                 )
                 descToStateIdQ.clear()
                 retroactiveGlobalStateId = StateIdProvider.nextId
@@ -297,19 +287,12 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                 descToStateIdQ[SENTINEL_GLOBAL_DESC] = LinkedBlockingDeque()
                 descToStateIdQ[SENTINEL_GLOBAL_DESC]!!.add(retroactiveGlobalStateId)
 
-                val combinedCounter: Long =
-                    stateIdToCounter.values
-                        .stream()
-                        .mapToLong { obj: AtomicLong -> obj.get() }
-                        .sum()
+                val combinedCounter: Long = stateIdToCounter.values.sumOf { it.get() }
                 stateIdToCounter.clear()
                 stateIdToCounter[retroactiveGlobalStateId] = AtomicLong(combinedCounter)
 
                 val statsCounter: Long =
-                    stateIdToCounterForPopulatingDestinationStats.values
-                        .stream()
-                        .mapToLong { obj: AtomicLong -> obj.get() }
-                        .sum()
+                    stateIdToCounterForPopulatingDestinationStats.values.sumOf { it.get() }
                 stateIdToCounterForPopulatingDestinationStats.clear()
                 stateIdToCounterForPopulatingDestinationStats.put(
                     retroactiveGlobalStateId,
@@ -338,17 +321,16 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private fun closeState(
         message: PartialAirbyteMessage,
         sizeInBytes: Long,
-        defaultNamespace: String,
     ) {
         val resolvedDescriptor: StreamDescriptor =
-            extractStream(message, defaultNamespace)
+            extractStream(message)
                 .orElse(
                     SENTINEL_GLOBAL_DESC,
                 )
         synchronized(lock) {
             logger.debug { "State with arrival number $arrivalNumber received" }
             stateIdToState[getStateId(resolvedDescriptor)] =
-                ImmutablePair.of(
+                Pair(
                     StateMessageWithArrivalNumber(
                         message,
                         arrivalNumber,
@@ -372,32 +354,27 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             while (memoryAllocated.get() < memoryUsed.get() + sizeInBytes) {
                 memoryAllocated.addAndGet(memoryManager.requestMemory())
                 try {
-                    LOGGER.debug(
-                        "Insufficient memory to store state message. Allocated: {}, Used: {}, Size of State Msg: {}, Needed: {}",
-                        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-                        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-                        FileUtils.byteCountToDisplaySize(sizeInBytes),
-                        FileUtils.byteCountToDisplaySize(
-                            sizeInBytes - (memoryAllocated.get() - memoryUsed.get()),
-                        ),
-                    )
+                    logger.debug {
+                        "Insufficient memory to store state message. " +
+                            "Allocated: ${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, " +
+                            "Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, " +
+                            "Size of State Msg: ${FileUtils.byteCountToDisplaySize(sizeInBytes)}, " +
+                            "Needed: ${FileUtils.byteCountToDisplaySize(
+                                sizeInBytes - (memoryAllocated.get() - memoryUsed.get()),
+                            )}"
+                    }
                     Thread.sleep(1000)
                 } catch (e: InterruptedException) {
                     throw RuntimeException(e)
                 }
             }
-            LOGGER.debug(memoryUsageMessage)
+            logger.debug { memoryUsageMessage }
         }
     }
 
     val memoryUsageMessage: String
         get() =
-            String.format(
-                "State Manager memory usage: Allocated: %s, Used: %s, percentage Used %f",
-                FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-                FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-                memoryUsed.get().toDouble() / memoryAllocated.get(),
-            )
+            "State Manager memory usage: Allocated: ${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, percentage Used ${memoryUsed.get().toDouble() / memoryAllocated.get()}"
 
     private fun getStateAfterAlias(stateId: Long): Long {
         return if (aliasIds.contains(stateId)) {
@@ -438,46 +415,20 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     )
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(GlobalAsyncStateManager::class.java)
-
         private val SENTINEL_GLOBAL_DESC: StreamDescriptor =
             StreamDescriptor()
                 .withName(
                     UUID.randomUUID().toString(),
                 )
 
-        /**
-         * If the user has selected the Destination Namespace as the Destination default while
-         * setting up the connector, the platform sets the namespace as null in the StreamDescriptor
-         * in the AirbyteMessages (both record and state messages). The destination checks that if
-         * the namespace is empty or null, if yes then re-populates it with the defaultNamespace.
-         * See [io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer.accept] But
-         * destination only does this for the record messages. So when state messages arrive without
-         * a namespace and since the destination doesn't repopulate it with the default namespace,
-         * there is a mismatch between the StreamDescriptor from record messages and state messages.
-         * That breaks the logic of the state management class as [descToStateIdQ] needs to have
-         * consistent StreamDescriptor. This is why while trying to extract the StreamDescriptor
-         * from state messages, we check if the namespace is null, if yes then replace it with
-         * defaultNamespace to keep it consistent with the record messages.
-         */
         private fun extractStream(
             message: PartialAirbyteMessage,
-            defaultNamespace: String,
         ): Optional<StreamDescriptor> {
             if (
                 message.state?.type != null &&
                     message.state?.type == AirbyteStateMessage.AirbyteStateType.STREAM
             ) {
                 val streamDescriptor: StreamDescriptor? = message.state?.stream?.streamDescriptor
-                if (Strings.isNullOrEmpty(streamDescriptor?.namespace)) {
-                    return Optional.of(
-                        StreamDescriptor()
-                            .withName(
-                                streamDescriptor?.name,
-                            )
-                            .withNamespace(defaultNamespace),
-                    )
-                }
                 return streamDescriptor?.let { Optional.of(it) } ?: Optional.empty()
             }
             return Optional.empty()

@@ -4,13 +4,15 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
+import static io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
+import io.airbyte.integrations.destination.redshift.RedshiftDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGeneratorIntegrationTest.RedshiftSourceOperations;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -25,6 +27,7 @@ import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedupingTest {
@@ -38,7 +41,7 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   @Override
   protected DataSource getDataSource(final JsonNode config) {
-    return new RedshiftInsertDestination().getDataSource(config);
+    return new RedshiftDestination().getDataSource(config);
   }
 
   @Override
@@ -48,7 +51,7 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   @Override
   protected SqlGenerator getSqlGenerator() {
-    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false) {
 
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
       // to save bytes.
@@ -61,15 +64,18 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
   public void testRawTableMetaMigration_append() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     // First sync without _airbyte_meta
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages_before_meta.jsonl");
@@ -84,6 +90,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
   public void testRawTableMetaMigration_incrementalDedupe() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
@@ -92,9 +101,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     // First sync without _airbyte_meta
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages_before_meta.jsonl");
@@ -138,23 +147,23 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
                              }
                            }
                            """;
-    final String largeString1 = generateBigString(0);
-    final String largeString2 = generateBigString(2);
+    final String largeString1 = generateRandomString(REDSHIFT_VARCHAR_MAX_BYTE_SIZE);
+    final String largeString2 = generateRandomString(REDSHIFT_VARCHAR_MAX_BYTE_SIZE + 2);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
     final AirbyteMessage message1 = Jsons.deserialize(record1, AirbyteMessage.class);
-    message1.getRecord().setNamespace(streamNamespace);
-    message1.getRecord().setStream(streamName);
+    message1.getRecord().setNamespace(getStreamNamespace());
+    message1.getRecord().setStream(getStreamName());
     ((ObjectNode) message1.getRecord().getData()).put("name", largeString1);
     final AirbyteMessage message2 = Jsons.deserialize(record2, AirbyteMessage.class);
-    message2.getRecord().setNamespace(streamNamespace);
-    message2.getRecord().setStream(streamName);
+    message2.getRecord().setNamespace(getStreamNamespace());
+    message2.getRecord().setStream(getStreamName());
     ((ObjectNode) message2.getRecord().getData()).put("name", largeString2);
 
     // message1 should be preserved which is just on limit, message2 should be nulled.
@@ -170,11 +179,10 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   }
 
-  private String generateBigString(final int additionalChars) {
-    final int length = RedshiftSuperLimitationTransformer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE + additionalChars;
+  protected String generateRandomString(final int totalLength) {
     return RANDOM
         .ints('a', 'z' + 1)
-        .limit(length)
+        .limit(totalLength)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
   }

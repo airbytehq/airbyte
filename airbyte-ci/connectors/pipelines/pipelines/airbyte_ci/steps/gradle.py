@@ -1,11 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import xml.etree.ElementTree as ET
 from abc import ABC
 from datetime import datetime
 from typing import Any, ClassVar, List, Optional, Tuple, cast
 
 import pipelines.dagger.actions.system.docker
+import requests
 from dagger import CacheSharingMode, CacheVolume, Container, ExecError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
@@ -32,6 +34,9 @@ class GradleTask(Step, ABC):
     GRADLE_DEP_CACHE_PATH = "/root/gradle-cache"
     GRADLE_HOME_PATH = "/root/.gradle"
     STATIC_GRADLE_OPTIONS = ("--no-daemon", "--no-watch-fs", "--build-cache", "--scan", "--console=plain")
+    CDK_MAVEN_METADATA_URL = (
+        "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/airbyte-cdk-core/maven-metadata.xml"
+    )
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
@@ -64,6 +69,14 @@ class GradleTask(Step, ABC):
     def _get_gradle_command(self, task: str, *args: Any, task_options: Optional[List[str]] = None) -> str:
         task_options = task_options or []
         return f"./gradlew {' '.join(self.gradle_task_options + args)} {task} {' '.join(task_options)}"
+
+    def get_last_cdk_update_time(self) -> str:
+        response = requests.get(self.CDK_MAVEN_METADATA_URL)
+        response.raise_for_status()
+        last_updated = ET.fromstring(response.text).find(".//lastUpdated")
+        if last_updated is None or last_updated.text is None:
+            raise ValueError(f"Could not find the lastUpdated field in the CDK maven metadata at {self.CDK_MAVEN_METADATA_URL}")
+        return last_updated.text
 
     async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
         include = [
@@ -129,13 +142,13 @@ class GradleTask(Step, ABC):
         )
 
         # Augment the base container with S3 build cache secrets when available.
-        if self.context.s3_build_cache_access_key_id_secret:
+        if self.context.s3_build_cache_access_key_id:
             gradle_container_base = gradle_container_base.with_secret_variable(
-                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id_secret
+                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id.as_dagger_secret(self.dagger_client)
             )
-            if self.context.s3_build_cache_secret_key_secret:
+            if self.context.s3_build_cache_secret_key:
                 gradle_container_base = gradle_container_base.with_secret_variable(
-                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret
+                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key.as_dagger_secret(self.dagger_client)
                 )
 
         # Running a gradle task like "help" with these arguments will trigger updating all dependencies.
@@ -150,6 +163,8 @@ class GradleTask(Step, ABC):
             gradle_container_base
             # Mount the whole repo.
             .with_directory("/airbyte", self.context.get_repo_dir("."))
+            # Burst the cache if a new CDK version was released.
+            .with_env_variable("CDK_LAST_UPDATE", self.get_last_cdk_update_time())
             # Update the cache in place by executing a gradle task which will update all dependencies.
             .with_exec(
                 sh_dash_c(
@@ -181,7 +196,7 @@ class GradleTask(Step, ABC):
         # From this point on, we add layers which are task-dependent.
         if self.mount_connector_secrets:
             secrets_dir = f"{self.context.connector.code_directory}/secrets"
-            gradle_container = gradle_container.with_(await secrets.mounted_connector_secrets(self.context, secrets_dir))
+            gradle_container = gradle_container.with_(await secrets.mounted_connector_secrets(self.context, secrets_dir, self.secrets))
         if self.bind_to_docker_host:
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
             gradle_container = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)
@@ -232,12 +247,10 @@ class GradleTask(Step, ABC):
             self.context.logger.warn(f"No {test_logs_dir_name_in_container} found directory in the build folder")
             return None
         try:
-            zip_file = await (
-                dagger_directory_as_zip_file(
-                    self.dagger_client,
-                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"),
-                    test_logs_dir_name_in_zip,
-                )
+            zip_file = await dagger_directory_as_zip_file(
+                self.dagger_client,
+                await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"),
+                test_logs_dir_name_in_zip,
             )
             return Artifact(
                 name=f"{test_logs_dir_name_in_zip}.zip",
@@ -267,12 +280,10 @@ class GradleTask(Step, ABC):
             self.context.logger.warn(f"No {test_results_dir_name_in_container} found directory in the build folder")
             return None
         try:
-            zip_file = await (
-                dagger_directory_as_zip_file(
-                    self.dagger_client,
-                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"),
-                    test_results_dir_name_in_zip,
-                )
+            zip_file = await dagger_directory_as_zip_file(
+                self.dagger_client,
+                await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"),
+                test_results_dir_name_in_zip,
             )
             return Artifact(
                 name=f"{test_results_dir_name_in_zip}.zip",

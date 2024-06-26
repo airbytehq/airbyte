@@ -15,9 +15,7 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.stream.Collectors
 import kotlin.math.min
-import org.apache.commons.lang3.tuple.ImmutablePair
 
 private val logger = KotlinLogging.logger {}
 
@@ -103,16 +101,11 @@ internal constructor(
             val isSizeTriggeredResult = isSizeTriggered(stream, queueSizeThresholdBytes)
 
             val debugString =
-                String.format(
-                    "trigger info: %s - %s, %s , %s",
-                    stream.namespace,
-                    stream.name,
-                    isTimeTriggeredResult.getRight(),
-                    isSizeTriggeredResult.getRight(),
-                )
+                "trigger info: ${stream.namespace} - ${stream.name}, " +
+                    "${isTimeTriggeredResult.second} , ${isSizeTriggeredResult.second}"
             logger.debug { "computed: $debugString" }
 
-            if (isSizeTriggeredResult.getLeft() || isTimeTriggeredResult.getLeft()) {
+            if (isSizeTriggeredResult.first || isTimeTriggeredResult.first) {
                 logger.info { "flushing: $debugString" }
                 latestFlushTimeMsPerStream[stream] = nowProvider.millis()
                 return Optional.of(stream)
@@ -134,12 +127,12 @@ internal constructor(
      * @return is time triggered and a debug string
      */
     @VisibleForTesting
-    fun isTimeTriggered(latestFlushTimeMs: Long): ImmutablePair<Boolean, String> {
+    fun isTimeTriggered(latestFlushTimeMs: Long): Pair<Boolean, String> {
         val timeSinceLastFlushMs = nowProvider.millis() - latestFlushTimeMs
         val isTimeTriggered = timeSinceLastFlushMs >= MAX_TIME_BETWEEN_FLUSH_MS
-        val debugString = String.format("time trigger: %s", isTimeTriggered)
+        val debugString = "time trigger: $isTimeTriggered"
 
-        return ImmutablePair.of(isTimeTriggered, debugString)
+        return Pair(isTimeTriggered, debugString)
     }
 
     /**
@@ -163,23 +156,20 @@ internal constructor(
     fun isSizeTriggered(
         stream: StreamDescriptor,
         queueSizeThresholdBytes: Long,
-    ): ImmutablePair<Boolean, String> {
+    ): Pair<Boolean, String> {
         val currentQueueSize = bufferDequeue.getQueueSizeBytes(stream).orElseThrow()
         val sizeOfRunningWorkersEstimate = estimateSizeOfRunningWorkers(stream, currentQueueSize)
         val queueSizeAfterRunningWorkers = currentQueueSize - sizeOfRunningWorkersEstimate
         val isSizeTriggered = queueSizeAfterRunningWorkers > queueSizeThresholdBytes
 
         val debugString =
-            String.format(
-                "size trigger: %s current threshold b: %s, queue size b: %s, penalty b: %s, after penalty b: %s",
-                isSizeTriggered,
-                AirbyteFileUtils.byteCountToDisplaySize(queueSizeThresholdBytes),
-                AirbyteFileUtils.byteCountToDisplaySize(currentQueueSize),
-                AirbyteFileUtils.byteCountToDisplaySize(sizeOfRunningWorkersEstimate),
-                AirbyteFileUtils.byteCountToDisplaySize(queueSizeAfterRunningWorkers),
-            )
+            "size trigger: $isSizeTriggered " +
+                "current threshold b: ${AirbyteFileUtils.byteCountToDisplaySize(queueSizeThresholdBytes)}, " +
+                "queue size b: ${AirbyteFileUtils.byteCountToDisplaySize(currentQueueSize)}, " +
+                "penalty b: ${AirbyteFileUtils.byteCountToDisplaySize(sizeOfRunningWorkersEstimate)}, " +
+                "after penalty b: ${AirbyteFileUtils.byteCountToDisplaySize(queueSizeAfterRunningWorkers)}"
 
-        return ImmutablePair.of(isSizeTriggered, debugString)
+        return Pair(isSizeTriggered, debugString)
     }
 
     /**
@@ -203,12 +193,10 @@ internal constructor(
             )
         val workersWithBatchesSize =
             runningWorkerBatchesSizes
-                .stream()
                 .filter { obj: Optional<Long> -> obj.isPresent }
-                .mapToLong { obj: Optional<Long> -> obj.get() }
-                .sum()
+                .sumOf { obj: Optional<Long> -> obj.get() }
         val workersWithoutBatchesCount =
-            runningWorkerBatchesSizes.stream().filter { obj: Optional<Long> -> obj.isEmpty }.count()
+            runningWorkerBatchesSizes.count { obj: Optional<Long> -> obj.isEmpty }
         val workersWithoutBatchesSizeEstimate =
             (min(
                     flusher.optimalBatchSizeBytes.toDouble(),
@@ -241,48 +229,30 @@ internal constructor(
     fun orderStreamsByPriority(streams: Set<StreamDescriptor>): List<StreamDescriptor> {
         // eagerly pull attributes so that values are consistent throughout comparison
         val sdToQueueSize =
-            streams
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { s: StreamDescriptor -> s },
-                        { streamDescriptor: StreamDescriptor ->
-                            bufferDequeue.getQueueSizeBytes(
-                                streamDescriptor,
-                            )
-                        },
-                    ),
+            streams.associateWith { streamDescriptor: StreamDescriptor ->
+                bufferDequeue.getQueueSizeBytes(
+                    streamDescriptor,
                 )
+            }
 
         val sdToTimeOfLastRecord =
-            streams
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { s: StreamDescriptor -> s },
-                        { streamDescriptor: StreamDescriptor ->
-                            bufferDequeue.getTimeOfLastRecord(
-                                streamDescriptor,
-                            )
-                        },
-                    ),
+            streams.associateWith { streamDescriptor: StreamDescriptor ->
+                bufferDequeue.getTimeOfLastRecord(
+                    streamDescriptor,
                 )
-
-        return streams
-            .stream()
-            .sorted(
-                Comparator.comparing(
-                        { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
-                        Comparator.reverseOrder(),
-                    ) // if no time is present, it suggests the queue has no records. set MAX time
-                    // as a sentinel value to
-                    // represent no records.
-                    .thenComparing { s: StreamDescriptor ->
-                        sdToTimeOfLastRecord[s]!!.orElse(Instant.MAX)
-                    }
-                    .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
-            )
-            .collect(Collectors.toList())
+            }
+        return streams.sortedWith(
+            Comparator.comparing(
+                    { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
+                    Comparator.reverseOrder(),
+                ) // if no time is present, it suggests the queue has no records. set MAX time
+                // as a sentinel value to
+                // represent no records.
+                .thenComparing { s: StreamDescriptor ->
+                    sdToTimeOfLastRecord[s]!!.orElse(Instant.MAX)
+                }
+                .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
+        )
     }
 
     companion object {

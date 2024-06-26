@@ -14,8 +14,8 @@ from source_snapchat_marketing.source import (
     Ads,
     AdsStatsDaily,
     AdsStatsLifetime,
+    Oauth2Authenticator,
     Organizations,
-    SnapchatOauth2Authenticator,
     SourceSnapchatMarketing,
 )
 
@@ -23,6 +23,9 @@ config_mock = {
     "authenticator": NoAuth(),
     "start_date": "2000-01-01",
     "end_date": "2000-02-10",
+    "action_report_time": "impression",
+    "swipe_up_attribution_window": "7_DAY",
+    "view_attribution_window": "1_DAY",
 }
 stats_stream = AdaccountsStatsDaily(**config_mock)
 
@@ -378,7 +381,7 @@ def test_retry_get_access_token(requests_mock):
         "https://accounts.snapchat.com/login/oauth2/access_token",
         [{"status_code": 429}, {"status_code": 429}, {"status_code": 200, "json": {"access_token": "token", "expires_in": 3600}}],
     )
-    auth = SnapchatOauth2Authenticator(
+    auth = Oauth2Authenticator(
         token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
         client_id="client_id",
         client_secret="client_secret",

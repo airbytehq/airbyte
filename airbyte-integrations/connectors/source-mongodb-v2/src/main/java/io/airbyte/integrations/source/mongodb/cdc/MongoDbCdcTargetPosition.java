@@ -13,6 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.slf4j.Logger;
@@ -88,7 +89,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
   }
 
   @Override
-  public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
+  public boolean isSameOffset(@Nullable final Map<String, String> offsetA, @Nullable final Map<String, String> offsetB) {
     if (offsetA == null || offsetA.size() != 1) {
       return false;
     }

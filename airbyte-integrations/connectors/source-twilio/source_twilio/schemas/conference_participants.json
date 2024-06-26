@@ -1,47 +1,61 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier for the Twilio account associated with the conference participant.",
       "type": ["null", "string"]
     },
     "call_sid": {
+      "description": "The unique identifier for the call made by the participant.",
       "type": ["null", "string"]
     },
     "label": {
+      "description": "A custom label assigned to the participant for identification.",
       "type": ["null", "string"]
     },
     "conference_sid": {
+      "description": "The unique identifier for the conference the participant is a part of.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the participant was added to the conference.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the participant's information was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "end_conference_on_exit": {
+      "description": "Indicates whether the conference will end when the participant exits.",
       "type": ["null", "boolean"]
     },
     "muted": {
+      "description": "Indicates whether the participant's audio is muted.",
       "type": ["null", "boolean"]
     },
     "hold": {
+      "description": "Indicates whether the participant is on hold.",
       "type": ["null", "boolean"]
     },
     "status": {
+      "description": "The current status of the participant in the conference.",
       "type": ["null", "string"]
     },
     "start_conference_on_enter": {
+      "description": "Indicates whether the conference will start when the participant enters.",
       "type": ["null", "boolean"]
     },
     "coaching": {
+      "description": "Indicates whether the participant is in coaching mode.",
       "type": ["null", "boolean"]
     },
     "call_sid_to_coach": {
+      "description": "The unique identifier for the call made to the coach.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI for accessing the details of the conference participant.",
       "type": ["null", "string"]
     }
   },

@@ -12,20 +12,21 @@ internal open class CommonFactoryTest {
     companion object {
         private const val DATABASE_NAME = "airbyte_test_database"
 
-        @JvmStatic protected lateinit var container: PostgreSQLContainer<*>
+        @JvmStatic
+        protected var container: PostgreSQLContainer<*> =
+            PostgreSQLContainer<Nothing>("postgres:13-alpine")
 
         @JvmStatic
         @BeforeAll
         fun dbSetup(): Unit {
-            container = PostgreSQLContainer<Nothing>("postgres:13-alpine")
             container.withDatabaseName(DATABASE_NAME).withUsername("docker").withPassword("docker")
-            container!!.start()
+            container.start()
         }
 
         @JvmStatic
         @AfterAll
         fun dbDown(): Unit {
-            container!!.close()
+            container.close()
         }
     }
 }

@@ -7,6 +7,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import (
     AlwaysAvailableAvailabilityStrategy,
@@ -301,7 +302,7 @@ test_concurrent_cdk_multiple_streams = (
 
 test_concurrent_cdk_partition_raises_exception = (
     TestScenarioBuilder()
-    .set_name("test_concurrent_partition_raises_exception")
+    .set_name("test_concurrent_cdk_partition_raises_exception")
     .set_config({})
     .set_source_builder(
         ConcurrentSourceBuilder()
@@ -317,7 +318,7 @@ test_concurrent_cdk_partition_raises_exception = (
             {"data": {"id": "1"}, "stream": "stream1"},
         ]
     )
-    .set_expected_read_error(ValueError, "test exception")
+    .set_expected_read_error(AirbyteTracedException, "Concurrent read failure")
     .set_expected_catalog(
         {
             "streams": [

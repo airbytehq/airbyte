@@ -7,7 +7,7 @@ const plugin = () => {
     const registry = await catalog;
 
     visit(ast, "mdxJsxFlowElement", (node) => {
-      if (node.name !== "AirbyteLibConnectors") return;
+      if (node.name !== "PyAirbyteConnectors") return;
 
         const connectors = registry.filter(isPypiConnector);
 

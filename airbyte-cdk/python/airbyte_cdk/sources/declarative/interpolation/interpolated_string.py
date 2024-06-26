@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 
 @dataclass
@@ -24,12 +24,12 @@ class InterpolatedString:
     parameters: InitVar[Mapping[str, Any]]
     default: Optional[str] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.default = self.default or self.string
         self._interpolation = JinjaInterpolation()
         self._parameters = parameters
 
-    def eval(self, config: Config, **kwargs):
+    def eval(self, config: Config, **kwargs: Any) -> Any:
         """
         Interpolates the input string using the config and other optional arguments passed as parameter.
 
@@ -39,7 +39,7 @@ class InterpolatedString:
         """
         return self._interpolation.eval(self.string, config, self.default, parameters=self._parameters, **kwargs)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, InterpolatedString):
             return False
         return self.string == other.string and self.default == other.default
@@ -50,7 +50,7 @@ class InterpolatedString:
         string_or_interpolated: Union["InterpolatedString", str],
         *,
         parameters: Mapping[str, Any],
-    ):
+    ) -> "InterpolatedString":
         """
         Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
 

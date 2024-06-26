@@ -17,7 +17,7 @@ from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
 from airbyte_protocol.models import AirbyteStateMessage, FailureType, SyncMode
 from source_amazon_seller_partner.streams import ReportProcessingStatus
 
-from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, ConfigBuilder
+from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE, ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import build_response, response_with_status
 from .utils import assert_message_in_log_output, config, find_template, get_stream_by_name, mock_auth, read_output
@@ -68,7 +68,8 @@ def _create_report_request(report_name: str) -> RequestBuilder:
     A POST request needed to start generating a report on Amazon SP platform.
     Performed in ReportsAmazonSPStream._create_report method.
     """
-
+    if report_name == "GET_VENDOR_TRAFFIC_REPORT":
+        return RequestBuilder.create_vendor_traffic_report_endpoint(report_name)
     return RequestBuilder.create_report_endpoint(report_name)
 
 
@@ -388,8 +389,11 @@ class TestFullRefresh:
 
         output = self._read(stream_name, config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        config_end_date = CONFIG_END_DATE
+        if stream_name == "GET_VENDOR_TRAFFIC_REPORT":
+            config_end_date = VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE
         assert (
-            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{CONFIG_END_DATE}. This will be read during the next sync. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
+            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{config_end_date}. This will be read during the next sync. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
         ) in output.errors[-1].trace.error.message
 
     @pytest.mark.parametrize(

@@ -12,9 +12,9 @@ import org.junit.jupiter.params.provider.CsvSource
 class CollectionUtilsTest {
     @ParameterizedTest
     @CsvSource("foo,foo", "bar,BAR", "fIzZ,fizz", "ZIP_zop,zip_ZOP", "nope,")
-    fun testMatchingKey(input: String?, output: String?) {
+    fun testMatchingKey(input: String, output: String?) {
         val expected = Optional.ofNullable(output)
-        Assertions.assertEquals(matchingKey(TEST_COLLECTION, input!!), expected)
+        Assertions.assertEquals(matchingKey(TEST_COLLECTION, input), expected)
     }
 
     companion object {
