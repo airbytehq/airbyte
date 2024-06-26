@@ -1,8 +1,5 @@
 # Salesforce
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Salesforce](https://www.salesforce.com/) source connector.
