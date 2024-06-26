@@ -53,6 +53,7 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 | Version | Date       | Pull Request                                                   | Subject                              |
 | :------ | :--------- | :------------------------------------------------------------- | :----------------------------------- |
+| 0.2.5 | 2024-06-25 | [40303](https://github.com/airbytehq/airbyte/pull/40303) | Update dependencies |
 | 0.2.4 | 2024-06-22 | [39985](https://github.com/airbytehq/airbyte/pull/39985) | Update dependencies |
 | 0.2.3 | 2024-06-12 | [39115](https://github.com/airbytehq/airbyte/pull/39115) | Make compatible with builder |
 | 0.2.2 | 2024-06-06 | [39169](https://github.com/airbytehq/airbyte/pull/39169) | [autopull] Upgrade base image to v1.2.2 |
