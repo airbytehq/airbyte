@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.debezium.internals
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.AbstractIterator
 import io.airbyte.cdk.db.DbAnalyticsUtils
+import io.airbyte.cdk.db.DbAnalyticsUtils.debeziumCloseReasonMessage
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition
 import io.airbyte.commons.lang.MoreBooleans
@@ -41,6 +42,7 @@ class DebeziumRecordIterator<T>(
 ) : AbstractIterator<ChangeEventWithMetadata>(), AutoCloseableIterator<ChangeEventWithMetadata> {
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
+    private val subsequentRecordWaitTime: Duration = firstRecordWaitTime.dividedBy(2)
 
     private var receivedFirstRecord = false
     private var hasSnapshotFinished = true
@@ -49,13 +51,13 @@ class DebeziumRecordIterator<T>(
     private var maxInstanceOfNoRecordsFound = 0
     private var signalledDebeziumEngineShutdown = false
 
-    // The following logic incorporates heartbeat:
+    // The following logic incorporates heartbeat (CDC postgres only for now):
     // 1. Wait on queue either the configured time first or 1 min after a record received
     // 2. If nothing came out of queue finish sync
-    // 3. If received heartbeat: check if hearbeat_lsn reached target
+    // 3. If received heartbeat: check if hearbeat_lsn reached target or hasn't changed in a while
     // finish sync
     // 4. If change event lsn reached target finish sync
-    // 5. Otherwise, check message queue again
+    // 5. Otherwise check message queuen again
     override fun computeNext(): ChangeEventWithMetadata? {
         // keep trying until the publisher is closed or until the queue is empty. the latter case is
         // possible when the publisher has shutdown but the consumer has not yet processed all
@@ -64,8 +66,10 @@ class DebeziumRecordIterator<T>(
         while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
             val next: ChangeEvent<String?, String?>?
 
+            val waitTime =
+                if (receivedFirstRecord) this.subsequentRecordWaitTime else this.firstRecordWaitTime
             try {
-                next = queue.poll(this.firstRecordWaitTime.seconds, TimeUnit.SECONDS)
+                next = queue.poll(waitTime.seconds, TimeUnit.SECONDS)
             } catch (e: InterruptedException) {
                 throw RuntimeException(e)
             }
@@ -74,9 +78,14 @@ class DebeziumRecordIterator<T>(
             // producer to
             // shutdown.
             if (next == null) {
-                if (!receivedFirstRecord || maxInstanceOfNoRecordsFound >= 10) {
+                if (
+                    !receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10
+                ) {
                     requestClose(
-                        "No records were returned by Debezium within the timeout period, closing the engine and iterator"
+                        String.format(
+                            "No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
+                            waitTime.seconds
+                        )
                     )
                 }
                 LOGGER.info { "no record found. polling again." }
@@ -95,10 +104,12 @@ class DebeziumRecordIterator<T>(
                 // too long
                 if (targetPosition.reachedTargetPosition(heartbeatPos)) {
                     requestClose(
-                        "Closing: Heartbeat indicates sync is done by reaching the target position",
+                        "Closing: Heartbeat indicates sync is done by reaching the target position"
                     )
-                } else if (heartbeatPos == this.lastHeartbeatPosition) {
-                    logHeartbeatPosNotChanging()
+                } else if (
+                    heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging()
+                ) {
+                    requestClose("Closing: Heartbeat indicates sync is not progressing")
                 }
 
                 if (heartbeatPos != lastHeartbeatPosition) {
@@ -133,7 +144,7 @@ class DebeziumRecordIterator<T>(
                 event =
                     debeziumShutdownProcedure.recordsRemainingAfterShutdown.poll(
                         100,
-                        TimeUnit.MILLISECONDS,
+                        TimeUnit.MILLISECONDS
                     )
             } catch (e: InterruptedException) {
                 throw RuntimeException(e)
@@ -176,15 +187,17 @@ class DebeziumRecordIterator<T>(
             !event.value()!!.contains("source")
     }
 
-    private fun logHeartbeatPosNotChanging() {
+    private fun heartbeatPosNotChanging(): Boolean {
         if (this.tsLastHeartbeat == null) {
-            return
+            return false
         }
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
         LOGGER.info {
             "Time since last hb_pos change ${timeElapsedSinceLastHeartbeatTs.toSeconds()}s"
         }
+        // wait time for no change in heartbeat position is half of initial waitTime
+        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
     }
 
     private fun requestClose(closeLogMessage: String) {
@@ -192,9 +205,7 @@ class DebeziumRecordIterator<T>(
             return
         }
         LOGGER.info { closeLogMessage }
-        AirbyteTraceMessageUtility.emitAnalyticsTrace(
-            DbAnalyticsUtils.debeziumCloseReasonMessage(closeLogMessage)
-        )
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(debeziumCloseReasonMessage(closeLogMessage))
         debeziumShutdownProcedure.initiateShutdownProcedure()
         signalledDebeziumEngineShutdown = true
     }
