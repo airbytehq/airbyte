@@ -11,6 +11,7 @@ import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
+
 def read_file(file_name):
     parent_location = Path(__file__).absolute().parent
     file = open(parent_location / file_name).read()

@@ -11,6 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
+
 class ExchangeRates(HttpStream):
     url_base = "https://api.apilayer.com/exchangerates_data/"
     cursor_field = "date"
