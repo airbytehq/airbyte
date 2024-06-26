@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.db.factory.DataSourceFactory
 import io.airbyte.cdk.db.factory.DatabaseDriver
@@ -33,6 +34,7 @@ import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlDestinatio
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerator
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlV1V2Migrator
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.sql.SQLSyntaxErrorException
 import java.util.*
 import org.slf4j.Logger
@@ -47,6 +49,22 @@ class MySQLDestination :
     Destination {
     override val configSchemaKey: String
         get() = JdbcUtils.DATABASE_KEY
+
+    private fun getCloudDeploymentSpec(
+        originalSpec: ConnectorSpecification
+    ): ConnectorSpecification {
+        val spec: ConnectorSpecification = Jsons.clone(originalSpec)
+        (spec.connectionSpecification["properties"] as ObjectNode).remove(JdbcUtils.SSL_KEY)
+        return spec
+    }
+
+    @Throws(java.lang.Exception::class)
+    override fun spec(): ConnectorSpecification {
+        if (isCloudDeployment()) {
+            return getCloudDeploymentSpec(super.spec())
+        }
+        return super.spec()
+    }
 
     override fun check(config: JsonNode): AirbyteConnectionStatus {
         val dataSource = getDataSource(config)

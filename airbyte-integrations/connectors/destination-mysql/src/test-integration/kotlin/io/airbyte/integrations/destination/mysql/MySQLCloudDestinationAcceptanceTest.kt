@@ -19,6 +19,8 @@ import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTyp
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.cdk.integrations.util.HostPortResolver.resolveHost
 import io.airbyte.cdk.integrations.util.HostPortResolver.resolvePort
+import io.airbyte.commons.features.FeatureFlags
+import io.airbyte.commons.features.FeatureFlagsWrapper
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.json.Jsons.jsonNode
@@ -36,12 +38,16 @@ import org.junit.jupiter.api.Test
 import org.testcontainers.containers.MySQLContainer
 
 @Disabled
-class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
+class MySQLCloudDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
     private var db: MySQLContainer<*>? = null
     private val namingResolver: StandardNameTransformer = MySQLNameTransformer()
 
     override val imageName: String
         get() = "airbyte/destination-mysql-strict-encrypt:dev"
+
+    override fun featureFlags(): FeatureFlags {
+        return FeatureFlagsWrapper.overridingDeploymentMode(super.featureFlags(), "CLOUD")
+    }
 
     override fun implementsNamespaces(): Boolean {
         return true

@@ -4,6 +4,9 @@
 package io.airbyte.cdk.integrations
 
 import io.airbyte.cdk.db.factory.DatabaseDriver
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner
+import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalUnit
@@ -11,8 +14,17 @@ import java.util.*
 
 abstract class JdbcConnector
 protected constructor(@JvmField protected val driverClassName: String) : BaseConnector() {
+    var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
+
     protected fun getConnectionTimeout(connectionProperties: Map<String, String>): Duration {
         return getConnectionTimeout(connectionProperties, driverClassName)
+    }
+
+    protected fun isCloudDeployment(): Boolean {
+        return AdaptiveSourceRunner.CLOUD_MODE.equals(
+            featureFlags.deploymentMode(),
+            ignoreCase = true
+        )
     }
 
     companion object {

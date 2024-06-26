@@ -16,27 +16,17 @@ import io.airbyte.cdk.integrations.standardtest.destination.argproviders.util.Ar
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.BasicTestDataComparator
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.commons.util.MoreIterators
-import io.airbyte.configoss.JobGetSpecConfig
-import io.airbyte.configoss.OperatorDbt
-import io.airbyte.configoss.StandardCheckConnectionInput
-import io.airbyte.configoss.StandardCheckConnectionOutput
-import io.airbyte.configoss.WorkerDestinationConfig
+import io.airbyte.configoss.*
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
-import io.airbyte.protocol.models.v0.AirbyteCatalog
-import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStream
-import io.airbyte.protocol.models.v0.CatalogHelpers
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.SyncMode
 import io.airbyte.workers.exception.TestHarnessException
@@ -83,6 +73,10 @@ abstract class DestinationAcceptanceTest {
     private lateinit var jobRoot: Path
     private lateinit var processFactory: ProcessFactory
     private lateinit var mConnectorConfigUpdater: ConnectorConfigUpdater
+
+    protected open fun featureFlags(): FeatureFlags {
+        return EnvVariableFeatureFlags()
+    }
 
     protected var localRoot: Path? = null
     open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
@@ -372,7 +366,11 @@ abstract class DestinationAcceptanceTest {
     }
 
     open fun getConnectorEnv(): Map<String, String> {
-        return emptyMap()
+        val retVal = mutableMapOf<String, String>()
+        featureFlags().deploymentMode()?.let {
+            retVal[EnvVariableFeatureFlags.DEPLOYMENT_MODE] = it
+        }
+        return retVal
     }
 
     @AfterEach
@@ -1499,7 +1497,7 @@ abstract class DestinationAcceptanceTest {
                         null,
                         null,
                         false,
-                        EnvVariableFeatureFlags()
+                        featureFlags()
                     )
                 )
                 .run(JobGetSpecConfig().withDockerImage(imageName), jobRoot)
@@ -1519,7 +1517,7 @@ abstract class DestinationAcceptanceTest {
                     null,
                     null,
                     false,
-                    EnvVariableFeatureFlags()
+                    featureFlags()
                 ),
                 mConnectorConfigUpdater
             )
@@ -1541,7 +1539,7 @@ abstract class DestinationAcceptanceTest {
                             null,
                             null,
                             false,
-                            EnvVariableFeatureFlags()
+                            featureFlags()
                         ),
                         mConnectorConfigUpdater
                     )
@@ -1569,7 +1567,7 @@ abstract class DestinationAcceptanceTest {
                         null,
                         null,
                         false,
-                        EnvVariableFeatureFlags()
+                        featureFlags()
                     )
             )
         }
