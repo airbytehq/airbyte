@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.4
   dockerRepository: airbyte/source-mailerlite
   githubIssueLabel: source-mailerlite
   icon: mailerlite.svg

@@ -310,6 +310,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.4 | 2024-06-25 | [40326](https://github.com/airbytehq/airbyte/pull/40326) | Update dependencies |
+| 3.5.3 | 2024-06-22 | [40158](https://github.com/airbytehq/airbyte/pull/40158) | Update dependencies |
 | `3.5.2` | 2024-06-06 | [39277](https://github.com/airbytehq/airbyte/pull/39277) | [autopull] Upgrade base image to v1.2.2 |
 | `3.5.1`  | 2024-06-13 | [39425](https://github.com/airbytehq/airbyte/pull/39425) | Fix integration tests; update acceptance tests                                                                                       |
 | `3.5.0`  | 2024-05-22 | [37840](https://github.com/airbytehq/airbyte/pull/37840) | Fix custom GAQL queries default value                                                                                                |

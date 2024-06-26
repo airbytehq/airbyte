@@ -60,6 +60,8 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 0.1.5 | 2024-06-25 | [40364](https://github.com/airbytehq/airbyte/pull/40364) | Update dependencies |
+| 0.1.4 | 2024-06-22 | [40186](https://github.com/airbytehq/airbyte/pull/40186) | Update dependencies |
 | 0.1.3 | 2024-06-04 | [38967](https://github.com/airbytehq/airbyte/pull/38967) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.2 | 2024-05-21 | [38502](https://github.com/airbytehq/airbyte/pull/38502) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2023-07-11 | [28153](https://github.com/airbytehq/airbyte/pull/28153) | Fix manifest duplicate key (no change in behavior for the syncs) |

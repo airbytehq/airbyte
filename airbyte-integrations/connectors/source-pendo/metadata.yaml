@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b1ccb590-e84f-46c0-83a0-2048ccfffdae
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/source-pendo
   documentationUrl: https://docs.airbyte.com/integrations/sources/pendo
   githubIssueLabel: source-pendo

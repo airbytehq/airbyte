@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-persistiq
   githubIssueLabel: source-persistiq
   icon: persistiq.svg

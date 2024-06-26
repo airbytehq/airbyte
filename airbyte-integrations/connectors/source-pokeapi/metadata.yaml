@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-pokeapi
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg

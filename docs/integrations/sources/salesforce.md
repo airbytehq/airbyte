@@ -1,5 +1,8 @@
 # Salesforce
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Salesforce](https://www.salesforce.com/) source connector.
@@ -22,27 +25,47 @@ To use this connector, you'll need at least the Enterprise edition of Salesforce
 
 ## Setup guide
 
-### Step 1: (Optional, Recommended) Create a read-only Salesforce user
+### Step 1: (Optional, Recommended) Create a dedicated Salesforce user
 
-While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
+Follow the instructions below to create a Minimum Access standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
 
-To create a dedicated read only Salesforce user:
+While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read. 
+    
+Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5). 
 
-1. [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
-2. On the top right of the screen, click the gear icon and then click **Setup**.
-3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
-4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
-5. Click **Save**. The Profiles page is displayed. Click **Edit**.
-6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and ensure the user has the **View All Data** permissions for objects that you want to replicate via Airbyte.
-7. Scroll to the top and click **Save**.
-8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
-9. Fill out the required fields:
-   1. For License, select **Salesforce**.
-   2. For Profile, select **Airbyte Read Only User**.
-   3. For Email, make sure to use an email address that you can access.
-10. Click **Save**.
-11. Copy the Username and keep it accessible.
-12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
+[Log in to Salesforce](https://login.salesforce.com/) with an admin account.
+
+#### 1. Create a new User: 
+-  On the top right of the screen, click the gear icon and then click **Setup**.
+-  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname. 
+      - Leave `role` unspecified
+      - Select `Salesforce Platform` for the User License
+      - Select `Standard Platform User` for Profile. 
+      - Decide whether to generate a new password and notify the user. 
+      - Select `save`
+#### 2. Create a new Permission Set: 
+-  Using the left navigation bar, select **Users** > **Permission Sets** 
+- Click `New` to create a new Permission Set. 
+- Give your permission set a descriptive label name (e.g., "Airbyte Read Only Access"). The API name will autopopulate based on the label you give the permission set. 
+- For licence, leave this set to` –None—` and click `save`. 
+- Now that you see the permission set is created, define the permissions via Object Settings. 
+   - Click "Object Settings."
+   - Select the `Object Name` for each object you want the user to have read-only access to (e.g., Accounts, Contacts, Opportunities).
+   - Select “Edit” and check the "Read" permission and uncheck all other permissions (Create, Edit, Delete, etc.).
+   - Click `Save`
+   - Continue to add read permissions for any objects you want Airbyte to have access to. 
+#### 3. Assign the Permission Set to the new User
+- From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
+- Click "Add Assignments."
+- Find and select the user you created in Step 1.
+- Click `Assign`
+
+Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
+
+:::info
+**Profile vs. Permission Set:** Remember that the user's profile will provide their baseline permissions. The permission set adds or restricts permissions on top of that.
+**Object-Level vs. Field-Level Security:** This guide focuses on object-level read-only access. While setting up your permission set, you can stick with object-level security or define more granular controls by scrolling down within each object settings page to select read access for only needed fields. 
+:::
 
 <!-- env:oss -->
 
@@ -108,7 +131,6 @@ The Salesforce source connector supports the following sync modes:
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -116,8 +138,8 @@ The Salesforce connector supports reading both Standard Objects and Custom Objec
 
 Airbyte allows exporting all available Salesforce objects dynamically based on:
 
-- If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
-- If the salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
+- If the authenticated Salesforce user has the Role and Permissions to read and fetch objects. This would be set as part of the Permission Set you assign to the Airbyte user. See [Step 1](#step-1-optional-recommended-create-a-dedicated-salesforce-user) for more information.
+- If the Salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
 
 ## Limitations & Troubleshooting
 
@@ -195,6 +217,8 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.17 | 2024-06-25 | [40329](https://github.com/airbytehq/airbyte/pull/40329) | Update dependencies |
+| 2.5.16 | 2024-06-21 | [39927](https://github.com/airbytehq/airbyte/pull/39927) | Update dependencies |
 | 2.5.15 | 2024-06-16 | [39517](https://github.com/airbytehq/airbyte/pull/39517) | Salesforce refactor: add CheckpointMixin for state management |
 | 2.5.14 | 2024-06-06 | [39269](https://github.com/airbytehq/airbyte/pull/39269) | [autopull] Upgrade base image to v1.2.2 |
 | 2.5.13 | 2024-05-23 | [38563](https://github.com/airbytehq/airbyte/pull/38563) | Use HttpClient to perform HTTP requests for bulk, authentication and schema discovery |

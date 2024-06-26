@@ -67,6 +67,8 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| 1.2.5 | 2024-06-25 | [40413](https://github.com/airbytehq/airbyte/pull/40413) | Update dependencies |
+| 1.2.4 | 2024-06-22 | [40091](https://github.com/airbytehq/airbyte/pull/40091) | Update dependencies |
 | 1.2.3 | 2024-06-06 | [39241](https://github.com/airbytehq/airbyte/pull/39241) | [autopull] Upgrade base image to v1.2.2 |
 | 1.2.2 | 2024-05-28 | [38578](https://github.com/airbytehq/airbyte/pull/38578) | Make connector Builder compatible |
 | 1.2.1 | 2024-04-02 | [36775](https://github.com/airbytehq/airbyte/pull/36775) | Migrate to base image, manage dependencies with Poetry, and stop using last_records interpolation variable. |

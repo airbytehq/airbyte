@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9f32dab3-77cb-45a1-9d33-347aa5fbe363
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-activecampaign
   documentationUrl: https://docs.airbyte.com/integrations/sources/activecampaign
   githubIssueLabel: source-activecampaign

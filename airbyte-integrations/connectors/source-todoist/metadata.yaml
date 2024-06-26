@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1a3d38e4-dc6b-4154-b56b-582f9e978ecd
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.7
   dockerRepository: airbyte/source-todoist
   githubIssueLabel: source-todoist
   icon: todoist.svg
