@@ -49,6 +49,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.3.4 | 2024-06-25 | [40336](https://github.com/airbytehq/airbyte/pull/40336) | Update dependencies |
 | 0.3.3 | 2024-06-22 | [40022](https://github.com/airbytehq/airbyte/pull/40022) | Update dependencies |
 | 0.3.2 | 2024-05-21 | [38488](https://github.com/airbytehq/airbyte/pull/38488) | [autopull] base image + poetry + up_to_date |
 | 0.3.1 | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version |
