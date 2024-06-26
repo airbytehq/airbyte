@@ -32,7 +32,11 @@ public class MySQLDestinationStrictEncrypt extends SpecModifyingDestination impl
   public static void main(final String[] args) throws Exception {
     final Destination destination = new MySQLDestinationStrictEncrypt();
     LOGGER.info("starting destination: {}", MySQLDestinationStrictEncrypt.class);
-    new IntegrationRunner(destination).run(args);
+    try {
+      new IntegrationRunner(destination).run(args);
+    } catch (Exception e) {
+      MySQLDestination.handleException(e);
+    }
     LOGGER.info("completed destination: {}", MySQLDestinationStrictEncrypt.class);
   }
 
