@@ -28,6 +28,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from jsonschema.exceptions import ValidationError
+from pydantic import AnyUrl
 
 logger = logging.getLogger("airbyte")
 
@@ -206,7 +207,7 @@ class TestManifestDeclarativeSource:
         source = ManifestDeclarativeSource(source_config=manifest)
         connector_specification = source.spec(logger)
         assert connector_specification is not None
-        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-manifest"
+        assert connector_specification.documentationUrl == AnyUrl("https://airbyte.com/#yaml-from-manifest")
         assert connector_specification.connectionSpecification["title"] == "Test Spec"
         assert connector_specification.connectionSpecification["required"][0] == "api_key"
         assert connector_specification.connectionSpecification["additionalProperties"] is False
@@ -273,7 +274,7 @@ class TestManifestDeclarativeSource:
 
         connector_specification = source.spec(logger)
 
-        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-external"
+        assert connector_specification.documentationUrl == AnyUrl("https://airbyte.com/#yaml-from-external")
         assert connector_specification.connectionSpecification == EXTERNAL_CONNECTION_SPECIFICATION
 
     def test_source_is_not_created_if_toplevel_fields_are_unknown(self):

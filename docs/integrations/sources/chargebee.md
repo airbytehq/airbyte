@@ -103,6 +103,8 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.5.4 | 2024-06-25 | [40332](https://github.com/airbytehq/airbyte/pull/40332) | Update dependencies |
+| 0.5.3 | 2024-06-23 | [40074](https://github.com/airbytehq/airbyte/pull/40074) | Update dependencies |
 | 0.5.2 | 2024-06-06 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.1 | 2024-04-24 | [36633](https://github.com/airbytehq/airbyte/pull/36633) | Schema descriptions and CDK 0.80.0 |
 | 0.5.0 | 2024-03-28 | [36518](https://github.com/airbytehq/airbyte/pull/36518) | Updates CDK to ^0, updates IncrementalSingleSliceCursor |

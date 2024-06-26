@@ -9,6 +9,8 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.7 | 2024-06-25 | [40398](https://github.com/airbytehq/airbyte/pull/40398) | Update dependencies |
+| 0.3.6 | 2024-06-22 | [40116](https://github.com/airbytehq/airbyte/pull/40116) | Update dependencies |
 | 0.3.5 | 2024-06-06 | [39156](https://github.com/airbytehq/airbyte/pull/39156) | [autopull] Upgrade base image to v1.2.2 |
 | 0.3.4 | 2024-05-21 | [38146](https://github.com/airbytehq/airbyte/pull/38146) | Make connector compatible with the builder |
 | 0.3.3 | 2024-04-19 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |

@@ -6,15 +6,17 @@ import datetime
 import itertools
 import json
 import logging
+import re
 from typing import TYPE_CHECKING
 
 from connectors_insights.hacks import get_ci_on_master_report
 from connectors_insights.models import ConnectorInsights
+from connectors_insights.pylint import get_pylint_output
 from connectors_insights.result_backends import FileToPersist, ResultBackend
 from connectors_insights.sbom import get_json_sbom
 
 if TYPE_CHECKING:
-    from typing import Dict, List
+    from typing import Dict, List, Tuple
 
     import dagger
     from anyio import Semaphore
@@ -65,9 +67,38 @@ def get_sbom_inferred_insights(raw_sbom: str | None, connector: Connector) -> Di
         dependency = {"type": artifact["type"], "version": artifact["version"], "package_name": artifact["name"]}
         if isinstance(sbom_inferred_insights["dependencies"], list) and dependency not in sbom_inferred_insights["dependencies"]:
             sbom_inferred_insights["dependencies"].append(dependency)
-    if connector.cdk_name == "python" or connector.cdk_name == "low-code":
-        sbom_inferred_insights["cdk_version"] = python_artifacts.get("airbyte-cdk", {}).get("version")
+    sbom_inferred_insights["cdk_version"] = python_artifacts.get("airbyte-cdk", {}).get("version")
     return sbom_inferred_insights
+
+
+def get_pylint_inferred_insights(pylint_output: str | None) -> Dict:
+    """Make insights from the pylint output.
+    It currently parses the deprecated classes and modules from the pylint output.
+    """
+    if not pylint_output:
+        return {}
+
+    deprecated_classes_in_use = []
+    deprecated_modules_in_use = []
+    forbidden_method_names_in_use = []
+    deprecated_class_pattern = r"Using deprecated class (\w+) of module ([\w\.]+)"
+    deprecated_module_pattern = r"Deprecated module '([^']+)'"
+    forbidden_method_name_pattern = r'Method name "([^"]+)"'
+    for message in json.loads(pylint_output):
+        if message["symbol"] == "deprecated-class":
+            if match := re.search(deprecated_class_pattern, message["message"]):
+                deprecated_classes_in_use.append(f"{match.group(2)}.{match.group(1)}")
+        if message["symbol"] == "deprecated-module":
+            if match := re.search(deprecated_module_pattern, message["message"]):
+                deprecated_modules_in_use.append(match.group(1))
+        if message["symbol"] == "forbidden-method-name":
+            if match := re.search(forbidden_method_name_pattern, message["message"]):
+                forbidden_method_names_in_use.append(match.group(1))
+    return {
+        "deprecated_classes_in_use": deprecated_classes_in_use,
+        "deprecated_modules_in_use": deprecated_modules_in_use,
+        "forbidden_method_names_in_use": forbidden_method_names_in_use,
+    }
 
 
 def should_skip_generation(
@@ -110,7 +141,7 @@ async def fetch_sbom(dagger_client: dagger.Client, connector: Connector) -> str 
     return None
 
 
-def generate_insights(connector: Connector, sbom: str | None) -> ConnectorInsights:
+def generate_insights(connector: Connector, sbom: str | None, pylint_output: str | None) -> ConnectorInsights:
     """Generate insights for the connector.
 
     Args:
@@ -124,6 +155,7 @@ def generate_insights(connector: Connector, sbom: str | None) -> ConnectorInsigh
     return ConnectorInsights(
         **{
             **get_metadata_inferred_insights(connector),
+            **get_pylint_inferred_insights(pylint_output),
             **get_sbom_inferred_insights(sbom, connector),
             "ci_on_master_report": ci_on_master_report,
             "ci_on_master_passes": ci_on_master_report.get("success") if ci_on_master_report else None,
@@ -171,7 +203,7 @@ async def generate_insights_for_connector(
     semaphore: Semaphore,
     rewrite: bool = False,
     result_backends: List[ResultBackend] | None = None,
-) -> ConnectorInsights | None:
+) -> Tuple[bool, Connector]:
     """Aggregate insights for a connector and write them to the result backends.
 
     Args:
@@ -181,7 +213,7 @@ async def generate_insights_for_connector(
         rewrite (bool): whether to rewrite the insights if they already exist.
         result_backend (List[ResultBackend] | None): the result backends to write the insights to.
     Returns:
-        ConnectorInsights: the insights for the connector.
+        Tuple[bool, Connector]: a tuple of whether the insights were generated and the connector.
     """
     logger = logging.getLogger(__name__)
     insights_file = FileToPersist("insights.json")
@@ -191,16 +223,21 @@ async def generate_insights_for_connector(
     async with semaphore:
         if should_skip_generation(result_backends, connector, files_to_persist, rewrite):
             logger.info(f"Skipping insights generation for {connector.technical_name} because it is already generated.")
-            return None
+            return True, connector
 
         logger.info(f"Generating insights for {connector.technical_name}")
         result_backends = result_backends or []
-        raw_sbom = await fetch_sbom(dagger_client, connector)
-        if raw_sbom:
-            sbom_file.set_file_content(raw_sbom)
+        try:
+            pylint_output = await get_pylint_output(dagger_client, connector)
+            raw_sbom = await fetch_sbom(dagger_client, connector)
+            if raw_sbom:
+                sbom_file.set_file_content(raw_sbom)
 
-        insights = generate_insights(connector, raw_sbom)
-        insights_file.set_file_content(insights.json())
-        persist_files(connector, files_to_persist, result_backends, rewrite, logger)
-        logger.info(f"Finished generating insights for {connector.technical_name}")
-        return insights
+            insights = generate_insights(connector, raw_sbom, pylint_output)
+            insights_file.set_file_content(insights.json())
+            persist_files(connector, files_to_persist, result_backends, rewrite, logger)
+            logger.info(f"Finished generating insights for {connector.technical_name}")
+            return True, connector
+        except Exception as e:
+            logger.error(f"Failed to generate insights for {connector.technical_name}: {e}")
+            return False, connector

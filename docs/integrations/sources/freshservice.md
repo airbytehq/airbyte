@@ -57,6 +57,8 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 1.3.9 | 2024-06-25 | [40381](https://github.com/airbytehq/airbyte/pull/40381) | Update dependencies |
+| 1.3.8 | 2024-06-22 | [40177](https://github.com/airbytehq/airbyte/pull/40177) | Update dependencies |
 | 1.3.7 | 2024-06-06 | [39173](https://github.com/airbytehq/airbyte/pull/39173) | [autopull] Upgrade base image to v1.2.2 |
 | 1.3.6 | 2024-05-15 | [38195](https://github.com/airbytehq/airbyte/pull/38195) | Make connector compatible with builder |
 | 1.3.5 | 2024-04-19 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Updating to 0.80.0 CDK |

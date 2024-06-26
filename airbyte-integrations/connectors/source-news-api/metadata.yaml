@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: df38991e-f35b-4af2-996d-36817f614587
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-news-api
   githubIssueLabel: source-news-api
   icon: newsapi.svg

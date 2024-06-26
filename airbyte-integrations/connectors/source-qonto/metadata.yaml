@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ccd3901d-edf3-4e58-900c-942d6990aa59
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-qonto
   githubIssueLabel: source-qonto
   icon: qonto.svg

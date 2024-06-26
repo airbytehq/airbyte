@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8097ceb9-383f-42f6-9f92-d3fd4bcc7689
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-hubplanner
   githubIssueLabel: source-hubplanner
   icon: hubplanner.svg
