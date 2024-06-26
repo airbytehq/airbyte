@@ -81,11 +81,12 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
   }
 
   private void adjustChunkSizeLimitForMySQLVariants() {
-    // For PSDB, we need to limit the chunk size to 100k rows to avoid the query being killed by the server.
+    // For PSDB, we need to limit the chunk size to 100k rows to avoid the query being killed by the
+    // server.
     // Reference:
     // https://planetscale.com/docs/reference/planetscale-system-limits
     if (config.get(JdbcUtils.HOST_KEY).asText().toLowerCase().contains("psdb.cloud"))
-        MAX_CHUNK_SIZE = 100_000;
+      MAX_CHUNK_SIZE = 100_000;
   }
 
   private static String getCatalog(final SqlDatabase database) {
