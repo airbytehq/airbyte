@@ -61,6 +61,7 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.5 | 2024-06-25 | [40338](https://github.com/airbytehq/airbyte/pull/40338) | Update dependencies |
 | 0.1.4 | 2024-06-21 | [39939](https://github.com/airbytehq/airbyte/pull/39939) | Update dependencies |
 | 0.1.3 | 2024-06-04 | [38938](https://github.com/airbytehq/airbyte/pull/38938) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.2 | 2024-05-21 | [38512](https://github.com/airbytehq/airbyte/pull/38512) | [autopull] base image + poetry + up_to_date |
