@@ -41,7 +41,7 @@ If you are interested in learning more about the Webflow API and implementation 
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
-| 0.1.8 | 2024-06-26 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated auth package |
+| 0.1.8 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
 | 0.1.7 | 2024-06-25 | [40259](https://github.com/airbytehq/airbyte/pull/40259) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40009](https://github.com/airbytehq/airbyte/pull/40009) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39151](https://github.com/airbytehq/airbyte/pull/39151) | [autopull] Upgrade base image to v1.2.2 |
