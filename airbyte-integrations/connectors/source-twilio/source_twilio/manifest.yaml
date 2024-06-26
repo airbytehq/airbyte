@@ -91,11 +91,10 @@ spec:
   type: Spec
   connection_specification:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     required:
       - account_sid
-      - base_api_url
-      - studio_base_api_url
+      - auth_token
       - start_date
     properties:
       username:
