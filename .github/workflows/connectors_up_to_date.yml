@@ -5,8 +5,8 @@ concurrency:
 
 on:
   schedule:
-    # Runs everyday at 12:00 UTC
-    - cron: "0 12 * * *"
+    # Runs everyday Saturday at 12:00 UTC
+    - cron: "0 12 * * 6"
   workflow_dispatch:
     inputs:
       connectors-options:
