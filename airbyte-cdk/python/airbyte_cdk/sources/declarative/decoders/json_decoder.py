@@ -45,9 +45,6 @@ class IterableDecoder(Decoder):
         return True
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
-        # TODO: how to handle simple string in extractor;
-        #  see list_users in iterable:: response.body == b'user1@example.com\nuser2@example.com'
-        #  possible option: we can wrap strings directly into records => {"record": {line.decode()}}
         for line in response.iter_lines():
             self.last_decoded = {"record": line.decode()}
             yield self.last_decoded
