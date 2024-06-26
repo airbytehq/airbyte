@@ -18,7 +18,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /listings
           http_method: GET
           request_parameters:
@@ -47,7 +47,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/listings'
+          $ref: "#/schemas/listings"
     buyers:
       type: DeclarativeStream
       name: buyers
@@ -56,7 +56,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /buyers
           http_method: GET
           request_parameters:
@@ -85,7 +85,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/buyers'
+          $ref: "#/schemas/buyers"
     contracts:
       type: DeclarativeStream
       name: contracts
@@ -94,7 +94,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contracts
           http_method: GET
           request_parameters:
@@ -123,7 +123,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contracts'
+          $ref: "#/schemas/contracts"
     opportunities:
       type: DeclarativeStream
       name: opportunities
@@ -132,7 +132,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /opportunities
           http_method: GET
           request_parameters:
@@ -161,7 +161,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/opportunities'
+          $ref: "#/schemas/opportunities"
     private_offers:
       type: DeclarativeStream
       name: private_offers
@@ -170,7 +170,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /private_offers
           http_method: GET
           request_parameters:
@@ -199,14 +199,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/private_offers'
+          $ref: "#/schemas/private_offers"
     analytics_aws_marketplace_disbursements:
       type: DeclarativeStream
       name: analytics_aws_marketplace_disbursements
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/aws_marketplace_disbursements
           http_method: GET
         record_selector:
@@ -233,14 +233,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_aws_marketplace_disbursements'
+          $ref: "#/schemas/analytics_aws_marketplace_disbursements"
     analytics_aws_marketplace_revenue:
       type: DeclarativeStream
       name: analytics_aws_marketplace_revenue
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/aws_marketplace_revenue
           http_method: GET
         record_selector:
@@ -267,14 +267,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_aws_marketplace_revenue'
+          $ref: "#/schemas/analytics_aws_marketplace_revenue"
     analytics_aws_cosell_opportunities:
       type: DeclarativeStream
       name: analytics_aws_cosell_opportunities
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/aws_cosell_opportunities
           http_method: GET
         record_selector:
@@ -301,14 +301,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_aws_cosell_opportunities'
+          $ref: "#/schemas/analytics_aws_cosell_opportunities"
     analytics_azure_marketplace_revenue:
       type: DeclarativeStream
       name: analytics_azure_marketplace_revenue
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/azure_marketplace_revenue
           http_method: GET
         record_selector:
@@ -335,14 +335,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_azure_marketplace_revenue'
+          $ref: "#/schemas/analytics_azure_marketplace_revenue"
     analytics_azure_marketplace_customers:
       type: DeclarativeStream
       name: analytics_azure_marketplace_customers
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/azure_marketplace_customers
           http_method: GET
         record_selector:
@@ -369,14 +369,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_azure_marketplace_customers'
+          $ref: "#/schemas/analytics_azure_marketplace_customers"
     analytics_azure_marketplace_orders:
       type: DeclarativeStream
       name: analytics_azure_marketplace_orders
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/azure_marketplace_orders
           http_method: GET
         record_selector:
@@ -403,14 +403,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_azure_marketplace_orders'
+          $ref: "#/schemas/analytics_azure_marketplace_orders"
     analytics_azure_marketplace_metered_usage:
       type: DeclarativeStream
       name: analytics_azure_marketplace_metered_usage
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/azure_marketplace_metered_usage
           http_method: GET
         record_selector:
@@ -437,14 +437,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_azure_marketplace_metered_usage'
+          $ref: "#/schemas/analytics_azure_marketplace_metered_usage"
     analytics_azure_cosell_opportunities:
       type: DeclarativeStream
       name: analytics_azure_cosell_opportunities
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/azure_cosell_opportunities
           http_method: GET
         record_selector:
@@ -471,14 +471,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_azure_cosell_opportunities'
+          $ref: "#/schemas/analytics_azure_cosell_opportunities"
     analytics_gcp_marketplace_disbursements:
       type: DeclarativeStream
       name: analytics_gcp_marketplace_disbursements
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/gcp_marketplace_disbursements
           http_method: GET
         record_selector:
@@ -505,14 +505,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_gcp_marketplace_disbursements'
+          $ref: "#/schemas/analytics_gcp_marketplace_disbursements"
     analytics_gcp_marketplace_disbursements_summary:
       type: DeclarativeStream
       name: analytics_gcp_marketplace_disbursements_summary
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/gcp_marketplace_disbursements_summary
           http_method: GET
         record_selector:
@@ -539,14 +539,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_gcp_marketplace_disbursements_summary'
+          $ref: "#/schemas/analytics_gcp_marketplace_disbursements_summary"
     analytics_gcp_marketplace_charges_and_usage:
       type: DeclarativeStream
       name: analytics_gcp_marketplace_charges_and_usage
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/gcp_marketplace_charges_and_usage
           http_method: GET
         record_selector:
@@ -573,14 +573,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_gcp_marketplace_charges_and_usage'
+          $ref: "#/schemas/analytics_gcp_marketplace_charges_and_usage"
     analytics_gcp_marketplace_daily_insights:
       type: DeclarativeStream
       name: analytics_gcp_marketplace_daily_insights
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/gcp_marketplace_daily_insights
           http_method: GET
         record_selector:
@@ -607,14 +607,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_gcp_marketplace_daily_insights'
+          $ref: "#/schemas/analytics_gcp_marketplace_daily_insights"
     analytics_gcp_marketplace_incremental_daily_insights:
       type: DeclarativeStream
       name: analytics_gcp_marketplace_incremental_daily_insights
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/gcp_marketplace_incremental_daily_insights
           http_method: GET
         record_selector:
@@ -641,14 +641,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_gcp_marketplace_incremental_daily_insights'
+          $ref: "#/schemas/analytics_gcp_marketplace_incremental_daily_insights"
     analytics_gcp_marketplace_monthly_insights:
       type: DeclarativeStream
       name: analytics_gcp_marketplace_monthly_insights
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/gcp_marketplace_monthly_insights
           http_method: GET
         record_selector:
@@ -675,14 +675,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_gcp_marketplace_monthly_insights'
+          $ref: "#/schemas/analytics_gcp_marketplace_monthly_insights"
     analytics_gcp_marketplace_incremental_monthly_insights:
       type: DeclarativeStream
       name: analytics_gcp_marketplace_incremental_monthly_insights
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /analytics/datasets/gcp_marketplace_incremental_monthly_insights
           http_method: GET
         record_selector:
@@ -709,7 +709,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/analytics_gcp_marketplace_incremental_monthly_insights'
+          $ref: "#/schemas/analytics_gcp_marketplace_incremental_monthly_insights"
   base_requester:
     type: HttpRequester
     url_base: https://api.clazar.io
@@ -722,25 +722,25 @@ definitions:
       token_refresh_endpoint: https://api.clazar.io/authenticate/
 
 streams:
-  - $ref: '#/definitions/streams/listings'
-  - $ref: '#/definitions/streams/buyers'
-  - $ref: '#/definitions/streams/contracts'
-  - $ref: '#/definitions/streams/opportunities'
-  - $ref: '#/definitions/streams/private_offers'
-  - $ref: '#/definitions/streams/analytics_aws_marketplace_disbursements'
-  - $ref: '#/definitions/streams/analytics_aws_marketplace_revenue'
-  - $ref: '#/definitions/streams/analytics_aws_cosell_opportunities'
-  - $ref: '#/definitions/streams/analytics_azure_marketplace_revenue'
-  - $ref: '#/definitions/streams/analytics_azure_marketplace_customers'
-  - $ref: '#/definitions/streams/analytics_azure_marketplace_orders'
-  - $ref: '#/definitions/streams/analytics_azure_marketplace_metered_usage'
-  - $ref: '#/definitions/streams/analytics_azure_cosell_opportunities'
-  - $ref: '#/definitions/streams/analytics_gcp_marketplace_disbursements'
-  - $ref: '#/definitions/streams/analytics_gcp_marketplace_disbursements_summary'
-  - $ref: '#/definitions/streams/analytics_gcp_marketplace_charges_and_usage'
-  - $ref: '#/definitions/streams/analytics_gcp_marketplace_daily_insights'
-  - $ref: '#/definitions/streams/analytics_gcp_marketplace_incremental_daily_insights'
-  - $ref: '#/definitions/streams/analytics_gcp_marketplace_monthly_insights'
+  - $ref: "#/definitions/streams/listings"
+  - $ref: "#/definitions/streams/buyers"
+  - $ref: "#/definitions/streams/contracts"
+  - $ref: "#/definitions/streams/opportunities"
+  - $ref: "#/definitions/streams/private_offers"
+  - $ref: "#/definitions/streams/analytics_aws_marketplace_disbursements"
+  - $ref: "#/definitions/streams/analytics_aws_marketplace_revenue"
+  - $ref: "#/definitions/streams/analytics_aws_cosell_opportunities"
+  - $ref: "#/definitions/streams/analytics_azure_marketplace_revenue"
+  - $ref: "#/definitions/streams/analytics_azure_marketplace_customers"
+  - $ref: "#/definitions/streams/analytics_azure_marketplace_orders"
+  - $ref: "#/definitions/streams/analytics_azure_marketplace_metered_usage"
+  - $ref: "#/definitions/streams/analytics_azure_cosell_opportunities"
+  - $ref: "#/definitions/streams/analytics_gcp_marketplace_disbursements"
+  - $ref: "#/definitions/streams/analytics_gcp_marketplace_disbursements_summary"
+  - $ref: "#/definitions/streams/analytics_gcp_marketplace_charges_and_usage"
+  - $ref: "#/definitions/streams/analytics_gcp_marketplace_daily_insights"
+  - $ref: "#/definitions/streams/analytics_gcp_marketplace_incremental_daily_insights"
+  - $ref: "#/definitions/streams/analytics_gcp_marketplace_monthly_insights"
   - $ref: >-
       #/definitions/streams/analytics_gcp_marketplace_incremental_monthly_insights
 
@@ -797,45 +797,45 @@ schemas:
       metadata:
         type:
           - object
-          - 'null'
+          - "null"
       cloud:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_id:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_url:
         type:
           - string
-          - 'null'
+          - "null"
       eula_type:
         type:
           - string
-          - 'null'
+          - "null"
       eula_url:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: string
       long_description:
         type:
           - string
-          - 'null'
+          - "null"
       short_description:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
       title:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
   buyers:
@@ -846,57 +846,57 @@ schemas:
       metadata:
         type:
           - object
-          - 'null'
+          - "null"
       cloud:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_identifiers:
         type:
           - object
-          - 'null'
+          - "null"
       custom_properties:
         type:
           - object
-          - 'null'
+          - "null"
       domain:
         type:
           - string
-          - 'null'
+          - "null"
       external_object_associations:
         type:
           - object
-          - 'null'
+          - "null"
       id:
         type: string
       latest_contract_id:
         type:
           - string
-          - 'null'
+          - "null"
       listing_id:
         type:
           - string
-          - 'null'
+          - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       registration_details:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
   contracts:
@@ -907,69 +907,69 @@ schemas:
       metadata:
         type:
           - object
-          - 'null'
+          - "null"
       accepted_at:
         type:
           - string
-          - 'null'
+          - "null"
       auto_renew:
         type:
           - boolean
-          - 'null'
+          - "null"
       buyer_id:
         type:
           - string
-          - 'null'
+          - "null"
       cloud:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_id:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_identifiers:
         type:
           - object
-          - 'null'
+          - "null"
       cloud_url:
         type:
           - string
-          - 'null'
+          - "null"
       custom_properties:
         type:
           - object
-          - 'null'
+          - "null"
       duration:
         type:
           - string
-          - 'null'
+          - "null"
       end_at:
         type:
           - string
-          - 'null'
+          - "null"
       external_object_associations:
         type:
           - object
-          - 'null'
+          - "null"
       id:
         type: string
       latest_offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       listing_id:
         type:
           - string
-          - 'null'
+          - "null"
       start_at:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
   opportunities:
@@ -980,61 +980,61 @@ schemas:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       metadata:
         type:
           - object
-          - 'null'
+          - "null"
       accept_by:
         type:
           - string
-          - 'null'
+          - "null"
       cloud:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_id:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_url:
         type:
           - string
-          - 'null'
+          - "null"
       customer_company:
         type:
           - string
-          - 'null'
+          - "null"
       customer_website:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: string
       last_modified_at:
         type:
           - string
-          - 'null'
+          - "null"
       published_at:
         type:
           - string
-          - 'null'
+          - "null"
       stage:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
       target_close_date:
         type:
           - string
-          - 'null'
+          - "null"
       title:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
   private_offers:
@@ -1045,61 +1045,61 @@ schemas:
       metadata:
         type:
           - object
-          - 'null'
+          - "null"
       accepted_at:
         type:
           - string
-          - 'null'
+          - "null"
       archived:
         type:
           - string
-          - 'null'
+          - "null"
       cloud:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_id:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_url:
         type:
           - string
-          - 'null'
+          - "null"
       duration:
         type:
           - string
-          - 'null'
+          - "null"
       eula_type:
         type:
           - string
-          - 'null'
+          - "null"
       expiration_at:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type: string
       listing_id:
         type:
           - string
-          - 'null'
+          - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       offer_type:
         type:
           - string
-          - 'null'
+          - "null"
       published_at:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
     required:
       - id
   analytics_aws_marketplace_disbursements:
@@ -1110,271 +1110,271 @@ schemas:
       agreement_acceptance_date:
         type:
           - string
-          - 'null'
+          - "null"
       agreement_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       agreement_id:
         type:
           - string
-          - 'null'
+          - "null"
       agreement_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       aws_seller_of_record:
         type:
           - string
-          - 'null'
+          - "null"
       aws_tax_share_listing_fee:
         type:
           - number
-          - 'null'
+          - "null"
       aws_tax_share_refund_listing_fee:
         type:
           - number
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       customer_reference_id:
         type:
           - string
-          - 'null'
+          - "null"
       disburse_bank_trace_id:
         type:
           - string
-          - 'null'
+          - "null"
       disbursed_net_revenue:
         type:
           - number
-          - 'null'
+          - "null"
       disbursement_date:
         type:
           - string
-          - 'null'
+          - "null"
       disbursement_period:
         type:
           - string
-          - 'null'
+          - "null"
       disbursement_status:
         type:
           - string
-          - 'null'
+          - "null"
       disbursement_time_in_days:
         type:
           - number
-          - 'null'
+          - "null"
       gross_refund:
         type:
           - number
-          - 'null'
+          - "null"
       gross_revenue:
         type:
           - number
-          - 'null'
+          - "null"
       hubspot_object_id:
         type:
           - string
-          - 'null'
+          - "null"
       hubspot_object_url:
         type:
           - string
-          - 'null'
+          - "null"
       invoice_date:
         type:
           - string
-          - 'null'
+          - "null"
       invoice_id:
         type:
           - string
-          - 'null'
+          - "null"
       isv_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       isv_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       listing_fee:
         type:
           - number
-          - 'null'
+          - "null"
       listing_fee_invoice_id:
         type:
           - string
-          - 'null'
+          - "null"
       listing_fee_percentage:
         type:
           - number
-          - 'null'
+          - "null"
       listing_fee_refund:
         type:
           - number
-          - 'null'
+          - "null"
       offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       offer_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       payer_address_id:
         type:
           - string
-          - 'null'
+          - "null"
       payer_aws_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       payer_city:
         type:
           - string
-          - 'null'
+          - "null"
       payer_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       payer_country:
         type:
           - string
-          - 'null'
+          - "null"
       payer_email_domain:
         type:
           - string
-          - 'null'
+          - "null"
       payer_postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       payer_state_or_region:
         type:
           - string
-          - 'null'
+          - "null"
       payment_due_date:
         type:
           - string
-          - 'null'
+          - "null"
       payment_terms:
         type:
           - string
-          - 'null'
+          - "null"
       product_code:
         type:
           - string
-          - 'null'
+          - "null"
       product_id:
         type:
           - string
-          - 'null'
+          - "null"
       product_title:
         type:
           - string
-          - 'null'
+          - "null"
       resale_authorization_description:
         type:
           - string
-          - 'null'
+          - "null"
       resale_authorization_id:
         type:
           - string
-          - 'null'
+          - "null"
       resale_authorization_name:
         type:
           - string
-          - 'null'
+          - "null"
       reseller_aws_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       reseller_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       seller_net_revenue:
         type:
           - number
-          - 'null'
+          - "null"
       seller_tax_share:
         type:
           - number
-          - 'null'
+          - "null"
       seller_tax_share_refund:
         type:
           - number
-          - 'null'
+          - "null"
       subscriber_address_id:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_aws_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_city:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_country:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_email_domain:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_state_or_region:
         type:
           - string
-          - 'null'
+          - "null"
       transaction_reference_id:
         type:
           - string
-          - 'null'
+          - "null"
       undisbursed_net_revenue:
         type:
           - number
-          - 'null'
+          - "null"
       usage_period_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       usage_period_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       wholesale_cost:
         type:
           - number
-          - 'null'
+          - "null"
       wholesale_cost_refund:
         type:
           - number
-          - 'null'
+          - "null"
   analytics_aws_marketplace_revenue:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1383,263 +1383,263 @@ schemas:
       agreement_acceptance_date:
         type:
           - string
-          - 'null'
+          - "null"
       agreement_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       agreement_id:
         type:
           - string
-          - 'null'
+          - "null"
       agreement_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       aws_seller_of_record:
         type:
           - string
-          - 'null'
+          - "null"
       aws_tax_share:
         type:
           - number
-          - 'null'
+          - "null"
       aws_tax_share_listing_fee:
         type:
           - number
-          - 'null'
+          - "null"
       aws_tax_share_refund:
         type:
           - number
-          - 'null'
+          - "null"
       aws_tax_share_refund_listing_fee:
         type:
           - number
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       customer_reference_id:
         type:
           - string
-          - 'null'
+          - "null"
       disburse_bank_trace_id:
         type:
           - string
-          - 'null'
+          - "null"
       disbursement_date:
         type:
           - string
-          - 'null'
+          - "null"
       disbursement_status:
         type:
           - string
-          - 'null'
+          - "null"
       gross_refund:
         type:
           - number
-          - 'null'
+          - "null"
       gross_revenue:
         type:
           - number
-          - 'null'
+          - "null"
       hubspot_object_id:
         type:
           - string
-          - 'null'
+          - "null"
       hubspot_object_url:
         type:
           - string
-          - 'null'
+          - "null"
       invoice_date:
         type:
           - string
-          - 'null'
+          - "null"
       invoice_id:
         type:
           - string
-          - 'null'
+          - "null"
       isv_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       isv_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       listing_fee:
         type:
           - number
-          - 'null'
+          - "null"
       listing_fee_invoice_id:
         type:
           - string
-          - 'null'
+          - "null"
       listing_fee_percentage:
         type:
           - number
-          - 'null'
+          - "null"
       listing_fee_refund:
         type:
           - number
-          - 'null'
+          - "null"
       offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       offer_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       payer_address_id:
         type:
           - string
-          - 'null'
+          - "null"
       payer_aws_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       payer_city:
         type:
           - string
-          - 'null'
+          - "null"
       payer_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       payer_country:
         type:
           - string
-          - 'null'
+          - "null"
       payer_email_domain:
         type:
           - string
-          - 'null'
+          - "null"
       payer_postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       payer_state_or_region:
         type:
           - string
-          - 'null'
+          - "null"
       payment_due_date:
         type:
           - string
-          - 'null'
+          - "null"
       payment_terms:
         type:
           - string
-          - 'null'
+          - "null"
       product_code:
         type:
           - string
-          - 'null'
+          - "null"
       product_id:
         type:
           - string
-          - 'null'
+          - "null"
       product_title:
         type:
           - string
-          - 'null'
+          - "null"
       resale_authorization_description:
         type:
           - string
-          - 'null'
+          - "null"
       resale_authorization_id:
         type:
           - string
-          - 'null'
+          - "null"
       resale_authorization_name:
         type:
           - string
-          - 'null'
+          - "null"
       reseller_aws_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       reseller_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       seller_net_revenue:
         type:
           - number
-          - 'null'
+          - "null"
       seller_tax_share:
         type:
           - number
-          - 'null'
+          - "null"
       seller_tax_share_refund:
         type:
           - number
-          - 'null'
+          - "null"
       subscriber_address_id:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_aws_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_city:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_country:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_email_domain:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       subscriber_state_or_region:
         type:
           - string
-          - 'null'
+          - "null"
       transaction_reference_id:
         type:
           - string
-          - 'null'
+          - "null"
       usage_period_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       usage_period_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       wholesale_cost:
         type:
           - number
-          - 'null'
+          - "null"
       wholesale_cost_refund:
         type:
           - number
-          - 'null'
+          - "null"
   analytics_aws_cosell_opportunities:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1648,139 +1648,139 @@ schemas:
       age:
         type:
           - number
-          - 'null'
+          - "null"
       aws_marketplace_engagement_score:
         type:
           - string
-          - 'null'
+          - "null"
       aws_sales_rep_name:
         type:
           - string
-          - 'null'
+          - "null"
       aws_stage:
         type:
           - string
-          - 'null'
+          - "null"
       business_unit:
         type:
           - string
-          - 'null'
+          - "null"
       closed_lost_reason:
         type:
           - string
-          - 'null'
+          - "null"
       country:
         type:
           - string
-          - 'null'
+          - "null"
       created_date:
         type:
           - string
-          - 'null'
+          - "null"
       customer_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       estimated_aws_mrr:
         type:
           - number
-          - 'null'
+          - "null"
       geo:
         type:
           - string
-          - 'null'
+          - "null"
       industry:
         type:
           - string
-          - 'null'
+          - "null"
       is_greenfield:
         type:
           - boolean
-          - 'null'
+          - "null"
       is_marketing_development_funded:
         type:
           - boolean
-          - 'null'
+          - "null"
       is_net_new_business_for_company:
         type:
           - boolean
-          - 'null'
+          - "null"
       is_opp_from_marketing_activity:
         type:
           - boolean
-          - 'null'
+          - "null"
       is_this_for_marketplace:
         type:
           - boolean
-          - 'null'
+          - "null"
       last_activity_date:
         type:
           - string
-          - 'null'
+          - "null"
       next_step:
         type:
           - string
-          - 'null'
+          - "null"
       opportunity_id:
         type:
           - string
-          - 'null'
+          - "null"
       opportunity_ownership:
         type:
           - string
-          - 'null'
+          - "null"
       opportunity_type:
         type:
           - string
-          - 'null'
+          - "null"
       partner_primary_need_from_aws:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       primary_campaign_source:
         type:
           - string
-          - 'null'
+          - "null"
       region:
         type:
           - string
-          - 'null'
+          - "null"
       segment:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       stage:
         type:
           - string
-          - 'null'
+          - "null"
       state:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
       target_close_date:
         type:
           - string
-          - 'null'
+          - "null"
       use_case:
         type:
           - string
-          - 'null'
+          - "null"
   analytics_azure_marketplace_revenue:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1789,267 +1789,267 @@ schemas:
       adjustment_type:
         type:
           - string
-          - 'null'
+          - "null"
       asset_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_model:
         type:
           - string
-          - 'null'
+          - "null"
       customer_city:
         type:
           - string
-          - 'null'
+          - "null"
       customer_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       customer_country:
         type:
           - string
-          - 'null'
+          - "null"
       customer_email:
         type:
           - string
-          - 'null'
+          - "null"
       customer_id:
         type:
           - string
-          - 'null'
+          - "null"
       customer_name:
         type:
           - string
-          - 'null'
+          - "null"
       customer_postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       customer_state:
         type:
           - string
-          - 'null'
+          - "null"
       dataset_month:
         type:
           - string
-          - 'null'
+          - "null"
       days_uncollected:
         type:
           - string
-          - 'null'
+          - "null"
       discounted_price_usd:
         type:
           - number
-          - 'null'
+          - "null"
       earning_amount_cc:
         type:
           - number
-          - 'null'
+          - "null"
       earning_amount_pc:
         type:
           - number
-          - 'null'
+          - "null"
       earning_amount_usd:
         type:
           - number
-          - 'null'
+          - "null"
       earning_currency_code:
         type:
           - string
-          - 'null'
+          - "null"
       earning_exchange_rate_pc:
         type:
           - number
-          - 'null'
+          - "null"
       earning_id:
         type:
           - string
-          - 'null'
+          - "null"
       estimated_payout_month:
         type:
           - string
-          - 'null'
+          - "null"
       estimated_revenue_pc:
         type:
           - number
-          - 'null'
+          - "null"
       estimated_revenue_usd:
         type:
           - number
-          - 'null'
+          - "null"
       exchange_rate_date:
         type:
           - string
-          - 'null'
+          - "null"
       exchange_rate_pc:
         type:
           - number
-          - 'null'
+          - "null"
       exchange_rate_usd:
         type:
           - number
-          - 'null'
+          - "null"
       incentive_rate:
         type:
           - number
-          - 'null'
+          - "null"
       invoice_date:
         type:
           - string
-          - 'null'
+          - "null"
       invoice_due_date:
         type:
           - string
-          - 'null'
+          - "null"
       invoice_id:
         type:
           - string
-          - 'null'
+          - "null"
       is_invoiced:
         type:
           - number
-          - 'null'
+          - "null"
       is_private_offer:
         type:
           - number
-          - 'null'
+          - "null"
       is_private_plan:
         type:
           - number
-          - 'null'
+          - "null"
       line_item_id:
         type:
           - string
-          - 'null'
+          - "null"
       list_price_usd:
         type:
           - number
-          - 'null'
+          - "null"
       month_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       multi_party:
         type:
           - number
-          - 'null'
+          - "null"
       offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       offer_type:
         type:
           - string
-          - 'null'
+          - "null"
       offer_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       payment_instrument_type:
         type:
           - string
-          - 'null'
+          - "null"
       payment_sent_date:
         type:
           - string
-          - 'null'
+          - "null"
       payout_currency:
         type:
           - string
-          - 'null'
+          - "null"
       payout_status:
         type:
           - string
-          - 'null'
+          - "null"
       plan_id:
         type:
           - string
-          - 'null'
+          - "null"
       plan_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       purchase_record_id:
         type:
           - string
-          - 'null'
+          - "null"
       quantity:
         type:
           - number
-          - 'null'
+          - "null"
       revenue:
         type:
           - number
-          - 'null'
+          - "null"
       sales_channel:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku:
         type:
           - string
-          - 'null'
+          - "null"
       term_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       term_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       transaction_amount_cc:
         type:
           - number
-          - 'null'
+          - "null"
       transaction_amount_pc:
         type:
           - number
-          - 'null'
+          - "null"
       transaction_amount_usd:
         type:
           - number
-          - 'null'
+          - "null"
       transaction_currency:
         type:
           - string
-          - 'null'
+          - "null"
       trial_deployment:
         type:
           - number
-          - 'null'
+          - "null"
       units:
         type:
           - string
-          - 'null'
+          - "null"
   analytics_azure_marketplace_customers:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2058,155 +2058,155 @@ schemas:
       address_line_1:
         type:
           - string
-          - 'null'
+          - "null"
       azure_license_type:
         type:
           - string
-          - 'null'
+          - "null"
       billing_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_id:
         type:
           - string
-          - 'null'
+          - "null"
       commerce_root_customer:
         type:
           - string
-          - 'null'
+          - "null"
       customer_city:
         type:
           - string
-          - 'null'
+          - "null"
       customer_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       customer_country_region:
         type:
           - string
-          - 'null'
+          - "null"
       customer_id:
         type:
           - string
-          - 'null'
+          - "null"
       customer_postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       customer_state:
         type:
           - string
-          - 'null'
+          - "null"
       customer_type:
         type:
           - string
-          - 'null'
+          - "null"
       dataset_month:
         type:
           - string
-          - 'null'
+          - "null"
       date_acquired:
         type:
           - string
-          - 'null'
+          - "null"
       date_lost:
         type:
           - string
-          - 'null'
+          - "null"
       email:
         type:
           - string
-          - 'null'
+          - "null"
       first_name:
         type:
           - string
-          - 'null'
+          - "null"
       is_active:
         type:
           - number
-          - 'null'
+          - "null"
       is_private_plan:
         type:
           - number
-          - 'null'
+          - "null"
       last_modified_at:
         type:
           - string
-          - 'null'
+          - "null"
       last_name:
         type:
           - string
-          - 'null'
+          - "null"
       marketplace_subscription_id:
         type:
           - string
-          - 'null'
+          - "null"
       multi_party:
         type:
           - number
-          - 'null'
+          - "null"
       offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       offer_type:
         type:
           - string
-          - 'null'
+          - "null"
       plan_id:
         type:
           - string
-          - 'null'
+          - "null"
       plan_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       promotional_customers:
         type:
           - number
-          - 'null'
+          - "null"
       provider_email:
         type:
           - string
-          - 'null'
+          - "null"
       provider_name:
         type:
           - string
-          - 'null'
+          - "null"
       purchaser_email:
         type:
           - string
-          - 'null'
+          - "null"
       reference_id:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku:
         type:
           - string
-          - 'null'
+          - "null"
   analytics_azure_marketplace_orders:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2215,207 +2215,207 @@ schemas:
       version:
         type:
           - number
-          - 'null'
+          - "null"
       asset_id:
         type:
           - string
-          - 'null'
+          - "null"
       auto_renew:
         type:
           - boolean
-          - 'null'
+          - "null"
       azure_license_type:
         type:
           - string
-          - 'null'
+          - "null"
       billed_revenue:
         type:
           - number
-          - 'null'
+          - "null"
       billing_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_plan:
         type:
           - string
-          - 'null'
+          - "null"
       billing_term:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_instance_name:
         type:
           - string
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       customer_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       customer_country:
         type:
           - string
-          - 'null'
+          - "null"
       customer_id:
         type:
           - string
-          - 'null'
+          - "null"
       dataset_month:
         type:
           - string
-          - 'null'
+          - "null"
       discount_price_usd:
         type:
           - number
-          - 'null'
+          - "null"
       event_timestamp:
         type:
           - string
-          - 'null'
+          - "null"
       has_trial:
         type:
           - number
-          - 'null'
+          - "null"
       is_new_customer:
         type:
           - number
-          - 'null'
+          - "null"
       is_preview_sku:
         type:
           - number
-          - 'null'
+          - "null"
       is_private_offer:
         type:
           - number
-          - 'null'
+          - "null"
       is_private_plan:
         type:
           - number
-          - 'null'
+          - "null"
       is_trial:
         type:
           - number
-          - 'null'
+          - "null"
       list_price_usd:
         type:
           - string
-          - 'null'
+          - "null"
       marketplace_license_type:
         type:
           - string
-          - 'null'
+          - "null"
       marketplace_subscription_id:
         type:
           - string
-          - 'null'
+          - "null"
       month_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       multi_party:
         type:
           - number
-          - 'null'
+          - "null"
       offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       offer_type:
         type:
           - string
-          - 'null'
+          - "null"
       offer_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       order_action:
         type:
           - string
-          - 'null'
+          - "null"
       order_cancel_date:
         type:
           - string
-          - 'null'
+          - "null"
       order_purchase_date:
         type:
           - string
-          - 'null'
+          - "null"
       order_status:
         type:
           - string
-          - 'null'
+          - "null"
       order_version:
         type:
           - string
-          - 'null'
+          - "null"
       plan_id:
         type:
           - string
-          - 'null'
+          - "null"
       plan_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       purchase_record_id:
         type:
           - string
-          - 'null'
+          - "null"
       purchase_record_line_item_id:
         type:
           - string
-          - 'null'
+          - "null"
       quantity:
         type:
           - number
-          - 'null'
+          - "null"
       quantity_changed:
         type:
           - number
-          - 'null'
+          - "null"
       reference_id:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku:
         type:
           - string
-          - 'null'
+          - "null"
       term_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       term_start_date:
         type:
           - string
-          - 'null'
+          - "null"
   analytics_azure_marketplace_metered_usage:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2424,219 +2424,219 @@ schemas:
       asset_id:
         type:
           - string
-          - 'null'
+          - "null"
       azure_license_type:
         type:
           - string
-          - 'null'
+          - "null"
       billing_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_id:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_instance_name:
         type:
           - string
-          - 'null'
+          - "null"
       core_size:
         type:
           - number
-          - 'null'
+          - "null"
       customer_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       customer_country:
         type:
           - string
-          - 'null'
+          - "null"
       customer_currency_cc:
         type:
           - string
-          - 'null'
+          - "null"
       customer_id:
         type:
           - string
-          - 'null'
+          - "null"
       customer_name:
         type:
           - string
-          - 'null'
+          - "null"
       dataset_month:
         type:
           - string
-          - 'null'
+          - "null"
       deployment_method:
         type:
           - string
-          - 'null'
+          - "null"
       discounted_price_usd:
         type:
           - number
-          - 'null'
+          - "null"
       estimated_extended_charge_cc:
         type:
           - number
-          - 'null'
+          - "null"
       estimated_extended_charge_pc:
         type:
           - number
-          - 'null'
+          - "null"
       estimated_financial_impact_usd:
         type:
           - number
-          - 'null'
+          - "null"
       estimated_price_pc:
         type:
           - number
-          - 'null'
+          - "null"
       is_custom_meter:
         type:
           - number
-          - 'null'
+          - "null"
       is_multisolution:
         type:
           - number
-          - 'null'
+          - "null"
       is_new_customer:
         type:
           - number
-          - 'null'
+          - "null"
       is_preview_sku:
         type:
           - number
-          - 'null'
+          - "null"
       is_private_offer:
         type:
           - number
-          - 'null'
+          - "null"
       is_private_plan:
         type:
           - number
-          - 'null'
+          - "null"
       list_price_usd:
         type:
           - number
-          - 'null'
+          - "null"
       marketplace_license_type:
         type:
           - string
-          - 'null'
+          - "null"
       marketplace_subscription_id:
         type:
           - string
-          - 'null'
+          - "null"
       meter_dimension:
         type:
           - string
-          - 'null'
+          - "null"
       meter_id:
         type:
           - string
-          - 'null'
+          - "null"
       metered_usage:
         type:
           - number
-          - 'null'
+          - "null"
       month_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       multi_party:
         type:
           - number
-          - 'null'
+          - "null"
       normalized_usage:
         type:
           - number
-          - 'null'
+          - "null"
       offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       offer_type:
         type:
           - string
-          - 'null'
+          - "null"
       offer_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       partner_center_detected_anomaly:
         type:
           - number
-          - 'null'
+          - "null"
       payout_currency_pc:
         type:
           - string
-          - 'null'
+          - "null"
       plan_id:
         type:
           - string
-          - 'null'
+          - "null"
       plan_visibility:
         type:
           - string
-          - 'null'
+          - "null"
       price_cc:
         type:
           - number
-          - 'null'
+          - "null"
       private_offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_name:
         type:
           - string
-          - 'null'
+          - "null"
       raw_usage:
         type:
           - number
-          - 'null'
+          - "null"
       reference_id:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku:
         type:
           - string
-          - 'null'
+          - "null"
       skubilling_type:
         type:
           - string
-          - 'null'
+          - "null"
       usage_date:
         type:
           - string
-          - 'null'
+          - "null"
       usage_reference:
         type:
           - string
-          - 'null'
+          - "null"
       usage_unit:
         type:
           - string
-          - 'null'
+          - "null"
       vmsubscription:
         type:
           - number
-          - 'null'
+          - "null"
   analytics_azure_cosell_opportunities:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2645,373 +2645,373 @@ schemas:
       metadata:
         type:
           - object
-          - 'null'
+          - "null"
       accepted_date_time:
         type:
           - string
-          - 'null'
+          - "null"
       address:
         type:
           - string
-          - 'null'
+          - "null"
       assistance_type:
         type:
           - string
-          - 'null'
+          - "null"
       azure_seller_id:
         type:
           - number
-          - 'null'
+          - "null"
       city:
         type:
           - string
-          - 'null'
+          - "null"
       closed_date_time:
         type:
           - string
-          - 'null'
+          - "null"
       closing_date_time:
         type:
           - string
-          - 'null'
+          - "null"
       cloud:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_created_at:
         type:
           - string
-          - 'null'
+          - "null"
       cloud_status:
         type:
           - string
-          - 'null'
+          - "null"
       consent_to_contact:
         type:
           - boolean
-          - 'null'
+          - "null"
       consent_to_share_referral_with_microsoft_sellers:
         type:
           - boolean
-          - 'null'
+          - "null"
       consent_to_to_share_info_with_others:
         type:
           - boolean
-          - 'null'
+          - "null"
       country:
         type:
           - string
-          - 'null'
+          - "null"
       created_at:
         type:
           - string
-          - 'null'
+          - "null"
       created_by_id:
         type:
           - number
-          - 'null'
+          - "null"
       created_date_time:
         type:
           - string
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       customer_company_name:
         type:
           - string
-          - 'null'
+          - "null"
       customer_contacts:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             email:
               type:
                 - string
-                - 'null'
+                - "null"
             first_name:
               type:
                 - string
-                - 'null'
+                - "null"
             last_name:
               type:
                 - string
-                - 'null'
+                - "null"
             phone_number:
               type:
                 - string
-                - 'null'
+                - "null"
       customer_duns_number:
         type:
           - string
-          - 'null'
+          - "null"
       customer_website:
         type:
           - string
-          - 'null'
+          - "null"
       deal_name:
         type:
           - string
-          - 'null'
+          - "null"
       deal_type:
         type:
           - string
-          - 'null'
+          - "null"
       deal_value:
         type:
           - number
-          - 'null'
+          - "null"
       deleted_at:
         type:
           - string
-          - 'null'
+          - "null"
       direction:
         type:
           - string
-          - 'null'
+          - "null"
       domain_info_category:
         type:
           - string
-          - 'null'
+          - "null"
       engagement_id:
         type:
           - string
-          - 'null'
+          - "null"
       expiration_date_time:
         type:
           - string
-          - 'null'
+          - "null"
       external_id:
         type:
           - string
-          - 'null'
+          - "null"
       external_status:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - number
-          - 'null'
+          - "null"
       is_macc_eligible:
         type:
           - boolean
-          - 'null'
+          - "null"
       is_matching_complete:
         type:
           - boolean
-          - 'null'
+          - "null"
       is_spam:
         type:
           - boolean
-          - 'null'
+          - "null"
       microsoft_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       microsoft_sales_reps:
         type:
           - array
-          - 'null'
+          - "null"
       notes:
         type:
           - string
-          - 'null'
+          - "null"
       organization_id:
         type:
           - string
-          - 'null'
+          - "null"
       organization_name:
         type:
           - string
-          - 'null'
+          - "null"
       partner_contacts:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             email:
               type:
                 - string
-                - 'null'
+                - "null"
             first_name:
               type:
                 - string
-                - 'null'
+                - "null"
             last_name:
               type:
                 - string
-                - 'null'
+                - "null"
             phone_number:
               type:
                 - string
-                - 'null'
+                - "null"
       postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       qualification:
         type:
           - string
-          - 'null'
+          - "null"
       referral_id:
         type:
           - string
-          - 'null'
+          - "null"
       referral_source:
         type:
           - string
-          - 'null'
+          - "null"
       row_number:
         type:
           - number
-          - 'null'
+          - "null"
       sales_stage:
         type:
           - string
-          - 'null'
+          - "null"
       seller_created_at:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       shared_referral_metadata:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           assistance_type:
             type:
               - string
-              - 'null'
+              - "null"
           closed_date_time:
             type:
               - string
-              - 'null'
+              - "null"
           created_date_time:
             type:
               - string
-              - 'null'
+              - "null"
           expiration_date_time:
             type:
               - string
-              - 'null'
+              - "null"
           referral_id:
             type:
               - string
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           status_reason:
             type:
               - string
-              - 'null'
+              - "null"
           sub_status:
             type:
               - string
-              - 'null'
+              - "null"
           updated_date_time:
             type:
               - string
-              - 'null'
+              - "null"
       solutions:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             id:
               type:
                 - string
-                - 'null'
+                - "null"
             name:
               type:
                 - string
-                - 'null'
+                - "null"
       state:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
       status_reason:
         type:
           - string
-          - 'null'
+          - "null"
       sub_status:
         type:
           - string
-          - 'null'
+          - "null"
       sync_error:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           error:
             type:
               - string
-              - 'null'
+              - "null"
       tags:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       target:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             type:
               type:
                 - string
-                - 'null'
+                - "null"
             id:
               type:
                 - string
-                - 'null'
+                - "null"
             name:
               type:
                 - string
-                - 'null'
+                - "null"
       updated_at:
         type:
           - string
-          - 'null'
+          - "null"
       updated_date_time:
         type:
           - string
-          - 'null'
+          - "null"
       uuid:
         type:
           - string
-          - 'null'
+          - "null"
   analytics_gcp_marketplace_disbursements:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3020,231 +3020,231 @@ schemas:
       abandoned_amount:
         type:
           - number
-          - 'null'
+          - "null"
       account_id:
         type:
           - string
-          - 'null'
+          - "null"
       aggregated_payout:
         type:
           - number
-          - 'null'
+          - "null"
       billing_frequency:
         type:
           - string
-          - 'null'
+          - "null"
       c_u_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       channel:
         type:
           - string
-          - 'null'
+          - "null"
       country:
         type:
           - string
-          - 'null'
+          - "null"
       cud_credits_used:
         type:
           - number
-          - 'null'
+          - "null"
       cust_charges:
         type:
           - number
-          - 'null'
+          - "null"
       cust_identity:
         type:
           - string
-          - 'null'
+          - "null"
       cust_organization:
         type:
           - string
-          - 'null'
+          - "null"
       disbursement_entity:
         type:
           - string
-          - 'null'
+          - "null"
       discount_offered:
         type:
           - number
-          - 'null'
+          - "null"
       domain:
         type:
           - string
-          - 'null'
+          - "null"
       ds:
         type:
           - string
-          - 'null'
+          - "null"
       entitlement_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       entitlement_id:
         type:
           - string
-          - 'null'
+          - "null"
       entitlement_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       final_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       first_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       insights_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       installment_count:
         type:
           - number
-          - 'null'
+          - "null"
       marketplace_fee_amount:
         type:
           - number
-          - 'null'
+          - "null"
       marketplace_fee_percent:
         type:
           - string
-          - 'null'
+          - "null"
       max_usage_start_time:
         type:
           - string
-          - 'null'
+          - "null"
       min_usage_start_time:
         type:
           - string
-          - 'null'
+          - "null"
       offer_title:
         type:
           - string
-          - 'null'
+          - "null"
       order_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       order_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       organization_id:
         type:
           - string
-          - 'null'
+          - "null"
       partner_testing_credit:
         type:
           - number
-          - 'null'
+          - "null"
       payment_schedule:
         type:
           - string
-          - 'null'
+          - "null"
       postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_acceptance_date:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_creator:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       released_amount:
         type:
           - number
-          - 'null'
+          - "null"
       replaced_private_offer_id:
         type:
           - string
-          - 'null'
+          - "null"
       report_creation_date:
         type:
           - string
-          - 'null'
+          - "null"
       report_timezone:
         type:
           - number
-          - 'null'
+          - "null"
       reseller_discount:
         type:
           - number
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku_description:
         type:
           - string
-          - 'null'
+          - "null"
       sku_id:
         type:
           - string
-          - 'null'
+          - "null"
       solution_id:
         type:
           - string
-          - 'null'
+          - "null"
       solution_name:
         type:
           - string
-          - 'null'
+          - "null"
       state_or_province:
         type:
           - string
-          - 'null'
+          - "null"
       term_total_contract_value:
         type:
           - number
-          - 'null'
+          - "null"
       total_contract_value:
         type:
           - number
-          - 'null'
+          - "null"
       total_deductions:
         type:
           - number
-          - 'null'
+          - "null"
       transaction_type:
         type:
           - string
-          - 'null'
+          - "null"
       trial_credits_used:
         type:
           - number
-          - 'null'
+          - "null"
       usage_quantity:
         type:
           - number
-          - 'null'
+          - "null"
       usage_unit:
         type:
           - string
-          - 'null'
+          - "null"
       wholesale_charges:
         type:
           - number
-          - 'null'
+          - "null"
       withheld_amount:
         type:
           - number
-          - 'null'
+          - "null"
   analytics_gcp_marketplace_disbursements_summary:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3253,43 +3253,43 @@ schemas:
       amount:
         type:
           - number
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       customer_refund:
         type:
           - number
-          - 'null'
+          - "null"
       ds:
         type:
           - string
-          - 'null'
+          - "null"
       entity:
         type:
           - string
-          - 'null'
+          - "null"
       payment_type:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       total:
         type:
           - number
-          - 'null'
+          - "null"
       withholding:
         type:
           - string
-          - 'null'
+          - "null"
   analytics_gcp_marketplace_charges_and_usage:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3298,107 +3298,107 @@ schemas:
       abandoned:
         type:
           - number
-          - 'null'
+          - "null"
       account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_frequency:
         type:
           - string
-          - 'null'
+          - "null"
       charges:
         type:
           - number
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       ds:
         type:
           - string
-          - 'null'
+          - "null"
       due_partner:
         type:
           - number
-          - 'null'
+          - "null"
       google_entity:
         type:
           - string
-          - 'null'
+          - "null"
       insights_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       location:
         type:
           - string
-          - 'null'
+          - "null"
       payment_schedule:
         type:
           - string
-          - 'null'
+          - "null"
       payment_type:
         type:
           - string
-          - 'null'
+          - "null"
       postpay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       prepay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       refund_balance_deducted_this_month:
         type:
           - number
-          - 'null'
+          - "null"
       refund_balance_outstanding:
         type:
           - number
-          - 'null'
+          - "null"
       released:
         type:
           - number
-          - 'null'
+          - "null"
       resource:
         type:
           - string
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku:
         type:
           - string
-          - 'null'
+          - "null"
       trial_use:
         type:
           - number
-          - 'null'
+          - "null"
       units:
         type:
           - string
-          - 'null'
+          - "null"
       usage:
         type:
           - number
-          - 'null'
+          - "null"
       used_by:
         type:
           - string
-          - 'null'
+          - "null"
       withheld:
         type:
           - number
-          - 'null'
+          - "null"
   analytics_gcp_marketplace_daily_insights:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3407,187 +3407,187 @@ schemas:
       abandoned:
         type:
           - number
-          - 'null'
+          - "null"
       account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_frequency:
         type:
           - string
-          - 'null'
+          - "null"
       channel:
         type:
           - string
-          - 'null'
+          - "null"
       charges:
         type:
           - number
-          - 'null'
+          - "null"
       company:
         type:
           - string
-          - 'null'
+          - "null"
       country:
         type:
           - string
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       date:
         type:
           - string
-          - 'null'
+          - "null"
       domain:
         type:
           - string
-          - 'null'
+          - "null"
       ds:
         type:
           - string
-          - 'null'
+          - "null"
       due_vendor:
         type:
           - number
-          - 'null'
+          - "null"
       end_date:
         type:
           - string
-          - 'null'
+          - "null"
       entitlement_id:
         type:
           - string
-          - 'null'
+          - "null"
       external_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       final_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       first_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       installment_count:
         type:
           - number
-          - 'null'
+          - "null"
       offer_title:
         type:
           - string
-          - 'null'
+          - "null"
       order_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       order_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       parent_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       payment_schedule:
         type:
           - string
-          - 'null'
+          - "null"
       payment_type:
         type:
           - string
-          - 'null'
+          - "null"
       postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       postpay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       prepay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       private_offer_acceptance_date:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_total_contract_value:
         type:
           - number
-          - 'null'
+          - "null"
       quote_creator:
         type:
           - string
-          - 'null'
+          - "null"
       quote_id:
         type:
           - string
-          - 'null'
+          - "null"
       released:
         type:
           - number
-          - 'null'
+          - "null"
       reseller_discount:
         type:
           - number
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku_description:
         type:
           - string
-          - 'null'
+          - "null"
       sku_id:
         type:
           - string
-          - 'null'
+          - "null"
       solution_name:
         type:
           - string
-          - 'null'
+          - "null"
       start_date:
         type:
           - string
-          - 'null'
+          - "null"
       state_or_province:
         type:
           - string
-          - 'null'
+          - "null"
       transaction_type:
         type:
           - string
-          - 'null'
+          - "null"
       trial_use:
         type:
           - number
-          - 'null'
+          - "null"
       unit:
         type:
           - string
-          - 'null'
+          - "null"
       usage:
         type:
           - number
-          - 'null'
+          - "null"
       wholesale_charges:
         type:
           - number
-          - 'null'
+          - "null"
       withheld:
         type:
           - number
-          - 'null'
+          - "null"
   analytics_gcp_marketplace_incremental_daily_insights:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3596,191 +3596,191 @@ schemas:
       abandoned:
         type:
           - number
-          - 'null'
+          - "null"
       account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_frequency:
         type:
           - string
-          - 'null'
+          - "null"
       channel:
         type:
           - string
-          - 'null'
+          - "null"
       charges:
         type:
           - number
-          - 'null'
+          - "null"
       company:
         type:
           - string
-          - 'null'
+          - "null"
       country:
         type:
           - string
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       date:
         type:
           - string
-          - 'null'
+          - "null"
       domain:
         type:
           - string
-          - 'null'
+          - "null"
       ds:
         type:
           - string
-          - 'null'
+          - "null"
       due_vendor:
         type:
           - number
-          - 'null'
+          - "null"
       end_date:
         type:
           - string
-          - 'null'
+          - "null"
       entitlement_id:
         type:
           - string
-          - 'null'
+          - "null"
       external_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       final_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       first_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       installment_count:
         type:
           - number
-          - 'null'
+          - "null"
       offer_title:
         type:
           - string
-          - 'null'
+          - "null"
       order_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       order_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       parent_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       payment_schedule:
         type:
           - string
-          - 'null'
+          - "null"
       payment_type:
         type:
           - string
-          - 'null'
+          - "null"
       postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       postpay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       prepay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       private_offer_acceptance_date:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_total_contract_value:
         type:
           - number
-          - 'null'
+          - "null"
       quote_creator:
         type:
           - string
-          - 'null'
+          - "null"
       quote_id:
         type:
           - string
-          - 'null'
+          - "null"
       released:
         type:
           - number
-          - 'null'
+          - "null"
       report_date:
         type:
           - string
-          - 'null'
+          - "null"
       reseller_discount:
         type:
           - number
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku_description:
         type:
           - string
-          - 'null'
+          - "null"
       sku_id:
         type:
           - string
-          - 'null'
+          - "null"
       solution_name:
         type:
           - string
-          - 'null'
+          - "null"
       start_date:
         type:
           - string
-          - 'null'
+          - "null"
       state_or_province:
         type:
           - string
-          - 'null'
+          - "null"
       transaction_type:
         type:
           - string
-          - 'null'
+          - "null"
       trial_use:
         type:
           - number
-          - 'null'
+          - "null"
       unit:
         type:
           - string
-          - 'null'
+          - "null"
       usage:
         type:
           - number
-          - 'null'
+          - "null"
       wholesale_charges:
         type:
           - number
-          - 'null'
+          - "null"
       withheld:
         type:
           - number
-          - 'null'
+          - "null"
   analytics_gcp_marketplace_monthly_insights:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3789,187 +3789,187 @@ schemas:
       abandoned:
         type:
           - number
-          - 'null'
+          - "null"
       account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_frequency:
         type:
           - string
-          - 'null'
+          - "null"
       channel:
         type:
           - string
-          - 'null'
+          - "null"
       charges:
         type:
           - number
-          - 'null'
+          - "null"
       company:
         type:
           - string
-          - 'null'
+          - "null"
       country:
         type:
           - string
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       date:
         type:
           - string
-          - 'null'
+          - "null"
       domain:
         type:
           - string
-          - 'null'
+          - "null"
       ds:
         type:
           - string
-          - 'null'
+          - "null"
       due_vendor:
         type:
           - number
-          - 'null'
+          - "null"
       end_date:
         type:
           - string
-          - 'null'
+          - "null"
       entitlement_id:
         type:
           - string
-          - 'null'
+          - "null"
       external_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       final_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       first_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       installment_count:
         type:
           - number
-          - 'null'
+          - "null"
       offer_title:
         type:
           - string
-          - 'null'
+          - "null"
       order_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       order_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       parent_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       payment_schedule:
         type:
           - string
-          - 'null'
+          - "null"
       payment_type:
         type:
           - string
-          - 'null'
+          - "null"
       postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       postpay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       prepay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       private_offer_acceptance_date:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_total_contract_value:
         type:
           - number
-          - 'null'
+          - "null"
       quote_creator:
         type:
           - string
-          - 'null'
+          - "null"
       quote_id:
         type:
           - string
-          - 'null'
+          - "null"
       released:
         type:
           - number
-          - 'null'
+          - "null"
       reseller_discount:
         type:
           - number
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku_description:
         type:
           - string
-          - 'null'
+          - "null"
       sku_id:
         type:
           - string
-          - 'null'
+          - "null"
       solution_name:
         type:
           - string
-          - 'null'
+          - "null"
       start_date:
         type:
           - string
-          - 'null'
+          - "null"
       state_or_province:
         type:
           - string
-          - 'null'
+          - "null"
       transaction_type:
         type:
           - string
-          - 'null'
+          - "null"
       trial_use:
         type:
           - number
-          - 'null'
+          - "null"
       unit:
         type:
           - string
-          - 'null'
+          - "null"
       usage:
         type:
           - number
-          - 'null'
+          - "null"
       wholesale_charges:
         type:
           - number
-          - 'null'
+          - "null"
       withheld:
         type:
           - number
-          - 'null'
+          - "null"
   analytics_gcp_marketplace_incremental_monthly_insights:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3978,188 +3978,188 @@ schemas:
       abandoned:
         type:
           - number
-          - 'null'
+          - "null"
       account_id:
         type:
           - string
-          - 'null'
+          - "null"
       billing_frequency:
         type:
           - string
-          - 'null'
+          - "null"
       channel:
         type:
           - string
-          - 'null'
+          - "null"
       charges:
         type:
           - number
-          - 'null'
+          - "null"
       company:
         type:
           - string
-          - 'null'
+          - "null"
       country:
         type:
           - string
-          - 'null'
+          - "null"
       currency:
         type:
           - string
-          - 'null'
+          - "null"
       date:
         type:
           - string
-          - 'null'
+          - "null"
       domain:
         type:
           - string
-          - 'null'
+          - "null"
       ds:
         type:
           - string
-          - 'null'
+          - "null"
       due_vendor:
         type:
           - number
-          - 'null'
+          - "null"
       end_date:
         type:
           - string
-          - 'null'
+          - "null"
       entitlement_id:
         type:
           - string
-          - 'null'
+          - "null"
       external_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       final_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       first_installment_date:
         type:
           - string
-          - 'null'
+          - "null"
       installment_count:
         type:
           - number
-          - 'null'
+          - "null"
       offer_title:
         type:
           - string
-          - 'null'
+          - "null"
       order_end_date:
         type:
           - string
-          - 'null'
+          - "null"
       order_start_date:
         type:
           - string
-          - 'null'
+          - "null"
       parent_account_id:
         type:
           - string
-          - 'null'
+          - "null"
       payment_schedule:
         type:
           - string
-          - 'null'
+          - "null"
       payment_type:
         type:
           - string
-          - 'null'
+          - "null"
       postal_code:
         type:
           - string
-          - 'null'
+          - "null"
       postpay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       prepay_credits:
         type:
           - number
-          - 'null'
+          - "null"
       private_offer_acceptance_date:
         type:
           - string
-          - 'null'
+          - "null"
       private_offer_total_contract_value:
         type:
           - number
-          - 'null'
+          - "null"
       quote_creator:
         type:
           - string
-          - 'null'
+          - "null"
       quote_id:
         type:
           - string
-          - 'null'
+          - "null"
       released:
         type:
           - number
-          - 'null'
+          - "null"
       report_date:
         type:
           - string
-          - 'null'
+          - "null"
       reseller_discount:
         type:
           - number
-          - 'null'
+          - "null"
       seller_domain:
         type:
           - string
-          - 'null'
+          - "null"
       seller_id:
         type:
           - string
-          - 'null'
+          - "null"
       sku_description:
         type:
           - string
-          - 'null'
+          - "null"
       sku_id:
         type:
           - string
-          - 'null'
+          - "null"
       solution_name:
         type:
           - string
-          - 'null'
+          - "null"
       start_date:
         type:
           - string
-          - 'null'
+          - "null"
       state_or_province:
         type:
           - string
-          - 'null'
+          - "null"
       transaction_type:
         type:
           - string
-          - 'null'
+          - "null"
       trial_use:
         type:
           - number
-          - 'null'
+          - "null"
       unit:
         type:
           - string
-          - 'null'
+          - "null"
       usage:
         type:
           - number
-          - 'null'
+          - "null"
       wholesale_charges:
         type:
           - number
-          - 'null'
+          - "null"
       withheld:
         type:
           - number
-          - 'null'
+          - "null"
