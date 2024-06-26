@@ -124,6 +124,7 @@ The output SQS message would contain:
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| 0.1.6 | 2024-06-25 | [40461](https://github.com/airbytehq/airbyte/pull/40461) | Update dependencies |
 | 0.1.5 | 2024-06-22 | [40075](https://github.com/airbytehq/airbyte/pull/40075) | Update dependencies |
 | 0.1.4 | 2024-06-04 | [39070](https://github.com/airbytehq/airbyte/pull/39070) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-05-21 | [38493](https://github.com/airbytehq/airbyte/pull/38493) | [autopull] base image + poetry + up_to_date |
