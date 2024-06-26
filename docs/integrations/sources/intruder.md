@@ -35,6 +35,7 @@ Intruder.io APIs are under rate limits for the number of API calls allowed per A
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.1.5 | 2024-06-25 | [40358](https://github.com/airbytehq/airbyte/pull/40358) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [39962](https://github.com/airbytehq/airbyte/pull/39962) | Update dependencies |
 | 0.1.3 | 2024-06-15 | [39112](https://github.com/airbytehq/airbyte/pull/39112) | Make compatible with builder |
 | 0.1.2 | 2024-06-06 | [39222](https://github.com/airbytehq/airbyte/pull/39222) | [autopull] Upgrade base image to v1.2.2 |
