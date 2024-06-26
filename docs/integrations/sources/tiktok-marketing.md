@@ -126,6 +126,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| 3.9.11 | 2024-06-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate off deprecated authenticator |
 | 3.9.10 | 2024-06-25 | [40373](https://github.com/airbytehq/airbyte/pull/40373) | Update dependencies |
 | 3.9.9 | 2024-06-22 | [40133](https://github.com/airbytehq/airbyte/pull/40133) | Update dependencies |
 | 3.9.8 | 2024-06-06 | [39253](https://github.com/airbytehq/airbyte/pull/39253) | [autopull] Upgrade base image to v1.2.2 |
