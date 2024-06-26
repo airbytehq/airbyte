@@ -96,5 +96,5 @@ This is a child stream of the events stream indicating webinars that belong to t
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.1 | 2024-06-26 | [38786](https://github.com/airbytehq/airbyte/pull/38786) | New Source: Goldcast |
+| 0.1.0 | 2024-06-26 | [38786](https://github.com/airbytehq/airbyte/pull/38786) | New Source: Goldcast |
 </details>
