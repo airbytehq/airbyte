@@ -26,8 +26,8 @@ class AirbyteMessageDeserializer(
      * Message.
      *
      * Throws on deserialization errors, obfuscating the error message to avoid data leakage. In
-     * recoverable cases (currently only when the top-level message type is unrecognized), throws
-     * a dedicated exception.
+     * recoverable cases (currently only when the top-level message type is unrecognized), throws a
+     * dedicated exception.
      *
      * PartialAirbyteMessage holds either:
      * * entire serialized message string when message is a valid State Message

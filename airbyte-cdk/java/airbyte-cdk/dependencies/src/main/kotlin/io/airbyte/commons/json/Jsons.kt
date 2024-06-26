@@ -139,6 +139,9 @@ object Jsons {
         }
     }
 
+    // WARNING: This message throws bare exceptions on parse failure which might
+    // leak sensitive data. Use obfuscateDeserializationException() to strip
+    // the sensitive data before logging.
     @JvmStatic
     fun <T : Any> deserializeExactUnchecked(jsonString: String?, klass: Class<T>?): T {
         return OBJECT_MAPPER_EXACT.readValue(jsonString, klass)
