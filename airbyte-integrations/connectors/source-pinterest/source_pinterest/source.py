@@ -63,7 +63,7 @@ class SourcePinterest(YamlDeclarativeSource):
                 f"Current start_date: {start_date} does not meet API report requirements. "
                 f"Resetting start_date to: {latest_date_allowed_by_api}"
             )
-            config["start_date"] = latest_date_allowed_by_api.strftime("%Y-%m-%d")
+            config["start_date"] = latest_date_allowed_by_api
 
         return config
 

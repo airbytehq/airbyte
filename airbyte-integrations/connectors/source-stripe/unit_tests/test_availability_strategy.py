@@ -150,7 +150,7 @@ def test_403_error_handling(stream_by_name, requests_mock):
         (
             "refunds",
             {
-                "/v1/refunds": {"data": []}
+                "/v1/refunds": {"data": []}, "/v1/events": {"data": []}
             },
             2
         ),

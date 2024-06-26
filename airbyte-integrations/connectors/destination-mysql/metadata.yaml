@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/destination-mysql
   githubIssueLabel: destination-mysql
   icon: mysql.svg

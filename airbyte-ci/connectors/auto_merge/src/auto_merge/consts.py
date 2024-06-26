@@ -10,3 +10,4 @@ CONNECTOR_PATH_PREFIXES = {
     "docs/integrations/sources",
     "docs/integrations/destinations",
 }
+MERGE_METHOD = "squash"

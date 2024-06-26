@@ -7,7 +7,7 @@ import logging
 import typing
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
@@ -105,6 +105,8 @@ class Stream(ABC):
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
+    _configured_json_schema: Optional[Dict[str, Any]] = None
+
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self) -> logging.Logger:
@@ -143,6 +145,7 @@ class Stream(ABC):
     ) -> Iterable[StreamData]:
         sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
+        self.configured_json_schema = configured_stream.stream.json_schema
 
         # WARNING: When performing a read() that uses incoming stream state, we MUST use the self.state that is defined as
         # opposed to the incoming stream_state value. Because some connectors like ones using the file-based CDK modify
@@ -502,3 +505,16 @@ class Stream(ABC):
         #  to reduce changes right now and this would span concurrent as well
         state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)
+
+    @property
+    def configured_json_schema(self) -> Optional[Dict[str, Any]]:
+        """
+        This property is set from the read method.
+
+        :return Optional[Dict]: JSON schema from configured catalog if provided, otherwise None.
+        """
+        return self._configured_json_schema
+
+    @configured_json_schema.setter
+    def configured_json_schema(self, json_schema: Dict[str, Any]) -> None:
+        self._configured_json_schema = json_schema

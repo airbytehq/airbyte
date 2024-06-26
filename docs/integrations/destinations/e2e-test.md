@@ -40,7 +40,10 @@ This mode mimics a slow data sync. You can specify the time (in millisecond) of 
 
 This mode throws an exception after receiving a configurable number of messages.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 The OSS and Cloud variants have the same version number starting from version `0.2.2`.
 
@@ -59,3 +62,5 @@ The OSS and Cloud variants have the same version number starting from version `0
 | 0.2.1   | 2021-12-19 | [\#8824](https://github.com/airbytehq/airbyte/pull/8905) | Fix documentation URL.                                    |
 | 0.2.0   | 2021-12-16 | [\#8824](https://github.com/airbytehq/airbyte/pull/8824) | Add multiple logging modes.                               |
 | 0.1.0   | 2021-05-25 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) | Create initial version.                                   |
+
+</details>

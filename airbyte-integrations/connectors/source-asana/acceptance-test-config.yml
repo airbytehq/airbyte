@@ -1,11 +1,10 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-asana:dev
-test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_asana/spec.json"
+      - spec_path: "source_asana/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -15,15 +14,15 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.6.1 # Resolved schema bug in events.json
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 7200
-        expect_records:
-          bypass_reason: "Bypassed until dedicated sandbox account is up and running. Please follow https://github.com/airbytehq/airbyte/issues/19662."
+        configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: custom_fields
-            bypass_reason: "This stream is not available on the account we're currently using. Please follow https://github.com/airbytehq/airbyte/issues/19662."
+          - name: organization_exports
+            bypass_reason: "Stream could not be seeded by sandbox credentials"
           - name: events
             bypass_reason: "This stream is not available on our current account."
           - name: portfolios_compact
@@ -32,11 +31,9 @@ acceptance_tests:
             bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
           - name: portfolios_memberships
             bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
-  full_refresh:
-    # tests:
-    #   - config_path: "secrets/config.json"
-    #     configured_catalog_path: "integration_tests/configured_catalog.json"
-    #     timeout_seconds: 7200
-    bypass_reason: "As we are using an internal account the data is not frozen and results of `two-sequential-reads` are flaky. Please follow https://github.com/airbytehq/airbyte/issues/19662."
   incremental:
-    bypass_reason: "Incremental syncs are not supported on this connector."
+    bypass_reason: "This connector does not implement incremental sync"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

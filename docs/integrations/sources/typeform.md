@@ -96,8 +96,14 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------|
+| 1.3.0   | 2024-06-21 | [40176](https://github.com/airbytehq/airbyte/pull/40176) | Fix pagination for stream `Responses`                                                           |
+| 1.2.10  | 2024-06-22 | [40112](https://github.com/airbytehq/airbyte/pull/40112) | Update dependencies                                                                             |
+| 1.2.9   | 2024-06-06 | [39199](https://github.com/airbytehq/airbyte/pull/39199) | [autopull] Upgrade base image to v1.2.2                                                         |
 | 1.2.8   | 2024-05-02 | [36667](https://github.com/airbytehq/airbyte/pull/36667) | Schema descriptions                                                                             |
 | 1.2.7   | 2024-04-30 | [37599](https://github.com/airbytehq/airbyte/pull/37599) | Changed last_records to last_record                                                             |
 | 1.2.6   | 2024-03-13 | [36164](https://github.com/airbytehq/airbyte/pull/36164) | Unpin CDK version                                                                               |
@@ -120,8 +126,10 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 | 0.1.8   | 2022-08-09 | [15435](https://github.com/airbytehq/airbyte/pull/15435) | Update Forms stream schema                                                                      |
 | 0.1.7   | 2022-06-20 | [13935](https://github.com/airbytehq/airbyte/pull/13935) | Update Responses stream schema                                                                  |
 | 0.1.6   | 2022-05-23 | [12280](https://github.com/airbytehq/airbyte/pull/12280) | Full Stream Coverage                                                                            |
-| 0.1.4   | 2021-12-08 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                                        |
-| 0.1.3   | 2021-12-07 | [8466](https://github.com/airbytehq/airbyte/pull/8466)   | Change Check Connection Function Logic                                                          |
-| 0.1.2   | 2021-10-11 | [6571](https://github.com/airbytehq/airbyte/pull/6571)   | Support pulling data from a select set of forms                                                 |
-| 0.1.1   | 2021-09-06 | [5799](https://github.com/airbytehq/airbyte/pull/5799)   | Add missed choices field to responses schema                                                    |
-| 0.1.0   | 2021-07-10 | [4541](https://github.com/airbytehq/airbyte/pull/4541)   | Initial release for Typeform API supporting Forms and Responses streams                         |
+| 0.1.4   | 2021-12-08 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec                                                        |
+| 0.1.3   | 2021-12-07 | [8466](https://github.com/airbytehq/airbyte/pull/8466) | Change Check Connection Function Logic                                                          |
+| 0.1.2   | 2021-10-11 | [6571](https://github.com/airbytehq/airbyte/pull/6571) | Support pulling data from a select set of forms                                                 |
+| 0.1.1   | 2021-09-06 | [5799](https://github.com/airbytehq/airbyte/pull/5799) | Add missed choices field to responses schema                                                    |
+| 0.1.0   | 2021-07-10 | [4541](https://github.com/airbytehq/airbyte/pull/4541) | Initial release for Typeform API supporting Forms and Responses streams                         |
+
+</details>
