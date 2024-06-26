@@ -13,6 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
+
 def prepare_request_params(query_params: str, api_key: str) -> dict:
     query_params = parse_qs(query_params)
     params = {**query_params, "key": api_key}
