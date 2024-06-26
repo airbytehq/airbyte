@@ -134,7 +134,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         .collect(Collectors.toList());
     final AutoCloseableIterator<AirbyteRecordData> queryStream =
         new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-            calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
+            Long.min(calculateChunkSize(tableSizeInfoMap.get(pair), pair), MAX_CHUNK_SIZE), isCompositePrimaryKey(airbyteStream));
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
@@ -148,16 +148,16 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
 
   // Calculates the number of rows to fetch per query.
   @VisibleForTesting
-  public long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
+  public static long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
     // If table size info could not be calculated, a default chunk size will be provided.
     if (tableSizeInfo == null || tableSizeInfo.tableSize() == 0 || tableSizeInfo.avgRowLength() == 0) {
       LOGGER.info("Chunk size could not be determined for pair: {}, defaulting to {} rows", pair, DEFAULT_CHUNK_SIZE);
-      return Long.min(DEFAULT_CHUNK_SIZE, MAX_CHUNK_SIZE);
+      return DEFAULT_CHUNK_SIZE;
     }
     final long avgRowLength = tableSizeInfo.avgRowLength();
     final long chunkSize = QUERY_TARGET_SIZE_GB / avgRowLength;
     LOGGER.info("Chunk size determined for pair: {}, is {}", pair, chunkSize);
-    return Long.min(chunkSize, MAX_CHUNK_SIZE);
+    return chunkSize;
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
