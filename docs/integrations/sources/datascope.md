@@ -64,6 +64,7 @@ GET https://www.mydatascope.com/api/external/locations
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.1.5 | 2024-06-25 | [40302](https://github.com/airbytehq/airbyte/pull/40302) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40193](https://github.com/airbytehq/airbyte/pull/40193) | Update dependencies |
 | 0.1.3 | 2024-06-15 | [38844](https://github.com/airbytehq/airbyte/pull/38844) | Make compatible with builder |
 | 0.1.2 | 2024-06-06 | [39254](https://github.com/airbytehq/airbyte/pull/39254) | [autopull] Upgrade base image to v1.2.2 |
