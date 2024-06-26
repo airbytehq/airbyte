@@ -68,7 +68,7 @@ class ZohoAPI:
         return urlunsplit((schema, domain, *_))
 
     def _json_from_path(self, path: str, key: str, params: MutableMapping[str, str] = None) -> List[MutableMapping[Any, Any]]:
-        response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header(), params=params or {})
+        response = requests.get(url=f"{self.api_url}{path}", headers=self._session.auth.get_auth_header(), params=params or {})
         if response.status_code == 204:
             # Zoho CRM returns `No content` for Metadata of some modules
             logger.warning(f"{key.capitalize()} Metadata inaccessible: {response.content} [HTTP status {response.status_code}]")
@@ -86,7 +86,7 @@ class ZohoAPI:
 
     def check_connection(self) -> Tuple[bool, Any]:
         path = "/crm/v2/settings/modules"
-        response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header())
+        response = requests.get(url=f"{self.api_url}{path}", headers=self._session.auth.get_auth_header())
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as exc:

@@ -226,7 +226,7 @@ class LookerStream(BaseLookerStream, ABC):
     def generate_looker_stream(self, name: str, request_params: Mapping[str, Any] = None) -> "LookerStream":
         """Generate a stream object. It can be used for loading of parent data"""
         return LookerStream(
-            name, authenticator=self.authenticator, swagger_parser=self._swagger_parser, domain=self._domain, request_params=request_params
+            name, authenticator=self._session.auth, swagger_parser=self._swagger_parser, domain=self._domain, request_params=request_params
         )
 
     def get_parent_endpoints(self) -> List[SwaggerParser.Endpoint]:

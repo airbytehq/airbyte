@@ -373,7 +373,7 @@ class BulkSalesforceStream(SalesforceStream):
         the response buffer (which is either by calling `json` or `iter_content`)
         """
         headers = (
-            self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
+            self._session.auth.get_auth_header() if not headers else headers | self._session.auth.get_auth_header()
         )  # FIXME can we remove this?
         return self._http_client.send_request(method, url, headers=headers, json=json, request_kwargs={})[1]
 

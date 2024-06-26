@@ -300,7 +300,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self.http_method = "POST"
         create_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._session.auth.get_auth_header()),
             data=json.dumps(report_data),
         )
         report_response = self._send_request(create_report_request, {})
@@ -311,7 +311,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         request_headers = self.request_headers()
         retrieve_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports/{report_id}",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._session.auth.get_auth_header()),
         )
         retrieve_report_response = self._send_request(retrieve_report_request, {})
         report_payload = retrieve_report_response.json()
@@ -322,7 +322,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         request_headers = self.request_headers()
         request = self._create_prepared_request(
             path=self.path(document_id=report_document_id),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._session.auth.get_auth_header()),
             params=self.request_params(),
         )
         return self._send_request(request, {})
@@ -1535,7 +1535,7 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
             request_headers = self.request_headers()
             get_reports = self._create_prepared_request(
                 path=f"{self.path_prefix}/reports",
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                headers=dict(request_headers, **self._session.auth.get_auth_header()),
                 params=params,
             )
             report_response = self._send_request(get_reports, {})

@@ -156,7 +156,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Verify the report status and return it along with the report URL."""
         api_path = self._build_api_path(stream_slice["parent"]["id"])
         response_data = self._http_get(
-            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self.authenticator.get_auth_header()
+            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self._session.auth.get_auth_header()
         )
         try:
             report_status = ReportStatusDetails.parse_raw(json.dumps(response_data))

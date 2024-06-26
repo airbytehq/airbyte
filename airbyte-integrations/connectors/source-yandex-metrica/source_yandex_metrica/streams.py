@@ -81,7 +81,7 @@ class YandexMetricaStream(HttpStream, ABC):
         request = requests.Request(
             "GET",
             f"{self.url_base}{self.counter_id}/logrequests/evaluate",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._session.auth.get_auth_header()),
             params=request_params,
         )
         prepared_request = self._session.prepare_request(request)
@@ -104,7 +104,7 @@ class YandexMetricaStream(HttpStream, ABC):
         request = requests.Request(
             "POST",
             f"{self.url_base}{self.counter_id}/logrequests",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._session.auth.get_auth_header()),
             params=request_params,
         )
         prepared_request = self._session.prepare_request(request)
@@ -123,7 +123,7 @@ class YandexMetricaStream(HttpStream, ABC):
         request = requests.Request(
             "GET",
             f"{self.url_base}{self.counter_id}/logrequest/{logrequest_id}",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._session.auth.get_auth_header()),
         )
         prepared_request = self._session.prepare_request(request)
         job_status = "created"
@@ -145,7 +145,7 @@ class YandexMetricaStream(HttpStream, ABC):
         request = requests.Request(
             "GET",
             f"{self.url_base}{self.counter_id}/logrequest/{logrequest_id}/part/{part_number}/download",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._session.auth.get_auth_header()),
         )
         prepared_request = self._session.prepare_request(request)
         response = self._send_request(prepared_request, {})
@@ -168,7 +168,7 @@ class YandexMetricaStream(HttpStream, ABC):
         request = requests.Request(
             "POST",
             f"{self.url_base}{self.counter_id}/logrequest/{logrequest_id}/clean",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._session.auth.get_auth_header()),
         )
         prepared_request = self._session.prepare_request(request)
         self._send_request(prepared_request, {})
