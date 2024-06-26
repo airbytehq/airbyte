@@ -46,6 +46,7 @@ List of available streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.2.7 | 2024-06-25 | [40351](https://github.com/airbytehq/airbyte/pull/40351) | Update dependencies |
 | 0.2.6 | 2024-06-22 | [40028](https://github.com/airbytehq/airbyte/pull/40028) | Update dependencies |
 | 0.2.5 | 2024-06-05 | [38819](https://github.com/airbytehq/airbyte/pull/38819) | Make compatible with the builder |
 | 0.2.4 | 2024-06-04 | [38936](https://github.com/airbytehq/airbyte/pull/38936) | [autopull] Upgrade base image to v1.2.1 |
