@@ -147,7 +147,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /platform/analytics/workflow_email_statistics
+          path: /platform/analytics/workflow_emails
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -225,7 +225,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: embeddables
+          path: /platform/embeddables
           http_method: GET
         record_selector:
           type: RecordSelector
