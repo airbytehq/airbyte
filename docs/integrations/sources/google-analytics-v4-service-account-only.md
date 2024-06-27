@@ -10,7 +10,7 @@ This connector supports Universal Analytics properties through the [Reporting AP
 
 :::danger
 
-Google Analytics (Universal Analytics) will deprecate its API on July 1. At that point, this connector will stop working. For more information, please see https://support.google.com/analytics/answer/11583528.
+Google Analytics Universal Analytics Source Connector will be deprecated due to the deprecation of the Google Analytics Universal Analytics API by Google. This deprecation is scheduled by Google on July 1, 2024 (see Google's Documentation for more details). Transition to the Google Analytics 4 (GA4) Source Connector by July 1, 2024, to continue accessing your analytics data.
 
 :::
 
