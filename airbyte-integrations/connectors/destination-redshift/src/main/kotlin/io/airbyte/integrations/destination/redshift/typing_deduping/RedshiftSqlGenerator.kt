@@ -269,25 +269,26 @@ open class RedshiftSqlGenerator(
      * Return ROW_NUMBER() OVER (PARTITION BY primaryKeys ORDER BY cursor DESC NULLS LAST,
      * _airbyte_extracted_at DESC)
      *
-     * @param primaryKeys
-     * @param cursor
+     * @param primaryKey
+     * @param cursorField
      * @return
      */
-    override fun getRowNumber(primaryKeys: List<ColumnId>, cursor: Optional<ColumnId>): Field<Int> {
+    override fun getRowNumber(
+        primaryKey: List<ColumnId>,
+        cursorField: Optional<ColumnId>
+    ): Field<Int> {
         // literally identical to postgres's getRowNumber implementation, changes here probably
         // should
         // be reflected there
         val primaryKeyFields =
-            if (primaryKeys != null)
-                primaryKeys
-                    .stream()
-                    .map { columnId: ColumnId -> DSL.field(DSL.quotedName(columnId.name)) }
-                    .collect(Collectors.toList())
-            else ArrayList()
+            primaryKey
+                .stream()
+                .map { columnId: ColumnId -> DSL.field(DSL.quotedName(columnId.name)) }
+                .collect(Collectors.toList())
         val orderedFields: MutableList<Field<*>> = ArrayList()
         // We can still use Jooq's field to get the quoted name with raw sql templating.
         // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
-        cursor.ifPresent { columnId: ColumnId ->
+        cursorField.ifPresent { columnId: ColumnId ->
             orderedFields.add(
                 DSL.field("{0} desc NULLS LAST", DSL.field(DSL.quotedName(columnId.name)))
             )
@@ -331,6 +332,7 @@ open class RedshiftSqlGenerator(
     companion object {
         const val CASE_STATEMENT_SQL_TEMPLATE: String = "CASE WHEN {0} THEN {1} ELSE {2} END "
         const val CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE: String = "CASE WHEN {0} THEN {1} END "
+        const val QUOTE: String = "\""
 
         private const val AIRBYTE_META_COLUMN_CHANGES_KEY = "changes"
 
