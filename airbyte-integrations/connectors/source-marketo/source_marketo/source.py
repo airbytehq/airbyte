@@ -389,10 +389,12 @@ class Leads(MarketoExportBase):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         standard_properties = super().get_json_schema()
-        resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header()).json().get("result")
+        resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
+        fields = resp.json().get("result")
+        print('fields:', fields)
         
         STRING_TYPES = ["string", "email", "phone", "url", "textarea", "reference"]
-        for field in resp:
+        for field in fields:
             field_name = field.get("rest", {}).get("name")
             if not field_name:
                 continue
