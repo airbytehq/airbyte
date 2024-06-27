@@ -176,7 +176,7 @@ class AbstractSource(Source, ABC):
         logger.info(f"Finished syncing {self.name}")
 
     @staticmethod
-    def _serialize_exception(stream_instance, configured_stream, e):
+    def _serialize_exception(stream_instance: Stream, configured_stream: ConfiguredAirbyteStream, e: Exception) -> AirbyteTracedException:
         display_message = stream_instance.get_error_display_message(e)
         stream_descriptor = StreamDescriptor(name=configured_stream.stream.name)
         if display_message:
