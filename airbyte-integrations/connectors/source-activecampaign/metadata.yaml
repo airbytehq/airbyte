@@ -1,31 +1,35 @@
 data:
-  ab_internal:
-    ql: 200
-    sl: 100
+  allowedHosts:
+    hosts:
+      - "*.api-us1.com"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-activecampaign
   connectorSubtype: api
   connectorType: source
   definitionId: 9f32dab3-77cb-45a1-9d33-347aa5fbe363
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-activecampaign
   documentationUrl: https://docs.airbyte.com/integrations/sources/activecampaign
   githubIssueLabel: source-activecampaign
   icon: activecampaign.svg
   license: MIT
   name: ActiveCampaign
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-activecampaign
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
+  releaseDate: 2022-10-25
   releaseStage: alpha
   supportLevel: community
   tags:
     - language:python
     - cdk:low-code
+  ab_internal:
+    ql: 200
+    sl: 100
   # Disable acceptance tests for now
   # They are not passing
   # Low/No Airbyte Cloud Usage
