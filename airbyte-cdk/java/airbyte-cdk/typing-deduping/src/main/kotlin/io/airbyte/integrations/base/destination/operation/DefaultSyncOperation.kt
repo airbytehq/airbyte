@@ -25,6 +25,8 @@ import java.util.concurrent.Executors
 import java.util.stream.Stream
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
 
+private val LOGGER = KotlinLogging.logger {}
+
 class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
     private val parsedCatalog: ParsedCatalog,
     private val destinationHandler: DestinationHandler<DestinationState>,
@@ -104,7 +106,11 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
     override fun flushStream(descriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val streamConfig =
             parsedCatalog.getStream(descriptor.namespace ?: defaultNamespace, descriptor.name)
-        streamOpsMap[streamConfig.id]?.writeRecords(
+        val streamOp = streamOpsMap[streamConfig.id]
+        LOGGER.info {
+            "SGX stream=${descriptor.namespace}.${descriptor.name}, defaultNamespace=$defaultNamespace, streamOp=${streamOp?.javaClass}"
+        }
+        streamOp?.writeRecords(
             streamConfig,
             stream.map { record ->
                 if (record.record!!.meta == null) {

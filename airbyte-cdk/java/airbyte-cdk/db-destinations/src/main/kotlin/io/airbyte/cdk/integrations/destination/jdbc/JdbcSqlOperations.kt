@@ -10,6 +10,9 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -118,9 +121,10 @@ abstract class JdbcSqlOperations : SqlOperations {
         CREATE TABLE IF NOT EXISTS %s.%s (
           %s VARCHAR PRIMARY KEY,
           %s JSONB,
-          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          %s TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-          %s JSONB
+          %s TIMESTAMP(9) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          %s TIMESTAMP(9) WITH TIME ZONE DEFAULT NULL,
+          %s JSONB,
+          %s INTEGER
         );
         
         """.trimIndent(),
@@ -130,14 +134,20 @@ abstract class JdbcSqlOperations : SqlOperations {
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
+            JavaBaseConstants.COLUMN_NAME_AB_META,
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
         )
     }
 
     // TODO: This method seems to be used by Postgres and others while staging to local temp files.
     // Should there be a Local staging operations equivalent
     @Throws(Exception::class)
-    protected fun writeBatchToFile(tmpFile: File?, records: List<PartialAirbyteMessage>) {
+    protected fun writeBatchToFile(
+        tmpFile: File?,
+        records: List<PartialAirbyteMessage>,
+        syncId: Long,
+        generationId: Long,
+    ) {
         PrintWriter(tmpFile, StandardCharsets.UTF_8).use { writer ->
             CSVPrinter(writer, CSVFormat.DEFAULT).use { csvPrinter ->
                 for (record in records) {
@@ -146,17 +156,27 @@ abstract class JdbcSqlOperations : SqlOperations {
                     val jsonData = record.serialized
                     val airbyteMeta =
                         if (record.record!!.meta == null) {
-                            "{\"changes\":[]}"
+                            "{\"changes\":[],\"${JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY}\":$syncId}"
                         } else {
-                            Jsons.serialize(record.record!!.meta)
+                            Jsons.serialize(
+                                record.record!!
+                                    .meta!!
+                                    .withAdditionalProperty(
+                                        JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY,
+                                        syncId,
+                                    )
+                            )
                         }
                     val extractedAt =
                         Timestamp.from(Instant.ofEpochMilli(record.record!!.emittedAt))
+                    val columnValues: List<Any?>
                     if (isDestinationV2) {
-                        csvPrinter.printRecord(uuid, jsonData, extractedAt, null, airbyteMeta)
+                        columnValues = listOf(uuid, jsonData, extractedAt, null, airbyteMeta, generationId)
                     } else {
-                        csvPrinter.printRecord(uuid, jsonData, extractedAt)
+                        columnValues = listOf(uuid, jsonData, extractedAt)
                     }
+                    val allColumnValues = columnValues
+                    csvPrinter.printRecord(allColumnValues)
                 }
             }
         }
@@ -165,9 +185,17 @@ abstract class JdbcSqlOperations : SqlOperations {
     override fun truncateTableQuery(
         database: JdbcDatabase?,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        generationId: Long
     ): String {
-        return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName)
+        return """DO $$
+            |BEGIN
+            |  IF (SELECT _airbyte_generation_id FROM $schemaName.$tableName LIMIT 1) <> $generationId
+            |  THEN
+            |    TRUNCATE TABLE $schemaName.$tableName;
+            |  END IF;
+            |END $$;
+        """.trimMargin()
     }
 
     override fun insertTableQuery(
@@ -225,12 +253,28 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     ) {
         if (isDestinationV2) {
-            insertRecordsInternalV2(database, records, schemaName, tableName)
+            insertRecordsInternalV2(
+                database,
+                records,
+                schemaName,
+                tableName,
+                syncId,
+                generationId,
+            )
         } else {
-            insertRecordsInternal(database, records, schemaName, tableName)
+            insertRecordsInternal(
+                database,
+                records,
+                schemaName,
+                tableName,
+                syncId,
+                generationId,
+            )
         }
     }
 
@@ -239,7 +283,9 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     )
 
     @Throws(Exception::class)
@@ -247,7 +293,9 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     )
 
     companion object {

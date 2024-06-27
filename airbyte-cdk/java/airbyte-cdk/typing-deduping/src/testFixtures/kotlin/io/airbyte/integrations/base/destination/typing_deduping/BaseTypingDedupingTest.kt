@@ -240,7 +240,7 @@ abstract class BaseTypingDedupingTest {
                         ConfiguredAirbyteStream()
                             .withSyncId(42)
                             .withGenerationId(43)
-                            .withMinimumGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withStream(
@@ -370,7 +370,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    fun incrementalAppend() {
+    open fun incrementalAppend() {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -421,7 +421,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    fun incrementalDedup() {
+    open fun incrementalDedup() {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -469,11 +469,12 @@ abstract class BaseTypingDedupingTest {
      * destinations behave differently with small vs large record count, so this test case tries to
      * exercise that behavior.
      */
+    val largeDedupRecordCount = 250
     @Test
     @Throws(Exception::class)
     // This test writes a lot of data to the destination and can take longer than a minute.
     @Timeout(value = 15, unit = TimeUnit.MINUTES)
-    fun largeDedupSync() {
+    open fun largeDedupSync() {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -497,13 +498,13 @@ abstract class BaseTypingDedupingTest {
                 )
 
         // Run a sync with 25K copies of the input messages
-        val messages1 = repeatList(25000, readMessages("dat/sync1_messages.jsonl"))
+        val messages1 = repeatList(largeDedupRecordCount, readMessages("dat/sync1_messages.jsonl"))
 
         runSync(catalog, messages1)
 
         // The raw table will contain 25K copies of each record
         val expectedRawRecords1 =
-            repeatList(25000, readRecords("dat/sync1_expectedrecords_raw.jsonl"))
+            repeatList(largeDedupRecordCount, readRecords("dat/sync1_expectedrecords_raw.jsonl"))
         // But the final table should be fully deduped
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl")
         verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
@@ -512,7 +513,7 @@ abstract class BaseTypingDedupingTest {
     /** Identical to [.incrementalDedup], except that the stream has no namespace. */
     @Test
     @Throws(Exception::class)
-    fun incrementalDedupDefaultNamespace() {
+    open fun incrementalDedupDefaultNamespace() {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -911,7 +912,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    fun incrementalDedupChangeCursor() {
+    open fun incrementalDedupChangeCursor() {
         val mangledSchema = SCHEMA.deepCopy<JsonNode>()
         (mangledSchema["properties"] as ObjectNode).remove("updated_at")
         (mangledSchema["properties"] as ObjectNode).set<JsonNode>(

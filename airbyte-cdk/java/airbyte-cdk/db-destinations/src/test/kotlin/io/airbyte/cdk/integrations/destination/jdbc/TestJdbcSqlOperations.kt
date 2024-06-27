@@ -5,6 +5,7 @@ package io.airbyte.cdk.integrations.destination.jdbc
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import java.sql.SQLException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -16,7 +17,9 @@ class TestJdbcSqlOperations : JdbcSqlOperations() {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     ) {
         // Not required for the testing
     }
@@ -26,8 +29,18 @@ class TestJdbcSqlOperations : JdbcSqlOperations() {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     ) {
+        // Not required for the testing
+    }
+
+    override fun getRawTableSuffix(database: JdbcDatabase, stream: StreamConfig): String {
+        return ""
+    }
+
+    override fun overwriteRawTable(database: JdbcDatabase, stream: StreamConfig) {
         // Not required for the testing
     }
 

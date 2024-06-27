@@ -210,7 +210,7 @@ object TyperDeduperUtil {
     ) {
         try {
             LOGGER.info(
-                "Attempting typing and deduping for {}.{} with suffix {}",
+                "Attempting typing and deduping for {}.{} with suffix {} ${Thread.currentThread().stackTrace.joinToString("\n    ")}",
                 streamConfig!!.id.originalNamespace,
                 streamConfig.id.originalName,
                 suffix

@@ -10,12 +10,15 @@ import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManag
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentMap
 
 /**
  * Represents the minimal interface over the underlying buffer queues required for enqueue
  * operations with the aim of minimizing lower-level queue access.
  */
+val LOGGER = KotlinLogging.logger {}
+
 class BufferEnqueue(
     private val memoryManager: GlobalMemoryManager,
     private val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>,
@@ -89,14 +92,14 @@ class BufferEnqueue(
             }
         }
     }
-
-    companion object {
-        private fun extractStreamDescriptorFromRecord(
-            message: PartialAirbyteMessage
-        ): StreamDescriptor {
-            return StreamDescriptor()
-                .withNamespace(message.record?.namespace)
-                .withName(message.record?.stream)
+    private fun extractStreamDescriptorFromRecord(
+        message: PartialAirbyteMessage
+    ): StreamDescriptor {
+        LOGGER.info {
+            "SGX namespace=${message.record?.namespace}, name=${message.record?.stream}, message=$message"
         }
+        return StreamDescriptor()
+            .withNamespace(message.record?.namespace)
+            .withName(message.record?.stream)
     }
 }

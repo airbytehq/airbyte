@@ -908,7 +908,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Test
     @Throws(Exception::class)
-    fun timestampFormats() {
+    open fun timestampFormats() {
         createRawTable(streamId)
         createFinalTable(incrementalAppendStream, "")
         insertRawTableRecords(
@@ -1819,6 +1819,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                                     .withMinimumGenerationId(0)
                                     .withSyncMode(SyncMode.INCREMENTAL)
                                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                                    .withGenerationId(42)
+                                    .withMinimumGenerationId(0)
+                                    .withSyncId(13)
                             )
                         )
                 )

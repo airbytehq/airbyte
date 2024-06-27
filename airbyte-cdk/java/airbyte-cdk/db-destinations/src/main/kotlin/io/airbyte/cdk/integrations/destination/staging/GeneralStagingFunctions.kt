@@ -65,16 +65,15 @@ object GeneralStagingFunctions {
                 stagingOperations.createTableIfNotExists(database, schema, dstTableName)
                 stagingOperations.createStageIfNotExists(database, stageName)
 
-                when (writeConfig.syncMode) {
-                    DestinationSyncMode.OVERWRITE ->
+                when (writeConfig.minimumGenerationId) {
+                    writeConfig.generationId ->
                         queryList.add(
-                            stagingOperations.truncateTableQuery(database, schema, dstTableName)
+                            stagingOperations.truncateTableQuery(database, schema, dstTableName, writeConfig.generationId)
                         )
-                    DestinationSyncMode.APPEND,
-                    DestinationSyncMode.APPEND_DEDUP -> {}
+                    0L -> {}
                     else ->
                         throw IllegalStateException(
-                            "Unrecognized sync mode: " + writeConfig.syncMode
+                            "minimumGenerationId should be 0 or generationID (${writeConfig.generationId}"
                         )
                 }
                 log.info {

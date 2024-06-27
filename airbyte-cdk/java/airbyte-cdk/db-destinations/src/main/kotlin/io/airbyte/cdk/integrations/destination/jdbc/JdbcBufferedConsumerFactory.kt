@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.destination.jdbc
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
-import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.getRawNamespaceOverride
@@ -24,9 +23,10 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
+import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -68,19 +68,21 @@ object JdbcBufferedConsumerFactory {
         optimalBatchSizeBytes: Long = DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
         parsedCatalog: ParsedCatalog,
     ): SerializedAirbyteMessageConsumer {
+
         val writeConfigs =
             createWriteConfigs(
+                database,
+                sqlOperations,
                 namingResolver,
                 config,
-                sqlOperations.isSchemaRequired,
-                parsedCatalog,
-                ""
+                parsedCatalog
             )
         return AsyncStreamConsumer(
             outputRecordCollector,
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
-            onCloseFunction(typerDeduper),
+            onCloseFunction(database, sqlOperations, parsedCatalog, typerDeduper),
             JdbcInsertFlushFunction(
+                defaultNamespace,
                 recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
                 optimalBatchSizeBytes
             ),
@@ -93,20 +95,20 @@ object JdbcBufferedConsumerFactory {
     }
 
     private fun createWriteConfigs(
+        database: JdbcDatabase,
+        sqlOperations: SqlOperations,
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
-        schemaRequired: Boolean,
         parsedCatalog: ParsedCatalog,
-        rawTableSuffix: String,
     ): List<WriteConfig> {
-        if (schemaRequired) {
+        if (sqlOperations.isSchemaRequired) {
             Preconditions.checkState(
                 config.has("schema"),
                 "jdbc destinations must specify a schema."
             )
         }
         return parsedCatalog.streams
-            .map { parsedStreamToWriteConfig(namingResolver, rawTableSuffix).apply(it) }
+            .map { parsedStreamToWriteConfig(namingResolver, sqlOperations.getRawTableSuffix(database, it)).apply(it) }
             .toList()
     }
 
@@ -128,9 +130,34 @@ object JdbcBufferedConsumerFactory {
                 namingResolver.getTmpTableName(streamConfig.id.rawNamespace),
                 streamConfig.id.rawName,
                 streamConfig.destinationSyncMode,
+                streamConfig.syncId,
                 streamConfig.generationId,
                 streamConfig.minimumGenerationId,
                 rawTableSuffix
+            )
+        }
+    }
+
+    /**
+     * Defer to the [AirbyteStream]'s namespace. If this is not set, use the destination's default
+     * schema. This namespace is source-provided, and can be potentially empty.
+     *
+     * The logic here matches the logic in the catalog_process.py for Normalization. Any
+     * modifications need to be reflected there and vice versa.
+     */
+    private fun getOutputSchema(
+        stream: AirbyteStream,
+        defaultDestSchema: String,
+        namingResolver: NamingConventionTransformer,
+    ): String {
+        return if (isDestinationV2) {
+            namingResolver.getNamespace(
+                getRawNamespaceOverride(AbstractJdbcDestination.Companion.RAW_SCHEMA_OVERRIDE)
+                    .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
+            )
+        } else {
+            namingResolver.getNamespace(
+                Optional.ofNullable<String>(stream.namespace).orElse(defaultDestSchema)
             )
         }
     }
@@ -168,17 +195,15 @@ object JdbcBufferedConsumerFactory {
                 }
                 sqlOperations.createSchemaIfNotExists(database, schemaName)
                 sqlOperations.createTableIfNotExists(database, schemaName, dstTableName)
-                when (writeConfig.syncMode) {
-                    DestinationSyncMode.OVERWRITE ->
+                if (writeConfig.rawTableSuffix != AbstractStreamOperation.NO_SUFFIX) {
+                    sqlOperations.createTableIfNotExists(database, schemaName, dstTableName + writeConfig.rawTableSuffix)
+                }
+                when (writeConfig.minimumGenerationId) {
+                    writeConfig.generationId ->
                         queryList.add(
-                            sqlOperations.truncateTableQuery(database, schemaName, dstTableName)
+                            sqlOperations.truncateTableQuery(database, schemaName, dstTableName + writeConfig.rawTableSuffix, writeConfig.generationId)
                         )
-                    DestinationSyncMode.APPEND,
-                    DestinationSyncMode.APPEND_DEDUP -> {}
-                    else ->
-                        throw IllegalStateException(
-                            "Unrecognized sync mode: " + writeConfig.syncMode
-                        )
+                    else -> {}
                 }
             }
             sqlOperations.executeTransaction(database, queryList)
@@ -203,10 +228,9 @@ object JdbcBufferedConsumerFactory {
     ): RecordWriter<PartialAirbyteMessage> {
         val pairToWriteConfig: Map<AirbyteStreamNameNamespacePair, WriteConfig> =
             writeConfigs.associateBy { toNameNamespacePair(it) }
-
         return RecordWriter {
-            pair: AirbyteStreamNameNamespacePair,
-            records: List<PartialAirbyteMessage> ->
+                pair: AirbyteStreamNameNamespacePair,
+                records: List<PartialAirbyteMessage> ->
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s, \nstream identifier: %s\nkeys: %s",
@@ -220,17 +244,22 @@ object JdbcBufferedConsumerFactory {
                 database,
                 ArrayList(records),
                 writeConfig.outputSchemaName,
-                writeConfig.outputTableName
+                writeConfig.outputTableName + writeConfig.rawTableSuffix,
+                writeConfig.syncId,
+                writeConfig.generationId,
             )
         }
     }
 
     /** Tear down functionality */
-    private fun onCloseFunction(typerDeduper: TyperDeduper): OnCloseFunction {
+    private fun onCloseFunction(database: JdbcDatabase, sqlOperations: SqlOperations, catalog: ParsedCatalog, typerDeduper: TyperDeduper): OnCloseFunction {
         return OnCloseFunction {
             _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             try {
+                catalog.streams.forEach{
+                    sqlOperations.overwriteRawTable(database, it)
+                }
                 typerDeduper.typeAndDedupe(streamSyncSummaries)
                 typerDeduper.commitFinalTables()
                 typerDeduper.cleanup()
@@ -241,6 +270,6 @@ object JdbcBufferedConsumerFactory {
     }
 
     private fun toNameNamespacePair(config: WriteConfig): AirbyteStreamNameNamespacePair {
-        return AirbyteStreamNameNamespacePair(config.streamName, config.namespace)
-    }
+        LOGGER.info { "SGX converting ${config.streamName}.${config.namespace}" }
+        return AirbyteStreamNameNamespacePair(config.streamName, config.namespace)    }
 }

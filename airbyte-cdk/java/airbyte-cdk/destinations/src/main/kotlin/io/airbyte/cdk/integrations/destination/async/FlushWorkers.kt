@@ -161,7 +161,7 @@ constructor(
                                 flushWorkerId,
                             )}) -- Batch contains: ${batch.data.size} records, ${AirbyteFileUtils.byteCountToDisplaySize(
                                 batch.sizeInBytes,
-                            )} bytes."
+                            )} bytes. flusher type=${flusher.javaClass}, desc=${desc.namespace}.${desc.name}"
                     }
 
                     flusher.flush(desc, batch.data.map { it.message }.stream())

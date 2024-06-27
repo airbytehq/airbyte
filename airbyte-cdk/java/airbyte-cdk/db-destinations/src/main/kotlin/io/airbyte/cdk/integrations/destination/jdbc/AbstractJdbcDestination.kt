@@ -426,6 +426,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                             listOf(dummyRecord),
                             outputSchema,
                             outputTableName,
+                            0,
+                            0,
                         )
                     }
                 } finally {

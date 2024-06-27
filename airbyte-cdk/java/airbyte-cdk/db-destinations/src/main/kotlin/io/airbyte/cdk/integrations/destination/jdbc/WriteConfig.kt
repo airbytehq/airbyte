@@ -24,6 +24,7 @@ constructor(
     val tmpTableName: String?,
     val outputTableName: String?,
     val syncMode: DestinationSyncMode,
+    val syncId: Long,
     val generationId: Long,
     val minimumGenerationId: Long,
     val rawTableSuffix: String,

@@ -6,6 +6,10 @@ package io.airbyte.cdk.integrations.destination.jdbc
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import org.apache.commons.compress.archivers.StreamingNotSupportedException
+import org.jooq.impl.DSL
 
 /**
  * SQL queries required for successfully syncing to a destination connector. These operations
@@ -78,9 +82,9 @@ interface SqlOperations {
      * @param database Database that the connector is syncing
      * @param schemaName Name of schema
      * @param tableName Name of table
-     * @return Query
+     * @param generationId the current generationId (only truncate if there's records with a lower generationId)
      */
-    fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String
+    fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?, generationId: Long): String
 
     /**
      * Insert records into table. Assumes the table exists.
@@ -96,7 +100,9 @@ interface SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     )
 
     /**
@@ -137,5 +143,10 @@ interface SqlOperations {
      */
     val isSchemaRequired: Boolean
 
-    companion object {}
+    fun getRawTableSuffix(
+        database: JdbcDatabase,
+        stream: StreamConfig
+    ): String
+
+    fun overwriteRawTable(database: JdbcDatabase, stream: StreamConfig)
 }

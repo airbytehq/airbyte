@@ -10,6 +10,7 @@ import io.airbyte.integrations.destination.postgres.PostgresTestDatabase
 import javax.sql.DataSource
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 
 open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     override fun getBaseConfig(): ObjectNode {
@@ -59,5 +60,60 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
         fun teardownPostgres() {
             testContainer!!.close()
         }
+    }
+
+    @Test
+    override fun incrementalDedup() {
+        super.incrementalDedup();
+    }
+
+    @Test
+    override fun truncateRefresh() {
+        super.truncateRefresh();
+    }
+
+    @Test
+    override fun incrementalAppend() {
+        super.incrementalAppend();
+    }
+
+    @Test
+    override fun incrementalDedupChangeCursor() {
+        super.incrementalDedupChangeCursor();
+    }
+
+    @Test
+    override fun largeDedupSync() {
+        super.largeDedupSync();
+    }
+
+    @Test
+    override fun testMixedCasedSchema() {
+        super.testMixedCasedSchema();
+    }
+
+    @Test
+    override fun mergeRefresh() {
+        super.mergeRefresh();
+    }
+
+    @Test
+    override fun testRawTableMetaMigration_append() {
+        super.testRawTableMetaMigration_append();
+    }
+
+    @Test
+    override fun testRawTableMetaMigration_incrementalDedupe() {
+        super.testRawTableMetaMigration_incrementalDedupe();
+    }
+
+    @Test
+    override fun testMixedCaseRawTableV1V2Migration() {
+        super.testMixedCaseRawTableV1V2Migration();
+    }
+
+    @Test
+    override fun identicalNameSimultaneousSync() {
+        super.identicalNameSimultaneousSync();
     }
 }

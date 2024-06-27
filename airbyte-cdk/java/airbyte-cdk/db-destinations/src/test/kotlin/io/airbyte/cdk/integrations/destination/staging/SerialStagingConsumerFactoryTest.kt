@@ -25,7 +25,7 @@ internal class SerialStagingConsumerFactoryTest {
                             "destination_default_schema",
                             null,
                             null,
-                            mock(), mock(), mock(), mock()
+                            mock(), mock(), mock(), mock(), mock()
                         ),
                         WriteConfig(
                             "example_stream",
@@ -33,7 +33,7 @@ internal class SerialStagingConsumerFactoryTest {
                             "destination_default_schema",
                             null,
                             null,
-                            mock(), mock(), mock(), mock()
+                            mock(), mock(), mock(), mock(), mock()
                         )
                     ),
                     mock(),

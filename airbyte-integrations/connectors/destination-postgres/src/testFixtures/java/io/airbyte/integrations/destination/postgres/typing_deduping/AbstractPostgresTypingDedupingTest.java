@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +66,10 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
             .withStream(new AirbyteStream()
                 .withNamespace(getStreamNamespace())
                 .withName(getStreamName())
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(getSchema()))
+            .withMinimumGenerationId(0L)
+            .withSyncId(13L)
+            .withGenerationId(43L)));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
@@ -87,12 +91,15 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
             .withStream(new AirbyteStream()
                 .withNamespace(getStreamNamespace())
                 .withName(getStreamName())
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(getSchema()))
+            .withGenerationId(43L)
+            .withMinimumGenerationId(0L)
+            .withSyncId(13L)));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
-    runSync(catalog, messages1, "airbyte/destination-postgres:0.6.3");
+    runSync(catalog, messages1, "airbyte/destination-postgres:0.6.3", Function.identity(), null);
     // Special case to retrieve raw records pre DV2 using the same logic as actual code.
     final List<JsonNode> rawActualRecords = getDatabase().queryJsons(
         DSL.selectFrom(DSL.name(getStreamNamespace(), "_airbyte_raw_" + Names.toAlphanumericAndUnderscore(getStreamName()).toLowerCase())).getSQL());
@@ -108,7 +115,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
   @Test
   public void testRawTableMetaMigration_append() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final ConfiguredAirbyteCatalog catalog1 = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -119,10 +126,25 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
     // First sync without _airbyte_meta
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
-    runSync(catalog, messages1, "airbyte/destination-postgres:2.0.4");
+    runSync(catalog1, messages1, "airbyte/destination-postgres:2.0.4", Function.identity(), null);
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_mixed_meta_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_fullrefresh_append_mixed_meta_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+
+    final ConfiguredAirbyteCatalog catalog2 = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))
+            .withMinimumGenerationId(0L)
+            .withSyncId(13L)
+            .withGenerationId(42L)));
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages_after_meta.jsonl");
-    runSync(catalog, messages2);
+    runSync(catalog2, messages2);
 
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_mixed_meta_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_mixed_meta_final.jsonl");
@@ -131,7 +153,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
   @Test
   public void testRawTableMetaMigration_incrementalDedupe() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final ConfiguredAirbyteCatalog catalog1 = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("updated_at"))
@@ -144,10 +166,24 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
     // First sync without _airbyte_meta
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
-    runSync(catalog, messages1, "airbyte/destination-postgres:2.0.4");
+    runSync(catalog1, messages1, "airbyte/destination-postgres:2.0.4", Function.identity(), null);
+
     // Second sync
+    final ConfiguredAirbyteCatalog catalog2 = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))
+            .withMinimumGenerationId(0L)
+            .withSyncId(13L)
+            .withGenerationId(42L)));
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages_after_meta.jsonl");
-    runSync(catalog, messages2);
+    runSync(catalog2, messages2);
 
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_mixed_meta_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_meta_final.jsonl");
@@ -168,7 +204,10 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
             .withStream(new AirbyteStream()
                 .withNamespace(getStreamNamespace())
                 .withName(getStreamName())
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(getSchema()))
+            .withMinimumGenerationId(0L)
+            .withSyncId(13L)
+            .withGenerationId(42L)));
 
     final AirbyteMessage message = new AirbyteMessage();
     final String largeString = generateBigString();

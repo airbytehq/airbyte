@@ -154,7 +154,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info { "Final Table exists for stream ${stream.id.finalName}" }
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
-                        if (stream.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+                        if (stream.generationId == stream.minimumGenerationId) {
                             if (!initialState.isFinalTableEmpty || initialState.isSchemaMismatch) {
                                 // We want to overwrite an existing table. Write into a tmp table.
                                 // We'll overwrite the table at the
@@ -335,7 +335,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 }
                 continue
             }
-            if (DestinationSyncMode.OVERWRITE == streamConfig.destinationSyncMode) {
+            if (streamConfig.generationId == streamConfig.minimumGenerationId) {
                 tableCommitTasks.add(commitFinalTableTask(streamConfig))
             }
         }

@@ -16,6 +16,8 @@ import java.time.Instant
 import java.util.Optional
 import java.util.stream.Stream
 
+private val LOGGER = KotlinLogging.logger {}
+
 abstract class AbstractStreamOperation<DestinationState : MinimumDestinationState, Data>(
     private val storageOperation: StorageOperation<Data>,
     destinationInitialStatus: DestinationInitialStatus<DestinationState>,
@@ -70,6 +72,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
             log.info { "Typing and deduping disabled, skipping final table initialization" }
             finalTmpTableSuffix = NO_SUFFIX
         }
+        LOGGER.info { "SGX stream $stream has isTruncSync=$isTruncateSync, rawTableSuffix='$rawTableSuffix', initialRawTableStatus=$initialRawTableStatus, finalTmpTableSuffix='$finalTmpTableSuffix'" }
         updatedDestinationState = destinationInitialStatus.destinationState.withSoftReset(false)
     }
 
@@ -226,6 +229,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     }
 
     override fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
+        LOGGER.info { "SGX this.impl=${this.javaClass}, streamConfig=${streamConfig}" }
         // redirect to the appropriate raw table (potentially the temp raw table).
         writeRecordsImpl(
             streamConfig,
@@ -331,7 +335,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     }
 
     companion object {
-        private const val NO_SUFFIX = ""
+        const val NO_SUFFIX = ""
         const val TMP_TABLE_SUFFIX = "_airbyte_tmp"
     }
 }

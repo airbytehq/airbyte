@@ -173,7 +173,7 @@ abstract class AzureBlobStorageStreamCopier(
         }
         val queries = StringBuilder()
         if (destSyncMode == DestinationSyncMode.OVERWRITE) {
-            queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName))
+            queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName, -1))
             LOGGER.info {
                 "Destination OVERWRITE mode detected. Dest table: $destTableName, schema: $schemaName, truncated."
             }
