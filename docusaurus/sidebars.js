@@ -397,11 +397,6 @@ const deployAirbyte = {
   items: [
     {
       type: "doc",
-      label: "Quickstart",
-      id: "deploying-airbyte/quickstart",
-    },
-    {
-      type: "doc",
       label: "Using docker compose",
       id: "deploying-airbyte/docker-compose",
     },
@@ -509,6 +504,7 @@ module.exports = {
     },
     {
       type: "doc",
+      label: "Quickstart",
       id: "using-airbyte/getting-started/oss-quickstart",
     },
     {
