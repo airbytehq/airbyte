@@ -409,6 +409,15 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                     "Try to grant required permissions/scopes or re-authenticate."
                 )
                 return []
+
+            errors = " ".join([er["message"] for er in e.response.json()["errors"]])
+            if "does not support account ID of type class com.amazon.partner.account.id.VendorGroupId." in errors:
+                logger.warning(
+                    f"The endpoint {e.response.url} returned {e.response.status_code}: {errors}. "
+                    "This is most likely due to account type (Vendor) on the credentials in use. "
+                    "Try to re-authenticate with Seller account type and sync again."
+                )
+                return []
             raise e
 
         # create and retrieve the report
