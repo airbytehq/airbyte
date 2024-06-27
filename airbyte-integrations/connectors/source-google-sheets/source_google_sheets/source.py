@@ -143,6 +143,13 @@ class SourceGoogleSheets(Source):
                     failure_type=FailureType.config_error,
                 ) from err
             raise Exception(f"Could not discover the schema of your spreadsheet. {error_description}. {err.reason}.")
+        except google_exceptions.GoogleAuthError as err:
+            message = "Access to the spreadsheet expired or was revoked. Re-authenticate to restore access."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            ) from err
 
     def _read(
         self,
