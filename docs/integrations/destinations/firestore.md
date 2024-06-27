@@ -6,7 +6,7 @@ Google Firestore, officially known as Cloud Firestore, is a flexible, scalable d
 
 ## Getting started
 
-### Requiremnets
+### Requirements
 
 - An existing GCP project
 - A role with permissions to create a Service Account Key in GCP
@@ -39,6 +39,8 @@ Each stream will be output into a BigQuery table.
 
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
+| 0.1.6 | 2024-06-25 | [40477](https://github.com/airbytehq/airbyte/pull/40477) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40053](https://github.com/airbytehq/airbyte/pull/40053) | Update dependencies |
 | 0.1.4 | 2024-06-06 | [39149](https://github.com/airbytehq/airbyte/pull/39149) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.3 | 2024-06-03 | [38902](https://github.com/airbytehq/airbyte/pull/38902) | Replace AirbyteLogger with logging.Logger |
 | 0.1.2 | 2024-05-20 | [38422](https://github.com/airbytehq/airbyte/pull/38422) | [autopull] base image + poetry + up_to_date |

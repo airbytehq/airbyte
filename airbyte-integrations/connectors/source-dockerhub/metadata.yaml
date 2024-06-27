@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 72d405a3-56d8-499f-a571-667c03406e43
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.7
   dockerRepository: airbyte/source-dockerhub
   documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
   githubIssueLabel: source-dockerhub

@@ -89,6 +89,8 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0.5 | 2024-06-25 | [40356](https://github.com/airbytehq/airbyte/pull/40356) | Update dependencies |
+| 1.0.4 | 2024-06-22 | [40155](https://github.com/airbytehq/airbyte/pull/40155) | Update dependencies |
 | 1.0.3 | 2024-06-06 | [39197](https://github.com/airbytehq/airbyte/pull/39197) | [autopull] Upgrade base image to v1.2.2 |
 | 1.0.2 | 2024-05-21 | [38478](https://github.com/airbytehq/airbyte/pull/38478) | Update deprecated authenticator package |
 | 1.0.1 | 2024-05-20 | [38264](https://github.com/airbytehq/airbyte/pull/38264) | Replace AirbyteLogger with logging.Logger |

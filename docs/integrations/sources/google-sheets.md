@@ -166,6 +166,9 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.5.6 | 2024-06-26 | [40533](https://github.com/airbytehq/airbyte/pull/40533) | Update dependencies |
+| 0.5.5 | 2024-06-25 | [40505](https://github.com/airbytehq/airbyte/pull/40505) | Update dependencies |
+| 0.5.4 | 2024-06-22 | [40129](https://github.com/airbytehq/airbyte/pull/40129) | Update dependencies |
 | 0.5.3 | 2024-06-06 | [39225](https://github.com/airbytehq/airbyte/pull/39225) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.2 | 2024-06-02 | [0](https://github.com/airbytehq/airbyte/pull/0) | Emit state message at least once per stream |
 | 0.5.1 | 2024-04-11 | [35404](https://github.com/airbytehq/airbyte/pull/35404) | Add `row_batch_size` parameter more granular control read records |

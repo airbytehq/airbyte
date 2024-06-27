@@ -54,6 +54,8 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 0.3.3 | 2024-06-26 | [40371](https://github.com/airbytehq/airbyte/pull/40371) | Update dependencies |
+| 0.3.2 | 2024-06-22 | [40119](https://github.com/airbytehq/airbyte/pull/40119) | Update dependencies |
 | 0.3.1 | 2024-05-21 | [38481](https://github.com/airbytehq/airbyte/pull/38481) | [autopull] base image + poetry + up_to_date |
 | 0.3.0 | 2023-10-17 | [30994](https://github.com/airbytehq/airbyte/pull/30994) | Migrate to Low-code Framework |
 | 0.2.0 | 2023-06-08 | [25103](https://github.com/airbytehq/airbyte/pull/25103) | Add fields to `conversation_export` stream |

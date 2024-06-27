@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6240848f-f795-45eb-8f5e-c7542822fc03
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-tmdb
   githubIssueLabel: source-tmdb
   icon: tmdb.svg

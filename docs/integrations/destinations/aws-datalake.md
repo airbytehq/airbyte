@@ -94,6 +94,9 @@ which will be translated for compatibility with the Glue Data Catalog:
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.12 | 2024-06-26 | [40535](https://github.com/airbytehq/airbyte/pull/40535) | Update dependencies |
+| 0.1.11 | 2024-06-25 | [40458](https://github.com/airbytehq/airbyte/pull/40458) | Update dependencies |
+| 0.1.10 | 2024-06-22 | [39958](https://github.com/airbytehq/airbyte/pull/39958) | Update dependencies |
 | 0.1.9 | 2024-06-04 | [39033](https://github.com/airbytehq/airbyte/pull/39033) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.8 | 2024-05-20 | [38413](https://github.com/airbytehq/airbyte/pull/38413) | [autopull] base image + poetry + up_to_date |
 | `0.1.7` | 2024-04-29 | [#33853](https://github.com/airbytehq/airbyte/pull/33853)  | Enable STS Role Credential Refresh for Long Sync     |
