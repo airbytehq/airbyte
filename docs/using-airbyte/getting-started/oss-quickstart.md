@@ -13,7 +13,7 @@ Airbyte Open Source is a reliable and extensible open source data pipeline.
 
 If you're getting started with Airbyte Cloud, you can skip ahead to moving data by [adding your first source](add-a-source.md). 
 
-This quickstart guides you through creating a locally deployed instance of Airbyte in just minutes using `abctl` ([Airbyte Command Line Tool](https://github.com/airbytehq/abctl)).
+This quickstart guides you through creating a locally deployed instance of Airbyte in just minutes using `abctl` ([Airbyte Command Line Tool](https://github.com/airbytehq/abctl)). You'll be able to move data with minimal setup while you're exploring what Airbyte can do!
 
 :::tip
 **When you're ready to put an Airbyte instance into production, you'll want to review our guides on deployment.**
