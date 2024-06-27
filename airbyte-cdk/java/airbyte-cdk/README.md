@@ -2,22 +2,22 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-- [Developing with the Java CDK](#developing-with-the-java-cdk)
-  - [Intro to the Java CDK](#intro-to-the-java-cdk)
-    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    - [How is the CDK published?](#how-is-the-cdk-published)
-  - [Using the Java CDK](#using-the-java-cdk)
-    - [Building the CDK](#building-the-cdk)
-    - [Bumping the CDK version](#bumping-the-cdk-version)
-    - [Publishing the CDK](#publishing-the-cdk)
-  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    - [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-    - [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  - [Changelog](#changelog)
-    - [Java CDK](#java-cdk)
+* [Developing with the Java CDK](#developing-with-the-java-cdk)
+  * [Intro to the Java CDK](#intro-to-the-java-cdk)
+    * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    * [How is the CDK published?](#how-is-the-cdk-published)
+  * [Using the Java CDK](#using-the-java-cdk)
+    * [Building the CDK](#building-the-cdk)
+    * [Bumping the CDK version](#bumping-the-cdk-version)
+    * [Publishing the CDK](#publishing-the-cdk)
+  * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  * [Changelog](#changelog)
+    * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -187,7 +187,6 @@ corresponds to that version.
 | 0.36.4  | 2024-05-31 | [\#38824](https://github.com/airbytehq/airbyte/pull/38824) | Param marked as non-null to nullable in JdbcDestinationHandler for NPE fix                                                                                     |
 | 0.36.2  | 2024-05-29 | [\#38538](https://github.com/airbytehq/airbyte/pull/38357) | Exit connector when encountering a config error.                                                                                                               |
 | 0.36.0  | 2024-05-29 | [\#38358](https://github.com/airbytehq/airbyte/pull/38358) | Plumb generation_id / sync_id to destinations code                                                                                                             |
-| 0.35.16 | 2024-06-25 | [\#40517](https://github.com/airbytehq/airbyte/pull/40517) | (Backport, NOT AVAILABLE in all CDK versions) Make JdbcDatabase SQL statement logging optional                                                                 |
 | 0.35.15 | 2024-05-31 | [\#38824](https://github.com/airbytehq/airbyte/pull/38824) | Param marked as non-null to nullable in JdbcDestinationHandler for NPE fix                                                                                     |
 | 0.35.14 | 2024-05-28 | [\#38738](https://github.com/airbytehq/airbyte/pull/38738) | make ThreadCreationInfo cast as nullable                                                                                                                       |
 | 0.35.13 | 2024-05-28 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | minor changes to allow conversion of snowflake tests to kotlin                                                                                                 |
