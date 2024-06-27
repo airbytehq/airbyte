@@ -185,11 +185,11 @@ There are several channels for community support of local setup and deployment.
 **Airbyte Knowledge Base:**<br/>While support services are limited to Cloud and Enterprise customers, anyone may search the support team's [Help Center](https://support.airbyte.com/hc).
 
 **Community Slack:**<br/>Helpful channels for troubleshooting include:<br/>
-- [#ask-community-for-troubleshooting](https://airbytehq.slack.com/archives/C021JANJ6TY)
-- [#ask-ai](https://airbytehq.slack.com/archives/C01AHCD885S)
+- [#ask-community-for-troubleshooting](https://airbytehq.slack.com/archives/C021JANJ6TY): Where members of the Airbyte community can ask and answer questions. 
+- [#ask-ai](https://airbytehq.slack.com/archives/C01AHCD885S): For quick answers sourced from documentation and open support channels, you can have a chat with our virtual Airbyte assistant.  
 
 **Introductory Course:**<br/>
-For an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
+On Udemy, [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/) is a convenient and hands-on introduction to Airbyte that includes setting up example source and destination configurations. You'll also go on to use it in conjunction with Apache Airflow, Snowflake, dbt, and more.
 
 **Bug Reports:**<br/>If you find an issue with the `abctl` command, please report it as a github
 issue [here](https://github.com/airbytehq/airbyte/issues) with the type of `🐛 [abctl] Report an issue with the abctl tool`.
