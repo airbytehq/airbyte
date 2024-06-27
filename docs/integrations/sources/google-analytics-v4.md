@@ -8,6 +8,12 @@ This connector supports Universal Analytics properties through the [Reporting AP
 
 </HideInUI>
 
+:::danger
+
+Google Analytics (Universal Analytics) will deprecate its API on July 1. At that point, this connector will stop working. For more information, please see https://support.google.com/analytics/answer/11583528.
+
+:::
+
 :::caution
 
 **The Google Analytics (Universal Analytics) connector will be deprecated soon.**
