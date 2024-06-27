@@ -1,13 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from os import getenv
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
@@ -191,7 +190,7 @@ class SourceGithub(AbstractSource):
             )
         return user_message
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
@@ -238,12 +237,13 @@ class SourceGithub(AbstractSource):
         # This parameter is deprecated and in future will be used sane default, page_size: 10
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
-
+        max_waiting_time = config.get("max_waiting_time", 10) * 60
         organization_args = {
             "authenticator": authenticator,
             "organizations": organizations,
             "api_url": config.get("api_url"),
             "access_token_type": access_token_type,
+            "max_waiting_time": max_waiting_time,
         }
         start_date = config.get("start_date")
         organization_args_with_start_date = {**organization_args, "start_date": start_date}
@@ -254,6 +254,7 @@ class SourceGithub(AbstractSource):
             "repositories": repositories,
             "page_size_for_large_streams": page_size,
             "access_token_type": access_token_type,
+            "max_waiting_time": max_waiting_time,
         }
         repository_args_with_start_date = {**repository_args, "start_date": start_date}
 

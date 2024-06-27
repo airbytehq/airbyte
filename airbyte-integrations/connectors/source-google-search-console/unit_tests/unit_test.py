@@ -101,7 +101,7 @@ def test_slice(site_urls, sync_mode, data_state):
 def test_state(current_stream_state, latest_record, expected):
     stream = SearchAnalyticsByDate(None, ["https://example.com"], "start_date", "end_date")
 
-    value = stream.get_updated_state(current_stream_state, latest_record)
+    value = stream._get_updated_state(current_stream_state, latest_record)
     assert value == expected
 
 
@@ -110,9 +110,9 @@ def test_updated_state():
 
     state = {}
     record = {"site_url": "https://domain1.com", "search_type": "web", "date": "2022-01-01"}
-    state = stream.get_updated_state(state, record)
+    state = stream._get_updated_state(state, record)
     record = {"site_url": "https://domain2.com", "search_type": "web", "date": "2022-01-01"}
-    state = stream.get_updated_state(state, record)
+    state = stream._get_updated_state(state, record)
 
     assert state == {
         "https://domain1.com": {"web": {"date": "2022-01-01"}},

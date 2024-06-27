@@ -61,6 +61,9 @@ internal class AsyncFlush(
                     writer.accept(
                         record.serialized!!,
                         Jsons.serialize(record.record!!.meta),
+                        // Destinations that want to use generations should switch to the new
+                        // structure (e.g. StagingStreamOperations)
+                        0,
                         record.record!!.emittedAt
                     )
                 } catch (e: Exception) {
