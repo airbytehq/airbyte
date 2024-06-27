@@ -267,6 +267,7 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.14  | 2024-06-26 | [\#40563](https://github.com/airbytehq/airbyte/pull/40563) | Convert all strict-encrypt prod code to kotlin.                                                          |
 | 2.0.13  | 2024-06-13 | [\#40159](https://github.com/airbytehq/airbyte/pull/40159) | Config error on drop failure when cascade is disabled                                                    |
 | 2.0.12  | 2024-06-12 | [\#39388](https://github.com/airbytehq/airbyte/pull/39388) | Sources auto-conversion to Kotlin                                                                        |
 | 2.0.11  | 2024-06-10 | [\#39372](https://github.com/airbytehq/airbyte/pull/39372) | Fixed function already exists error                                                                      |
