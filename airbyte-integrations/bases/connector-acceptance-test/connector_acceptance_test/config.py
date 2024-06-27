@@ -83,6 +83,7 @@ class DiscoveryTestConfig(BaseConfig):
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
+    validate_primary_keys_data_type: bool = Field(True, description="Ensure correct primary keys data type")
 
 
 class ExpectedRecordsConfig(BaseModel):
@@ -168,6 +169,7 @@ class BasicReadTestConfig(BaseConfig):
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
     validate_stream_statuses: bool = Field(None, description="Ensure that all streams emit status messages")
     validate_state_messages: bool = Field(True, description="Ensure that state messages emitted as expected")
+    validate_primary_keys_data_type: bool = Field(True, description="Ensure correct primary keys data type")
     fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
@@ -197,10 +199,29 @@ class FullRefreshConfig(BaseConfig):
     )
 
 
+class FutureStateCursorFormatStreamConfiguration(BaseConfig):
+    name: str
+    format: Optional[str] = Field(default=None, description="Expected format of the cursor value")
+
+
+class FutureStateCursorFormatConfiguration(BaseConfig):
+    format: Optional[str] = Field(
+        default=None,
+        description="The default format of the cursor value will be used for all streams except those defined in the streams section",
+    )
+    streams: List[FutureStateCursorFormatStreamConfiguration] = Field(
+        default_factory=list, description="Expected cursor value format for a particular stream"
+    )
+
+
 class FutureStateConfig(BaseConfig):
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
     missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missing streams with valid bypass reasons.")
     bypass_reason: Optional[str]
+    cursor_format: Optional[FutureStateCursorFormatConfiguration] = Field(
+        default_factory=FutureStateCursorFormatConfiguration,
+        description=("Expected cursor format"),
+    )
 
 
 class IncrementalConfig(BaseConfig):

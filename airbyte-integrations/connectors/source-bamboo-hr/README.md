@@ -1,11 +1,15 @@
-# Bamboo-Hr source connector
+# Bamboo Hr Source
 
-This is the repository for the Bamboo-Hr source connector, written in Python.
+This is the repository for the Bamboo HR source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/bamboo-hr).
 
 ## Local development
 
 ### Prerequisites
+
+* Python (`^3.9`)
+* Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
+
 
 - Python (~=3.9)
 - Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
@@ -21,7 +25,7 @@ poetry install --with dev
 ### Create credentials
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/bamboo-hr)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_bamboo_hr/spec.yaml` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_bamboo_hr/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
@@ -34,12 +38,12 @@ poetry run source-bamboo-hr discover --config secrets/config.json
 poetry run source-bamboo-hr read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
-### Running unit tests
+### Running tests
 
-To run unit tests locally, from the connector directory run:
+To run tests locally, from the connector directory run:
 
 ```
-poetry run pytest unit_tests
+poetry run pytest tests
 ```
 
 ### Building the docker image
@@ -79,7 +83,7 @@ If your connector requires to create or destroy resources for use during accepta
 
 ### Dependency Management
 
-All of your dependencies should be managed via Poetry.
+All of your dependencies should be managed via Poetry. 
 To add a new dependency, run:
 
 ```bash
@@ -94,7 +98,7 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-bamboo-hr test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
-   - bump the `dockerImageTag` value in in `metadata.yaml`
+   - bump the `dockerImageTag` value in `metadata.yaml`
    - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/bamboo-hr.md`).

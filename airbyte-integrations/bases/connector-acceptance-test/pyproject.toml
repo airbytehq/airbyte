@@ -41,6 +41,7 @@ docker = ">=6,<7"
 urllib3 = "<2.0"
 requests = "^2.31"
 pytest-xdist = "^3.3.1"
+pytest-reportlog = "^0.4.0"
 
 [tool.poe.tasks]
 test = "pytest unit_tests"

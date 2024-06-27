@@ -21,6 +21,7 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.util.MoreIterators
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
+import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
@@ -65,6 +66,60 @@ internal class DefaultJdbcSourceAcceptanceTest :
 
     public override fun supportsSchemas(): Boolean {
         return true
+    }
+
+    // Default test source does not support RFR.
+    public override fun supportResumeableFullRefreshWithoutPk(): Boolean? {
+        return false
+    }
+
+    override fun getCatalog(defaultNamespace: String?): AirbyteCatalog {
+        return AirbyteCatalog()
+            .withStreams(
+                mutableListOf(
+                    CatalogHelpers.createAirbyteStream(
+                            TABLE_NAME,
+                            defaultNamespace,
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
+                        .withSupportedSyncModes(
+                            java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                        )
+                        .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID)))
+                        .withIsResumable(false),
+                    CatalogHelpers.createAirbyteStream(
+                            TABLE_NAME_WITHOUT_PK,
+                            defaultNamespace,
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
+                        .withSupportedSyncModes(
+                            java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                        )
+                        .withSourceDefinedPrimaryKey(emptyList())
+                        .withIsResumable(false),
+                    CatalogHelpers.createAirbyteStream(
+                            TABLE_NAME_COMPOSITE_PK,
+                            defaultNamespace,
+                            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
+                        .withSupportedSyncModes(
+                            java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                        )
+                        .withSourceDefinedPrimaryKey(
+                            java.util.List.of(
+                                java.util.List.of(COL_FIRST_NAME),
+                                java.util.List.of(COL_LAST_NAME),
+                            ),
+                        )
+                        .withIsResumable(false),
+                ),
+            )
     }
 
     fun getConfigWithConnectionProperties(

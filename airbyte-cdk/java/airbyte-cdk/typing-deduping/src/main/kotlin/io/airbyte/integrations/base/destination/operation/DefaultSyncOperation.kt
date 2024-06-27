@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base.destination.operation
 
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.operation.SyncOperation
@@ -15,6 +16,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil as tdutils
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.CompletableFuture
@@ -102,7 +104,22 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
     override fun flushStream(descriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val streamConfig =
             parsedCatalog.getStream(descriptor.namespace ?: defaultNamespace, descriptor.name)
-        streamOpsMap[streamConfig.id]?.writeRecords(streamConfig, stream)
+        streamOpsMap[streamConfig.id]?.writeRecords(
+            streamConfig,
+            stream.map { record ->
+                if (record.record!!.meta == null) {
+                    record.record!!.meta = AirbyteRecordMessageMeta()
+                }
+                record.also {
+                    it.record!!
+                        .meta!!
+                        .setAdditionalProperty(
+                            AIRBYTE_META_SYNC_ID_KEY,
+                            streamConfig.syncId,
+                        )
+                }
+            },
+        )
     }
 
     override fun finalizeStreams(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {

@@ -1,4 +1,4 @@
-# Omnisend Source
+# Omnisend source connector
 
 This is the repository for the Omnisend configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/omnisend).
@@ -42,7 +42,7 @@ poetry run source-omnisend read --config secrets/config.json --catalog sample_fi
 To run tests locally, from the connector directory run:
 
 ```
-poetry run pytest tests
+poetry run pytest unit_tests
 ```
 
 ### Building the docker image

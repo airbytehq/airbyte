@@ -3,9 +3,9 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.1"
+version = "0.1.4"
 name = "source-omnisend"
-description = "Source implementation for omnisend."
+description = "Source implementation for Omnisend."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
@@ -22,6 +22,6 @@ airbyte-cdk = "^0"
 source-omnisend = "source_omnisend.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "*"
-pytest-mock = "*"
-pytest = "*"
+requests-mock = "^1.9.3"
+pytest = "^6.1"
+pytest-mock = "^3.6.1"

@@ -232,7 +232,7 @@ class TestIncrementalKlaviyoStream:
     )
     def test_get_updated_state(self, config_start_date, current_cursor, latest_cursor, expected_cursor):
         stream = SomeIncrementalStream(api_key=API_KEY, start_date=config_start_date)
-        assert stream.get_updated_state(
+        assert stream._get_updated_state(
             current_stream_state={stream.cursor_field: current_cursor} if current_cursor else {},
             latest_record={stream.cursor_field: latest_cursor},
         ) == {stream.cursor_field: expected_cursor}
@@ -446,7 +446,7 @@ class TestCampaignsStream:
     )
     def test_get_updated_state(self, latest_record, current_stream_state, expected_state):
         stream = Campaigns(api_key=API_KEY)
-        assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+        assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
 
     def test_stream_slices(self):
         stream = Campaigns(api_key=API_KEY)
