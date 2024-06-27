@@ -603,7 +603,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: end_time
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -670,7 +670,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -696,7 +696,8 @@ definitions:
       type: DeclarativeStream
       name: conference_participants
       primary_key:
-        - sid
+        - account_sid
+        - conference_sid
       retriever:
         type: SimpleRetriever
         requester:
@@ -879,7 +880,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1128,7 +1129,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_sent
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1201,9 +1202,9 @@ definitions:
                   $ref: "#/definitions/streams/Messages"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date_sent
+        cursor_field: date_created
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1229,7 +1230,8 @@ definitions:
       type: DeclarativeStream
       name: usage_records
       primary_key:
-        - sid
+        - account_sid
+        - category
       retriever:
         type: SimpleRetriever
         requester:
@@ -1270,7 +1272,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: start_date
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1445,7 +1447,7 @@ definitions:
       type: DeclarativeStream
       name: user_conversations
       primary_key:
-        - conversations
+        - account_sid
       retriever:
         type: SimpleRetriever
         requester:
@@ -2632,7 +2634,7 @@ schemas:
         type: DatetimeBasedCursor
         cursor_field: start_date
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%a, %d %b %Y %H:%M:%S %z"
         start_datetime:
           type: MinMaxDatetime
