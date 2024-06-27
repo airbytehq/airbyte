@@ -4,7 +4,6 @@
 
 
 from airbyte_cdk.logger import AirbyteLogger
-
 from source_posthog import SourcePosthog
 
 

@@ -62,7 +62,7 @@ def establish_connection(config: json, logger: Optional[AirbyteLogger] = None) -
     """
     Creates a connection to Firebolt database using the parameters provided.
     :param config: Json object containing db credentials.
-    :param logger: logging.Logger instance to print logs.
+    :param logger: AirbyteLogger instance to print logs.
     :return: PEP-249 compliant database Connection object.
     """
     logger.debug("Connecting to Firebolt.") if logger else None
