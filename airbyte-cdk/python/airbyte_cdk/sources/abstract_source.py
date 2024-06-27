@@ -141,35 +141,25 @@ class AbstractSource(Source, ABC):
                     )
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
-                except AirbyteTracedException as e:
-                    yield from self._emit_queued_messages()
-                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    yield e.as_sanitized_airbyte_message(stream_descriptor=StreamDescriptor(name=configured_stream.stream.name))
-                    stream_name_to_exception[stream_instance.name] = e
-                    if self.stop_sync_on_stream_failure:
-                        logger.info(
-                            f"Stopping sync on error from stream {configured_stream.stream.name} because {self.name} does not support continuing syncs on error."
-                        )
-                        break
                 except Exception as e:
                     yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    display_message = stream_instance.get_error_display_message(e)
-                    stream_descriptor = StreamDescriptor(name=configured_stream.stream.name)
-                    if display_message:
-                        traced_exception = AirbyteTracedException.from_exception(
-                            e, message=display_message, stream_descriptor=stream_descriptor
-                        )
+
+                    if isinstance(e, AirbyteTracedException):
+                        stream_descriptor = StreamDescriptor(name=configured_stream.stream.name)
+                        traced_exception = e
+                        info_message = f"Stopping sync on error from stream {configured_stream.stream.name} because {self.name} does not support continuing syncs on error."
                     else:
-                        traced_exception = AirbyteTracedException.from_exception(e, stream_descriptor=stream_descriptor)
-                    yield traced_exception.as_sanitized_airbyte_message()
+                        stream_descriptor = None
+                        traced_exception = self._serialize_exception(stream_instance, configured_stream, e)
+                        info_message = f"{self.name} does not support continuing syncs on error from stream {configured_stream.stream.name}"
+
+                    yield traced_exception.as_sanitized_airbyte_message(stream_descriptor=stream_descriptor)
                     stream_name_to_exception[stream_instance.name] = traced_exception
                     if self.stop_sync_on_stream_failure:
-                        logger.info(f"{self.name} does not support continuing syncs on error from stream {configured_stream.stream.name}")
+                        logger.info(info_message)
                         break
                 finally:
                     timer.finish_event()
@@ -184,6 +174,14 @@ class AbstractSource(Source, ABC):
             # type because this combined error isn't actionable, but rather the previously emitted individual errors.
             raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
         logger.info(f"Finished syncing {self.name}")
+
+    @staticmethod
+    def _serialize_exception(stream_instance, configured_stream, e):
+        display_message = stream_instance.get_error_display_message(e)
+        stream_descriptor = StreamDescriptor(name=configured_stream.stream.name)
+        if display_message:
+            return AirbyteTracedException.from_exception(e, message=display_message, stream_descriptor=stream_descriptor)
+        return AirbyteTracedException.from_exception(e, stream_descriptor=stream_descriptor)
 
     @property
     def raise_exception_on_missing_stream(self) -> bool:
