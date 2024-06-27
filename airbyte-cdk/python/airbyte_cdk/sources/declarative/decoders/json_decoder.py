@@ -44,9 +44,7 @@ class IterableDecoder(Decoder):
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
         for line in response.iter_lines():
-            self.last_decoded = {"record": line.decode()}
-            yield self.last_decoded
-
+            yield {"record": line.decode()}
 
 @dataclass
 class JsonlDecoder(Decoder):
