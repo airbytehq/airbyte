@@ -443,6 +443,35 @@ class TestFullRefresh:
         assert_message_in_log_output(message_on_backoff_exception, output)
         assert len(output.records) == 0
 
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_error_not_support_account_id_of_type_vendor_when_read_then_no_records_and_error_logged(
+            self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ):
+        mock_auth(http_mocker)
+        response_body = {
+            "errors": [
+                {"code": "InvalidInput",
+                 "message": "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.",
+                 "details": ""}
+            ]
+        }
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            response_with_status(status_code=HTTPStatus.BAD_REQUEST, body=response_body),
+        )
+
+        warning_message = (
+            "The endpoint https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports returned 400: "
+            "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.."
+            " This is most likely due to account type (Vendor) on the credentials in use."
+            " Try to re-authenticate with Seller account type and sync again."
+        )
+
+        output = self._read(stream_name, config())
+        assert_message_in_log_output(warning_message, output)
+        assert len(output.records) == 0
+
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestIncremental:
