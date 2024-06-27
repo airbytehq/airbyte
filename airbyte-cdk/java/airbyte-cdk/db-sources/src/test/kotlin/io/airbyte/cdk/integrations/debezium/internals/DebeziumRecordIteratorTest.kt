@@ -34,7 +34,7 @@ class DebeziumRecordIteratorTest {
                 { false },
                 mock(),
                 Duration.ZERO,
-                false
+                false // Heartbeats should not be ignored for tests.
             )
         val lsn =
             debeziumRecordIterator.getHeartbeatPosition(

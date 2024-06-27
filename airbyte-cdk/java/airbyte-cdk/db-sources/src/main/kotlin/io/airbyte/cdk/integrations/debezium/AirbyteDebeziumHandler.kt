@@ -104,7 +104,7 @@ class AirbyteDebeziumHandler<T>(
                 { publisher.hasClosed() },
                 DebeziumShutdownProcedure(queue, { publisher.close() }, { publisher.hasClosed() }),
                 firstRecordWaitTime,
-                shouldIgnoreHeartbeat()
+                config
             )
 
         val syncCheckpointDuration =
@@ -138,11 +138,6 @@ class AirbyteDebeziumHandler<T>(
                 StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration),
             )
         return AutoCloseableIterators.fromIterator(iterator)
-    }
-
-    private fun shouldIgnoreHeartbeat(): Boolean {
-        val isTest = config.has("is_test") && config["is_test"].asBoolean()
-        return !isTest
     }
 
     companion object {

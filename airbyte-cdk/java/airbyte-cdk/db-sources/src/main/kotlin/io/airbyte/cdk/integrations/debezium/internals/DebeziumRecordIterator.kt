@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.debezium.internals
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.AbstractIterator
 import io.airbyte.cdk.db.DbAnalyticsUtils.debeziumCloseReasonMessage
@@ -38,7 +39,7 @@ class DebeziumRecordIterator<T>(
     private val publisherStatusSupplier: Supplier<Boolean>,
     private val debeziumShutdownProcedure: DebeziumShutdownProcedure<ChangeEvent<String?, String?>>,
     private val firstRecordWaitTime: Duration,
-    private val shouldIgnoreHeartbeat: Boolean
+    private val config: JsonNode
 ) : AbstractIterator<ChangeEventWithMetadata>(), AutoCloseableIterator<ChangeEventWithMetadata> {
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
@@ -195,6 +196,8 @@ class DebeziumRecordIterator<T>(
             !event.value()!!.contains("source")
     }
 
+    // Closing debezium due to heartbeat position not changing only exists as an escape hatch for
+    // testing setups. In production, we rely on the platform heartbeats to kill the sync
     private fun heartbeatPosNotChanging(): Boolean {
         if (this.tsLastHeartbeat == null) {
             return false
@@ -206,11 +209,10 @@ class DebeziumRecordIterator<T>(
         }
 
         // wait time for no change in heartbeat position is half of initial waitTime
-        if (shouldIgnoreHeartbeat) {
+        if (isTest()) {
             return false
-        } else {
-            return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
         }
+        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
     }
 
     private fun requestClose(closeLogMessage: String, closeReason: DebeziumCloseReason) {
@@ -229,6 +231,11 @@ class DebeziumRecordIterator<T>(
         if (!hasSnapshotFinished) {
             throw RuntimeException("Closing down debezium engine but snapshot has not finished")
         }
+    }
+
+    private fun isTest(): Boolean {
+        val isTest = config.has("is_test") && config["is_test"].asBoolean()
+        return !isTest
     }
 
     /**
