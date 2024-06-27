@@ -6,7 +6,7 @@ data:
     hosts:
       - "*.s3.amazonaws.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2-rc.1@sha256:9715c1ba59b69783eb87758eb0c2fac8d3904233d6ffd687c5642af97eed0c7a
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
