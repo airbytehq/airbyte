@@ -47,6 +47,7 @@ def test_break_down_results_transformation():
     record_transformation_result = InstagramBreakDownResultsTransformation().transform(breakdowns_record)
     assert record_transformation_result == expected_breakdown_record_transformed
 
-def test_instragram_insights_transformation(config):
+
+def test_instagram_insights_transformation(config):
     record_transformation = InstagramInsightsTransformation().transform(insights_record)
-    assert record_transformation == {**insights_record_transformed, **record_transformation}
+    assert record_transformation == insights_record_transformed

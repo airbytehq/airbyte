@@ -109,9 +109,49 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
 @dataclass
 class InstagramInsightsTransformation(RecordTransformation):
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        insights_data = record.get("data", [])
-        for insight in insights_data:
-            record[insight["name"]] = insight.get("values")[0]["value"]
+        """
+        The transformation flattens the array of insights into a single object (dictionary). In such object, each key-value pair
+        in the resulting object represents a metric and and its corresponding value.
+
+        Example Input:
+        {
+            "data": [
+              {
+                "name": "comments",
+                "period": "lifetime",
+                "values": [
+                  {
+                    "value": 7
+                  }
+                ],
+                "title": "title1",
+                "description": "Description1.",
+                "id": "insta_id/insights/comments/lifetime"
+              },
+              {
+                "name": "ig_reels_avg_watch_time",
+                "period": "lifetime",
+                "values": [
+                  {
+                    "value": 11900
+                  }
+                ],
+                "title": "2",
+                "description": "Description2.",
+                "id": "insta_id/insights/ig_reels_avg_watch_time/lifetime"
+              }
+        }
+
+        Example Output:
+        {
+            "comments": 7,
+            "ig_reels_avg_watch_time": 11900
+        }
+        """
+        if record.get("data"):
+            insights_data = record.pop("data")
+            for insight in insights_data:
+                record[insight["name"]] = insight.get("values")[0]["value"]
         return record
 
 

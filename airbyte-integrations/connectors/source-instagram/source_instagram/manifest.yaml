@@ -202,9 +202,6 @@ definitions:
                 - business_account_id
               value: "{{ stream_partition.media_insights_info.business_account_id }}"
               value_type: string
-        - type: RemoveFields
-          field_pointers:
-            - - data
         - type: CustomTransformation
           class_name: source_instagram.components.InstagramClearUrlTransformation
       schema_loader:
@@ -508,9 +505,6 @@ definitions:
               value_type: string
         - type: CustomTransformation
           class_name: source_instagram.components.InstagramClearUrlTransformation
-        - type: RemoveFields
-          field_pointers:
-            - - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -785,32 +779,6 @@ schemas:
               type:
                 - "null"
                 - string
-            media_insights_info:
-              description: Information for media insights
-              type:
-                - object
-                - "null"
-              properties:
-                business_account_id:
-                  type:
-                    - string
-                    - "null"
-                media_id:
-                  type:
-                    - string
-                    - "null"
-                media_product_type:
-                  type:
-                    - string
-                    - "null"
-                media_type:
-                  type:
-                    - string
-                    - "null"
-                page_id:
-                  type:
-                    - string
-                    - "null"
     required:
       - id
   MediaInsights:
@@ -1073,23 +1041,6 @@ schemas:
         type:
           - "null"
           - string
-      story_insights_info:
-        type:
-          - object
-          - "null"
-        properties:
-          business_account_id:
-            type:
-              - string
-              - "null"
-          page_id:
-            type:
-              - string
-              - "null"
-          story_id:
-            type:
-              - string
-              - "null"
     required:
       - id
   StoryInsights:
