@@ -376,6 +376,7 @@ class Leads(MarketoExportBase):
     """
 
     cursor_field = "updatedAt"
+    _schema_cache = None  # Class variable to cache the schema
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config, self.name)
@@ -388,10 +389,18 @@ class Leads(MarketoExportBase):
         return list(standard_properties & available_fields)
 
     def get_json_schema(self) -> Mapping[str, Any]:
+        if Leads._schema_cache is not None:  # Use cached schema if available
+            return Leads._schema_cache
+
         standard_properties = super().get_json_schema()
         resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
         fields = resp.json().get("result")
-        print('fields:', fields)
+        if fields is None:
+            self.logger.info('retrying to get fields, sleeping 10 seconds...')
+            sleep(10)
+            resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
+            fields = resp.json().get("result")
+            self.logger.info('retried retriving fields')
         
         STRING_TYPES = ["string", "email", "phone", "url", "textarea", "reference"]
         for field in fields:
@@ -420,6 +429,9 @@ class Leads(MarketoExportBase):
             # Allow null values for all field types
             field_schema["type"] = [field_schema["type"], "null"]
             standard_properties["properties"][field_name] = field_schema
+
+        self.logger.info('caching leads schema')
+        Leads._schema_cache = standard_properties  # Cache the schema
         return standard_properties
 
 
