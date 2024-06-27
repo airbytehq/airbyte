@@ -94,6 +94,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - contacts
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['modifiedAt'] >= stream_interval['start_time'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
