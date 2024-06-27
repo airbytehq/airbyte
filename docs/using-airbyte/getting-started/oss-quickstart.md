@@ -45,10 +45,6 @@ With Brew, you can keep abctl up to date easily, by running:
 brew upgrade abctl
 ``` 
 
-:::info
-If you don't want to use Brew to manage the installation, you can manually download the latest release [here](https://github.com/airbytehq/abctl/releases).
-:::
-
 </TabItem>
 <TabItem value="abctl-linux" label="Linux" default>
 
