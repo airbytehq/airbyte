@@ -1,6 +1,7 @@
-# Customer Io Source
+# Customer-Io source connector
 
-This is the repository for the Customer Io configuration based source connector.
+
+This is the repository for the Customer-Io source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/customer-io).
 
 ## Local development
@@ -25,7 +26,7 @@ poetry install --with dev
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/customer-io)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_customer_io/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
+See `sample_files/sample_config.json` for a sample config file.
 
 
 ### Locally running the connector
@@ -53,6 +54,7 @@ poetry run pytest tests
 airbyte-ci connectors --name=source-customer-io build
 ```
 
+An image will be available on your host with the tag `airbyte/source-customer-io:dev`.
 An image will be available on your host with the tag `airbyte/source-customer-io:dev`.
 
 
@@ -95,9 +97,14 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+    - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/customer-io.md`).
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/customer-io.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
 8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.

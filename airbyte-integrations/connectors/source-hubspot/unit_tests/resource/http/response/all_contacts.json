@@ -27,6 +27,16 @@
           "form-type": "HUBSPOT",
           "contact-associated-by": ["EMAIL"],
           "meta-data": []
+        },
+        {
+          "conversion-id": "55891af1-faa6-44de-ad51-b012c6f7a892",
+          "timestamp": 1714546800000,
+          "form-id": "15905b83-4431-414c-8a0c-4bfd1e819290",
+          "portal-id": 8727216,
+          "title": "Favorite bending element?",
+          "form-type": "HUBSPOT",
+          "contact-associated-by": ["EMAIL"],
+          "meta-data": []
         }
       ],
       "list-memberships": [
@@ -72,7 +82,64 @@
           ]
         }
       ],
-      "merge-audits": [],
+      "merge-audits": [
+        {
+          "canonical-vid": 651,
+          "vid-to-merge": 201,
+          "timestamp": 1714546800000,
+          "entity-id": "auth:app-cookie | auth-level:app | login-id:integration-test@airbyte.io-1688758203663 | hub-id:8727216 | user-id:12282590 | origin-ip:2804:1b3:8402:b1f4:7d1b:f62e:b071:593d | correlation-id:3f139cd7-66fc-4300-8cbc-e6c1fe9ea7d1",
+          "user-id": 12282590,
+          "num-properties-moved": 45,
+          "merged_from_email": {
+            "value": "testingapis@hubspot.com",
+            "source-type": "API",
+            "source-id": null,
+            "source-label": null,
+            "updated-by-user-id": null,
+            "timestamp": 1714546800000,
+            "selected": false
+          },
+          "merged_to_email": {
+            "value": "testingapicontact_1@hubspot.com",
+            "source-type": "API",
+            "source-id": null,
+            "source-label": null,
+            "updated-by-user-id": null,
+            "timestamp": 1714546800000,
+            "selected": false
+          },
+          "first-name": "test",
+          "last-name": "testerson"
+        },
+        {
+          "canonical-vid": 651,
+          "vid-to-merge": 201,
+          "timestamp": 1714546800000,
+          "entity-id": "auth:app-cookie | auth-level:app | login-id:integration-test@airbyte.io-1688758203663 | hub-id:8727216 | user-id:12282590 | origin-ip:2804:1b3:8402:b1f4:7d1b:f62e:b071:593d | correlation-id:3f139cd7-66fc-4300-8cbc-e6c1fe9ea7d1",
+          "user-id": 12282590,
+          "num-properties-moved": 45,
+          "merged_from_email": {
+            "value": "testingapis@hubspot.com",
+            "source-type": "API",
+            "source-id": null,
+            "source-label": null,
+            "updated-by-user-id": null,
+            "timestamp": 1714546800000,
+            "selected": false
+          },
+          "merged_to_email": {
+            "value": "testingapicontact_1@hubspot.com",
+            "source-type": "API",
+            "source-id": null,
+            "source-label": null,
+            "updated-by-user-id": null,
+            "timestamp": 1714546800000,
+            "selected": false
+          },
+          "first-name": "test",
+          "last-name": "testerson"
+        }
+      ],
       "addedAt": 1711049462684
     }
   ]

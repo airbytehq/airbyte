@@ -1,0 +1,6 @@
+.callout {
+  background: var(--color-blue-30);
+  border-radius: 0.3125rem;
+  width: 100%;
+  padding: 0.625rem 1.25rem;
+}

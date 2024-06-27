@@ -66,7 +66,7 @@ def default_backoff_handler(
 
 
 def http_client_default_backoff_handler(
-    max_tries: Optional[int], factor: float, max_time: Optional[int] = None, **kwargs: Any
+    max_tries: Optional[int], max_time: Optional[int] = None, **kwargs: Any
 ) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def log_retry_attempt(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
@@ -88,7 +88,6 @@ def http_client_default_backoff_handler(
         giveup=should_give_up,
         max_tries=max_tries,
         max_time=max_time,
-        factor=factor,
         **kwargs,
     )
 

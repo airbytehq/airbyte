@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk import AirbyteLogger
+import logging
+
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 """

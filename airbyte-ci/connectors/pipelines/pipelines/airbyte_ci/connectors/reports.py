@@ -152,7 +152,7 @@ class ConnectorReport(Report):
                 dagger_client=self.pipeline_context.dagger_client,
                 bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
                 key=self.html_report_remote_storage_key,
-                gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,  # type: ignore
+                gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
             )
             self.pipeline_context.logger.info(f"HTML report uploaded to {gcs_url}")
 

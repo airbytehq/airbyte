@@ -90,3 +90,18 @@ def test_last_record_is_node_if_no_records():
     response = requests.Response()
     next_page_token = strategy.next_page_token(response, 0, None)
     assert next_page_token is None
+
+
+def test_reset_with_initial_token():
+    strategy = CursorPaginationStrategy(
+        page_size=10,
+        cursor_value="{{ response.next_page }}",
+        config={},
+        parameters={},
+    )
+
+    assert strategy.initial_token is None
+
+    strategy.reset("https://for-all-mankind.nasa.com/api/v1/astronauts")
+
+    assert strategy.initial_token == "https://for-all-mankind.nasa.com/api/v1/astronauts"
