@@ -11,7 +11,7 @@ from airbyte_cdk.models import AirbyteStream
 
 class WriteBufferMixin:
 
-    # Default instance of AirbyteLogger
+    # Default instance of logging.Logger
     logger = logging.getLogger("airbyte")
     # intervals after which the records_buffer should be cleaned up for selected stream
     flush_interval = 500  # records count

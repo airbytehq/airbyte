@@ -43,7 +43,7 @@ TEST_RECORDS_PATH: str = "integration_tests/test_data/test_destination_messages.
 
 def test_check():
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    actual = TEST_DESTINATION.check(logger=AirbyteLogger, config=TEST_CONFIG)
+    actual = TEST_DESTINATION.check(logger=logging.Logger, config=TEST_CONFIG)
     assert actual == expected
 
 
