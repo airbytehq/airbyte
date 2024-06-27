@@ -41,6 +41,8 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.6 | 2024-06-25 | [40396](https://github.com/airbytehq/airbyte/pull/40396) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40098](https://github.com/airbytehq/airbyte/pull/40098) | Update dependencies |
 | 0.1.4 | 2024-06-06 | [39154](https://github.com/airbytehq/airbyte/pull/39154) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.3 | 2024-05-21 | [38525](https://github.com/airbytehq/airbyte/pull/38525) | [autopull] base image + poetry + up_to_date |
 | 0.1.2 | 2023-03-06 | [23749](https://github.com/airbytehq/airbyte/pull/23749) | Spec and docs are improved for beta certification |

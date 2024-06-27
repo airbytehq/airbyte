@@ -178,7 +178,9 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 2.1.4 | 2024-06-16 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix README commands, change spec from json to yaml, fix schema states to object |
+| 2.1.6 | 2024-06-25 | [40331](https://github.com/airbytehq/airbyte/pull/40331) | Update dependencies |
+| 2.1.5 | 2024-06-22 | [39998](https://github.com/airbytehq/airbyte/pull/39998) | Update dependencies |
+| 2.1.4 | 2024-06-16 | [0](https://github.com/airbytehq/airbyte/pull/0) | Fix README commands, change spec from json to yaml, fix schema states to object |
 | 2.1.3 | 2024-06-06 | [39240](https://github.com/airbytehq/airbyte/pull/39240) | [autopull] Upgrade base image to v1.2.2 |
 | 2.1.2 | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions |
 | 2.1.1 | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs |

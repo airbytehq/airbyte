@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2446953b-b794-429b-a9b3-c821ba992a48
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-twilio-taskrouter
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
   githubIssueLabel: source-twilio-taskrouter

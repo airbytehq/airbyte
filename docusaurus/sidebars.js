@@ -4,6 +4,7 @@ const {
   parseMarkdownContentTitle,
   parseFrontMatter,
 } = require("@docusaurus/utils");
+const { type } = require("os");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -568,6 +569,11 @@ module.exports = {
     },
     "operator-guides/upgrading-airbyte",
     {
+      type: "doc",
+      label: "Managing Connector Updates",
+      id: "managing-airbyte/connector-updates",
+    },
+    {
       type: "category",
       label: "Configuring Airbyte",
       link: {
@@ -580,6 +586,7 @@ module.exports = {
         "operator-guides/telemetry",
       ],
     },
+    
     {
       type: "category",
       label: "Access Management",
@@ -598,7 +605,18 @@ module.exports = {
             },
           ],
         },
-      ],
+        {
+          type: "category",
+          label: "Role-Based Access Control (RBAC)",
+          link: {
+            type: "doc",
+            id: "access-management/rbac",
+          },
+          items: [
+            {type: "doc", id: "access-management/role-mapping"},
+          ],
+        },
+      ]
     },
     {
       type: "category",

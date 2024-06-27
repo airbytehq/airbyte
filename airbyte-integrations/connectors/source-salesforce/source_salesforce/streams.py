@@ -21,7 +21,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
-from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
@@ -695,7 +695,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
     return instance
 
 
-class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
+class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC):
     state_checkpoint_interval = 500
     _slice = None
 
@@ -704,6 +704,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         self.replication_key = replication_key
         self._stream_slice_step = stream_slice_step
         self._stream_slicer_cursor = None
+        self._state = {}
 
     def set_cursor(self, cursor: Cursor) -> None:
         self._stream_slicer_cursor = cursor
@@ -764,7 +765,15 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     def cursor_field(self) -> str:
         return self.replication_key
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object. Check if latest record is IN stream slice interval => ignore if not

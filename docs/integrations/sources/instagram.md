@@ -116,6 +116,10 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| 3.0.14 | 2024-06-26 | [39303](https://github.com/airbytehq/airbyte/pull/40524) | Fix Api stream when the results contain not business accounts |
+| 3.0.13 | 2024-06-25 | [40456](https://github.com/airbytehq/airbyte/pull/40456) | Update dependencies |
+| 3.0.12 | 2024-06-24 | [39303](https://github.com/airbytehq/airbyte/pull/39504) | Migrate Media, Users, UserLifeTimeInsights and Stories to low-code |
+| 3.0.11 | 2024-06-22 | [40127](https://github.com/airbytehq/airbyte/pull/40127) | Update dependencies |
 | 3.0.10 | 2024-06-06 | [39303](https://github.com/airbytehq/airbyte/pull/39303) | [autopull] Upgrade base image to v1.2.2 |
 | 3.0.9 | 2024-05-21 | [38554](https://github.com/airbytehq/airbyte/pull/38554) | Upgrade to API v19.0 |
 | 3.0.8 | 2024-05-20 | [38268](https://github.com/airbytehq/airbyte/pull/38268) | Replace AirbyteLogger with logging.Logger |
