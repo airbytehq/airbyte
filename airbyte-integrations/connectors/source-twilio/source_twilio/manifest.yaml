@@ -47,7 +47,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            {{ config['base_api_url'] }}/Accounts/{{
+            https://api.twilio.com/2010-04-01/Accounts/{{
             stream_partition.account_sid }}/Addresses.json
           http_method: GET
         record_selector:
@@ -82,10 +82,1431 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Addresses"
+    Available Phone Number Countries:
+      type: DeclarativeStream
+      name: available_phone_number_countries
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/AvailablePhoneNumbers.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - countries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Available Phone Number Countries"
+    Available Phone Numbers Local:
+      type: DeclarativeStream
+      name: available_phone_numbers_local
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/Local.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - available_phone_numbers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: account_sid
+                stream:
+                  $ref: "#/definitions/streams/Accounts"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: country_code
+                partition_field: country_code
+                stream:
+                  $ref: "#/definitions/streams/Available Phone Number Countries"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Available Phone Numbers Local"
+    Available Phone Numbers Mobile:
+      type: DeclarativeStream
+      name: available_phone_numbers_mobile
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/Mobile.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - available_phone_numbers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: account_sid
+                stream:
+                  $ref: "#/definitions/streams/Accounts"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: country_code
+                partition_field: country_code
+                stream:
+                  $ref: "#/definitions/streams/Available Phone Number Countries"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Available Phone Numbers Mobile"
+    Available Phone Numbers Toll-Free:
+      type: DeclarativeStream
+      name: available_phone_numbers_toll-Free
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/TollFree.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - available_phone_numbers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: account_sid
+                stream:
+                  $ref: "#/definitions/streams/Accounts"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: country_code
+                partition_field: country_code
+                stream:
+                  $ref: "#/definitions/streams/Available Phone Number Countries"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Available Phone Numbers Toll-Free"
+    Incoming Phone Numbers:
+      type: DeclarativeStream
+      name: incoming_phone_pumbers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/IncomingPhoneNumbers.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incoming_phone_numbers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Incoming Phone Numbers"
+    Keys:
+      type: DeclarativeStream
+      name: keys
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/Keys.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - keys
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Keys"
+    Flows:
+      type: DeclarativeStream
+      name: flows
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "https://studio.twilio.com/v1/Flows"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - flows
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Flows"
+    Steps:
+      type: DeclarativeStream
+      name: steps
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://studio.twilio.com/v1/Flows/{{stream_partition.flow_sid}}/Executions/{{stream_partition.execution_sid}}/Steps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - steps
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: flow_sid
+                stream:
+                  $ref: "#/definitions/streams/Flows"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: execution_sid
+                stream:
+                  $ref: "#/definitions/streams/Executions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Steps"
+    Alerts:
+      type: DeclarativeStream
+      name: alerts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://monitor.twilio.com/v1/Alerts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - alerts
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Alerts"
+    Applications:
+      type: DeclarativeStream
+      name: applications
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Applications.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - applications
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Applications"
+    Dependent Phone Numbers:
+      type: DeclarativeStream
+      name: dependent_phone_numbers
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Addresses/{{
+            stream_partition.address_sid }}/DependentPhoneNumbers.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - dependent_phone_numbers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: account_sid
+                stream:
+                  $ref: "#/definitions/streams/Accounts"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: address_sid
+                stream:
+                  $ref: "#/definitions/streams/Addresses"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Dependent Phone Numbers"
+    Calls:
+      type: DeclarativeStream
+      name: calls
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Calls.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - calls
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: end_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: EndTime>
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: EndTime<
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Calls"
+    Conferences:
+      type: DeclarativeStream
+      name: conferences
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Conferences.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conferences
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_created
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: DateCreated>
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: DateCreated<
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Conferences"
+    Conference Participants:
+      type: DeclarativeStream
+      name: conference_participants
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Conferences/{{
+            stream_partition.conference_sid }}/Participants.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - participants
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: account_sid
+                stream:
+                  $ref: "#/definitions/streams/Accounts"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: conference_sid
+                stream:
+                  $ref: "#/definitions/streams/Conferences"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Conference Participants"
+    Executions:
+      type: DeclarativeStream
+      name: executions
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://studio.twilio.com/v1/Flows/{{ stream_partition.flow_sid
+            }}/Executions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - executions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: flow_sid
+              stream:
+                $ref: "#/definitions/streams/Flows"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Executions"
+    Outgoing Caller Ids:
+      type: DeclarativeStream
+      name: outgoing_caller_ids
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/OutgoingCallerIds
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Outgoing Caller Ids"
+    Recordings:
+      type: DeclarativeStream
+      name: recordings
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Recordings.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - recordings
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_created
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: DateCreated>
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: DateCreated<
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Recordings"
+    Services:
+      type: DeclarativeStream
+      name: services
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://chat.twilio.com/v2/Services
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - services
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Services"
+    Verify Services:
+      type: DeclarativeStream
+      name: verify_services
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://verify.twilio.com/v2/Services
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - services
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Verify Services"
+    Roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://chat.twilio.com/v2/Services/{{ stream_partition.service_sid
+            }}/Roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: service_sid
+              stream:
+                $ref: "#/definitions/streams/Services"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Roles"
+    Transcriptions:
+      type: DeclarativeStream
+      name: transcriptions
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Transcriptions.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transcriptions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Transcriptions"
+    Trunks:
+      type: DeclarativeStream
+      name: trunks
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://trunking.twilio.com/v1/Trunks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - trunks
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Trunks"
+    Queues:
+      type: DeclarativeStream
+      name: queues
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Queues.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - queues
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Queues"
+    Messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Messages.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_sent
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: DateSent>
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: DateSent<
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Messages"
+    Message Media:
+      type: DeclarativeStream
+      name: message_media
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Messages/{{
+            stream_partition.message_sid }}/Media.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - media
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: account_sid
+                stream:
+                  $ref: "#/definitions/streams/Accounts"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: sid
+                partition_field: message_sid
+                stream:
+                  $ref: "#/definitions/streams/Messages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_sent
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: DateSent>
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: DateSent<
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Message Media"
+    Usage Records:
+      type: DeclarativeStream
+      name: usage_records
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Usage/Records.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - usage_records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: start_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: StartDate
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: EndDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Usage Records"
+    Usage Triggers:
+      type: DeclarativeStream
+      name: usage_triggers
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://api.twilio.com/2010-04-01/Accounts/{{
+            stream_partition.account_sid }}/Usage/Triggers.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - usage_triggers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: account_sid
+              stream:
+                $ref: "#/definitions/streams/Accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Usage Triggers"
+    Conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://conversations.twilio.com/v1/Conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversations
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Conversations"
+    Conversation Participants:
+      type: DeclarativeStream
+      name: conversation_participants
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://conversations.twilio.com/v1/Conversations/{{
+            stream_partition.conversation_sid }}/Participants
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - participants
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: conversation_sid
+              stream:
+                $ref: "#/definitions/streams/Conversations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Conversation Participants"
+    Conversation Messages:
+      type: DeclarativeStream
+      name: conversation_messages
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://conversations.twilio.com/v1/Conversations/{{
+            stream_partition.conversation_sid }}/Messages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: conversation_sid
+              stream:
+                $ref: "#/definitions/streams/Conversations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Conversation Messages"
+    Users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - sid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://conversations.twilio.com/v1/Users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Users"
+    User Conversation:
+      type: DeclarativeStream
+      name: user_conversation
+      primary_key:
+        - conversations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://conversations.twilio.com/v1/Users/{{
+            stream_partition.user_sid }}/Conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: user_sid
+              stream:
+                $ref: "#/definitions/streams/Users"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/User Conversation"
 
 streams:
   - $ref: "#/definitions/streams/Accounts"
   - $ref: "#/definitions/streams/Addresses"
+  - $ref: "#/definitions/streams/Available Phone Number Countries"
+  - $ref: "#/definitions/streams/Available Phone Numbers Local"
+  - $ref: "#/definitions/streams/Available Phone Numbers Mobile"
+  - $ref: "#/definitions/streams/Available Phone Numbers Toll-Free"
+  - $ref: "#/definitions/streams/Incoming Phone Numbers"
+  - $ref: "#/definitions/streams/Keys"
+  - $ref: "#/definitions/streams/Flows"
+  - $ref: "#/definitions/streams/Steps"
+  - $ref: "#/definitions/streams/Alerts"
+  - $ref: "#/definitions/streams/Applications"
+  - $ref: "#/definitions/streams/Dependent Phone Numbers"
+  - $ref: "#/definitions/streams/Calls"
+  - $ref: "#/definitions/streams/Conferences"
+  - $ref: "#/definitions/streams/Conference Participants"
+  - $ref: "#/definitions/streams/Executions"
+  - $ref: "#/definitions/streams/Outgoing Caller Ids"
+  - $ref: "#/definitions/streams/Recordings"
+  - $ref: "#/definitions/streams/Services"
+  - $ref: "#/definitions/streams/Verify Services"
+  - $ref: "#/definitions/streams/Roles"
+  - $ref: "#/definitions/streams/Transcriptions"
+  - $ref: "#/definitions/streams/Trunks"
+  - $ref: "#/definitions/streams/Queues"
+  - $ref: "#/definitions/streams/Messages"
+  - $ref: "#/definitions/streams/Message Media"
+  - $ref: "#/definitions/streams/Usage Records"
+  - $ref: "#/definitions/streams/Usage Triggers"
+  - $ref: "#/definitions/streams/Conversations"
+  - $ref: "#/definitions/streams/Conversation Participants"
+  - $ref: "#/definitions/streams/Conversation Messages"
+  - $ref: "#/definitions/streams/Users"
+  - $ref: "#/definitions/streams/User Conversation"
 
 spec:
   type: Spec
@@ -139,8 +1560,40 @@ spec:
 
 metadata:
   autoImportSchema:
-    Accounts: true
-    Addresses: true
+    Accounts: false
+    Addresses: false
+    Available Phone Number Countries: false
+    Available Phone Numbers Local: false
+    Available Phone Numbers Mobile: false
+    Available Phone Numbers Toll-Free: false
+    Incoming Phone Numbers: false
+    Keys: false
+    Flows: false
+    Steps: false
+    Alerts: false
+    Applications: false
+    Dependent Phone Numbers: false
+    Calls: false
+    Conferences: false
+    Conference Participants: false
+    Executions: false
+    Outgoing Caller Ids: false
+    Recordings: false
+    Services: false
+    Verify Services: false
+    Roles: false
+    Transcriptions: false
+    Trunks: false
+    Queues: false
+    Messages: false
+    Message Media: false
+    Usage Records: false
+    Usage Triggers: false
+    Conversations: false
+    Conversation Participants: false
+    Conversation Messages: false
+    Users: false
+    User Conversation: false
 
 schemas:
   Accounts:
@@ -373,3 +1826,3357 @@ schemas:
           - boolean
         required:
           - sid
+  Available Phone Number Countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      beta:
+        description: Whether the phone number country data is in beta phase or not.
+        type:
+          - "null"
+          - boolean
+      country:
+        description: The name of the country for which phone number data is provided.
+        type:
+          - "null"
+          - string
+      country_code:
+        description: The country code associated with the country.
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        additionalProperties: true
+        description: URIs for accessing different types of phone numbers in the country.
+        properties:
+          local:
+            description: URI for fetching local phone numbers in the country.
+            type:
+              - "null"
+              - string
+          mobile:
+            description: URI for fetching mobile phone numbers in the country.
+            type:
+              - "null"
+              - string
+          toll_free:
+            description: URI for fetching toll-free phone numbers in the country.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      uri:
+        description: The URI to fetch more details about phone numbers in the country.
+        type:
+          - "null"
+          - string
+  Available Phone Numbers Local:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_requirements:
+        description:
+          The requirements related to the address associated with the phone
+          number
+        type:
+          - "null"
+          - string
+      beta:
+        description: Indicator showing if the phone number is in beta testing
+        type:
+          - "null"
+          - boolean
+      capabilities:
+        additionalProperties: true
+        description: Object containing the capabilities of the available phone number
+        properties:
+          MMS:
+            description: Capability for Multimedia Messaging Service
+            type:
+              - "null"
+              - boolean
+          SMS:
+            description: Capability for Short Message Service (Texting)
+            type:
+              - "null"
+              - boolean
+          fax:
+            description: Capability for Facsimile (Faxing)
+            type:
+              - "null"
+              - boolean
+          voice:
+            description: Capability for Voice calls
+            type:
+              - "null"
+              - boolean
+        type:
+          - "null"
+          - object
+      friendly_name:
+        description: A user-friendly nickname for the phone number
+        type:
+          - "null"
+          - string
+      iso_country:
+        description: ISO country code of the phone number
+        type:
+          - "null"
+          - string
+      lata:
+        description: Local access and transport area code for the phone number
+        type:
+          - "null"
+          - string
+      latitude:
+        description: Latitude coordinate of the phone number's location
+        type:
+          - "null"
+          - string
+      locality:
+        description: Locality or city associated with the phone number
+        type:
+          - "null"
+          - string
+      longitude:
+        description: Longitude coordinate of the phone number's location
+        type:
+          - "null"
+          - string
+      phone_number:
+        description: The phone number itself
+        type:
+          - "null"
+          - string
+      postal_code:
+        description: Postal code of the phone number's location
+        type:
+          - "null"
+          - string
+      rate_center:
+        description: Rate center for the phone number
+        type:
+          - "null"
+          - string
+      region:
+        description: Region or state associated with the phone number
+        type:
+          - "null"
+          - string
+  Available Phone Numbers Mobile:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_requirements:
+        description: Address requirements for purchasing the phone number
+        type:
+          - "null"
+          - string
+      beta:
+        description: Indicates if the phone number is in beta testing phase
+        type:
+          - "null"
+          - boolean
+      capabilities:
+        additionalProperties: true
+        description:
+          Represents the capabilities of the available mobile phone numbers
+          such as SMS and voice services
+        properties:
+          MMS:
+            description: Indicates if MMS messaging is supported
+            type:
+              - "null"
+              - boolean
+          SMS:
+            description: Indicates if SMS messaging is supported
+            type:
+              - "null"
+              - boolean
+          fax:
+            description: Indicates if fax capability is available
+            type:
+              - "null"
+              - boolean
+          voice:
+            description: Indicates if voice calling capability is available
+            type:
+              - "null"
+              - boolean
+        type:
+          - "null"
+          - object
+      friendly_name:
+        description: A user-friendly name for the phone number
+        type:
+          - "null"
+          - string
+      iso_country:
+        description: The ISO country code for the phone number
+        type:
+          - "null"
+          - string
+      lata:
+        description: Local access and transport area code
+        type:
+          - "null"
+          - string
+      latitude:
+        description: Latitude coordinate of the phone number's location
+        type:
+          - "null"
+          - string
+      locality:
+        description: Locality or city where the phone number is based
+        type:
+          - "null"
+          - string
+      longitude:
+        description: Longitude coordinate of the phone number's location
+        type:
+          - "null"
+          - string
+      phone_number:
+        description: The phone number in E.164 format
+        type:
+          - "null"
+          - string
+      postal_code:
+        description: Postal code of the phone number's area
+        type:
+          - "null"
+          - string
+      rate_center:
+        description: Rate center associated with the phone number
+        type:
+          - "null"
+          - string
+      region:
+        description: Region or state where the phone number is located
+        type:
+          - "null"
+          - string
+  Available Phone Numbers Toll-Free:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_requirements:
+        description:
+          Specifies the requirements related to the address associated with
+          the phone number.
+        type:
+          - "null"
+          - string
+      beta:
+        description: Indicates if the phone number is in beta testing phase.
+        type:
+          - "null"
+          - boolean
+      capabilities:
+        additionalProperties: true
+        description: Represents the capabilities of the toll-free phone numbers available
+        properties:
+          MMS:
+            description: Indicates if the phone number supports Multimedia Messaging Service.
+            type:
+              - "null"
+              - boolean
+          SMS:
+            description:
+              Indicates if the phone number supports Short Message Service
+              (text messaging).
+            type:
+              - "null"
+              - boolean
+          fax:
+            description: Indicates if the phone number supports fax communication.
+            type:
+              - "null"
+              - boolean
+          voice:
+            description: Indicates if the phone number supports voice calls.
+            type:
+              - "null"
+              - boolean
+        type:
+          - "null"
+          - object
+      friendly_name:
+        description: A user-friendly name associated with the phone number for easy identification.
+        type:
+          - "null"
+          - string
+      iso_country:
+        description: The ISO country code of the phone number's location.
+        type:
+          - "null"
+          - string
+      lata:
+        description: The Local Access and Transport Area code of the phone number's location.
+        type:
+          - "null"
+          - string
+      latitude:
+        description: The latitude coordinate of the phone number's location.
+        type:
+          - "null"
+          - string
+      locality:
+        description: The locality (city/town) where the phone number is located.
+        type:
+          - "null"
+          - string
+      longitude:
+        description: The longitude coordinate of the phone number's location.
+        type:
+          - "null"
+          - string
+      phone_number:
+        description: The toll-free phone number that can be used for communication.
+        type:
+          - "null"
+          - string
+      postal_code:
+        description: The postal code of the phone number's location.
+        type:
+          - "null"
+          - string
+      rate_center:
+        description: The rate center associated with the phone number.
+        type:
+          - "null"
+          - string
+      region:
+        description: The region (state/province) where the phone number is located.
+        type:
+          - "null"
+          - string
+  Incoming Phone Numbers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The SID of the account that owns this phone number.
+        type:
+          - "null"
+          - string
+      address_requirements:
+        description: Indicates the address requirements for this phone number.
+        type:
+          - "null"
+          - string
+      address_sid:
+        description: The SID of the address associated with this phone number.
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API being used for this phone number.
+        type:
+          - "null"
+          - string
+      beta:
+        description: Flag indicating beta status of this phone number.
+        type:
+          - "null"
+          - boolean
+      bundle_sid:
+        description: The SID of the bundle associated with this phone number.
+        type:
+          - "null"
+          - string
+      capabilities:
+        additionalProperties: true
+        description: Capabilities of this phone number.
+        properties:
+          fax:
+            description: Capability for faxing.
+            type:
+              - "null"
+              - boolean
+          mms:
+            description: Capability for sending and receiving MMS messages.
+            type:
+              - "null"
+              - boolean
+          sms:
+            description: Capability for sending and receiving SMS messages.
+            type:
+              - "null"
+              - boolean
+          voice:
+            description: Capability for making and receiving voice calls.
+            type:
+              - "null"
+              - boolean
+        type:
+          - "null"
+          - object
+      date_created:
+        description: The date and time when this phone number was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when this phone number was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      emergency_address_sid:
+        description: The SID of the emergency address associated with this phone number.
+        type:
+          - "null"
+          - string
+      emergency_address_status:
+        description: Status of the emergency address associated with this phone number.
+        type:
+          - "null"
+          - string
+      emergency_status:
+        description: Emergency status of this phone number.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-assigned friendly name for this phone number.
+        type:
+          - "null"
+          - string
+      identity_sid:
+        description: The SID of the identity associated with this phone number.
+        type:
+          - "null"
+          - string
+      origin:
+        description: Indicates the origin of this phone number.
+        type:
+          - "null"
+          - string
+      phone_number:
+        description: The phone number.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The SID of this phone number.
+        type:
+          - "null"
+          - string
+      sms_application_sid:
+        description:
+          The SID of the application to handle incoming SMS messages for this
+          phone number.
+        type:
+          - "null"
+          - string
+      sms_fallback_method:
+        description: HTTP method to use when making requests to the sms_fallback_url.
+        type:
+          - "null"
+          - string
+      sms_fallback_url:
+        description:
+          URL to make requests to when an error occurs while processing an
+          incoming SMS message.
+        type:
+          - "null"
+          - string
+      sms_method:
+        description: HTTP method to use when making requests to the sms_url.
+        type:
+          - "null"
+          - string
+      sms_url:
+        description: URL to make requests to when an incoming SMS message is received.
+        type:
+          - "null"
+          - string
+      status:
+        description: Status of this phone number.
+        type:
+          - "null"
+          - string
+      status_callback:
+        description:
+          URL to make requests to when certain events happen related to this
+          phone number.
+        type:
+          - "null"
+          - string
+      status_callback_method:
+        description: HTTP method to use when making requests to the status_callback URL.
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        additionalProperties: true
+        description: URIs for related sub-resources.
+        properties:
+          assigned_add_ons:
+            description: URI for accessing assigned add-ons for this phone number.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      trunk_sid:
+        description: The SID of the trunk associated with this phone number.
+        type:
+          - "null"
+          - string
+      uri:
+        description: The URI of this phone number.
+        type:
+          - "null"
+          - string
+      voice_application_sid:
+        description:
+          The SID of the application to handle incoming voice calls for this
+          phone number.
+        type:
+          - "null"
+          - string
+      voice_caller_id_lookup:
+        description: Caller ID lookup setting for voice calls made from this phone number.
+        type:
+          - "null"
+          - boolean
+      voice_fallback_method:
+        description: HTTP method to use when making requests to the voice_fallback_url.
+        type:
+          - "null"
+          - string
+      voice_fallback_url:
+        description:
+          URL to make requests to when an error occurs while processing an
+          incoming voice call.
+        type:
+          - "null"
+          - string
+      voice_method:
+        description: HTTP method to use when making requests to the voice_url.
+        type:
+          - "null"
+          - string
+      voice_receive_mode:
+        description: Receive mode setting for this phone number.
+        type:
+          - "null"
+          - string
+      voice_url:
+        description: URL to make requests to when an incoming voice call is received.
+        type:
+          - "null"
+          - string
+  Keys:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date_created:
+        description: The date and time when the key was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the key was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: The user-friendly name associated with the key.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the key (System ID).
+        type:
+          - "null"
+          - string
+  Flows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: Unique identifier for the account associated with the flow.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: Date and time when the flow was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: Date and time when the flow was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name given to the flow.
+        type:
+          - "null"
+          - string
+      links:
+        additionalProperties: true
+        description: Represents links related to the flow data.
+        properties:
+          steps:
+            description: Link to the steps included in the flow.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      sid:
+        description: Unique identifier for the flow.
+        type:
+          - "null"
+          - string
+      status:
+        description: Status of the flow (e.g., active, inactive).
+        enum:
+          - published
+          - draft
+        type:
+          - string
+          - "null"
+      url:
+        description: URL endpoint for the flow.
+        type:
+          - "null"
+          - string
+      version:
+        description: Version number of the flow.
+        type:
+          - "null"
+          - integer
+  Steps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The SID of the account associated with the step data.
+        type:
+          - "null"
+          - string
+      context:
+        description: Additional context or metadata related to the step.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the step was created.
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the step was last updated.
+        type:
+          - "null"
+          - string
+      execution_sid:
+        description: The SID of the execution this step belongs to.
+        type:
+          - "null"
+          - string
+      flow_sid:
+        description: The SID of the flow to which this step belongs.
+        type:
+          - "null"
+          - string
+      links:
+        description: Contains related hypermedia links to navigate through the step data.
+        properties:
+          step_context:
+            description: Link to additional contextual information related to the step.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      name:
+        description: The name or identifier of the step.
+        type:
+          - "null"
+          - string
+      parent_step_sid:
+        description:
+          The SID of the parent step if this step is nested within another
+          step.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier (SID) of the step.
+        type:
+          - "null"
+          - string
+      transitioned_from:
+        description: The previous state from which the step transitioned.
+        type:
+          - "null"
+          - string
+      transitioned_to:
+        description: The state to which the step transitioned.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL for accessing detailed information about the step.
+        type:
+          - "null"
+          - string
+  Alerts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account associated with the alert
+        type:
+          - "null"
+          - string
+      alert_text:
+        description: The actual content or text of the alert message
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API used for the alert
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the alert was created
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_generated:
+        description: The date and time when the alert data was generated
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the alert was last updated
+        format: date-time
+        type:
+          - "null"
+          - string
+      error_code:
+        description: The code representing the error, if an error occurred
+        type:
+          - "null"
+          - string
+      log_level:
+        description: The severity level of the alert (info, warning, error)
+        type:
+          - "null"
+          - string
+      more_info:
+        description: Additional information or details related to the alert
+        type:
+          - "null"
+          - string
+      request_method:
+        description: The method used in the HTTP request that triggered the alert
+        type:
+          - "null"
+          - string
+      request_url:
+        description: The URL that was requested and triggered the alert
+        type:
+          - "null"
+          - string
+      resource_sid:
+        description: The SID of the specific resource associated with the alert
+        type:
+          - "null"
+          - string
+      service_sid:
+        description: The SID of the Twilio service related to the alert
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier (SID) for the alert entry
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL or endpoint related to the alert
+        type:
+          - "null"
+          - string
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: start_date
+        cursor_datetime_formats:
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: StartDate
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: EndDate
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  Applications:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier of the Twilio account associated with the application.
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API being used for the application.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the application was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the application was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name assigned to the application for identification.
+        type:
+          - "null"
+          - string
+      message_status_callback:
+        description: The URL where status updates for outgoing messages will be sent.
+        type:
+          - "null"
+          - string
+      public_application_connect_enabled:
+        description: Indicates whether public application connect is enabled for the application.
+        type:
+          - "null"
+          - boolean
+      sid:
+        description: A unique identifier for the application.
+        type:
+          - "null"
+          - string
+      sms_fallback_method:
+        description:
+          The HTTP method used to send a fallback URL if an error occurs during
+          SMS delivery.
+        type:
+          - "null"
+          - string
+      sms_fallback_url:
+        description: The URL that Twilio will request if an error occurs during SMS delivery.
+        type:
+          - "null"
+          - string
+      sms_method:
+        description: The HTTP method used to send SMS messages for the application.
+        type:
+          - "null"
+          - string
+      sms_status_callback:
+        description: The URL where status updates for incoming SMS messages will be sent.
+        type:
+          - "null"
+          - string
+      sms_url:
+        description: The URL that Twilio will request when receiving an incoming SMS message.
+        type:
+          - "null"
+          - string
+      status_callback:
+        description: The URL where status updates for calls will be sent.
+        type:
+          - "null"
+          - string
+      status_callback_method:
+        description: The HTTP method used to send status updates for calls.
+        type:
+          - "null"
+          - string
+      uri:
+        description: The URI of the application resource.
+        type:
+          - "null"
+          - string
+      voice_caller_id_lookup:
+        description:
+          Indicates whether or not caller ID information will be looked up
+          for incoming calls.
+        type:
+          - "null"
+          - boolean
+      voice_fallback_method:
+        description:
+          The HTTP method used to send a fallback URL if an error occurs during
+          voice call handling.
+        type:
+          - "null"
+          - string
+      voice_fallback_url:
+        description:
+          The URL that Twilio will request if an error occurs during voice
+          call handling.
+        type:
+          - "null"
+          - string
+      voice_method:
+        description: The HTTP method used for voice call handling.
+        type:
+          - "null"
+          - string
+      voice_url:
+        description: The URL that Twilio will request for voice call handling.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Dependent Phone Numbers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account this phone number belongs to.
+        type:
+          - "null"
+          - string
+      address_requirements:
+        description: Requirements for the address associated with the phone number.
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API being used.
+        type:
+          - "null"
+          - string
+      capabilities:
+        additionalProperties: true
+        description: List of capabilities supported by the phone number.
+        properties:
+          MMS:
+            description: Support for multimedia messaging (MMS).
+            type:
+              - "null"
+              - boolean
+          SMS:
+            description: Support for text messaging (SMS).
+            type:
+              - "null"
+              - boolean
+          Voice:
+            description: Support for voice calling.
+            type:
+              - "null"
+              - boolean
+        type:
+          - "null"
+          - object
+      date_created:
+        description: The date and time when the phone number was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the phone number was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      emergency_address_sid:
+        description: The SID of the emergency address associated with the phone number.
+        type:
+          - "null"
+          - string
+      emergency_status:
+        description: The emergency status of the phone number.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name for the phone number.
+        type:
+          - "null"
+          - string
+      phone_number:
+        description: The phone number itself.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier (SID) for the phone number resource.
+        type:
+          - "null"
+          - string
+      sms_application_sid:
+        description: The SID of the SMS application to handle incoming messages.
+        type:
+          - "null"
+          - string
+      sms_fallback_method:
+        description: The HTTP method to use for the SMS fallback URL.
+        type:
+          - "null"
+          - string
+      sms_fallback_url:
+        description: The URL to call if an error occurs while handling incoming SMS messages.
+        type:
+          - "null"
+          - string
+      sms_method:
+        description: The HTTP method to use for the SMS URL.
+        type:
+          - "null"
+          - string
+      sms_url:
+        description: The URL to call when a message comes in to the phone number.
+        type:
+          - "null"
+          - string
+      status_callback:
+        description:
+          The URL to send status callbacks to for events related to the phone
+          number.
+        type:
+          - "null"
+          - string
+      status_callback_method:
+        description: The HTTP method to use for status callback requests.
+        type:
+          - "null"
+          - string
+      trunk_sid:
+        description: The SID of the Trunk containing this phone number.
+        type:
+          - "null"
+          - string
+      uri:
+        description: The URI of the phone number resource.
+        type:
+          - "null"
+          - string
+      voice_application_sid:
+        description: The SID of the voice application to handle incoming calls.
+        type:
+          - "null"
+          - string
+      voice_caller_id_lookup:
+        description:
+          Indicates whether the phone number performs caller ID lookup on incoming
+          calls.
+        type:
+          - "null"
+          - boolean
+      voice_fallback_method:
+        description: The HTTP method to use for the voice fallback URL.
+        type:
+          - "null"
+          - string
+      voice_fallback_url:
+        description:
+          The URL to call if an error occurs while handling incoming voice
+          calls.
+        type:
+          - "null"
+          - string
+      voice_method:
+        description: The HTTP method to use for the voice URL.
+        type:
+          - "null"
+          - string
+      voice_url:
+        description: The URL to call when a call comes in to the phone number.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Calls:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account associated with the call.
+        type:
+          - "null"
+          - string
+      annotation:
+        description: Any additional notes or context added to the call.
+        type:
+          - "null"
+          - string
+      answered_by:
+        description: The name of the entity or system that answered the call.
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API used for this call.
+        type:
+          - "null"
+          - string
+      caller_name:
+        description: The name of the caller as supplied by the caller ID service.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the call record was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the call record was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      direction:
+        description: The direction of the call, either 'inbound' or 'outbound'.
+        type:
+          - "null"
+          - string
+      duration:
+        description: The duration of the call in seconds.
+        type:
+          - "null"
+          - integer
+      end_time:
+        description: The date and time when the call ended.
+        format: date-time
+        type:
+          - "null"
+          - string
+      forwarded_from:
+        description: The phone number that initiated the call forwarding.
+        type:
+          - "null"
+          - string
+      from:
+        description: The phone number that made the call.
+        type:
+          - "null"
+          - string
+      from_formatted:
+        description: The formatted version of the 'from' phone number.
+        type:
+          - "null"
+          - string
+      group_sid:
+        description: The unique identifier of the call group to which this call belongs.
+        type:
+          - "null"
+          - string
+      parent_call_sid:
+        description: The SID of the parent call if this call is part of a conference.
+        type:
+          - "null"
+          - string
+      phone_number_sid:
+        description: The SID of the phone number used for the call.
+        type:
+          - "null"
+          - string
+      price:
+        description: The cost of the call.
+        type:
+          - "null"
+          - number
+      price_unit:
+        description: The currency unit of the call cost.
+        type:
+          - "null"
+          - string
+      queue_time:
+        description: The time the call spent in a queue before being answered.
+        type:
+          - "null"
+          - integer
+      sid:
+        description: The unique identifier for the call.
+        type:
+          - "null"
+          - string
+      start_time:
+        description: The date and time when the call started.
+        format: date-time
+        type:
+          - "null"
+          - string
+      status:
+        description: The current status of the call, such as 'completed' or 'in-progress'.
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        additionalProperties: true
+        description: Contains URIs for related subresources such as recordings or notifications.
+        properties:
+          events:
+            description: URI for call events related to this call.
+            type:
+              - "null"
+              - string
+          feedback:
+            description: URI for call feedback related to this call.
+            type:
+              - "null"
+              - string
+          feedback_summaries:
+            description: URI for call feedback summaries related to this call.
+            type:
+              - "null"
+              - string
+          notifications:
+            description: URI for call notifications related to this call.
+            type:
+              - "null"
+              - string
+          payments:
+            description: URI for call payments related to this call.
+            type:
+              - "null"
+              - string
+          recordings:
+            description: URI for call recordings related to this call.
+            type:
+              - "null"
+              - string
+          siprec:
+            description: URI for call SIP recording related to this call.
+            type:
+              - "null"
+              - string
+          streams:
+            description: URI for call streams related to this call.
+            type:
+              - "null"
+              - string
+          user_defined_message_subscriptions:
+            description: URI for user-defined message subscriptions related to this call.
+            type:
+              - "null"
+              - string
+          user_defined_messages:
+            description: URI for user-defined messages related to this call.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      to:
+        description: The phone number that received the call.
+        type:
+          - "null"
+          - string
+      to_formatted:
+        description: The formatted version of the 'to' phone number.
+        type:
+          - "null"
+          - string
+      trunk_sid:
+        description: The unique identifier of the trunk used for the call.
+        type:
+          - "null"
+          - string
+      uri:
+        description: The URI for this call record.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Conferences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier of the account associated with the conference.
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API used for the conference.
+        type:
+          - "null"
+          - string
+      call_sid_ending_conference:
+        description: The SID of the call that ended the conference, if applicable.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the conference was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the conference was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-defined friendly name for the conference.
+        type:
+          - "null"
+          - string
+      reason_conference_ended:
+        description: The reason for the conference ending, if available.
+        type:
+          - "null"
+          - string
+      region:
+        description: The region where the conference is hosted.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier (SID) of the conference.
+        type:
+          - "null"
+          - string
+      status:
+        description: The current status of the conference.
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        additionalProperties: true
+        description: Contains URLs for accessing subresources related to conferences
+        properties:
+          participants:
+            description: URI to access the participants associated with the conference.
+            type:
+              - "null"
+              - string
+          recordings:
+            description: URI to access the recordings of the conference.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      uri:
+        description: The URI to access the conference resource.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Conference Participants:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: "The unique identifier for the Twilio account associated with the conference participant."
+        type:
+          - "null"
+          - string
+      call_sid:
+        description: "The unique identifier for the call made by the participant."
+        type:
+          - "null"
+          - string
+      label:
+        description: "A custom label assigned to the participant for identification."
+        type:
+          - "null"
+          - string
+      conference_sid:
+        description: "The unique identifier for the conference the participant is a part of."
+        type:
+          - "null"
+          - string
+      date_created:
+        description: "The date and time when the participant was added to the conference."
+        format: "date-time"
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: "The date and time when the participant's information was last updated."
+        format: "date-time"
+        type:
+          - "null"
+          - string
+      end_conference_on_exit:
+        description: "Indicates whether the conference will end when the participant exits."
+        type:
+          - "null"
+          - boolean
+      muted:
+        description: "Indicates whether the participant's audio is muted."
+        type:
+          - "null"
+          - boolean
+      hold:
+        description: "Indicates whether the participant is on hold."
+        type:
+          - "null"
+          - boolean
+      status:
+        description: "The current status of the participant in the conference."
+        type:
+          - "null"
+          - string
+      start_conference_on_enter:
+        description: "Indicates whether the conference will start when the participant enters."
+        type:
+          - "null"
+          - boolean
+      coaching:
+        description: "Indicates whether the participant is in coaching mode."
+        type:
+          - "null"
+          - boolean
+      call_sid_to_coach:
+        description: "The unique identifier for the call made to the coach."
+        type:
+          - "null"
+          - string
+      uri:
+        description: "The URI for accessing the details of the conference participant."
+        type:
+          - "null"
+          - string
+  Executions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account associated with the execution.
+        type:
+          - "null"
+          - string
+      contact_channel_address:
+        description: The contact channel address where the execution is targeted.
+        type:
+          - "null"
+          - string
+      contact_sid:
+        description: The unique identifier for the contact associated with the execution.
+        type:
+          - "null"
+          - string
+      context:
+        additionalProperties: true
+        description: Additional context or data related to the execution.
+        type:
+          - "null"
+          - object
+      date_created:
+        description: The date and time when the execution was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the execution was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      flow_sid:
+        description: The unique identifier for the flow associated with the execution.
+        type:
+          - "null"
+          - string
+      links:
+        additionalProperties: true
+        description:
+          Contains related hypermedia links associated with the executions
+          data.
+        properties:
+          execution_context:
+            description: Link to the execution context data.
+            type:
+              - "null"
+              - string
+          steps:
+            description: Link to the steps involved in the execution.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      sid:
+        description: The unique identifier for the execution.
+        type:
+          - "null"
+          - string
+      status:
+        description: The status of the execution process.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL endpoint for accessing detailed information about the execution.
+        type:
+          - "null"
+          - string
+  Outgoing Caller Ids:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description:
+          The unique identifier for the Twilio account associated with this
+          outgoing caller ID.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the outgoing caller ID was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the outgoing caller ID was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-defined friendly name for the outgoing caller ID.
+        type:
+          - "null"
+          - string
+      phone_number:
+        description: The phone number associated with the outgoing caller ID.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the outgoing caller ID.
+        type:
+          - "null"
+          - string
+      uri:
+        description:
+          The URI for accessing detailed information about the outgoing caller
+          ID.
+        type:
+          - "null"
+          - string
+  Recordings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier of the account that owns the recording.
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API used when the recording was created.
+        type:
+          - "null"
+          - string
+      call_sid:
+        description: The unique identifier of the call associated with the recording.
+        type:
+          - "null"
+          - string
+      channels:
+        description: The number of audio channels in the recording.
+        type:
+          - "null"
+          - integer
+      conference_sid:
+        description:
+          The unique identifier of the conference, if the recording is part
+          of a conference.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the recording was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the recording was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      duration:
+        description: The duration of the recording in seconds.
+        type:
+          - "null"
+          - integer
+      encryption_details:
+        additionalProperties: true
+        description: Details about the encryption used for the recording.
+        properties:
+          encryption_cek:
+            description: The Content Encryption Key used for encryption.
+            type:
+              - "null"
+              - string
+          encryption_public_key_sid:
+            description: The SID of the public key used for encryption.
+            type:
+              - "null"
+              - string
+          iv:
+            description: The Initialization Vector used for encryption.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of encryption used.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      error_code:
+        description: The error code, if any, associated with the recording.
+        type:
+          - "null"
+          - integer
+      media_url:
+        description: The URL where the recording audio file can be accessed.
+        type: string
+      price:
+        description: The cost of storing the recording.
+        type:
+          - "null"
+          - number
+      price_unit:
+        description: The unit in which the cost is measured (e.g., USD).
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier of the recording.
+        type:
+          - "null"
+          - string
+      source:
+        description: The source of the recording (e.g., twilio).
+        type:
+          - "null"
+          - string
+      start_time:
+        description: The date and time when the recording started.
+        format: date-time
+        type:
+          - "null"
+          - string
+      status:
+        description: The status of the recording (e.g., completed, in-progress).
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        additionalProperties: true
+        description: URIs for subresources related to the recording.
+        properties:
+          add_on_results:
+            description: The URI to fetch add-on results related to the recording.
+            type:
+              - "null"
+              - string
+          transcriptions:
+            description: The URI to fetch transcriptions of the recording.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      uri:
+        description: The URI of the recording resource.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Services:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier of the account related to the service.
+        type:
+          - "null"
+          - string
+      consumption_report_interval:
+        description: The interval at which consumption reports are generated.
+        type:
+          - "null"
+          - number
+      date_created:
+        description: The date and time when the service was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the service was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      default_channel_creator_role_sid:
+        description: The default role assigned to the creator of a channel.
+        type:
+          - "null"
+          - string
+      default_channel_role_sid:
+        description: The default role assigned to all users in a channel.
+        type:
+          - "null"
+          - string
+      default_service_role_sid:
+        description: The default role assigned to users of the service.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name given to the service.
+        type:
+          - "null"
+          - string
+      limits:
+        description: Limits applied to the service.
+        properties:
+          channel_members:
+            description: Maximum number of members allowed in a channel.
+            type:
+              - "null"
+              - number
+          user_channels:
+            description: Maximum number of channels a user can belong to.
+            type:
+              - "null"
+              - number
+        type:
+          - "null"
+          - object
+      links:
+        description: Links to different resources related to the service.
+        properties:
+          bindings:
+            description: Links related to bindings.
+            type:
+              - "null"
+              - string
+          channels:
+            description: Links related to channels.
+            type:
+              - "null"
+              - string
+          roles:
+            description: Links related to roles.
+            type:
+              - "null"
+              - string
+          users:
+            description: Links related to users.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      media:
+        description: Media settings for the service.
+        properties:
+          compatibility_message:
+            description: Message to display for incompatible media.
+            type:
+              - "null"
+              - string
+          size_limit_mb:
+            description: Maximum size limit for media in megabytes.
+            type:
+              - "null"
+              - number
+        type:
+          - "null"
+          - object
+      notifications:
+        description: Notification settings for users.
+        properties:
+          users:
+            description: Users to receive notifications.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      post_webhook_retry_count:
+        description: Number of retries for the post webhook.
+        type:
+          - "null"
+          - number
+      post_webhook_url:
+        description: URL for the post webhook.
+        type:
+          - "null"
+          - string
+      pre_webhook_retry_count:
+        description: Number of retries for the pre webhook.
+        type:
+          - "null"
+          - number
+      pre_webhook_url:
+        description: URL for the pre webhook.
+        type:
+          - "null"
+          - string
+      reachability_enabled:
+        description: Flag indicating if reachability is enabled.
+        type:
+          - "null"
+          - boolean
+      read_status_enabled:
+        description: Flag indicating if read status is enabled.
+        type:
+          - "null"
+          - boolean
+      sid:
+        description: The unique identifier of the service.
+        type:
+          - "null"
+          - string
+      typing_indicator_timeout:
+        description: Timeout duration for typing indicators.
+        type:
+          - "null"
+          - number
+      url:
+        description: URL of the service.
+        type:
+          - "null"
+          - string
+      webhook_filters:
+        description: Filters for webhooks.
+        items:
+          type:
+            - "null"
+            - string
+        type:
+          - "null"
+          - array
+      webhook_method:
+        description: HTTP method used for webhooks.
+        type:
+          - "null"
+          - string
+  Verify Services:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: Unique identifier for the account associated with the verify service.
+        type:
+          - "null"
+          - string
+      code_length:
+        description: The number of digits in the verification code sent to users.
+        type:
+          - "null"
+          - number
+      custom_code_enabled:
+        description: Indicates whether custom verification codes are enabled.
+        type:
+          - "null"
+          - boolean
+      date_created:
+        description: The date and time when the verify service was created.
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the verify service was last updated.
+        type:
+          - "null"
+          - string
+      default_template_sid:
+        description:
+          The unique identifier for the default template used for verification
+          messages.
+        type:
+          - "null"
+          - string
+      do_not_share_warning_enabled:
+        description:
+          Indicates if the 'do not share' warning is enabled for verification
+          codes.
+        type:
+          - "null"
+          - boolean
+      dtmf_input_required:
+        description: Indicates whether DTMF input is required during verification.
+        type:
+          - "null"
+          - boolean
+      friendly_name:
+        description: A user-friendly name for the verify service.
+        type:
+          - "null"
+          - string
+      links:
+        description: Object containing related hyperlinks for verify_services data.
+        properties:
+          access_tokens:
+            description: Links related to access tokens for the verify service.
+            type:
+              - "null"
+              - string
+          entities:
+            description: Links related to entities associated with the verify service.
+            type:
+              - "null"
+              - string
+          messaging_configurations:
+            description: Links related to messaging configurations for the verify service.
+            type:
+              - "null"
+              - string
+          rate_limits:
+            description: Links related to rate limits for the verify service.
+            type:
+              - "null"
+              - string
+          verification_checks:
+            description: Links related to verification checks for the verify service.
+            type:
+              - "null"
+              - string
+          verifications:
+            description: Links related to verifications performed using the verify service.
+            type:
+              - "null"
+              - string
+          webhooks:
+            description: Links related to webhooks for the verify service.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      lookup_enabled:
+        description: Indicates if phone number lookup is enabled for the verify service.
+        type:
+          - "null"
+          - boolean
+      mailer_sid:
+        description:
+          Unique identifier for the mailer service associated with the verify
+          service.
+        type:
+          - "null"
+          - string
+      psd2_enabled:
+        description:
+          Indicates if PSD2 (Payment Services Directive 2) verification is
+          enabled.
+        type:
+          - "null"
+          - boolean
+      push:
+        description: Object containing configuration settings for push verification method.
+        properties:
+          apn_credential_sid:
+            description:
+              Unique identifier for the APN (Apple Push Notification) credential
+              associated with the verify service.
+            type:
+              - "null"
+              - string
+          fcm_credential_sid:
+            description:
+              Unique identifier for the FCM (Firebase Cloud Messaging) credential
+              associated with the verify service.
+            type:
+              - "null"
+              - string
+          include_date:
+            description: Indicates if the date should be included in push notifications.
+            type:
+              - "null"
+              - boolean
+        type:
+          - "null"
+          - object
+      sid:
+        description: Unique identifier for the verify service.
+        type:
+          - "null"
+          - string
+      skip_sms_to_landlines:
+        description:
+          Indicates whether SMS messages are skipped for landline numbers during
+          verification.
+        type:
+          - "null"
+          - boolean
+      totp:
+        description:
+          Object containing configuration settings for Time-based One-Time
+          Password (TOTP) verification method.
+        properties:
+          code_length:
+            description:
+              The number of digits in the TOTP (Time-based One-Time Password)
+              code.
+            type:
+              - "null"
+              - number
+          issuer:
+            description: The issuer name included in TOTP messages.
+            type:
+              - "null"
+              - string
+          skew:
+            description: The time skew allowed for TOTP code validation.
+            type:
+              - "null"
+              - number
+          time_step:
+            description: The time step interval for generating TOTP codes.
+            type:
+              - "null"
+              - number
+        type:
+          - "null"
+          - object
+      tts_name:
+        description: The name used for text-to-speech (TTS) in verification calls.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL associated with the verify service.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account associated with the role.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the role was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the role was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name assigned to the role.
+        type:
+          - "null"
+          - string
+      permissions:
+        description: The list of permissions assigned to the role.
+        items:
+          type:
+            - "null"
+            - string
+        type:
+          - "null"
+          - array
+      service_sid:
+        description: The unique identifier for the service associated with the role.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the role.
+        type:
+          - "null"
+          - string
+      type:
+        description: The type or category of the role.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL for accessing the role data.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Transcriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description:
+          The unique identifier for the account associated with the transcription
+          data.
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API used for the transcription.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the transcription was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the transcription was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      duration:
+        description:
+          The duration of the audio recording for which the transcription was
+          generated.
+        type:
+          - "null"
+          - integer
+      price:
+        description: The cost of the transcription service.
+        type:
+          - "null"
+          - number
+      price_unit:
+        description: The currency unit used for pricing the transcription service.
+        type:
+          - "null"
+          - string
+      recording_sid:
+        description: The unique identifier for the recording associated with the transcription.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the transcription data.
+        type:
+          - "null"
+          - string
+      status:
+        description: The current status of the transcription (e.g., in-progress, completed).
+        type:
+          - "null"
+          - string
+      transcription_text:
+        description: The text content of the transcription generated from the audio recording.
+        type:
+          - "null"
+          - string
+      type:
+        description: The type of transcription (e.g., automatic, human-generated).
+        type:
+          - "null"
+          - string
+      uri:
+        description: The URI where the transcription data can be accessed.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Trunks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier of the account associated with the trunk.
+        type:
+          - "null"
+          - string
+      auth_type:
+        description: The authentication type used for this trunk.
+        type:
+          - "null"
+          - string
+      auth_type_set:
+        description: A set of authentication types associated with the trunk.
+        items:
+          auth_type:
+            description: The authentication type used for each item in the set.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - array
+      cnam_lookup_enabled:
+        description:
+          Indicates whether Caller ID Name (CNAM) lookup is enabled for this
+          trunk.
+        type:
+          - "null"
+          - boolean
+      date_created:
+        description: The date and time the trunk was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time the trunk was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      disaster_recovery_method:
+        description: The method used for disaster recovery for this trunk.
+        type:
+          - "null"
+          - string
+      disaster_recovery_url:
+        description: The URL set up for disaster recovery in case of trunk failure.
+        type:
+          - "null"
+          - string
+      domain_name:
+        description: The domain name associated with the trunk.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name for the trunk.
+        type:
+          - "null"
+          - string
+      links:
+        description: Links to related resources associated with the trunk.
+        properties:
+          credential_lists:
+            description: Endpoint for managing credential lists associated with the trunk.
+            type:
+              - "null"
+              - string
+          ip_access_control_lists:
+            description:
+              Endpoint for managing IP Access Control Lists (ACLs) associated
+              with the trunk.
+            type:
+              - "null"
+              - string
+          origination_urls:
+            description: Endpoint for managing origination URLs associated with the trunk.
+            type:
+              - "null"
+              - string
+          phone_numbers:
+            description: Endpoint for managing phone numbers associated with the trunk.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      recording:
+        description: Settings related to call recording on the trunk.
+        properties:
+          mode:
+            description: The mode used for recording calls on this trunk.
+            type:
+              - "null"
+              - string
+          trim:
+            description: Indicates whether recorded calls should be trimmed.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      secure:
+        description: Indicates whether the trunk connection is secure.
+        type:
+          - "null"
+          - boolean
+      sid:
+        description: The unique identifier for the trunk.
+        type:
+          - "null"
+          - string
+      transfer_caller_id:
+        description: The Caller ID used when transferring calls through this trunk.
+        type:
+          - "null"
+          - string
+      transfer_mode:
+        description: The mode used for call transfer on this trunk.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL of the trunk.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Queues:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier of the account that owns this queue.
+        type:
+          - "null"
+          - string
+      average_wait_time:
+        description:
+          The average time, in seconds, that callers have spent waiting in
+          this queue.
+        type:
+          - "null"
+          - integer
+      current_size:
+        description: The current number of callers waiting in this queue.
+        type:
+          - "null"
+          - integer
+      date_created:
+        description: The date and time when this queue was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when this queue was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-defined human-readable name for this queue.
+        type:
+          - "null"
+          - string
+      max_size:
+        description: The maximum number of callers allowed in this queue.
+        type:
+          - "null"
+          - integer
+      sid:
+        description: A unique identifier for this queue.
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        additionalProperties: true
+        description: Contains URIs for related subresources of this queue.
+        properties:
+          members:
+            description: A URI to fetch the members (callers) of this queue.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      uri:
+        description: The URI for this queue resource.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account associated with this message.
+        type:
+          - "null"
+          - string
+      api_version:
+        description:
+          The version of the Twilio API being used to send or receive this
+          message.
+        type:
+          - "null"
+          - string
+      body:
+        description: The text body of the message.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the message was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_sent:
+        description: The date and time when the message was sent.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the message was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      direction:
+        description: The direction of the message, whether it's incoming or outgoing.
+        type:
+          - "null"
+          - string
+      error_code:
+        description: The error code associated with the message, if any.
+        type:
+          - "null"
+          - string
+      error_message:
+        description: The error message description if the message failed to send.
+        type:
+          - "null"
+          - string
+      from:
+        description: The phone number or sender ID that the message originated from.
+        type:
+          - "null"
+          - string
+      messaging_service_sid:
+        description:
+          The unique identifier for the messaging service associated with the
+          message.
+        type:
+          - "null"
+          - string
+      num_media:
+        description:
+          The number of media files (e.g., images, videos) included in the
+          message.
+        type:
+          - "null"
+          - integer
+      num_segments:
+        description: The number of message segments if the message exceeds 160 characters.
+        type:
+          - "null"
+          - integer
+      price:
+        description: The cost of sending the message.
+        type:
+          - "null"
+          - number
+      price_unit:
+        description: The currency unit used for pricing of the message.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for this message.
+        type:
+          - "null"
+          - string
+      status:
+        description: The status of the message (e.g., sent, delivered, failed).
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        additionalProperties: true
+        description: Contains links to the subresources related to the message.
+        properties:
+          feedback:
+            description: URI to access feedback related to the message.
+            type:
+              - "null"
+              - string
+          media:
+            description: URI to access media files associated with the message.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      to:
+        description: The phone number or recipient ID that the message was sent to.
+        type:
+          - "null"
+          - string
+      uri:
+        description: The URI for accessing detailed information about this message.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Message Media:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description:
+          The unique identifier of the account associated with this message
+          media.
+        type:
+          - "null"
+          - string
+      content_type:
+        description: The MIME type of the media content.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the message media was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the message media was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      parent_sid:
+        description:
+          The unique identifier of the parent message associated with this
+          media.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier of the message media.
+        type:
+          - "null"
+          - string
+      uri:
+        description: The URI that can be used to access this message media resource.
+        type:
+          - "null"
+          - string
+  Usage Records:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account associated with the usage record.
+        type:
+          - "null"
+          - string
+      api_version:
+        description:
+          The version of the Twilio API used in the interaction that generated
+          the usage record.
+        type:
+          - "null"
+          - string
+      as_of:
+        description:
+          The timestamp indicating the date and time up to which the usage
+          data is accurate.
+        type:
+          - "null"
+          - string
+      category:
+        description:
+          The category to which the usage data belongs, such as calls, SMS,
+          or recordings.
+        type:
+          - "null"
+          - string
+      count:
+        description: The number of units consumed in the usage record.
+        type:
+          - "null"
+          - integer
+      count_unit:
+        description:
+          The unit of measurement for the count field, such as minutes, messages,
+          or bytes.
+        type:
+          - "null"
+          - string
+      description:
+        description: A brief explanation or summary of the usage record data.
+        type:
+          - "null"
+          - string
+      end_date:
+        description: The end date of the usage record period.
+        format: date
+        type:
+          - "null"
+          - string
+      price:
+        description: The total price incurred for the consumed units in the usage record.
+        type:
+          - "null"
+          - number
+      price_unit:
+        description: The currency unit in which the price is denoted, such as USD or EUR.
+        type:
+          - "null"
+          - string
+      start_date:
+        description: The start date and time of the usage record period.
+        format: date-time
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        additionalProperties: true
+        description: Contains references to sub-resources related to the usage record.
+        properties:
+          all_time:
+            description:
+              The resource URI for fetching usage records spanning all time
+              periods.
+            type:
+              - "null"
+              - string
+          daily:
+            description: The resource URI for fetching daily usage records.
+            type:
+              - "null"
+              - string
+          last_month:
+            description: The resource URI for fetching usage records for the last month.
+            type:
+              - "null"
+              - string
+          monthly:
+            description: The resource URI for fetching monthly usage records.
+            type:
+              - "null"
+              - string
+          this_month:
+            description: The resource URI for fetching usage records for the current month.
+            type:
+              - "null"
+              - string
+          today:
+            description: The resource URI for fetching today's usage records.
+            type:
+              - "null"
+              - string
+          yearly:
+            description: The resource URI for fetching yearly usage records.
+            type:
+              - "null"
+              - string
+          yesterday:
+            description: The resource URI for fetching yesterday's usage records.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      uri:
+        description: The unique resource identifier for the usage record.
+        type:
+          - "null"
+          - string
+      usage:
+        description:
+          The total usage value, which could be a cumulative count or a sum
+          of values depending on the category.
+        type:
+          - "null"
+          - number
+      usage_unit:
+        description:
+          The unit of measurement for the usage field, corresponding to the
+          usage count unit.
+        type:
+          - "null"
+          - string
+    required:
+      - start_date
+  Usage Triggers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account associated with the usage trigger.
+        type:
+          - "null"
+          - string
+      api_version:
+        description: The version of the Twilio API used for the trigger.
+        type:
+          - "null"
+          - string
+      callback_method:
+        description: The HTTP method used for callback notifications.
+        type:
+          - "null"
+          - string
+      callback_url:
+        description: The URL where callback notifications are sent.
+        type:
+          - "null"
+          - string
+      current_value:
+        description: The current value for the trigger condition.
+        type:
+          - "null"
+          - number
+      date_created:
+        description: The date and time when the trigger was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_fired:
+        description: The date and time when the trigger was last fired.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the trigger was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name for the trigger.
+        type:
+          - "null"
+          - string
+      recurring:
+        description: Indicates if the trigger is set to recur periodically.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the trigger.
+        type:
+          - "null"
+          - string
+      trigger_by:
+        description: The attribute by which the trigger condition is evaluated.
+        type:
+          - "null"
+          - string
+      trigger_value:
+        description: The value that triggers the condition.
+        type:
+          - "null"
+          - number
+      uri:
+        description: The URI of the usage trigger resource.
+        type:
+          - "null"
+          - string
+      usage_category:
+        description: The category under which the usage falls.
+        type:
+          - "null"
+          - string
+      usage_record_uri:
+        description: The URI of the associated usage record.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the account associated with the conversation.
+        type:
+          - "null"
+          - string
+      attributes:
+        description: Additional attributes or metadata associated with the conversation.
+        type:
+          - "null"
+          - string
+      bindings:
+        description: Information about the communication channels bound to the conversation.
+        type:
+          - "null"
+          - object
+      chat_service_sid:
+        description:
+          The SID (Service Identifier) for the chat service to which the conversation
+          belongs.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the conversation was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the conversation was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A human-readable name assigned to the conversation.
+        type:
+          - "null"
+          - string
+      messaging_service_sid:
+        description: The SID for the messaging service associated with the conversation.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the conversation.
+        type:
+          - "null"
+          - string
+      state:
+        description: The current state of the conversation (e.g., active, inactive).
+        type:
+          - "null"
+          - string
+      timers:
+        description: Information about timers set for the conversation.
+        type:
+          - "null"
+          - object
+      unique_name:
+        description: A unique name assigned to the conversation for easy identification.
+        type:
+          - "null"
+          - string
+      url:
+        description:
+          The URL endpoint for accessing or interacting with the conversation
+          data.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Conversation Participants:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The Twilio account SID of the conversation participant.
+        type:
+          - "null"
+          - string
+      attributes:
+        description: Additional attributes related to the conversation participant.
+        type:
+          - "null"
+          - string
+      conversation_sid:
+        description: The SID of the conversation the participant belongs to.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the conversation participant was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the conversation participant was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      identity:
+        description: The identity of the participant in the conversation.
+        type:
+          - "null"
+          - string
+      last_read_message_index:
+        description: The index of the last message that the participant has read.
+        type:
+          - "null"
+          - string
+      last_read_timestamp:
+        description: The timestamp when the participant last read a message.
+        type:
+          - "null"
+          - string
+      messaging_binding:
+        description: Details about the messaging binding for the conversation participant.
+        properties:
+          address:
+            description: The address associated with the participant's messaging binding.
+            type:
+              - "null"
+              - string
+          proxy_address:
+            description: The proxy address for the messaging binding.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of the messaging binding (e.g., SMS, email).
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      role_sid:
+        description: The SID of the role assigned to the participant in the conversation.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique SID of the conversation participant.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL for accessing more details about the conversation participant.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Conversation Messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description:
+          The unique identifier of the account associated with the conversation_messages
+          data.
+        type:
+          - "null"
+          - string
+      attributes:
+        description: Additional attributes or metadata related to the conversation message.
+        type:
+          - "null"
+          - string
+      author:
+        description: The author or sender of the conversation message.
+        type:
+          - "null"
+          - string
+      body:
+        description: The textual content of the conversation message.
+        type:
+          - "null"
+          - string
+      content_sid:
+        description:
+          The unique identifier of the content associated with the conversation
+          message.
+        type:
+          - "null"
+          - string
+      conversation_sid:
+        description: The unique identifier of the conversation to which the message belongs.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the message was created.
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the message was last updated.
+        type:
+          - "null"
+          - string
+      delivery:
+        additionalProperties: true
+        description: Information related to message delivery
+        properties:
+          delivered:
+            description: Whether the message was successfully delivered.
+            type:
+              - "null"
+              - string
+          failed:
+            description: Number of failed delivery attempts.
+            type:
+              - "null"
+              - string
+          read:
+            description: Whether the message has been read by the recipient.
+            type:
+              - "null"
+              - string
+          sent:
+            description: Number of successful delivery attempts.
+            type:
+              - "null"
+              - string
+          total:
+            description: Total number of delivery attempts.
+            type:
+              - "null"
+              - integer
+          undelivered:
+            description: Number of undelivered message attempts.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      index:
+        description: The index of the message within the conversation.
+        type:
+          - "null"
+          - integer
+      links:
+        description: Links related to the conversation
+        properties:
+          channel_metadata:
+            description: Metadata specific to the communication channel.
+            type:
+              - "null"
+              - string
+          delivery_receipts:
+            description: Receipts and status of message delivery.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      media:
+        description: List of media items attached to the message
+        items:
+          additionalProperties: true
+          properties:
+            content_type:
+              description: The type of media content attached to the message.
+              type:
+                - "null"
+                - string
+            filename:
+              description: The name of the media file.
+              type:
+                - "null"
+                - string
+            sid:
+              description: The unique identifier of the media content.
+              type:
+                - "null"
+                - string
+            size:
+              description: The size of the media content in bytes.
+              type:
+                - "null"
+                - integer
+          type:
+            - "null"
+            - object
+        type:
+          - "null"
+          - array
+      participant_sid:
+        description: The unique identifier of the participant associated with the message.
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier of the conversation_message.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL of the conversation message for accessing or viewing.
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  Users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description: The unique identifier for the user's account
+        type:
+          - "null"
+          - string
+      attributes:
+        description: Additional attributes or metadata associated with the user
+        type:
+          - "null"
+          - string
+      chat_service_sid:
+        description:
+          The unique identifier for the chat service the user is associated
+          with
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the user was created
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the user was last updated
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name for the user
+        type:
+          - "null"
+          - string
+      identity:
+        description: The identity or username of the user
+        type:
+          - "null"
+          - string
+      is_notifiable:
+        description: Indicates whether the user is set to receive notifications
+        type:
+          - "null"
+          - string
+      is_online:
+        description: Indicates whether the user is currently online
+        type:
+          - "null"
+          - string
+      links:
+        description: Contains URLs to related resources for the user data.
+        properties:
+          user_conversations:
+            description: URL to retrieve the conversations associated with the user
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      role_sid:
+        description: The unique identifier for the role assigned to the user
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the user
+        type:
+          - "null"
+          - string
+      url:
+        description: URL to access the user's detailed information
+        type:
+          - "null"
+          - string
+    required:
+      - sid
+  User Conversation:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_sid:
+        description:
+          The unique identifier of the Twilio account the conversation belongs
+          to.
+        type:
+          - "null"
+          - string
+      attributes:
+        description: Additional metadata or attributes associated with the conversation.
+        type:
+          - "null"
+          - string
+      chat_service_sid:
+        description: The unique identifier of the chat service associated with the conversation.
+        type:
+          - "null"
+          - string
+      conversation_sid:
+        description: The unique identifier of the conversation.
+        type:
+          - "null"
+          - string
+      conversation_state:
+        description: The current state or status of the conversation.
+        type:
+          - "null"
+          - string
+      created_by:
+        description: The user or entity that created the conversation.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the conversation was initially created.
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the conversation was last updated.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name or alias for the conversation.
+        type:
+          - "null"
+          - string
+      last_read_message_index:
+        description:
+          The index of the last message in the conversation that has been read
+          by the user.
+        type:
+          - "null"
+          - integer
+      links:
+        description: Contains links related to the user conversation data.
+        properties:
+          conversation:
+            description: Link to access detailed information about the conversation.
+            type:
+              - "null"
+              - string
+          participant:
+            description: Link to access participant information related to the conversation.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      notification_level:
+        description: The level of notification settings for the conversation.
+        type:
+          - "null"
+          - string
+      participant_sid:
+        description: The unique identifier of the participant in the conversation.
+        type:
+          - "null"
+          - string
+      timers:
+        description: Contains timers or time-related information for the user conversation.
+        properties:
+          chat_service_sid:
+            description: Additional timer related to the chat service.
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      unique_name:
+        description: A unique name assigned to the conversation.
+        type:
+          - "null"
+          - string
+      unread_messages_count:
+        description: The count of unread messages in the conversation.
+        type:
+          - "null"
+          - integer
+      url:
+        description: The URL to access the conversation details.
+        type:
+          - "null"
+          - string
+      user_sid:
+        description: The unique identifier of the user associated with the conversation.
+        type:
+          - "null"
+          - string
+    required:
+      - conversations
