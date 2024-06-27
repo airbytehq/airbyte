@@ -35,7 +35,11 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
 
     @Throws(SQLException::class)
     override fun execute(sql: String?) {
-        execute { connection: Connection -> connection.createStatement().execute(sql) }
+        execute { connection: Connection ->
+            LOGGER.info("executing SQL $sql")
+            LOGGER.info(Thread.currentThread().stackTrace.joinToString("\n    "))
+            connection.createStatement().execute(sql)
+        }
     }
 
     @Throws(SQLException::class)
@@ -44,6 +48,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
             connection.autoCommit = false
             for (s in queries) {
                 LOGGER.info("executing query within transaction: $s")
+                LOGGER.info(Thread.currentThread().stackTrace.joinToString("\n    "))
                 connection.createStatement().execute(s)
                 LOGGER.info("done executing query within transaction: $s")
             }

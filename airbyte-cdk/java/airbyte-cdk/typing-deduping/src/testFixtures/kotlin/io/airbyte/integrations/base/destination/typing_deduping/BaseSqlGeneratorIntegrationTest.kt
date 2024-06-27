@@ -1607,6 +1607,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 v1RawTableStreamId.rawNamespace,
                 v1RawTableStreamId.rawName
             )
+        LOGGER.info("SGX SQL migrateFromV2ToV2=$migration")
         destinationHandler.execute(migration)
         val v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId)
         val v2RawRecords = dumpRawTableRecords(streamId)
@@ -1816,6 +1817,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                                     )
                                     .withSyncMode(SyncMode.INCREMENTAL)
                                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                                    .withGenerationId(43)
+                                    .withMinimumGenerationId(43)
+                                    .withSyncId(42)
                             )
                         )
                 )

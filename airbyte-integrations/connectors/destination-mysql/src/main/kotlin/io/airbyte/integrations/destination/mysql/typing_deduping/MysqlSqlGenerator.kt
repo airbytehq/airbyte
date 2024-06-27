@@ -398,6 +398,8 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                         cast(null, timestampWithTimeZoneType)
                             .`as`(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
                         castNull(JSON_TYPE).`as`(JavaBaseConstants.COLUMN_NAME_AB_META),
+                        DSL.castNull(SQLDataType.BIGINT)
+                            .`as`(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID),
                     )
                     .from(table(name(namespace, tableName))),
             )

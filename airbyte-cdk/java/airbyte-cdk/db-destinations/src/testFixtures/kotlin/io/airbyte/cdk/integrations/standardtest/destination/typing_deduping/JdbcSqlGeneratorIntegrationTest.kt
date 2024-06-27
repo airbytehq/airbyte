@@ -19,12 +19,15 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.SQLException
 import java.util.*
 import org.jooq.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
+
+val LOGGER = KotlinLogging.logger {}
 
 abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestinationState> :
     BaseSqlGeneratorIntegrationTest<DestinationState>() {
@@ -58,6 +61,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DSL.table(tableName),
                 columnNames.map { columnName: String -> DSL.field(DSL.quotedName(columnName)) }
             )
+        LOGGER.info("SGX columnNames=$columnNames")
         for (record in records) {
             insert =
                 insert.values(
@@ -118,10 +122,10 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     public override fun insertRawTableRecords(streamId: StreamId, records: List<JsonNode>) {
         insertRecords(
             DSL.name(streamId.rawNamespace, streamId.rawName),
-            JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
+            JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITH_GENERATION,
             records,
             COLUMN_NAME_DATA,
-            COLUMN_NAME_AB_META
+            COLUMN_NAME_AB_META,
         )
     }
 

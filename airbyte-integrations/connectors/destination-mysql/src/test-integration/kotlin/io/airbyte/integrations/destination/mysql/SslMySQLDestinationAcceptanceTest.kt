@@ -25,10 +25,11 @@ import org.jooq.SQLDialect
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
 
 @Disabled
 class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
-    private var dslContext: DSLContext? = null
+    private var dslContext: DSLContext = mock()
     private val namingResolver: StandardNameTransformer = MySQLNameTransformer()
 
     override fun getConfig(): JsonNode {

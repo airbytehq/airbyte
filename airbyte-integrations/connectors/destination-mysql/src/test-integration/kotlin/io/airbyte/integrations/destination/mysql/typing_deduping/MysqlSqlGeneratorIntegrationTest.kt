@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META
@@ -59,10 +60,11 @@ class MysqlSqlGeneratorIntegrationTest :
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
+        generationId: Long,
     ) {
         reformatMetaColumnTimestamps(records)
-        super.insertFinalTableRecords(includeCdcDeletedAt, streamId, suffix, records)
+        super.insertFinalTableRecords(includeCdcDeletedAt, streamId, suffix, records, generationId)
     }
 
     @Throws(Exception::class)
@@ -83,6 +85,7 @@ class MysqlSqlGeneratorIntegrationTest :
                 .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMP(6).nullable(false))
                 .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMP(6))
                 .column(COLUMN_NAME_AB_META, structType.nullable(true))
+                .column(COLUMN_NAME_AB_GENERATION_ID, structType.nullable(true))
                 .getSQL(ParamType.INLINED),
         )
     }

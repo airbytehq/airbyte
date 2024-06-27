@@ -201,6 +201,8 @@ constructor(
             timestampWithTimeZoneType.nullable(false)
         if (includeMetaColumn)
             metaColumns[JavaBaseConstants.COLUMN_NAME_AB_META] = structType.nullable(false)
+        metaColumns[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID] =
+            SQLDataType.BIGINT.nullable(true)
         return metaColumns
     }
 
@@ -349,6 +351,10 @@ constructor(
             )
             .column(JavaBaseConstants.COLUMN_NAME_DATA, structType.nullable(false))
             .column(JavaBaseConstants.COLUMN_NAME_AB_META, structType.nullable(true))
+            .column(
+                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
+                SQLDataType.BIGINT.nullable(true)
+            )
             .`as`(
                 DSL.select(
                         DSL.field(JavaBaseConstants.COLUMN_NAME_AB_ID)
@@ -360,6 +366,8 @@ constructor(
                         DSL.field(JavaBaseConstants.COLUMN_NAME_DATA)
                             .`as`(JavaBaseConstants.COLUMN_NAME_DATA),
                         DSL.cast(null, structType).`as`(JavaBaseConstants.COLUMN_NAME_AB_META),
+                        DSL.cast(null, SQLDataType.BIGINT)
+                            .`as`(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID),
                     )
                     .from(DSL.table(DSL.name(namespace, tableName))),
             )

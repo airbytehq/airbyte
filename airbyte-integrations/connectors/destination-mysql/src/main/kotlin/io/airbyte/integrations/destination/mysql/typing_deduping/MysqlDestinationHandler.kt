@@ -22,6 +22,7 @@ import java.sql.ResultSet
 import java.util.Optional
 import org.jooq.DataType
 import org.jooq.SQLDialect
+import org.jooq.conf.ParamType
 import org.jooq.impl.DefaultDataType
 
 class MysqlDestinationHandler(
@@ -64,6 +65,12 @@ class MysqlDestinationHandler(
         MinimumDestinationState.Impl(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
         )
+
+    override fun createNamespaces(schemas: Set<String>) {
+        schemas.forEach {
+            jdbcDatabase.execute(dslContext.createSchemaIfNotExists(it).getSQL(ParamType.INLINED))
+        }
+    }
 
     // Mysql doesn't have schemas. Pass the namespace as the database name.
     override fun findExistingTable(id: StreamId): Optional<TableDefinition> =

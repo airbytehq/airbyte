@@ -163,6 +163,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             LOGGER.info {
                 "Executing sql $queryId-$transactionId: ${transactions.joinToString("\n")}"
             }
+            LOGGER.info { Thread.currentThread().stackTrace.joinToString("\n    ") }
             val startTime = System.currentTimeMillis()
 
             try {
@@ -375,7 +376,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
                 ) && isAirbyteExtractedAtColumnMatch(existingTable)) ||
                 !(existingTable.columns.containsKey(JavaBaseConstants.COLUMN_NAME_AB_META) &&
-                    isAirbyteMetaColumnMatch(existingTable))
+                    isAirbyteMetaColumnMatch(existingTable)) ||
+                !(existingTable.columns.containsKey(
+                    JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+                ) && isAirbyteMetaColumnMatch(existingTable))
         ) {
             // Missing AB meta columns from final table, we need them to do proper T+D so trigger
             // soft-reset

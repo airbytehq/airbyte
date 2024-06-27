@@ -10,7 +10,7 @@ import org.testcontainers.utility.DockerImageName
 
 /** Much like the destination-postgres PostgresTestDatabase, this was copied from source-mysql. */
 class MySQLContainerFactory : ContainerFactory<MySQLContainer<*>>() {
-    override fun createNewContainer(imageName: DockerImageName?): MySQLContainer<*> {
-        return MySQLContainer(imageName?.asCompatibleSubstituteFor("mysql"))
+    override fun createNewContainer(imageName: DockerImageName): MySQLContainer<*> {
+        return MySQLContainer(imageName.asCompatibleSubstituteFor("mysql"))
     }
 }
