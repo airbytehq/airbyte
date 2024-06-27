@@ -42,6 +42,7 @@ These files can then be accessed by creating an SFTP connection to the server an
 
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
-| 0.1.0   | 2022-11-24 | [4924](https://github.com/airbytehq/airbyte/pull/4924) | 🎉 New Destination: SFTP JSON |
+| 0.1.1 | 2024-06-27 | [40581](https://github.com/airbytehq/airbyte/pull/40581) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.1.0 | 2022-11-24 | [4924](https://github.com/airbytehq/airbyte/pull/4924) | 🎉 New Destination: SFTP JSON |
 
 </details>
