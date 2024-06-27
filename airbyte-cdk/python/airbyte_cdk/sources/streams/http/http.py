@@ -226,34 +226,6 @@ class HttpStream(Stream, ABC):
         :return: An iterable containing the parsed response
         """
 
-    # TODO: add version
-    # @deprecated(version="2.1.0", reason="Deprecated in favor of the ErrorHandlers which offers similar functionality")
-    # def should_retry(self, response: requests.Response) -> bool:
-    #     """
-    #     Override to set different conditions for backoff based on the response from the server.
-    #
-    #     By default, back off on the following HTTP response statuses:
-    #      - 429 (Too Many Requests) indicating rate limiting
-    #      - 500s to handle transient server errors
-    #
-    #     Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
-    #     """
-    #     return response.status_code == 429 or 500 <= response.status_code < 600
-
-    # TODO: add version
-    # @deprecated(version="2.1.0", reason="Deprecated in favor of the BackoffStrategy which offers similar functionality")
-    # def backoff_time(self, response: requests.Response) -> Optional[float]:
-    #     """
-    #     Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
-    #
-    #     This method is called only if should_backoff() returns True for the input request.
-    #
-    #     :param response:
-    #     :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-    #     to the default backoff behavior (e.g using an exponential algorithm).
-    #     """
-    #     return None
-
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         """
         Used to initialize Adapter to avoid breaking changes;
