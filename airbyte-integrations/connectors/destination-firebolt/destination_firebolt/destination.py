@@ -31,7 +31,7 @@ def _determine_auth(key: str, secret: str) -> Auth:
         return ClientCredentials(key, secret)
 
 
-def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[str, Any]:
+def parse_config(config: json, logger: Optional[logging.Logger] = None) -> Dict[str, Any]:
     """
     Convert dict of config values to firebolt.db.Connection arguments
     :param config: json-compatible dict of settings
@@ -58,7 +58,7 @@ def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[s
     return connection_args
 
 
-def establish_connection(config: json, logger: Optional[AirbyteLogger] = None) -> Connection:
+def establish_connection(config: json, logger: Optional[logging.Logger] = None) -> Connection:
     """
     Creates a connection to Firebolt database using the parameters provided.
     :param config: Json object containing db credentials.
