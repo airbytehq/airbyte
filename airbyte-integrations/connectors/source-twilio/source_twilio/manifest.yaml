@@ -273,7 +273,7 @@ definitions:
           $ref: "#/schemas/Available Phone Numbers Toll-Free"
     Incoming Phone Numbers:
       type: DeclarativeStream
-      name: incoming_phone_pumbers
+      name: incoming_phone_numbers
       retriever:
         type: SimpleRetriever
         requester:
@@ -390,9 +390,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Flows"
-    Steps:
+    Step:
       type: DeclarativeStream
-      name: steps
+      name: step
       primary_key:
         - sid
       retriever:
@@ -407,7 +407,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - steps
+              - step
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -440,7 +440,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Steps"
+          $ref: "#/schemas/Step"
     Alerts:
       type: DeclarativeStream
       name: alerts
@@ -603,7 +603,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: end_time
         cursor_datetime_formats:
-          - "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -670,7 +670,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -879,7 +879,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1128,7 +1128,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_sent
         cursor_datetime_formats:
-          - "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1203,7 +1203,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_sent
         cursor_datetime_formats:
-          - "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1270,7 +1270,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: start_date
         cursor_datetime_formats:
-          - "%Y-%m-%d"
+          - "%a, %d %b %Y %H:%M:%S %z"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1441,9 +1441,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Users"
-    User Conversation:
+    User Conversations:
       type: DeclarativeStream
-      name: user_conversation
+      name: user_conversations
       primary_key:
         - conversations
       retriever:
@@ -1470,7 +1470,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/User Conversation"
+          $ref: "#/schemas/User Conversations"
 
 streams:
   - $ref: "#/definitions/streams/Accounts"
@@ -1482,7 +1482,7 @@ streams:
   - $ref: "#/definitions/streams/Incoming Phone Numbers"
   - $ref: "#/definitions/streams/Keys"
   - $ref: "#/definitions/streams/Flows"
-  - $ref: "#/definitions/streams/Steps"
+  - $ref: "#/definitions/streams/Step"
   - $ref: "#/definitions/streams/Alerts"
   - $ref: "#/definitions/streams/Applications"
   - $ref: "#/definitions/streams/Dependent Phone Numbers"
@@ -1506,7 +1506,7 @@ streams:
   - $ref: "#/definitions/streams/Conversation Participants"
   - $ref: "#/definitions/streams/Conversation Messages"
   - $ref: "#/definitions/streams/Users"
-  - $ref: "#/definitions/streams/User Conversation"
+  - $ref: "#/definitions/streams/User Conversations"
 
 spec:
   type: Spec
@@ -1569,7 +1569,7 @@ metadata:
     Incoming Phone Numbers: false
     Keys: false
     Flows: false
-    Steps: false
+    Step: false
     Alerts: false
     Applications: false
     Dependent Phone Numbers: false
@@ -1593,7 +1593,7 @@ metadata:
     Conversation Participants: false
     Conversation Messages: false
     Users: false
-    User Conversation: false
+    User Conversations: false
 
 schemas:
   Accounts:
@@ -2467,7 +2467,7 @@ schemas:
         type:
           - "null"
           - integer
-  Steps:
+  Step:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -5062,7 +5062,7 @@ schemas:
           - string
     required:
       - sid
-  User Conversation:
+  User Conversations:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
