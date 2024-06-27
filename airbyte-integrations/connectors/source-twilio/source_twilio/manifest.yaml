@@ -456,6 +456,28 @@ definitions:
             type: DpathExtractor
             field_path:
               - alerts
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_generated
+        cursor_datetime_formats:
+          - '%a, %d %b %Y %H:%M:%S %z'
+        datetime_format: '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          field_name: StartDate=
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: EndDate=
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -603,24 +625,24 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: end_time
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%d"
+          - '%a, %d %b %Y %H:%M:%S %z'
+        datetime_format: '%Y-%m-%d'
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: EndTime>
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: EndTime<
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -670,24 +692,24 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%d"
+          - '%a, %d %b %Y %H:%M:%S %z'
+        datetime_format: '%Y-%m-%d'
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: DateCreated>
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: DateCreated<
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -880,24 +902,24 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%d"
+          - '%a, %d %b %Y %H:%M:%S %z'
+        datetime_format: '%Y-%m-%d'
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: DateCreated>
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: DateCreated<
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1129,24 +1151,24 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_sent
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%d"
+          - '%a, %d %b %Y %H:%M:%S %z'
+        datetime_format: '%Y-%m-%d'
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: DateSent>
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: DateSent<
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1204,24 +1226,24 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%d"
+          - '%a, %d %b %Y %H:%M:%S %z'
+        datetime_format: '%Y-%m-%d'
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
+          field_name: DateCreated>
           inject_into: request_parameter
-          field_name: DateSent>
         end_time_option:
           type: RequestOption
+          field_name: DateCreated<
           inject_into: request_parameter
-          field_name: DateSent<
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1272,24 +1294,24 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: start_date
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%d"
+          - '%a, %d %b %Y %H:%M:%S %z'
+        datetime_format: '%Y-%m-%d'
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
+          field_name: StartDate>
           inject_into: request_parameter
-          field_name: StartDate
         end_time_option:
           type: RequestOption
+          field_name: EndDate<
           inject_into: request_parameter
-          field_name: EndDate
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2630,28 +2652,6 @@ schemas:
         type:
           - "null"
           - string
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: start_date
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%a, %d %b %Y %H:%M:%S %z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: StartDate
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: EndDate
-          inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   Applications:
     type: object
     $schema: http://json-schema.org/schema#
