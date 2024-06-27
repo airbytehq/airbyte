@@ -1,18 +1,20 @@
-- [+] feat: choose a strategy based on config
-- [+] chore: stop writing any record data to logs
-- [+] chore: cleanup logs generally
-- [+] fix: "add rows failed with status 400: {"message":"More than 500 mutations"}" in mutation api (batch them to ~100 or something)
-- [+] fix: batch row adds in rest api
-- [+] chore: unify test framework across unit/integration tests (remove pytest?)
-- [+] feat: snuggle rows in a batch
-- [+] feat: support multiple streams from source by using a naming convention and discovering existing tables with GET /tables
+- [x] feat: choose a strategy based on config
+- [x] chore: stop writing any record data to logs
+- [x] chore: cleanup logs generally
+- [x] fix: "add rows failed with status 400: {"message":"More than 500 mutations"}" in mutation api (batch them to ~100 or something)
+- [x] fix: batch row adds in rest api
+- [x] chore: unify test framework across unit/integration tests (remove pytest?)
+- [x] feat: snuggle rows in a batch
+- [x] feat: support multiple streams from source by using a naming convention and discovering existing tables with GET /tables
+- [ ] feat: add airbyte\_ prefix to all tables to prevent user from inadvertently overwriting existing table.
 - [ ] fix: replace "hostname" and "path" configs with "baseUrl"
+- [ ] fix: use friendly names for the properties on the config page
 - [ ] feat: verify actual host/api/auth connection in check: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#check
 - [ ] feat: add a default timeout everywhere per https://requests.readthedocs.io/en/latest/user/quickstart/#timeouts
-- [ ] fix: use friendly names for the properties on the config page
 
 - [ ] chore: update readme
+- [ ] feat: incremental update support for airbyte (explore what APIs we need to do this)
 - [ ] chore: unit test for Column to ensure it serializes to json as expected
-- [ ] chore: remove GlideBigTableMutationsStrategy?
+- [x] chore: remove GlideBigTableMutationsStrategy?
 - [ ] chore: clean up todos
 - [ ] chore: figure out why the dev-write script stopped working (freezes)
