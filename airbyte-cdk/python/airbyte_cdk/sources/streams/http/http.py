@@ -9,6 +9,8 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 from urllib.parse import urljoin
 
 import requests
+from deprecated.classic import deprecated
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.message import NoopMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -20,6 +22,8 @@ from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, Htt
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.types import JsonType
 from requests.auth import AuthBase
+
+from sources.streams.http.error_handlers import ErrorHandler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
@@ -40,7 +44,6 @@ class HttpStream(Stream, ABC):
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     def __init__(self, authenticator: Optional[AuthBase] = None, api_budget: Optional[APIBudget] = None):
-
         self._http_client = HttpClient(
             name=self.name,
             logger=self.logger,
@@ -50,7 +53,7 @@ class HttpStream(Stream, ABC):
             use_cache=self.use_cache,
             backoff_strategy=self.get_backoff_strategy(),
             # disable_retries=self.disable_retries,
-            message_respository=NoopMessageRepository(),
+            message_repository=NoopMessageRepository(),
         )
 
     @property
@@ -223,79 +226,68 @@ class HttpStream(Stream, ABC):
         :return: An iterable containing the parsed response
         """
 
-    # TODO move all the retry logic to a functor/decorator which is input as an init parameter
-    def should_retry(self, response: requests.Response) -> bool:
+    # TODO: add version
+    # @deprecated(version="2.1.0", reason="Deprecated in favor of the ErrorHandlers which offers similar functionality")
+    # def should_retry(self, response: requests.Response) -> bool:
+    #     """
+    #     Override to set different conditions for backoff based on the response from the server.
+    #
+    #     By default, back off on the following HTTP response statuses:
+    #      - 429 (Too Many Requests) indicating rate limiting
+    #      - 500s to handle transient server errors
+    #
+    #     Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
+    #     """
+    #     return response.status_code == 429 or 500 <= response.status_code < 600
+
+    # TODO: add version
+    # @deprecated(version="2.1.0", reason="Deprecated in favor of the BackoffStrategy which offers similar functionality")
+    # def backoff_time(self, response: requests.Response) -> Optional[float]:
+    #     """
+    #     Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
+    #
+    #     This method is called only if should_backoff() returns True for the input request.
+    #
+    #     :param response:
+    #     :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
+    #     to the default backoff behavior (e.g using an exponential algorithm).
+    #     """
+    #     return None
+
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         """
-        Override to set different conditions for backoff based on the response from the server.
-
-        By default, back off on the following HTTP response statuses:
-         - 429 (Too Many Requests) indicating rate limiting
-         - 500s to handle transient server errors
-
-        Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
+        Used to initialize Adapter to avoid breaking changes;
+        Override to provide custom BackoffStrategy
+        :return Optional[BackoffStrategy]:
         """
-        return response.status_code == 429 or 500 <= response.status_code < 600
+        # if self._is_method_overridden('backoff_time'):
+        if hasattr(self, "backoff_time"):
+            return HttpStreamAdapterBackoffStrategy(self)
+        else:
+            return None
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    # def _is_method_overridden(self, method_name):
+    #     parent_method = getattr(HttpStream, method_name, None)
+    #     current_method = getattr(self.__class__, method_name, None)
+    #
+    #     # Ensure both methods exist and compare their function objects
+    #     return parent_method and current_method and current_method.__code__ is not parent_method.__code__
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
         """
-        Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
-
-        This method is called only if should_backoff() returns True for the input request.
-
-        :param response:
-        :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-        to the default backoff behavior (e.g using an exponential algorithm).
+        Used to initialize Adapter to avoid breaking changes;
+        Override to provide custom ErrorHandler
+        :return Optional[ErrorHandler]:
         """
-        return None
-
-    def get_backoff_strategy(self) -> BackoffStrategy:
-        def backoff_time_wrapper(self_strategy, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
-    ) -> Optional[float]:
-            return self.backoff_time(response=response_or_exception)
-
-        return type("DynamicBackoffStrategy", (BackoffStrategy, object), {"backoff_time": backoff_time_wrapper})()
-
-    def get_error_handler(self) -> HttpStatusErrorHandler:
-        raise_on_http_errors = self.raise_on_http_errors
-        should_retry_method = self.should_retry
-
-        def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-            if isinstance(response_or_exception, Exception):
-                return error_handler.interpret_response(response_or_exception)
-            should_retry = should_retry_method(response_or_exception)
-            if should_retry:
-                return ErrorResolution(
-                    response_action=ResponseAction.RETRY,
-                    failure_type=FailureType.transient_error,
-                    error_message="Response does not include an HTTP status code.",
-                )
-            else:
-                if response_or_exception.ok:
-                    return ErrorResolution(
-                        response_action=ResponseAction.SUCCESS,
-                        failure_type=None,
-                        error_message=None,
-                    )
-                if raise_on_http_errors:
-                    return ErrorResolution(
-                        response_action=ResponseAction.FAIL,
-                        failure_type=FailureType.transient_error,
-                        error_message="Response does not include an HTTP status code.",
-                    )
-                else:
-                    return ErrorResolution(
-                        response_action=ResponseAction.IGNORE,
-                        failure_type=FailureType.transient_error,
-                        error_message="Response does not include an HTTP status code.",
-                    )
-
-        DynamicHttpStatusErrorHandler = type(
-            "DynamicHttpStatusErrorHandler", (HttpStatusErrorHandler, object), {"interpret_response": interpret_response}
-        )
-        error_handler = DynamicHttpStatusErrorHandler(
-            logger=logging.Logger, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time or 0)
-        )
-        return error_handler
+        if hasattr(self, "should_retry"):
+            error_handler = HttpStreamAdapterHttpStatusErrorHandler(stream=self,
+                                                                    logger=logging.Logger,
+                                                                    max_retries=self.max_retries,
+                                                                    max_time=timedelta(seconds=self.max_time or 0)
+                                                                    )
+            return error_handler
+        else:
+            return None
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
@@ -434,3 +426,53 @@ class HttpSubStream(HttpStream, ABC):
             # iterate over all parent records with current stream_slice
             for record in parent_records:
                 yield {"parent": record}
+
+
+class HttpStreamAdapterBackoffStrategy(BackoffStrategy):
+
+    def __init__(self, stream: HttpStream):
+        self.stream = stream
+
+    def backoff_time(
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+    ) -> Optional[float]:
+        return self.stream.backoff_time(response_or_exception)
+
+
+class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
+    def __init__(self, stream: HttpStream, **kwargs):
+        self.stream = stream
+        super().__init__(**kwargs)
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+
+        raise_on_http_errors = self.stream.raise_on_http_errors
+
+        if isinstance(response_or_exception, Exception):
+            return super().interpret_response(response_or_exception)
+        should_retry = self.stream.should_retry(response_or_exception)
+        if should_retry:
+            return ErrorResolution(
+                response_action=ResponseAction.RETRY,
+                failure_type=FailureType.transient_error,
+                error_message="Response does not include an HTTP status code.",
+            )
+        else:
+            if response_or_exception.ok:
+                return ErrorResolution(
+                    response_action=ResponseAction.SUCCESS,
+                    failure_type=None,
+                    error_message=None,
+                )
+            if raise_on_http_errors:
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.transient_error,
+                    error_message="Response does not include an HTTP status code.",
+                )
+            else:
+                return ErrorResolution(
+                    response_action=ResponseAction.IGNORE,
+                    failure_type=FailureType.transient_error,
+                    error_message="Response does not include an HTTP status code.",
+                )

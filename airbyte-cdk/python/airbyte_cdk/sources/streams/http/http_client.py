@@ -67,7 +67,7 @@ class HttpClient:
         backoff_strategy: Optional[Union[BackoffStrategy, List[BackoffStrategy]]] = None,
         error_message_parser: Optional[ErrorMessageParser] = None,
         disable_retries: bool = False,
-        message_respository: Optional[MessageRepository] = None,
+        message_repository: Optional[MessageRepository] = None,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -93,7 +93,7 @@ class HttpClient:
         self._error_message_parser = error_message_parser or JsonErrorMessageParser()
         self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
         self._disable_retries = disable_retries
-        self._message_repository = message_respository
+        self._message_repository = message_repository
 
     @property
     def cache_filename(self) -> str:
