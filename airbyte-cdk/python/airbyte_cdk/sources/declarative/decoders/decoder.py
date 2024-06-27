@@ -3,7 +3,7 @@
 #
 
 from abc import abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Generator, Mapping
 
 import requests
@@ -14,8 +14,6 @@ class Decoder:
     """
     Decoder strategy to transform a requests.Response into a Mapping[str, Any]
     """
-
-    last_decoded: Mapping[str, Any] = field(init=False, repr=False, default_factory=dict)
 
     @abstractmethod
     def is_stream_response(self) -> bool:

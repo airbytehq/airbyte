@@ -26,9 +26,7 @@ class JsonDecoder(Decoder):
             body_json = response.json()
             if not isinstance(body_json, list):
                 body_json = [body_json]
-            for rec in body_json:
-                self.last_decoded = rec
-                yield rec
+            yield from body_json
         except requests.exceptions.JSONDecodeError:
             yield {}
 
@@ -65,5 +63,4 @@ class JsonlDecoder(Decoder):
         # TODO???: set delimiter? usually it is `\n` but maybe it would be useful to set optional?
         #  https://github.com/airbytehq/airbyte-internal-issues/issues/8436
         for record in response.iter_lines():
-            self.last_decoded = json.loads(record)
-            yield self.last_decoded
+            yield json.loads(record)
