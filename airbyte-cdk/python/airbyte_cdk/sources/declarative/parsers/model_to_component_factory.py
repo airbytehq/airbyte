@@ -424,6 +424,8 @@ class ModelToComponentFactory:
     def create_cursor_pagination(
         self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
     ) -> CursorPaginationStrategy:
+        if not isinstance(decoder, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
             decoder=decoder,
@@ -748,6 +750,9 @@ class ModelToComponentFactory:
             decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
         else:
             decoder_to_use = JsonDecoder(parameters={})
+        if not isinstance(decoder_to_use, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
+
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
@@ -976,6 +981,8 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
+        if not isinstance(decoder, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
         return OffsetIncrement(
             page_size=model.page_size,
             config=config,
