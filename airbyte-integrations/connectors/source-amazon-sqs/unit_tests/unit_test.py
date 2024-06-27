@@ -66,7 +66,7 @@ def test_check():
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
     config = create_config(queue_url, user["AccessKeyId"], user["SecretAccessKey"], queue_region, False)
-    # Create AirbyteLogger
+    # Create logging.Logger
     logger = logging.getLogger("airbyte")
     # Create Source
     source = SourceAmazonSqs()
@@ -84,7 +84,7 @@ def test_discover():
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
     config = create_config(queue_url, "xxx", "xxx", queue_region, False)
-    # Create AirbyteLogger
+    # Create logging.Logger
     logger = logging.getLogger("airbyte")
     # Create Source
     source = SourceAmazonSqs()
@@ -111,7 +111,7 @@ def test_read():
     config = create_config(queue_url, user["AccessKeyId"], user["SecretAccessKey"], queue_region, False)
     # Create ConfiguredAirbyteCatalog
     catalog = ConfiguredAirbyteCatalog(streams=get_catalog()["streams"])
-    # Create AirbyteLogger
+    # Create logging.Logger
     logger = logging.getLogger("airbyte")
     # Create State
     state = Dict[str, any]
