@@ -7,19 +7,23 @@ import TabItem from "@theme/TabItem";
 
 
 
-# OSS Quickstart
+# Quickstart
 
 Airbyte Open Source is a reliable and extensible open source data pipeline.
 
-If you're getting started with Airbyte Cloud, you can skip ahead to [adding a source](add-a-source.md). This quickstart guides you through creating a locally deployed instance of Airbyte in just minutes using `abctl` (Airbyte Command Line Tool). 
+If you're getting started with Airbyte Cloud, you can skip ahead to moving data by [adding your first source](add-a-source.md). 
+
+This quickstart guides you through creating a locally deployed instance of Airbyte in just minutes using `abctl` ([Airbyte Command Line Tool](https://github.com/airbytehq/abctl)).
 
 :::tip
-Learn more about `abctl` by exploring its [GitHub repository](https://github.com/airbytehq/abctl). 
+**When you're ready to put an Airbyte instance into production, you'll want to review our guides on deployment.**
+
+For the best experience, we recommend [Deploying Airbyte on Kubernetes via Helm](../../deploying-airbyte/on-kubernetes-via-helm.md). 
 :::
 
 ## Prerequisites
 
-- To use `abctl`, you'll need to have **Docker Desktop** installed. See Docker's instructions for installation: [Mac](https://docs.docker.com/desktop/install/mac-install/), [Windows](https://docs.docker.com/desktop/install/windows-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/)
+- To use `abctl`, you'll need to have **Docker Desktop** installed. See Docker's instructions for installation: [Mac](https://docs.docker.com/desktop/install/mac-install/), [Windows](https://docs.docker.com/desktop/install/windows-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/) 
 
 ## 1: Install `abctl`
 
