@@ -1,4 +1,4 @@
-version: 0.77.2
+version: 2.0.0
 
 type: DeclarativeSource
 
@@ -61,7 +61,7 @@ definitions:
         type: CursorPagination
         page_size: 100
         cursor_value: '{{ response.get("next_page", {}) }}'
-        stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+        stop_condition: "{{ last_page_size == 0 }}"
       page_token_option:
         type: RequestPath
 
@@ -117,7 +117,7 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: "{{ response['links']['next'] }}"
-      stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
+      stop_condition: "{{ last_page_size == 0 }}"
       page_size: 100
     page_token_option:
       type: RequestPath
@@ -131,7 +131,7 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: '{{ response.get("after_url") }}'
-      stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+      stop_condition: "{{ last_page_size == 0 }}"
       page_size: 100
     page_token_option:
       type: RequestPath
@@ -231,7 +231,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     $parameters:
@@ -310,7 +310,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     $parameters:
@@ -362,7 +362,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     $parameters:
@@ -422,7 +422,7 @@ definitions:
           type: CursorPagination
           page_size: 200
           cursor_value: "{{ response.get('before_url') }}"
-          stop_condition: "{{ config.get('ignore_pagination') or 'before_url' not in response or not last_record }}"
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     incremental_sync:
@@ -455,7 +455,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     $parameters:
@@ -500,7 +500,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     $parameters:
