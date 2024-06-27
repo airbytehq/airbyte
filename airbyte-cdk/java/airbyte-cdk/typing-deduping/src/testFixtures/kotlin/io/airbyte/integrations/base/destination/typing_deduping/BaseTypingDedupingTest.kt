@@ -512,7 +512,7 @@ abstract class BaseTypingDedupingTest {
     /** Identical to [.incrementalDedup], except that the stream has no namespace. */
     @Test
     @Throws(Exception::class)
-    fun incrementalDedupDefaultNamespace() {
+    open fun incrementalDedupDefaultNamespace() {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()

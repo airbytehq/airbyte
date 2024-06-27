@@ -365,7 +365,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             )
     }
 
-    protected open fun isAirbyteGenerationColumnMatch(existingTable: TableDefinition): Boolean {
+    protected open fun isAirbyteGenerationIdColumnMatch(existingTable: TableDefinition): Boolean {
         return toJdbcTypeName(AirbyteProtocolType.INTEGER)
             .equals(
                 existingTable.columns.getValue(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID).type,

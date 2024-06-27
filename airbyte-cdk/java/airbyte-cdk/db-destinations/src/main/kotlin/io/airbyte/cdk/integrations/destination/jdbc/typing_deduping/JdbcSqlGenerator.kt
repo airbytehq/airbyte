@@ -207,6 +207,8 @@ constructor(
         }
         if (includeMetaColumn)
             metaColumns[JavaBaseConstants.COLUMN_NAME_AB_META] = structType.nullable(false)
+        metaColumns[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID] =
+            SQLDataType.BIGINT.nullable(true)
         return metaColumns
     }
 

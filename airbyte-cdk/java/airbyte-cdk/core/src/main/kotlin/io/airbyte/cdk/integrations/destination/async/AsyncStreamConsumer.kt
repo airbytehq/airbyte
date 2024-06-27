@@ -177,6 +177,7 @@ constructor(
                 val terminalStatusFromSource =
                     terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.INCOMPLETE
                 if (terminalStatusFromSource == AirbyteStreamStatus.INCOMPLETE) {
+                    logger.error { "terminal status for $streamDescriptor was ${terminalStatusesFromSource[streamDescriptor]}" }
                     unsuccessfulStreams.add(streamDescriptor)
                 }
                 StreamDescriptorUtils.withDefaultNamespace(

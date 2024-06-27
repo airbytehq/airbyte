@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
@@ -87,12 +88,16 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
             .withStream(new AirbyteStream()
                 .withNamespace(getStreamNamespace())
                 .withName(getStreamName())
-                .withJsonSchema(getSchema()))));
+                .withJsonSchema(getSchema()))
+            .withGenerationId(43L)
+            .withMinimumGenerationId(0L)
+            .withSyncId(13L)
+    ));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
-    runSync(catalog, messages1, "airbyte/destination-postgres:0.6.3");
+    runSync(catalog, messages1, "airbyte/destination-postgres:0.6.3", Function.identity(), null);
     // Special case to retrieve raw records pre DV2 using the same logic as actual code.
     final List<JsonNode> rawActualRecords = getDatabase().queryJsons(
         DSL.selectFrom(DSL.name(getStreamNamespace(), "_airbyte_raw_" + Names.toAlphanumericAndUnderscore(getStreamName()).toLowerCase())).getSQL());

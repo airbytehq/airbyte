@@ -120,7 +120,8 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s JSONB,
           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           %s TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-          %s JSONB
+          %s JSONB,
+          %s INTEGER
         );
         
         """.trimIndent(),
@@ -130,7 +131,8 @@ abstract class JdbcSqlOperations : SqlOperations {
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
+            JavaBaseConstants.COLUMN_NAME_AB_META,
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
         )
     }
 
