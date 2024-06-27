@@ -373,7 +373,6 @@ constructor(
                 DSL.field(JavaBaseConstants.COLUMN_NAME_DATA)
                     .`as`(JavaBaseConstants.COLUMN_NAME_DATA),
                 DSL.cast(null, structType).`as`(JavaBaseConstants.COLUMN_NAME_AB_META),
-                DSL.value(0).`as`(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID),
             )
         if (hasGenerationId) {
             selectColumns += DSL.value(0).`as`(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
