@@ -46,6 +46,7 @@ class IterableDecoder(Decoder):
         for line in response.iter_lines():
             yield {"record": line.decode()}
 
+
 @dataclass
 class JsonlDecoder(Decoder):
     """
