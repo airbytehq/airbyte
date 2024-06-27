@@ -30,7 +30,7 @@ A connection is an automated data pipeline that replicates data from a source to
 | [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                           | How should the streams be replicated (read and written)?           |
 | [Sync Schedule](/using-airbyte/core-concepts/sync-schedules.md)                                                          | When should a data sync be triggered?                              |
 | [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                                    | Where should the replicated data be written?                       |
-| [Schema Propagation](using-airbyte/schema-change-management.md)                                             | How should Airbyte handle schema drift in sources?                 |
+| [Schema Propagation](using-airbyte/schema-change-management.md)                                                          | How should Airbyte handle schema drift in sources?                 |
 
 ## Stream
 
@@ -87,22 +87,7 @@ Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.
 
 ## Typing and Deduping
 
-Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns and only contains unique records. Typing and deduping is only relevant for the following relational database & warehouse destinations:
-
-- Snowflake
-- BigQuery
-
-:::info
-Typing and Deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. We are retaining documentation about normalization to support legacy destinations.
-:::
-
-For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
-
-## Basic Normalization
-
-Basic Normalization transforms data after a sync to denest columns into their own tables. Note that normalization is only available for relational database & warehouse destinations that have not yet migrated to Destinations V2, and will eventually be fully deprecated.
-
-For more details, see our [Basic Normalization documentation](/using-airbyte/core-concepts/basic-normalization.md).
+Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns, and if deduplication is selected, only contains unique records. Typing and deduping is only relevant for relational database & warehouse destinations. For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
 
 ## Custom Transformations
 

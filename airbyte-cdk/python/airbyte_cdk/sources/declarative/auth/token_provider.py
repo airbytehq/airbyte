@@ -5,10 +5,10 @@
 
 import datetime
 from abc import abstractmethod
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, Optional, Union
 
-import dpath.util
+import dpath
 import pendulum
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -36,7 +36,7 @@ class SessionTokenProvider(TokenProvider):
     parameters: InitVar[Mapping[str, Any]]
     message_repository: MessageRepository = NoopMessageRepository()
 
-    _decoder: Decoder = JsonDecoder(parameters={})
+    _decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
     _next_expiration_time: Optional[DateTime] = None
     _token: Optional[str] = None
 
@@ -62,7 +62,7 @@ class SessionTokenProvider(TokenProvider):
         )
         if response is None:
             raise ReadException("Failed to get session token, response got ignored by requester")
-        session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
+        session_token = dpath.get(self._decoder.decode(response), self.session_token_path)
         if self.expiration_duration is not None:
             self._next_expiration_time = pendulum.now() + self.expiration_duration
         self._token = session_token

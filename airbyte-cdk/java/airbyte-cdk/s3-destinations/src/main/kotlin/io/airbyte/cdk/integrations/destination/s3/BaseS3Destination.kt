@@ -15,10 +15,11 @@ import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class BaseS3Destination
 protected constructor(
@@ -47,7 +48,7 @@ protected constructor(
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: Exception) {
-            LOGGER.error("Exception attempting to access the S3 bucket: ", e)
+            LOGGER.error(e) { "Exception attempting to access the S3 bucket: " }
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
@@ -80,7 +81,5 @@ protected constructor(
 
     abstract fun storageProvider(): StorageProvider
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BaseS3Destination::class.java)
-    }
+    companion object {}
 }

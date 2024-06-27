@@ -121,14 +121,24 @@ class TestFullRefreshStreams:
                 True,
                 None,
                 {"start_date": "2023-01-01 00:00:01", "end_date": "2023-01-31 00:00:01"},
-                {"limit": 250, "sort_by": "updated_at-asc", "updated_at_min": "2023-01-01 00:00:01", "updated_at_max": "2023-01-31 00:00:01"},
+                {
+                    "limit": 250,
+                    "sort_by": "updated_at-asc",
+                    "updated_at_min": "2023-01-01 00:00:01",
+                    "updated_at_max": "2023-01-31 00:00:01",
+                },
             ),
             (
                 Orders,
                 False,
                 None,
                 {"start_date": "2023-01-01 00:00:01", "end_date": "2023-01-31 00:00:01"},
-                {"limit": 250, "sort_by": "updated_at-asc", "updated_at_min": "2023-01-01 00:00:01", "updated_at_max": "2023-01-31 00:00:01"},
+                {
+                    "limit": 250,
+                    "sort_by": "updated_at-asc",
+                    "updated_at_min": "2023-01-01 00:00:01",
+                    "updated_at_max": "2023-01-31 00:00:01",
+                },
             ),
         ],
     )
@@ -216,14 +226,24 @@ class TestIncrementalStreams:
                 True,
                 None,
                 {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
-                {"limit": 250, "sort_by": "updated_at-asc", "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+                {
+                    "limit": 250,
+                    "sort_by": "updated_at-asc",
+                    "updated_at_min": "2020-01-01T00:00:00Z",
+                    "updated_at_max": "2020-02-01T00:00:00Z",
+                },
             ),
             (
                 Orders,
                 False,
                 None,
                 {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
-                {"limit": 250, "sort_by": "updated_at-asc", "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+                {
+                    "limit": 250,
+                    "sort_by": "updated_at-asc",
+                    "updated_at_min": "2020-01-01T00:00:00Z",
+                    "updated_at_max": "2020-02-01T00:00:00Z",
+                },
             ),
         ],
     )

@@ -27,8 +27,10 @@ def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
         assert result.exit_code == 0, f"Validation failed for {file_path} with error: {result.output}"
 
 
-def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files, tmp_path):
+def test_invalid_metadata_yaml_files(mocker, invalid_metadata_yaml_files, tmp_path):
     runner = CliRunner()
+
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
 
     assert len(invalid_metadata_yaml_files) > 0, "No files found"
 

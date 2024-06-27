@@ -38,7 +38,7 @@ internal class MockSqlGenerator : SqlGenerator {
     ): Sql {
         val timestampFilter =
             minRawTimestamp
-                .map(Function { timestamp: Instant? -> " WHERE extracted_at > $timestamp" })
+                .map(Function { timestamp: Instant -> " WHERE extracted_at > $timestamp" })
                 .orElse("")
         val casting = if (useExpensiveSaferCasting) " WITH" else " WITHOUT" + " SAFER CASTING"
         return of(

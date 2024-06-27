@@ -5,7 +5,7 @@
 
 import json
 import socket
-from typing import Any, Generator, List, MutableMapping, Union
+from typing import Any, Generator, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType
@@ -19,7 +19,9 @@ from airbyte_cdk.models.airbyte_protocol import (
     Status,
     Type,
 )
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.source import Source
+from airbyte_cdk.sources.streams.checkpoint import FullRefreshCheckpointReader
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message
 from apiclient import errors
@@ -147,12 +149,14 @@ class SourceGoogleSheets(Source):
         logger: AirbyteLogger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
+        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Generator[AirbyteMessage, None, None]:
         client = GoogleSheetsClient(self.get_credentials(config))
         client.Backoff.row_batch_size = config.get("batch_size", 200)
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
-        stream_name_to_stream = {stream.stream.name: stream for stream in catalog.streams}
+        stream_instances = {s.stream.name: s.stream for s in catalog.streams}
+        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state or {})
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
@@ -165,46 +169,61 @@ class SourceGoogleSheets(Source):
         logger.info(f"Row counts: {sheet_row_counts}")
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
-            stream = stream_name_to_stream.get(sheet).stream
+            stream = stream_instances.get(sheet)
             yield as_airbyte_message(stream, AirbyteStreamStatus.STARTED)
+            checkpoint_reader = FullRefreshCheckpointReader([])
+            _ = checkpoint_reader.next()
             # We revalidate the sheet here to avoid errors in case the sheet was changed after the sync started
             is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet)
-            if is_valid:
-                column_index_to_name = sheet_to_column_index_to_name[sheet]
-                row_cursor = 2  # we start syncing past the header row
-                # For the loop, it is necessary that the initial row exists when we send a request to the API,
-                # if the last row of the interval goes outside the sheet - this is normal, we will return
-                # only the real data of the sheet and in the next iteration we will loop out.
-                while row_cursor <= sheet_row_counts[sheet]:
-                    row_batch = SpreadsheetValues.parse_obj(
-                        client.get_values(
-                            sheet=sheet,
-                            row_cursor=row_cursor,
-                            spreadsheetId=spreadsheet_id,
-                            majorDimension="ROWS",
-                        )
-                    )
-
-                    row_cursor += client.Backoff.row_batch_size + 1
-                    # there should always be one range since we requested only one
-                    value_ranges = row_batch.valueRanges[0]
-
-                    if not value_ranges.values:
-                        break
-
-                    row_values = value_ranges.values
-                    if len(row_values) == 0:
-                        break
-
-                    yield as_airbyte_message(stream, AirbyteStreamStatus.RUNNING)
-                    for row in row_values:
-                        if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
-                            yield AirbyteMessage(
-                                type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name)
-                            )
-                yield as_airbyte_message(stream, AirbyteStreamStatus.COMPLETE)
-            else:
+            if not is_valid:
                 logger.info(f"Skipping syncing sheet {sheet}: {reason}")
+                yield self._checkpoint_state(checkpoint_reader.get_checkpoint(), state_manager, sheet, None)
+                yield as_airbyte_message(stream, AirbyteStreamStatus.INCOMPLETE)
+                continue
+
+            column_index_to_name = sheet_to_column_index_to_name[sheet]
+            row_cursor = 2  # we start syncing past the header row
+            # For the loop, it is necessary that the initial row exists when we send a request to the API,
+            # if the last row of the interval goes outside the sheet - this is normal, we will return
+            # only the real data of the sheet and in the next iteration we will loop out.
+            while row_cursor <= sheet_row_counts[sheet]:
+                row_batch = SpreadsheetValues.parse_obj(
+                    client.get_values(
+                        sheet=sheet,
+                        row_cursor=row_cursor,
+                        spreadsheetId=spreadsheet_id,
+                        majorDimension="ROWS",
+                    )
+                )
+
+                row_cursor += client.Backoff.row_batch_size + 1
+                # there should always be one range since we requested only one
+                value_ranges = row_batch.valueRanges[0]
+
+                if not value_ranges.values:
+                    break
+
+                row_values = value_ranges.values
+                if len(row_values) == 0:
+                    break
+
+                yield as_airbyte_message(stream, AirbyteStreamStatus.RUNNING)
+                for row in row_values:
+                    if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
+                        yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
+
+            yield self._checkpoint_state(checkpoint_reader.get_checkpoint(), state_manager, sheet, None)
+            yield as_airbyte_message(stream, AirbyteStreamStatus.COMPLETE)
+
+    def _checkpoint_state(
+        self,
+        stream_state: Mapping[str, Any],
+        state_manager,
+        stream_name: str,
+        stream_namespace: Optional[str],
+    ) -> AirbyteMessage:
+        state_manager.update_state_for_stream(stream_name, stream_namespace, stream_state)
+        return state_manager.create_state_message(stream_name, stream_namespace)
 
     def read(
         self,
@@ -215,7 +234,7 @@ class SourceGoogleSheets(Source):
     ) -> Generator[AirbyteMessage, None, None]:
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:
-            yield from self._read(logger, config, catalog)
+            yield from self._read(logger, config, catalog, state)
         except errors.HttpError as e:
             error_description = exception_description_by_status_code(e.status_code, spreadsheet_id)
 

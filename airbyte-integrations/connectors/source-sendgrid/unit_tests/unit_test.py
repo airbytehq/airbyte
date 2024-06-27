@@ -2,16 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
+import logging
 import os
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 import pendulum
 import pytest
-import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from numpy import nan
 from requests import codes
@@ -47,9 +45,16 @@ def mock_pendulum_now(monkeypatch):
     monkeypatch.setattr(pendulum, "now", pendulum_mock)
 
 
+@pytest.fixture()
+def mock_authenticator():
+    mock = Mock()
+    mock.get_auth_header.return_value = {"Authorization": "Bearer fake_token"}
+    return mock
+
+
 def test_source_wrong_credentials():
     source = SourceSendgrid()
-    status, error = source.check_connection(logger=AirbyteLogger(), config={"api_key": "wrong.api.key123"})
+    status, error = source.check_connection(logger=logging.getLogger("airbyte"), config={"api_key": "wrong.api.key123"})
     assert not status
 
 
@@ -76,8 +81,9 @@ def test_read_records(
     stream_name,
     url,
     expected,
-    requests_mock,
+    requests_mock
 ):
+    requests_mock.get("https://api.sendgrid.com/v3/marketing/contacts/exports", json={})
     stream = find_stream(stream_name)
     requests_mock.get("https://api.sendgrid.com/v3/marketing", json={})
     requests_mock.get(url, json={"name": "test", "id": "id", "contact_count": 20, "_metadata": {"self": "self"}})
@@ -131,8 +137,10 @@ def test_should_retry_on_permission_error(stream_name, status, expected):
     assert stream.retriever.requester._should_retry(response_mock) == expected
 
 
-def test_compressed_contact_response(requests_mock):
+def test_compressed_contact_response(requests_mock, mock_authenticator):
     stream = Contacts()
+    stream._session.auth = mock_authenticator
+
     with open(os.path.dirname(__file__) + "/compressed_response", "rb") as file_response:
         url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
         requests_mock.register_uri("POST", url, [{"json": {"id": "random_id"}, "status_code": 202}])
@@ -152,8 +160,10 @@ def test_compressed_contact_response(requests_mock):
         assert recs == expected_records
 
 
-def test_uncompressed_contact_response(requests_mock):
+def test_uncompressed_contact_response(requests_mock, mock_authenticator):
     stream = Contacts()
+    stream._session.auth = mock_authenticator
+
     with open(os.path.dirname(__file__) + "/decompressed_response.csv", "rb") as file_response:
         url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
         requests_mock.register_uri("POST", url, [{"json": {"id": "random_id"}, "status_code": 202}])
@@ -173,8 +183,9 @@ def test_uncompressed_contact_response(requests_mock):
         assert recs == expected_records
 
 
-def test_bad_job_response(requests_mock):
+def test_bad_job_response(requests_mock, mock_authenticator):
     stream = Contacts()
+    stream._session.auth = mock_authenticator
     url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
 
     requests_mock.register_uri(

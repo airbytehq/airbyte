@@ -47,5 +47,12 @@ class ShopifyBulkExceptions:
     class BulkJobAccessDenied(BaseBulkException):
         """Raised when BULK Job has ACCESS_DENIED status"""
 
+    class BulkJobCreationFailedConcurrentError(BaseBulkException):
+        """Raised when an attempt to create a job as failed because of concurrency limits."""
+
+        failure_type: FailureType = FailureType.transient_error
+
     class BulkJobConcurrentError(BaseBulkException):
-        """Raised when BULK Job could not be created, since the 1 Bulk job / shop quota is exceeded."""
+        """Raised when failing the job after hitting too many BulkJobCreationFailedConcurrentError."""
+
+        failure_type: FailureType = FailureType.transient_error

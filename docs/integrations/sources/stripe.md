@@ -220,8 +220,18 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4.5 | 2024-06-25 | [40404](https://github.com/airbytehq/airbyte/pull/40404) | Update dependencies |
+| 5.4.4 | 2024-06-22 | [40040](https://github.com/airbytehq/airbyte/pull/40040) | Update dependencies |
+| 5.4.3 | 2024-06-06 | [39284](https://github.com/airbytehq/airbyte/pull/39284) | [autopull] Upgrade base image to v1.2.2 |
+| 5.4.2 | 2024-06-11 | [39412](https://github.com/airbytehq/airbyte/pull/39412) | Removed `invoice.upcomming` event type from (incremental sync) for `Invoices` stream |
+| 5.4.1 | 2024-06-11 | [39393](https://github.com/airbytehq/airbyte/pull/39393) | Added missing `event types` (incremental sync) for `Invoices` stream |
+| 5.4.0 | 2024-06-05 | [39138](https://github.com/airbytehq/airbyte/pull/39138) | Fixed the `Refunds` stream missing data for the `incremental` sync |
+| 5.3.9 | 2024-05-22 | [38550](https://github.com/airbytehq/airbyte/pull/38550) | Update authenticator package |
 | 5.3.8 | 2024-05-15 | [38248](https://github.com/airbytehq/airbyte/pull/38248) | Replace AirbyteLogger with logging.Logger |
 | 5.3.7 | 2024-04-24 | [36663](https://github.com/airbytehq/airbyte/pull/36663) | Schema descriptions |
 | 5.3.6 | 2024-04-18 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type |
@@ -326,5 +336,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 0.1.10  | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)    | Update data types to be number instead of int                                                                                                                                                                                 |
 | 0.1.9   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)    | Add acceptance tests for connected accounts                                                                                                                                                                                   |
 | 0.1.8   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)    | Bump CDK connectors                                                                                                                                                                                                           |
+
+</details>
 
 </HideInUI>
