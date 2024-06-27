@@ -132,7 +132,7 @@ The Zendesk Support source connector supports the following streams:
 The Zendesk Support connector fetches deleted records in the following streams:
 
 | Stream                   | Deletion indicator field |
-| :----------------------- | :----------------------- |
+|:-------------------------|:-------------------------|
 | **Brands**               | `is_deleted`             |
 | **Groups**               | `deleted`                |
 | **Organizations**        | `deleted_at`             |
@@ -162,8 +162,13 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.5   | 2024-05-23 | [38607](https://github.com/airbytehq/airbyte/pull/38607) | migrate to cursor based pagination in stream `Organization memberships`                                                                                                                                                            |
+| 2.6.4   | 2024-05-20 | [38310](https://github.com/airbytehq/airbyte/pull/38310) | Fix record filter for `Ticket Metrics` stream                                                                                                                                                                                      |
 | 2.6.3   | 2024-05-02 | [36669](https://github.com/airbytehq/airbyte/pull/36669) | Schema descriptions                                                                                                                                                                                                                |
 | 2.6.2   | 2024-02-05 | [37761](https://github.com/airbytehq/airbyte/pull/37761) | Add stop condition for `Ticket Audits` when recieved old records; Ignore 403 and 404 status codes.                                                                                                                                 |
 | 2.6.1   | 2024-04-30 | [37723](https://github.com/airbytehq/airbyte/pull/37723) | Add %Y-%m-%dT%H:%M:%S%z to cursor_datetime_formats                                                                                                                                                                                 |
@@ -257,5 +262,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 0.1.2   | 2021-10-16 | [6513](https://github.com/airbytehq/airbyte/pull/6513)   | Fixed TicketComments stream                                                                                                                                                                                                        |
 | 0.1.1   | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787)   | Fixed incremental logic for the ticket_comments stream                                                                                                                                                                             |
 | 0.1.0   | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861)   | Created CDK native zendesk connector                                                                                                                                                                                               |
+
+</details>
 
 </HideInUI>

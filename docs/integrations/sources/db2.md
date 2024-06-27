@@ -58,6 +58,9 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                                  | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | 0.2.2   | 2024-02-13 | [35233](https://github.com/airbytehq/airbyte/pull/35233)                                                      | Adopt CDK 0.20.4                                                                                                                          |
@@ -85,3 +88,5 @@ You can also enter your own password for the keystore, but if you don't, the pas
 | 0.1.2   | 2021-10-25 | [7355](https://github.com/airbytehq/airbyte/pull/7355)                                                        | Added ssl support                                                                                                                         |
 | 0.1.1   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699)                                                        | Added json config validator                                                                                                               |
 | 0.1.0   | 2021-06-22 | [4197](https://github.com/airbytehq/airbyte/pull/4197)                                                        | New Source: IBM DB2                                                                                                                       |
+
+</details>

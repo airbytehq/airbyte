@@ -505,9 +505,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // Modify the state to point to a non-existing resume token value
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
-    final String replicaSetName = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final MongoDbCdcState cdcState = new MongoDbCdcState(
-        MongoDbDebeziumStateUtil.formatState(databaseName, replicaSetName, INVALID_RESUME_TOKEN));
+        MongoDbDebeziumStateUtil.formatState(databaseName, INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
@@ -557,15 +556,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
         new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
-    final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();
     final Map<String, String> emptyOffsetB = Map.of();
     final Map<String, String> offsetA = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, resumeTokenString), new TypeReference<>() {});
+        resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetB = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, resumeTokenString), new TypeReference<>() {});
+        resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetBDifferent = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, INVALID_RESUME_TOKEN), new TypeReference<>() {});
+        INVALID_RESUME_TOKEN), new TypeReference<>() {});
 
     assertFalse(targetPosition.isSameOffset(null, offsetB));
     assertFalse(targetPosition.isSameOffset(emptyOffsetA, offsetB));
@@ -573,6 +571,36 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(targetPosition.isSameOffset(offsetA, emptyOffsetB));
     assertFalse(targetPosition.isSameOffset(offsetA, offsetBDifferent));
     assertTrue(targetPosition.isSameOffset(offsetA, offsetB));
+  }
+
+  @Test
+  void testStreamStatusTraces() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+
+    // Start a sync with one stream
+    final List<AirbyteMessage> messages = runRead(configuredCatalog);
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(messages);
+    final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
+    final List<AirbyteTraceMessage> statusTraceMessages = filterStatusTraceMessages(messages);
+
+    assertEquals(recordCount, recordMessages.size());
+    assertEquals(recordCount + 1, stateMessages.size());
+    assertEquals(2, statusTraceMessages.size());
+
+    final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
+
+    final var result = mongoClient.getDatabase(databaseName).getCollection(collectionName).insertOne(createDocument(1));
+    final var insertedId = result.getInsertedId();
+
+    // Start another sync that finds the insert change
+    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, Jsons.jsonNode(List.of(lastStateMessage)));
+    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
+    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
+    final List<AirbyteTraceMessage> statusTraceMessages2 = filterStatusTraceMessages(messages2);
+
+    assertEquals(1, recordMessages2.size());
+    assertEquals(1, stateMessages2.size());
+    assertEquals(2, statusTraceMessages2.size());
   }
 
   private ConfiguredAirbyteStream convertToConfiguredAirbyteStream(final AirbyteStream airbyteStream, final SyncMode syncMode) {
@@ -592,6 +620,12 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private List<AirbyteStateMessage> filterStateMessages(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == AirbyteMessage.Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  private List<AirbyteTraceMessage> filterStatusTraceMessages(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(m -> m.getType() == Type.TRACE &&
+        m.getTrace().getType() == AirbyteTraceMessage.Type.STREAM_STATUS).map(AirbyteMessage::getTrace)
         .collect(Collectors.toList());
   }
 

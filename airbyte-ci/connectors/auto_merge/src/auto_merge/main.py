@@ -8,11 +8,11 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from github import Auth, Github
 
-from .consts import AIRBYTE_REPO, AUTO_MERGE_LABEL, BASE_BRANCH, CONNECTOR_PATH_PREFIXES
+from .consts import AIRBYTE_REPO, AUTO_MERGE_LABEL, BASE_BRANCH, MERGE_METHOD
 from .env import GITHUB_TOKEN, PRODUCTION
 from .helpers import generate_job_summary_as_markdown
 from .pr_validators import ENABLED_VALIDATORS
@@ -58,6 +58,29 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
     return True
 
 
+def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 60) -> Optional[PullRequest]:
+    """Merge a PR with retries
+
+    Args:
+        pr (PullRequest): The PR to merge
+        max_retries (int, optional): The maximum number of retries. Defaults to 3.
+        wait_time (int, optional): The time to wait between retries in seconds. Defaults to 60.
+    """
+    for i in range(max_retries):
+        try:
+            pr.merge(merge_method=MERGE_METHOD)
+            logger.info(f"PR #{pr.number} was auto-merged")
+            return pr
+        except Exception as e:
+            logger.error(f"Failed to merge PR #{pr.number} - {e}")
+            if i < max_retries - 1:
+                logger.info(f"Retrying to merge PR #{pr.number}")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"Failed to merge PR #{pr.number} after {max_retries} retries")
+    return None
+
+
 def process_pr(repo: GithubRepo, pr: PullRequest, required_passing_contexts: set[str], dry_run: bool) -> None | PullRequest:
     """Process a PR to see if it is auto-mergeable and merge it if it is.
 
@@ -74,8 +97,7 @@ def process_pr(repo: GithubRepo, pr: PullRequest, required_passing_contexts: set
     head_commit = repo.get_commit(sha=pr.head.sha)
     if check_if_pr_is_auto_mergeable(head_commit, pr, required_passing_contexts):
         if not dry_run:
-            pr.merge()
-            logger.info(f"PR #{pr.number} was auto-merged")
+            merge_with_retries(pr)
             return pr
         else:
             logger.info(f"PR #{pr.number} is auto-mergeable but dry-run is enabled")
@@ -120,6 +142,6 @@ def auto_merge() -> None:
             back_off_if_rate_limited(gh_client)
             if merged_pr := process_pr(repo, pr, required_passing_contexts, dry_run):
                 merged_prs.append(merged_pr)
-        if os.environ["GITHUB_STEP_SUMMARY"]:
+        if "GITHUB_STEP_SUMMARY" in os.environ:
             job_summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(generate_job_summary_as_markdown(merged_prs))
             logger.info(f"Job summary written to {job_summary_path}")

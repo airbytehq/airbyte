@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "auto-merge"
-version = "0.1.0"
+version = "0.1.2"
 description = ""
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"

@@ -96,7 +96,7 @@ def test_get_updated_state(authenticator, token_config, current_state, latest_re
         default_start_date=pendulum.parse(token_config["start_date"]),
         lookback_window=token_config["lookback_window"]
     )
-    assert stream.get_updated_state(current_stream_state=current_state, latest_record=latest_record) == expected_state
+    assert stream._get_updated_state(current_stream_state=current_state, latest_record=latest_record) == expected_state
 
 
 def test_threads_request_params(authenticator, token_config):
@@ -190,3 +190,17 @@ def test_should_retry(authenticator, token_config, status_code, expected):
     )
     mocked_response = Mock(status_code=status_code)
     assert stream.should_retry(mocked_response) == expected
+
+def test_channels_stream_with_include_private_channels_false(authenticator) -> None:
+    stream = Channels(channel_filter=[], include_private_channels=False, authenticator=authenticator)
+
+    params = stream.request_params(stream_slice={}, stream_state={})
+
+    assert params.get("types") == 'public_channel'
+
+def test_channels_stream_with_include_private_channels(authenticator) -> None:
+    stream = Channels(channel_filter=[], include_private_channels=True, authenticator=authenticator)
+
+    params = stream.request_params(stream_slice={}, stream_state={})
+
+    assert params.get("types") == 'public_channel,private_channel'

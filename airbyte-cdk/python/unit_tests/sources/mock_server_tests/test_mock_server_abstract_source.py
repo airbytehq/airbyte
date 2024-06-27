@@ -7,7 +7,7 @@ from typing import List, Optional
 from unittest import TestCase
 
 import freezegun
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
@@ -242,7 +242,7 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 1
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
 
     @HttpMocker()
@@ -270,7 +270,7 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 1
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 4.0
 
 
@@ -303,10 +303,10 @@ class IncrementalStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 2
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "planets"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_0}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_0)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_1}
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_1)
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
 
     @HttpMocker()
@@ -337,10 +337,10 @@ class IncrementalStreamTest(TestCase):
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
 
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "planets"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_0}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_0)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_1}
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_1)
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
 
     @HttpMocker()
@@ -370,10 +370,10 @@ class IncrementalStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 2
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "legacies"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_0}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_0)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "legacies"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_1}
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_1)
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
 
     @HttpMocker()
@@ -395,7 +395,7 @@ class IncrementalStreamTest(TestCase):
             _create_response().build(),
         )
 
-        incoming_state = {"created_at": last_record_date_1}
+        incoming_state = AirbyteStateBlob(created_at=last_record_date_1)
         state = StateBuilder().with_stream_state("legacies", incoming_state).build()
 
         source = SourceFixture()
@@ -422,7 +422,7 @@ class IncrementalStreamTest(TestCase):
 
         last_record_date_1 = _NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        incoming_state = {"created_at": last_record_date_1}
+        incoming_state = AirbyteStateBlob(created_at=last_record_date_1)
         state = StateBuilder().with_stream_state("legacies", incoming_state).build()
 
         source = SourceFixture()
@@ -499,14 +499,14 @@ class MultipleStreamTest(TestCase):
             Type.STATE
         ], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_0}
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_0)
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 3.0
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "planets"
-        assert actual_messages.state_messages[2].state.stream.stream_state == {"created_at": last_record_date_1}
+        assert actual_messages.state_messages[2].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_1)
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[3].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
+        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
         assert actual_messages.state_messages[3].state.sourceStats.recordCount == 4.0
