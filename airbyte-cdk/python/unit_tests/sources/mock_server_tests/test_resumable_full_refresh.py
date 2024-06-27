@@ -7,7 +7,7 @@ from typing import List, Optional
 from unittest import TestCase
 
 import freezegun
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
@@ -145,16 +145,16 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 4
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.STATE, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"page": 1}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(page=1)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"page": 2}
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(page=2)
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[2].state.stream.stream_state == {}
+        assert actual_messages.state_messages[2].state.stream.stream_state == AirbyteStateBlob()
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 1.0
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[3].state.stream.stream_state == {}
+        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob()
         assert actual_messages.state_messages[3].state.sourceStats.recordCount == 0.0
 
     @HttpMocker()
@@ -192,16 +192,16 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 4
         validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"page": 101}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(page=101)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"page": 102}
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(page=102)
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 3.0
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[2].state.stream.stream_state == {}
+        assert actual_messages.state_messages[2].state.stream.stream_state == AirbyteStateBlob()
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[3].state.stream.stream_state == {}
+        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob()
         assert actual_messages.state_messages[3].state.sourceStats.recordCount == 0.0
 
     @HttpMocker()
@@ -230,9 +230,9 @@ class ResumableFullRefreshStreamTest(TestCase):
 
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"page": 1}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(page=1)
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"page": 2}
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(page=2)
 
         assert actual_messages.errors[0].trace.error.failure_type == FailureType.system_error
         assert actual_messages.errors[0].trace.error.stream_descriptor.name == "justice_songs"

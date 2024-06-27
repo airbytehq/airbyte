@@ -302,7 +302,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                             "required": ["filetype"],
                                         },
                                         {
-                                            "title": "Document File Type Format (Experimental)",
+                                            "title": "Unstructured Document Format",
                                             "type": "object",
                                             "properties": {
                                                 "filetype": {

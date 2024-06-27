@@ -170,13 +170,14 @@ Verifies when a `discover` operation is run on the connector using the given con
 Additional tests are validating the backward compatibility of the discovered catalog compared to the catalog of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped.
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 
-| Input                                                            | Type   | Default                                     | Note                                                                                                                  |
-| :--------------------------------------------------------------- | :----- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- |
-| `config_path`                                                    | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                    |
-| `configured_catalog_path`                                        | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                            |
-| `timeout_seconds`                                                | int    | 30                                          | Test execution timeout in seconds                                                                                     |
-| `backward_compatibility_tests_config.previous_connector_version` | string | `latest`                                    | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
-| `backward_compatibility_tests_config.disable_for_version`        | string | None                                        | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
+| Input                                                            | Type    | Default                                     | Note                                                                                                                  |
+|:-----------------------------------------------------------------|:--------|:--------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
+| `config_path`                                                    | string  | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                    |
+| `configured_catalog_path`                                        | string  | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                            |
+| `timeout_seconds`                                                | int     | 30                                          | Test execution timeout in seconds                                                                                     |
+| `backward_compatibility_tests_config.previous_connector_version` | string  | `latest`                                    | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
+| `backward_compatibility_tests_config.disable_for_version`        | string  | None                                        | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
+| `validate_primary_keys_data_type`                                | boolean | True                                        | Verify that primary keys data types are correct                                                                       |
 
 ## Test Basic Read
 
@@ -184,7 +185,7 @@ Configuring all streams in the input catalog to full refresh mode verifies that 
 Set `validate_data_points=True` if possible. This validation is going to be enabled by default and won't be configurable in future releases.
 
 | Input                                           | Type             | Default                                     | Note                                                                                                         |
-| :---------------------------------------------- | :--------------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------------- |
+|:------------------------------------------------|:-----------------|:--------------------------------------------|:-------------------------------------------------------------------------------------------------------------|
 | `config_path`                                   | string           | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                           |
 | `configured_catalog_path`                       | string           | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                   |
 | `empty_streams`                                 | array of objects | \[\]                                        | List of streams that might be empty with a `bypass_reason`                                                   |
@@ -193,6 +194,9 @@ Set `validate_data_points=True` if possible. This validation is going to be enab
 | `ignored_fields[stream][0].name`                | string           |                                             | Name of the ignored field                                                                                    |
 | `ignored_fields[stream][0].bypass_reason`       | string           | None                                        | Reason why this field is ignored                                                                             |
 | `validate_schema`                               | boolean          | True                                        | Verify that structure and types of records matches the schema from discovery command                         |
+| `validate_stream_statuses`                      | boolean          | False                                       | Ensure that all streams emit status messages                                                                 |
+| `validate_state_messages`                       | boolean          | True                                        | Ensure that state messages emitted as expected                                                               |
+| `validate_primary_keys_data_type`               | boolean          | True                                        | Verify that primary keys data types are correct                                                              |
 | `fail_on_extra_columns`                         | boolean          | True                                        | Fail schema validation if undeclared columns are found in records. Only relevant when `validate_schema=True` |
 | `validate_data_points`                          | boolean          | False                                       | Validate that all fields in all streams contained at least one data point                                    |
 | `timeout_seconds`                               | int              | 5\*60                                       | Test execution timeout in seconds                                                                            |

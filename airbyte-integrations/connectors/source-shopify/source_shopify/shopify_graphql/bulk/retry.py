@@ -43,6 +43,17 @@ def bulk_retry_on_exception(logger: logging.Logger, more_exceptions: Optional[Tu
                             f"Stream `{stream_name}`: {ex}. Retrying {current_retries}/{max_retries} after {backoff_time} seconds."
                         )
                         sleep(backoff_time)
+                except ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError:
+                    if self._concurrent_attempt == self._concurrent_max_retry:
+                        message = f"The BULK Job couldn't be created at this time, since another job is running."
+                        logger.error(message)
+                        raise ShopifyBulkExceptions.BulkJobConcurrentError(message)
+
+                    self._concurrent_attempt += 1
+                    logger.warning(
+                        f"Stream: `{self.stream_name}`, the BULK concurrency limit has reached. Waiting {self._concurrent_interval} sec before retry, attempt: {self._concurrent_attempt}.",
+                    )
+                    sleep(self._concurrent_interval)
 
         return wrapper
 
