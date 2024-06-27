@@ -393,7 +393,7 @@ class TestFullRefresh:
         if stream_name == "GET_VENDOR_TRAFFIC_REPORT":
             config_end_date = VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE
         assert (
-            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{config_end_date}. This will be read during the next sync. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
+            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{config_end_date}. This will be read during the next sync. Report ID: 6789087632. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
         ) in output.errors[-1].trace.error.message
 
     @pytest.mark.parametrize(
