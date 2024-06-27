@@ -34,10 +34,11 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class _MockSource(ConcurrentSourceAdapter):
-    def __init__(self, concurrent_source, _streams_to_is_concurrent, logger):
+    def __init__(self, concurrent_source, _streams_to_is_concurrent, logger, raise_exception_on_missing_stream=True):
         super().__init__(concurrent_source)
         self._streams_to_is_concurrent = _streams_to_is_concurrent
         self._logger = logger
+        self._raise_exception_on_missing_stream = raise_exception_on_missing_stream
 
     message_repository = InMemoryMessageRepository()
 
@@ -49,6 +50,15 @@ class _MockSource(ConcurrentSourceAdapter):
             StreamFacade.create_from_stream(s, self, self._logger, None, FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository())) if is_concurrent else s
             for s, is_concurrent in self._streams_to_is_concurrent.items()
         ]
+
+    @property
+    def raise_exception_on_missing_stream(self):
+        """The getter method."""
+        return self._raise_exception_on_missing_stream
+
+    @raise_exception_on_missing_stream.setter
+    def raise_exception_on_missing_stream(self, value):
+        self._raise_exception_on_missing_stream = value
 
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
@@ -117,9 +127,10 @@ def _configured_catalog(streams: List[Stream]):
     )
 
 
-def test_read_nonexistent_concurrent_stream_emit_incomplete_stream_status(mocker, remove_stack_trace, as_stream_status):
+@pytest.mark.parametrize("raise_exception_on_missing_stream", [True, False])
+def test_read_nonexistent_concurrent_stream_emit_incomplete_stream_status(mocker, remove_stack_trace, as_stream_status, raise_exception_on_missing_stream):
     """
-    Tests that attempting to sync a stream which the source does not return from the `streams` method emit incomplete stream status
+    Tests that attempting to sync a stream which the source does not return from the `streams` method emits incomplete stream status.
     """
     logger = Mock()
 
@@ -128,14 +139,18 @@ def test_read_nonexistent_concurrent_stream_emit_incomplete_stream_status(mocker
 
     concurrent_source = Mock()
     concurrent_source.read.return_value = []
+
     adapter = _MockSource(concurrent_source, {s1: True}, logger)
+    expected_status = [as_stream_status("this_stream_doesnt_exist_in_the_source", AirbyteStreamStatus.INCOMPLETE)]
 
-    expected = [as_stream_status("this_stream_doesnt_exist_in_the_source", AirbyteStreamStatus.INCOMPLETE)]
+    adapter.raise_exception_on_missing_stream = raise_exception_on_missing_stream
 
-    with pytest.raises(AirbyteTracedException) as exc_info:
+    if not raise_exception_on_missing_stream:
         messages = [remove_stack_trace(message) for message in adapter.read(logger, {}, _configured_catalog([s2]))]
-
-        assert messages == expected
-
-    assert exc_info.value.failure_type == FailureType.config_error
-    assert "not found in the source" in exc_info.value.internal_message
+        assert messages[0].trace.stream_status == expected_status[0].trace.stream_status
+    else:
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            messages = [remove_stack_trace(message) for message in adapter.read(logger, {}, _configured_catalog([s2]))]
+            assert messages == expected_status
+        assert exc_info.value.failure_type == FailureType.config_error
+        assert "not found in the source" in exc_info.value.internal_message
