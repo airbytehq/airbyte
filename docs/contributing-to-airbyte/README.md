@@ -6,16 +6,18 @@ description: "We love contributions to Airbyte, big or small."
 
 Thank you for your interest in contributing! We love community contributions.
 Read on to learn how to contribute to Airbyte.
-We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)!
+We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via email: [hey@airbyte.io](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)!
 
 Before getting started, please review Airbyte's Code of Conduct. Everyone interacting in Slack, codebases, mailing lists, events, or other Airbyte activities is expected to follow [Code of Conduct](../community/code-of-conduct.md).
 
 ## Code Contributions
 
-Most of the issues that are open for contributions are tagged with `good first issue` or `help-welcome`.
-A great place to start looking will be our GitHub projects for:
+Most of the issues that are open for contributions are tagged with [`good-first-issue`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Agood-first-issue) or [`help-welcome`](https://github.com/airbytehq/airbyte/labels/help-welcome).
+A great place to start looking will be our GitHub projects for [**Community Connector Issues**](https://github.com/orgs/airbytehq/projects/50)
 
-[**Community Connector Issues Project**](https://github.com/orgs/airbytehq/projects/50)
+Contributions for new connectors should come with documentation. Refer to the [guidelines on updateing documentation](writing-docs.md) which include a template to use while documentiong a new connector. 
+
+Proposed updates to a connector should include updates to the connector's documentation. 
 
 Due to project priorities, we may not be able to accept all contributions at this time.
 We are prioritizing the following contributions:
@@ -69,6 +71,8 @@ Guidelines to common code contributions:
 We welcome Pull Requests that enhance the grammar, structure, or fix typos in our documentation.
 
 - Check the [Updating Documentation](writing-docs.md) guide for submitting documentation changes.
+
+- Refer to this [template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw) if you're submitting a new connector to the cataolg.
 
 ## Community Content
 

@@ -56,14 +56,14 @@
               "avatar_path": {
                 "$id": "#root/results/items/author_details/avatar_path",
                 "title": "Avatar_path",
-                "type": ["null", "string", "integer"],
+                "type": ["null", "string"],
                 "default": "",
                 "pattern": "^.*$"
               },
               "rating": {
                 "$id": "#root/results/items/author_details/rating",
                 "title": "Rating",
-                "type": ["null", "string", "integer"],
+                "type": ["null", "string"],
                 "default": null
               }
             }

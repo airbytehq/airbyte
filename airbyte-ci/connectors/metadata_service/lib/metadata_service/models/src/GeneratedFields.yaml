@@ -9,3 +9,5 @@ properties:
     "$ref": GitInfo.yaml
   source_file_info:
     "$ref": SourceFileInfo.yaml
+  metrics:
+    "$ref": ConnectorMetrics.yaml

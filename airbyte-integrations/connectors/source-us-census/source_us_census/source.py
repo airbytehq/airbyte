@@ -12,7 +12,6 @@ from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 
 def prepare_request_params(query_params: str, api_key: str) -> dict:
@@ -213,6 +212,6 @@ class SourceUsCensus(AbstractSource):
                 query_params=config.get("query_params"),
                 query_path=config.get("query_path"),
                 api_key=config.get("api_key"),
-                authenticator=NoAuth(),
+                authenticator=None,
             )
         ]

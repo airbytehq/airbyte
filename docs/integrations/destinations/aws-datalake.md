@@ -86,10 +86,19 @@ which will be translated for compatibility with the Glue Data Catalog:
 | number             | float                   |
 | integer            | int                     |
 
+
 ## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.12 | 2024-06-26 | [40535](https://github.com/airbytehq/airbyte/pull/40535) | Update dependencies |
+| 0.1.11 | 2024-06-25 | [40458](https://github.com/airbytehq/airbyte/pull/40458) | Update dependencies |
+| 0.1.10 | 2024-06-22 | [39958](https://github.com/airbytehq/airbyte/pull/39958) | Update dependencies |
+| 0.1.9 | 2024-06-04 | [39033](https://github.com/airbytehq/airbyte/pull/39033) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.8 | 2024-05-20 | [38413](https://github.com/airbytehq/airbyte/pull/38413) | [autopull] base image + poetry + up_to_date |
 | `0.1.7` | 2024-04-29 | [#33853](https://github.com/airbytehq/airbyte/pull/33853)  | Enable STS Role Credential Refresh for Long Sync     |
 | `0.1.6` | 2024-03-22 | [#36386](https://github.com/airbytehq/airbyte/pull/36386)  | Support new state message protocol                   |
 | `0.1.5` | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)  | Add new ap-southeast-3 AWS region                    |
@@ -98,3 +107,5 @@ which will be translated for compatibility with the Glue Data Catalog:
 | `0.1.2` | 2022-09-26 | [\#17193](https://github.com/airbytehq/airbyte/pull/17193) | Fix schema keyerror and add parquet support          |
 | `0.1.1` | 2022-04-20 | [\#11811](https://github.com/airbytehq/airbyte/pull/11811) | Fix name of required param in specification          |
 | `0.1.0` | 2022-03-29 | [\#10760](https://github.com/airbytehq/airbyte/pull/10760) | Initial release                                      |
+
+</details>

@@ -345,7 +345,7 @@ def test_projects_stream(config, mock_projects_responses):
 
 
 @responses.activate
-def test_projects_avatars_stream(config, mock_projects_responses, projects_avatars_response):
+def test_projects_avatars_stream(config, mock_non_deleted_projects_responses, projects_avatars_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/1/avatars",
@@ -643,7 +643,7 @@ def test_python_issues_stream_updated_state(config):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
     stream = Issues(**args)
 
-    updated_state = stream.get_updated_state(
+    updated_state = stream._get_updated_state(
         current_stream_state={"updated": "2021-01-01T00:00:00Z"},
         latest_record={"updated": "2021-01-02T00:00:00Z"}
     )
@@ -745,7 +745,7 @@ def test_issue_custom_field_contexts_stream(config, mock_fields_response, mock_i
 
 
 @responses.activate
-def test_project_permissions_stream(config, mock_projects_responses, project_permissions_response):
+def test_project_permissions_stream(config, mock_non_deleted_projects_responses, project_permissions_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/securitylevel",
@@ -776,7 +776,7 @@ def test_project_permissions_stream(config, mock_projects_responses, project_per
 
 
 @responses.activate
-def test_project_email_stream(config, mock_projects_responses, mock_project_emails):
+def test_project_email_stream(config, mock_non_deleted_projects_responses, mock_project_emails):
     stream = find_stream("project_email", config)
     records = list(read_full_refresh(stream))
 
@@ -785,7 +785,7 @@ def test_project_email_stream(config, mock_projects_responses, mock_project_emai
 
 
 @responses.activate
-def test_project_components_stream(config, mock_projects_responses, project_components_response):
+def test_project_components_stream(config, mock_non_deleted_projects_responses, project_components_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/component?maxResults=50",
@@ -895,7 +895,7 @@ def test_issue_remote_links_stream_(config, mock_projects_responses, mock_issues
 
 
 @responses.activate
-def test_project_versions_stream(config, mock_projects_responses, projects_versions_response):
+def test_project_versions_stream(config, mock_non_deleted_projects_responses, projects_versions_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/version?maxResults=50",
@@ -957,6 +957,7 @@ def test_project_versions_stream(config, mock_projects_responses, projects_versi
 def test_skip_slice(
     config,
     mock_projects_responses_additional_project,
+    mock_non_deleted_projects_responses,
     mock_issues_responses_with_date_filter,
     mock_project_emails,
     mock_issue_watchers_responses,

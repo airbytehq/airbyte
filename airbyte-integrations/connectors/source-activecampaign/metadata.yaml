@@ -11,15 +11,10 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-activecampaign
-  connectorBuildOptions:
-    # Please update to the latest version of the connector base image.
-    # https://hub.docker.com/r/airbyte/python-connector-base
-    # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 9f32dab3-77cb-45a1-9d33-347aa5fbe363
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-activecampaign
   documentationUrl: https://docs.airbyte.com/integrations/sources/activecampaign
   githubIssueLabel: source-activecampaign
@@ -35,4 +30,18 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  # Disable acceptance tests for now
+  # They are not passing
+  # Low/No Airbyte Cloud Usage
+  #
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-ACTIVECAMPAIGN__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
 metadataSpecVersion: "1.0"

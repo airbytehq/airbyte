@@ -1,0 +1,77 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/okta
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  type: object
+  required: []
+  properties:
+    credentials:
+      title: Authorization Method
+      type: object
+      oneOf:
+        - type: object
+          title: OAuth2.0
+          required:
+            - auth_type
+            - client_id
+            - client_secret
+            - refresh_token
+          properties:
+            auth_type:
+              type: string
+              const: oauth2.0
+              order: 0
+            client_id:
+              type: string
+              title: Client ID
+              description: The Client ID of your OAuth application.
+              airbyte_secret: true
+            client_secret:
+              type: string
+              title: Client Secret
+              description: The Client Secret of your OAuth application.
+              airbyte_secret: true
+            refresh_token:
+              type: string
+              title: Refresh Token
+              description: Refresh Token to obtain new Access Token, when it's expired.
+              airbyte_secret: true
+        - type: object
+          title: API Token
+          required:
+            - auth_type
+            - api_token
+          properties:
+            auth_type:
+              type: string
+              const: api_token
+              order: 0
+            api_token:
+              type: string
+              title: Personal API Token
+              description: >-
+                An Okta token. See the <a
+                href="https://docs.airbyte.com/integrations/sources/okta">docs</a>
+                for instructions on how to generate it.
+              airbyte_secret: true
+      order: 0
+    domain:
+      type: string
+      title: Okta domain
+      description: >-
+        The Okta domain. See the <a
+        href="https://docs.airbyte.com/integrations/sources/okta">docs</a> for
+        instructions on how to find it.
+      airbyte_secret: false
+      order: 1
+    start_date:
+      type: string
+      title: Start Date
+      format: date-time
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      description: >-
+        UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Any data before
+        this date will not be replicated.
+      examples:
+        - "2022-07-22T00:00:00Z"
+      order: 2
+  additionalProperties: true

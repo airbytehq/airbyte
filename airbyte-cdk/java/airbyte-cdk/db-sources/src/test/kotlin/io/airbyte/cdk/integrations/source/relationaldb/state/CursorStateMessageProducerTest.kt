@@ -446,6 +446,7 @@ internal class CursorStateMessageProducerTest {
                     NAMESPACE,
                     Field.of(UUID_FIELD_NAME, JsonSchemaType.STRING)
                 )
+                .withSyncMode(SyncMode.INCREMENTAL)
                 .withCursorField(List.of(UUID_FIELD_NAME))
 
         private val EMPTY_STATE_MESSAGE = createEmptyStateMessage(0.0)

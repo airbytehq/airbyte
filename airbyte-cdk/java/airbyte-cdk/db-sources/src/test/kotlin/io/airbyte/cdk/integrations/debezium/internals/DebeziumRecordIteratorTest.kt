@@ -18,7 +18,7 @@ class DebeziumRecordIteratorTest {
         val debeziumRecordIterator =
             DebeziumRecordIterator(
                 mock(),
-                object : CdcTargetPosition<Long?> {
+                object : CdcTargetPosition<Long> {
                     override fun reachedTargetPosition(
                         changeEventWithMetadata: ChangeEventWithMetadata?
                     ): Boolean {

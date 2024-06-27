@@ -28,7 +28,7 @@ private val logger = KotlinLogging.logger {}
  * @param <E> type in the queue </E>
  */
 class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
-    private val hiddenQueue = HiddenQueue<E?>(maxMemoryUsage)
+    private val hiddenQueue = HiddenQueue<E>(maxMemoryUsage)
 
     val currentMemoryUsage: Long
         get() = hiddenQueue.currentMemoryUsage.get()
@@ -48,16 +48,16 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
         return hiddenQueue.offer(e, itemSizeInBytes)
     }
 
-    fun peek(): MemoryItem<E?>? {
+    fun peek(): MemoryItem<E>? {
         return hiddenQueue.peek()
     }
 
     @Throws(InterruptedException::class)
-    fun take(): MemoryItem<E?> {
+    fun take(): MemoryItem<E> {
         return hiddenQueue.take()
     }
 
-    fun poll(): MemoryItem<E?>? {
+    fun poll(): MemoryItem<E>? {
         return hiddenQueue.poll()
     }
 
@@ -65,7 +65,7 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
     fun poll(
         timeout: Long,
         unit: TimeUnit,
-    ): MemoryItem<E?>? {
+    ): MemoryItem<E>? {
         return hiddenQueue.poll(timeout, unit)
     }
 
@@ -78,7 +78,7 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
      *
      * @param <E> </E>
      */
-    private class HiddenQueue<E>(maxMemoryUsage: Long) : LinkedBlockingQueue<MemoryItem<E>?>() {
+    private class HiddenQueue<E>(maxMemoryUsage: Long) : LinkedBlockingQueue<MemoryItem<E>>() {
         val currentMemoryUsage: AtomicLong = AtomicLong(0)
         val maxMemoryUsage: AtomicLong = AtomicLong(maxMemoryUsage)
 
