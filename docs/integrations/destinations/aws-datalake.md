@@ -94,6 +94,7 @@ which will be translated for compatibility with the Glue Data Catalog:
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.13 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.1.12 | 2024-06-26 | [40535](https://github.com/airbytehq/airbyte/pull/40535) | Update dependencies |
 | 0.1.11 | 2024-06-25 | [40458](https://github.com/airbytehq/airbyte/pull/40458) | Update dependencies |
 | 0.1.10 | 2024-06-22 | [39958](https://github.com/airbytehq/airbyte/pull/39958) | Update dependencies |

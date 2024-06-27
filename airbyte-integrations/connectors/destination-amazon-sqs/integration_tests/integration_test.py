@@ -3,10 +3,10 @@
 #
 
 import json
+import logging
 from typing import Any, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
 from destination_amazon_sqs import DestinationAmazonSqs
 
@@ -37,10 +37,10 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationAmazonSqs().check(AirbyteLogger(), config)
+    outcome = DestinationAmazonSqs().check(logging.getLogger("airbyte"), config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config():
-    outcome = DestinationAmazonSqs().check(AirbyteLogger(), {"secret_key": "not_a_real_secret"})
+    outcome = DestinationAmazonSqs().check(logging.getLogger("airbyte"), {"secret_key": "not_a_real_secret"})
     assert outcome.status == Status.FAILED
