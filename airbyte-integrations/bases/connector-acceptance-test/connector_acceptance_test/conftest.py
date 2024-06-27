@@ -19,7 +19,7 @@ import dagger
 import pytest
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration
+from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration, SetupTeardownConfig
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
     SecretDict,
@@ -29,6 +29,7 @@ from connector_acceptance_test.utils import (
     filter_output,
     load_config,
     load_yaml_or_json_path,
+    setup_and_teardown_runner,
 )
 
 if TYPE_CHECKING:
@@ -127,22 +128,11 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
     return SecretDict(json.loads(contents))
 
 
-@pytest.fixture(name="setup_script_path")
-def setup_script_path_fixture(inputs, base_path, acceptance_test_config) -> Optional[Path]:
-    """Fixture with connector's setup script path, if it exists."""
-    if hasattr(inputs, "setup_script_path"):
-        filepath = getattr(inputs, "setup_script_path")
-        if filepath:
-            return Path(base_path) / filepath
-
-
-@pytest.fixture(name="teardown_script_path")
-def teardown_script_path_fixture(inputs, base_path, acceptance_test_config) -> Optional[Path]:
-    """Fixture with connector's teardown script path, if it exists."""
-    if hasattr(inputs, "teardown_script_path"):
-        filepath = getattr(inputs, "teardown_script_path")
-        if filepath:
-            return Path(base_path) / filepath
+@pytest.fixture(name="setup_teardown_dockerfile_config")
+def setup_teardown_dockerfile_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[SetupTeardownConfig]:
+    """Fixture with connector's setup/teardown Dockerfile path, if it exists."""
+    if hasattr(inputs, "setup_teardown_config"):
+        return getattr(inputs, "setup_teardown_config")
 
 
 @pytest.fixture(name="invalid_connector_config")
@@ -210,20 +200,31 @@ def docker_runner_fixture(
 @pytest.fixture(autouse=True)
 async def setup_and_teardown(
     request: "SubRequest",
+    base_path: Path,
     connector_container: dagger.Container,
     connector_config: SecretDict,
     docker_runner: connector_runner.ConnectorRunner,
     dagger_client: dagger.Client,
-    setup_script_path: Optional[Path],
-    teardown_script_path: Optional[Path],
+    setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
 ):
-    if request.node.get_closest_marker("setup") and setup_script_path:
+    setup_teardown_container = None
+    if request.node.get_closest_marker("setup") and setup_teardown_dockerfile_config:
         print("Running setup")
-        await docker_runner.do_setup(dagger_client, connector_container, connector_config, setup_script_path)
+        setup_teardown_container = await setup_and_teardown_runner.do_setup(
+            dagger_client,
+            base_path / setup_teardown_dockerfile_config.setup_teardown_dockerfile_path,
+            setup_teardown_dockerfile_config.setup_command,
+            connector_config,
+        )
+        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
     yield None
-    if request.node.get_closest_marker("teardown") and teardown_script_path:
+    if request.node.get_closest_marker("teardown") and setup_teardown_container:
         print("Running teardown")
-        await docker_runner.do_teardown(dagger_client, connector_container, connector_config, teardown_script_path)
+        setup_teardown_container = await setup_and_teardown_runner.do_teardown(
+            setup_teardown_container,
+            setup_teardown_dockerfile_config.teardown_command,
+        )
+        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
 
 
 @pytest.fixture(name="previous_connector_image_name")

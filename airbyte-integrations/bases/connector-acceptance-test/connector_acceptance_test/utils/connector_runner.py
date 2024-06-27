@@ -125,8 +125,6 @@ class ConnectorRunner:
     IN_CONTAINER_CATALOG_PATH = "/data/catalog.json"
     IN_CONTAINER_STATE_PATH = "/data/state.json"
     IN_CONTAINER_OUTPUT_PATH = "/output.txt"
-    IN_CONTAINER_SETUP_SCRIPT_PATH = "/tmp/setup.sh"
-    IN_CONTAINER_TEARDOWN_SCRIPT_PATH = "/tmp/teardown.sh"
 
     def __init__(
         self,
@@ -209,18 +207,6 @@ class ConnectorRunner:
             state=state,
             enable_caching=enable_caching,
         )
-
-    async def do_setup(self, dagger_client: dagger.Client, container: dagger.Container, config: SecretDict, setup_script_path: Path):
-        container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)))
-        container = container.with_mounted_file(self.IN_CONTAINER_SETUP_SCRIPT_PATH, dagger_client.host().file(str(setup_script_path.expanduser())))
-        command = ["sh", self.IN_CONTAINER_SETUP_SCRIPT_PATH]
-        await container.with_exec(command, skip_entrypoint=True).stdout()
-
-    async def do_teardown(self, dagger_client: dagger.Client, container: dagger.Container, config: SecretDict, teardown_script_path: Path):
-        container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)))
-        container = container.with_mounted_file(self.IN_CONTAINER_TEARDOWN_SCRIPT_PATH, dagger_client.host().file(str(teardown_script_path.expanduser())))
-        command = ["sh", self.IN_CONTAINER_TEARDOWN_SCRIPT_PATH]
-        return await container.with_exec(command, skip_entrypoint=True).stdout()
 
     async def get_container_env_variable_value(self, name: str) -> str:
         return await self._connector_under_test_container.env_variable(name)

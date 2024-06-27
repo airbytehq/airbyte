@@ -1,0 +1,3 @@
+FROM alpine:latest
+
+CMD ["echo", "running CAT setup & teardown CMD"]

@@ -18,16 +18,20 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
-        setup_script_path: integration_tests/setup.sh
-        teardown_script_path: integration_tests/teardown.sh
+        setup_teardown_config:
+          setup_teardown_dockerfile_path: integration_tests/Dockerfile.cat_setup_teardown
+          setup_command: ["echo", "setting up"]
+          teardown_command: ["echo", "tearing down"]
         expect_records:
           path: integration_tests/expected_records.jsonl
   full_refresh:
     tests:
-      - config_path: secrets/config.json
+      - config_path: secrets/config_cdc.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        setup_script_path: integration_tests/setup.sh
-        teardown_script_path: integration_tests/teardown.sh
+        setup_teardown_config:
+          setup_teardown_dockerfile_path: integration_tests/Dockerfile.cat_setup_teardown
+          setup_command: ["echo", "setting up"]
+          teardown_command: ["echo", "tearing down"]
         ignored_fields:
           users:
             - name: updated_at
@@ -48,5 +52,9 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
+        setup_teardown_config:
+          setup_teardown_dockerfile_path: integration_tests/Dockerfile.cat_setup_teardown
+          setup_command: ["echo", "setting up"]
+          teardown_command: ["echo", "tearing down"]
         future_state:
           future_state_path: integration_tests/abnormal_state.json
