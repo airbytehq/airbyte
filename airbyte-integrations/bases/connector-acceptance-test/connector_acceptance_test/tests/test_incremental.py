@@ -125,8 +125,6 @@ def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteM
     return diff
 
 
-@pytest.mark.setup
-@pytest.mark.teardown
 @pytest.mark.default_timeout(TWENTY_MINUTES)
 class TestIncremental(BaseTest):
     async def test_two_sequential_reads(

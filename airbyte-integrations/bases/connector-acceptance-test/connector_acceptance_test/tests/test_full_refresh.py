@@ -36,8 +36,6 @@ def primary_keys_only(record, pks):
     return ";".join([f"{pk.path}={pk.parse(record)}" for pk in pks])
 
 
-@pytest.mark.setup
-@pytest.mark.teardown
 @pytest.mark.default_timeout(TWENTY_MINUTES)
 class TestFullRefresh(BaseTest):
     def assert_emitted_at_increase_on_subsequent_runs(self, first_read_records, second_read_records):

@@ -13,13 +13,19 @@ from glob import glob
 from logging import Logger
 from pathlib import Path
 from subprocess import STDOUT, check_output, run
-from typing import TYPE_CHECKING, Any, List, Mapping, MutableMapping, Optional, Set
+from typing import Any, List, Mapping, MutableMapping, Optional, Set
 
 import dagger
 import pytest
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration, SetupTeardownConfig
+from connector_acceptance_test.config import (
+    Config,
+    EmptyStreamConfiguration,
+    ExpectedRecordsConfig,
+    IgnoredFieldsConfiguration,
+    SetupTeardownConfig,
+)
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
     SecretDict,
@@ -31,9 +37,6 @@ from connector_acceptance_test.utils import (
     load_yaml_or_json_path,
     setup_and_teardown_runner,
 )
-
-if TYPE_CHECKING:
-    from _pytest.fixtures import SubRequest
 
 
 @pytest.fixture(name="acceptance_test_config", scope="session")
@@ -199,17 +202,14 @@ def docker_runner_fixture(
 
 @pytest.fixture(autouse=True)
 async def setup_and_teardown(
-    request: "SubRequest",
     base_path: Path,
-    connector_container: dagger.Container,
     connector_config: SecretDict,
-    docker_runner: connector_runner.ConnectorRunner,
     dagger_client: dagger.Client,
     setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
 ):
     setup_teardown_container = None
-    if request.node.get_closest_marker("setup") and setup_teardown_dockerfile_config:
-        print("Running setup")
+    if setup_teardown_dockerfile_config:
+        logging.info("Running setup")
         setup_teardown_container = await setup_and_teardown_runner.do_setup(
             dagger_client,
             base_path / setup_teardown_dockerfile_config.setup_teardown_dockerfile_path,
@@ -218,8 +218,8 @@ async def setup_and_teardown(
         )
         print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
     yield None
-    if request.node.get_closest_marker("teardown") and setup_teardown_container:
-        print("Running teardown")
+    if setup_teardown_container:
+        logging.info("Running teardown")
         setup_teardown_container = await setup_and_teardown_runner.do_teardown(
             setup_teardown_container,
             setup_teardown_dockerfile_config.teardown_command,

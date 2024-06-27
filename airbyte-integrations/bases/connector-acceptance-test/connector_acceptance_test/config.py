@@ -159,7 +159,9 @@ class FileTypesConfig(BaseConfig):
 
 
 class SetupTeardownConfig(BaseConfig):
-    setup_teardown_dockerfile_path: str = Field(None, description="Path to Dockerfile to run before each test marked with @pytest.mark.setup.")
+    setup_teardown_dockerfile_path: str = Field(
+        None, description="Path to Dockerfile to run before each test for which a config is provided."
+    )
     setup_command: List[str] = Field(None, description="Command for running the setup/teardown container for setup")
     teardown_command: List[str] = Field(None, description="Command for running the setup/teardown container for teardown")
 

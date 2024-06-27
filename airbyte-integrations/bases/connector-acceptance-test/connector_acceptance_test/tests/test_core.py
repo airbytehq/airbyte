@@ -881,8 +881,6 @@ def _extract_primary_key_value(record: Mapping[str, Any], primary_key: List[List
     return pk_values
 
 
-@pytest.mark.setup
-@pytest.mark.teardown
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestBasicRead(BaseTest):
     @staticmethod
