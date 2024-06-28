@@ -31,7 +31,10 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
             for target_record in target_records:
                 target_relationships = target_record.get("relationships", {})
                 included_record_type = included_record["type"]
-                if included_record_type in target_relationships:
+                included_record_id = included_record["id"]
+                target_relationship_id = target_relationships.get(included_record_type, {}).get("data")['id']
+
+                if included_record_id == target_relationship_id:
                     target_relationships[included_record_type]["data"].update(included_attributes)
                 yield target_record
 
