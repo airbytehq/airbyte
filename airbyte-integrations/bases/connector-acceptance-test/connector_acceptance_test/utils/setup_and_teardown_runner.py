@@ -35,11 +35,7 @@ async def _run_with_config(container: dagger.Container, command: List[str], conf
 
 
 async def _run(container: dagger.Container, command: List[str]) -> dagger.Container:
-    # TODO:
-    #  - should we be using something like hacks.never_fail_exec?
-    #  - why isn't this respecting the passed-in command?
-    await container.with_exec(command, skip_entrypoint=True)
-    return container
+    return await container.with_exec(command, skip_entrypoint=True)
 
 
 async def do_setup(dagger_client: dagger.Client, dockerfile_path: Path, command: List[str], connector_config: SecretDict):
