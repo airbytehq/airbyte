@@ -99,7 +99,10 @@ This will completely reset your Airbyte deployment. You will lose all data.
 
 
 
-## Mandatory Intermediate Upgrade
+## Older Versions
+
+<details>
+  <summary>Mandatory Intermediate Upgrade for **version 0.32.0-alpha-patch-1**</summary>
 
 **If your current version of airbyte is < v0.32.0-alpha-patch-1, you first need to upgrade to this version before upgrading to any later version.**
 
@@ -116,6 +119,5 @@ To upgrade to v0.32.0-alpha-patch-1, follow the steps in the following sections,
 
 If you use custom connectors, this upgrade requires all of your connector specs to be retrievable from the node running Airbyte, or Airbyte will fail on startup. If the specs are not retrievable, you need to fix this before proceeding. Alternatively, you could delete the custom connector definitions from Airbyte upon upgrade by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to true. This will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
 
-```
+</details>
 
-```
