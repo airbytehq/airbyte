@@ -396,11 +396,6 @@ const deployAirbyte = {
   items: [
     {
       type: "doc",
-      label: "Quickstart",
-      id: "deploying-airbyte/quickstart",
-    },
-    {
-      type: "doc",
       label: "Using docker compose",
       id: "deploying-airbyte/docker-compose",
     },
@@ -452,6 +447,37 @@ const deployAirbyte = {
   ],
 };
 
+const connectionConfigurations = {
+  type: "category",
+  label: "Data Transfer Options",
+  link: {
+    type: "doc",
+    id: "cloud/managing-airbyte-cloud/configuring-connections",
+  },
+  items: [
+    "using-airbyte/core-concepts/sync-schedules",
+    "using-airbyte/core-concepts/namespaces",
+    { 
+      type: "doc",
+      id: "using-airbyte/schema-change-management",
+    },
+    {
+      type: "category",
+      label: "Sync Modes",
+      link: {
+        type: "doc",
+        id: "using-airbyte/core-concepts/sync-modes/README",
+      },
+      items: [
+        "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
+        "using-airbyte/core-concepts/sync-modes/incremental-append",
+        "using-airbyte/core-concepts/sync-modes/full-refresh-append",
+        "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
+      ],
+    },
+    ],
+    };
+
 const understandingAirbyte = {
   type: "category",
   label: "Understand Airbyte",
@@ -473,57 +499,43 @@ const understandingAirbyte = {
 
 module.exports = {
   docs: [
-    sectionHeader("Airbyte Connectors"),
-    connectorCatalog,
-    buildAConnector,
-    "integrations/connector-support-levels",
-    sectionHeader("Using Airbyte"),
+    sectionHeader("Getting Started"),
+    {
+      type: "doc",
+        id: "using-airbyte/getting-started/readme",
+    },
+    {
+        type: "doc",
+        id: "using-airbyte/core-concepts/readme",
+    },
+    {
+      type: "doc",
+      label: "Quickstart",
+      id: "using-airbyte/getting-started/oss-quickstart",
+    },
     {
       type: "category",
-      label: "Getting Started",
-      link: {
-        type: "doc",
-        id: "using-airbyte/getting-started/readme",
-      },
+      label: "Moving Data",
       items: [
-        "using-airbyte/core-concepts/readme",
         "using-airbyte/getting-started/add-a-source",
         "using-airbyte/getting-started/add-a-destination",
         "using-airbyte/getting-started/set-up-a-connection",
       ],
     },
+    sectionHeader("Airbyte Connectors"),
+    connectorCatalog,
+    buildAConnector,
+    "integrations/connector-support-levels",
+    sectionHeader("Using Airbyte"),
+    connectionConfigurations,
+    { 
+      type: "doc",
+      id: "using-airbyte/core-concepts/typing-deduping",
+    },
     {
       type: "category",
-      label: "Configuring Connections",
-      link: {
-        type: "doc",
-        id: "cloud/managing-airbyte-cloud/configuring-connections",
-      },
-      items: [
-        "using-airbyte/core-concepts/sync-schedules",
-        "using-airbyte/core-concepts/namespaces",
-        {
-          type: "category",
-          label: "Sync Modes",
-          link: {
-            type: "doc",
-            id: "using-airbyte/core-concepts/sync-modes/README",
-          },
-          items: [
-            "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
-            "using-airbyte/core-concepts/sync-modes/incremental-append",
-            "using-airbyte/core-concepts/sync-modes/full-refresh-append",
-            "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
-          ],
-        },
-        "using-airbyte/core-concepts/typing-deduping",
-        "using-airbyte/schema-change-management",
-        {
-          type: "category",
-          label: "Transformations",
-          items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
-        },
-      ],
+      label: "Transformations",
+      items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
     },
     {
       type: "category",
