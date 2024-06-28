@@ -22,7 +22,8 @@ jobs:
   connectors_ci:
     name: Connectors Version Increment Check
     runs-on: connector-test-large
-    timeout-minutes: 10
+    if: github.event.pull_request.head.repo.fork != true
+    timeout-minutes: 12
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4

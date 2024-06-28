@@ -57,7 +57,12 @@ save snapshots periodically on disk.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------- |
 | 0.1.4   | 2022-10-25 | [\#18358](https://github.com/airbytehq/airbyte/pull/18358) | TLS support     |
 | 0.1.3   | 2022-10-18 | [\#17951](https://github.com/airbytehq/airbyte/pull/17951) | Add SSH support |
+
+</details>
