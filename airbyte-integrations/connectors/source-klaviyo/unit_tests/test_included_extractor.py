@@ -52,8 +52,8 @@ def test_extract_records_by_path(mock_values, mock_get, extractor, mock_response
 
 
 def test_update_target_records_with_included(extractor):
-    target_records = [{'relationships': {'type1': {'data': {}}}}]
-    included_records = [{'type': 'type1', 'attributes': {'key': 'value'}}]
+    target_records = [{'relationships': {'type1': {'data': {'id': 1}}}}]
+    included_records = [{'id': 1, 'type': 'type1', 'attributes': {'key': 'value'}}]
 
     updated_records = list(extractor.update_target_records_with_included(target_records, included_records))
-    assert updated_records[0]['relationships']['type1']['data'] == {'key': 'value'}
+    assert updated_records[0]['relationships']['type1']['data'] == {'id': 1, 'key': 'value'}
