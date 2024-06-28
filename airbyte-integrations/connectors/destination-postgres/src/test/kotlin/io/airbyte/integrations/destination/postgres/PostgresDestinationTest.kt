@@ -35,10 +35,13 @@ import java.util.stream.Collectors
 import java.util.stream.IntStream
 import javax.sql.DataSource
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.MountableFile
 
-@Timeout(value = 10, unit = TimeUnit.MINUTES)
+@Execution(ExecutionMode.CONCURRENT)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class PostgresDestinationTest {
     private var config: JsonNode? = null
 
@@ -247,7 +250,7 @@ class PostgresDestinationTest {
     fun sanityTest() {
         val destination: Destination = PostgresDestination()
         val config = this.config!!
-        DestinationConfig.initialize(config)
+        DestinationConfig.initialize(config, true)
         val consumer =
             destination.getSerializedMessageConsumer(
                 config,
@@ -286,7 +289,7 @@ class PostgresDestinationTest {
                 { connection: Connection ->
                     connection
                         .createStatement()
-                        .executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;")
+                        .executeQuery("SELECT * FROM airbyte_internal.public_raw__stream_id_and_name;")
                 },
                 { queryResult: ResultSet -> defaultSourceOperations.rowToJson(queryResult) }
             )
