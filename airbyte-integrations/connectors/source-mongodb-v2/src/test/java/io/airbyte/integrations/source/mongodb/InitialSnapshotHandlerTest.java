@@ -186,7 +186,7 @@ class InitialSnapshotHandlerTest {
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final MongoDbStateManager stateManager = spy(ogStateManager);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG);
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false);
 
     assertEquals(iterators.size(), 4);
 
@@ -319,7 +319,7 @@ class InitialSnapshotHandlerTest {
     when(stateManager.getStreamState(COLLECTION3, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID4_STRING, InitialSnapshotStatus.FULL_REFRESH, IdType.OBJECT_ID)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG);
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false);
 
     assertEquals(iterators.size(), 4);
 
@@ -393,7 +393,7 @@ class InitialSnapshotHandlerTest {
 
     final var thrown = assertThrows(ConfigErrorException.class,
         () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG));
+            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG, false, false));
     assertTrue(thrown.getMessage().contains("must be consistently typed"));
   }
 
@@ -409,7 +409,7 @@ class InitialSnapshotHandlerTest {
 
     final var thrown = assertThrows(ConfigErrorException.class,
         () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG));
+            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG, false, false));
     assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
@@ -435,7 +435,7 @@ class InitialSnapshotHandlerTest {
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final MongoDbStateManager stateManager = spy(ogStateManager);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG);
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false);
 
     assertEquals(iterators.size(), 4);
 
@@ -508,7 +508,7 @@ class InitialSnapshotHandlerTest {
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.STRING)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
-        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG);
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false);
 
     assertEquals(iterators.size(), 4);
 
