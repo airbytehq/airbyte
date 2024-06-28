@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e71aae8a-5143-11ed-bdc3-0242ac120002
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.3.7
   dockerRepository: airbyte/source-clockify
   documentationUrl: https://docs.airbyte.com/integrations/sources/clockify
   githubIssueLabel: source-clockify

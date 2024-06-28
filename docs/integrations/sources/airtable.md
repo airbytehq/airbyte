@@ -129,6 +129,8 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 4.2.4 | 2024-06-25 | [40290](https://github.com/airbytehq/airbyte/pull/40290) | Update dependencies |
+| 4.2.3 | 2024-06-22 | [40085](https://github.com/airbytehq/airbyte/pull/40085) | Update dependencies |
 | 4.2.2 | 2024-06-04 | [39089](https://github.com/airbytehq/airbyte/pull/39089) | [autopull] Upgrade base image to v1.2.1 |
 | 4.2.1 | 2024-05-29 | [38765](https://github.com/airbytehq/airbyte/pull/38765) | Fix next_page_token() to correctly adhere to HttpStream interface |
 | 4.2.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |

@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
-  dockerImageTag: 1.3.3
+  dockerImageTag: 1.3.5
   dockerRepository: airbyte/source-exchange-rates
   githubIssueLabel: source-exchange-rates
   icon: exchangeratesapi.svg

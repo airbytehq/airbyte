@@ -233,6 +233,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.11  | 2024-06-26 | [40561](https://github.com/airbytehq/airbyte/pull/40561)   | Support PlanetScale MySQL's per-query row limit.                                                                                                |
 | 3.4.10  | 2024-06-14 | [39349](https://github.com/airbytehq/airbyte/pull/39349)   | Full refresh stream sending internal count metadata.                                                                                            |
 | 3.4.9   | 2024-06-11 | [39405](https://github.com/airbytehq/airbyte/pull/39405)   | Adopt latest CDK.                                                                                                                               |
 | 3.4.8   | 2024-06-05 | [39144](https://github.com/airbytehq/airbyte/pull/39144)   | Upgrade Debezium to 2.5.4                                                                                                                       |

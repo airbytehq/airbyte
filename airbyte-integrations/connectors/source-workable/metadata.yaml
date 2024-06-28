@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef3c99c6-9e90-43c8-9517-926cfd978517
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-workable
   githubIssueLabel: source-workable
   icon: workable.svg

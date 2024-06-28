@@ -40,6 +40,8 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                  |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------- |
+| 0.2.5 | 2024-06-25 | [40452](https://github.com/airbytehq/airbyte/pull/40452) | Update dependencies |
+| 0.2.4 | 2024-06-22 | [39992](https://github.com/airbytehq/airbyte/pull/39992) | Update dependencies |
 | 0.2.3 | 2024-06-06 | [39211](https://github.com/airbytehq/airbyte/pull/39211) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.2 | 2024-05-13 | [38119](https://github.com/airbytehq/airbyte/pull/38119) | Add builder compatability |
 | 0.2.1 | 2024-05-15 | [37100](https://github.com/airbytehq/airbyte/pull/37100) | Add new A/B test columns |

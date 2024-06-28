@@ -103,9 +103,15 @@ constructor(
          * do it without touching buffer manager.
          */
         val partialAirbyteMessage =
-            airbyteMessageDeserializer.deserializeAirbyteMessage(
-                message,
-            )
+            try {
+                airbyteMessageDeserializer.deserializeAirbyteMessage(
+                    message,
+                )
+            } catch (e: AirbyteMessageDeserializer.UnrecognizedAirbyteMessageTypeException) {
+                logger.warn { "Ignoring unrecognized message type: ${e.message}" }
+                return
+            }
+
         when (partialAirbyteMessage.type) {
             AirbyteMessage.Type.RECORD -> {
                 validateRecord(partialAirbyteMessage)
