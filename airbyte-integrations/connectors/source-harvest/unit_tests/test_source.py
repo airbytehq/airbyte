@@ -34,7 +34,7 @@ class SourceTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self._source = SourceHarvest()
-        self._logger = Mock(spec=logging.Logger)
+        self._logger = Mock(spec=logging.Logger("Airbyte"))
         self._config = ConfigBuilder().build()
 
     def test_given_config_with_client_id_without_account_id_when_check_connection_then_not_available(self) -> None:
