@@ -253,7 +253,7 @@ definitions:
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
-            path: [ "datetime" ]
+            path: ["datetime"]
             value: "{{ record.get('attributes', {}).get('datetime') }}"
     $parameters:
       path: "events"
