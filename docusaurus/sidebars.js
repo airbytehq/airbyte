@@ -450,7 +450,7 @@ const deployAirbyte = {
 
 const connectionConfigurations = {
   type: "category",
-  label: "Data Tranfer Options",
+  label: "Data Transfer Options",
   link: {
     type: "doc",
     id: "cloud/managing-airbyte-cloud/configuring-connections",
@@ -458,6 +458,10 @@ const connectionConfigurations = {
   items: [
     "using-airbyte/core-concepts/sync-schedules",
     "using-airbyte/core-concepts/namespaces",
+    { 
+      type: "doc",
+      id: "using-airbyte/schema-change-management",
+    },
     {
       type: "category",
       label: "Sync Modes",
@@ -528,10 +532,6 @@ module.exports = {
     { 
       type: "doc",
       id: "using-airbyte/core-concepts/typing-deduping",
-    },
-    { 
-      type: "doc",
-      id: "using-airbyte/schema-change-management",
     },
     {
       type: "category",
