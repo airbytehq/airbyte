@@ -3,10 +3,10 @@
 #
 
 
+import logging
 import time
 from typing import Any, Iterable, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
@@ -50,7 +50,7 @@ class DestinationTypesense(Destination):
                 continue
         writer.flush()
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         logger.debug("TypeSense Destination Config Check")
         try:
             client = get_client(config=config)

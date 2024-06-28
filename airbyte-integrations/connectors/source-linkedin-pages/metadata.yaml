@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
-  dockerImageTag: 1.0.7
+  dockerImageTag: 1.0.9
   dockerRepository: airbyte/source-linkedin-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   githubIssueLabel: source-linkedin-pages

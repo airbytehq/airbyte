@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9b2d3607-7222-4709-9fa2-c2abdebbdd88
-  dockerImageTag: 0.4.3
+  dockerImageTag: 0.4.5
   dockerRepository: airbyte/source-chargify
   githubIssueLabel: source-chargify
   icon: chargify.svg
