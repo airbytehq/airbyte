@@ -6,7 +6,6 @@ check:
   type: CheckStream
   stream_names:
     - per-article
-    - top
 
 definitions:
   streams:
@@ -21,7 +20,7 @@ definitions:
             /per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}
           http_method: GET
           request_headers:
-            "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
+            "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
         record_selector:
           type: RecordSelector
           extractor:
@@ -60,7 +59,7 @@ definitions:
             /top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}
           http_method: GET
           request_headers:
-            "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
+            "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
         record_selector:
           type: RecordSelector
           extractor:
