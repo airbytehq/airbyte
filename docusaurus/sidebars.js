@@ -450,14 +450,17 @@ const deployAirbyte = {
 
 const connectionConfigurations = {
   type: "category",
-  label: "Configuration Options",
+  label: "Data Tranfer Options",
+  link: {
+    type: "doc",
+    id: "cloud/managing-airbyte-cloud/configuring-connections",
+  },
   items: [
-    "cloud/managing-airbyte-cloud/configuring-connections",
     "using-airbyte/core-concepts/sync-schedules",
     "using-airbyte/core-concepts/namespaces",
     {
       type: "category",
-      label: "sync-modes",
+      label: "Sync Modes",
       link: {
         type: "doc",
         id: "using-airbyte/core-concepts/sync-modes/README",
