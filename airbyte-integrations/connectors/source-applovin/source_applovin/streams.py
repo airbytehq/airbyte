@@ -209,7 +209,8 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             record_date = record[self.cursor_field]
             state_date = self.state.get(self.cursor_field)
             self.state = {self.cursor_field: max(record_date, state_date or default_start_date)}
-            yield record
+            record_with_numeric_types = self._cast_types(record)
+            yield record_with_numeric_types
 
     def request_params(
             self,
@@ -235,6 +236,20 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             return '{}'
         response_json = response.json()
         yield from response_json["results"]
+
+    def _cast_types(self, record):
+        for key, value in record.items():
+            # Attempt to cast to integer
+            if value.isdigit():
+                record[key] = int(value)
+            else:
+                try:
+                    record[key] = float(value)
+                except ValueError:
+                    # Keep the value as string if it cannot be casted to numeric
+                    pass
+        return record
+
 
     @property
     def columns(self):
