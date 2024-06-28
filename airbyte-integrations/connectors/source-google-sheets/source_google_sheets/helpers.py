@@ -10,7 +10,6 @@ from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List, Tuple
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.logger import AirbyteLogger
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
@@ -194,7 +193,9 @@ class Helpers(object):
                 non_grid_sheets.append(sheet_title)
 
         if non_grid_sheets:
-            logging.getLogger("airbyte").log("WARN", "Skip non-grid sheets: " + ", ".join(non_grid_sheets))
+            # logging.getLogger(...).log() expects an integer level. The level for WARN is 30
+            # Reference: https://docs.python.org/3.10/library/logging.html#levels
+            logging.getLogger("airbyte").log(30, "Skip non-grid sheets: " + ", ".join(non_grid_sheets))
 
         return grid_sheets
 
