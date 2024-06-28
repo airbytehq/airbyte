@@ -1,10 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient, HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config
 from source_instagram import SourceInstagram
@@ -14,14 +16,25 @@ from .common import remove_params_from_url
 GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
 
 
-def get_http_response(path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
+def get_http_response(name: str, path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
     url = f"{GRAPH_URL}/{path}"
     token = config["access_token"]
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     params = {
         **request_params,
     }
-    response = requests.get(url, params=params, headers=headers)
+    http_client = HttpClient(
+        name=name,
+        logger=logging.getLogger(f"airbyte.HttpClient.{name}"),
+        use_cache=True,
+    )
+    _, response = http_client.send_request(
+        http_method=HttpMethod.GET.name,
+        url=url,
+        request_kwargs={},
+        headers=headers,
+        params=params,
+    )
     if response.status_code == 200:
         return response.json()
 
@@ -93,7 +106,7 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
         if children:
             children_ids = [child.get("id") for child in children.get("data")]
             for children_id in children_ids:
-                media_data = get_http_response(children_id, {"fields": fields}, config=config)
+                media_data = get_http_response(f"MediaInsights.{children_id}", children_id, {"fields": fields}, config=config)
                 media_data = InstagramClearUrlTransformation().transform(media_data)
                 if media_data.get("timestamp"):
                     dt = datetime.strptime(media_data["timestamp"], "%Y-%m-%dT%H:%M:%S%z")

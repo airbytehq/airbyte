@@ -28,6 +28,10 @@ class RequestBuilder:
         return cls(resource="media").with_item_id(item_id)
 
     @classmethod
+    def get_media_children_endpoint(cls, item_id: str) -> RequestBuilder:
+        return cls().with_item_id(item_id).with_item_id_is_sub_path(False)
+
+    @classmethod
     def get_media_insights_endpoint(cls, item_id: str) -> RequestBuilder:
         return cls(resource="insights").with_item_id(item_id)
 
