@@ -179,16 +179,15 @@ const sectionHeader = (title) => ({
 
 const buildAConnector = {
   type: "category",
-  label: "Build a Connector",
+  label: "Building Connectors",
+  link: {
+    type: "doc",
+    id: "connector-development/README",
+  },
   items: [
     {
-      type: "doc",
-      label: "Overview",
-      id: "connector-development/README",
-    },
-    {
       type: "category",
-      label: "Connector Builder",
+      label: "No-Code Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/connector-builder-compatibility",
@@ -209,10 +208,10 @@ const buildAConnector = {
     },
     {
       type: "category",
-      label: "Low-code connector development",
+      label: "Low-Code CDK",
       items: [
         {
-          label: "Low-code CDK Intro",
+          label: "Low-Code CDK Intro",
           type: "doc",
           id: "connector-development/config-based/low-code-cdk-overview",
         },
@@ -263,7 +262,7 @@ const buildAConnector = {
 
     {
       type: "category",
-      label: "Connector Development Kit",
+      label: "Python CDK",
       link: {
         type: "doc",
         id: "connector-development/cdk-python/README",
@@ -276,6 +275,29 @@ const buildAConnector = {
         "connector-development/cdk-python/http-streams",
         "connector-development/cdk-python/python-concepts",
         "connector-development/cdk-python/stream-slices",
+        {
+          type: "category",
+          label: "Tutorials",
+          items: [
+            "connector-development/tutorials/cdk-speedrun",
+            {
+              type: "category",
+              label: "Python CDK: Creating a Python Source",
+              items: [
+                "connector-development/tutorials/custom-python-connector/getting-started",
+                "connector-development/tutorials/custom-python-connector/environment-setup",
+                "connector-development/tutorials/custom-python-connector/reading-a-page",
+                "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
+                "connector-development/tutorials/custom-python-connector/check-and-error-handling",
+                "connector-development/tutorials/custom-python-connector/discover",
+                "connector-development/tutorials/custom-python-connector/incremental-reads",
+                "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
+                "connector-development/tutorials/custom-python-connector/concurrency",
+              ],
+            },
+            
+          ],
+        },
       ],
     },
     {
@@ -287,29 +309,6 @@ const buildAConnector = {
       },
       items: [
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
-      ],
-    },
-    {
-      type: "category",
-      label: "Tutorials",
-      items: [
-        "connector-development/tutorials/cdk-speedrun",
-        {
-          type: "category",
-          label: "Python CDK: Creating a Python Source",
-          items: [
-            "connector-development/tutorials/custom-python-connector/getting-started",
-            "connector-development/tutorials/custom-python-connector/environment-setup",
-            "connector-development/tutorials/custom-python-connector/reading-a-page",
-            "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
-            "connector-development/tutorials/custom-python-connector/check-and-error-handling",
-            "connector-development/tutorials/custom-python-connector/discover",
-            "connector-development/tutorials/custom-python-connector/incremental-reads",
-            "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
-            "connector-development/tutorials/custom-python-connector/concurrency",
-          ],
-        },
-        "connector-development/tutorials/building-a-java-destination",
       ],
     },
     "connector-development/connector-specification-reference",
@@ -709,3 +708,10 @@ module.exports = {
     },
   ],
 };
+
+// Any temporarily archived content should be added here with a comment
+// to indicate when it was archived and why.
+// You can still view docs that are not linked to in the sidebar. 
+
+// Java Destination template is not currently available for use
+// "connector-development/tutorials/building-a-java-destination",
