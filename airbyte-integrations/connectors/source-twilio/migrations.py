@@ -19,6 +19,21 @@ class MigrateDataCenter:
 
     STREAMS = ["calls"]
 
+    def migrate_state(cls, stream_name, state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        This method migrates the state.
+        Args:
+        - stream_name (str): The stream name.
+        - state (Mapping[str, Any]): The state to migrate.
+        Returns:
+        - Mapping[str, Any]: The migrated state.
+        """
+        if stream_name in cls.STREAMS:
+            if "partition" in state:
+                return state
+            return {"partition": {"data_center": "us1"}, "cursor": state}
+        return state
+
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
         """
