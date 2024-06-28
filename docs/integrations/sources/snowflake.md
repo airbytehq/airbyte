@@ -89,27 +89,27 @@ Your database user should now be ready for use with Airbyte.
 
 ### Key pair authentication
 
-    In order to configure key pair authentication you will need a private/public key pair.
-    If you do not have the key pair yet, you can generate one using openssl command line tool
-    Use this command in order to generate an unencrypted private key file:
+In order to configure key pair authentication you will need a private/public key pair.
+If you do not have the key pair yet, you can generate one using openssl command line tool
+Use this command in order to generate an unencrypted private key file:
 
-       `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt`
+`openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt`
 
-    Alternatively, use this command to generate an encrypted private key file:
+Alternatively, use this command to generate an encrypted private key file:
 
-      `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v1 PBE-SHA1-RC4-128 -out rsa_key.p8`
+`openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v1 PBE-SHA1-RC4-128 -out rsa_key.p8`
 
-    Once you have your private key, you need to generate a matching public key.
-    You can do so with the following command:
+Once you have your private key, you need to generate a matching public key.
+You can do so with the following command:
 
-      `openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub`
+`openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub`
 
-    Finally, you need to add the public key to your Snowflake user account.
-    You can do so with the following SQL command in Snowflake:
+Finally, you need to add the public key to your Snowflake user account.
+You can do so with the following SQL command in Snowflake:
 
-      `alter user <user_name> set rsa_public_key=<public_key_value>;`
+`alter user <user_name> set rsa_public_key=<public_key_value>;`
 
-    and replace `<user_name>` with your user name and `<public_key_value>` with your public key.
+and replace `<user_name>` with your user name and `<public_key_value>` with your public key.
 
 ### Network policies
 
