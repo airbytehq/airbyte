@@ -158,6 +158,14 @@ class FileTypesConfig(BaseConfig):
         return skip_test
 
 
+class SetupTeardownConfig(BaseConfig):
+    setup_teardown_dockerfile_path: str = Field(
+        None, description="Path to Dockerfile to run before each test for which a config is provided."
+    )
+    setup_command: List[str] = Field(None, description="Command for running the setup/teardown container for setup")
+    teardown_command: List[str] = Field(None, description="Command for running the setup/teardown container for teardown")
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     deployment_mode: Optional[str] = deployment_mode
@@ -181,6 +189,10 @@ class BasicReadTestConfig(BaseConfig):
         default_factory=FileTypesConfig,
         description="For file-based connectors, unsupported by source file types can be configured or a test can be skipped at all",
     )
+    setup_teardown_config: Optional[SetupTeardownConfig] = Field(
+        default_factory=SetupTeardownConfig,
+        description="Information required to run a setup & teardown Docker container before each test.",
+    )
 
 
 class FullRefreshConfig(BaseConfig):
@@ -196,6 +208,10 @@ class FullRefreshConfig(BaseConfig):
     deployment_mode: Optional[str] = deployment_mode
     ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
         description="For each stream, list of fields path ignoring in sequential reads test"
+    )
+    setup_teardown_config: Optional[SetupTeardownConfig] = Field(
+        default_factory=SetupTeardownConfig,
+        description="Information required to run a setup & teardown Docker container before each test.",
     )
 
 
@@ -232,6 +248,10 @@ class IncrementalConfig(BaseConfig):
     deployment_mode: Optional[str] = deployment_mode
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
+    )
+    setup_teardown_config: Optional[SetupTeardownConfig] = Field(
+        default_factory=SetupTeardownConfig,
+        description="Information required to run a setup & teardown Docker container before each test.",
     )
 
     class Config:

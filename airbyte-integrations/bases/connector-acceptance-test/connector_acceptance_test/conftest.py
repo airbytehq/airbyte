@@ -19,7 +19,13 @@ import dagger
 import pytest
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration
+from connector_acceptance_test.config import (
+    Config,
+    EmptyStreamConfiguration,
+    ExpectedRecordsConfig,
+    IgnoredFieldsConfiguration,
+    SetupTeardownConfig,
+)
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
     SecretDict,
@@ -29,6 +35,7 @@ from connector_acceptance_test.utils import (
     filter_output,
     load_config,
     load_yaml_or_json_path,
+    setup_and_teardown_runner,
 )
 
 
@@ -124,6 +131,13 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
     return SecretDict(json.loads(contents))
 
 
+@pytest.fixture(name="setup_teardown_dockerfile_config")
+def setup_teardown_dockerfile_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[SetupTeardownConfig]:
+    """Fixture with connector's setup/teardown Dockerfile path, if it exists."""
+    if hasattr(inputs, "setup_teardown_config"):
+        return getattr(inputs, "setup_teardown_config")
+
+
 @pytest.fixture(name="invalid_connector_config")
 def invalid_connector_config_fixture(base_path, invalid_connector_config_path) -> MutableMapping[str, Any]:
     """TODO: implement default value - generate from valid config"""
@@ -184,6 +198,33 @@ def docker_runner_fixture(
         custom_environment_variables=custom_environment_variables,
         deployment_mode=deployment_mode,
     )
+
+
+@pytest.fixture(autouse=True)
+async def setup_and_teardown(
+    base_path: Path,
+    connector_config: SecretDict,
+    dagger_client: dagger.Client,
+    setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
+):
+    setup_teardown_container = None
+    if setup_teardown_dockerfile_config:
+        logging.info("Running setup")
+        setup_teardown_container = await setup_and_teardown_runner.do_setup(
+            dagger_client,
+            base_path / setup_teardown_dockerfile_config.setup_teardown_dockerfile_path,
+            setup_teardown_dockerfile_config.setup_command,
+            connector_config,
+        )
+        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
+    yield None
+    if setup_teardown_container:
+        logging.info("Running teardown")
+        setup_teardown_container = await setup_and_teardown_runner.do_teardown(
+            setup_teardown_container,
+            setup_teardown_dockerfile_config.teardown_command,
+        )
+        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
 
 
 @pytest.fixture(name="previous_connector_image_name")
