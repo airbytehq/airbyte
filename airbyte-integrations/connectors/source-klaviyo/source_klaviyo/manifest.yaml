@@ -229,23 +229,6 @@ definitions:
     $parameters:
       path: "lists/{{ stream_slice.id }}"
 
-  events_stream:
-    # Docs: https://developers.klaviyo.com/en/reference/get_events
-    name: "events"
-    $ref: "#/definitions/base_incremental_stream"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema: "#/definitions/events_schema"
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path: [ "datetime" ]
-            value: "{{ record.get('attributes', {}).get('datetime') }}"
-    $parameters:
-      path: "events"
-      cursor_field: "datetime"
-
   events_detailed_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_event
     name: "events_detailed"
