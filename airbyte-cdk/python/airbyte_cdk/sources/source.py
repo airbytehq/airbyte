@@ -15,6 +15,10 @@ TState = TypeVar("TState")
 TCatalog = TypeVar("TCatalog")
 
 
+class ExperimentalClassWarning(DeprecationWarning):
+    pass
+
+
 class BaseSource(BaseConnector[TConfig], ABC, Generic[TConfig, TState, TCatalog]):
     @abstractmethod
     def read_state(self, state_path: str) -> TState:

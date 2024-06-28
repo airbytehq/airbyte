@@ -126,6 +126,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 2.0.7 | 2024-06-25 | [40320](https://github.com/airbytehq/airbyte/pull/40320) | Update dependencies |
 | 2.0.6 | 2024-06-21 | [39937](https://github.com/airbytehq/airbyte/pull/39937) | Update dependencies |
 | 2.0.5 | 2024-06-18 | [38868](https://github.com/airbytehq/airbyte/pull/38868) | Refactor:  use `client_side_incremental` feature |
 | 2.0.4 | 2024-06-06 | [39202](https://github.com/airbytehq/airbyte/pull/39202) | [autopull] Upgrade base image to v1.2.2 |

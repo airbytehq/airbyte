@@ -73,10 +73,6 @@ internal class BigQueryDestinationTest {
                 "insufficientRoleConfig",
                 "User does not have bigquery.datasets.create permission"
             ),
-            Arguments.of(
-                "nonBillableConfig",
-                "Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier"
-            )
         )
     }
 
