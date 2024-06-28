@@ -480,6 +480,10 @@ module.exports = {
     "integrations/connector-support-levels",
     sectionHeader("Using Airbyte"),
     {
+      type: "doc",
+      id: "using-airbyte/on-using-airbyte"
+    },
+    {
       type: "category",
       label: "Getting Started",
       link: {
@@ -539,6 +543,10 @@ module.exports = {
       ],
     },
     sectionHeader("Managing Airbyte"),
+    {
+      type: "doc",
+      id: "managing-airbyte/on-managing-airbyte",
+    },
     deployAirbyte,
     {
       type: "category",
