@@ -102,6 +102,10 @@ def is_per_stream_state(message: AirbyteMessage) -> bool:
     return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.STREAM
 
 
+def is_global_state(message: AirbyteMessage) -> bool:
+    return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.GLOBAL
+
+
 def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict[str, Mapping[str, Any]]:
     """
     Because connectors that have migrated to per-stream state only emit state messages with the new state value for a single
@@ -174,6 +178,9 @@ class TestIncremental(BaseTest):
                         "stream": {"stream_descriptor": stream_descriptor, "stream_state": stream_state},
                     }
                 )
+        elif is_global_state(states_1[-1]):
+            # TODO: DB sources to fill out this case
+            state_input = states_1[-1].state.data
         else:
             state_input = states_1[-1].state.data
 
@@ -288,6 +295,11 @@ class TestIncremental(BaseTest):
         ), f"The sync should produce no records when run with the state with abnormally large values {records[0].record.stream}"
         assert states, "The sync should produce at least one STATE message"
 
+        if states and is_global_state(states[0]):
+            # TODO: DB sources to fill out this case. Also, can we assume all states will be global if the first one is?
+            pass
+
+        # TODO: else:
         cursor_fields_per_stream = {
             stream.stream.name: self._get_cursor_field(stream)
             for stream in configured_catalog.streams
@@ -377,6 +389,9 @@ class TestIncremental(BaseTest):
                 stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
                     per_stream.stream_state.dict() if per_stream.stream_state else {}
                 )
+        elif current_state and current_state.type == AirbyteStateType.GLOBAL:
+            # TODO: DB Sources to fill in this case
+            pass
         state_input = [
             {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
             for stream_name, stream_state in stream_name_to_per_stream_state.items()
