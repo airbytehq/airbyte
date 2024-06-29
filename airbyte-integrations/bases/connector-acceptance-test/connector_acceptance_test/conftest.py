@@ -212,6 +212,7 @@ async def setup_and_teardown(
         logging.info("Running setup")
         setup_teardown_container = await setup_and_teardown_runner.do_setup(
             dagger_client,
+            base_path,
             base_path / setup_teardown_dockerfile_config.setup_teardown_dockerfile_path,
             setup_teardown_dockerfile_config.setup_command,
             connector_config,

@@ -17,16 +17,15 @@ IN_CONTAINER_OUTPUT_PATH = Path("/tmp/output.txt")
 async def _build_container(dagger_client: dagger.Client, dockerfile_path: Path) -> dagger.Container:
     workspace = (
         dagger_client.container()
-        .with_directory("/tmp", dagger_client.host().directory(os.path.dirname(dockerfile_path)))
-        .with_workdir("/tmp")
-        .with_file("/tmp/Dockerfile.cat_setup_teardown", dagger_client.host().file(str(dockerfile_path.expanduser())))
-        .directory("/tmp")
+        .with_mounted_directory("/tmp/setup_teardown_context", dagger_client.host().directory(os.path.dirname(dockerfile_path)))
+        .directory("/tmp/setup_teardown_context")
     )
     return await dagger_client.container().build(context=workspace, dockerfile="Dockerfile.cat_setup_teardown")
 
 
-async def _build_setup_container(dagger_client: dagger.Client, dockerfile_path: Path) -> dagger.Container:
-    return await _build_container(dagger_client, dockerfile_path)
+async def _build_setup_container(dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path) -> dagger.Container:
+    container = await _build_container(dagger_client, dockerfile_path)
+    return container.with_mounted_directory("/connector", dagger_client.host().directory(str(connector_path)))
 
 
 async def _run_with_config(container: dagger.Container, command: List[str], config: SecretDict) -> dagger.Container:
@@ -38,8 +37,10 @@ async def _run(container: dagger.Container, command: List[str]) -> dagger.Contai
     return await container.with_exec(command, skip_entrypoint=True)
 
 
-async def do_setup(dagger_client: dagger.Client, dockerfile_path: Path, command: List[str], connector_config: SecretDict):
-    return await _run_with_config(await _build_setup_container(dagger_client, dockerfile_path), command, connector_config)
+async def do_setup(
+    dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path, command: List[str], connector_config: SecretDict
+):
+    return await _run_with_config(await _build_setup_container(dagger_client, connector_path, dockerfile_path), command, connector_config)
 
 
 async def do_teardown(container: dagger.Container, command: List[str]):
