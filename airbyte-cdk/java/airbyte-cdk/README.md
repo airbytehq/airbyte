@@ -2,22 +2,22 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-- [Developing with the Java CDK](#developing-with-the-java-cdk)
-  - [Intro to the Java CDK](#intro-to-the-java-cdk)
-    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    - [How is the CDK published?](#how-is-the-cdk-published)
-  - [Using the Java CDK](#using-the-java-cdk)
-    - [Building the CDK](#building-the-cdk)
-    - [Bumping the CDK version](#bumping-the-cdk-version)
-    - [Publishing the CDK](#publishing-the-cdk)
-  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    - [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-    - [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  - [Changelog](#changelog)
-    - [Java CDK](#java-cdk)
+* [Developing with the Java CDK](#developing-with-the-java-cdk)
+  * [Intro to the Java CDK](#intro-to-the-java-cdk)
+    * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    * [How is the CDK published?](#how-is-the-cdk-published)
+  * [Using the Java CDK](#using-the-java-cdk)
+    * [Building the CDK](#building-the-cdk)
+    * [Bumping the CDK version](#bumping-the-cdk-version)
+    * [Publishing the CDK](#publishing-the-cdk)
+  * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  * [Changelog](#changelog)
+    * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -173,7 +173,12 @@ corresponds to that version.
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
-|:--------| :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.40.5  | 2024-06-26 | [\#40517](https://github.com/airbytehq/airbyte/pull/40517) | JdbcDatabase.executeWithinTransaction allows disabling SQL statement logging                                                                                   |
+| 0.35.16 | 2024-06-25 | [\#40517](https://github.com/airbytehq/airbyte/pull/40517) | (backport) JdbcDatabase.executeWithinTransaction allows disabling SQL statement logging                                                                        |
+| 0.40.4  | 2024-06-18 | [\#40254](https://github.com/airbytehq/airbyte/pull/40254) | Destinations: Do not throw on unrecognized airbyte message type (ignore message instead)                                                                       |
+| 0.40.3  | 2024-06-18 | [\#39526](https://github.com/airbytehq/airbyte/pull/39526) | Destinations: INCOMPLETE stream status is a TRANSIENT error rather than SYSTEM                                                                                 |
+| 0.40.2  | 2024-06-18 | [\#39552](https://github.com/airbytehq/airbyte/pull/39552) | Destinations: Throw error if the ConfiguredCatalog has no streams                                                                                              |
 | 0.40.1  | 2024-06-14 | [\#39349](https://github.com/airbytehq/airbyte/pull/39349) | Source stats for full refresh streams                                                                                                                          |
 | 0.40.0  | 2024-06-17 | [\#38622](https://github.com/airbytehq/airbyte/pull/38622) | Destinations: Implement refreshes logic in AbstractStreamOperation                                                                                             |
 | 0.39.0  | 2024-06-17 | [\#38067](https://github.com/airbytehq/airbyte/pull/38067) | Destinations: Breaking changes for refreshes (fail on INCOMPLETE stream status; ignore OVERWRITE sync mode)                                                    |

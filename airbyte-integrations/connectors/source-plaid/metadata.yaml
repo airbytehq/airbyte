@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.4
   dockerRepository: airbyte/source-plaid
   githubIssueLabel: source-plaid
   icon: plaid.svg

@@ -1,85 +1,76 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024s Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Mapping
+
 import pytest
-from source_orb.source import CreditsLedgerEntries, OrbStream, SubscriptionUsage
+from airbyte_cdk.sources.streams import Stream
+from airbyte_protocol.models import SyncMode
+from jsonref import requests
+from source_orb.source import SourceOrb
 
 
-@pytest.fixture
-def patch_base_class(mocker):
-    mocker.patch.object(OrbStream, "path", "v0/example_endpoint")
-    mocker.patch.object(OrbStream, "primary_key", "id")
-    mocker.patch.object(OrbStream, "__abstractmethods__", set())
+def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
+    source = SourceOrb()
+    matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
+    if not matches_by_name:
+        raise ValueError("Please provide a valid stream name.")
+    return matches_by_name[0]
 
 
-def test_request_params(patch_base_class):
-    stream = OrbStream()
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {"limit": OrbStream.page_size}
-    assert stream.request_params(**inputs) == expected_params
+def test_request_params(config_pass):
+    stream = get_stream_by_name("subscriptions", config_pass)
+    expected_params = {}
+    assert stream.retriever.requester.get_request_params() == expected_params
 
 
 @pytest.mark.parametrize(
     ("mock_response", "expected_token"),
     [
         ({}, None),
-        (dict(pagination_metadata=dict(has_more=True, next_cursor="orb-test-cursor")), dict(cursor="orb-test-cursor")),
+        (dict(pagination_metadata=dict(has_more=True, next_cursor="orb-test-cursor")), dict(next_page_token="orb-test-cursor")),
         (dict(pagination_metadata=dict(has_more=False)), None),
     ],
 )
-def test_next_page_token(patch_base_class, mocker, mock_response, expected_token):
-    stream = OrbStream()
-    response = mocker.MagicMock()
-    response.json.return_value = mock_response
-    inputs = {"response": response}
-    assert stream.next_page_token(**inputs) == expected_token
+def test_next_page_token(requests_mock, config_pass, subscriptions_url, mock_response, expected_token):
+    requests_mock.get(url=subscriptions_url, status_code=200, json=mock_response)
+    stream = get_stream_by_name("subscriptions", config_pass)
+    inputs = {"response": requests.get(subscriptions_url)}
+    assert stream.retriever._next_page_token(**inputs) == expected_token
 
 
 @pytest.mark.parametrize(
-    ("mock_response", "expected_parsed_objects"),
+    ("mock_response", "expected_parsed_records"),
     [
         ({}, []),
         (dict(data=[]), []),
-        (dict(data=[{"id": "test-customer-id"}]), [{"id": "test-customer-id"}]),
-        (dict(data=[{"id": "test-customer-id"}, {"id": "test-customer-id-2"}]), [{"id": "test-customer-id"}, {"id": "test-customer-id-2"}]),
+        (dict(data=[{"id": "test-customer-id", "customer": {"id": "1", "external_customer_id": "2"}, "plan": {"id": "3"}}]),
+         [{"id": "test-customer-id", "customer_id": "1", "external_customer_id": "2", "plan_id": "3"}]),
+        (dict(data=[{"id": "test-customer-id", "customer": {"id": "7", "external_customer_id": "8"}, "plan": {"id": "9"}},
+                    {"id": "test-customer-id-2", "customer": {"id": "10", "external_customer_id": "11"}, "plan": {"id": "12"}}]),
+         [{"id": "test-customer-id", "customer_id": "7", "external_customer_id": "8", "plan_id": "9"},
+          {"id": "test-customer-id-2", "customer_id": "10", "external_customer_id": "11", "plan_id": "9"}]),
     ],
 )
-def test_parse_response(patch_base_class, mocker, mock_response, expected_parsed_objects):
-    stream = OrbStream()
-    response = mocker.MagicMock()
-    response.json.return_value = mock_response
-    inputs = {"response": response}
-    assert list(stream.parse_response(**inputs)) == expected_parsed_objects
+def test_parse_response(requests_mock, config_pass, subscriptions_url, mock_response, expected_parsed_records):
+    requests_mock.get(url=subscriptions_url, status_code=200, json=mock_response)
+    stream = get_stream_by_name("subscriptions", config_pass)
+    records = []
+    for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records.extend(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)))
+    assert len(records) == len(expected_parsed_records)
+    for i in range(len(records)):
+        assert sorted(records[i].keys()) == sorted(expected_parsed_records[i].keys())
 
 
-def test_http_method(patch_base_class):
-    stream = OrbStream()
+def test_http_method(config_pass):
+    stream = get_stream_by_name("subscriptions", config_pass)
     expected_method = "GET"
-    assert stream.http_method == expected_method
+    assert stream.retriever.requester.http_method.value == expected_method
 
 
-@pytest.mark.parametrize("event_properties_keys", [["foo-property"], ["foo-property", "bar-property"], None])
-def test_credit_ledger_entries_schema(patch_base_class, mocker, event_properties_keys):
-    stream = CreditsLedgerEntries(string_event_properties_keys=event_properties_keys)
+def test_subscription_usage_schema(config_pass):
+    stream = get_stream_by_name("subscription_usage", config_pass)
     json_schema = stream.get_json_schema()
-
-    assert "event" in json_schema["properties"]
-    if event_properties_keys is None:
-        assert json_schema["properties"]["event"]["properties"]["properties"]["properties"] == {}
-    else:
-        for property_key in event_properties_keys:
-            assert property_key in json_schema["properties"]["event"]["properties"]["properties"]["properties"]
-
-
-@pytest.mark.parametrize("group_by_key", ["foo-key", None])
-def test_subscription_usage_schema(patch_base_class, mocker, group_by_key):
-    stream = SubscriptionUsage(start_date="2022-01-01T00:00:00Z", subscription_usage_grouping_key=group_by_key)
-    json_schema = stream.get_json_schema()
-
-    if group_by_key is None:
-        # no additional key added to schema
-        assert len(json_schema["properties"]) == 6
-    else:
-        assert len(json_schema["properties"]) == 7
-        assert group_by_key in json_schema["properties"]
+    assert len(json_schema["properties"]) == 7

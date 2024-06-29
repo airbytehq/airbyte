@@ -71,6 +71,8 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.1.6 | 2024-06-25 | [40367](https://github.com/airbytehq/airbyte/pull/40367) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40111](https://github.com/airbytehq/airbyte/pull/40111) | Update dependencies |
 | 0.1.4 | 2024-06-06 | [39232](https://github.com/airbytehq/airbyte/pull/39232) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.3 | 2024-04-19 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
 | 0.1.2 | 2024-04-12 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | schema descriptions |

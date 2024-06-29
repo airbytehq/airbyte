@@ -106,6 +106,9 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.0.4 | 2024-06-25 | [40392](https://github.com/airbytehq/airbyte/pull/40392) | Update dependencies |
+| 1.0.3 | 2024-06-22 | [40092](https://github.com/airbytehq/airbyte/pull/40092) | Update dependencies |
+| 1.0.2 | 2024-06-18 | [39551](https://github.com/airbytehq/airbyte/pull/39551) | Fix pagination from offset to cursor based, Increment airbyte_cdk to ^1 |
 | 1.0.1 | 2024-06-06 | [39249](https://github.com/airbytehq/airbyte/pull/39249) | [autopull] Upgrade base image to v1.2.2 |
 | 1.0.0 | 2024-04-15 | [36697](https://github.com/airbytehq/airbyte/pull/36697) | Migrate to low code |
 | 0.6.1 | 2023-11-13 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Fix hidden config access |

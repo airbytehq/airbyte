@@ -120,8 +120,12 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
   <summary>Expand to review</summary>
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
-| :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| 1.4.2 | 2024-06-06 | [39297](https://github.com/airbytehq/airbyte/pull/39297) | [autopull] Upgrade base image to v1.2.2 |
+|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.4.6 | 2024-06-26 | [40530](https://github.com/airbytehq/airbyte/pull/40530) | Update dependencies |
+| 1.4.5 | 2024-06-25 | [40318](https://github.com/airbytehq/airbyte/pull/40318) | Update dependencies |
+| 1.4.4 | 2024-06-23 | [40001](https://github.com/airbytehq/airbyte/pull/40001) | Update dependencies |
+| `1.4.3`  | 2024-06-18 | [39549](https://github.com/airbytehq/airbyte/pull/39549) | Refactor: use `client_side_incremental` feature                                                  |
+| `1.4.2`  | 2024-06-06 | [39297](https://github.com/airbytehq/airbyte/pull/39297) | [autopull] Upgrade base image to v1.2.2                                                          |
 | `1.4.1`  | 2024-05-23 | [38631](https://github.com/airbytehq/airbyte/pull/38631) | Update deprecated authenticator package                                                          |
 | `1.4.0`  | 2024-04-15 | [36854](https://github.com/airbytehq/airbyte/pull/36854) | Migrate to low-code                                                                              |
 | `1.3.2`  | 2024-04-19 | [36650](https://github.com/airbytehq/airbyte/pull/36650) | Updating to 0.80.0 CDK                                                                           |

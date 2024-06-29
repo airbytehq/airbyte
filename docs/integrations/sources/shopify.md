@@ -121,8 +121,8 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Countries](https://shopify.dev/docs/api/admin-rest/2024-04/resources/country)
 - [Custom Collections](https://shopify.dev/api/admin-rest/2024-04/resources/customcollection#top)
 - [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
-- [Customer Journey Summary](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
-- [Customer Address](https://shopify.dev/docs/api/admin-rest/2024-04/resources/customer-address)
+- [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
+- [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
 - [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2024-04/resources/customersavedsearch)
 - [Draft Orders](https://shopify.dev/api/admin-rest/2024-04/resources/draftorder#top)
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
@@ -133,15 +133,15 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/2024-04/resources/location)
 - [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield)
+- [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/2024-04/resources/order#top)
 - [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
-- [Order Risks](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
+- [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
 - [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
 - [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
-- [Products](https://shopify.dev/api/admin-rest/2024-04/resources/product#top)
-- [Products (GraphQL)](https://shopify.dev/api/admin-graphql/2022-10/queries/products)
-- [Product Images](https://shopify.dev/api/admin-rest/2024-04/resources/product-image)
-- [Product Variants](https://shopify.dev/api/admin-rest/2024-04/resources/product-variant)
+- [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
+- [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
+- [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
 - [Shop](https://shopify.dev/api/admin-rest/2024-04/resources/shop)
 - [Smart Collections](https://shopify.dev/api/admin-rest/2024-04/resources/smartcollection)
 - [Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/transaction#top)
@@ -212,6 +212,12 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 | :------ |:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.6 | 2024-06-26 | [40526](https://github.com/airbytehq/airbyte/pull/40526) | Made `BULK Job termination threshold` limit adjustable from `input configuration`, increased the default value to `1 hour`. |
+| 2.4.5 | 2024-06-25 | [40484](https://github.com/airbytehq/airbyte/pull/40484) | Update dependencies |
+| 2.4.4 | 2024-06-19 | [39594](https://github.com/airbytehq/airbyte/pull/39594) | Extended the `Discount Codes`, `Fulfillment Orders`, `Inventory Items`, `Inventory Levels`, `Products`, `Product Variants` and `Transactions` stream schemas |
+| 2.4.3 | 2024-06-06 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | add resiliency on some transient errors using the HttpClient |
+| 2.4.1 | 2024-06-20 | [39651](https://github.com/airbytehq/airbyte/pull/39651) | Update dependencies |
+| 2.4.0 | 2024-06-17 | [39527](https://github.com/airbytehq/airbyte/pull/39527) | Added new stream `Order Agreements` |
 | 2.3.0 | 2024-06-14 | [39487](https://github.com/airbytehq/airbyte/pull/39487) | Added new stream `Customer Journey Summary` |
 | 2.2.3 | 2024-06-06 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | add resiliency on some transient errors using the HttpClient |
 | 2.2.2 | 2024-06-04 | [39019](https://github.com/airbytehq/airbyte/pull/39019) | [autopull] Upgrade base image to v1.2.1 |

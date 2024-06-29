@@ -3,17 +3,16 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.2"
+version = "0.1.5"
 name = "source-everhour"
-description = "Source implementation for Everhour."
+description = "Source implementation for everhour."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/everhour"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-[[tool.poetry.packages]]
-include = "source_everhour"
+packages = [ { include = "source_everhour" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"

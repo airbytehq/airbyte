@@ -42,6 +42,8 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
+| 0.3.5 | 2024-06-25 | [40435](https://github.com/airbytehq/airbyte/pull/40435) | Update dependencies |
+| 0.3.4 | 2024-06-22 | [40000](https://github.com/airbytehq/airbyte/pull/40000) | Update dependencies |
 | 0.3.3 | 2024-06-06 | [39153](https://github.com/airbytehq/airbyte/pull/39153) | [autopull] Upgrade base image to v1.2.2 |
 | 0.3.2 | 2024-05-14 | [38144](https://github.com/airbytehq/airbyte/pull/38144) | Make connector compatible with Builder |
 | 0.3.1 | 2023-06-05 | [27002](https://github.com/airbytehq/airbyte/pull/27002) | Flag spec `api_key` field as `airbyte-secret` |

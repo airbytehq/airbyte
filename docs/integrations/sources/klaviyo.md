@@ -75,6 +75,8 @@ Stream `Events Detailed` contains field `name` for `metric` relationship - addit
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.2 | 2024-06-26 | [40401](https://github.com/airbytehq/airbyte/pull/40401) | Update dependencies |
+| 2.7.1 | 2024-06-22 | [40032](https://github.com/airbytehq/airbyte/pull/40032) | Update dependencies |
 | `2.7.0`  | 2024-06-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000)   | Add `events_detailed` stream                                                                                                  |
 | `2.6.4`  | 2024-06-06 | [38879](https://github.com/airbytehq/airbyte/pull/38879)   | Implement `CheckpointMixin` for handling state in Python streams                                                              |
 | `2.6.3`  | 2024-06-04 | [38935](https://github.com/airbytehq/airbyte/pull/38935)   | [autopull] Upgrade base image to v1.2.1                                                                                       |
