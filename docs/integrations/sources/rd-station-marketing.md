@@ -42,11 +42,21 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.2.0   | 2024-06-27 | [40216](https://github.com/airbytehq/airbyte/pull/40216) | Migrate connector to Low Code               |
+| 0.1.9 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 0.1.8 | 2024-06-25 | [40324](https://github.com/airbytehq/airbyte/pull/40324) | Update dependencies |
+| 0.1.7 | 2024-06-22 | [40145](https://github.com/airbytehq/airbyte/pull/40145) | Update dependencies |
+| 0.1.6 | 2024-06-06 | [39228](https://github.com/airbytehq/airbyte/pull/39228) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.5 | 2024-06-03 | [38916](https://github.com/airbytehq/airbyte/pull/38916) | Replace AirbyteLogger with logging.Logger |
 | 0.1.4 | 2024-06-03 | [38916](https://github.com/airbytehq/airbyte/pull/38916) | Replace AirbyteLogger with logging.Logger |
 | 0.1.3 | 2024-05-20 | [38372](https://github.com/airbytehq/airbyte/pull/38372) | [autopull] base image + poetry + up_to_date |
 | 0.1.2   | 2022-07-06 | [28009](https://github.com/airbytehq/airbyte/pull/28009/) | Migrated to advancedOAuth        |
 | 0.1.1   | 2022-11-01 | [18826](https://github.com/airbytehq/airbyte/pull/18826)  | Fix stream analytics_conversions |
 | 0.1.0   | 2022-10-23 | [18348](https://github.com/airbytehq/airbyte/pull/18348)  | Initial Release                  |
+
+</details>

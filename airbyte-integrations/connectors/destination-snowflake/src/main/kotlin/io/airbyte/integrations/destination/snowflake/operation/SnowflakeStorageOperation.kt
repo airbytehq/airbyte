@@ -51,7 +51,9 @@ class SnowflakeStorageOperation(
         |   "${JavaBaseConstants.COLUMN_NAME_AB_RAW_ID}" VARCHAR PRIMARY KEY,
         |   "${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT}" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
         |   "${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT}" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-        |   "${JavaBaseConstants.COLUMN_NAME_DATA}" VARIANT
+        |   "${JavaBaseConstants.COLUMN_NAME_DATA}" VARIANT,
+        |   "${JavaBaseConstants.COLUMN_NAME_AB_META}" VARIANT DEFAULT NULL,
+        |   "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" INTEGER DEFAULT NULL
         |) data_retention_time_in_days = $retentionPeriodDays;
         """.trimMargin()
     }
@@ -60,11 +62,16 @@ class SnowflakeStorageOperation(
         return "TRUNCATE TABLE \"${streamId.rawNamespace}\".\"${streamId.rawName}\";\n"
     }
 
-    override fun writeToStage(streamId: StreamId, data: SerializableBuffer) {
-        val stageName = getStageName(streamId)
+    override fun writeToStage(streamConfig: StreamConfig, data: SerializableBuffer) {
+        val stageName = getStageName(streamConfig.id)
         val stagingPath = getStagingPath()
         val stagedFileName = staging.uploadRecordsToStage(data, stageName, stagingPath)
-        staging.copyIntoTableFromStage(stageName, stagingPath, listOf(stagedFileName), streamId)
+        staging.copyIntoTableFromStage(
+            stageName,
+            stagingPath,
+            listOf(stagedFileName),
+            streamConfig.id
+        )
     }
     override fun cleanupStage(streamId: StreamId) {
         val stageName = getStageName(streamId)

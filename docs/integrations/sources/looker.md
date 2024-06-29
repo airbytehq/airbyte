@@ -74,10 +74,14 @@ The Looker connector should not run into Looker API limitations under normal usa
 
 Please read the "API3 Key" section in [Looker's information for users docs](https://docs.looker.com/admin-options/settings/users) for instructions on how to generate Client Id and Client Secret.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| 0.2.12 | 2024-06-06 | [39191](https://github.com/airbytehq/airbyte/pull/39191) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.11 | 2024-06-03 | [38914](https://github.com/airbytehq/airbyte/pull/38914) | Replace AirbyteLogger with logging.Logger |
 | 0.2.10 | 2024-06-03 | [38914](https://github.com/airbytehq/airbyte/pull/38914) | Replace AirbyteLogger with logging.Logger |
 | 0.2.9 | 2024-05-20 | [38396](https://github.com/airbytehq/airbyte/pull/38396) | [autopull] base image + poetry + up_to_date |
@@ -92,3 +96,5 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 | 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Allow future / unknown properties in the protocol. |
 | 0.1.1 | 2021-01-27 | [1857](https://github.com/airbytehq/airbyte/pull/1857) | Fix failed CI tests. |
 | 0.1.0 | 2020-12-24 | [1441](https://github.com/airbytehq/airbyte/pull/1441) | Add looker connector. |
+
+</details>

@@ -72,6 +72,9 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
 | 2.1.3 | 2024-06-04 | [38958](https://github.com/airbytehq/airbyte/pull/38958) | [autopull] Upgrade base image to v1.2.1 |
@@ -101,3 +104,5 @@ The Monday connector should not run into Monday API limitations under normal usa
 | 0.1.2   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429)    | Update titles and descriptions                                                                    |
 | 0.1.1   | 2021-11-18 | [8016](https://github.com/airbytehq/airbyte/pull/8016)    | 🐛 Source Monday: fix pagination and schema bug                                                   |
 | 0.1.0   | 2021-11-07 | [7168](https://github.com/airbytehq/airbyte/pull/7168)    | 🎉 New Source: Monday                                                                             |
+
+</details>

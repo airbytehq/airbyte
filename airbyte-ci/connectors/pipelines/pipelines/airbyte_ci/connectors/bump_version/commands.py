@@ -9,15 +9,13 @@ from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
-@click.command(cls=DaggerPipelineCommand, short_help="Bump a connector version: update metadata.yaml and changelog.")
+@click.command(cls=DaggerPipelineCommand, short_help="Bump a connector version and update its changelog.")
 @click.argument("bump-type", type=click.Choice(["patch", "minor", "major"]))
-@click.argument("pull-request-number", type=str)
 @click.argument("changelog-entry", type=str)
 @click.pass_context
 async def bump_version(
     ctx: click.Context,
     bump_type: str,
-    pull_request_number: str,
     changelog_entry: str,
 ) -> bool:
     """Bump a connector version: update metadata.yaml and changelog."""
@@ -58,7 +56,6 @@ async def bump_version(
         ctx.obj["execute_timeout"],
         bump_type,
         changelog_entry,
-        pull_request_number,
     )
 
     return True

@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 3.9.0
+  dockerImageTag: 3.10.1
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake

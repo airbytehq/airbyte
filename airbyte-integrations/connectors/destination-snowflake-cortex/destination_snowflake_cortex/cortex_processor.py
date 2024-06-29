@@ -333,27 +333,27 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             if not self.sql_config.cortex_embedding_model:
                 new_data[EMBEDDING_COLUMN] = embeddings[i]
 
-        self.file_writer.process_record_message(
-            record_msg=AirbyteRecordMessage(
-                namespace=record_msg.namespace,
-                stream=record_msg.stream,
-                data=new_data,
-                emitted_at=record_msg.emitted_at,
-            ),
-            stream_schema={
-                "type": "object",
-                "properties": {
-                    DOCUMENT_ID_COLUMN: {"type": "string"},
-                    CHUNK_ID_COLUMN: {"type": "string"},
-                    METADATA_COLUMN: {"type": "object"},
-                    DOCUMENT_CONTENT_COLUMN: {"type": "string"},
-                    EMBEDDING_COLUMN: {
-                        "type": "array",
-                        "items": {"type": "float"},
+            self.file_writer.process_record_message(
+                record_msg=AirbyteRecordMessage(
+                    namespace=record_msg.namespace,
+                    stream=record_msg.stream,
+                    data=new_data,
+                    emitted_at=record_msg.emitted_at,
+                ),
+                stream_schema={
+                    "type": "object",
+                    "properties": {
+                        DOCUMENT_ID_COLUMN: {"type": "string"},
+                        CHUNK_ID_COLUMN: {"type": "string"},
+                        METADATA_COLUMN: {"type": "object"},
+                        DOCUMENT_CONTENT_COLUMN: {"type": "string"},
+                        EMBEDDING_COLUMN: {
+                            "type": "array",
+                            "items": {"type": "float"},
+                        },
                     },
                 },
-            },
-        )
+            )
 
     def _get_table_by_name(
         self,

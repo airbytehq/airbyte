@@ -214,7 +214,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.associateWith { it.state?.destinationStats }
         assertEquals(0, stateWithStats.size)
 
-        stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+        stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
         stateManager.flushStates { e: AirbyteMessage ->
             emittedStatesFromDestination.add(
                 e,
@@ -256,7 +256,7 @@ class GlobalAsyncStateManagerTest {
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             // GLOBAL
-            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
@@ -286,7 +286,6 @@ class GlobalAsyncStateManagerTest {
                 stateManager.trackState(
                     STREAM1_STATE_MESSAGE1,
                     STATE_MSG_SIZE,
-                    DEFAULT_NAMESPACE,
                 )
             }
         }
@@ -302,7 +301,7 @@ class GlobalAsyncStateManagerTest {
             val preConvertId2: Long = simulateIncomingRecords(STREAM3_DESC, 10, stateManager)
             assertEquals(3, setOf(preConvertId0, preConvertId1, preConvertId2).size)
 
-            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
 
             // Since this is actually a global state, we can only flush after all streams are done.
             stateManager.decrement(preConvertId0, 10)
@@ -350,7 +349,7 @@ class GlobalAsyncStateManagerTest {
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
-            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(preConvertId0, 10)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -377,7 +376,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             val afterConvertId1: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
-            stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE)
             stateManager.decrement(afterConvertId1, 10)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -408,7 +407,7 @@ class GlobalAsyncStateManagerTest {
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
-            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(preConvertId0, 10)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -433,7 +432,7 @@ class GlobalAsyncStateManagerTest {
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
 
-            stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
@@ -461,7 +460,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             val afterConvertId2: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
-            stateManager.trackState(GLOBAL_STATE_MESSAGE3, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE3, STATE_MSG_SIZE)
             stateManager.decrement(afterConvertId2, 10)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -494,7 +493,7 @@ class GlobalAsyncStateManagerTest {
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             val preConvertId1: Long = simulateIncomingRecords(STREAM2_DESC, 10, stateManager)
             assertNotEquals(preConvertId0, preConvertId1)
-            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(preConvertId0, 10)
             stateManager.decrement(preConvertId1, 10)
             stateManager.flushStates { e: AirbyteMessage ->
@@ -523,7 +522,7 @@ class GlobalAsyncStateManagerTest {
             val afterConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             val afterConvertId1: Long = simulateIncomingRecords(STREAM2_DESC, 10, stateManager)
             assertEquals(afterConvertId0, afterConvertId1)
-            stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE)
             stateManager.decrement(afterConvertId0, 20)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -557,7 +556,7 @@ class GlobalAsyncStateManagerTest {
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             // GLOBAL
-            stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
@@ -586,7 +585,6 @@ class GlobalAsyncStateManagerTest {
                 stateManager.trackState(
                     GLOBAL_STATE_MESSAGE1,
                     STATE_MSG_SIZE,
-                    DEFAULT_NAMESPACE,
                 )
             }
         }
@@ -598,7 +596,7 @@ class GlobalAsyncStateManagerTest {
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             var stateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
-            stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(stateId, 3)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -625,7 +623,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
-            stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE)
             stateManager.decrement(stateId, 10)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -660,7 +658,7 @@ class GlobalAsyncStateManagerTest {
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             var stateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
-            stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(stateId, 3)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -685,7 +683,7 @@ class GlobalAsyncStateManagerTest {
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
 
-            stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
@@ -713,7 +711,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
-            stateManager.trackState(STREAM1_STATE_MESSAGE3, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(STREAM1_STATE_MESSAGE3, STATE_MSG_SIZE)
             stateManager.decrement(stateId, 10)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -750,7 +748,7 @@ class GlobalAsyncStateManagerTest {
             val stream1StateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
             val stream2StateId: Long = simulateIncomingRecords(STREAM2_DESC, 7, stateManager)
 
-            stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(stream1StateId, 3)
             stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
@@ -782,7 +780,7 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             assertEquals(listOf<Any>(), emittedStatesFromDestination)
-            stateManager.trackState(STREAM2_STATE_MESSAGE, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
+            stateManager.trackState(STREAM2_STATE_MESSAGE, STATE_MSG_SIZE)
             stateManager.decrement(stream2StateId, 3)
             // only flush state if counter is 0.
             stateManager.flushStates { e: AirbyteMessage ->
@@ -831,7 +829,7 @@ class GlobalAsyncStateManagerTest {
             GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
         val stateId = simulateIncomingRecords(STREAM1_DESC, 6, stateManager)
         stateManager.decrement(stateId, 4)
-        stateManager.trackState(GLOBAL_STATE_MESSAGE1, 1, STREAM1_DESC.namespace)
+        stateManager.trackState(GLOBAL_STATE_MESSAGE1, 1)
         stateManager.flushStates { e: AirbyteMessage ->
             emittedStatesFromDestination.add(
                 e,
