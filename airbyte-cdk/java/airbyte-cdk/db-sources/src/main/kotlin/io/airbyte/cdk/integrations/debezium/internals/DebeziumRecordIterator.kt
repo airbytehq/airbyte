@@ -196,22 +196,15 @@ class DebeziumRecordIterator<T>(
             !event.value()!!.contains("source")
     }
 
-    // Closing debezium due to heartbeat position not changing only exists as an escape hatch for
-    // testing setups. In production, we rely on the platform heartbeats to kill the sync
     private fun heartbeatPosNotChanging(): Boolean {
-        if (this.tsLastHeartbeat == null) {
+        // Closing debezium due to heartbeat position not changing only exists as an escape hatch
+        // for
+        // testing setups. In production, we rely on the platform heartbeats to kill the sync
+        if (!isTest() || this.tsLastHeartbeat == null) {
             return false
         }
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
-        LOGGER.info {
-            "Time since last hb_pos change ${timeElapsedSinceLastHeartbeatTs.toSeconds()}s"
-        }
-
-        // wait time for no change in heartbeat position is half of initial waitTime
-        if (isTest()) {
-            return false
-        }
         return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
     }
 
@@ -234,8 +227,7 @@ class DebeziumRecordIterator<T>(
     }
 
     private fun isTest(): Boolean {
-        val isTest = config.has("is_test") && config["is_test"].asBoolean()
-        return !isTest
+        return config.has("is_test") && config["is_test"].asBoolean()
     }
 
     /**
