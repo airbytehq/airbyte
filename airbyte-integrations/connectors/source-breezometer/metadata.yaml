@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7c37685e-8512-4901-addf-9afbef6c0de9
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-breezometer
   githubIssueLabel: source-breezometer
   icon: breezometer.svg
