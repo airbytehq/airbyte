@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.8.2
+
+Allow tests to access the setup/teardown container.
+
 ## 3.8.1
 
 Provide the ability for users to perform setup/teardown by building and running a container before each test.

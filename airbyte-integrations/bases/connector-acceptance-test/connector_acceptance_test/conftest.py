@@ -201,31 +201,42 @@ def docker_runner_fixture(
 
 
 @pytest.fixture(autouse=True)
-async def setup_and_teardown(
+async def client_container(
     base_path: Path,
     connector_config: SecretDict,
     dagger_client: dagger.Client,
     setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
-):
-    setup_teardown_container = None
+) -> Optional[dagger.Container]:
     if setup_teardown_dockerfile_config:
-        logging.info("Running setup")
-        setup_teardown_container = await setup_and_teardown_runner.do_setup(
+        return await setup_and_teardown_runner.get_client_container(
             dagger_client,
             base_path,
             base_path / setup_teardown_dockerfile_config.setup_teardown_dockerfile_path,
+        )
+
+
+@pytest.fixture(autouse=True)
+async def setup_and_teardown(
+    client_container: dagger.Container,
+    connector_config: SecretDict,
+    setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
+):
+    if client_container:
+        logging.info("Running setup")
+        setup_teardown_container = await setup_and_teardown_runner.do_setup(
+            client_container,
             setup_teardown_dockerfile_config.setup_command,
             connector_config,
         )
-        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
+        logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
     yield None
-    if setup_teardown_container:
+    if client_container:
         logging.info("Running teardown")
         setup_teardown_container = await setup_and_teardown_runner.do_teardown(
-            setup_teardown_container,
+            client_container,
             setup_teardown_dockerfile_config.teardown_command,
         )
-        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
+        logging.info(f"Teardown stdout: {await setup_teardown_container.stdout()}")
 
 
 @pytest.fixture(name="previous_connector_image_name")
