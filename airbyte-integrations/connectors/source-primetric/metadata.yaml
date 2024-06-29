@@ -24,7 +24,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f636c3c6-4077-45ac-b109-19fc62a283c1
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/source-primetric
   githubIssueLabel: source-primetric
   icon: primetric.svg
