@@ -23,7 +23,6 @@ from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests.auth import AuthBase
 
-from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
@@ -39,18 +38,13 @@ class HttpStream(Stream, ABC):
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
-    # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
+    def __init__(self, authenticator: Optional[AuthBase] = None, api_budget: Optional[APIBudget] = None):
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         self._session = self.request_session()
         self._session.mount(
             "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
         )
-        self._authenticator: HttpAuthenticator = NoAuth()
-        if isinstance(authenticator, AuthBase):
-            self._session.auth = authenticator
-        elif authenticator:
-            self._authenticator = authenticator
+        self._session.auth = authenticator
 
     @property
     def cache_filename(self) -> str:
@@ -133,10 +127,6 @@ class HttpStream(Stream, ABC):
         Override if needed. Specifies factor for backoff policy.
         """
         return 5
-
-    @property
-    def authenticator(self) -> HttpAuthenticator:
-        return self._authenticator
 
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
@@ -511,10 +501,9 @@ class HttpStream(Stream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
-        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),

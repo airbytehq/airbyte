@@ -30,8 +30,8 @@ class CursorManagerTest {
                     StateTestConstants.CURSOR_RECORD_COUNT
                 ),
                 StateTestConstants.getStream(StateTestConstants.CURSOR_FIELD1),
-                { obj: DbStreamState? -> obj!!.cursor },
-                { obj: DbStreamState? -> obj!!.cursorField },
+                { obj: DbStreamState -> obj!!.cursor },
+                { obj: DbStreamState -> obj!!.cursorField },
                 CURSOR_RECORD_COUNT_FUNCTION
             )
         Assertions.assertEquals(
@@ -60,8 +60,8 @@ class CursorManagerTest {
                 StateTestConstants.NAME_NAMESPACE_PAIR1,
                 StateTestConstants.getState(StateTestConstants.CURSOR_FIELD1, null),
                 StateTestConstants.getStream(StateTestConstants.CURSOR_FIELD1),
-                { obj: DbStreamState? -> obj!!.cursor },
-                { obj: DbStreamState? -> obj!!.cursorField },
+                { obj: DbStreamState -> obj!!.cursor },
+                { obj: DbStreamState -> obj!!.cursorField },
                 CURSOR_RECORD_COUNT_FUNCTION
             )
         Assertions.assertEquals(
@@ -91,8 +91,8 @@ class CursorManagerTest {
                     StateTestConstants.CURSOR
                 ),
                 StateTestConstants.getStream(StateTestConstants.CURSOR_FIELD2),
-                { obj: DbStreamState? -> obj!!.cursor },
-                { obj: DbStreamState? -> obj!!.cursorField },
+                { obj: DbStreamState -> obj!!.cursor },
+                { obj: DbStreamState -> obj!!.cursorField },
                 CURSOR_RECORD_COUNT_FUNCTION
             )
         Assertions.assertEquals(
@@ -119,8 +119,8 @@ class CursorManagerTest {
                 StateTestConstants.NAME_NAMESPACE_PAIR1,
                 Optional.empty(),
                 StateTestConstants.getStream(StateTestConstants.CURSOR_FIELD1),
-                Function { obj: DbStreamState? -> obj!!.cursor },
-                Function { obj: DbStreamState? -> obj!!.cursorField },
+                Function { obj: DbStreamState -> obj!!.cursor },
+                Function { obj: DbStreamState -> obj!!.cursorField },
                 CURSOR_RECORD_COUNT_FUNCTION
             )
         Assertions.assertEquals(
@@ -145,8 +145,8 @@ class CursorManagerTest {
                     StateTestConstants.CURSOR
                 ),
                 Optional.empty(),
-                { obj: DbStreamState? -> obj!!.cursor },
-                { obj: DbStreamState? -> obj!!.cursorField },
+                { obj: DbStreamState -> obj!!.cursor },
+                { obj: DbStreamState -> obj!!.cursorField },
                 CURSOR_RECORD_COUNT_FUNCTION
             )
         Assertions.assertEquals(
@@ -169,8 +169,8 @@ class CursorManagerTest {
                 StateTestConstants.NAME_NAMESPACE_PAIR1,
                 Optional.empty(),
                 Optional.empty(),
-                Function { obj: DbStreamState? -> obj!!.cursor },
-                Function { obj: DbStreamState? -> obj!!.cursorField },
+                Function { obj: DbStreamState -> obj!!.cursor },
+                Function { obj: DbStreamState -> obj!!.cursorField },
                 CURSOR_RECORD_COUNT_FUNCTION
             )
         Assertions.assertEquals(CursorInfo(null, null, null, null), actual)
@@ -192,8 +192,8 @@ class CursorManagerTest {
                     StateTestConstants.CURSOR
                 ),
                 StateTestConstants.getStream(null),
-                { obj: DbStreamState? -> obj!!.cursor },
-                { obj: DbStreamState? -> obj!!.cursorField },
+                { obj: DbStreamState -> obj!!.cursor },
+                { obj: DbStreamState -> obj!!.cursorField },
                 CURSOR_RECORD_COUNT_FUNCTION
             )
         Assertions.assertEquals(
@@ -249,8 +249,8 @@ class CursorManagerTest {
         return CursorManager(
             StateTestConstants.getCatalog(cursorField).orElse(null),
             { setOf(dbStreamState) },
-            { obj: DbStreamState? -> obj!!.cursor },
-            { obj: DbStreamState? -> obj!!.cursorField },
+            { obj: DbStreamState -> obj!!.cursor },
+            { obj: DbStreamState -> obj!!.cursorField },
             CURSOR_RECORD_COUNT_FUNCTION,
             { nameNamespacePair },
             false

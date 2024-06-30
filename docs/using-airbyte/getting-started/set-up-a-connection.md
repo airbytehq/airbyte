@@ -17,7 +17,7 @@ Once you've chosen your source and destination you can configure the connection.
 
 Most users select "Mirror Source", which will simply copy the data from the source to the destination where you'll see one row in the destination for each row in the source. If you prefer to Append Historical Changes or take a Full Snapshot with each sync, you can optionally select those options, but keep in mind those will create duplicate records in your destination. The sync mode we choose for all the enabled streams will reflect your selection here.
 
-<Arcade id="9E7CQiWoHtFvB12Yd5zN" title="Getting Started (Select Streams)" />
+<Arcade id="9E7CQiWoHtFvB12Yd5zN" title="Getting Started (Select Streams)" paddingBottom="calc(61.37931034482759% + 41px)" />
 
 Next, you can toggle which streams you want to replicate. Our test data consists of three streams, which we've enabled and set to `Incremental - Append + Deduped` sync mode.
 
@@ -30,7 +30,7 @@ You can also select individual fields to sync on this page. Expand the fields av
 
 Click **Next** to complete your stream setup and move to the connection configuration. This is where you'll set up how often your data will sync and where it will live in the destination. For this demo, we'll set the connection to run at 8 AM every day and sync the connection to a custom namespace with a stream prefix.
 
-<Arcade id="KdySgaUBwroRxkYLnemX" title="Getting Started (Configure Connection)" />
+<Arcade id="KdySgaUBwroRxkYLnemX" title="Getting Started (Configure Connection)" paddingBottom="calc(61.37931034482759% + 41px)" />
 
 :::note
 To ensure your data is synced to the correct place, see our examples for [Destination Namespace](/using-airbyte/core-concepts/namespaces.md)
@@ -80,6 +80,8 @@ If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](
 ## What's next?
 
 Congratulations on successfully setting up your first connection using Airbyte! We hope that this will be just the first step on your journey with us. We support a large, ever-growing [catalog of sources and destinations](/integrations/), and you can even [contribute your own](/connector-development/).
+
+If you'd like an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
 
 If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). If you would like to see a missing feature or connector added, please create an issue on our [Github](https://github.com/airbytehq/airbyte). Our community's participation is invaluable in helping us grow and improve every day, and we always welcome your feedback.
 

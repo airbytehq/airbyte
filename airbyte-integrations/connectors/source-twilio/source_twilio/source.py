@@ -3,10 +3,10 @@
 #
 
 import datetime
+import logging
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -52,7 +52,7 @@ RETENTION_WINDOW_LIMIT = 400
 
 
 class SourceTwilio(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             auth = HttpBasicAuthenticator(
                 (

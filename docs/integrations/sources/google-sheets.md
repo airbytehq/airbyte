@@ -161,8 +161,18 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.5.8   | 2024-06-28 | [40587](https://github.com/airbytehq/airbyte/pull/40587) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.5.7   | 2024-06-25 | [40560](https://github.com/airbytehq/airbyte/pull/40560) | Catch an auth error during discover and raise a config error                      |
+| 0.5.6   | 2024-06-26 | [40533](https://github.com/airbytehq/airbyte/pull/40533) | Update dependencies                                                               |
+| 0.5.5   | 2024-06-25 | [40505](https://github.com/airbytehq/airbyte/pull/40505) | Update dependencies                                                               |
+| 0.5.4   | 2024-06-22 | [40129](https://github.com/airbytehq/airbyte/pull/40129) | Update dependencies                                                               |
+| 0.5.3   | 2024-06-06 | [39225](https://github.com/airbytehq/airbyte/pull/39225) | [autopull] Upgrade base image to v1.2.2                                           |
+| 0.5.2   | 2024-06-02 | [38851](https://github.com/airbytehq/airbyte/pull/38851) | Emit state message at least once per stream                                       |
 | 0.5.1   | 2024-04-11 | [35404](https://github.com/airbytehq/airbyte/pull/35404) | Add `row_batch_size` parameter more granular control read records                 |
 | 0.5.0   | 2024-03-26 | [36515](https://github.com/airbytehq/airbyte/pull/36515) | Resolve poetry dependency conflict, add record counts to state messages           |
 | 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                   |
@@ -218,5 +228,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 | 0.1.6   | 2021-01-27 | [1668](https://github.com/airbytehq/airbyte/pull/1668)   | Adopt connector best practices                                                    |
 | 0.1.5   | 2020-12-30 | [1438](https://github.com/airbytehq/airbyte/pull/1438)   | Implement backoff                                                                 |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                           |
+
+</details>
 
 </HideInUI>

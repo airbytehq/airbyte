@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, Optional, Type, Union
 
-import dpath.util
+import dpath
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, FieldPointer, Record, StreamSlice, StreamState
@@ -122,7 +122,7 @@ class AddFields(RecordTransformation):
         for parsed_field in self._parsed_fields:
             valid_types = (parsed_field.value_type,) if parsed_field.value_type else None
             value = parsed_field.value.eval(config, valid_types=valid_types, **kwargs)
-            dpath.util.new(record, parsed_field.path, value)
+            dpath.new(record, parsed_field.path, value)
 
         return record
 

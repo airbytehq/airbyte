@@ -83,8 +83,13 @@ _NOTE_: MQTT version 5 is not supported yet.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
 | 0.1.3   | 2022-09-02 | [16263](https://github.com/airbytehq/airbyte/pull/16263) | Marked password field in spec as airbyte_secret |
 | 0.1.2   | 2022-07-12 | [14648](https://github.com/airbytehq/airbyte/pull/14648) | Include lifecycle management                    |
 | 0.1.1   | 2022-05-24 | [13099](https://github.com/airbytehq/airbyte/pull/13099) | Fixed build's tests                             |
+
+</details>

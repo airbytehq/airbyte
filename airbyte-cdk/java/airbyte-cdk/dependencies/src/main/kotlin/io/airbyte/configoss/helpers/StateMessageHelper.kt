@@ -58,14 +58,14 @@ object StateMessageHelper {
                 }
             } else {
                 if (
-                    stateMessages.stream().allMatch { stateMessage: AirbyteStateMessage ->
+                    stateMessages.all { stateMessage: AirbyteStateMessage ->
                         stateMessage.type == AirbyteStateMessage.AirbyteStateType.STREAM
                     }
                 ) {
                     return Optional.of(provideStreamState(stateMessages))
                 }
                 if (
-                    stateMessages.stream().allMatch { stateMessage: AirbyteStateMessage ->
+                    stateMessages.all { stateMessage: AirbyteStateMessage ->
                         stateMessage.type == null
                     }
                 ) {

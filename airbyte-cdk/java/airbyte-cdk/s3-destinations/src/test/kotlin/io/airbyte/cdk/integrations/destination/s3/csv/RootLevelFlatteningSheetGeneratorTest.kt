@@ -61,7 +61,7 @@ class RootLevelFlatteningSheetGeneratorTest {
         private val SCHEMA: ObjectNode = MAPPER.createObjectNode()
 
         init {
-            val fields: List<String?> = listOf("C", "B", "A", "c", "b", "a").shuffled()
+            val fields: List<String> = listOf("C", "B", "A", "c", "b", "a").shuffled()
 
             val schemaProperties = MAPPER.createObjectNode()
             for (field in fields) {

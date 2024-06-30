@@ -6,14 +6,15 @@ package io.airbyte.cdk.integrations.debezium.internals
 import io.airbyte.cdk.db.DataTypeUtils.toISO8601String
 import io.airbyte.cdk.db.DataTypeUtils.toISO8601StringWithMicroseconds
 import io.debezium.spi.converter.RelationalColumn
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DebeziumConverterUtils private constructor() {
     init {
@@ -21,7 +22,6 @@ class DebeziumConverterUtils private constructor() {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DebeziumConverterUtils::class.java)
 
         /** TODO : Replace usage of this method with [io.airbyte.cdk.db.jdbc.DateTimeConverter] */
         @JvmStatic
@@ -51,14 +51,13 @@ class DebeziumConverterUtils private constructor() {
                 try {
                     return LocalDateTime.parse(input).toString()
                 } catch (e: DateTimeParseException) {
-                    LOGGER.warn("Cannot convert value '{}' to LocalDateTime type", input)
+                    LOGGER.warn { "Cannot convert value '$input' to LocalDateTime type" }
                     return input.toString()
                 }
             }
-            LOGGER.warn(
-                "Uncovered date class type '{}'. Use default converter",
-                input.javaClass.name
-            )
+            LOGGER.warn {
+                "Uncovered date class type '${input.javaClass.name}'. Use default converter"
+            }
             return input.toString()
         }
 

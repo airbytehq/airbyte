@@ -85,8 +85,15 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                      |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.22 | 2024-06-29 | [40633](https://github.com/airbytehq/airbyte/pull/40633) | Update dependencies |
+| 0.2.21 | 2024-06-25 | [40274](https://github.com/airbytehq/airbyte/pull/40274) | Update dependencies |
+| 0.2.20 | 2024-06-22 | [40109](https://github.com/airbytehq/airbyte/pull/40109) | Update dependencies |
+| 0.2.19 | 2024-06-06 | [39212](https://github.com/airbytehq/airbyte/pull/39212) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.18 | 2024-05-15 | [38272](https://github.com/airbytehq/airbyte/pull/38272) | Replace AirbyteLogger with logging.Logger |
 | 0.2.17  | 2024-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333)  | Update CDK & pytest version to fix security vulnerabilities.                                                                                 |
 | 0.2.16  | 2024-03-22 | [#35911](https://github.com/airbytehq/airbyte/pull/35911)  | Fix tests and move to Poetry                                                                                                                 |
@@ -108,3 +115,5 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 | 0.2.0   | 2023-09-22 | [#30151](https://github.com/airbytehq/airbyte/pull/30151)  | Add embedding capabilities, overwrite and dedup support and API key auth mode, make certified. 🚨 Breaking changes - check migrations guide. |
 | 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects             |
 | 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                                                                                                                     |
+
+</details>

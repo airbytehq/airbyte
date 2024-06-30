@@ -40,7 +40,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   static final String DOUBLE_QUOTES_PATTERN = "\"";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
   static final String MONGODB_CONNECTION_MODE_KEY = "mongodb.connection.mode";
-  static final String MONGODB_CONNECTION_MODE_VALUE = "replica_set";
+  static final String MONGODB_CONNECTION_MODE_VALUE = "sharded";
   static final String MONGODB_CONNECTION_STRING_KEY = "mongodb.connection.string";
   static final String MONGODB_PASSWORD_KEY = "mongodb.password";
   static final String MONGODB_SSL_ENABLED_KEY = "mongodb.ssl.enabled";
@@ -49,8 +49,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
-                                          final ConfiguredAirbyteCatalog catalog) {
-    super(properties, config, catalog);
+                                          final ConfiguredAirbyteCatalog catalog,
+                                          final List<String> streamNames) {
+    super(properties, config, catalog, streamNames);
   }
 
   @Override
@@ -82,20 +83,21 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   }
 
   @Override
-  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
+  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final List<String> cdcStreamNames) {
     final Properties properties = new Properties();
 
     // Database/collection selection
-    properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams()));
+    properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams(), cdcStreamNames));
     properties.setProperty(DATABASE_INCLUDE_LIST_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
     properties.setProperty(CAPTURE_TARGET_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
 
     return properties;
   }
 
-  protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams) {
+  protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams, final List<String> cdcStreamNames) {
     return streams.stream()
         .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
+        .filter(s -> cdcStreamNames.contains(s))
         .collect(Collectors.joining(","));
   }
 

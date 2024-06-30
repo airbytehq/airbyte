@@ -1,0 +1,181 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "attachment_permissions": {
+      "type": "object"
+    },
+    "auto_integrate_repair_order_status": {
+      "type": ["string", "null"]
+    },
+    "invoice": {
+      "type": ["object", "null"]
+    },
+    "warranty_credits_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "warranty_credits_percentage": {
+      "type": ["string", "null"]
+    },
+    "warranty_credits_type": {
+      "type": ["string", "null"]
+    },
+    "labor_subtotal_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "parts_subtotal_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "subtotal_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "discout_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "tax_1_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "tax_2_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "total_amount_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "warrant_credits_cents": {
+      "type": ["string", "number", "null"]
+    },
+    "comments_count": {
+      "type": "number"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "discount": {
+      "type": ["null", "number"]
+    },
+    "discount_percentage": {
+      "type": ["null", "string"]
+    },
+    "fees_cents": {
+      "type": ["number", "null"]
+    },
+    "discount_type": {
+      "type": "string"
+    },
+    "discount_cents": {
+      "type": ["number", "string", "null"]
+    },
+    "documents_count": {
+      "type": "number"
+    },
+    "general_notes": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": "number"
+    },
+    "images_count": {
+      "type": "number"
+    },
+    "is_sample": {
+      "type": "boolean"
+    },
+    "labels": {
+      "items": {
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "labor_subtotal": {
+      "type": ["null", "number"]
+    },
+    "primary_meter_entry": {
+      "type": ["object", "null"]
+    },
+    "secondary_meter_entry": {
+      "type": ["object", "null"]
+    },
+    "parts_subtotal": {
+      "type": ["null", "number"]
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "started_at": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": "string"
+    },
+    "tax_1": {
+      "type": ["null", "number"]
+    },
+    "tax_1_percentage": {
+      "type": ["null", "string"]
+    },
+    "tax_1_type": {
+      "type": ["null", "string"]
+    },
+    "tax_2": {
+      "type": ["null", "number"]
+    },
+    "tax_2_percentage": {
+      "type": ["null", "string"]
+    },
+    "tax_2_type": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "vehicle_id": {
+      "type": "number"
+    },
+    "vehicle": {
+      "type": ["object", "null"]
+    },
+    "vendor_id": {
+      "type": ["null", "number"]
+    },
+    "vendor_name": {
+      "type": ["null", "string"]
+    },
+    "vendor": {
+      "type": ["object", "null"]
+    },
+    "vmrs_repair_priority_class": {
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "work_order_id": {
+      "type": ["null", "number"]
+    },
+    "work_order_number": {
+      "type": ["null", "number"]
+    }
+  }
+}

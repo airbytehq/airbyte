@@ -17,6 +17,8 @@ NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME = "output.json"
 NIGHTLY_GHA_WORKFLOW_ID = "connector_nightly_builds_dagger.yml"
 CI_TEST_REPORT_PREFIX = "airbyte-ci/connectors/test"
 CI_MASTER_TEST_OUTPUT_REGEX = f".*master.*output.json$"
+ANALYTICS_BUCKET = "ab-analytics-connector-metrics"
+ANALYTICS_FOLDER = "data/connector_quality_metrics"
 
 CONNECTOR_REPO_NAME = "airbytehq/airbyte"
 CONNECTORS_PATH = "airbyte-integrations/connectors"

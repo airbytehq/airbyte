@@ -3,8 +3,10 @@
 #
 
 
+from abc import ABC
 from lib2to3.pgen2.literals import test
 from typing import Any, List, Mapping, Optional
+from unittest import TestCase
 
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -12,6 +14,7 @@ from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalo
 from source_recharge import SourceRecharge
 
 from .config import ConfigBuilder
+from .request_builder import RequestBuilder
 
 
 def config() -> ConfigBuilder:
@@ -71,3 +74,14 @@ def get_cursor_value_from_state_message(
     cursor_field: Optional[str] = None,
 ) -> str:
     return dict(test_output.most_recent_state.stream_state).get(cursor_field)
+
+
+class StreamTestCase(TestCase, ABC):
+    _STREAM_NAME: str
+
+    def setUp(self):
+        self._access_token = "an_access_token"
+        self._config = config().with_access_token(self._access_token)
+
+    def stream_request(self):
+        return RequestBuilder.get_endpoint(self._STREAM_NAME).with_access_token(self._access_token)
