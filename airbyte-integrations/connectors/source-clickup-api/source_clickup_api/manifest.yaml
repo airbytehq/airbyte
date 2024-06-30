@@ -137,5 +137,3 @@ streams:
           type: RequestOption
           field_name: "page"
           inject_into: "request_parameter"
-
-
