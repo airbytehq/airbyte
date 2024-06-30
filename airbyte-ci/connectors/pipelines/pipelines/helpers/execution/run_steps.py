@@ -177,7 +177,10 @@ def _step_dependencies_succeeded(step_to_eval: StepToRun, results: RESULTS_DICT)
                 f"Step {step_to_eval.id} depends on {step_id} which has not been run yet. This implies that the order of the steps is not correct. Please check that the steps are in the correct order."
             )
 
-    return all(results[step_id] and results[step_id].status is StepStatus.SUCCESS for step_id in step_to_eval.depends_on)
+    return all(
+        results[step_id] and (results[step_id].status is StepStatus.SUCCESS or not results[step_id].consider_in_overall_status)
+        for step_id in step_to_eval.depends_on
+    )
 
 
 def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: RESULTS_DICT) -> Tuple[STEP_TREE, RESULTS_DICT]:
@@ -301,7 +304,7 @@ async def run_steps(
         options.log_step_tree = False
 
     # If any of the previous steps failed, skip the remaining steps
-    if options.fail_fast and any(result.status is StepStatus.FAILURE for result in results.values()):
+    if options.fail_fast and any(result.status is StepStatus.FAILURE and result.consider_in_overall_status for result in results.values()):
         skipped_results = _skip_remaining_steps(runnables)
         return {**results, **skipped_results}
 

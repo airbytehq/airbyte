@@ -6,6 +6,10 @@
       "description": "The unique identifier of the assigned location",
       "type": ["null", "integer"]
     },
+    "channel_id": {
+      "description": "The ID of the channel that created an order",
+      "type": ["null", "string"]
+    },
     "destination": {
       "description": "Details of the destination where the order is to be fulfilled",
       "type": ["null", "object"],

@@ -287,18 +287,8 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     return@filter false
                 }
                 // Skip if we don't have any records for this stream.
-                val streamSyncSummary =
-                    streamSyncSummaries.getOrDefault(
-                        streamConfig.id.asStreamDescriptor(),
-                        StreamSyncSummary.DEFAULT
-                    )
-                val nonzeroRecords =
-                    streamSyncSummary.recordsWritten
-                        .map { r: Long ->
-                            r > 0
-                        } // If we didn't track record counts during the sync, assume we had nonzero
-                        // records for this stream
-                        .orElse(true)
+                val streamSyncSummary = streamSyncSummaries[streamConfig.id.asStreamDescriptor()]!!
+                val nonzeroRecords = streamSyncSummary.recordsWritten > 0
                 val unprocessedRecordsPreexist =
                     initialRawTableStateByStream[streamConfig.id]!!.hasUnprocessedRecords
                 // If this sync emitted records, or the previous sync left behind some unprocessed

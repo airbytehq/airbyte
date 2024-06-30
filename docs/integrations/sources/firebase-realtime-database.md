@@ -72,10 +72,21 @@ You should now have all the requirements needed to configure Firebase Realtime D
 
 Once you've configured Firebase Realtime Database as a source, delete the Service Account Key from your computer.
 
-## CHANGELOG
+## Changelog
 
-### source-firebase-realtime-database
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.8 | 2024-06-29 | [40628](https://github.com/airbytehq/airbyte/pull/40628) | Update dependencies |
+| 0.1.7 | 2024-06-26 | [40538](https://github.com/airbytehq/airbyte/pull/40538) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40328](https://github.com/airbytehq/airbyte/pull/40328) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40181](https://github.com/airbytehq/airbyte/pull/40181) | Update dependencies |
+| 0.1.4 | 2024-06-06 | [39200](https://github.com/airbytehq/airbyte/pull/39200) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.3 | 2024-06-03 | [38910](https://github.com/airbytehq/airbyte/pull/38910) | Replace AirbyteLogger with logging.Logger |
+| 0.1.2 | 2024-06-03 | [38910](https://github.com/airbytehq/airbyte/pull/38910) | Replace AirbyteLogger with logging.Logger |
+| 0.1.1 | 2024-05-20 | [38416](https://github.com/airbytehq/airbyte/pull/38416) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-16 | [\#18029](https://github.com/airbytehq/airbyte/pull/18029) | 🎉 New Source: Firebase Realtime Database. |
+
+</details>
