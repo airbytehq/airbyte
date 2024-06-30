@@ -20,7 +20,7 @@ This page contains the setup guide and reference information for the [Clazar](ht
 **For Airbyte Cloud:**
 
 1. Generate client credentials by visiting the [API access page](https://app.clazar.io/settings/api-access). 
-2. Click on `Create API Credentials` in `Integration Type` select **Airbyte** and copy the `Client ID` & `Client secret`. 
+2. Click on `Create API Credentials` in `Integration Type` select **Airbyte** from dropdown and copy the `Client ID` & `Client secret`. 
 3. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 5. On the Set up the source page, select **Clazar** from the Source type dropdown and enter the name for the Clazar connector
@@ -34,7 +34,7 @@ This page contains the setup guide and reference information for the [Clazar](ht
 **For Airbyte OSS:**
 
 1. Generate client credentials by visiting the [API access page](https://app.clazar.io/settings/api-access).
-2. Click on `Create API Credentials` in `Integration Type` select **Airbyte** and copy the `Client ID` & `Client secret`.
+2. Click on `Create API Credentials` in `Integration Type` select **Airbyte** from dropdown and copy the `Client ID` & `Client secret`.
 3. Navigate to the Airbyte Open Source dashboard.
 4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 5. On the Set up the source page, select **Clazar** from the Source type dropdown and enter the name for the Clazar connector.
@@ -58,14 +58,13 @@ The Clazar source connector supports the following [sync modes](https://docs.air
 
 ## Supported Streams
 
-- Online
-  - [Listings](https://developers.clazar.io/reference/get-listings)
-  - [Private Offers](https://developers.clazar.io/reference/get-private-offers)
-  - [Buyers](https://developers.clazar.io/reference/get-buyers)
-  - [Metering](https://developers.clazar.io/reference/create-metering-record)
-  - [Contracts](https://developers.clazar.io/reference/get-contracts-1)
-  - Opportunities
-- Offline (Analytics)
+
+- [Listings](https://developers.clazar.io/reference/get-listings)
+- [Private Offers](https://developers.clazar.io/reference/get-private-offers)
+- [Buyers](https://developers.clazar.io/reference/get-buyers)
+- [Contracts](https://developers.clazar.io/reference/get-contracts-1)
+- Opportunities
+- Analytics
   - AWS
     - Disbursement
     - Revenue
@@ -96,7 +95,7 @@ Expand to see details about Clazar connector limitations and troubleshooting.
 
 #### Rate limiting
 
-Clazar Analytics has the rate limits of (30/minute), but the connector should not run into API limitations under normal usage.
+Clazar Analytics APIs has the rate limits of (30/minute) and for other APIs it's (120/minute), but the connector should not run into API limitations under normal usage.
 
 Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
