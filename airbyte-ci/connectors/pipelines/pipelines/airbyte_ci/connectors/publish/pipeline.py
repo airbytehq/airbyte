@@ -123,7 +123,7 @@ class UploadDependenciesToMetadataService(Step):
             file,
             key,
             self.context.metadata_bucket_name,
-            self.context.metadata_service_gcs_credentials_secret,
+            self.context.metadata_service_gcs_credentials,
             flags=['--cache-control="no-cache"'],
         )
         if exit_code != 0:
@@ -282,7 +282,7 @@ class UploadSpecToCache(Step):
                 file,
                 key,
                 self.context.spec_cache_bucket_name,
-                self.context.spec_cache_gcs_credentials_secret,
+                self.context.spec_cache_gcs_credentials,
                 flags=['--cache-control="no-cache"'],
             )
             if exit_code != 0:
@@ -309,9 +309,9 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     metadata_upload_step = MetadataUpload(
         context=context,
-        metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
-        docker_hub_username_secret=context.docker_hub_username_secret,
-        docker_hub_password_secret=context.docker_hub_password_secret,
+        metadata_service_gcs_credentials=context.metadata_service_gcs_credentials,
+        docker_hub_username=context.docker_hub_username,
+        docker_hub_password=context.docker_hub_password,
         metadata_bucket_name=context.metadata_bucket_name,
         pre_release=context.pre_release,
         pre_release_tag=context.docker_image_tag,

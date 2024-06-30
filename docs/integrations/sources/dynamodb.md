@@ -73,6 +73,9 @@ the underlying role executing the container workload in AWS.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                              |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
 | 0.3.2   | 2024-05-01 | [27045](https://github.com/airbytehq/airbyte/pull/27045)  | Fix missing scan permissions                                         |
@@ -85,3 +88,5 @@ the underlying role executing the container workload in AWS.
 | 0.1.2   | 01-19-2023 | https://github.com/airbytehq/airbyte/pull/20172           | Fix reserved words in projection expression & make them configurable |
 | 0.1.1   | 02-09-2023 | https://github.com/airbytehq/airbyte/pull/22682           | Fix build                                                            |
 | 0.1.0   | 11-14-2022 | https://github.com/airbytehq/airbyte/pull/18750           | Initial version                                                      |
+
+</details>

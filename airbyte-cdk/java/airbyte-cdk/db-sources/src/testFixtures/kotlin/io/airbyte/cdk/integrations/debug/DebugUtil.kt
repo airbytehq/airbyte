@@ -35,7 +35,7 @@ object DebugUtil {
         debugSource.discover(debugConfig)
 
         val messageIterator = debugSource.read(debugConfig, configuredAirbyteCatalog, state)
-        messageIterator.forEachRemaining { message: AirbyteMessage? -> }
+        messageIterator.forEachRemaining { message: AirbyteMessage -> }
     }
 
     @get:Throws(Exception::class)

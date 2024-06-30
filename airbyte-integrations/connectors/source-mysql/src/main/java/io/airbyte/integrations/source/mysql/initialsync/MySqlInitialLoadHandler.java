@@ -12,12 +12,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -26,15 +29,8 @@ import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -62,6 +58,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
 
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
+  private long MAX_CHUNK_SIZE = Long.MAX_VALUE;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MySqlInitialLoadHandler(final JsonNode config,
@@ -78,12 +75,24 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
     this.initialLoadStateManager = initialLoadStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tableSizeInfoMap = tableSizeInfoMap;
+    adjustChunkSizeLimitForMySQLVariants();
+  }
+
+  private void adjustChunkSizeLimitForMySQLVariants() {
+    // For PSDB, we need to limit the chunk size to 100k rows to avoid the query being killed by the
+    // server.
+    // Reference:
+    // https://planetscale.com/docs/reference/planetscale-system-limits
+    if (config.get(JdbcUtils.HOST_KEY).asText().toLowerCase().contains("psdb.cloud"))
+      MAX_CHUNK_SIZE = 100_000;
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                                                             final Instant emittedAt) {
+                                                                             final Instant emittedAt,
+                                                                             final boolean decorateWithStartedStatus,
+                                                                             final boolean decorateWithCompletedStatus) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -93,7 +102,16 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
       if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
         final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
         final TableInfo<CommonField<MysqlType>> table = tableNameToTable.get(fullyQualifiedTableName);
+        if (decorateWithStartedStatus) {
+          iteratorList.add(
+              new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+        }
+
         iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
+        if (decorateWithCompletedStatus) {
+          iteratorList.add(new StreamStatusTraceEmitterIterator(
+              new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+        }
       }
     }
     return iteratorList;
@@ -116,12 +134,12 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         .collect(Collectors.toList());
     final AutoCloseableIterator<AirbyteRecordData> queryStream =
         new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-            calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
+            Long.min(calculateChunkSize(tableSizeInfoMap.get(pair), pair), MAX_CHUNK_SIZE), isCompositePrimaryKey(airbyteStream));
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
-    return augmentWithLogs(recordAndMessageIterator, pair, streamName);
 
+    return augmentWithLogs(recordAndMessageIterator, pair, streamName);
   }
 
   private static boolean isCompositePrimaryKey(final ConfiguredAirbyteStream stream) {

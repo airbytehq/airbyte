@@ -151,7 +151,7 @@ ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
 
 In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
-ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.
+ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non-TOAST-able primary keys (integers, varchars, etc), and there will only be a [modest increase in resource utilization, in addition to increased WAL storage size](https://xata.io/blog/replica-identity-full-performance).
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
@@ -191,8 +191,7 @@ This is a good solution if:
 
 - There is not a well-defined cursor candidate to use for Standard incremental mode.
 - You want to replace a previously configured full-refresh sync.
-- You are replicating Postgres tables less than 500GB.
-- Your database doesn't incur heavy writes that would lead to transaction ID wrap around
+- Your database doesn't incur heavy writes that would lead to transaction ID wraparound.
 - You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication.
 
 ## Connecting with SSL or SSH Tunneling
@@ -250,7 +249,7 @@ The command produces the private key in PEM format and the public key remains in
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
+To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting).
 
 ## Data type mapping
 
@@ -307,8 +306,26 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.4.20  | 2024-06-23 | [40559](https://github.com/airbytehq/airbyte/pull/40559) | Remove strict check for stream states of unknown types                                                                                                                     |
+| 3.4.19  | 2024-06-23 | [40223](https://github.com/airbytehq/airbyte/pull/40223) | Revert the changes introduced in version 3.4.15.                                                                                                                           |
+| 3.4.18  | 2024-06-14 | [39349](https://github.com/airbytehq/airbyte/pull/39349) | Full refresh stream sending internal count metadata.                                                                                                                       |
+| 3.4.17  | 2024-06-13 | [39460](https://github.com/airbytehq/airbyte/pull/39460) | Bump postgres JDBC driver version                                                                                                                                          |
+| 3.4.16  | 2024-05-29 | [39474](https://github.com/airbytehq/airbyte/pull/39474) | Adopt latest CDK.                                                                                                                                                          |
+| 3.4.15  | 2024-05-29 | [38773](https://github.com/airbytehq/airbyte/pull/38773) | Connect with adaptiveFetch=true.                                                                                                                                           |
+| 3.4.14  | 2024-06-08 | [39353](https://github.com/airbytehq/airbyte/pull/39353) | Upgrade Debezium to 2.6.2                                                                                                                                                  |
+| 3.4.13  | 2024-06-04 | [38875](https://github.com/airbytehq/airbyte/pull/38875) | read() throws config exception upon detecting transaction ID wraparound.                                                                                                   |
+| 3.4.12  | 2024-06-04 | [38836](https://github.com/airbytehq/airbyte/pull/38836) | check() throws config error upon detecting transaction ID wraparound.                                                                                                      |
+| 3.4.11  | 2024-06-04 | [38848](https://github.com/airbytehq/airbyte/pull/38848) | Improve UI message and doc on xmin                                                                                                                                         |
+| 3.4.10  | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                                                                                         |
+| 3.4.9   | 2024-05-29 | [38775](https://github.com/airbytehq/airbyte/pull/38775) | Publish CDK                                                                                                                                                                |
+| 3.4.9   | 2024-05-28 | [38716](https://github.com/airbytehq/airbyte/pull/38716) | Publish CDK                                                                                                                                                                |
+| 3.4.8   | 2024-05-28 | [38716](https://github.com/airbytehq/airbyte/pull/38716) | Stream status for postgres                                                                                                                                                 |
+| 3.4.7   | 2024-05-20 | [38365](https://github.com/airbytehq/airbyte/pull/38365) | Rollback a previously version (3.4.6)                                                                                                                                      |
 | 3.4.5   | 2024-05-16 | [38303](https://github.com/airbytehq/airbyte/pull/38303) | Streams not in the CDC publication still have a cursor and PK.                                                                                                             |
 | 3.4.4   | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208) | disable counts in full refresh stream in state message.                                                                                                                    |
 | 3.4.3   | 2024-05-13 | [38104](https://github.com/airbytehq/airbyte/pull/38104) | Handle transient error messages.                                                                                                                                           |
@@ -321,7 +338,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 3.3.30  | 2024-04-30 | [37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                                    |
 | 3.3.29  | 2024-04-23 | [37509](https://github.com/airbytehq/airbyte/pull/37509) | remove excessive logs                                                                                                                                                      |
 | 3.3.28  | 2024-04-23 | [37509](https://github.com/airbytehq/airbyte/pull/37509) | Better error messages on switching between sync modes.                                                                                                                     |
-| 3.3.27  | 2024-04-22 | [37441](https://github.com/airbytehq/airbyte/pull/37441) | Remove legacy bad values handling code.                                                                                                                                    |
+| 3.3.27  | 2024-04-22 | [37445](https://github.com/airbytehq/airbyte/pull/37445) | Remove legacy bad values handling code.                                                                                                                                    |
 | 3.3.26  | 2024-04-10 | [36982](https://github.com/airbytehq/airbyte/pull/36982) | Populate airyte_meta.changes for xmin path                                                                                                                                 |
 | 3.3.25  | 2024-04-10 | [36981](https://github.com/airbytehq/airbyte/pull/36981) | Track latest CDK                                                                                                                                                           |
 | 3.3.24  | 2024-04-10 | [36865](https://github.com/airbytehq/airbyte/pull/36865) | Track latest CDK                                                                                                                                                           |
@@ -550,3 +567,5 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172)   | Support incremental sync                                                                                                                                                   |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038)   | Change JDBC sources to discover more than standard schemas                                                                                                                 |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                                                                                                                    |
+
+</details>

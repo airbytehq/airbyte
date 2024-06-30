@@ -58,7 +58,7 @@ class Contacts(SendgridStream):
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, stream: bool = False, enable_auth: bool = True):
-        headers = self.authenticator.get_auth_header() if enable_auth else None
+        headers = self._session.auth.get_auth_header() if enable_auth else None
         response = self._session.request(method, url=url, headers=headers, stream=stream)
         if response.status_code not in [200, 202]:
             self.logger.error(f"error body: {response.text}")
@@ -159,9 +159,8 @@ class Contacts(SendgridStream):
 
         url_parsed = urlparse(url)
         tmp_file = os.path.realpath(os.path.basename(url_parsed.path[1:-5]))
-        with closing(self._send_http_request("GET", f"{url}", stream=True, enable_auth=False)) as response, open(
-            tmp_file, "wb"
-        ) as data_file:
+        download_session = requests.get(f"{url}", stream=True)
+        with closing(download_session) as response, open(tmp_file, "wb") as data_file:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 try:
                     # see if it's compressed. we are seeing some that are not all of a sudden.

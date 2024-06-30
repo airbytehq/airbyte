@@ -19,7 +19,7 @@ abstract class JdbcDestinationAcceptanceTest : DestinationAcceptanceTest() {
 
     protected fun getJsonFromRecord(
         record: Record,
-        valueParser: Function<Any?, Optional<String>>
+        valueParser: Function<Any, Optional<String>>
     ): JsonNode {
         val node = mapper.createObjectNode()
 

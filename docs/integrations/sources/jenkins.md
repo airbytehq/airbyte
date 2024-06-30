@@ -54,6 +54,9 @@ Login to your Jenkins server in your browser and go to
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                   | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------------- | :------------------------------------------------------------------- |
 | 0.1.23  | 2021-10-01 | [114](https://github.com/faros-ai/airbyte-connectors/pull/114) | Added projects stream to Phabricator + cleanup                       |
@@ -61,3 +64,5 @@ Login to your Jenkins server in your browser and go to
 | 0.1.21  | 2021-09-27 | [101](https://github.com/faros-ai/airbyte-connectors/pull/101) | Exclude tests from Docker + fix path + bump version                  |
 | 0.1.20  | 2021-09-27 | [100](https://github.com/faros-ai/airbyte-connectors/pull/100) | Update Jenkins spec + refactor + add Phabricator source skeleton     |
 | 0.1.7   | 2021-09-25 | [64](https://github.com/faros-ai/airbyte-connectors/pull/64)   | Add Jenkins source                                                   |
+
+</details>
