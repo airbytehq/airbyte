@@ -24,4 +24,3 @@ if __name__ == "__main__":
             internal_message=error_message,
             failure_type=FailureType.config_error,
         )
-
