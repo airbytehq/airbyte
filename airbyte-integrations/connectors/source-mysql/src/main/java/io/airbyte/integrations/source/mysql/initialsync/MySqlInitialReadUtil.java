@@ -46,6 +46,7 @@ import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.*;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -209,6 +210,12 @@ public class MySqlInitialReadUtil {
       stateToBeUsed = cdcState;
     }
 
+    // Debezium is started for streams that have been started - that is they have been partially or fully completed.
+    final var cdcStreamList = catalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
+        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
+
     // If there are streams to sync via primary key load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
 
@@ -218,21 +225,32 @@ public class MySqlInitialReadUtil {
           getMySqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadGlobalStateManager,
               Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
 
-      // Because initial load streams will be followed by cdc read of those stream, we only decorate with
-      // complete status trace
-      // after CDC read is done.
+      // WAL is read for completed & started streams prior to resuming initial load, so start traces will be emitted prior to that. However, if
+      // there are no completed & started stream emitted, then the initial load iterator must be decorated with them. A stream completed status
+      // is ALWAYS emitted since the reading the WAL is done prior to the initial load. One additional sync is forced by decorating the initial load
+      // iterators with a transient error.
+      final boolean decorateWithStartStatus = !cdcStreamList.isEmpty();
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
-          emittedAt, true, false));
+          emittedAt, decorateWithStartStatus, true, true));
     }
 
+    // CDC stream status messages should be emitted for streams that have been partially or fully completed.
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = catalog.getStreams().stream()
-        .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
+        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
             new AirbyteStreamStatusHolder(
                 new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
+        .toList();
+
+    final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsEndStatusEmitters = catalog.getStreams().stream()
+        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
+        .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
+            new AirbyteStreamStatusHolder(
+                new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))
         .toList();
 
     // Build the incremental CDC iterators.
@@ -243,24 +261,12 @@ public class MySqlInitialReadUtil {
         firstRecordWaitTime,
         AirbyteDebeziumHandler.QUEUE_CAPACITY,
         false);
-    final var cdcStreamList = catalog.getStreams().stream()
-        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
-        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
         MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, cdcStreamList);
     final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
-
-    final List<AutoCloseableIterator<AirbyteMessage>> allStreamsCompleteStatusEmitters = catalog.getStreams().stream()
-        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-        .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
-            new AirbyteStreamStatusHolder(
-                new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))
-        .toList();
 
     // This starts processing the binglogs as soon as initial sync is complete, this is a bit different
     // from the current cdc syncs.
@@ -271,14 +277,24 @@ public class MySqlInitialReadUtil {
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream
+                  .of(initialLoadIterator)
+                  .flatMap(Collection::stream)
+                  .collect(Collectors.toList()),
+              AirbyteTraceMessageUtility::emitStreamStatusTrace));
+    } else if (initialLoadIterator.isEmpty()) {
+      LOGGER.info("Initial load has finished completely - only reading the WAL");
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(
+              Stream
                   .of(
-                      initialLoadIterator,
-                      allStreamsCompleteStatusEmitters)
+                      cdcStreamsStartStatusEmitters,
+                      Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+                      cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
     } else {
-      LOGGER.info("Including the CDC read altogether cdc streams have been completed");
+      LOGGER.info("Initial load is in progress - reading WAL first and then resuming with initial load.");
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream
@@ -286,7 +302,7 @@ public class MySqlInitialReadUtil {
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                       initialLoadIterator,
-                      allStreamsCompleteStatusEmitters)
+                      cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
