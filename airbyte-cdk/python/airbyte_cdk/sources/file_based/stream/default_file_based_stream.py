@@ -190,39 +190,52 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         elif self.config.schemaless:
             return schemaless_schema
         else:
-            files = self.list_files()
+            if self.config.files_to_read_for_schema_discovery:
+                self.logger.info(
+                    msg=(
+                        f"Only first {self.config.files_to_read_for_schema_discovery} files will be used to infer schema "
+                        f"for stream {self.name} due to limitation in config."
+                    )
+                )
+
+            files = self.list_files(number_of_files=self.config.files_to_read_for_schema_discovery)
             total_n_files = len(files)
 
-            if total_n_files == 0:
-                self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
-                return schemaless_schema
+        if total_n_files == 0:
+            self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
+            return schemaless_schema
 
-            max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
-            if total_n_files > max_n_files_for_schema_inference:
-                # Use the most recent files for schema inference, so we pick up schema changes during discovery.
-                files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
-                self.logger.warn(
-                    msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
-                )
+        max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
+        if total_n_files > max_n_files_for_schema_inference:
+            # Use the most recent files for schema inference, so we pick up schema changes during discovery.
+            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
+            self.logger.warning(
+                msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
+            )
 
-            inferred_schema = self.infer_schema(files)
+        inferred_schema = self.infer_schema(files)
 
-            if not inferred_schema:
-                raise InvalidSchemaError(
-                    FileBasedSourceError.INVALID_SCHEMA_ERROR,
-                    details=f"Empty schema. Please check that the files are valid for format {self.config.format}",
-                    stream=self.name,
-                )
+        if not inferred_schema:
+            raise InvalidSchemaError(
+                FileBasedSourceError.INVALID_SCHEMA_ERROR,
+                details=f"Empty schema. Please check that the files are valid for format {self.config.format}",
+                stream=self.name,
+            )
 
-            schema = {"type": "object", "properties": inferred_schema}
+        schema = {"type": "object", "properties": inferred_schema}
 
         return schema
 
-    def get_files(self) -> Iterable[RemoteFile]:
+    def get_files(self, number_of_files: Optional[int] = None) -> Iterable[RemoteFile]:
         """
-        Return all files that belong to the stream as defined by the stream's globs.
+        Return the first `number_of_files` files if `number_of_files` is defined, otherwise all files
+        that belong to the stream as defined by the stream's globs.
         """
-        return self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
+        matching_files = self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
+
+        if number_of_files:
+            return matching_files[:number_of_files]
+        return matching_files
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()

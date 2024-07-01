@@ -181,6 +181,8 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         self._parser.infer_schema.return_value = {"data": {"type": "string"}}
         files = [RemoteFile(uri=f"file{i}", last_modified=self._NOW) for i in range(10)]
         self._stream_reader.get_matching_files.return_value = files
+        self._stream.config.files_to_read_for_schema_discovery = 3
+
 
         schema = self._stream.get_json_schema()
 
