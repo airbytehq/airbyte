@@ -65,7 +65,7 @@ class DataTypeEnforcer:
 
     @staticmethod
     def _transform_number(value: Any):
-        return Decimal(value)
+        return float(Decimal(value))
 
     @staticmethod
     def _transform_string(value: Any):
