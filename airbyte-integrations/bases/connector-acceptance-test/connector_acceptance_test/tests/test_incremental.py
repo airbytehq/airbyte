@@ -4,9 +4,12 @@
 
 import json
 import re
+from logging import Logger
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
+from uuid import uuid4
 
+import dagger
 import pytest
 from airbyte_protocol.models import (
     AirbyteMessage,
@@ -19,7 +22,7 @@ from airbyte_protocol.models import (
     Type,
 )
 from connector_acceptance_test import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.config import ClientContainerConfig, Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
 from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 from deepdiff import DeepDiff
@@ -132,6 +135,9 @@ class TestIncremental(BaseTest):
         connector_config: SecretDict,
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
         docker_runner: ConnectorRunner,
+        client_container: Optional[dagger.Container],
+        client_container_config: Optional[ClientContainerConfig],
+        detailed_logger: Logger,
     ):
         """
         This test makes two calls to the read method and verifies that the records returned are different.
@@ -172,6 +178,12 @@ class TestIncremental(BaseTest):
             state_input = states_1[-1].state.data
 
         # READ #2
+        if client_container and client_container_config.between_syncs_command:
+            detailed_logger.info(
+                await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
+                .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
+                .stdout()
+            )
 
         output_2 = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
         records_2 = filter_output(output_2, type_=Type.RECORD)
@@ -182,7 +194,14 @@ class TestIncremental(BaseTest):
         ), f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
 
     async def test_read_sequential_slices(
-        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner
+        self,
+        inputs: IncrementalConfig,
+        connector_config,
+        configured_catalog_for_incremental,
+        docker_runner: ConnectorRunner,
+        client_container: Optional[dagger.Container],
+        client_container_config: Optional[ClientContainerConfig],
+        detailed_logger: Logger,
     ):
         """
         Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
@@ -226,6 +245,13 @@ class TestIncremental(BaseTest):
                 state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
                     state_message, mutating_stream_name_to_per_stream_state
                 )
+
+                if client_container and client_container_config.between_syncs_command:
+                    detailed_logger.info(
+                        await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
+                        .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
+                        .stdout()
+                    )
 
                 output_N = await docker_runner.call_read_with_state(
                     connector_config, configured_catalog_for_incremental_per_stream, state=state_input

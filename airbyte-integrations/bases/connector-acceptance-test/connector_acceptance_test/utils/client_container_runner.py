@@ -56,10 +56,12 @@ async def _run(container: dagger.Container, command: List[str]) -> dagger.Contai
     return await container.with_exec(command, skip_entrypoint=True)
 
 
-async def do_setup(
-    dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path, command: List[str], connector_config: SecretDict
-):
-    return await _run_with_config(await _build_client_container(dagger_client, connector_path, dockerfile_path), command, connector_config)
+async def get_client_container(dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path):
+    return await _build_client_container(dagger_client, connector_path, dockerfile_path)
+
+
+async def do_setup(container: dagger.Container, command: List[str], connector_config: SecretDict):
+    return await _run_with_config(container, command, connector_config)
 
 
 async def do_teardown(container: dagger.Container, command: List[str]):

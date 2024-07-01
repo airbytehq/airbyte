@@ -20,22 +20,22 @@ import pytest
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
+    ClientContainerConfig,
     Config,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
     IgnoredFieldsConfiguration,
-    SetupTeardownConfig,
 )
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
     SecretDict,
     build_configured_catalog_from_custom_catalog,
     build_configured_catalog_from_discovered_catalog_and_empty_streams,
+    client_container_runner,
     connector_runner,
     filter_output,
     load_config,
     load_yaml_or_json_path,
-    setup_and_teardown_runner,
 )
 
 
@@ -131,8 +131,8 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
     return SecretDict(json.loads(contents))
 
 
-@pytest.fixture(name="setup_teardown_dockerfile_config")
-def setup_teardown_dockerfile_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[SetupTeardownConfig]:
+@pytest.fixture(name="client_container_config")
+def client_container_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[ClientContainerConfig]:
     """Fixture with connector's setup/teardown Dockerfile path, if it exists."""
     if hasattr(inputs, "setup_teardown_config") and inputs.setup_teardown_config:
         return inputs.setup_teardown_config
@@ -201,31 +201,42 @@ def docker_runner_fixture(
 
 
 @pytest.fixture(autouse=True)
-async def setup_and_teardown(
+async def client_container(
     base_path: Path,
     connector_config: SecretDict,
     dagger_client: dagger.Client,
-    setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
-):
-    setup_teardown_container = None
-    if setup_teardown_dockerfile_config:
-        logging.info("Running setup")
-        setup_teardown_container = await setup_and_teardown_runner.do_setup(
+    client_container_config: Optional[ClientContainerConfig],
+) -> Optional[dagger.Container]:
+    if client_container_config:
+        return await client_container_runner.get_client_container(
             dagger_client,
             base_path,
-            base_path / setup_teardown_dockerfile_config.setup_teardown_dockerfile_path,
-            setup_teardown_dockerfile_config.setup_command,
+            base_path / client_container_config.client_dockerfile_path,
+        )
+
+
+@pytest.fixture(autouse=True)
+async def setup_and_teardown(
+    client_container: dagger.Container,
+    connector_config: SecretDict,
+    client_container_config: Optional[ClientContainerConfig],
+):
+    if client_container:
+        logging.info("Running setup")
+        setup_teardown_container = await client_container_runner.do_setup(
+            client_container,
+            client_container_config.setup_command,
             connector_config,
         )
-        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
+        logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
     yield None
-    if setup_teardown_container:
+    if client_container:
         logging.info("Running teardown")
-        setup_teardown_container = await setup_and_teardown_runner.do_teardown(
-            setup_teardown_container,
-            setup_teardown_dockerfile_config.teardown_command,
+        setup_teardown_container = await client_container_runner.do_teardown(
+            client_container,
+            client_container_config.teardown_command,
         )
-        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {await setup_teardown_container.stdout()}")
+        logging.info(f"Teardown stdout: {await setup_teardown_container.stdout()}")
 
 
 @pytest.fixture(name="previous_connector_image_name")
