@@ -213,6 +213,7 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
+            LOGGER.error(e) { "caught exception!" }
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
             // attempt is made
             // to
