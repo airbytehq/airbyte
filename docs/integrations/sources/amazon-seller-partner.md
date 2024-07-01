@@ -178,6 +178,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 4.3.4 | 2024-06-25 | [40384](https://github.com/airbytehq/airbyte/pull/40384) | Update dependencies |
 | 4.3.3 | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008) | Update dependencies |
 | 4.3.2 | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441) | Update state handling for incremental streams |
