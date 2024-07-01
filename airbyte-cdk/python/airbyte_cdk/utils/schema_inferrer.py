@@ -86,19 +86,34 @@ class SchemaInferrer:
         """Uses the input record to add to the inferred schemas maintained by this object"""
         self.stream_to_builder[record.stream].add_object(record.data)
 
+    def _null_type_in_any_of(self, node: InferredSchema) -> bool:
+        if "anyOf" in node:
+            return {"type": _NULL_TYPE} in node["anyOf"]
+        else:
+            return False
+
+    def _remove_type_from_any_of(self, node: InferredSchema) -> InferredSchema:
+        if "anyOf" in node:
+            node.pop("type", None)
+        return node
+
     def _clean(self, node: InferredSchema) -> InferredSchema:
         """
         Recursively cleans up a produced schema:
         - remove anyOf if one of them is just a null value
         - remove properties of type "null"
         """
+
         if isinstance(node, dict):
             if "anyOf" in node:
-                if len(node["anyOf"]) == 2 and {"type": _NULL_TYPE} in node["anyOf"]:
+                if len(node["anyOf"]) == 2 and self._null_type_in_any_of(node):
                     real_type = node["anyOf"][1] if node["anyOf"][0]["type"] == _NULL_TYPE else node["anyOf"][0]
                     node.update(real_type)
                     node["type"] = [node["type"], _NULL_TYPE]
                     node.pop("anyOf")
+                # populate `type` for `anyOf` if it's not present to pass all other checks
+                elif len(node["anyOf"]) == 2 and not self._null_type_in_any_of(node):
+                    node["type"] = [_NULL_TYPE]
             if "properties" in node and isinstance(node["properties"], dict):
                 for key, value in list(node["properties"].items()):
                     if isinstance(value, dict) and value.get("type", None) == _NULL_TYPE:
@@ -116,6 +131,10 @@ class SchemaInferrer:
                 node["type"].append(_NULL_TYPE)
             else:
                 node["type"] = [node["type"], _NULL_TYPE]
+
+        # remove added `type: ["null"]` for `anyOf` nested node
+        node = self._remove_type_from_any_of(node)
+
         return node
 
     def _add_required_properties(self, node: InferredSchema) -> InferredSchema:
