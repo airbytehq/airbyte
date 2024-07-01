@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import datadog.trace.api.Trace
 import io.airbyte.cdk.integrations.util.ApmTraceUtils
+import io.airbyte.cdk.integrations.util.ConnectorExceptionTranslator
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer
 import io.airbyte.commons.features.EnvVariableFeatureFlags
@@ -110,17 +111,20 @@ internal constructor(
 
     @Trace(operationName = "RUN_OPERATION")
     @Throws(Exception::class)
-    fun run(args: Array<String>) {
+    @JvmOverloads
+    fun run(args: Array<String>,
+            exceptionTranslator: ConnectorExceptionTranslator? = null) {
         val parsed = cliParser.parse(args)
         try {
-            runInternal(parsed)
+            runInternal(parsed, exceptionTranslator)
         } catch (e: Exception) {
             throw e
         }
     }
 
     @Throws(Exception::class)
-    private fun runInternal(parsed: IntegrationConfig) {
+    private fun runInternal(parsed: IntegrationConfig,
+                            exceptionTranslator: ConnectorExceptionTranslator? = null) {
         LOGGER.info { "Running integration: ${integration.javaClass.name}" }
         LOGGER.info { "Command: ${parsed.command}" }
         LOGGER.info { "Integration config: $parsed" }
@@ -213,6 +217,10 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
+            //if (typeof e is DebeziumException) {
+             //   e = e.getFirstExcption
+            //}
+
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
             // attempt is made
             // to
@@ -220,8 +228,8 @@ internal constructor(
             // exist, we
             // just return the original exception.
             ApmTraceUtils.addExceptionToTrace(e)
-            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e)
-            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e)
+            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e, exceptionTranslator)
+            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e, exceptionTranslator)
             // If the source connector throws a config error, a trace message with the relevant
             // message should
             // be surfaced.
@@ -239,7 +247,7 @@ internal constructor(
                                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                                 .withMessage(
                                     ConnectorExceptionUtil.getDisplayMessage(
-                                        rootConfigErrorThrowable
+                                        rootConfigErrorThrowable, exceptionTranslator
                                     )
                                 )
                         )
@@ -247,17 +255,17 @@ internal constructor(
                 return
             }
 
-            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
+            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable, exceptionTranslator)) {
                 AirbyteTraceMessageUtility.emitConfigErrorTrace(
                     e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
+                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable, exceptionTranslator),
                 )
                 // On receiving a config error, the container should be immediately shut down.
                 System.exit(1)
-            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
+            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable, exceptionTranslator)) {
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(
                     e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable)
+                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable, exceptionTranslator)
                 )
                 // On receiving a transient error, the container should be immediately shut down.
                 System.exit(1)
