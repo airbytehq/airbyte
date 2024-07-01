@@ -142,7 +142,7 @@ class MssqlSourceTest {
     final String oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
         new AirbyteStream().withName(
             actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace()));
-      assertNull(oc);
+    assertNull(oc);
   }
 
 }
