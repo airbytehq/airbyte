@@ -49,6 +49,7 @@ class Partition(ABC):
 
     @abstractmethod
     def is_closed(self) -> bool:
+        # FIXME where is it used? Can we just delete that?
         """
         Returns whether the partition is closed.
         :return:
