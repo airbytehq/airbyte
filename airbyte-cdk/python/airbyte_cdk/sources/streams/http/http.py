@@ -10,18 +10,17 @@ from urllib.parse import urljoin
 
 import requests
 from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources.message import InMemoryMessageRepository
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.http_client import HttpClient
 from airbyte_cdk.sources.utils.types import JsonType
 from deprecated import deprecated
 from requests.auth import AuthBase
-from sources.streams.http.error_handlers import ErrorHandler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
@@ -92,6 +91,7 @@ class HttpStream(Stream, ABC):
         return True
 
     @property
+    @deprecated(reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def max_retries(self) -> Union[int, None]:
         """
         Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
@@ -99,6 +99,7 @@ class HttpStream(Stream, ABC):
         return 5
 
     @property
+    @deprecated(reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def max_time(self) -> Union[int, None]:
         """
         Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
@@ -106,6 +107,7 @@ class HttpStream(Stream, ABC):
         return 60 * 10
 
     @property
+    @deprecated(reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def retry_factor(self) -> float:
         """
         Override if needed. Specifies factor for backoff policy.
@@ -236,13 +238,6 @@ class HttpStream(Stream, ABC):
         else:
             return None
 
-    # def _is_method_overridden(self, method_name):
-    #     parent_method = getattr(HttpStream, method_name, None)
-    #     current_method = getattr(self.__class__, method_name, None)
-    #
-    #     # Ensure both methods exist and compare their function objects
-    #     return parent_method and current_method and current_method.__code__ is not parent_method.__code__
-
     def get_error_handler(self) -> Optional[ErrorHandler]:
         """
         Used to initialize Adapter to avoid breaking changes;
@@ -251,7 +246,7 @@ class HttpStream(Stream, ABC):
         """
         if hasattr(self, "should_retry"):
             error_handler = HttpStreamAdapterHttpStatusErrorHandler(
-                stream=self, logger=logging.Logger, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time or 0)
+                stream=self, logger=logging.getLogger(), max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time or 0)
             )
             return error_handler
         else:
@@ -358,7 +353,7 @@ class HttpStream(Stream, ABC):
                 self.url_base,
                 self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             ),
-            request_kwargs={},
+            request_kwargs=self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
