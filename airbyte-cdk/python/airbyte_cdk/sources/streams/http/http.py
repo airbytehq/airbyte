@@ -9,10 +9,8 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 from urllib.parse import urljoin
 
 import requests
-from deprecated.classic import deprecated
-
 from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources.message import NoopMessageRepository
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import Stream, StreamData
@@ -21,8 +19,8 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.types import JsonType
+from deprecated import deprecated
 from requests.auth import AuthBase
-
 from sources.streams.http.error_handlers import ErrorHandler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
@@ -52,8 +50,7 @@ class HttpStream(Stream, ABC):
             authenticator=authenticator,
             use_cache=self.use_cache,
             backoff_strategy=self.get_backoff_strategy(),
-            # disable_retries=self.disable_retries,
-            message_repository=NoopMessageRepository(),
+            message_repository=InMemoryMessageRepository(),
         )
 
     @property
@@ -87,6 +84,7 @@ class HttpStream(Stream, ABC):
         return "GET"
 
     @property
+    @deprecated(reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
     def raise_on_http_errors(self) -> bool:
         """
         Override if needed. If set to False, allows opting-out of raising HTTP code exception.
@@ -252,11 +250,9 @@ class HttpStream(Stream, ABC):
         :return Optional[ErrorHandler]:
         """
         if hasattr(self, "should_retry"):
-            error_handler = HttpStreamAdapterHttpStatusErrorHandler(stream=self,
-                                                                    logger=logging.Logger,
-                                                                    max_retries=self.max_retries,
-                                                                    max_time=timedelta(seconds=self.max_time or 0)
-                                                                    )
+            error_handler = HttpStreamAdapterHttpStatusErrorHandler(
+                stream=self, logger=logging.Logger, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time or 0)
+            )
             return error_handler
         else:
             return None
@@ -401,10 +397,10 @@ class HttpSubStream(HttpStream, ABC):
 
 
 class HttpStreamAdapterBackoffStrategy(BackoffStrategy):
-
     def __init__(self, stream: HttpStream):
         self.stream = stream
 
+    @deprecated(reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
     ) -> Optional[float]:
@@ -416,6 +412,7 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
         self.stream = stream
         super().__init__(**kwargs)
 
+    @deprecated(reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
 
         raise_on_http_errors = self.stream.raise_on_http_errors
