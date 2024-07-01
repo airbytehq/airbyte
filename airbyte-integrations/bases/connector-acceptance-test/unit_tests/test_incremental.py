@@ -187,8 +187,8 @@ async def test_incremental_two_sequential_reads(
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
             docker_runner=docker_runner_mock,
-            setup_container=None,
-            setup_teardown_dockerfile_config=None,
+            client_container=None,
+            client_container_config=None,
             detailed_logger=Logger("test"),
         )
 
@@ -403,8 +403,8 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
             configured_catalog_for_incremental=catalog,
             docker_runner=docker_runner_mock,
             inputs=inputs,
-            setup_container=None,
-            setup_teardown_dockerfile_config=None,
+            client_container=None,
+            client_container_config=None,
             detailed_logger=Logger("test"),
         )
 
@@ -500,8 +500,8 @@ async def test_config_skip_test(mocker):
                 ]
             ),
             docker_runner=docker_runner_mock,
-            setup_container=None,
-            setup_teardown_dockerfile_config=None,
+            client_container=None,
+            client_container_config=None,
             detailed_logger=Logger("test"),
         )
 

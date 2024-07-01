@@ -24,7 +24,7 @@ from connector_acceptance_test.config import (
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
     IgnoredFieldsConfiguration,
-    SetupTeardownConfig,
+    ClientContainerConfig,
 )
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
@@ -35,7 +35,7 @@ from connector_acceptance_test.utils import (
     filter_output,
     load_config,
     load_yaml_or_json_path,
-    setup_and_teardown_runner,
+    client_container_runner,
 )
 
 
@@ -131,8 +131,8 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
     return SecretDict(json.loads(contents))
 
 
-@pytest.fixture(name="setup_teardown_dockerfile_config")
-def setup_teardown_dockerfile_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[SetupTeardownConfig]:
+@pytest.fixture(name="client_container_config")
+def client_container_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[ClientContainerConfig]:
     """Fixture with connector's setup/teardown Dockerfile path, if it exists."""
     if hasattr(inputs, "setup_teardown_config") and inputs.setup_teardown_config:
         return inputs.setup_teardown_config
@@ -205,13 +205,13 @@ async def client_container(
     base_path: Path,
     connector_config: SecretDict,
     dagger_client: dagger.Client,
-    setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
+    client_container_config: Optional[ClientContainerConfig],
 ) -> Optional[dagger.Container]:
-    if setup_teardown_dockerfile_config:
-        return await setup_and_teardown_runner.get_client_container(
+    if client_container_config:
+        return await client_container_runner.get_client_container(
             dagger_client,
             base_path,
-            base_path / setup_teardown_dockerfile_config.setup_teardown_dockerfile_path,
+            base_path / client_container_config.client_dockerfile_path,
         )
 
 
@@ -219,22 +219,22 @@ async def client_container(
 async def setup_and_teardown(
     client_container: dagger.Container,
     connector_config: SecretDict,
-    setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
+    client_container_config: Optional[ClientContainerConfig],
 ):
     if client_container:
         logging.info("Running setup")
-        setup_teardown_container = await setup_and_teardown_runner.do_setup(
+        setup_teardown_container = await client_container_runner.do_setup(
             client_container,
-            setup_teardown_dockerfile_config.setup_command,
+            client_container_config.setup_command,
             connector_config,
         )
         logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
     yield None
     if client_container:
         logging.info("Running teardown")
-        setup_teardown_container = await setup_and_teardown_runner.do_teardown(
+        setup_teardown_container = await client_container_runner.do_teardown(
             client_container,
-            setup_teardown_dockerfile_config.teardown_command,
+            client_container_config.teardown_command,
         )
         logging.info(f"Teardown stdout: {await setup_teardown_container.stdout()}")
 

@@ -22,7 +22,7 @@ from airbyte_protocol.models import (
     Type,
 )
 from connector_acceptance_test import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig, SetupTeardownConfig
+from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig, ClientContainerConfig
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
 from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 from deepdiff import DeepDiff
@@ -135,8 +135,8 @@ class TestIncremental(BaseTest):
         connector_config: SecretDict,
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
         docker_runner: ConnectorRunner,
-        setup_container: Optional[dagger.Container],
-        setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
+        client_container: Optional[dagger.Container],
+        client_container_config: Optional[ClientContainerConfig],
         detailed_logger: Logger,
     ):
         """
@@ -178,10 +178,10 @@ class TestIncremental(BaseTest):
             state_input = states_1[-1].state.data
 
         # READ #2
-        if setup_container and setup_teardown_dockerfile_config.between_syncs_command:
+        if client_container and client_container_config.between_syncs_command:
             detailed_logger.info(
-                await setup_container.with_env_variable("CACHEBUSTER", str(uuid4()))
-                .with_exec(setup_teardown_dockerfile_config.between_syncs_command, skip_entrypoint=True)
+                await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
+                .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
                 .stdout()
             )
 
@@ -199,8 +199,8 @@ class TestIncremental(BaseTest):
         connector_config,
         configured_catalog_for_incremental,
         docker_runner: ConnectorRunner,
-        setup_container: Optional[dagger.Container],
-        setup_teardown_dockerfile_config: Optional[SetupTeardownConfig],
+        client_container: Optional[dagger.Container],
+        client_container_config: Optional[ClientContainerConfig],
         detailed_logger: Logger,
     ):
         """
@@ -246,10 +246,10 @@ class TestIncremental(BaseTest):
                     state_message, mutating_stream_name_to_per_stream_state
                 )
 
-                if setup_container and setup_teardown_dockerfile_config.between_syncs_command:
+                if client_container and client_container_config.between_syncs_command:
                     detailed_logger.info(
-                        await setup_container.with_env_variable("CACHEBUSTER", str(uuid4()))
-                        .with_exec(setup_teardown_dockerfile_config.between_syncs_command, skip_entrypoint=True)
+                        await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
+                        .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
                         .stdout()
                     )
 
