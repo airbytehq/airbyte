@@ -48,17 +48,24 @@ The following variables are relevant to both Docker and Kubernetes.
 
 #### Secrets
 
-1. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to AWS_SECRET_MANAGER to use AWS Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
+1. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Undefined behavior will result if this is turned on and then off.
+    Supported Value | Description
+    :--- | :--- 
+    TESTING_CONFIG_DB_TABLE | Default value, set to use the database as a test
+    AWS_SECRET_MANAGER | Set to use AWS Secret Manager
+    GOOGLE_SECRET_MANAGER | Set to use Google Secret Manager
+    VAULT | Set to use Hashicorp Vault, currently only the token based authentication is supported
 2. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
 3. `SECRET_STORE_GCP_CREDENTIALS` - Defines the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
 4. `VAULT_ADDRESS` - Defines the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
 5. `VAULT_PREFIX` - Defines the vault path prefix. Empty by default. Alpha Support.
 6. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
 7. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
-8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager.
+8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager. AWS access keys are required if not using IAM roles for Amazon EC2 instances.
 9. `AWS_SECRET_ACCESS_KEY`- Defines aws_secret_access_key to use for the AWS Secret Manager.
-10. `AWS_KMS_KEY_ARN` - Optional param that defines the KMS Encryption key used for the AWS Secret Manager.
-11. `AWS_SECRET_MANAGER_SECRET_TAGS` - Defines the tags that will be included to all writes to the AWS Secret Manager. The format should be "key1=value1,key2=value2".
+10. `AWS_REGION` - Defines the AWS region to use for AWS Secret Manager.
+11. `AWS_KMS_KEY_ARN` - Optional param that defines the KMS Encryption key used for the AWS Secret Manager.
+12. `AWS_SECRET_MANAGER_SECRET_TAGS` - Defines the tags that will be included to all writes to the AWS Secret Manager. The format should be "key1=value1,key2=value2".
 
 #### Database
 
