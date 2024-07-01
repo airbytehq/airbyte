@@ -190,7 +190,6 @@ class BasicReadTestConfig(BaseConfig):
         description="For file-based connectors, unsupported by source file types can be configured or a test can be skipped at all",
     )
     setup_teardown_config: Optional[SetupTeardownConfig] = Field(
-        default_factory=SetupTeardownConfig,
         description="Information required to run a setup & teardown Docker container before each test.",
     )
 
@@ -210,7 +209,6 @@ class FullRefreshConfig(BaseConfig):
         description="For each stream, list of fields path ignoring in sequential reads test"
     )
     setup_teardown_config: Optional[SetupTeardownConfig] = Field(
-        default_factory=SetupTeardownConfig,
         description="Information required to run a setup & teardown Docker container before each test.",
     )
 
@@ -250,7 +248,6 @@ class IncrementalConfig(BaseConfig):
         description="Determines whether to skip more granular testing for incremental syncs", default=False
     )
     setup_teardown_config: Optional[SetupTeardownConfig] = Field(
-        default_factory=SetupTeardownConfig,
         description="Information required to run a setup & teardown Docker container before each test.",
     )
 
