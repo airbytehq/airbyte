@@ -1,0 +1,232 @@
+version: 0.85.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - workers
+
+definitions:
+  streams:
+    workers:
+      type: DeclarativeStream
+      name: workers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: workers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/workers'
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: people
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/people'
+    supervisory_organizations:
+      type: DeclarativeStream
+      name: supervisory_organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: supervisory_organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/supervisory_organizations'
+    org_charts:
+      type: DeclarativeStream
+      name: org_charts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /supervisoryOrganizations/{org_id}/orgChart
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: org_id
+                stream:
+                  $ref: '#/definitions/streams/supervisory_organizations'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/org_charts'
+    custom_reports:
+      type: DeclarativeStream
+      name: custom_reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /service/customreport2/{tenant_id}/{report_name}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/custom_reports'
+  base_requester:
+    type: HttpRequester
+    url_base: <host>/<API version>/<tenant>/ccx
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: '{{ config["username"] }}'
+      password: '{{ config["password"] }}'
+
+streams:
+  - $ref: '#/definitions/streams/workers'
+  - $ref: '#/definitions/streams/people'
+  - $ref: '#/definitions/streams/supervisory_organizations'
+  - $ref: '#/definitions/streams/org_charts'
+  - $ref: '#/definitions/streams/custom_reports'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - host
+      - tenant_id
+      - custom_report_name
+    properties:
+      username:
+        type: string
+        title: Username
+        order: 0
+      password:
+        type: string
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        order: 1
+      host:
+        type: string
+        title: Host
+        order: 2
+      tenant_id:
+        type: string
+        title: Tenant Id
+        order: 3
+      custom_report_name:
+        type: array
+        title: Custom Report Name
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    workers: true
+    people: true
+    supervisory_organizations: true
+    org_charts: true
+    custom_reports: true
+
+schemas:
+  workers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  people:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  supervisory_organizations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  org_charts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  custom_reports:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
