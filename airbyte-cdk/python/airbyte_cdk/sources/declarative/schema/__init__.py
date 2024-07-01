@@ -6,5 +6,6 @@ from airbyte_cdk.sources.declarative.schema.default_schema_loader import Default
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
+from airbyte_cdk.sources.declarative.schema.first_record_schema_loader import FirstRecordSchemaLoader
 
-__all__ = ["JsonFileSchemaLoader", "DefaultSchemaLoader", "SchemaLoader", "InlineSchemaLoader"]
+__all__ = ["JsonFileSchemaLoader", "DefaultSchemaLoader", "SchemaLoader", "InlineSchemaLoader", "FirstRecordSchemaLoader"]
