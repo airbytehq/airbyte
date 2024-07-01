@@ -90,12 +90,9 @@ class RedshiftDestinationHandler(
         for (transaction in transactions) {
             val transactionId = UUID.randomUUID()
             if (logStatements) {
-                log.info(
-                    "Executing sql {}-{}: {}",
-                    queryId,
-                    transactionId,
-                    java.lang.String.join("\n", transaction)
-                )
+                log.info {
+                    "Executing sql $queryId-$transactionId: ${transaction.joinToString("\n")}"
+                }
             }
             val startTime = System.currentTimeMillis()
 
@@ -113,7 +110,7 @@ class RedshiftDestinationHandler(
                     logStatements = logStatements
                 )
             } catch (e: SQLException) {
-                log.error("Sql {}-{} failed", queryId, transactionId, e)
+                log.error(e) { "Sql $queryId-$transactionId failed" }
                 // This is a big hammer for something that should be much more targetted, only when
                 // executing the
                 // DROP TABLE command.
@@ -129,12 +126,9 @@ class RedshiftDestinationHandler(
                 throw e
             }
 
-            log.info(
-                "Sql {}-{} completed in {} ms",
-                queryId,
-                transactionId,
-                System.currentTimeMillis() - startTime
-            )
+            log.info {
+                "Sql $queryId-$transactionId completed in ${System.currentTimeMillis() - startTime} ms"
+            }
         }
     }
 
@@ -156,7 +150,8 @@ class RedshiftDestinationHandler(
         return RedshiftState(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
             json.hasNonNull("isAirbyteMetaPresentInRaw") &&
-                json["isAirbyteMetaPresentInRaw"].asBoolean()
+                json["isAirbyteMetaPresentInRaw"].asBoolean(),
+            json.hasNonNull("isGenerationIdPresent") && json["isGenerationIdPresent"].asBoolean(),
         )
     }
 

@@ -51,7 +51,8 @@ class RedshiftStagingStorageOperation(
         s3StorageOperations.createBucketIfNotExists()
     }
 
-    override fun writeToStage(streamId: StreamId, data: SerializableBuffer) {
+    override fun writeToStage(streamConfig: StreamConfig, data: SerializableBuffer) {
+        val streamId = streamConfig.id
         val objectPath: String = getStagingPath(streamId)
         log.info {
             "Uploading records to for ${streamId.rawNamespace}.${streamId.rawName} to path $objectPath"
@@ -201,7 +202,8 @@ class RedshiftStagingStorageOperation(
                     ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} TIMESTAMPTZ DEFAULT GETDATE(),
                     ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT} TIMESTAMPTZ,
                     ${JavaBaseConstants.COLUMN_NAME_DATA} SUPER NOT NULL,
-                    ${JavaBaseConstants.COLUMN_NAME_AB_META} SUPER NULL
+                    ${JavaBaseConstants.COLUMN_NAME_AB_META} SUPER NULL,
+                    ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID} BIGINT NULL
                 )
             """.trimIndent()
         }
