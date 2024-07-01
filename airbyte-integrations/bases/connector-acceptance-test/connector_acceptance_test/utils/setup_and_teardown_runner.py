@@ -4,6 +4,7 @@
 
 import json
 import os
+from glob import glob
 from pathlib import Path
 from typing import List
 
@@ -25,7 +26,25 @@ async def _build_container(dagger_client: dagger.Client, dockerfile_path: Path) 
 
 async def _build_setup_container(dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path) -> dagger.Container:
     container = await _build_container(dagger_client, dockerfile_path)
-    return container.with_mounted_directory("/connector", dagger_client.host().directory(str(connector_path)))
+    return container.with_mounted_directory(
+        "/connector", dagger_client.host().directory(str(connector_path), exclude=get_default_excluded_files())
+    )
+
+
+def get_default_excluded_files() -> List[str]:
+    return (
+        [".git"]
+        + glob("**/build", recursive=True)
+        + glob("**/.venv", recursive=True)
+        + glob("**/__pycache__", recursive=True)
+        + glob("**/*.egg-info", recursive=True)
+        + glob("**/.vscode", recursive=True)
+        + glob("**/.pytest_cache", recursive=True)
+        + glob("**/.eggs", recursive=True)
+        + glob("**/.mypy_cache", recursive=True)
+        + glob("**/.DS_Store", recursive=True)
+        + glob("**/.gradle", recursive=True)
+    )
 
 
 async def _run_with_config(container: dagger.Container, command: List[str], config: SecretDict) -> dagger.Container:
