@@ -134,8 +134,8 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
 @pytest.fixture(name="setup_teardown_dockerfile_config")
 def setup_teardown_dockerfile_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[SetupTeardownConfig]:
     """Fixture with connector's setup/teardown Dockerfile path, if it exists."""
-    if hasattr(inputs, "setup_teardown_config"):
-        return getattr(inputs, "setup_teardown_config")
+    if hasattr(inputs, "setup_teardown_config") and inputs.setup_teardown_config:
+        return inputs.setup_teardown_config
 
 
 @pytest.fixture(name="invalid_connector_config")
