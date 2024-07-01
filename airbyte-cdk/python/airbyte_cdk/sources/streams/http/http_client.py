@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import Level, AirbyteStreamStatus, AirbyteStreamStatusReasonType, AirbyteStreamStatusReason
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
@@ -27,6 +27,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
@@ -300,9 +301,8 @@ class HttpClient:
                 )
 
         elif error_resolution.response_action == ResponseAction.RATE_LIMITED and self._message_repository is not None:
-            message = f"Rate limit for stream {self._name} is reached."
-
-            self._message_repository.log_message(Level.INFO, lambda: message)
+            reasons = [AirbyteStreamStatusReason(AirbyteStreamStatusReasonType.RATE_LIMITED)]
+            self._message_repository.emit_message(stream_status_as_airbyte_message(self, AirbyteStreamStatus.RUNNING, reasons))
 
         elif response:
             try:
