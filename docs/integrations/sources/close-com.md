@@ -109,6 +109,7 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.5.3 | 2024-07-01 | [40515](https://github.com/airbytehq/airbyte/pull/40515) | Add support for array type custom fields |
 | 0.5.3 | 2024-06-22 | [40043](https://github.com/airbytehq/airbyte/pull/40043) | Update dependencies |
 | 0.5.2 | 2024-06-15 | [39477](https://github.com/airbytehq/airbyte/pull/39477) | Format source, delete requirements.txt |
 | 0.5.1 | 2024-05-20 | [38391](https://github.com/airbytehq/airbyte/pull/38391) | [autopull] base image + poetry + up_to_date |
