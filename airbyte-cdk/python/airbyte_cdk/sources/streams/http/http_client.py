@@ -274,7 +274,7 @@ class HttpClient:
             self._logger.info(error_resolution.error_message or log_message)
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
-        elif error_resolution.response_action == ResponseAction.RETRY:
+        elif error_resolution.response_action == ResponseAction.RETRY or error_resolution.response_action == ResponseAction.RATE_LIMITED:
             user_defined_backoff_time = None
             for backoff_strategy in self._backoff_strategies:
                 backoff_time = backoff_strategy.backoff_time(
@@ -298,6 +298,11 @@ class HttpClient:
                 raise DefaultBackoffException(
                     request=request, response=(response if response is not None else exc), error_message=error_message
                 )
+
+        elif error_resolution.response_action == ResponseAction.RATE_LIMITED and self._message_repository is not None:
+            message = f"Rate limit for stream {self._name} is reached."
+
+            self._message_repository.log_message(Level.INFO, lambda: message)
 
         elif response:
             try:
