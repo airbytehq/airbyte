@@ -2320,8 +2320,9 @@ class ProductImage(ShopifyBulkQuery):
             if BULK_PARENT_KEY in item:
                 item.pop(BULK_PARENT_KEY)
 
-            image_url = item.get("image", {}).get("url")
-            if image_url in url_map:
+            image = item.get("image", {})
+            image_url = image.get("url") if image else None
+            if image_url and image_url in url_map:
                 # Merge images into media
                 item.update(url_map.get(image_url))
                 # remove lefovers
