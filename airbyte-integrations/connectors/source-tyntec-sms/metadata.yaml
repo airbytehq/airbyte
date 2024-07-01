@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3c0c3cd1-b3e0-464a-9090-d3ceb5f92346
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-tyntec-sms
   githubIssueLabel: source-tyntec-sms
   icon: tyntec.svg

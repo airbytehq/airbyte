@@ -28,7 +28,7 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SC
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
 from airbyte_cdk.sources.source import TState
 from avro import datafile
-from pydantic import AnyUrl
+from pydantic.v1 import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):

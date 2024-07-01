@@ -161,6 +161,8 @@ data less frequently** rather than _smaller amounts of data more frequently_!
 
 | Version | Date       | Pull Request                                              | Subject                                             |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.5 | 2024-06-26 | [40507](https://github.com/airbytehq/airbyte/pull/40507) | Update dependencies |
+| 0.1.4 | 2024-06-21 | [39930](https://github.com/airbytehq/airbyte/pull/39930) | Update dependencies |
 | 0.1.3 | 2024-06-06 | [39292](https://github.com/airbytehq/airbyte/pull/39292) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.2 | 2024-05-20 | [38371](https://github.com/airbytehq/airbyte/pull/38371) | [autopull] base image + poetry + up_to_date |
 | 0.1.1   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                |

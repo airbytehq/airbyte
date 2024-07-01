@@ -4,7 +4,9 @@ on:
   schedule:
     - cron: "0 0,12 * * *" # Run every 12 hours UTC
   workflow_dispatch:
-
+    inputs:
+      rewrite:
+        default: false
 jobs:
   connectors_insights:
     name: Connectors Insights generation
@@ -46,4 +48,4 @@ jobs:
         run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-sa-key.json" >> $GITHUB_ENV
       - name: Run connectors insights
         run: |
-          poetry -C airbyte-ci/connectors/connectors_insights run connectors-insights generate --gcs-uri=gs://prod-airbyte-cloud-connector-metadata-service/connector_insights --connector-directory airbyte-integrations/connectors/ --concurrency 10
+          poetry -C airbyte-ci/connectors/connectors_insights run connectors-insights generate --gcs-uri=gs://prod-airbyte-cloud-connector-metadata-service/connector_insights --connector-directory airbyte-integrations/connectors/ --concurrency 10 ${{ inputs.rewrite == 'true' && '--rewrite' || ''}}

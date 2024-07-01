@@ -34,6 +34,8 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.1.4 | 2024-06-25 | [40296](https://github.com/airbytehq/airbyte/pull/40296) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40188](https://github.com/airbytehq/airbyte/pull/40188) | Update dependencies |
 | 0.1.2 | 2024-06-06 | [39208](https://github.com/airbytehq/airbyte/pull/39208) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.1 | 2024-05-20 | [38393](https://github.com/airbytehq/airbyte/pull/38393) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2023-05-04 | [25790](https://github.com/airbytehq/airbyte/pull/25790) | Add Klaus API Source Connector |
