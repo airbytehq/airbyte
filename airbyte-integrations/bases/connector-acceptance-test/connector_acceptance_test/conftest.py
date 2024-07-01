@@ -20,22 +20,22 @@ import pytest
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
+    ClientContainerConfig,
     Config,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
     IgnoredFieldsConfiguration,
-    ClientContainerConfig,
 )
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
     SecretDict,
     build_configured_catalog_from_custom_catalog,
     build_configured_catalog_from_discovered_catalog_and_empty_streams,
+    client_container_runner,
     connector_runner,
     filter_output,
     load_config,
     load_yaml_or_json_path,
-    client_container_runner,
 )
 
 
