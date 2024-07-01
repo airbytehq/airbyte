@@ -24,7 +24,7 @@ async def _build_container(dagger_client: dagger.Client, dockerfile_path: Path) 
     return await dagger_client.container().build(context=workspace, dockerfile="Dockerfile.cat_setup_teardown")
 
 
-async def _build_setup_container(dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path) -> dagger.Container:
+async def _build_client_container(dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path) -> dagger.Container:
     container = await _build_container(dagger_client, dockerfile_path)
     return container.with_mounted_directory(
         "/connector", dagger_client.host().directory(str(connector_path), exclude=get_default_excluded_files())
@@ -59,7 +59,7 @@ async def _run(container: dagger.Container, command: List[str]) -> dagger.Contai
 async def do_setup(
     dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path, command: List[str], connector_config: SecretDict
 ):
-    return await _run_with_config(await _build_setup_container(dagger_client, connector_path, dockerfile_path), command, connector_config)
+    return await _run_with_config(await _build_client_container(dagger_client, connector_path, dockerfile_path), command, connector_config)
 
 
 async def do_teardown(container: dagger.Container, command: List[str]):
