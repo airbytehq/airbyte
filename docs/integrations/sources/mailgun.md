@@ -68,6 +68,8 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.10 | 2024-06-25 | [40491](https://github.com/airbytehq/airbyte/pull/40491) | Update dependencies |
+| 0.2.9 | 2024-06-22 | [40106](https://github.com/airbytehq/airbyte/pull/40106) | Update dependencies |
 | 0.2.8 | 2024-06-06 | [39229](https://github.com/airbytehq/airbyte/pull/39229) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.7 | 2024-05-28 | [38176](https://github.com/airbytehq/airbyte/pull/38176) | Make connector compatible with Builder |
 | 0.2.6 | 2024-05-02 | [37594](https://github.com/airbytehq/airbyte/pull/37594) | Change `last_recrods` to `last_record` |

@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 import freezegun
 import pytest
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
@@ -61,7 +62,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
@@ -80,7 +80,9 @@ from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
+from airbyte_protocol.models import FailureType
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
 
 factory = ModelToComponentFactory()
@@ -1233,6 +1235,42 @@ requester:
     }
 
 
+def test_given_composite_error_handler_does_not_match_response_then_fallback_on_default_error_handler(requests_mock):
+    content = """
+requester:
+  type: HttpRequester
+  path: "/v3/marketing/lists"
+  $parameters:
+    name: 'lists'
+  url_base: "https://api.sendgrid.com"
+  error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            http_codes:
+              - 500
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
+    http_requester = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name="any name"
+    )
+    requests_mock.get(
+        "https://api.sendgrid.com/v3/marketing/lists", status_code=401
+    )
+
+    with pytest.raises(AirbyteTracedException) as exception:
+        http_requester.send_request()
+
+    # The default behavior when we don't know about an error is to return a system_error.
+    # Here, we can confirm that we return a config_error which means we picked up the default error mapper
+    assert exception.value.failure_type == FailureType.config_error
+
+
 @pytest.mark.parametrize(
     "input_config, expected_authenticator_class",
     [
@@ -2046,25 +2084,6 @@ def test_simple_retriever_emit_log_messages():
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
     assert connector_builder_factory._message_repository._log_level == Level.DEBUG
-
-
-def test_ignore_retry():
-    requester_model = {
-        "type": "HttpRequester",
-        "name": "list",
-        "url_base": "orange.com",
-        "path": "/v1/api",
-    }
-
-    connector_builder_factory = ModelToComponentFactory(disable_retries=True)
-    requester = connector_builder_factory.create_component(
-        model_type=HttpRequesterModel,
-        component_definition=requester_model,
-        config={},
-        name="Test",
-    )
-
-    assert requester.max_retries == 0
 
 
 def test_create_page_increment():

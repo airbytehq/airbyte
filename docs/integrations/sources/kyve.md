@@ -29,6 +29,8 @@ You can fetch with one source configuration more than one pool simultaneously. Y
 
 | Version | Date       | Pull Request | Subject                                              |
 | :------ | :--------- | :----------- | :--------------------------------------------------- |
+| 0.2.4 | 2024-06-26 | [40268](https://github.com/airbytehq/airbyte/pull/40268) | Update dependencies |
+| 0.2.3 | 2024-06-24 | [40049](https://github.com/airbytehq/airbyte/pull/40049) | Update dependencies |
 | 0.2.2 | 2024-06-04 | [39004](https://github.com/airbytehq/airbyte/pull/39004) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.1 | 2024-05-21 | [38514](https://github.com/airbytehq/airbyte/pull/38514) | [autopull] base image + poetry + up_to_date |
 | 0.2.0   | 2023-11-10 |              | Update KYVE source to support to Mainnet and Testnet |

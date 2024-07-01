@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 492b56d1-937c-462e-8076-21ad2031e784
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-hellobaton
   githubIssueLabel: source-hellobaton
   icon: hellobaton.svg

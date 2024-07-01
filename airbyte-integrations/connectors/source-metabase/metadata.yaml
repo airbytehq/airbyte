@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.3
   dockerRepository: airbyte/source-metabase
   documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
   githubIssueLabel: source-metabase
