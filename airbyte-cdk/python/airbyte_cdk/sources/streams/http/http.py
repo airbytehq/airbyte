@@ -399,11 +399,11 @@ class HttpStreamAdapterBackoffStrategy(BackoffStrategy):
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
     ) -> Optional[float]:
-        return self.stream.backoff_time(response_or_exception)
+        return self.stream.backoff_time(response_or_exception)  # type: ignore # noqa
 
 
 class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
-    def __init__(self, stream: HttpStream, **kwargs):
+    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
         self.stream = stream
         super().__init__(**kwargs)
 
@@ -414,7 +414,7 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
 
         if isinstance(response_or_exception, Exception):
             return super().interpret_response(response_or_exception)
-        should_retry = self.stream.should_retry(response_or_exception)
+        should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
         if should_retry:
             return ErrorResolution(
                 response_action=ResponseAction.RETRY,
@@ -422,7 +422,7 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
                 error_message="Response does not include an HTTP status code.",
             )
         else:
-            if response_or_exception.ok:
+            if response_or_exception.ok:  # type: ignore # noqa
                 return ErrorResolution(
                     response_action=ResponseAction.SUCCESS,
                     failure_type=None,
