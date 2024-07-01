@@ -1203,23 +1203,29 @@ class InventoryLevel(ShopifyBulkQuery):
                     node {
                         __typename
                         id
-                        inventoryLevels(query: "updated_at:>='2023-04-14T00:00:00+00:00'") {
+                        inventoryLevels(query: "updated_at:>='2020-04-13T00:00:00+00:00'") {
                             edges {
                                 node {
-                                    __typename
-                                    id
-                                    available
-                                    item {
-                                        inventory_item_id: id
-                                        inventoryHistoryUrl
-                                        locationsCount {
-                                            count
-                                        }
+                                __typename
+                                id
+                                canDeactivate
+                                createdAt
+                                deactivationAlert
+                                updatedAt
+                                item {
+                                    inventory_history_url: inventoryHistoryUrl
+                                    inventory_item_id: id
+                                    locations_count: locationsCount {
+                                        count
                                     }
-                                    updatedAt
-                                    canDeactivate
-                                    createdAt
-                                    deactivationAlert
+                                }
+                                quantities(
+                                    names: ["available", "incoming", "committed", "damaged", "on_hand", "quality_control", "reserved", "safety_stock"]) {
+                                        id
+                                        name
+                                        quantity
+                                        updatedAt
+                                    }
                                 }
                             }
                         }
@@ -1251,13 +1257,6 @@ class InventoryLevel(ShopifyBulkQuery):
         '"reserved"',
         '"safety_stock"',
     ]
-    # quantities fields
-    quantities_fields: List[str] = [
-        "id",
-        "name",
-        "quantity",
-        "updatedAt",
-    ]
 
     item_fields: List[Field] = [
         Field(name="inventoryHistoryUrl", alias="inventory_history_url"),
@@ -1280,11 +1279,26 @@ class InventoryLevel(ShopifyBulkQuery):
         Defines the `quantities` nested query.
         """
 
-        return Query(
+        return Field(
             name="quantities",
             arguments=[Argument(name="names", value=self.quantities_names_filter)],
-            fields=self.quantities_fields,
+            fields=[
+                "id",
+                "name",
+                "quantity",
+                "updatedAt",
+            ],
         )
+
+    def _get_inventory_levels_fields(self, filter_query: Optional[str] = None) -> List[Field]:
+        nested_fields = self.inventory_levels_fields + [self._quantities_query()]
+        return self.query_nodes + [
+            Field(
+                name="inventoryLevels",
+                arguments=[Argument(name="query", value=f'"{filter_query}"')],
+                fields=[Field(name="edges", fields=[Field(name="node", fields=nested_fields)])],
+            )
+        ]
 
     def _process_quantities(self, quantities: Iterable[MutableMapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
         if quantities:
@@ -1299,15 +1313,10 @@ class InventoryLevel(ShopifyBulkQuery):
         return []
 
     def query(self, filter_query: Optional[str] = None) -> Query:
-        # construct the `quantities` query piece
-        quantities: List[Query] = [self._quantities_query()]
-        # build the nested query first with `filter_query` to have the incremental syncs
-        inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields + quantities, filter_query)]
         # build the main query around previous
-        # return the constructed query operation
         return self.build(
             name=self.query_name,
-            edges=self.query_nodes + inventory_levels,
+            edges=self._get_inventory_levels_fields(filter_query),
             # passing more query args for `locations` query
             additional_query_args=self.locations_query_args,
         )
@@ -2311,8 +2320,9 @@ class ProductImage(ShopifyBulkQuery):
             if BULK_PARENT_KEY in item:
                 item.pop(BULK_PARENT_KEY)
 
-            image_url = item.get("image", {}).get("url")
-            if image_url in url_map:
+            image = item.get("image", {})
+            image_url = image.get("url") if image else None
+            if image_url and image_url in url_map:
                 # Merge images into media
                 item.update(url_map.get(image_url))
                 # remove lefovers

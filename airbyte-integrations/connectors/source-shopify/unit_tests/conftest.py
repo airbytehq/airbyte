@@ -539,7 +539,9 @@ def product_images_jsonl_content_example():
 {"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/111","height":280,"alt":"","src":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/white-t-shirt.jpg?v=1673029759","url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/white-t-shirt.jpg?v=1673029759","width":265,"__parentId":"gid:\/\/shopify\/Product\/123"}
 {"__typename":"Product","id":"gid:\/\/shopify\/Product\/456"}
 {"__typename":"MediaImage","createdAt":"2021-06-23T01:09:47Z","updatedAt":"2023-04-24T17:27:15Z","image":{"url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587"},"__parentId":"gid:\/\/shopify\/Product\/456"}
-{"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/222","height":1467,"alt":"updated_mon_24.04.2023","src":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","width":2200,"__parentId":"gid:\/\/shopify\/Product\/456"}\n"""
+{"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/222","height":1467,"alt":"updated_mon_24.04.2023","src":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","width":2200,"__parentId":"gid:\/\/shopify\/Product\/456"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/9062091161885"}
+{"__typename":"MediaImage","createdAt":"2024-06-12T23:41:27Z","updatedAt":"2024-06-12T23:41:28Z","image":null,"__parentId":"gid:\/\/shopify\/Product\/9062091161885"}\n"""
 
 
 @pytest.fixture
@@ -811,6 +813,12 @@ def product_images_response_expected_result():
             "admin_graphql_api_id": "gid://shopify/ProductImage/222",
             "product_id": 456,
             "shop_url": "test_shop",
+        },
+        {
+            "created_at": "2024-06-12T23:41:27+00:00",
+            "updated_at": "2024-06-12T23:41:28+00:00",
+            "image": None,
+            "shop_url": "test_shop"
         },
     ]
 
