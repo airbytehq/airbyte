@@ -327,6 +327,12 @@ class CsvReaderTest(unittest.TestCase):
         with pytest.raises(RecordParseError):
             list(self._read_data())
 
+    def test_given_os_error_then_raise_os_error(self) -> None:
+        self._stream_reader.open_file.side_effect = OSError("File does not exist")
+
+        with pytest.raises(OSError):
+            list(self._read_data())
+
     def test_given_skip_rows_after_header_when_read_data_then_do_not_parse_skipped_rows(self) -> None:
         self._config_format.skip_rows_after_header = 1
         self._stream_reader.open_file.return_value = (
