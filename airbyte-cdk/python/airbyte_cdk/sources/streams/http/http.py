@@ -26,12 +26,6 @@ from requests.auth import AuthBase
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
-# [x] self.should_retry() - decides what to do at runtime based on the response -- how to wrap?? see def interpret_response
-# [x] self.backoff_time() - decides what to do at runtime based on the response -- wrapped on init
-# [x] self.error_message() - decides what to do at runtime based on the response -- removed as not used
-# [x] self.raise_on_http_errors() - This looks more static and could just be used as param inputs -- removed
-
-
 class HttpStream(Stream, ABC):
     """
     Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
