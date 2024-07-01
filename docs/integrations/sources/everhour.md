@@ -28,6 +28,7 @@ This project supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------| :------------------------------------------------------- | :-------------- |
+| 0.1.5 | 2024-06-25 | [40262](https://github.com/airbytehq/airbyte/pull/40262) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40168](https://github.com/airbytehq/airbyte/pull/40168) | Update dependencies |
 | 0.1.3 | 2024-06-19 | [38633](https://github.com/airbytehq/airbyte/pull/38633) | Make connector compatible with Builder |
 | 0.1.2 | 2024-06-04 | [39079](https://github.com/airbytehq/airbyte/pull/39079) | [autopull] Upgrade base image to v1.2.1 |
