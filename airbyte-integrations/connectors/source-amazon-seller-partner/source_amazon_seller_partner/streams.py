@@ -410,7 +410,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                 )
                 return []
 
-            errors = " ".join([er["message"] for er in e.response.json()["errors"]])
+            errors = " ".join([er["message"] for er in e.response.json().get("errors", [])])
             if "does not support account ID of type class com.amazon.partner.account.id.VendorGroupId." in errors:
                 logger.warning(
                     f"The endpoint {e.response.url} returned {e.response.status_code}: {errors}. "
