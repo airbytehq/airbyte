@@ -92,7 +92,11 @@ class HubspotTestCase:
     def mock_custom_objects(cls, http_mocker: HttpMocker):
         http_mocker.get(
             CustomObjectsRequestBuilder().build(),
-            HttpResponseBuilder({}, records_path=FieldPath("results"), pagination_strategy=None).build()
+            HttpResponseBuilder(
+                find_template("schemas", __file__), 
+                records_path=FieldPath("results"),
+                pagination_strategy=None)
+                .build()
         )
 
     @classmethod

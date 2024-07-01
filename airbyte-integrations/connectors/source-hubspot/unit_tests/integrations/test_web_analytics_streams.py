@@ -308,6 +308,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
         self.mock_scopes(http_mocker, self.ACCESS_TOKEN, [])
+        self.mock_custom_objects(http_mocker)
         self.read_from_stream(self.oauth_config(), stream_name, SyncMode.full_refresh, expecting_exception=True)
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)

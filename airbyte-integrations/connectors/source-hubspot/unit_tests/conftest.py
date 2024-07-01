@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import patch
+
 import pytest
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API
@@ -90,3 +92,13 @@ def api(some_credentials):
 @pytest.fixture
 def http_mocker():
     return None
+
+
+@pytest.fixture
+def mock_custom_objects_metadata():
+    with patch("source_hubspot.source.API.get_custom_objects_metadata") as mock:
+        mock.return_value = iter([
+            ("pets", "p8727216_pets", {"schema": "p8727216_pets_schema"}, {}),
+            ("cars", "p8727216_cars", {"schema": "p8727216_cars_schema"}, {})
+        ])
+        yield mock
