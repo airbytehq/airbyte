@@ -42,7 +42,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
             return False, reason
         except HTTPError as error:
-            is_available, reason = self.handle_http_error(stream, logger, source, error)
+            is_available, reason = self.handle_http_error(stream, logger, source, error)  # type: ignore # noqa
             if not is_available:
                 reason = f"Unable to get slices for {stream.name} stream, because of error in parent stream. {reason}"
             return is_available, reason
@@ -56,7 +56,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
             return True, None
         except HTTPError as error:
-            is_available, reason = self.handle_http_error(stream, logger, source, error)
+            is_available, reason = self.handle_http_error(stream, logger, source, error)  # type: ignore # noqa
             if not is_available:
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
@@ -91,7 +91,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
 
         doc_ref = self._visit_docs_message(logger, source)
         reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {known_reason}. {doc_ref} "
-        response_error_message = stream.parse_response_error_message(error.response)
+        response_error_message = stream.parse_response_error_message(error.response)  # type: ignore # noqa
         if response_error_message:
             reason += response_error_message
         return False, reason
