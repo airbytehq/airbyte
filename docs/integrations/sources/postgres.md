@@ -151,7 +151,7 @@ ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
 
 In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
-ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.
+ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non-TOAST-able primary keys (integers, varchars, etc), and there will only be a [modest increase in resource utilization, in addition to increased WAL storage size](https://xata.io/blog/replica-identity-full-performance).
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
