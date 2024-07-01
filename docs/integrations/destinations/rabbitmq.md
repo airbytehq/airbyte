@@ -48,6 +48,7 @@ To use the RabbitMQ destination, you'll need:
 
 | Version | Date             | Pull Request                                              | Subject                                         |
 | :------ | :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.8 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.1.7 | 2024-06-25 | [40348](https://github.com/airbytehq/airbyte/pull/40348) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40101](https://github.com/airbytehq/airbyte/pull/40101) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39300](https://github.com/airbytehq/airbyte/pull/39300) | [autopull] Upgrade base image to v1.2.2 |
