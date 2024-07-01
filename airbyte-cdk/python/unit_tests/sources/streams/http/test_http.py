@@ -476,7 +476,6 @@ class AutoFailTrueHttpStream(StubBasicReadHttpStream):
 def test_send_raise_on_http_errors_logs(mocker, status_code):
     mocker.patch("time.sleep", lambda x: None)
     stream = AutoFailTrueHttpStream()
-    req = requests.PreparedRequest()
     res = requests.Response()
     res.status_code = status_code
     mocker.patch.object(requests.Session, "send", return_value=res)
