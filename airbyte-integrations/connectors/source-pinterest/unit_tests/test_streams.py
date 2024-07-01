@@ -10,6 +10,7 @@ import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from source_pinterest.streams import PinterestAnalyticsStream, PinterestStream, PinterestSubStream, RateLimitExceeded
 from source_pinterest.utils import get_analytics_columns
 
@@ -67,7 +68,8 @@ def test_parse_response_with_sensitive_data(requests_mock, test_config):
         json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
     )
     actual_response = [
-        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        dict(record)
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
     ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
@@ -112,8 +114,8 @@ def test_backoff_time(patch_base_class):
 @pytest.mark.parametrize(
     ("test_response", "status_code", "expected"),
     (
-        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, False),
-        ({"code": 7, "message": "Some other error message"}, 429, False),
+        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, ResponseAction.IGNORE),
+        ({"code": 7, "message": "Some other error message"}, 429, ResponseAction.RETRY),
     ),
 )
 def test_should_retry_on_max_rate_limit_error(requests_mock, test_config, test_response, status_code, expected):
@@ -121,8 +123,8 @@ def test_should_retry_on_max_rate_limit_error(requests_mock, test_config, test_r
     url = "https://api.pinterest.com/v5/boards"
     requests_mock.get("https://api.pinterest.com/v5/boards", json=test_response, status_code=status_code)
     response = requests.get(url)
-    result = stream.retriever.requester._should_retry(response)
-    assert result is expected
+    result = stream.retriever.requester._http_client._error_handler.interpret_response(response)
+    assert result.response_action is expected
 
 
 def test_non_json_response(requests_mock, patch_base_class):
@@ -152,9 +154,7 @@ def test_non_json_response(requests_mock, patch_base_class):
         ),
     ),
 )
-def test_backoff_on_rate_limit_error(
-    requests_mock, test_config, patch_base_class, test_response, status_code, test_headers, expected
-):
+def test_backoff_on_rate_limit_error(requests_mock, test_config, patch_base_class, test_response, status_code, test_headers, expected):
     stream = PinterestStream(config=MagicMock())
     url = "https://api.pinterest.com/v5/boards"
     requests_mock.get(
