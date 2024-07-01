@@ -56,6 +56,9 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.2.2
+- Write the sbom output to a file and not to stdout to avoid issues with large outputs.
+
 ### 0.2.1
 - Implement a high-level error handling to not fail the entire process if a connector fails to generate insights.
 
