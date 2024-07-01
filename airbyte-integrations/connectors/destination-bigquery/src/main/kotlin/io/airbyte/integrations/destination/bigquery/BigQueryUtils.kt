@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
-import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.json.Jsons.jsonNode
 import java.util.*
@@ -77,116 +76,6 @@ object BigQueryUtils {
             dataset = bigquery.create(datasetInfo)
         }
         return dataset
-    }
-
-    fun checkHasCreateAndDeleteDatasetRole(
-        bigquery: BigQuery,
-        datasetId: String,
-        datasetLocation: String?
-    ) {
-        val tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX + System.currentTimeMillis()
-        val datasetInfo =
-            DatasetInfo.newBuilder(tmpTestDatasetId).setLocation(datasetLocation).build()
-
-        bigquery.create(datasetInfo)
-
-        try {
-            attemptCreateTableAndTestInsert(bigquery, tmpTestDatasetId)
-        } finally {
-            bigquery.delete(tmpTestDatasetId)
-        }
-    }
-
-    /**
-     * Method is used to create tmp table and make dummy record insert. It's used in Check()
-     * connection method to make sure that user has all required roles for upcoming data
-     * sync/migration. It also verifies if BigQuery project is billable, if not - later sync will
-     * fail as non-billable project has limitations with stream uploading and DML queries. More
-     * details may be found there:
-     * https://cloud.google.com/bigquery/docs/streaming-data-into-bigquery
-     * https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language
-     *
-     * @param bigquery
-     * - initialized bigquery client
-     * @param tmpTestDatasetId
-     * - dataset name where tmp table will be created
-     */
-    private fun attemptCreateTableAndTestInsert(bigquery: BigQuery, tmpTestDatasetId: String) {
-        // Create dummy schema that will be used for tmp table creation
-        val testTableSchema =
-            Schema.of(
-                Field.of("id", StandardSQLTypeName.INT64),
-                Field.of("name", StandardSQLTypeName.STRING)
-            )
-
-        // Create tmp table to verify if user has a create table permission. Also below we will do
-        // test
-        // records insert in it
-        val test_connection_table_name =
-            createTable(bigquery, tmpTestDatasetId, CHECK_TEST_TMP_TABLE_NAME, testTableSchema)
-
-        // Try to make test (dummy records) insert to make sure that user has required permissions
-        // Use ids for BigQuery client to attempt idempotent retries.
-        // See https://github.com/airbytehq/airbyte/issues/33982
-        try {
-            val response =
-                bigquery.insertAll(
-                    InsertAllRequest.newBuilder(test_connection_table_name)
-                        .addRow(
-                            InsertAllRequest.RowToInsert.of(
-                                "1",
-                                ImmutableMap.of("id", 1, "name", "James")
-                            )
-                        )
-                        .addRow(
-                            InsertAllRequest.RowToInsert.of(
-                                "2",
-                                ImmutableMap.of("id", 2, "name", "Eugene")
-                            )
-                        )
-                        .addRow(
-                            InsertAllRequest.RowToInsert.of(
-                                "3",
-                                ImmutableMap.of("id", 3, "name", "Angelina")
-                            )
-                        )
-                        .build()
-                )
-
-            if (response.hasErrors()) {
-                // If any of the insertions failed, this lets you inspect the errors
-                for ((_, value) in response.insertErrors) {
-                    throw ConfigErrorException(
-                        """
-    Failed to check connection: 
-    $value
-    """.trimIndent()
-                    )
-                }
-            }
-        } catch (e: BigQueryException) {
-            LOGGER.error("Dummy inserts in check failed", e)
-            throw ConfigErrorException(
-                """
-    Failed to check connection: 
-    ${e.message}
-    """.trimIndent()
-            )
-        } finally {
-            test_connection_table_name.delete()
-        }
-    }
-
-    fun createTable(
-        bigquery: BigQuery,
-        datasetName: String?,
-        tableName: String?,
-        schema: Schema?
-    ): Table {
-        val tableId = TableId.of(datasetName, tableName)
-        val tableDefinition: TableDefinition = StandardTableDefinition.of(schema)
-        val tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build()
-        return bigquery.create(tableInfo)
     }
 
     /**
