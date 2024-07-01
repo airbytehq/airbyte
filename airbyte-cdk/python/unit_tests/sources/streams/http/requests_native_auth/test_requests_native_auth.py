@@ -222,6 +222,7 @@ class TestOauth2Authenticator:
         assert isinstance(expires_datetime, pendulum.DateTime)
         assert ("access_token", expected_token_expiry_date) == (token, expires_datetime)
 
+    @pytest.mark.usefixtures("mock_sleep")
     @pytest.mark.parametrize("error_code", (429, 500, 502, 504))
     def test_refresh_access_token_retry(self, error_code, requests_mock):
         oauth = Oauth2Authenticator(
