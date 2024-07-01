@@ -33,7 +33,7 @@ data:
           Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally, 
           added incremental functionality to organizations. After updating, please reset your source before resuming syncs. 
           For more information, see our migration documentation for source Snapchat Marketing.
-        upgradeDeadline: "2024-07-01"
+        upgradeDeadline: "2024-07-16"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
