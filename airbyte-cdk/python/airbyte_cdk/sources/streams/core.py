@@ -10,7 +10,7 @@ from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.checkpoint import (
     CheckpointMode,
@@ -24,7 +24,7 @@ from airbyte_cdk.sources.streams.checkpoint import (
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated import deprecated
 
@@ -193,7 +193,7 @@ class Stream(ABC):
 
                     checkpoint_interval = self.state_checkpoint_interval
                     checkpoint = checkpoint_reader.get_checkpoint()
-                    if checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
+                    if checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None and state_manager:
                         airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
                         yield airbyte_state_message
 
@@ -201,16 +201,45 @@ class Stream(ABC):
                         break
             self._observe_state(checkpoint_reader)
             checkpoint_state = checkpoint_reader.get_checkpoint()
-            if checkpoint_state is not None:
+            if state_manager and checkpoint_state is not None:
                 airbyte_state_message = self._checkpoint_state(checkpoint_state, state_manager=state_manager)
                 yield airbyte_state_message
 
             next_slice = checkpoint_reader.next()
 
         checkpoint = checkpoint_reader.get_checkpoint()
-        if checkpoint is not None:
+        if state_manager and checkpoint is not None:
             airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
             yield airbyte_state_message
+
+    def read_stateless(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
+        self,
+        connector_state_manager=None,
+    ) -> Iterable[StreamData]:
+        """
+        Helper method that performs a full refresh read on a stream and emits records. If the parent stream supports
+        incremental, this operation does not update the stream's internal state (if it uses the modern state setter/getter)
+        or emit state messages.
+        """
+
+        configured_stream = ConfiguredAirbyteStream(
+            stream=AirbyteStream(
+                name=self.name,
+                json_schema={},
+                supported_sync_modes=[SyncMode.full_refresh],
+            ),
+            sync_mode=SyncMode.full_refresh,
+            destination_sync_mode=DestinationSyncMode.append,
+        )
+
+        yield from self.read(
+            configured_stream=configured_stream,
+            logger=self.logger,
+            slice_logger=DebugSliceLogger(),
+            stream_state={},
+            state_manager=connector_state_manager,
+            internal_config=InternalConfig(),
+        )
 
     @abstractmethod
     def read_records(
