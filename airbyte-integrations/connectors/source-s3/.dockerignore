@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!main.py
-!source_s3
-!setup.py
-!secrets
