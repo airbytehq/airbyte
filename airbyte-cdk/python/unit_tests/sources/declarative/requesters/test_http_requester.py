@@ -649,6 +649,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
     assert sent_request.url == expected_full_url
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_request_attempt_count_is_tracked_across_retries(http_requester_factory):
     request_mock = MagicMock(spec=requests.PreparedRequest)
     request_mock.headers = {}
@@ -669,6 +670,7 @@ def test_request_attempt_count_is_tracked_across_retries(http_requester_factory)
     assert http_requester._http_client._request_attempt_count.get(request_mock) == http_requester._http_client._max_retries + 1
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_request_attempt_count_with_exponential_backoff_strategy(http_requester_factory):
     request_mock = MagicMock(spec=requests.PreparedRequest)
     request_mock.headers = {}
