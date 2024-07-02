@@ -11,7 +11,6 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest
 import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
-import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest.Companion
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.destination.redshift.RedshiftDestination
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer
@@ -236,6 +235,9 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
             catalog,
             messages1,
             "airbyte/destination-redshift:3.1.1",
+            // Old connector version can't handle TRACE messages; disable the
+            // stream status message
+            streamStatus = null,
         )
 
         // Second sync
@@ -286,15 +288,16 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
 
     @Test
     fun testGenerationIdMigrationForOverwrite() {
-        val catalog =
+        // First sync
+        val catalog1 =
             ConfiguredAirbyteCatalog()
                 .withStreams(
                     listOf(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-                            .withSyncId(42L)
-                            .withGenerationId(43L)
+                            .withSyncId(41L)
+                            .withGenerationId(42L)
                             .withMinimumGenerationId(0L)
                             .withStream(
                                 AirbyteStream()
@@ -304,14 +307,37 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
                             ),
                     ),
                 )
-
-        // First sync
         val messages1 = readMessages("dat/sync1_messages.jsonl")
-        runSync(catalog, messages1, "airbyte/destination-redshift:3.1.1")
+        runSync(
+            catalog1,
+            messages1,
+            "airbyte/destination-redshift:3.1.1",
+            // Old connector version can't handle TRACE messages; disable the
+            // stream status message
+            streamStatus = null,
+        )
 
         // Second sync
+        val catalog2 =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(43L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
+                            ),
+                    ),
+                )
         val messages2 = readMessages("dat/sync2_messages.jsonl")
-        runSync(catalog, messages2)
+        runSync(catalog2, messages2)
 
         val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
         val expectedFinalRecords2 =
