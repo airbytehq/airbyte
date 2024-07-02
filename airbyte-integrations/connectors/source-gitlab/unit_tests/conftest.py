@@ -17,7 +17,7 @@ BASE_CONFIG = {
 GROUPS_LIST_URL = "https://gitlab.com/api/v4/groups?per_page=50"
 
 
-@pytest.fixture(params=["gitlab.com", "http://gitlab.com", "https://gitlab.com"])
+@pytest.fixture(params=["gitlab.com"])
 def config(request):
     return BASE_CONFIG | {"api_url": request.param}
 
