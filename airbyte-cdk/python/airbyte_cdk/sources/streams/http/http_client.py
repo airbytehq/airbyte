@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
-from airbyte_cdk.models import Level, AirbyteStreamStatus, AirbyteStreamStatusReasonType, AirbyteStreamStatusReason
+from airbyte_cdk.models import Level, AirbyteStreamStatus, AirbyteStreamStatusReasonType, AirbyteStreamStatusReason, StreamDescriptor
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
@@ -244,13 +244,26 @@ class HttpClient:
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
 
-        # Request/repsonse logging for declarative cdk.
+        # Request/response logging for declarative cdk
         if log_formatter is not None and response is not None and self._message_repository is not None:
             formatter = log_formatter
             self._message_repository.log_message(
                 Level.DEBUG,
                 lambda: formatter(response),  # type: ignore # log_formatter is always cast to a callable
             )
+
+        # Emit stream status RUNNING with the reason RATE_LIMITED to log that the rate limit has been reached
+        if error_resolution.response_action == ResponseAction.RATE_LIMITED:
+            # TODO: Update to handle with message repository when concurrent message repository is ready
+            reasons = [AirbyteStreamStatusReason(type=AirbyteStreamStatusReasonType.RATE_LIMITED)]
+            message = stream_status_as_airbyte_message(StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons).json(
+                exclude_unset=True)
+
+            # Simply printing the stream status is a temporary solution and can cause future issues. Currently, the _send method is
+            # wrapped with backoff decorators, and we can only emit messages by iterating record_iterator in the abstract source at the
+            # end of the retry decorator behavior. This approach does not allow us to emit messages in the queue before exiting the
+            # backoff retry loop.
+            print(message)
 
         if error_resolution.response_action == ResponseAction.FAIL:
             if response:
@@ -299,10 +312,6 @@ class HttpClient:
                 raise DefaultBackoffException(
                     request=request, response=(response if response is not None else exc), error_message=error_message
                 )
-
-        elif error_resolution.response_action == ResponseAction.RATE_LIMITED and self._message_repository is not None:
-            reasons = [AirbyteStreamStatusReason(AirbyteStreamStatusReasonType.RATE_LIMITED)]
-            self._message_repository.emit_message(stream_status_as_airbyte_message(self, AirbyteStreamStatus.RUNNING, reasons))
 
         elif response:
             try:
