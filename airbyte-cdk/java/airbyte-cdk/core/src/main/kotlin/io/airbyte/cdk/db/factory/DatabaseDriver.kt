@@ -26,7 +26,8 @@ enum class DatabaseDriver(val driverClassName: String, val urlFormatString: Stri
     YUGABYTEDB("com.yugabyte.Driver", "jdbc:yugabytedb://%s:%d/%s"),
     EXASOL("com.exasol.jdbc.EXADriver", "jdbc:exa:%s:%d"),
     TERADATA("com.teradata.jdbc.TeraDriver", "jdbc:teradata://%s/"),
-    SINGLESTORE("com.singlestore.jdbc.Driver", "jdbc:singlestore://%s:%d/%s");
+    SINGLESTORE("com.singlestore.jdbc.Driver", "jdbc:singlestore://%s:%d/%s"),
+    OCEANBASE("com.oceanbase.jdbc.Driver", "jdbc:oceanbase://%s:%s/%s");
 
     companion object {
         /**
