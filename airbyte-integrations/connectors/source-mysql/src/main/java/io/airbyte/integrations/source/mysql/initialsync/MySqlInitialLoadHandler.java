@@ -20,8 +20,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
-import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.TransientErrorTraceEmitterIterator;
-import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -94,8 +92,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final Instant emittedAt,
                                                                              final boolean decorateWithStartedStatus,
-                                                                             final boolean decorateWithCompletedStatus,
-                                                                             final boolean decorateWithTransientError) {
+                                                                             final boolean decorateWithCompletedStatus) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -116,12 +113,6 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
               new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
         }
       }
-    }
-    // The transient error should not be thrown if there are no streams for initial load - as this indicates that the initia load has finished
-    // completely.
-    if (!catalog.getStreams().isEmpty() && decorateWithTransientError) {
-      iteratorList.add(
-          new TransientErrorTraceEmitterIterator(new TransientErrorException("Forcing an additional sync since initial load has completed.")));
     }
     return iteratorList;
   }

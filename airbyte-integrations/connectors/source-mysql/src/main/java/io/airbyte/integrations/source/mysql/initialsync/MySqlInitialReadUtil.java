@@ -18,6 +18,7 @@ import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
@@ -27,7 +28,9 @@ import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.TransientErrorTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -46,7 +49,6 @@ import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.*;
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -210,10 +212,15 @@ public class MySqlInitialReadUtil {
       stateToBeUsed = cdcState;
     }
 
-    // Debezium is started for streams that have been started - that is they have been partially or fully completed.
-    final var cdcStreamList = catalog.getStreams().stream()
+    // Debezium is started for streams that have been started - that is they have been partially or
+    // fully completed.
+    final var startedCdcStreamList = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
+        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
+
+    final var allCdcStreamList = catalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
 
     // If there are streams to sync via primary key load, build the relevant iterators.
@@ -225,20 +232,17 @@ public class MySqlInitialReadUtil {
           getMySqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadGlobalStateManager,
               Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
 
-      // WAL is read for completed & started streams prior to resuming initial load, so start traces will be emitted prior to that. However, if
-      // there are no completed & started stream emitted, then the initial load iterator must be decorated with them. A stream completed status
-      // is ALWAYS emitted since the reading the WAL is done prior to the initial load. One additional sync is forced by decorating the initial load
-      // iterators with a transient error.
-      final boolean decorateWithStartStatus = !cdcStreamList.isEmpty();
+      // Start and complete stream status messages are emitted while constructing the full set of initial
+      // load and incremental debezium iterators.
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
-          emittedAt, decorateWithStartStatus, true, true));
+          emittedAt, false, false));
     }
 
-    // CDC stream status messages should be emitted for streams that have been partially or fully completed.
+    // CDC stream status messages should be emitted for streams.
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = catalog.getStreams().stream()
-        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
             new AirbyteStreamStatusHolder(
                 new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
@@ -246,7 +250,7 @@ public class MySqlInitialReadUtil {
         .toList();
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsEndStatusEmitters = catalog.getStreams().stream()
-        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, initialLoadStreams))
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
             new AirbyteStreamStatusHolder(
                 new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
@@ -261,40 +265,70 @@ public class MySqlInitialReadUtil {
         firstRecordWaitTime,
         AirbyteDebeziumHandler.QUEUE_CAPACITY,
         false);
-    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
-        MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, cdcStreamList);
     final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
-        propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
-
-    // This starts processing the binglogs as soon as initial sync is complete, this is a bit different
-    // from the current cdc syncs.
-    // We finish the current CDC once the initial snapshot is complete and the next sync starts
-    // processing the binlogs
-    if (cdcStreamList.isEmpty()) {
-      LOGGER.info("Skipping the CDC read altogether because no cdc streams have been completed or started");
+    if (startedCdcStreamList.isEmpty()) {
+      LOGGER.info("First sync - no cdc streams have been completed or started");
+      /*
+       * This is the first run case - no initial loads have been started. In this case, we want to run the
+       * iterators in the following order: 1. Run the initial load iterators. This step will timeout and
+       * throw a transient error if run for too long (> 8hrs by default). 2. Run the debezium iterators
+       * with ALL of the incremental streams configured. This is because if step 1 completes, the initial
+       * load can be considered finished.
+       */
+      final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+          MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, allCdcStreamList);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorsSupplier = getCdcIncrementalIteratorsSupplier(handler,
+          propertiesManager, eventConverter, stateToBeUsed, stateManager);
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream
-                  .of(initialLoadIterator)
+                  .of(
+                      cdcStreamsStartStatusEmitters,
+                      initialLoadIterator,
+                      Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorsSupplier, null)),
+                      cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
     } else if (initialLoadIterator.isEmpty()) {
       LOGGER.info("Initial load has finished completely - only reading the WAL");
+      /*
+       * In this case, the initial load has compelted and only debezium should be ru. The iterators should
+       * be run in the following order: 1. Run the debezium iterators with ALL of the incremental streams
+       * configured.
+       */
+      final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+          MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, allCdcStreamList);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = getCdcIncrementalIteratorsSupplier(handler,
+          propertiesManager, eventConverter, stateToBeUsed, stateManager);
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream
                   .of(
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-                      cdcStreamsEndStatusEmitters)
+                      cdcStreamsEndStatusEmitters,
+                      List.of(new TransientErrorTraceEmitterIterator(
+                          new TransientErrorException("Forcing a new sync after the initial load to read the WAL"))))
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
     } else {
       LOGGER.info("Initial load is in progress - reading WAL first and then resuming with initial load.");
+      /*
+       * In this case, the initial load has partially completed (WASS case). The iterators should be run
+       * in the following order: 1. Run the debezium iterators with only the incremental streams which
+       * have been fully or partially completed configured. 2. Resume initial load for partially completed
+       * and not started streams. This step will timeout and throw a transient error if run for too long
+       * (> 8hrs by default). 3. Emit a transient error. This is to signal to the platform to restart the
+       * sync to clear the WAL. We cannot simply add the same cdc iterators as their target end position
+       * is fixed to the tip of the WAL at the start of the sync.
+       */
+      final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+          MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, startedCdcStreamList);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = getCdcIncrementalIteratorsSupplier(handler,
+          propertiesManager, eventConverter, stateToBeUsed, stateManager);
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream
@@ -302,11 +336,24 @@ public class MySqlInitialReadUtil {
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                       initialLoadIterator,
+                      // This is redundant - we already get the tip of the WAL and clear it here. Instead, emit the
+                      // Collections.singletonList(AutoCloseableIterators.lazyIterator(lastDbzRunIncrementalIteratorSupplier,
+                      // null)),
                       cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Supplier<AutoCloseableIterator<AirbyteMessage>> getCdcIncrementalIteratorsSupplier(AirbyteDebeziumHandler handler,
+                                                                                                    RelationalDbDebeziumPropertiesManager propertiesManager,
+                                                                                                    DebeziumEventConverter eventConverter,
+                                                                                                    CdcState stateToBeUsed,
+                                                                                                    StateManager stateManager) {
+    return () -> handler.getIncrementalIterators(
+        propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
   }
 
   /**
