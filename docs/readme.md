@@ -34,6 +34,6 @@ Next, check out the [Airbyte Open Source QuickStart](/deploying-airbyte/quicksta
 
 ## For Airbyte contributors
 
-To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](/contributing-to-airbyte/).
+To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](./contributing-to-airbyte/).
 
 [![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)
