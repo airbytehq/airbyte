@@ -461,11 +461,9 @@ definitions:
                   - type: HttpResponseFilter
                     action: IGNORE
                     predicate: >-
-                      {{ 'error' in response and response['error']['code'] == 10
-                      }}
+                      {{ 'error' in response and response['error']['code'] == 10 }}
                     error_message: >-
-                      Insights error: {{
-                      response['error']['message'] }}
+                      Insights error: {{ response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
