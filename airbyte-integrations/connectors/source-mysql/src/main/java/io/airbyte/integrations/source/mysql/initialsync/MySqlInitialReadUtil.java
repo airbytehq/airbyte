@@ -24,6 +24,7 @@ import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventC
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
+import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadTimeoutUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
@@ -197,6 +198,7 @@ public class MySqlInitialReadUtil {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+    final Duration initialLoadTimeout = InitialLoadTimeoutUtil.getInitialLoadTimeout(sourceConfig);
     // Determine the streams that need to be loaded via primary key sync.
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
     final InitialLoadStreams initialLoadStreams =
@@ -237,7 +239,7 @@ public class MySqlInitialReadUtil {
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
-          emittedAt, false, false));
+          emittedAt, false, false, Optional.of(initialLoadTimeout)));
     }
 
     // CDC stream status messages should be emitted for streams.

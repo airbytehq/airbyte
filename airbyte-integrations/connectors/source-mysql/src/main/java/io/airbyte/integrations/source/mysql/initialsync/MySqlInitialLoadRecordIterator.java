@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
@@ -64,6 +65,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   private int numSubqueries = 0;
   private AutoCloseableIterator<AirbyteRecordData> currentIterator;
 
+  private Optional<Duration> cdcInitialLoadTimeout;
+
   MySqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
                                  final JdbcCompatibleSourceOperations<MysqlType> sourceOperations,
@@ -73,7 +76,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
                                  final AirbyteStreamNameNamespacePair pair,
                                  final long chunkSize,
                                  final boolean isCompositeKeyLoad,
-                                 final Instant startInstant) {
+                                 final Instant startInstant,
+                                 final Optional<Duration> cdcInitialLoadTimeout) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -84,12 +88,14 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     this.pkInfo = initialLoadStateManager.getPrimaryKeyInfo(pair);
     this.isCompositeKeyLoad = isCompositeKeyLoad;
     this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
   }
 
   @CheckForNull
   @Override
   protected AirbyteRecordData computeNext() {
-    if (isCdcSync() && Duration.between(startInstant, Instant.now()).compareTo(Duration.ofHours(8)) > 0) {
+    if (isCdcSync() && cdcInitialLoadTimeout.isPresent()
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
       LOGGER.info("Sync ran for too long - sending a transient error");
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
       throw new TransientErrorException("Cancelling sync because initial load taking too long");

@@ -21,7 +21,6 @@ class TransientErrorTraceEmitterIterator(private val e: Throwable) :
 
     override fun next(): AirbyteMessage {
         emitted = true
-
         return makeErrorTraceAirbyteMessage(
             e,
             e.message,
