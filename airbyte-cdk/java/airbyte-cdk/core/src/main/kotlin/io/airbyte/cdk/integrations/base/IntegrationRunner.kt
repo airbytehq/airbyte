@@ -8,9 +8,7 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import datadog.trace.api.Trace
-import io.airbyte.cdk.integrations.util.ApmTraceUtils
-import io.airbyte.cdk.integrations.util.ConnectorExceptionTranslator
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
+import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer
 import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.features.FeatureFlags
@@ -113,10 +111,10 @@ internal constructor(
     @Throws(Exception::class)
     @JvmOverloads
     fun run(args: Array<String>,
-            exceptionTranslator: ConnectorExceptionTranslator? = null) {
+            exceptionHandler: ConnectorExceptionHandler? = null) {
         val parsed = cliParser.parse(args)
         try {
-            runInternal(parsed, exceptionTranslator)
+            runInternal(parsed, exceptionHandler)
         } catch (e: Exception) {
             throw e
         }
@@ -124,7 +122,7 @@ internal constructor(
 
     @Throws(Exception::class)
     private fun runInternal(parsed: IntegrationConfig,
-                            exceptionTranslator: ConnectorExceptionTranslator? = null) {
+                            exceptionHandler: ConnectorExceptionHandler? = null) {
         LOGGER.info { "Running integration: ${integration.javaClass.name}" }
         LOGGER.info { "Command: ${parsed.command}" }
         LOGGER.info { "Integration config: $parsed" }
@@ -217,62 +215,8 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
-            //if (typeof e is DebeziumException) {
-             //   e = e.getFirstExcption
-            //}
-
-            // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
-            // attempt is made
-            // to
-            // find the root exception that corresponds to a configuration error. If that does not
-            // exist, we
-            // just return the original exception.
-            ApmTraceUtils.addExceptionToTrace(e)
-            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e, exceptionTranslator)
-            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e, exceptionTranslator)
-            // If the source connector throws a config error, a trace message with the relevant
-            // message should
-            // be surfaced.
-            if (parsed.command == Command.CHECK) {
-                // Currently, special handling is required for the CHECK case since the user display
-                // information in
-                // the trace message is
-                // not properly surfaced to the FE. In the future, we can remove this and just throw
-                // an exception.
-                outputRecordCollector.accept(
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                        .withConnectionStatus(
-                            AirbyteConnectionStatus()
-                                .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                .withMessage(
-                                    ConnectorExceptionUtil.getDisplayMessage(
-                                        rootConfigErrorThrowable, exceptionTranslator
-                                    )
-                                )
-                        )
-                )
-                return
-            }
-
-            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable, exceptionTranslator)) {
-                AirbyteTraceMessageUtility.emitConfigErrorTrace(
-                    e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable, exceptionTranslator),
-                )
-                // On receiving a config error, the container should be immediately shut down.
-                System.exit(1)
-            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable, exceptionTranslator)) {
-                AirbyteTraceMessageUtility.emitTransientErrorTrace(
-                    e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable, exceptionTranslator)
-                )
-                // On receiving a transient error, the container should be immediately shut down.
-                System.exit(1)
-            }
-            throw e
+            exceptionHandler?.handleException(e, parsed.command, outputRecordCollector)
         }
-
         LOGGER.info { "Completed integration: ${integration.javaClass.name}" }
     }
 

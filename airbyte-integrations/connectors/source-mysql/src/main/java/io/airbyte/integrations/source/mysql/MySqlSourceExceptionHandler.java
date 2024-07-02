@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Objects;
 
 import io.airbyte.cdk.integrations.util.ConnectorErrorProfile;
-import io.airbyte.cdk.integrations.util.ConnectorExceptionTranslator;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler;
 
 
-public class MySqlSourceExceptionTranslator extends ConnectorExceptionTranslator  {
+public class MySqlSourceExceptionHandler extends ConnectorExceptionHandler  {
 
     private  List<ConnectorErrorProfile> connectorErrorDictionary;
 
-    public MySqlSourceExceptionTranslator() {
+    public MySqlSourceExceptionHandler() {
         initializeErrorDictionary();
     }
 

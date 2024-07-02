@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import io.airbyte.cdk.integrations.util.ConnectorErrorProfile;
-import io.airbyte.cdk.integrations.util.ConnectorExceptionTranslator;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler;
 
-public class PostgresSourceExceptionTranslator extends ConnectorExceptionTranslator {
+public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
 
     String POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE =
             "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
@@ -18,7 +18,7 @@ public class PostgresSourceExceptionTranslator extends ConnectorExceptionTransla
 
     private  List<ConnectorErrorProfile> connectorErrorDictionary;
 
-    public PostgresSourceExceptionTranslator() {
+    public PostgresSourceExceptionHandler() {
         initializeErrorDictionary();
     }
 
@@ -60,6 +60,9 @@ public class PostgresSourceExceptionTranslator extends ConnectorExceptionTransla
 
     @Override
     public String translateConnectorSpecificErrorMessage(Throwable e) {
+
+        isRecognizableError(e);
+
         for (ConnectorErrorProfile errorProfile : connectorErrorDictionary)
             if (e.getMessage().toLowerCase().matches(errorProfile.getRegexMatchingPattern()))
                 return errorProfile.getExternalMessage();
