@@ -353,7 +353,7 @@ class HttpStream(Stream, ABC):
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             dedupe_query_params=True,
-            log_formatter=self.get_log_formatter()
+            log_formatter=self.get_log_formatter(),
         )
 
         return request, response
