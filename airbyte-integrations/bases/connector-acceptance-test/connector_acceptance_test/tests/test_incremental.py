@@ -164,8 +164,7 @@ class TestIncremental(BaseTest):
 
         # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
         # the complete final state of streams must be assembled by going through all prior state messages received
-        is_per_stream = is_per_stream_state(states_1[-1])
-        if is_per_stream:
+        if is_per_stream_state(states_1[-1]):
             latest_state = construct_latest_state_from_messages(states_1)
             state_input = []
             for stream_name, stream_state in latest_state.items():

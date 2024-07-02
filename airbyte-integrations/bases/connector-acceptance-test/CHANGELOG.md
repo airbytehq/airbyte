@@ -2,7 +2,7 @@
 
 ## 3.8.3
 
-Add handling for global state messages.
+Add handling for global state messages (for use by DB sources).
 
 ## 3.8.2
 
