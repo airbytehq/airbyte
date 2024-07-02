@@ -7,5 +7,6 @@
   "queue_url": "https://sqs.eu-west-1.amazonaws.com/840836244599/ab-airbyte-testing",
   "region": "eu-west-1",
   "access_key": "xxx",
-  "secret_key": "xxx"
+  "secret_key": "xxx",
+  "session_token": "xxx"
 }
