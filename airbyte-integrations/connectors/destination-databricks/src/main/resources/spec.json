@@ -131,6 +131,13 @@
         "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
         "default": true,
         "order": 9
+      },
+      "raw_schema_override": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "default": "airbyte_internal",
+        "order": 10
       }
     }
   }
