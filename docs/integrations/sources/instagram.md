@@ -115,8 +115,8 @@ Instagram limits the number of requests that can be made at a time. See Facebook
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-| :------ | :--------- |:---------------------------------------------------------| :------------------------------------------------------------------------------------------------------------------------ |
-| 3.0.15 | 2024-06-27 | [40569](https://github.com/airbytehq/airbyte/pull/40569) | Migrate MediaInsights and StoryInsights to low-code |
+| :------ |:-----------|:---------------------------------------------------------| :------------------------------------------------------------------------------------------------------------------------ |
+| 3.0.15 | 2024-07-02 | [40569](https://github.com/airbytehq/airbyte/pull/40569) | Migrate MediaInsights and StoryInsights to low-code |
 | 3.0.14 | 2024-06-26 | [40524](https://github.com/airbytehq/airbyte/pull/40524) | Fix Api stream when the results contain not business accounts |
 | 3.0.13 | 2024-06-25 | [40456](https://github.com/airbytehq/airbyte/pull/40456) | Update dependencies |
 | 3.0.12 | 2024-06-24 | [39504](https://github.com/airbytehq/airbyte/pull/39504) | Migrate Media, Users, UserLifeTimeInsights and Stories to low-code |
