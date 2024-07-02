@@ -434,9 +434,9 @@ class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
-class Leads(LinkedInAdsStreamSlicing):
+class Leads(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     """
-        Get Leads data using `account_id` slicing.
+        Get Leads data.
     https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2023-11&tabs=http"""
 
     endpoint = "leadFormResponses"
@@ -469,7 +469,7 @@ class Leads(LinkedInAdsStreamSlicing):
         )
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
-class Forms(LinkedInAdsStreamSlicing):
+class Forms(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     """
         Get forms data using `account_id` slicing.
     https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2023-11&tabs=http"""
