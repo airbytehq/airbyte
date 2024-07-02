@@ -1,0 +1,79 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "email": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "euId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "campaignId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "score": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "comment": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sourceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "dateSent": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "dateAnswered": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "source": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "custom": {
+            "type": [
+                "object",
+                "null"
+            ]
+        }
+    }
+}
