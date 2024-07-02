@@ -91,7 +91,9 @@ class SourceAmazonSellerPartner(AbstractSource):
         )
 
         start_date = config.get("replication_start_date")
-        use_default_start_date = not start_date or (pendulum.now("utc") - pendulum.parse(start_date)).days > DEFAULT_RETENTION_PERIOD_IN_DAYS
+        use_default_start_date = (
+            not start_date or (pendulum.now("utc") - pendulum.parse(start_date)).days > DEFAULT_RETENTION_PERIOD_IN_DAYS
+        )
         if use_default_start_date:
             start_date = pendulum.now("utc").subtract(days=DEFAULT_RETENTION_PERIOD_IN_DAYS).strftime("%Y-%m-%dT%H:%M:%SZ")
 
