@@ -36,7 +36,8 @@ class DatabricksStorageOperation(
     //  Hoist them to SqlGenerator interface in CDK, until then using concrete instance.
     private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
 
-    override fun writeToStage(streamId: StreamId, data: SerializableBuffer) {
+    override fun writeToStage(streamConfig: StreamConfig, data: SerializableBuffer) {
+        val streamId = streamConfig.id
         val stagedFile = "${stagingDirectory(streamId, database)}/${data.filename}"
         workspaceClient.files().upload(stagedFile, data.inputStream)
         destinationHandler.execute(
@@ -120,12 +121,6 @@ class DatabricksStorageOperation(
             log.info { "Deleting Staging directory ${stagingDirectory(streamId, database)}" }
             workspaceClient.files().deleteDirectory(stagingDirectory(streamId, database))
         }
-    }
-
-    override fun createFinalNamespace(streamId: StreamId) {
-        val finalSchema = streamId.finalNamespace
-        // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
-        destinationHandler.execute(sqlGenerator.createSchema(finalSchema))
     }
 
     override fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean) {

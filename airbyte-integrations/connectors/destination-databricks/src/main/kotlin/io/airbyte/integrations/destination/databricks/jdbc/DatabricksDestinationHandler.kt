@@ -29,6 +29,7 @@ import java.util.*
 import kotlin.streams.asSequence
 
 class DatabricksDestinationHandler(
+    private val sqlGenerator: DatabricksSqlGenerator,
     private val databaseName: String,
     private val jdbcDatabase: JdbcDatabase,
 ) : DestinationHandler<MinimumDestinationState.Impl> {
@@ -111,6 +112,13 @@ class DatabricksDestinationHandler(
             .toList()
     }
 
+    override fun createNamespaces(schemas: Set<String>) {
+        for (schema in schemas) {
+            // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
+            execute(sqlGenerator.createSchema(schema))
+        }
+    }
+
     private fun findExistingTable(
         streamIds: List<StreamId>
     ): Map<String, LinkedHashMap<String, TableDefinition>> {
@@ -182,7 +190,7 @@ class DatabricksDestinationHandler(
             tableDefinition.columns.entries
                 .filter { (it.key != abRawId && it.key != abExtractedAt && it.key != abMeta) }
                 .associate {
-                    it.key!! to if (it.value.type != "DECIMAL") it.value.type else "DECIMAL(38, 10)"
+                    it.key to if (it.value.type != "DECIMAL") it.value.type else "DECIMAL(38, 10)"
                 }
         return actualColumns == expectedColumns
     }
@@ -221,7 +229,7 @@ class DatabricksDestinationHandler(
                 // Handle resultset call in the function which will be closed
                 // after the scope is exited
                 val resultSet =
-                    metadata?.getTables(
+                    metadata.getTables(
                         databaseName,
                         id.rawNamespace,
                         id.rawName,

@@ -61,22 +61,22 @@ class DatabricksSqlGeneratorIntegrationTest :
         }
     }
 
+    override val sqlGenerator: SqlGenerator
+        get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
+    private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
     override val destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
         get() =
             DatabricksDestinationHandler(
+                databricksSqlGenerator,
                 connectorConfig.database,
                 jdbcDatabase,
             )
-    override val sqlGenerator: SqlGenerator
-        get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
     override val supportsSafeCast: Boolean
         get() = true
 
     override fun createNamespace(namespace: String) {
         destinationHandler.execute(sqlGenerator.createSchema(namespace))
     }
-
-    private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
 
     override fun createRawTable(streamId: StreamId) {
         destinationHandler.execute(databricksSqlGenerator.createRawTable(streamId))
@@ -136,7 +136,9 @@ class DatabricksSqlGeneratorIntegrationTest :
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
+        // TODO
+        generationId: Long,
     ) {
         val columnNames =
             if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES

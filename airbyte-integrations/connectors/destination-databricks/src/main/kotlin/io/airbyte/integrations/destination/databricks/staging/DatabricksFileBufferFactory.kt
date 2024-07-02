@@ -55,7 +55,9 @@ object DatabricksFileBufferFactory {
                             id: UUID,
                             formattedString: String,
                             emittedAt: Long,
-                            formattedAirbyteMetaString: String
+                            formattedAirbyteMetaString: String,
+                            // TODO use this value
+                            generationId: Long,
                         ): List<Any> {
                             return listOf(
                                 id,
