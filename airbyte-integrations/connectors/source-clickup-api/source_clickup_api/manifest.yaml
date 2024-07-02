@@ -1,4 +1,16 @@
-version: "0.80.0"
+version: 1.0.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - user
+    - team
+    - space
+    - folder
+    - list
+    - task
 
 definitions:
   schema_loader:
@@ -125,7 +137,3 @@ streams:
           type: RequestOption
           field_name: "page"
           inject_into: "request_parameter"
-
-check:
-  type: CheckStream
-  stream_names: ["user", "team"]
