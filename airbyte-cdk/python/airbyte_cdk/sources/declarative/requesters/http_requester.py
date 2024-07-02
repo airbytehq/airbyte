@@ -82,7 +82,7 @@ class HttpRequester(Requester):
             use_cache=self.use_cache,
             backoff_strategy=backoff_strategies,
             disable_retries=self.disable_retries,
-            message_respository=self.message_repository,
+            message_repository=self.message_repository,
         )
 
     def get_authenticator(self) -> DeclarativeAuthenticator:
