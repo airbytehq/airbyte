@@ -534,6 +534,12 @@ class Action(Enum):
     IGNORE = 'IGNORE'
 
 
+class FailureType(Enum):
+    system_error = 'system_error'
+    config_error = 'config_error'
+    transient_error = 'transient_error'
+
+
 class HttpResponseFilter(BaseModel):
     type: Literal['HttpResponseFilter']
     action: Optional[Action] = Field(
@@ -541,6 +547,12 @@ class HttpResponseFilter(BaseModel):
         description='Action to execute if a response matches the filter.',
         examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE'],
         title='Action',
+    )
+    failure_type: Optional[FailureType] = Field(
+        None,
+        description='Failure type of traced exception if a response matches the filter.',
+        examples=['system_error', 'config_error', 'transient_error'],
+        title='Failure Type',
     )
     error_message: Optional[str] = Field(
         None,
