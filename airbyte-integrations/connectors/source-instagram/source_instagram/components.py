@@ -6,7 +6,11 @@ from typing import Any, Dict, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
-from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient, HttpMethod, HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
+    ExponentialBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient, HttpMethod
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config
 from source_instagram import SourceInstagram
@@ -17,26 +21,41 @@ GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["
 
 
 def get_http_response(name: str, path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
-    url = f"{GRAPH_URL}/{path}"
-    token = config["access_token"]
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    params = {
-        **request_params,
-    }
-    http_client = HttpClient(
-        name=name,
-        logger=logging.getLogger(f"airbyte.HttpClient.{name}"),
-        use_cache=True,
-    )
-    _, response = http_client.send_request(
-        http_method=HttpMethod.GET.name,
-        url=url,
-        request_kwargs={},
-        headers=headers,
-        params=params,
-    )
-    if response.status_code == 200:
-        return response.json()
+    http_logger = logging.getLogger(f"airbyte.HttpClient.{name}")
+    try:
+        url = f"{GRAPH_URL}/{path}"
+        token = config["access_token"]
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        params = {
+            **request_params,
+        }
+        factor = 5
+        backoff_parameters = backoff_config = {"backoff": factor}
+        backoff_strategy = ExponentialBackoffStrategy(factor=factor, parameters=backoff_parameters, config=backoff_config)
+        error_handler = DefaultErrorHandler(config={}, parameters={}, backoff_strategies=[backoff_strategy])
+        http_client = HttpClient(
+            name=name,
+            logger=http_logger,
+            use_cache=True,
+            error_handler=error_handler,
+        )
+        _, response = http_client.send_request(
+            http_method=HttpMethod.GET.name,
+            url=url,
+            request_kwargs={},
+            headers=headers,
+            params=params,
+        )
+        response.raise_for_status()
+    except requests.HTTPError as http_err:
+        error = f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}"
+        http_logger.error(f"Error getting children data: {error}")
+        raise Exception(error)
+    except Exception as err:
+        error = f"An error occurred: {err}"
+        http_logger.error(f"Error getting children data: {error}")
+        raise Exception(error)
+    return response.json()
 
 
 @dataclass
