@@ -15,13 +15,21 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
+    StreamDescriptor,
     SyncMode,
-    Type,
+    TraceType,
 )
+from airbyte_cdk.models import Type
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import Source
 from faunadb import _json
 from faunadb import query as q
@@ -636,10 +644,10 @@ class SourceFauna(Source):
                     # beginning.
                     del state[stream_name]["full_sync_cursor"]
                     yield AirbyteMessage(
-                        type=Type.STATE,
+                        type=MessageType.STATE,
                         state=AirbyteStateMessage(
-                            data=state,
-                            emitted_at=self.find_emitted_at(),
+                            type=AirbyteStateType.STREAM,
+                            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
                         ),
                     )
                 elif stream.sync_mode == SyncMode.incremental:
@@ -679,10 +687,10 @@ class SourceFauna(Source):
                         yield make_message(stream_name, data_obj)
                     # Yield our state
                     yield AirbyteMessage(
-                        type=Type.STATE,
+                        type=MessageType.STATE,
                         state=AirbyteStateMessage(
-                            data=state,
-                            emitted_at=self.find_emitted_at(),
+                            type=AirbyteStateType.STREAM,
+                            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
                         ),
                     )
                 else:
@@ -690,10 +698,10 @@ class SourceFauna(Source):
 
         except Exception as e:
             yield AirbyteMessage(
-                type=Type.STATE,
+                type=MessageType.STATE,
                 state=AirbyteStateMessage(
-                    data=state,
-                    emitted_at=self.find_emitted_at(),
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
                 ),
             )
             logger.error(e)
