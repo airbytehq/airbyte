@@ -120,6 +120,9 @@ class AbstractSource(Source, ABC):
                             f"Refresh the schema in your replication settings and remove this stream from future sync attempts."
                         )
 
+                        # Use configured_stream as stream_instance to support references in error handling.
+                        stream_instance = configured_stream.stream
+
                         raise AirbyteTracedException(
                             message="A stream listed in your configuration was not found in the source. Please check the logs for more "
                                     "details.",
