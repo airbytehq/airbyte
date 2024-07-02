@@ -109,24 +109,24 @@ class AbstractSource(Source, ABC):
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
-                if not stream_instance:
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-
-                    if not self.raise_exception_on_missing_stream:
-                        continue
-
-                    error_message = (
-                        f"The stream '{configured_stream.stream.name}' in your connection configuration was not found in the source. "
-                        f"Refresh the schema in your replication settings and remove this stream from future sync attempts."
-                    )
-
-                    raise AirbyteTracedException(
-                        message="A stream listed in your configuration was not found in the source. Please check the logs for more details.",
-                        internal_message=error_message,
-                        failure_type=FailureType.config_error,
-                    )
-
                 try:
+                    if not stream_instance:
+                        if not self.raise_exception_on_missing_stream:
+                            yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
+                            continue
+
+                        error_message = (
+                            f"The stream '{configured_stream.stream.name}' in your connection configuration was not found in the source. "
+                            f"Refresh the schema in your replication settings and remove this stream from future sync attempts."
+                        )
+
+                        raise AirbyteTracedException(
+                            message="A stream listed in your configuration was not found in the source. Please check the logs for more "
+                                    "details.",
+                            internal_message=error_message,
+                            failure_type=FailureType.config_error,
+                        )
+
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
                     stream_is_available, reason = stream_instance.check_availability(logger, self)
                     if not stream_is_available:
