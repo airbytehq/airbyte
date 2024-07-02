@@ -17,7 +17,7 @@ The following table describes the support levels of Airbyte connectors.
 | **Support: Self-Managed Enterprise** | Supported\*                               | No Support                                                                                             | Supported\*\*                                                                                                                                                                                                                                                      |
 | **Support: Community (OSS)**         | Slack Support only                        | No Support                                                                                             | Slack Support only                                                                                                                                                                                                                                                 |
 
-\*For Integration connectors, Official Support SLAs are only available to customers with Premium
+\*For Integrations, Official Support SLAs are only available to customers with Premium
 Support included in their contract. Otherwise, please use our support portal and we will address
 your issues as soon as possible.
 
