@@ -10,8 +10,8 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteStream,
     AirbyteStreamStatus,
-    AirbyteStreamStatusTraceMessage,
     AirbyteStreamStatusReason,
+    AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     StreamDescriptor,
     TraceType,
@@ -19,7 +19,11 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 
 
-def as_airbyte_message(stream: Union[AirbyteStream, StreamDescriptor], current_status: AirbyteStreamStatus, reasons: Optional[List[AirbyteStreamStatusReason]] = None) -> AirbyteMessage:
+def as_airbyte_message(
+    stream: Union[AirbyteStream, StreamDescriptor],
+    current_status: AirbyteStreamStatus,
+    reasons: Optional[List[AirbyteStreamStatusReason]] = None,
+) -> AirbyteMessage:
     """
     Builds an AirbyteStreamStatusTraceMessage for the provided stream
     """

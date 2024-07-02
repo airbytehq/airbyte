@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
-from airbyte_cdk.models import Level, AirbyteStreamStatus, AirbyteStreamStatusReasonType, AirbyteStreamStatusReason, StreamDescriptor
+from airbyte_cdk.models import AirbyteStreamStatus, AirbyteStreamStatusReason, AirbyteStreamStatusReasonType, Level, StreamDescriptor
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
@@ -257,7 +257,8 @@ class HttpClient:
             # TODO: Update to handle with message repository when concurrent message repository is ready
             reasons = [AirbyteStreamStatusReason(type=AirbyteStreamStatusReasonType.RATE_LIMITED)]
             message = stream_status_as_airbyte_message(StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons).json(
-                exclude_unset=True)
+                exclude_unset=True
+            )
 
             # Simply printing the stream status is a temporary solution and can cause future issues. Currently, the _send method is
             # wrapped with backoff decorators, and we can only emit messages by iterating record_iterator in the abstract source at the
