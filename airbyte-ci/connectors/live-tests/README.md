@@ -280,6 +280,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.17.5
+
+Performance improvements using caching.
+
 ### 0.17.4
 
 Fix control image when running tests in CI.
