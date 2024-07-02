@@ -54,6 +54,7 @@ production.
   development or not prioritized) and may include backward-incompatible/breaking API changes with no
   or short notice.
 - Marketplace connectors have no Support SLAs.
+- You're very welcome to contribute new features and streams to an existing Marketplace integration. Airbyte Contributor Experience team is happy to review PRs when we have capacity.
 
 ## Archived
 
