@@ -159,6 +159,15 @@ NOW = 1234567
             {"my_stream": {"field_A": {"type": ["string", "null"]}}},
             id="test_null_string",
         ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": None}},
+                {"stream": "my_stream", "data": {"field_A": "abc"}},
+                {"stream": "my_stream", "data": {"field_A": {"nested": "xyz"}}},
+            ],
+            {"my_stream": {"field_A": {'anyOf': [{'type':['null', 'string']}, {'properties': {'nested': {'type': 'string'}}, 'type': 'object'}]}}},
+            id="test_anyof_basic_types_object",
+        )
     ],
 )
 def test_schema_derivation(input_records: List, expected_schemas: Mapping):
