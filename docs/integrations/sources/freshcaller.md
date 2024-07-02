@@ -45,9 +45,10 @@ Please read [How to find your API key](https://support.freshdesk.com/en/support/
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                           |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------|
+| 0.3.2   | 2024-05-15 | [38207](https://github.com/airbytehq/airbyte/pull/38207) | Make connector compatible with Builder            |
 | 0.3.1   | 2023-11-28 | [32874](https://github.com/airbytehq/airbyte/pull/32874) | 🐛 Source: fix page_size_option parameter in spec |
-| 0.3.0   | 2023-10-24 | [31102](https://github.com/airbytehq/airbyte/pull/14759) | ✨ Source: Migrate to Low Code CDK                |
+| 0.3.0   | 2023-10-24 | [31102](https://github.com/airbytehq/airbyte/pull/14759) | ✨ Source: Migrate to Low Code CDK                 |
 | 0.2.0   | 2023-05-15 | [26065](https://github.com/airbytehq/airbyte/pull/26065) | Fix spec type check for `start_date`              |
 | 0.1.0   | 2022-08-11 | [14759](https://github.com/airbytehq/airbyte/pull/14759) | 🎉 New Source: Freshcaller                        |
 
