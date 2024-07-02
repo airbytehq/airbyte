@@ -7,20 +7,18 @@ package io.airbyte.integrations.source.mssql;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.v0.*;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.*;
@@ -115,6 +113,36 @@ class MssqlSourceTest {
     assertThat(throwable).isInstanceOf(ConfigErrorException.class)
         .hasMessageContaining(
             "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='dbo.id_and_name', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+  }
+
+  @Test
+  void testDiscoverWithNonClusteredPk() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (name)");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+    final String oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
+        new AirbyteStream().withName(
+            actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace()));
+    assertEquals(oc, "name");
+  }
+
+  @Test
+  void testDiscoverWithNoClusteredIndex() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("CREATE NONCLUSTERED INDEX n1 ON id_and_name (name)");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+    final String oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
+        new AirbyteStream().withName(
+            actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace()));
+    assertNull(oc);
   }
 
 }

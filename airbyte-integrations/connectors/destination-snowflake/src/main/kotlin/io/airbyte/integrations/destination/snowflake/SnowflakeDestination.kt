@@ -122,6 +122,12 @@ constructor(
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.empty()
                         ),
+                    initialTempRawTableStatus =
+                        InitialRawTableStatus(
+                            rawTableExists = false,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.empty()
+                        ),
                     isSchemaMismatch = true,
                     isFinalTableEmpty = true,
                     destinationState =

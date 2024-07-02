@@ -1,0 +1,52 @@
+{
+  "data": [
+    {
+      "name": "impressions",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 10000
+        }
+      ],
+      "title": "Impressions",
+      "description": "The number of times your video was displayed.",
+      "id": "90014330517797123/insights/impressions/lifetime"
+    },
+    {
+      "name": "reach",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 8000
+        }
+      ],
+      "title": "Reach",
+      "description": "The number of unique accounts that viewed your video.",
+      "id": "90014330517797123/insights/reach/lifetime"
+    },
+    {
+      "name": "saved",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 200
+        }
+      ],
+      "title": "Saves",
+      "description": "The number of saves of your video.",
+      "id": "90014330517797123/insights/saved/lifetime"
+    },
+    {
+      "name": "video_views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 5000
+        }
+      ],
+      "title": "Video Views",
+      "description": "The number of times your video was viewed.",
+      "id": "90014330517797123/insights/video_views/lifetime"
+    }
+  ]
+}
