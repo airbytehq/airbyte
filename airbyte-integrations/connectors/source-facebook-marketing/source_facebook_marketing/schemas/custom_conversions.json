@@ -6,7 +6,8 @@
     },
     "account_id": {
       "description": "Unique identifier for the Facebook ad account.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "business": {
       "description": "Information about the business associated with the custom conversion.",
@@ -89,5 +90,8 @@
       "type": ["null", "string"]
     }
   },
-  "type": ["null", "object"]
+  "type": ["null", "object"],
+  "_erd_relations": {
+    "account_id": "ad_account.id"
+  }
 }

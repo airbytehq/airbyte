@@ -4,7 +4,8 @@
   "properties": {
     "account_id": {
       "description": "The unique identifier for the Facebook ad account.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "primary_key"
     },
     "account_status": {
       "description": "The status of the Facebook ad account.",
