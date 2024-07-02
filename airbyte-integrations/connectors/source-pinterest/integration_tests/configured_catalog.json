@@ -142,6 +142,94 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "campaign_targeting_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "advertiser_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "advertiser_targeting_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_group_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_group_targeting_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "pin_promotion_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "pin_promotion_targeting_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "custom_vadim_report",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     }
   ]
 }

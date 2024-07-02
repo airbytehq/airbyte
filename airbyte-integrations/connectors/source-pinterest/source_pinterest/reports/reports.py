@@ -156,7 +156,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Verify the report status and return it along with the report URL."""
         api_path = self._build_api_path(stream_slice["parent"]["id"])
         response_data = self._http_get(
-            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self.authenticator.get_auth_header()
+            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self._session.auth.get_auth_header()
         )
         try:
             report_status = ReportStatusDetails.parse_raw(json.dumps(response_data))
@@ -166,7 +166,9 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def _fetch_report_data(self, url: str) -> dict:
         """Fetch the report data from the given URL."""
-        return self._http_get(url)
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
