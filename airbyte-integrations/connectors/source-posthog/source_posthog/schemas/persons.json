@@ -13,9 +13,17 @@
         "type": "string"
       }
     },
+    "properties": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "uuid": {
+      "type": "string"
     }
   }
 }
