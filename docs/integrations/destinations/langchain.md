@@ -158,6 +158,7 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.3 | 2024-06-27 | [40580](https://github.com/airbytehq/airbyte/pull/40580) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.1.2   | 2023-11-13 | [#32455](https://github.com/airbytehq/airbyte/pull/32455) | Fix build                                                                                                                    |
 | 0.1.1   | 2023-09-01 | [#30282](https://github.com/airbytehq/airbyte/pull/30282) | Use embedders from CDK                                                                                                       |
 | 0.1.0   | 2023-09-01 | [#30080](https://github.com/airbytehq/airbyte/pull/30080) | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade. |
