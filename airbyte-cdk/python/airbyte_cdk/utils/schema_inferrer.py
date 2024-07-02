@@ -99,12 +99,11 @@ class SchemaInferrer:
         else:
             return False
 
-    def _remove_type_from_any_of(self, node: InferredSchema) -> InferredSchema:
+    def _remove_type_from_any_of(self, node: InferredSchema) -> None:
         if _ANY_OF in node:
             node.pop(_TYPE, None)
-        return node
 
-    def _clean_any_of(self, node: InferredSchema) -> InferredSchema:
+    def _clean_any_of(self, node: InferredSchema) -> None:
         if len(node[_ANY_OF]) == 2 and self._null_type_in_any_of(node):
             real_type = node[_ANY_OF][1] if node[_ANY_OF][0][_TYPE] == _NULL_TYPE else node[_ANY_OF][0]
             node.update(real_type)
@@ -114,18 +113,14 @@ class SchemaInferrer:
         elif len(node[_ANY_OF]) == 2 and not self._null_type_in_any_of(node):
             node[_TYPE] = [_NULL_TYPE]
 
-        return node
-
-    def _clean_properties(self, node: InferredSchema) -> InferredSchema:
+    def _clean_properties(self, node: InferredSchema) -> None:
         for key, value in list(node[_PROPERTIES].items()):
             if isinstance(value, dict) and value.get(_TYPE, None) == _NULL_TYPE:
                 node[_PROPERTIES].pop(key)
             else:
                 self._clean(value)
 
-        return node
-
-    def _ensure_null_type_on_top(self, node: InferredSchema) -> InferredSchema:
+    def _ensure_null_type_on_top(self, node: InferredSchema) -> None:
         if isinstance(node[_TYPE], list):
             if _NULL_TYPE in node[_TYPE]:
                 # we want to make sure null is always at the end as it makes schemas more readable
@@ -133,8 +128,6 @@ class SchemaInferrer:
             node[_TYPE].append(_NULL_TYPE)
         else:
             node[_TYPE] = [node[_TYPE], _NULL_TYPE]
-
-        return node
 
     def _clean(self, node: InferredSchema) -> InferredSchema:
         """
