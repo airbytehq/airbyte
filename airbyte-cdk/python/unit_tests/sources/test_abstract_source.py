@@ -396,6 +396,7 @@ def _as_records(stream: str, data: List[Dict[str, Any]]) -> List[AirbyteMessage]
     return [_as_record(stream, datum) for datum in data]
 
 
+# TODO: Replace call of this function to fixture in the tests
 def _as_stream_status(stream: str, status: AirbyteStreamStatus) -> AirbyteMessage:
     trace_message = AirbyteTraceMessage(
         emitted_at=datetime.datetime.now().timestamp() * 1000.0,
@@ -1794,6 +1795,7 @@ def test_continue_sync_with_failed_streams_with_override_false(mocker):
     assert exc.value.failure_type == FailureType.config_error
 
 
+# TODO: Replace call of this function to fixture in the tests
 def _remove_stack_trace(message: AirbyteMessage) -> AirbyteMessage:
     """
     Helper method that removes the stack trace from Airbyte trace messages to make asserting against expected records easier
@@ -1801,3 +1803,24 @@ def _remove_stack_trace(message: AirbyteMessage) -> AirbyteMessage:
     if message.trace and message.trace.error and message.trace.error.stack_trace:
         message.trace.error.stack_trace = None
     return message
+
+
+def test_read_nonexistent_stream_emit_incomplete_stream_status(mocker, remove_stack_trace, as_stream_status):
+    """
+    Tests that attempting to sync a stream which the source does not return from the `streams` method emit incomplete stream status
+    """
+    s1 = MockStream(name="s1")
+    s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1])
+    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
+
+    expected = _fix_emitted_at([as_stream_status("this_stream_doesnt_exist_in_the_source", AirbyteStreamStatus.INCOMPLETE)])
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        messages = [remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
+
+        assert messages == expected

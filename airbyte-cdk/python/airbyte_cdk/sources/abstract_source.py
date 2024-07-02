@@ -110,6 +110,8 @@ class AbstractSource(Source, ABC):
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
                 if not stream_instance:
+                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
+
                     if not self.raise_exception_on_missing_stream:
                         continue
 
