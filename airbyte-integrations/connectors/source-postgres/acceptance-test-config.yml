@@ -34,4 +34,19 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_view.json"
       - config_path: "secrets/config_cdc.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_view.json"
+        expect_records:
+          path: "integration_tests/expected_records_view.txt"
+          exact_order: no
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json

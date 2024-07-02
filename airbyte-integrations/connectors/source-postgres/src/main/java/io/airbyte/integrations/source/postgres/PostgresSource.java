@@ -107,6 +107,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -997,9 +998,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     final var starterStatus =
         new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
+    final var runningStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatus.RUNNING));
     final var completeStatus =
         new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
-    return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamIterator, completeStatus);
+    return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamIterator, runningStatus, completeStatus);
   }
 
   private List<JsonNode> getFullTableEstimate(final JdbcDatabase database,
