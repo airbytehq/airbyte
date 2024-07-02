@@ -66,8 +66,11 @@ class GlobalStateManager(
         globalState.sharedState = Jsons.jsonNode(cdcStateManager.cdcState)
         // If stream state exists in the global manager, it should be used to reflect the partial
         // states of initial loads.
-        if (cdcStateManager.rawStateMessage?.global?.streamStates?.size != 0) {
-            globalState.streamStates = cdcStateManager.rawStateMessage?.global?.streamStates
+        if (
+            cdcStateManager.rawStateMessage?.global?.streamStates != null &&
+                cdcStateManager.rawStateMessage.global?.streamStates?.size != 0
+        ) {
+            globalState.streamStates = cdcStateManager.rawStateMessage.global.streamStates
         } else {
             globalState.streamStates =
                 StateGeneratorUtils.generateStreamStateList(pairToCursorInfoMap)
