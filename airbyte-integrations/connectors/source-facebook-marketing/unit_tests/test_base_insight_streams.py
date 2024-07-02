@@ -599,6 +599,74 @@ class TestBaseInsightsStream:
         stream.state = state
         assert stream._get_start_date().get("unknown_account").to_date_string() == expected_start_date
 
+    def test_start_date_when_monthly_time_increment(self, api, some_config):
+        """Should force start_date to be first day of the month when
+        time_increment is monthly"""
+
+        start_date = pendulum.datetime(2024, 1, 15)
+        end_date = pendulum.datetime(2024, 5, 25)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=28,
+            time_increment="monthly",
+        )
+        assert stream._get_start_date()["unknown_account"].to_date_string() == "2024-01-01"
+
+    def test_start_date_when_monthly_time_increment_and_state(self, api, some_config):
+        """Should force start_date to be first day of the month when
+        time_increment is monthly"""
+
+        start_date = pendulum.datetime(2024, 1, 15)
+        end_date = pendulum.datetime(2024, 5, 25)
+        state = {"unknown_account": {AdsInsights.cursor_field: "2024-03-30"}, "time_increment": "monthly"}
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=28,
+            time_increment="monthly",
+        )
+        stream.state = state
+        assert stream._get_start_date()["unknown_account"].to_date_string() == "2024-03-01"
+
+    def test_generate_async_jobs(self, api, some_config):
+        start_date = pendulum.datetime(2024, 3, 15)
+        end_date = pendulum.datetime(2024, 3, 17)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            time_increment=1,
+        )
+
+        async_jobs = list(stream._generate_async_jobs(params={}, account_id="unknown_account"))
+        assert len(async_jobs) == 3
+        assert async_jobs[0].interval == pendulum.Period(pendulum.date(2024, 3, 15), pendulum.date(2024, 3, 15))
+        assert async_jobs[1].interval == pendulum.Period(pendulum.date(2024, 3, 16), pendulum.date(2024, 3, 16))
+        assert async_jobs[2].interval == pendulum.Period(pendulum.date(2024, 3, 17), pendulum.date(2024, 3, 17))
+
+    def test_generate_async_jobs_when_time_increment_is_monthly(self, api, some_config):
+        start_date = pendulum.datetime(2024, 3, 15)
+        end_date = pendulum.datetime(2024, 5, 17)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            time_increment="monthly",
+        )
+
+        async_jobs = list(stream._generate_async_jobs(params={}, account_id="unknown_account"))
+        assert len(async_jobs) == 3
+        assert async_jobs[0].interval == pendulum.Period(pendulum.date(2024, 3, 1), pendulum.date(2024, 3, 31))
+        assert async_jobs[1].interval == pendulum.Period(pendulum.date(2024, 4, 1), pendulum.date(2024, 4, 30))
+        assert async_jobs[2].interval == pendulum.Period(pendulum.date(2024, 5, 1), pendulum.date(2024, 5, 31))
+
     @pytest.mark.parametrize(
         "breakdowns, record, expected_record",
         (
