@@ -29,7 +29,10 @@ def get_parent_stream_values(record: Mapping[str, Any], key_value_map: Mapping[s
 
 
 def transform_change_audit_stamps(
-    record: Dict, dict_key: str = "changeAuditStamps", props: List = ["created", "lastModified"], fields: List = ["time"]
+    record: Dict,
+    dict_key: str = "changeAuditStamps",
+    props: List = ["created", "lastModified"],
+    fields: List = ["time"],
 ) -> Mapping[str, Any]:
     """
     :: EXAMPLE `changeAuditStamps` input structure:
@@ -103,7 +106,17 @@ def transform_date_range(
         }
     """
     # define list of tmp keys for cleanup.
-    keys_to_remove = [dict_key, "start.day", "start.month", "start.year", "end.day", "end.month", "end.year", "start", "end"]
+    keys_to_remove = [
+        dict_key,
+        "start.day",
+        "start.month",
+        "start.year",
+        "end.day",
+        "end.month",
+        "end.year",
+        "start",
+        "end",
+    ]
 
     target_dict: Dict = record.get(dict_key)
     for prop in props:
@@ -111,7 +124,12 @@ def transform_date_range(
         for field in fields:
             record.update(**{f"{prop}.{field}": target_dict.get(prop).get(field)})
     # We build `start_date` & `end_date` fields from nested structure.
-    record.update(**{"start_date": date_str_from_date_range(record, "start"), "end_date": date_str_from_date_range(record, "end")})
+    record.update(
+        **{
+            "start_date": date_str_from_date_range(record, "start"),
+            "end_date": date_str_from_date_range(record, "end"),
+        }
+    )
     # Cleanup tmp fields & nested used parts
     for key in keys_to_remove:
         if key in record:

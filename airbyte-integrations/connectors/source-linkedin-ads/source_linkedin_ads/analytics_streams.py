@@ -137,7 +137,13 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         schema["properties"].update({self.search_param_value: {"type": ["null", "string"]}})
         return schema
 
-    def __init__(self, name: str = None, pivot_by: str = None, time_granularity: str = None, **kwargs):
+    def __init__(
+        self,
+        name: str = None,
+        pivot_by: str = None,
+        time_granularity: str = None,
+        **kwargs,
+    ):
         self.user_stream_name = name
         if pivot_by:
             self.pivot_by = pivot_by
@@ -175,10 +181,17 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
         """Define the base parameters for analytics streams"""
-        return {"q": "analytics", "pivot": f"(value:{self.pivot_by})", "timeGranularity": f"(value:{self.time_granularity})"}
+        return {
+            "q": "analytics",
+            "pivot": f"(value:{self.pivot_by})",
+            "timeGranularity": f"(value:{self.time_granularity})",
+        }
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
@@ -236,7 +249,11 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         return stream_slice.get(self.primary_slice_key)
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, List[Mapping[str, Any]]]]]:
         """
         LinkedIn has a max of 20 fields per request. We make chunks by size of 19 fields to have the `dateRange` be included as well.
@@ -323,7 +340,10 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         yield from chunks
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         merged_records = defaultdict(dict)
         for field_slice in stream_slice.get("field_date_chunks", []):
@@ -336,7 +356,10 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         We need to get out the nested complex data structures for further normalization, so the transform_data method is applied.
         """
         for rec in transform_data(response.json().get("elements")):
-            yield rec | {self.search_param_value: self.get_primary_key_from_slice(kwargs.get("stream_slice")), "pivot": self.pivot_by}
+            yield rec | {
+                self.search_param_value: self.get_primary_key_from_slice(kwargs.get("stream_slice")),
+                "pivot": self.pivot_by,
+            }
 
 
 class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):

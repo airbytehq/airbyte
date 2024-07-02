@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ad Posts",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "lifecycleState": { "type": "string" },
+    "lastModifiedAt": { "type": "integer" },
+    "visibility": { "type": "string" },
+    "publishedAt": { "type": "integer" },
+    "author": { "type": "string" },
+    "contentCallToActionLabel": { "type": "string" },
+    "distribution": {
+      "type": "object",
+      "properties": {
+        "feedDistribution": { "type": "string" },
+        "thirdPartyDistributionChannels": { "type": "array", "items": {} }
+      }
+    },
+    "content": {
+      "type": "object",
+      "properties": {
+        "media": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "id": { "type": "string" }
+          }
+        }
+      }
+    },
+    "contentLandingPage": { "type": "string" },
+    "lifecycleStateInfo": {
+      "type": "object",
+      "properties": {
+        "isEditedByAuthor": { "type": "boolean" }
+      }
+    },
+    "isReshareDisabledByAuthor": { "type": "boolean" },
+    "createdAt": { "type": "integer" },
+    "id": { "type": "string" },
+    "commentary": { "type": "string" },
+    "adContext": {
+      "type": "object",
+      "properties": {
+        "dscStatus": { "type": "string" },
+        "dscName": { "type": "string" },
+        "dscAdType": { "type": "string" },
+        "isDsc": { "type": "boolean" },
+        "dscAdAccount": { "type": "string" }
+      }
+    }
+  },
+  "required": [
+    "lifecycleState",
+    "lastModifiedAt",
+    "visibility",
+    "publishedAt",
+    "author",
+    "contentCallToActionLabel",
+    "distribution",
+    "content",
+    "contentLandingPage",
+    "lifecycleStateInfo",
+    "isReshareDisabledByAuthor",
+    "createdAt",
+    "id",
+    "commentary",
+    "adContext"
+  ]
+}

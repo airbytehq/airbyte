@@ -73,7 +73,10 @@ class LinkedinAdsStream(HttpStream, ABC):
             return None
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {"Linkedin-Version": LINKEDIN_VERSION_API}
 
@@ -82,8 +85,20 @@ class LinkedinAdsStream(HttpStream, ABC):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
+        page_size_param: str = None,
+        records_limit: int = None,
     ) -> MutableMapping[str, Any]:
-        params = {"pageSize": self.records_limit, "q": "search"}
+        if not records_limit:
+            nb_records_per_page = self.records_limit
+        else:
+            nb_records_per_page = records_limit
+        if not page_size_param:
+            params = {"pageSize": nb_records_per_page}
+        else:
+            params = {page_size_param: nb_records_per_page}
+
+        params["q"] = "search"
+
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -221,9 +236,18 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
         """Define the checkpoint from the record output size."""
         return 100
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field))}
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field),
+                current_stream_state.get(self.cursor_field),
+            )
+        }
 
 
 class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
@@ -239,7 +263,9 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
     parent_values_map = {"account_id": "id"}
 
     def filter_records_newer_than_state(
-        self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
+        self,
+        stream_state: Mapping[str, Any] = None,
+        records_slice: Iterable[Mapping[str, Any]] = None,
     ) -> Iterable:
         """For the streams that provide the cursor_field `lastModified`, we filter out the old records."""
         if stream_state:
@@ -250,12 +276,18 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
             yield from records_slice
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         parent_stream = self.parent_stream(config=self.config)
         for record in parent_stream.read_records(**kwargs):
-            child_stream_slice = super().read_records(stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs)
+            child_stream_slice = super().read_records(
+                stream_slice=get_parent_stream_values(record, self.parent_values_map),
+                **kwargs,
+            )
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
 
 
@@ -270,7 +302,12 @@ class AccountUsers(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     primary_key = "account"
     search_param = "accounts"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        **kwargs,
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["q"] = self.search_param
         params["accounts"] = f"urn:li:sponsoredAccount:{stream_slice.get('account_id')}"  # accounts=
@@ -296,7 +333,10 @@ class CampaignGroups(LinkedInAdsStreamSlicing):
         return f"{self.parent_stream.endpoint}/{stream_slice.get('account_id')}/{self.endpoint}"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
@@ -332,7 +372,10 @@ class Campaigns(LinkedInAdsStreamSlicing):
         return f"{self.parent_stream.endpoint}/{stream_slice.get('account_id')}/{self.endpoint}"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
@@ -372,7 +415,10 @@ class Creatives(LinkedInAdsStreamSlicing):
         return f"{self.parent_stream.endpoint}/{stream_slice.get('account_id')}/{self.endpoint}"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         headers.update({"X-RestLi-Method": "FINDER"})
@@ -388,13 +434,69 @@ class Creatives(LinkedInAdsStreamSlicing):
         params.update({"q": "criteria"})
         return urlencode(params, safe="():,%")
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
         current_stream_state = (
             {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
             if not current_stream_state
             else current_stream_state
         )
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field),
+                int(current_stream_state.get(self.cursor_field)),
+            )
+        }
+
+
+class AdPosts(LinkedInAdsStreamSlicing):
+    """
+    Get AdPosts (former AdDirectSponsoredContents) data using `account_id` slicing.
+    More info about LinkedIn Ads / Ad Posts:
+    https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api?view=li-lms-2023-11&tabs=http#create-dark-posts
+    """
+
+    endpoint = "posts"
+    parent_stream = Accounts
+    cursor_field = "lastModifiedAt"
+    search_param = "dscAdAccount"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            page_size_param="count",
+            records_limit=100,
+        )
+        params["dscAdAccount"] = f'urn:li:sponsoredAccount:{stream_slice.get("account_id")}'
+        params["q"] = self.search_param
+        return params
+
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        current_stream_state = (
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
+            if not current_stream_state
+            else current_stream_state
+        )
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field),
+                int(current_stream_state.get(self.cursor_field)),
+            )
+        }
 
 
 class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
@@ -407,7 +509,10 @@ class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     search_param = "account"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         headers.update({"X-Restli-Protocol-Version": "2.0.0"})
@@ -425,10 +530,19 @@ class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
 
         return urlencode(params, safe="():,%")
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
         current_stream_state = (
             {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
             if not current_stream_state
             else current_stream_state
         )
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field),
+                int(current_stream_state.get(self.cursor_field)),
+            )
+        }
