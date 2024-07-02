@@ -124,7 +124,7 @@ class RedshiftSqlGeneratorTest {
                     )
                 }
                 .map { obj: String -> obj.trim { it <= ' ' } }
-                .filter { line: String -> !line.isEmpty() }
+                .filter { line: String -> line.isNotEmpty() }
                 .toList()
         Assertions.assertEquals(expectedSqlLines.size, generatedSqlLines.size)
         for (i in expectedSqlLines.indices) {
