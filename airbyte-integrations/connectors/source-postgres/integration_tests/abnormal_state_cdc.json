@@ -1,22 +1,22 @@
 [
   {
-    "type" : "GLOBAL",
-    "global" : {
-      "shared_state" : {
-        "state" : {
-          "[\"id_and_name\",{\"server\":\"id_and_name\"}]" : "{\"transaction_id\":null,\"lsn\":1994658883880,\"txId\":9924814,\"ts_usec\":1718229938564555}"
+    "type": "GLOBAL",
+    "global": {
+      "shared_state": {
+        "state": {
+          "[\"id_and_name\",{\"server\":\"id_and_name\"}]": "{\"transaction_id\":null,\"lsn\":1994658883880,\"txId\":9924814,\"ts_usec\":1718229938564555}"
         }
       },
-      "stream_states" : [
+      "stream_states": [
         {
-          "stream_descriptor" : {
-            "name" : "id_and_name",
-            "namespace" : "public"
+          "stream_descriptor": {
+            "name": "id_and_name",
+            "namespace": "public"
           },
-          "stream_state" : {
-            "stream_name" : "id_and_name",
-            "cursor_field" : [],
-            "stream_namespace" : "public"
+          "stream_state": {
+            "stream_name": "id_and_name",
+            "cursor_field": [],
+            "stream_namespace": "public"
           }
         }
       ]

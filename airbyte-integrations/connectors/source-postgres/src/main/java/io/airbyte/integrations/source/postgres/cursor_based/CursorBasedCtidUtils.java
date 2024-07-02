@@ -68,7 +68,8 @@ public class CursorBasedCtidUtils {
             cursorBasedSyncStreamPairs.add(pair);
             statesFromCursorBasedSync.add(stateMessage);
           } else {
-            throw new ConfigErrorException("You've changed replication modes - please reset the streams in this connector. state type: " + streamState.get(STATE_TYPE_KEY).asText());
+            throw new ConfigErrorException("You've changed replication modes - please reset the streams in this connector. state type: "
+                + streamState.get(STATE_TYPE_KEY).asText());
           }
         } else {
           LOGGER.info("State type not present, syncing stream {} via cursor", streamDescriptor.getName());

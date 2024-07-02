@@ -6,9 +6,7 @@
         "version": 2,
         "state_type": "cursor_based",
         "stream_name": "id_and_name",
-        "cursor_field": [
-          "id"
-        ],
+        "cursor_field": ["id"],
         "cursor": "6",
         "cursor_record_count": 1,
         "stream_namespace": "public"
