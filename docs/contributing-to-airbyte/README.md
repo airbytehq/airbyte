@@ -13,9 +13,8 @@ Before getting started, please review Airbyte's Code of Conduct. Everyone intera
 ## Code Contributions
 
 Most of the issues that are open for contributions are tagged with [`good-first-issue`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Agood-first-issue) or [`help-welcome`](https://github.com/airbytehq/airbyte/labels/help-welcome).
-A great place to start looking will be our GitHub projects for [**Community Connector Issues**](https://github.com/orgs/airbytehq/projects/50)
 
-Contributions for new connectors should come with documentation. Refer to the [guidelines on updateing documentation](writing-docs.md) which include a template to use while documentiong a new connector. 
+Please include documentation when contributing a new connector. Refer to the [guidelines on updating documentation](writing-docs.md) which includes a template to use while documenting a new connector.
 
 Proposed updates to a connector should include updates to the connector's documentation. 
 
