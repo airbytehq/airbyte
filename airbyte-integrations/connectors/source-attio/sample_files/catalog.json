@@ -1,0 +1,318 @@
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "name": "workspace_members",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "workspace_id": { "type": "string" },
+            "workspace_member_id": { "type": "string" },
+            "first_name": { "type": "string" },
+            "last_name": { "type": "string" },
+            "avatar_url": { "type": ["string", "null"] },
+            "email_address": { "type": "string" },
+            "created_at": { "type": "string" },
+            "access_level": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "objects",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "workspace_id": { "type": "string" },
+            "object_id": { "type": "string" },
+            "api_slug": { "type": "string" },
+            "singular_noun": { "type": "string" },
+            "plural_noun": { "type": ["string", "null"] },
+            "created_at": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "companies",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {
+            "domains": { "type": "array", "items": { "type": "string" } },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "team": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "target_object": { "type": "string" },
+                  "target_record_id": { "type": "string" }
+                }
+              }
+            },
+            "categories": { "type": "array", "items": { "type": "string" } },
+            "primary_location": { "type": "string" },
+            "primary_location_line_1": { "type": "string" },
+            "primary_location_line_2": { "type": "string" },
+            "primary_location_line_3": { "type": "string" },
+            "primary_location_line_4": { "type": "string" },
+            "primary_location_locality": { "type": "string" },
+            "primary_location_region": { "type": "string" },
+            "primary_location_postcode": { "type": "string" },
+            "primary_location_country_code": { "type": "string" },
+            "primary_location_latitude": { "type": "string" },
+            "primary_location_longitude": { "type": "string" },
+            "logo_url": { "type": "string" },
+            "angellist": { "type": "string" },
+            "facebook": { "type": "string" },
+            "instagram": { "type": "string" },
+            "linkedin": { "type": "string" },
+            "twitter": { "type": "string" },
+            "twitter_follower_count": { "type": "number" },
+            "estimated_arr_usd": { "type": "string" },
+            "funding_raised_usd": { "type": "number" },
+            "foundation_date": { "type": "string", "format": "date" },
+            "employee_range": { "type": "string" },
+            "strongest_connection_strength_legacy": { "type": "number" },
+            "strongest_connection_strength": { "type": "string" },
+            "strongest_connection_user": {
+              "type": "object",
+              "properties": {
+                "referenced_actor_id": { "type": "string" },
+                "referenced_actor_type": { "type": "string" }
+              }
+            },
+            "associated_workspaces": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "target_object": { "type": "string" },
+                  "target_record_id": { "type": "string" }
+                }
+              }
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "created_by": {
+              "type": "object",
+              "properties": {
+                "referenced_actor_id": { "type": "string" },
+                "referenced_actor_type": { "type": "string" }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "companies_attributes",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {
+            "workspace_id": { "type": "string" },
+            "object_id": { "type": "string" },
+            "attribute_id": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": ["string", "null"] },
+            "api_slug": { "type": "string" },
+            "type": { "type": "string" },
+            "is_system_attribute": { "type": "boolean" },
+            "is_writable": { "type": "boolean" },
+            "is_required": { "type": "boolean" },
+            "is_unique": { "type": "boolean" },
+            "is_multiselect": { "type": "boolean" },
+            "is_default_value_enabled": { "type": "boolean" },
+            "is_archived": { "type": "boolean" },
+            "default_value": { "type": ["string", "null"] },
+            "relationship": { "type": ["string", "null"] },
+            "config_record_reference_allowed_object_ids": { "type": "string" },
+            "config_currency_display_type": { "type": ["string", "null"] },
+            "config_currency_default_currency_code": {
+              "type": ["string", "null"]
+            },
+            "created_at": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "workspaces",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {
+            "workspace_id": { "type": "string" },
+            "name": { "type": "string" },
+            "company": {
+              "type": "object",
+              "properties": {
+                "target_object": { "type": "string" },
+                "target_record_id": { "type": "string" }
+              }
+            },
+            "avatar_url": { "type": "string" },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "created_by": {
+              "type": "object",
+              "properties": {
+                "referenced_actor_id": { "type": "string" },
+                "referenced_actor_type": { "type": "string" }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "workspaces_attributes",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {
+            "workspace_id": { "type": "string" },
+            "object_id": { "type": "string" },
+            "attribute_id": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": ["string", "null"] },
+            "api_slug": { "type": "string" },
+            "type": { "type": "string" },
+            "is_system_attribute": { "type": "boolean" },
+            "is_writable": { "type": "boolean" },
+            "is_required": { "type": "boolean" },
+            "is_unique": { "type": "boolean" },
+            "is_multiselect": { "type": "boolean" },
+            "is_default_value_enabled": { "type": "boolean" },
+            "is_archived": { "type": "boolean" },
+            "default_value": { "type": ["string", "null"] },
+            "relationship": { "type": ["string", "null"] },
+            "config_record_reference_allowed_object_ids": { "type": "string" },
+            "config_currency_display_type": { "type": ["string", "null"] },
+            "config_currency_default_currency_code": {
+              "type": ["string", "null"]
+            },
+            "created_at": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "people",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {
+            "name_first_name": { "type": "string" },
+            "name_last_name": { "type": "string" },
+            "name_full_name": { "type": "string" },
+            "email_addresses": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "description": { "type": "string" },
+            "company": {
+              "type": "object",
+              "properties": {
+                "target_object": { "type": "string" },
+                "target_record_id": { "type": "string" }
+              }
+            },
+            "job_title": { "type": "string" },
+            "avatar_url": { "type": "string" },
+            "phone_numbers": { "type": "array", "items": { "type": "string" } },
+            "primary_location": { "type": "string" },
+            "primary_location_line_1": { "type": "string" },
+            "primary_location_line_2": { "type": "string" },
+            "primary_location_line_3": { "type": "string" },
+            "primary_location_line_4": { "type": "string" },
+            "primary_location_locality": { "type": "string" },
+            "primary_location_region": { "type": "string" },
+            "primary_location_postcode": { "type": "string" },
+            "primary_location_country_code": { "type": "string" },
+            "primary_location_latitude": { "type": "string" },
+            "primary_location_longitude": { "type": "string" },
+            "angellist": { "type": "string" },
+            "facebook": { "type": "string" },
+            "instagram": { "type": "string" },
+            "linkedin": { "type": "string" },
+            "twitter": { "type": "string" },
+            "twitter_follower_count": { "type": "number" },
+            "strongest_connection_strength_legacy": { "type": "number" },
+            "strongest_connection_strength": { "type": "string" },
+            "strongest_connection_user": {
+              "type": "object",
+              "properties": {
+                "referenced_actor_id": { "type": "string" },
+                "referenced_actor_type": { "type": "string" }
+              }
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "created_by": {
+              "type": "object",
+              "properties": {
+                "referenced_actor_id": { "type": "string" },
+                "referenced_actor_type": { "type": "string" }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "people_attributes",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {
+            "workspace_id": { "type": "string" },
+            "object_id": { "type": "string" },
+            "attribute_id": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": ["string", "null"] },
+            "api_slug": { "type": "string" },
+            "type": { "type": "string" },
+            "is_system_attribute": { "type": "boolean" },
+            "is_writable": { "type": "boolean" },
+            "is_required": { "type": "boolean" },
+            "is_unique": { "type": "boolean" },
+            "is_multiselect": { "type": "boolean" },
+            "is_default_value_enabled": { "type": "boolean" },
+            "is_archived": { "type": "boolean" },
+            "default_value": { "type": ["string", "null"] },
+            "relationship": { "type": ["string", "null"] },
+            "config_record_reference_allowed_object_ids": { "type": "string" },
+            "config_currency_display_type": { "type": ["string", "null"] },
+            "config_currency_default_currency_code": {
+              "type": ["string", "null"]
+            },
+            "created_at": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      }
+    ]
+  }
+}
