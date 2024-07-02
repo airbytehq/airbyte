@@ -33,6 +33,7 @@ class HttpResponseFilter:
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     action: Optional[Union[ResponseAction, str]] = None
+    failure_type: Optional[Union[FailureType, str]] = None
     http_codes: Optional[Set[int]] = None
     error_message_contains: Optional[str] = None
     predicate: Union[InterpolatedBoolean, str] = ""
@@ -50,6 +51,8 @@ class HttpResponseFilter:
             self.predicate = InterpolatedBoolean(condition=self.predicate, parameters=parameters)
         self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, parameters=parameters)
         self._error_message_parser = JsonErrorMessageParser()
+        if self.failure_type and isinstance(self.failure_type, str):
+            self.failure_type = FailureType[self.failure_type]
 
     def matches(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[ErrorResolution]:
         filter_action = self._matches_filter(response_or_exception)
@@ -68,7 +71,11 @@ class HttpResponseFilter:
             if isinstance(response_or_exception, requests.Response):
                 error_message = self._create_error_message(response_or_exception)
             error_message = error_message or default_error_message
-            failure_type = default_mapped_error_resolution.failure_type if default_mapped_error_resolution else FailureType.system_error
+
+            if self.failure_type:
+                failure_type = self.failure_type
+            else:
+                failure_type = default_mapped_error_resolution.failure_type if default_mapped_error_resolution else FailureType.system_error
 
             return ErrorResolution(
                 response_action=filter_action,
