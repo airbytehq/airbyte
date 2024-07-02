@@ -1,0 +1,32 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.clazar.io
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-clazar
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d7df7b64-6266-45b5-ad83-e1515578f371
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-clazar
+  githubIssueLabel: source-clazar
+  icon: clazar.svg
+  license: MIT
+  name: Clazar
+  releaseDate: 2024-06-27
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/clazar
+  tags:
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"
