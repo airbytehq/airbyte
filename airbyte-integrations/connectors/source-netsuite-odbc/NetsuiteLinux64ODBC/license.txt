@@ -1,0 +1,1299 @@
+End User License Agreement
+
+READ THIS END USER LICENSE AGREEMENT ("EULA") BEFORE INSTALLING OR USING THE 
+PRODUCT TO WHICH THIS EULA APPLIES. BY ACCEPTING THIS EULA, COMPLETING THE 
+REGISTRATION PROCESS, AND/OR INSTALLING OR USING THE PRODUCT, YOU AGREE ON 
+BEHALF OF YOURSELF AND YOUR COMPANY (IF APPLICABLE) TO THE TERMS BELOW. IF YOU 
+DO NOT AGREE WITH THESE TERMS, OR DO NOT HAVE THE AUTHORITY TO BIND YOUR 
+COMPANY, DO NOT INSTALL, REGISTER FOR OR USE THE PRODUCT, AND DESTROY OR RETURN 
+ALL COPIES OF THE PRODUCT.  ONCE YOU HAVE DONE THIS, YOU MAY REQUEST FROM THE 
+POINT OF PURCHASE A FULL REFUND OF THE LICENSE FEES, IF ANY, PAID FOR THE 
+PRODUCT (OR, IF THE PRODUCT IS PROVIDED TO YOU AS A HOSTED SERVICE, A REFUND OF 
+THE PREPAID SERVICE FEES FOR THE REMAINDER OF THE SUBSCRIPTION PERIOD OF THE 
+PRODUCT). SUCH REQUEST MUST BE COMPLETED WITHIN THIRTY (30) DAYS OF DELIVERY OF 
+THE PRODUCT TO YOU. UNLESS OTHERWISE SPECIFIED IN THIS EULA, PROGRESS SOFTWARE 
+CORPORATION IS THE LICENSOR OF THE PRODUCT. THE LICENSOR MAY BE REFERRED TO 
+HEREIN AS "Licensor", "we", "us", or "our". IF YOU ARE AGREEING TO THIS EULA ON 
+BEHALF OF YOURSELF IN YOUR INDIVIDUAL CAPACITY, THEN YOU ARE THE LICENSEE AND 
+YOU MAY BE REFERRED TO HEREIN AS "Licensee", "you", or "your". IF YOU ARE 
+AGREEING TO THIS EULA ON BEHALF OF YOUR COMPANY, THEN YOUR COMPANY IS THE 
+LICENSEE AND ANY REFERENCES TO "Licensee", "you", or "your" WILL MEAN YOUR 
+COMPANY.
+
+This EULA includes the following sections: 
+
+1. GENERAL TERMS AND CONDITIONS - these terms apply to all Products;
+
+2.A.	TERMS FOR ON-PREMISE PRODUCTS - these terms apply to Products that you 
+or Permitted Third Parties install on computers;
+
+2.B.	TERMS FOR HOSTED SERVICES - these terms apply to Products that we host;
+
+3.	PRODUCT FAMILY SPECIFIC TERMS - these terms apply to all Products that 
+are part of the family of Products referenced in this section; and  
+
+4.	PRODUCT SPECIFIC TERMS - these terms apply to specific Products 
+referenced in this section.
+
+
+
+1. GENERAL TERMS AND CONDITIONS
+1.1. Definitions.
+1.1.1. "Affiliate" means any legal entity that directly or indirectly controls, 
+is controlled by, or is under common control with you or us. For the purposes 
+of this definition, "control" means ownership, directly or indirectly, of more 
+than fifty percent (50%) of the voting shares or other equity interest in an 
+entity.
+1.1.2. "Applicable Laws" means national, federal, state, and local laws, rules, 
+and regulations including, without limitation, those laws and regulations 
+relating to data privacy and security in each applicable jurisdiction.
+1.1.3. "Authorized Reseller" means a third party who is not our Affiliate and 
+who is authorized by us or our Affiliate to resell the Product.
+1.1.4. "Authorized User" means you, your employee or a third-party consultant 
+or agent that you authorize to use the Product for your benefit in accordance 
+with section 1.2.3 (Third Party Use).
+1.1.5. "Documentation" means any technical instructions or materials describing 
+the operation of the Product made available to you (electronically or 
+otherwise) by us for use with the Product, expressly excluding any user blogs, 
+reviews or forums.
+1.1.6. "Hosted Services" means computer software program(s), content and 
+related services provided by us on a software-as-a-service basis through 
+computers we or our Affiliates or our respective contractors (including cloud 
+infrastructure suppliers) control.
+1.1.7. "Intellectual Property Rights" means any and all current and future (a) 
+rights associated with works of authorship, including copyrights, mask work 
+rights, and moral rights; (b) trademark or service mark rights; (c) trade 
+secret rights; (d) patents, patent rights, and industrial property rights; (e) 
+layout design rights, design rights, and other proprietary rights of every kind 
+and nature other than trademarks, service marks, trade dress, and similar 
+rights; and (f) registrations, applications, renewals, extensions, or reissues 
+of any of (a) to (e) , in each case, in any jurisdiction throughout the world. 
+1.1.8. "On-Premise Product(s)" means computer software program(s) provided to 
+you to download, install and use on computer(s) controlled directly or 
+indirectly by you. 
+1.1.9. "Order" means a written or electronic order document entered into 
+between you and us (or our Affiliate or an Authorized Reseller) for the 
+Product.  Unless an Order says something different, each Order will be governed 
+by the terms of this EULA and include the name of the Product being licensed 
+and any usage limitations, applicable fees, and any other details related to 
+the transaction.
+1.1.10. "Our Technology" means any software, code, tools, libraries, scripts, 
+application programming interfaces, templates, algorithms, data science recipes 
+(including any source code for data science recipes and any modifications to 
+such source code), data science workflows, user interfaces, links, proprietary 
+methods and systems, know-how, trade secrets, techniques, designs, inventions, 
+and other tangible or intangible technical material, information and works of 
+authorship underlying or otherwise used to make available the Product, 
+including, without limitation, all Intellectual Property Rights therein and 
+thereto. 
+1.1.11. "Permitted Third Party" has the meaning given in section 1.2.3 (Third 
+Party Use). 
+1.1.12. "Product" means the On-Premise Product(s) or Hosted Services, as 
+applicable, identified in an Order, and any Updates.
+1.1.13. "Update" means any update, enhancement, error correction, modification 
+or new release to the Product that we make available to you.
+1.2. General License Terms, Restrictions and Order of Precedence.
+1.2.1. General License Terms.  The Product is licensed, not sold, to you by us 
+under the terms of this EULA and the Order. The scope of license granted by us 
+to you for the Product is set out in section 3 (Product Family Specific Terms) 
+and section 4 (Product Specific Terms).
+1.2.2. Authorized Users.  Anything your Authorized Users do or fail to do will 
+be considered your act or omission, and you accept full responsibility for any 
+such act or omission to the extent you would be liable if it were your act or 
+omission.
+1.2.3. Third Party Use.  You may allow your agents, contractors and outsourcing 
+service providers (each a "Permitted Third Party") to use the Product(s) 
+licensed to you hereunder solely for your benefit in accordance with the terms 
+of this EULA and you are responsible for any such Permitted Third Party's 
+compliance with this EULA in such use. Any breach by any Permitted Third Party 
+of the terms of this EULA will be considered your breach.  
+1.2.4. Restrictions.  Except as otherwise expressly permitted in this EULA, you 
+will not (and will not allow any of your Affiliates or any third party to): 
+       (a) copy, modify, adapt, translate, or otherwise create derivative works 
+of the Product, Documentation, or any software, services, or other technology 
+of third party vendor(s) or hosting provider(s) that we or our Affiliate engage;
+       (b) disassemble, decompile or "unlock", decode or otherwise reverse 
+translate or engineer, or attempt in any manner to reconstruct or discover the 
+source code or underlying structure, ideas, or algorithms of the Product except 
+as expressly permitted by law in effect in the jurisdiction in which you are 
+located; 
+       (c) rent, lease, sell, distribute, pledge, assign, sublicense or 
+otherwise transfer or encumber rights to the Product;   
+       (d) make the Product available on a timesharing or service bureau basis 
+or otherwise allow any third party to use or access the Product;
+       (e) remove or modify any proprietary notices, legends, or labels on the 
+Product or Documentation; 
+       (f) use or access the Product in a manner that: (i) violates any 
+Applicable Laws; (ii) violates the rights of any third party; (iii) purports to 
+subject us or our Affiliates to any other obligations; (iv) could be 
+fraudulent; or (v) is not permitted under this EULA; 
+       (g) use the Product to develop, test, support or market products that 
+are competitive with and/or provide similar functionality to the Product; or
+       (h) permit your Affiliates to access or use the Product unless 
+specifically authorized elsewhere in this EULA or the Order.
+1.2.5. Limitations on Evaluation or Trial Licenses.  If the Product is licensed 
+to you on an evaluation or trial basis, then you may use the Product only for 
+such purposes until the earlier of: (a) the end of the evaluation period, if 
+any, specified in the Order, this EULA or otherwise communicated by us to you 
+at the time of delivery; or (b) the start date of a paid for license to the 
+Product; or (c) termination in accordance with the terms of this EULA. You may 
+not extend the evaluation period by uninstalling and re-installing the 
+Product(s) or by any other means other than our written consent. You must not 
+use the Product in a production environment. You will be required to pay for a 
+license for the Product at our then applicable license price if you continue to 
+use the Product, whether in a production or non-production environment, after 
+the evaluation license expires or terminates, and the terms and conditions of 
+the EULA in effect at that time will apply to your continued use of the 
+Product. A Product licensed to you on an evaluation or trial basis may be 
+subject to one or more usage limits specified in section 3 (Product Family 
+Specific Terms), section 4 (Product Specific Terms), the Order or otherwise 
+communicated at the time of delivery (including posting of such limits at the 
+location where you download the Product for evaluation). We may, at our sole 
+discretion, decide whether to offer any maintenance and support for the Product 
+during the evaluation period, and to include any conditions or limits on such 
+maintenance and support. You may not circumvent any technical limitations 
+included in the Product licensed to you on an evaluation or trial basis.
+1.2.6. Redistribution.  If the Order or section 3 (Product Family Specific 
+Terms) or section 4 (Product Specific Terms) grants you the express right to 
+redistribute or offer access to all or a portion of the Product 
+("Redistributables"), then, in conjunction with any such grant, you must comply 
+with any limitations or requirements specified in the Order, section 3 (Product 
+Family Specific Terms) or section 4 (Product Specific Terms), as applicable, 
+and you must distribute or offer access to the Redistributables subject to a 
+license agreement or terms of use between you and each third party receiving or 
+accessing the Redistributables ("your customer") that: (a) protects our 
+interests consistent with the terms contained in this EULA, (b) prohibits your 
+customer from any further distribution of the Redistributables (unless 
+expressly permitted pursuant to section 3 (Product Family Specific Terms) or 
+section 4 (Product Specific Terms)), (c) includes a limitation of damages 
+clause that, to the maximum extent permitted by applicable law, disclaims on 
+behalf of us, our Affiliates or our or their respective licensors, suppliers or 
+Authorized Resellers, liability for any and all damages, whether direct, 
+special, incidental or consequential damages, (d) contains terms substantially 
+similar to those in subparts (a) through (g) of section 1.2.4 (Restrictions), 
+section 1.5.1 (Export Compliance) and section 1.5.2 (U.S. Government 
+Customers), and (e) includes a notice substantially similar to section 1.2.7 
+(Third Party Notices).  
+1.2.7. Third Party Notices.  The Product may contain or be accompanied by 
+certain third-party components which are subject to additional restrictions. 
+These components, are identified in, and subject to, special license terms and 
+conditions which, in the case of On-Premise Product(s), are set out in the 
+"readme.txt" file, the "notices.txt" file, or the "Third Party Software" file 
+accompanying the Product or portions thereof, and in the case of Hosted 
+Services, are set out in the third-party license agreement or notices that 
+comes with the third-party component or is otherwise provided on the web page 
+on which such third-party component is made available ("Special Notices"). The 
+Special Notices include important licensing and warranty information and 
+disclaimers. Unless otherwise expressly stated for a given third-party 
+component, all such third-party components may be used solely in connection 
+with the use of the Product subject to and in accordance with the terms and 
+conditions of this EULA and the Special Notices. In the event of conflict 
+between the Special Notices and the other portions of this EULA, the Special 
+Notices will take precedence (but solely with respect to the third-party 
+component(s) to which the Special Notice relates).
+1.2.8. Order of Precedence between EULA and Order.  If there is any conflict 
+between the terms and conditions in the Order and the terms and conditions of 
+this EULA, or if the Order changes any of the terms of this EULA, the terms and 
+conditions of the Order will apply, except if the Order is between you and an 
+Authorized Reseller, or the Order is issued/generated by you. In the case where 
+the Order is between you and an Authorized Reseller, the terms of the Order 
+will apply subject to the following:  (a) any terms and conditions in the Order 
+imposing obligations on the Authorized Reseller that are in addition to or 
+different from the obligations we have to you pursuant to this EULA will be 
+born solely by the Authorized Reseller and our obligations to you and limits on 
+our liability will be governed solely by the terms and conditions of this EULA 
+and (b) any terms and conditions that conflict with or would otherwise alter 
+any of the following under this EULA will have no effect unless expressly 
+agreed to in a written instrument executed by us: our ownership rights, yours 
+and our confidentiality obligations, your export compliance obligations, 
+limitations on your rights as a U.S. Government customer (if applicable), our 
+audit rights, restrictions on your right to assign, our publicity rights or 
+governing law and jurisdiction. In cases where the Order is issued/generated by 
+you, the terms and conditions of Section 1.19.2. of this EULA, governing a 
+purchase order or other document you supply in connection with this EULA, shall 
+apply to such Order.
+1.2.9. Order of Precedence within EULA.  If there is any conflict among the 
+terms and conditions of this EULA, or if a section changes the terms of another 
+section within this EULA, the order of precedence will be as follows: first, 
+section 4 (Product Specific Terms) (if any); second, section 3 (Product Family 
+Specific Terms) (if any); third, section 2.A (Terms for On-Premise Products) 
+and/or section 2.B (Terms for Hosted Services), as applicable; and fourth and 
+finally, section 1 (General Terms and Conditions).
+1.3. License Types.
+1.3.1. Overview of License Types.  The license type for the Product will, 
+unless otherwise specified in this EULA, be one of the following license types: 
+perpetual, term or subscription.  This will be confirmed in the Order or will 
+be the default license type listed in section 3 (Product Family Specific Terms) 
+or section 4 (Product Specific Terms).
+1.3.2. Perpetual License Type.  Your license to use the Product will continue 
+in perpetuity unless earlier terminated in accordance with the terms of this 
+EULA. 
+1.3.3. Term License Type.  Your license to use the Product will continue until 
+the expiration of the term identified in the Order unless earlier terminated in 
+accordance with the terms of this EULA. If we continue to make the Product 
+generally available to our customers, you may purchase a new term license for 
+the Product from us or our Authorized Reseller. 
+1.3.4. Subscription License Type. Your license to use the Product will continue 
+until the expiration of the subscription period identified in the Order unless 
+earlier terminated in accordance with the terms of this EULA. The procedure for 
+renewing your license to the Product is set out in section 3 (Product Family 
+Specific Terms) or section 4 (Product Specific Terms). If you upgrade your 
+subscription to the Product, the upgrade will take effect immediately and you 
+will be charged and must pay the applicable fee, and the term of your 
+then-current subscription period may be extended, as described at the time you 
+upgrade. You may not downgrade a subscription to the Product.
+1.4. Our Business Principles.  We will apply the principles set out in our Code 
+of Conduct and Business Ethics (published on our website at 
+http://investors.progress.com/governance.cfm) in our performance under this 
+EULA.
+1.5. Export Compliance and U.S. Government Customers.  
+1.5.1. Export Compliance.  Export laws and regulations of the United States and 
+any other relevant local export laws and regulations apply to the Products. You 
+agree that such export control laws, including, without limitation, the U.S. 
+Export Administration Act and its associated regulations, govern your use of 
+the Product (including technical data), and you agree to comply with all such 
+export laws and regulations (including "deemed export" and "deemed re-export" 
+regulations). You agree that no data, information and/or Product (or direct 
+product thereof) will be exported, directly or indirectly, in violation of 
+these laws, or will be used for any purpose prohibited by these laws including, 
+without limitation, nuclear, chemical, or biological weapons proliferation, or 
+development of missile technology. 
+1.5.2. U.S. Government Customers.  If the Product is being acquired by or on 
+behalf of the U.S. Government or by a U.S. Government prime contractor or 
+subcontractor (at any tier), then the U.S. Government's rights in the Product 
+will be only as set out herein. The Product and Documentation are "commercial 
+items" as that term is defined at 48 C.F.R. 2.101, consisting of "commercial 
+computer software" and "commercial software documentation" as such terms are 
+used in 48 C.F.R. 12.212. Consistent with 48 C.F.R. 12.212 and 48 C.F.R. 
+227.7202-1 through 227.7202-4, all U.S. Government end users acquire the 
+Product and such Documentation with only those rights set out herein. 
+1.6. IP Ownership and Feedback.  
+1.6.1. IP Ownership.  The Product, Our Technology, Documentation, and all other 
+current or future intellectual property developed by us or our Affiliates, and 
+all worldwide Intellectual Property Rights in each of the foregoing and all 
+Updates, upgrades, enhancements, new versions, releases, corrections, and other 
+modifications thereto and derivative works thereof, are the exclusive property 
+of us or our Affiliates or our or their licensors or suppliers. Except for the 
+rights and licenses expressly granted herein, all such rights are reserved by 
+us and our Affiliates and our or their licensors and suppliers.  All title and 
+Intellectual Property Rights in and to the content that may be accessed through 
+use of the Product is the property of the respective content owner and may be 
+protected by applicable copyright or other intellectual property laws and 
+treaties. This EULA grants you no rights to use such content.
+1.6.2. Feedback.  If you provide us any ideas, thoughts, criticisms, suggested 
+improvements or other feedback related to Our Technology (collectively 
+"Feedback") you own the Feedback and you grant to us a worldwide, royalty-free, 
+fully paid, perpetual, irrevocable license to use, reproduce, modify, 
+translate, distribute, perform, display, import, sell, license, offer for sale, 
+make, have made and otherwise exploit the Feedback in any form, media, or 
+technology, whether now known or hereafter developed, and to allow others to do 
+the same without restriction or obligation of any kind, on account of 
+confidential information, intellectual property rights or otherwise, and may 
+incorporate into our products or services any service, product, technology, 
+enhancement, documentation or other development ("Improvement") incorporating 
+or derived from any Feedback with no obligation to license or to make available 
+the Improvement to you or any other person or entity. This is true whether you 
+provide the Feedback through use of the Product or through any other method of 
+communication with us, unless we have entered into a separate agreement with 
+you that provides otherwise. 
+1.7. Maintenance.  
+1.7.1. Our Maintenance and Support Policies.  If we offer and you purchase 
+maintenance and support for the Product, then it will be provided in accordance 
+with our then current maintenance and support policies for the applicable 
+Product in effect at the time of purchase. You may access our maintenance and 
+support policies by clicking on the applicable Product family link located at 
+https://www.progress.com/support. 
+1.7.2. Maintenance and Support for Perpetual or Term License Types.  For 
+Perpetual and Term License Types, unless otherwise expressly stated by us in 
+the Order, first year annual maintenance and support (if offered by us) is 
+required for the Product and starts on the date the Product is delivered. 
+Thereafter, you may choose to purchase annual maintenance and support (if 
+offered by us). If you do not purchase renewal maintenance and support services 
+for a Product, then you will not receive any maintenance and support services 
+for that Product and will have no entitlement to any benefits of maintenance 
+and support services including, bug fixes, patches, upgrades, enhancements, new 
+releases or technical support. If you want to reinstate lapsed maintenance and 
+support services on a Product, and we offer reinstatement to our customers, 
+then you may re-instate maintenance and support services by paying the 
+then-current fee, plus a reinstatement fee for the lapsed maintenance and 
+support period in accordance with our maintenance and support reinstatement 
+policies then in effect.
+1.7.3. Maintenance and Support for Subscription License Type.  If the license 
+type for the Product licensed to you is the subscription license type, then 
+maintenance and support (if offered by us) is included in the subscription fees 
+for each subscription period. 
+1.8. Fees and Taxes.  
+1.8.1. Payment Terms and Taxes.  All fees payable to us are payable in the 
+currency specified in the Order, or if no currency is specified, in United 
+States Dollars, are due within 30 days from the invoice date and, except as 
+otherwise expressly specified herein, are non-cancellable and non-refundable. 
+We may charge you interest at a rate of 1.5% per month (or the highest rate 
+permitted by law, if less) on all overdue payments. You agree to pay any sales, 
+value-added or other similar taxes imposed by applicable law that we must pay 
+on such fees, except those based on our income. Invoices may be issued by our 
+Affiliate. If you and we agree that you will pay by credit card, you will 
+provide us with valid and updated credit card information and you authorize us 
+to store such information and bill such credit card for all fees applicable: 
+(a) at the time that you order the Product and (b) at the time of any renewal 
+or upgrade. 
+1.8.2. Fees for Renewal Subscription Licenses.  If the license type for the 
+Product licensed to you is the Subscription License Type then each renewal 
+subscription will be calculated at the then-current price offered for the 
+Product at the time of renewal. 
+1.8.3. Fees for Renewal Maintenance Terms.  If the license type for the Product 
+licensed to you is a Perpetual license or Term license, then, unless otherwise 
+specified in the Order or in section 3 (Product Family Specific Terms) or 
+section 4 (Product-Specific Terms), the fee for an optional annual renewal 
+maintenance and support term for the Product will be calculated based on the 
+annual rate applicable for the initial maintenance and support term or 
+immediately preceding renewal maintenance and support term, whichever is 
+applicable, plus a rate increase, if applicable, calculated at the lesser of 
+any standard price increase or CPI (or equivalent index) after applying any 
+increases as a consequence of our Lifetime Support policy, if applicable.
+1.8.4. Orders between You and Our Authorized Reseller.  Notwithstanding the 
+above terms of this section 1.8 (Fees and Taxes), if you purchased your license 
+to the Product and/or maintenance and support from an Authorized Reseller, then 
+the fees will be set out in the Order between you and the Authorized Reseller. 
+The Authorized Reseller may be responsible for billing and/or collecting 
+payment from you and if so, the billing and collection terms agreed to between 
+you and the Authorized Reseller may differ from the terms set out in this 
+section 1.8 (Fees and Taxes). 
+1.8.5. No Reliance on Future Availability of any Product or Update.  You agree 
+that you have not relied on the future availability of any Product or Updates 
+in your purchasing decision or in entering into the payment obligations in your 
+Order.
+1.9. Warranties.
+1.9.1. Authority.  Each party represents and warrants that it has the legal 
+power and authority to enter into this EULA.
+1.9.2. Product Compliance with Documentation.  We warrant to you that, for six 
+(6) months from delivery (in the case of an On-Premise Product) or for the 
+duration of the license (in the case of a Hosted Service), the Product will 
+comply with the applicable Documentation in all material respects. Your 
+exclusive remedy, and our sole liability, with respect to any breach of this 
+warranty will be for us to use commercially reasonable efforts to promptly 
+correct the non-compliance (provided that you notify us in writing within the 
+warranty period and allow us a reasonable cure period).  If we, at our 
+discretion, reasonably determine that correction is not economically or 
+technically feasible, we may terminate your license to the Product and provide 
+you a full refund of the fees paid to us with respect to the Product (in the 
+case of an On-Premise Product) or a refund of the prepaid fees for the unused 
+portion of the license period (in the case of a Hosted Service). Delivery of 
+additional copies of, or Updates to, the Product will not restart or otherwise 
+affect the warranty period.
+1.9.3. Warranty Exclusions.  The warranty specified in section 1.9.2 (Product 
+Compliance with Documentation) does not cover any Product provided on an unpaid 
+evaluation or trial basis, or defects to the Product due to accident, abuse, 
+service, alteration, modification or improper installation or configuration by 
+you, your Affiliates, your or their personnel or any third party not engaged by 
+us. 
+1.9.4. Warranty Disclaimers.  EXCEPT FOR THE WARRANTIES EXPRESSLY STATED IN 
+THIS SECTION 1.9 OR THE ADDITIONAL WARRANTIES (IF ANY) EXPRESSLY STATED IN 
+SECTION 3 (PRODUCT FAMILY SPECIFIC TERMS) OR SECTION 4 (PRODUCT SPECIFIC 
+TERMS), THE PRODUCT, DOCUMENTATION AND OUR TECHNOLOGY  ARE PROVIDED "AS IS", 
+WITH ALL FAULTS, AND WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, 
+BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE, TITLE, NONINFRINGEMENT, AVAILABILITY, ERROR-FREE OR UNINTERRUPTED 
+OPERATION, AND ANY WARRANTIES ARISING FROM COURSE OF DEALING, COURSE OF 
+PERFORMANCE, OR USAGE OF TRADE. TO THE EXTENT THAT WE MAY NOT AS A MATTER OF 
+APPLICABLE LAW DISCLAIM ANY IMPLIED WARRANTY, THE SCOPE AND DURATION OF SUCH 
+WARRANTY WILL BE THE MINIMUM PERMITTED UNDER APPLICABLE LAW.
+1.10. Indemnification.
+1.10.1. Our Indemnification Obligation.
+       1.10.1.1. Intellectual Property Infringement.  We will defend you, and 
+your officers, directors, employees, and agents from and against any and all 
+third party claims, lawsuits, and proceedings alleging that your use of the 
+Product, in accordance with the terms and conditions of this EULA, constitutes 
+a direct infringement or misappropriation of such third party's patent, 
+copyright or trade secret rights (the "IP Claim"), and we will indemnify you 
+for damages finally awarded against you by a court of competent jurisdiction 
+with respect to the IP Claim. 
+       1.10.1.2. Exceptions.  We will not indemnify you to the extent that the 
+alleged infringement or misappropriation results from (a) use of the Product in 
+combination with any other software or item not supplied by us; (b) failure to 
+promptly implement an Update provided by us pursuant to 1.10.1.3 (Our Options); 
+(c) modification of the Product not made or provided by us; or (d) use of the 
+Product in a manner not permitted by this EULA. We also will not indemnify you 
+if we notify you of our decision to terminate this EULA, and the license to the 
+Product granted hereunder, in accordance with section 1.10.1.3 (Our Options) 
+and you have not ceased all use of the Product within thirty (30) days of such 
+notification. 
+       1.10.1.3. Our Options.  If a final injunction is, or we reasonably 
+believe that it could be, obtained against your use of the Product, or if in 
+our opinion the Product is likely to become the subject of a successful claim 
+of infringement, we may, at our option and expense, (a) replace or modify the 
+Product so that it becomes non-infringing (provided that the functionality is 
+substantially equivalent), (b) obtain for you a license to continue to use the 
+Product, or (c) if neither (a) nor (b) are reasonably practicable, terminate 
+this EULA on thirty (30) days' notice and, if the Product was licensed to you 
+on a Perpetual License or Term License basis, refund to you the license fee 
+paid to us for the Product less an amount for depreciation determined on a 
+straight-line five year (or actual term if shorter) depreciation basis with a 
+commencement date as of the date of delivery of the Product, or if the Product 
+was licensed to you on a Subscription License basis, refund to you the unused 
+portion of the fees paid in advance to us for the then-current subscription 
+period for the Product. THE INDEMNIFICATION PROVISIONS SET OUT IN THIS SECTION 
+1.10.1 STATE OUR ENTIRE LIABILITY AND YOUR SOLE AND EXCLUSIVE REMEDY WITH 
+RESPECT TO ANY INFRINGEMENT OR ALLEGED INFRINGEMENT BY US OF ANY INTELLECTUAL 
+PROPERTY RIGHTS OR PROPRIETARY RIGHTS IN RESPECT OF THE PRODUCT OR ITS USE.
+1.10.2. Your Indemnification Obligation.
+       1.10.2.1. Indemnification for Third Party-Claims.  To the extent 
+permitted by applicable law, you will defend us and our Affiliates, and our and 
+their respective officers, directors, employees, and agents from and against 
+any and all third party claims, lawsuits, and proceedings that arise or result 
+from (a) your breach of this EULA, (b) your use, distribution and/or licensing 
+of the Redistributables, if applicable, except to the extent it arises from an 
+IP Claim covered under section 1.10.1 above, or (c) your failure or alleged 
+failure to comply with Applicable Laws or any violation of a third party's 
+rights in connection with your use of the Product (each a "Third-Party Claim" 
+and collectively "Third-Party Claims") and you will indemnify for damages 
+finally awarded by a court of competent jurisdiction with respect to any 
+Third-Party Claim. 
+1.10.3. Control of the Defense or Settlement. For any indemnification 
+obligation covered in section 1.10.1,"Indemnifying Party" means us, 
+"Indemnified Party" means you, and "Claim" means an IP Claim. For any 
+indemnification obligation covered in section 1.10.2, "Indemnifying Party" 
+means you, "Indemnified Party" means us, and "Claim" means a Third-Party Claim. 
+The Indemnified Party must provide the Indemnifying Party with prompt written 
+notice of a Claim; however, the Indemnified Party's failure to provide or delay 
+in providing such notice will not relieve the Indemnifying Party of its 
+obligations under this section except to the extent the Indemnifying Party is 
+prejudiced by the Indemnified Party's failure or delay. The Indemnified Party 
+will give the Indemnifying Party full control of the defense and settlement of 
+the Claim as long as such settlement does not include a financial obligation on 
+or admission of liability by the Indemnified Party. If the Indemnified Party 
+does not do so, then the Indemnified Party waives the Indemnifying Party's 
+indemnification obligations under section 1.10.1 or 1.10.2, as applicable. The 
+Indemnified Party will reasonably cooperate in the defense of the Claim and may 
+appear, at its own expense, through counsel reasonably acceptable to the 
+Indemnifying Party.
+1.11. Confidentiality.  
+1.11.1. Confidentiality Obligations.  Except as otherwise provided herein, each 
+party agrees to retain in confidence all information and know-how transmitted 
+or disclosed to the other that the disclosing party has identified as being 
+proprietary and/or confidential or should reasonably  be  understood  to  be  
+confidential  given  the  nature  of  the  information  and  the  circumstances 
+surrounding its disclosure, and agrees to make no use of such information and 
+know-how except under the terms of this EULA. However, neither party will have 
+an obligation to maintain the confidentiality of information that (a) it 
+received rightfully from a third party without an obligation to maintain such 
+information in confidence; (b) was known to the receiving party prior to its 
+disclosure by the disclosing party; (c) is or becomes a matter of public 
+knowledge through no fault of the receiving party; or (d) is independently 
+developed by the receiving party without use of the confidential information of 
+the disclosing party. Further, either party may disclose confidential 
+information of the other party as required by governmental or judicial order, 
+provided such party gives the other party prompt written notice prior to such 
+disclosure (unless such prior notice is not permitted by applicable law) and 
+complies with any protective order (or equivalent) imposed on such disclosure. 
+You will treat any source code for the Product as our confidential information 
+and will not disclose, disseminate or distribute such materials to any third 
+party without our prior written permission. Each party's obligations under this 
+section 1.11 will apply during the term of this EULA and for five (5) years 
+following termination of this EULA, provided, however, that (i) obligations 
+with respect to source code will survive forever and (ii) trade secrets will be 
+maintained as such until they fall into the public domain.
+1.11.2. Product Benchmark Results.  You acknowledge that any benchmark results 
+pertaining to the Product are our confidential information and may not be 
+disclosed or published without our prior written consent. This provision 
+applies regardless of whether the benchmark tests are conducted by you or us.
+1.11.3. Remedies for Breach of Confidentiality Obligations.  Each party 
+acknowledges that in the event of a breach or threat of breach of this section 
+1.11, money damages will not be adequate. Therefore, in addition to any other 
+legal or equitable remedies, the non-breaching party will be entitled to seek 
+injunctive or similar equitable relief against such breach or threat of breach 
+without proof of actual injury and without posting of a bond.
+1.12. Data Collection and Personal Data.
+1.12.1. Data Collection through use of the Product.  THE PRODUCT MAY INCLUDE 
+FEATURE(S) THAT (A) GATHER PRODUCT ACTIVATION, USAGE AND/OR ENVIRONMENT 
+INFORMATION, (B) IDENTIFY TRENDS AND/OR BUGS, (C) COLLECT USAGE STATISTICS, 
+AND/OR (D) TRACK OTHER DATA RELATED TO YOUR USE OF THE PRODUCT, AS FURTHER 
+DESCRIBED IN THE CURRENT VERSION OF OUR PRIVACY POLICY AVAILABLE AT 
+https://www.progress.com/legal/privacy-policy. BY YOUR ACCEPTANCE OF THE TERMS 
+OF THIS EULA AND/OR USE OF THE PRODUCT, YOU AUTHORIZE THE COLLECTION, USE AND 
+DISCLOSURE OF THIS DATA FOR THE PURPOSES PROVIDED FOR IN THIS EULA AND/OR THE 
+PRIVACY POLICY. 
+1.12.2. Additional Data Collection Terms.  Depending on the Product licensed to 
+you, this EULA may contain additional data collection terms in section 3 
+(Product Family Specific Terms) or section 4 (Product Specific Terms) and/or, 
+if we are hosting the Product, in section 2.B (Terms for Hosted Services). 
+1.12.3.	Your Personal Data. If you determine that you will be supplying us with 
+your Personal Data (as defined in the Data Processing Addendum referenced 
+below) for us to process on your behalf, in the provision of maintenance and 
+support services or hosting services (if the Product licensed to you is a 
+Hosted Service) or during the course of any audits we conduct pursuant to 
+section 1.14 (Audit), you may submit a written request at 
+privacy@progress.com   for the mutual execution of a Data Processing Addendum 
+substantially in the form we make available at 
+https://www.progress.com/docs/default-source/progress-software/data-processing-a
+ddendum.pdf and we will enter into such Data Processing Addendum with you. To 
+the extent there is any conflict between this EULA and such Data Processing 
+Addendum, the Data Processing Addendum will prevail with respect to our 
+handling and processing of your Personal Data. 
+1.13. Limitation of Liability and Disclaimer of Certain Types of Damages.
+1.13.1. Limitation of Liability.  EXCEPT FOR A PARTY'S INDEMNIFICATION 
+OBLIGATIONS SET OUT IN THIS EULA OR A PARTY'S BREACH OF ITS CONFIDENTIALITY 
+OBLIGATIONS PURSUANT TO SECTION 1.11 (CONFIDENTIALITY), OR YOUR MATERIAL 
+VIOLATION OF OUR INTELLECTUAL PROPERTY RIGHTS OR OF THE LICENSE RESTRICTIONS 
+SET OUT IN THIS EULA, TO THE EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT 
+WILL EITHER PARTY'S LIABILITY FOR ALL COSTS, DAMAGES, AND EXPENSES ARISING OUT 
+OF OR RELATED TO THIS EULA WHETHER BASED UPON WARRANTY, CONTRACT, TORT 
+(INCLUDING NEGLIGENCE), STRICT LIABILITY OR OTHERWISE AT LAW EXCEED, IN THE 
+AGGREGATE, THE FEES PAID TO US FOR THE PRODUCT AND/OR SERVICE THAT IS THE 
+SUBJECT OF THE CLAIM, PROVIDED, HOWEVER, THAT IF THE FEES PAID FOR SUCH PRODUCT 
+AND/OR SERVICE ARE PAID ON A RECURRING BASIS, THEN THE NOT TO EXCEED LIMIT WILL 
+BE THE FEES PAID TO US FOR THE PRODUCT AND/OR SERVICE DURING THE TWELVE (12) 
+MONTH PERIOD IMMEDIATELY PRECEDING THE DATE THE CLAIM AROSE. OUR AFFILIATES AND 
+LICENSORS, AND THE SUPPLIERS TO US, OUR AFFILIATES OR LICENSORS, WILL, TO THE 
+EXTENT PERMITTED BY APPLICABLE LAW, HAVE NO LIABILITY TO YOU OR TO ANY OTHER 
+PERSON OR ENTITY FOR DAMAGES, DIRECT OR OTHERWISE, ARISING OUT OF THIS EULA, 
+INCLUDING, WITHOUT LIMITATION, DAMAGES IN CONNECTION WITH THE PERFORMANCE OR 
+OPERATION OF OUR PRODUCTS OR OUR PERFORMANCE OF SERVICES. 
+1.13.2	Disclaimer of Certain Types of Damages.  EXCEPT FOR A PARTY'S 
+INDEMNIFICATION OBLIGATIONS SET OUT IN THIS EULA OR YOUR MATERIAL VIOLATION OF 
+OUR INTELLECTUAL PROPERTY RIGHTS OR THE LICENSE RESTRICTIONS SET OUT IN THIS 
+EULA, TO THE EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL EITHER PARTY, 
+ITS AFFILIATES OR ITS LICENSORS OR THEIR RESPECTIVE SUPPLIERS BE LIABLE FOR ANY 
+SPECIAL, INDIRECT, CONSEQUENTIAL, INCIDENTAL, PUNITIVE OR TORT DAMAGES ARISING 
+IN CONNECTION WITH THIS EULA OR EITHER PARTY'S PERFORMANCE UNDER THIS EULA OR 
+THE PERFORMANCE OF OUR PRODUCTS, OR FOR ANY DAMAGES RESULTING FROM LOSS OF USE, 
+LOSS OF OPPORTUNITY, LOSS OF DATA, LOSS OF REVENUE, LOSS OF PROFITS, OR LOSS OF 
+BUSINESS, EVEN IF THE PARTY, ITS AFFILIATES, ITS LICENSORS, OR ANY OF THEIR 
+RESPECTIVE SUPPLIERS HAVE BEEN ADVISED OF THE POSSIBILITY OF THOSE DAMAGES.
+1.14. Audit.  We may install and use automated license tracking, management 
+and/or enforcement solutions with the Product, which you may not disrupt or 
+alter. You will maintain records in connection with this EULA and the use of 
+the Product and any Updates and/or services provided hereunder. Such records 
+will include at a minimum the number of licenses purchased and being used by 
+you. At our expense and with reasonable written notice to you, we or a third 
+party appointed by us may audit the records, and if necessary and as 
+applicable, the systems on which the Product or any Update is installed for the 
+sole purpose of ensuring compliance with the terms of this EULA. We will have 
+the right to conduct audits as necessary. These audits may be conducted on 
+site at a location where you have installed the Product, remotely from our 
+offices, or a combination of both, if applicable to the Product. On-site audits 
+will be conducted during regular business hours, and neither on-site nor remote 
+audits will interfere unreasonably with your business operations. You agree to 
+share with us copies of all records referenced herein, as well as Product log 
+files and other information reasonably requested by us promptly following such 
+request, but in no event more than five (5) business days following receipt of 
+our written request (or such longer period, if applicable, that we specify in 
+the written request). We will treat all such information obtained or accessed 
+by us during the audit as confidential information pursuant to section 1.11 
+(Confidentiality) for use by us only as necessary to ensure compliance with and 
+enforcement of the terms of this EULA. If any audit reveals that you have 
+underpaid license, maintenance and support or subscription fees, you will be 
+invoiced for all such underpaid fees based on our list price in effect at the 
+time the audit is completed. If the underpaid fees exceed five percent (5%) of 
+the fees previously paid by you, then you will also pay our reasonable costs of 
+conducting the audit and enforcement of this EULA.
+1.15. Termination. 
+1.15.1. Termination for Breach.  We may terminate this EULA by written notice 
+at any time if you do not comply with any of your obligations under this EULA 
+and fail to cure such failure to our satisfaction within thirty (30) days after 
+such notice. This remedy will not be exclusive and will be in addition to any 
+other remedies which we may have under this EULA or otherwise. 
+1.15.2. Effect of Termination.  Upon expiration of your license term to the 
+Product (if applicable) or earlier termination of this EULA, your license to 
+access and/or use the Product and/or distribute the Redistributables (if 
+applicable) will terminate. You must immediately cease use of the Product and 
+destroy all copies of the Product in your possession (and required any 
+Permitted Third Parties to do the same). Any licenses you have granted to the 
+Redistributables in accordance with the terms and conditions of this EULA will, 
+unless otherwise specified in section 3 (Product Family Specific Terms) or 
+section 4 (Product Specific Terms), survive termination of this EULA.
+1.15.3. Survival.  Any provisions of this EULA containing licensing 
+restrictions, warranties and warranty disclaimers, confidentiality obligations, 
+limitations of liability and/or indemnity terms, audits rights, and any term of 
+this EULA which, by its nature, is intended to survive termination or 
+expiration, will remain in effect following any termination or expiration if 
+this EULA, as will your obligation to pay any fees accrued and owing to us as 
+of termination or expiration.
+1.16. Assignment.  You may not, without our prior written consent, assign or 
+novate this EULA, any of your rights or obligations under this EULA, or the 
+Products or any of our Confidential Information, in whole or in part, by 
+operation of law, sale of assets, merger or otherwise, to any other party, 
+including any parent, subsidiary or affiliated entity. Your Change of Control 
+will constitute an assignment for purposes of the preceding sentence. A 
+"Change of Control" will include, but not be limited to, any merger, 
+consolidation, amalgamation, reorganization or sale, transfer or exchange of 
+the capital stock or equity interests of you in a transaction or series of 
+transactions which results in the holders of your capital stock or equity 
+interests holding less than 50% of the outstanding capital stock or equity 
+interests immediately following such transaction(s). 
+1.17. Choice of Law.  This EULA is governed by the laws of the Commonwealth of 
+Massachusetts, U.S.A., without regard to the conflict of laws principles 
+thereof. If any dispute, controversy, or claim cannot be resolved by a 
+good-faith discussion between the parties, then it will be submitted for 
+resolution to a state or federal court in Boston, Massachusetts, USA, and the 
+parties hereby irrevocably and unconditionally agree to submit to the exclusive 
+jurisdiction and venue of such court. The Uniform Computer Information 
+Transactions Act and the United Nations Convention on the International Sale of 
+Goods will not apply to this EULA.
+1.18. Publicity.  You agree that we may, in our sole discretion, publicize your 
+use of the Product, and you license to us (and our Affiliates and necessary 
+sublicensees) any intellectual property rights required to allow us (and our 
+Affiliates and necessary sublicensees) to use your name, trade name(s), 
+trademark(s), service mark(s), logo(s) and domain name(s) in connection with 
+such publicity.  
+1.19. Miscellaneous.
+1.19.1. Notices.  Notices of termination, material breach, your insolvency or 
+an indemnifiable claim ("Legal Notices") must be clearly identified as Legal 
+Notices and sent via overnight courier or certified mail with proof of delivery 
+to the following addresses: For us:  14 Oak Park Drive, Bedford, MA 01730, 
+Attention: General Counsel. For you: your address set out in the Order. Legal 
+Notices sent in accordance with the above will be effective upon the second 
+business day after mailing. Either party may change its address for receipt of 
+notices upon written notice to the other party.
+1.19.2. Entire Agreement.  This EULA, and any terms expressly incorporated 
+herein by reference, will constitute the entire agreement between you and us 
+with respect to the subject matter of this EULA and supersedes all prior and 
+contemporaneous communications, oral or written, signed or unsigned, regarding 
+such subject matter. Use of any purchase order or other document you supply in 
+connection with this EULA will be for administrative convenience only and all 
+terms and conditions stated therein will be void and of no effect. Except as 
+otherwise expressly contemplated in this EULA, this EULA may not be modified or 
+amended other than in writing signed by you and us.
+1.19.3. Severability.  If any provision of this EULA is terminated or held by a 
+court of competent jurisdiction to be invalid, illegal, or unenforceable, the 
+remainder of this EULA will remain in full force and effect. 
+1.19.4. Waiver.  Failure or delay in exercising any right, power, privilege or 
+remedy hereunder will not constitute a waiver thereof. A waiver of default 
+will not operate as a waiver of any other default or of the same type of 
+default on future occasions.
+1.19.5. English Language.  This EULA has been drawn up in English at the 
+express wish of the parties. Le present contrat a ete redige en anglais a la 
+demande expresse des parties.
+1.19.6. Force Majeure.  Neither you nor we will be liable for any delay or 
+failure to take any action required under this EULA (except for payment) due to 
+any cause beyond the reasonable control of you or us, as the case may be, 
+including, but not limited to unavailability or shortages of labour, materials, 
+or equipment, failure or delay in the delivery of vendors and suppliers and 
+delays in transportation.
+1.19.7. Our Use of Our Affiliates.  We may, at our discretion, engage one or 
+more of our Affiliates in the fulfilment of our obligations, including, our 
+obligations for delivery of the Product to you and/or the provision of any 
+maintenance and support services.
+
+2.A. TERMS FOR ON-PREMISE PRODUCTS		
+2.A.1. Delivery.  Unless otherwise specified by us, On-Premise Product(s) will 
+be provided to you via electronic delivery, and delivery is deemed complete 
+when the On-Premise Product(s) is/are made available at the electronic software 
+download site specified by us and you are e-mailed or otherwise provided with 
+any necessary instructions, password and/or license keys required for you to be 
+able to access, download and install the On-Premise Product(s). If we provide 
+the On-Premise Product(s) on physical media, shipping terms will be FOB 
+shipping point.
+2.A.2. Updates.  Each Update to an On-Premise Product replaces part or all of 
+the On-Premise Product (or earlier Update) previously licensed to you 
+("Replaced Product") and will terminate such previously licensed Replaced 
+Product to the extent replaced by the Update; provided, however, that you may 
+continue to operate the Replaced Product for up to ninety (90) days from 
+delivery of the Update to allow you to complete your implementation of the 
+Update. You must cease all use of the Replaced Product at the end of the ninety 
+(90) day period. Each Update will be subject to the terms and conditions of the 
+license agreement accompanying the Update which must be accepted by you at the 
+time you download or install the Update. If you do not agree to the license 
+agreement accompanying the Update, do not download or install the Update.
+2.A.3. Cloud Environment.  You may upload the On-Premise Product(s) licensed to 
+you pursuant to this EULA onto a cloud instance supplied by a third party, 
+provided that the operation of the On-Premise Product(s) in the cloud instance 
+complies with all license model restrictions and usage limitations applicable 
+to the On-Premise Product(s).  You may also allow the third party to upload, 
+install, operate and/or use the On-Premise Products on the cloud instance, 
+provided that the third party's access to and use of the On-Premise Products is 
+solely for your benefit in accordance with the terms of this EULA. The third 
+party will be considered a Permitted Third Party, and you will be responsible 
+for the Permitted Third Party's compliance with this EULA in accordance with 
+section 1.2.3 (Third Party Use).
+
+2.B. TERMS FOR HOSTED SERVICES	THIS SECTION IS NOT APPLICABLE
+
+3. PRODUCT FAMILY SPECIFIC TERMS 
+This section specifies terms and conditions that are applicable to the 
+following On-Premise Products, as made generally available by us to our 
+customers: (1) all Progress OpenEdge products (excluding Progress OpenEdge 
+Developer Kit), (2) all Progress DataDirect ODBC, JDBC, ADO.NET, SequeLink, 
+OpenAccess, Hybrid Data Pipeline and Data Integration products; and (3) all 
+Progress Corticon products.  
+
+Default License Type for each of the above-referenced On-Premise Products: 
+Perpetual
+3.1. Product Family Definitions.
+Any defined term used in this section 3 (Product Family Specific Terms) but not 
+defined herein will have the meaning ascribed to it in section 1 (General Terms 
+and Conditions) or section 2 (Terms for On-Premise Products). 
+3.1.1. "Client Device" means any input technology that allows you to access the 
+Product, including but not limited to a workstation, a personal computer, a PDA 
+device, a cellular phone, a tablet, a laptop or other device that is operated 
+by an individual.
+3.1.2. "Container" means a software package that relies on virtual isolation to 
+deploy and run on the same Server multiple Product instances, components of the 
+Product, or the applications utilizing the Product, while accessing a shared 
+operating system kernel.
+3.1.3. "Core" means a core processor of a CPU as allocated by you made up of an 
+independent processor combined onto a single integrated circuit or silicon 
+chip, in both a virtualized and/or non-virtualized environment, and regardless 
+of whether used in a production or non-production (e.g., test, development) 
+environment.
+3.1.4. "CPU" means a central processing unit, also known as a processor or 
+microprocessor. It can contain multiple cores in both virtualized and/or 
+non-virtualized environments.
+3.1.5. "Disaster" means any unplanned event or condition that renders you 
+unable to use an application or database for its intended computer processing 
+and related purposes.
+3.1.6. "Named User" means a single individual, Non-Human Operated Device or 
+Process.
+3.1.7. "Non-Human Operated Device" means a device that is not operated by an 
+individual including, but not limited to, a temperature device, a production 
+line bar code scanner, or a tracking device.
+3.1.8. "Platform" means a specific combination of the hardware and the 
+operating system, a change to either would constitute a platform change.
+3.1.9. "Process" means any automated process that is not initiated by a Client 
+Device or a Non-Human Operated Device and includes, without limitation, 
+automated controls and background jobs.
+3.1.10. "Server" means a logical computer (can be a physical hardware or a 
+virtual machine) with one or more CPUs on which the Product resides, along with 
+the applications utilizing the Product, and which can be accessed by other 
+computers. If the Product is installed on a Container, such Container is 
+treated as a separate Server. 
+3.1.11. "Site" means a single building or campus of buildings sharing the same 
+postal address. 
+3.1.12. "Use Case" means a description in the Order of one or more 
+limitation(s) on the way the Product may be used by you. Such limitation(s) may 
+include, but are not limited to, use of the Product only for a specific 
+project, application, line of business, purpose of use or group of users.
+3.2. License Grant.  Subject to the terms and conditions contained in this 
+EULA, including all Orders and License Addenda (as defined below), we grant to 
+you a non-exclusive, non-transferable, limited, personal license (without the 
+right to sublicense) to use the Product identified in the Order. We also grant 
+you a non-exclusive, non-transferable, limited, personal license (without the 
+right to sublicense) to use the Documentation. The license model applicable to 
+the Product license granted to you will be identified in the Order and 
+described in section 3.4 (Product Family License Models) or section 4.2 
+(Product-Specific License Models). 
+3.3. Product Family Applicable License Restrictions. The following license 
+restrictions apply in addition to those set forth in section 1.2.3 
+(Restrictions):
+3.3.1. Internal Use; No Affiliate Use.  Your use of the Product and 
+Documentation is limited to internal use within your company. The Product and 
+Documentation may not be used by your Affiliates unless specifically authorized 
+in the Order. Use will be in accordance with this EULA and any additional 
+terms, if any, set out in any Order or additional agreement executed by us and 
+you in connection with this EULA which specifically states the terms thereof 
+will be in addition to or in lieu of any of the terms set out in this EULA 
+(each a "License Addendum" and collectively, the "License Addenda").
+3.3.2. No Use by Others. Except as otherwise expressly permitted in this EULA, 
+you may not allow the Product to be accessed, used or possessed by another 
+party. For these purposes, the term "use" will include, without limitation, 
+direct or indirect use via thin-client or web-based remote access software 
+which but for the use thereof would have required a copy of the Product to be 
+installed or used locally by that user.
+3.3.3. No Time Sharing or Similar Services.  You will have no right to use the 
+Product to provide outsourced services, or facility management services or to 
+act as or operate a service bureau or provide information, data processing, 
+subscription or hosting services for another party. 
+3.4. Product Family License Models. This section specifies license models that 
+may be applicable to one or more Products. Note that not all license models are 
+available for all Products. 
+3.4.1. CPU License. A CPU License grants you the right to run the Product, or 
+an application which can access the Product, on a single CPU, on a single 
+Server and on a single Platform, where such CPU contains only one Core. If the 
+CPU contains more than one Core, then you must either purchase a Core License 
+for the Product or, if no Core License model is available for the Product, then 
+each Core in the CPU will count as one (1) CPU. Additional CPU License(s) are 
+required for each CPU on a Server that runs the Product, including, without 
+limitation, Servers configured for disaster recovery, load balancing, 
+clustering, development, testing and reporting. A CPU License may not be 
+transferred from one Server or Platform to another.
+3.4.2. Named User/Seat License.  A Named User or Seat License grants you the 
+right to designate a Named User to access and use the Product or access and use 
+an application which can access the Product. You must be able to identify and 
+count each Named User. A Named User License is a multi-server license in that 
+it is not limited by Core, CPU or Server count, but the Product must be used on 
+a single Platform. A Named User may not be designated concurrently on different 
+computers or devices or shared by multiple users. A Named User does not have to 
+be logged on to the Product to be counted as a Named User. A Named User License 
+designation may be transferred from one Named User to another provided that the 
+original Named User no longer requires and is no longer permitted access to the 
+Product. The foregoing transfer right will not affect the assignment 
+prohibition set forth in section 1.16 (No Assignment). All Named Users must be 
+bound to the terms and conditions of this EULA.
+3.4.3. Server/Machine License.  A Server or Machine License grants you the 
+right to install and use the Product, or an application which can access the 
+Product, on a single Server and on a single Platform. Additional Server or 
+Machine License(s) are required for each Server that runs the Product 
+including, without limitation, Servers configured for disaster recovery, load 
+balancing, clustering, development, testing and reporting. A Server or Machine 
+License may not be transferred from one Server or Platform to another.
+3.4.4. Site License.  A Site License grants you the right to install and use 
+the Product, or an application which can access the Product, in any Server at a 
+single Site and on any device (wherein the device can be a Client Device, a 
+Non-Human Operated Device or a Process) operated by users who share the same 
+principal place of business as the Site location, regardless of whether the 
+Product, or an application which can access the Product is used in a 
+virtualized and/or non-virtualized environment.
+3.4.5. Application Specific License.  If the Order lists a specific application 
+authorized for use with the Product, or if you obtained the Product in 
+conjunction with a software application provided by a third party, the Product 
+is licensed for use only with that application. Use with any other 
+application/product is strictly prohibited. You will also be subject to the 
+license terms of the appropriate license model for the Product (e.g., CPU 
+License, Core License, Named User/Seat License, etc.) designated in the Order. 
+In no event do we make any representations or warranties, express, implied or 
+arising by custom or trade usage, regarding a third party's application and 
+assume no liability or responsibility for such application.
+3.4.6. Developer License.  A Developer License limits your access to and use of 
+the Product to internal application development and support purposes only. If 
+the license is for components of the Product only, then this right is limited 
+to those components. You will also be subject to the license terms of the 
+appropriate license model for the Product (e.g., CPU License, Core License, 
+Server/Machine License, etc.) designated in the Order. A Developer License may 
+not be transferred. 
+3.4.7. Disaster Recovery License.  A Disaster Recovery License will only be 
+used by you for the sole purpose of application recovery in the event a system 
+fails or crashes or the Product or database files become corrupt. In that case, 
+a Disaster Recovery License grants you the right to use the Product for a 
+period not to exceed ninety (90) days ("D/R Deployment Period"). You will 
+notify us in writing within five (5) business days of the commencement of the 
+D/R Deployment Period. You will also be subject to the same quantity limits and 
+license terms of the appropriate license model for the Product (e.g., CPU 
+License, Core License, Server/Machine License, etc.) designated in the Order. A 
+Disaster Recovery License may be transferred from one Server or CPU to another 
+with prior notice to us so long as such change is permitted by the underlying 
+license model. No Disaster Recovery License is required for a switch from a 
+primary Server to a secondary Server so long as the primary Server is 
+permanently disabled. However, a Disaster Recovery License is required for any 
+other temporary reassignment between the primary Server and any other Server. 
+The foregoing transfer right will not affect the assignment prohibition set 
+forth in section 1.16 (No Assignment).
+3.4.8. Evaluation License. An Evaluation License grants you the right to use 
+the Product solely for evaluation, demonstration, prototyping, testing and/or 
+proof of concept purposes in accordance with the terms set forth in section 
+1.2.5 (Limitations on Evaluation or Trial Licenses), and not in conjunction 
+with the development or deployment of any software application. No commercial 
+product development work is authorized. YOU UNDERSTAND AND ACKNOWLEDGE THAT THE 
+PRODUCT LICENSED TO YOU PURSUANT TO AN EVALUATION LICENSE CONTAINS A DISABLING 
+DEVICE THAT WILL AUTOMATICALLY DISABLE THE PRODUCT THIRTY (30) DAYS FROM 
+INSTALLATION OR AT THE END OF SUCH LONGER OR SHORTER PERIOD OF TIME AS MAY BE 
+SPECIFIED IN AN ORDER OR AGREED BY YOU AND US IN WRITING. 
+3.4.9. Testing and Staging License.  A Testing and Staging License grants you 
+the right to use the Product for internal quality assurance testing purposes 
+only and you may not deploy the Product in a production environment. You will 
+also be subject to the license terms of the appropriate license model for the 
+Product (e.g., CPU License, Core License, Server/Machine License, etc.) 
+designated in the Order. A Testing and Staging License may not be transferred.
+3.5. General Usage Limitations
+3.5.1. Templates, Samples and/or Accelerators.  
+       3.5.1.1. No Warranties.  NOTWITHSTANDING ANYTHING TO THE CONTRARY IN 
+THIS EULA, INCLUDING WITHOUT LIMITATION ANYTHING TO THE CONTRARY IN SECTION 1.9 
+(WARRANTIES), ANY TEMPLATES, SAMPLES OR ACCELERATORS THAT ARE LOCATED IN THE 
+PRODUCT AND DESCRIBED IN THE DOCUMENTATION AS A SAMPLE, TEMPLATE OR 
+ACCELERATOR, ARE PROVIDED SOLELY ON AN "AS IS" BASIS WITHOUT WARRANTY OF ANY 
+KIND. WE MAKE NO WARRANTIESWITH RESPECT TO SUCH TEMPLATES, SAMPLES AND/OR 
+ACCELERATORS, EXPRESS, IMPLIED, OR ARISING BY CUSTOM OR TRADE USAGE, AND 
+SPECIFICALLY MAKE NO WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR 
+PURPOSE.
+       3.5.1.2. No Maintenance and Support.  Any maintenance and support 
+services offered by us for the Product will not include maintenance and support 
+for the above-mentioned templates, samples or accelerators, as may be 
+configured by you for your own implementation. You will be solely responsible 
+for the use and configuration of said templates, samples and/or accelerators.
+       3.5.1.3. Ownership of Templates, Samples and/or Accelerators.  We retain 
+all ownership rights in and to the above-mentioned templates, samples and/or 
+accelerators, and any modifications thereto or derivatives thereof, in 
+accordance with section 1.6.1 (IP Ownership).
+3.5.2. Optional Components.  The Product licensed and delivered to you may 
+include on the media or in the electronically delivered files, as applicable, 
+components, features or other Products for which a separate license purchase 
+and license key(s) or control code(s) are required. You are permitted to use 
+only the Product(s) and/or components thereof for which you have ordered and 
+received a valid license key or control code. 
+3.5.3. Use Case and/or User Group Restrictions.  If the Order indicates that 
+the Product may be used for specific Use Case(s) or by specific user group(s), 
+the Product may only be used for the Use Case(s) and/or by the user group(s) 
+listed in the Order.
+3.5.4. Products Available via a Container Method. If we offer a download option 
+for the Product in a container image then the Product will be provided in a 
+container image that may also contain third party product(s) as identified in 
+the Special Notices accompanying the Product, and subject to the additional 
+licensing terms referenced in the Special Notices. Notwithstanding anything to 
+the contrary in this EULA, we make no representations or warranties and assume 
+no indemnification obligations in regard to such third party product(s), 
+its/their operation or its/their security. User modifications to the version of 
+the third party product(s) provided by us in the container image, even if 
+permitted under the applicable license referenced in the Special Notices, may 
+result in errors or instability in performance of the Product which are not 
+covered by us under warranty or maintenance terms. You are responsible for 
+obtaining, at your own expense, any required licenses from the supplier of the 
+container technology to deploy the container image that contains the Product 
+and the above-referenced third-party products and any such deployment of the 
+Product must comply with the terms and conditions of this EULA. 
+3.5.5. Technical Preview Features.  Product(s) may include features that are 
+identified as a "Technical Preview", and if included, such features are 
+documented in the Documentation such as the Product Releases Notes. We are not 
+obligated to provide any maintenance, technical or other support for the 
+Technical Preview features, but may, from time to time, provide technical 
+support and/or Updates to the Technical Preview features at our sole 
+discretion. All such Updates will be subject to the terms and conditions of 
+this EULA, including, without limitation, the terms and conditions set forth in 
+this section. NOTWITHSTANDING ANYTHING TO THE CONTRARY IN IN SECTION 1.9 
+(WARRANTIES), TECHNICAL PREVIEW FEATURES, ANY UPDATES THERETO AND ANY RELATED 
+TECHNICAL SUPPORT SERVICES ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. 
+WE MAKE NO WARRANTIES WITH RESPECT TO THE TECHNICAL PREVIEW FEATURES, ANY 
+UPDATES THERETO, OR ANY RELATED TECHNICAL SUPPORT SERVICES, WHETHER EXPRESS, 
+IMPLIED, OR ARISING BY CUSTOM OR TRADE USAGE, AND SPECIFICALLY MAKE NO WARRANTY 
+OF MERCHANTABILITY, FITNESS FOR ANY PARTICULAR PURPOSE, TITLE OR 
+NONINFRINGEMENT.
+ 
+4. PRODUCT SPECIFIC TERMS 
+
+This section specifies terms and conditions that are applicable to Products 
+included in the Progress DataDirect ODBC, JDBC, ADO.NET, SequeLink, OpenAccess, 
+Hybrid Data Pipeline and Data Integration product lines. 
+4.1. Product Specific Definitions.  Any defined term used in this section 4 
+(Product-Specific Terms) but not defined herein will have the meaning ascribed 
+to it in section 1 (General Terms and Conditions), section 2 (Terms for 
+On-Premise Products) or section 3 (Product Family Specific Terms).
+4.1.1. "Custom Driver" means a data connectivity driver resulting from the use 
+of the DataDirect OpenAccess Runtime Components in combination with the User 
+Interface Provider.
+4.1.2. "Progress OpenAccess Development Product(s)" means Product(s) (in object 
+code form) described in the Order as an "OpenAccess SDK" (or similar label or 
+identifier) and that consist of a software development toolkit (SDK) that may 
+be used to develop a User Interface Provider.
+4.1.3. "Progress OpenAccess Runtime Components" means the runtime software 
+components (in object code form) that are included in the Progress OpenAccess 
+Development Product(s).
+4.1.4. "Progress OpenAccess Runtime Product(s)" means the Progress OpenAccess 
+Runtime Components (in object code form) specified in the Order that may be 
+used in connection with the deployment of the Custom Driver in an internal 
+production environment.
+4.1.5. "User Interface Provider" means computer program code written by or for 
+you that provides the interface between the Progress OpenAccess Runtime 
+Components and your data source.
+4.2. Product Specific License Models.  This section specifies license models 
+that may be applicable to one or more Products in the Progress DataDirect ODBC, 
+JDBC, ADO.NET, SequeLink, OpenAccess, Hybrid Data Pipeline and Data Integration 
+product lines. Note that not all license models are available for all Products.
+4.2.1. Authorized User License.  If the Product is licensed on an Authorized 
+User basis, then the Product may be used on a single computing machine which 
+may be accessed by the number of Authorized Users specified in the Order. In no 
+event shall the number of persons authorized to have access to the Product 
+exceed the number of Authorized Users identified in the Order. The right to use 
+the Product is not based on concurrent users, but instead on an actual 
+"Authorized User" basis. You must, upon request by Progress, identify each 
+Authorized User who will have access to the Product and provide that 
+information to Progress.
+4.2.2. Concurrent User License. If the Product is licensed on a Concurrent User 
+basis, then the Product may be installed and used on multiple machines for 
+access by multiple users provided that at any given time the maximum number of 
+Concurrent Users accessing or using the Product may not exceed the number of 
+Concurrent Users identified in the Order. A "Concurrent User" is a single 
+individual making use of or accessing the Product under a Concurrent User 
+License model and will be deemed a "Concurrent User" at all times while such 
+use or access is occurring.
+4.2.3. Connection Basis (for DataDirect Connect for ODBC, DataDirect for 
+ODBC).  If the Product licensed to you is a Progress DataDirect Product which 
+incorporates the term "for ODBC" into the Product name or Product description 
+or which is otherwise designated as being "for ODBC", and if the Product is 
+licensed on a Connection basis, then a license fee must be paid for both the 
+maximum number of simultaneous Connections utilized by the Server and the 
+maximum number of CPUs utilized by the Server whether or not such access is 
+simultaneous or consecutive. For the purposes of this provision only a 
+"Connection" is defined as the driver state after a successful call to 
+SQLConnect, SQLDriverConnect, or SQLBrowseConnect and before termination of 
+this state, normally through a successful call to SQLDisconnect. Servers 
+utilizing dual core processing (or multiple core processing) or other 
+multi-processor technology shall have each core processor count as one (1) CPU. 
+The Product may only be used by Server-based applications running on that 
+Server accessed by other computers and may not be installed via file sharing on 
+a local area network file system.
+4.2.4. Connection Basis (for DataDirect Connect for JDBC, DataDirect for 
+JDBC).  If the Product licensed to you is a Progress DataDirect Product which 
+incorporates the term "for JDBC" into the Product name or Product description 
+or which is otherwise designated as being "for JDBC", and if the Product is 
+licensed on a Connection basis, then a license fee must be paid for both the 
+maximum number of simultaneous Connections utilized by the Server and the 
+maximum number of CPUs utilized by the Server whether or not such access is 
+simultaneous or consecutive. For the purposes of this provision only a 
+"Connection" is defined as the driver state after a successful call to the 
+DriverManager.getConnection method or the driver's Driver.connect, 
+DataSource.getConnection ConnectionPoolDataSource.getPooledConnection, 
+XADataSource.getXAConnection, or 
+ManagedConnectionFactory.createManagedConnection methods and before termination 
+of this state, normally through a successful call to the driver's 
+Connection.close, PooledConnection.close or ManagedConnection.destroy methods. 
+Servers utilizing dual core processing (or multiple core processing) or other 
+multi-processor technology shall have each core processor count as one (1) CPU. 
+The Product may only be used by Server-based applications running on that 
+Server accessed by other computers and may not be installed via file sharing on 
+a local area network file system.
+4.2.5. Connection Basis (for DataDirect Connect for ADO.NET only).  If the 
+Product is licensed on a Connection basis, then a license fee must be paid for 
+both the maximum number of simultaneous Connections utilized by the Server and 
+the maximum number of CPUs utilized by the Server whether or not such access is 
+simultaneous or consecutive. For the purposes of this provision only a 
+"Connection" is defined as the provider state after a successful call to the 
+Open method in the System.Data.Common.DbConnection class or the 
+DDTek.DB2.DB2Connection class or the DDTek.Oracle.OracleConnection class or the 
+DDTek.SQLServer.SQLServerConnection class or the DDTek.Sybase.SybaseConnection 
+class and before termination of this state, normally through a successful call 
+to the Close method in the System.Data.Common.DbConnection class or the 
+DDTek.DB2.DB2Connection class or the DDTek.Oracle.OracleConnection class or the 
+DDTek.SQLServer.SQLServerConnection class or the DDTek.Sybase.SybaseConnection 
+class. Servers utilizing dual core processing (or multiple core processing) or 
+other multi-processor technology shall have each core processor count as one 
+(1) CPU. The Product may only be used by Server-based applications running on 
+that Server accessed by other computers and may not be installed via file 
+sharing on a local area network file system.
+4.2.6. Core License.  If the Product is licensed on a Core basis, then you may 
+run the Product on a single Core, on a single Server. The total number of Cores 
+on the Server may not exceed the total number licensed to you. Additional Core 
+License(s) are required for each Core of a Server on which the Product runs, 
+including, without limitation, Servers configured for disaster recovery, load 
+balancing, clustering, development, testing and reporting.
+4.2.7. Virtualized Environment. The terms of this section apply only to 
+Products licensed under a Core license model. Notwithstanding anything in the 
+EULA to the contrary, you may install and use the Product(s) in a virtual 
+machine environment, provided however, that you must not allow more than the 
+number of applicable licensed Cores to be allocated to each Product via the 
+virtual machine technology. The applicable licensed Cores will be the number of 
+Cores that you are licensed to install and use each Product as specified in the 
+Order. Any allocation of any portion of a Core's processing ability to the 
+Product will constitute one Core toward the virtual machine environment 
+licensed hereunder. You will be responsible for allocating the Cores to the 
+Product(s) in a manner to ensure compliance with this restriction. Use of the 
+Product(s) in any configuration or environment (including, without limitation, 
+dynamic virtualization where additional Cores could be allocated to the 
+Product(s) at peak load times) that at any time exceeds the restrictions set 
+forth above is strictly prohibited, and requires the purchase of additional 
+licenses.
+4.2.8. z/OS Operating System Image License.  If the Product is licensed to you 
+on an z/OS Operating System Image basis, then a license fee must be paid for 
+the number of z/OS Operating System Images where the Product is installed. You 
+will identify the number of z/OS Operating System Images where the Product is 
+installed and provide the information to us.
+4.2.9. MVS or OS/390 Operating System Image License.  If the Product is 
+licensed to you on an MVS or OS/390 Operating System Image basis, then a 
+license fee must be paid for the number of MVS or OS/390 Operating System 
+Images, whichever is applicable, where the Product is installed. You will 
+identify the number of MVS or OS/390 Operating System Images, whichever is 
+applicable, where the Product is installed and provide the information to 
+Progress.
+4.2.10. Workstation License.  If the Product is licensed on a Workstation 
+basis, each Workstation using or accessing the Product must be licensed. A 
+"Workstation" is defined as a computer that is operated, either attended or via 
+remote access, by one person at a time, and cannot be used by more than one 
+person, directly or indirectly, simultaneously. In no event will the number of 
+workstations utilizing or accessing the Product exceed the number of 
+Workstations identified in the Order.
+4.2.11. Evaluation License Term. Notwithstanding anything to the contrary in 
+section 3.4.8 (Evaluation License), the default license term for any evaluation 
+license granted to you for the Product(s) pursuant to this EULA will be fifteen 
+(15) days.
+4.2.12. Term and Subscription Licenses.  If the Order specifies that your 
+license to the Product(s) is a term or subscription license, then, unless 
+otherwise specified in the Order, your license to the Products will not auto 
+renew and the term of this EULA and your license to the Product(s) hereunder 
+will expire on the expiration date stated in the Order unless sooner terminated 
+in accordance with the terms of this EULA. For the duration of the Term or 
+Subscription license (as applicable) you will be further subject to the license 
+terms of the appropriate license model for the Product (e.g., CPU, Core, 
+Server/Machine, etc.) designated in the Order. Upon completion of the term or 
+subscription (as applicable) the Product(s) may automatically timeout or cease 
+to function. Upon completion of the term or subscription (as applicable), all 
+of your license rights in and to the Products will terminate and you must 
+satisfy the requirements in section 1.15.2 (Effect of Termination).    
+4.3. Product-Specific Usage Limitations. 
+4.3.1. Runtime License Checker. The Products may include code to verify that 
+you have not exceeded the license keys issued by us (the "Runtime License 
+Checker") and in the event that the Runtime License Checker determines that you 
+have exceeded your license the Products may cease to operate.
+4.3.2. Operating Systems or Platforms.  If the Order specifies that your 
+license to the Product(s) is/are limited to a specific Operating System ("OS") 
+or Platform, then the Product(s) is/are licensed with the additional 
+restriction that it be used solely in conjunction with the specified OS or 
+Platform. Use with any other OS or Platform is strictly prohibited. Without 
+limiting the foregoing, if the Product is a Progress OpenAccess Development 
+Product (as defined above), then the additional restriction specified in the 
+preceding sentence applies to any part of the Progress OpenAccess Development 
+Product, including, without limitation, the Progress OpenAccess Runtime 
+Components (as defined above) contained therein.
+4.3.3. Progress DataDirect and OpenAccess Products "for ODBC".  If the Product 
+licensed to you is a Progress DataDirect or OpenAccess Product which 
+incorporates the term "for ODBC" into the Product name or Product description 
+or which is otherwise designated as being "for ODBC", (each the "Licensed 
+Product"), the following additional requirements will apply: we have licensed, 
+and have rights to sub-license certain third party software that is part of the 
+ODBC SDK components and which is usable for certain non-Windows platforms - Mac 
+OS, OS/2, HP-UX, AIX, Linux, Solaris, and other non-Windows operating systems. 
+This section sets forth the conditions that govern your permitted use of the 
+various non-windows SDK components: you are not licensed to use the ODBC Core 
+Components (hereinafter defined) other than with the Licensed Product, or in 
+the case where the Licensed Product is Progress OpenAccess Development 
+Product for ODBC or Progress OpenAccess Runtime Product for ODBC, other than 
+with the Custom Driver (as defined above) created with the use of the Progress 
+OpenAccess Development Product ("Permitted Driver"). Use of the ODBC Core 
+Components with any ODBC drivers other than the Licensed Product, or in the 
+case where the Licensed Product is Progress OpenAccess Development 
+Product for ODBC or Progress OpenAccess Runtime Product for ODBC, other than 
+the Permitted Driver, is expressly prohibited. You may not embed in any 
+products, or otherwise sub-license the ODBC Core Components, without a separate 
+license agreement. For the purposes hereof, the term "ODBC Core Components" 
+means the ODBC Driver Manager and support files for non-Windows operating 
+systems. A separate license must be obtained from us if you want to embed and 
+sub-license the ODBC Header Files (hereinafter defined) with any software 
+product. For the purposes hereof, the term "ODBC Header Files" means the text 
+files for compilation and development of software.
+4.3.4. Stylus Studio Products.  If the Product licensed to you is a Stylus 
+Studio product the following requirements apply:
+4.3.4.1. If the Product is Stylus Studio, Stylus Studio XML Enterprise Suite, 
+or Stylus Studio XML Professional Suite then the Product is licensed on either:
+       (a) a named user basis meaning specific individuals are authorized to 
+access the Product and the total number of named users may not exceed the total 
+number licensed by you; or
+       (b) a Concurrent User basis meaning the quantity of Concurrent Users (as 
+defined above) identified in the Order for the Product must equal the maximum 
+number of users concurrently using or accessing the Product at any given time 
+in accordance with the Concurrent User license model described above.
+Stylus Studio, Stylus Studio XML Enterprise Suite and Stylus Studio XML 
+Professional Suite are subject to the additional restriction that it may be 
+used by you solely for development and testing of software applications, and 
+not in conjunction with the deployment of such software applications.
+4.3.4.2. If the Product is Stylus Studio XML Home Edition, then the Product is 
+licensed on a single named user basis for personal use only. The Stylus Studio 
+XML Home Edition is subject to the additional restriction that it not be used 
+in conjunction with any commercial or for-profit transactions. NOTWITHSTANDING 
+ANYTHING TO THE CONTRARY IN SECTION 1.9 (WARRANTIES), AND EXCEPT AS PROHIBITED 
+BY APPLICABLE LAW, STYLUS STUDIO XML HOME EDITION IS PROVIDED "AS IS" WITHOUT 
+WARRANTY OF ANY KIND. WE MAKE NO WARRANTIES WITH RESPECT TO THE STYLUS STUDIO 
+XML HOME EDITION, EXPRESS, IMPLIED, OR ARISING BY CUSTOM OR TRADE USAGE, AND 
+SPECIFICALLY MAKE NO WARRANTY OF MERCHANTABILITY OR OF FITNESS FOR ANY 
+PARTICULAR PURPOSE OR NONINFRINGEMENT. You have the sole responsibility for 
+adequate protection and back-up of all data use in connection with the product.
+4.3.4.3. Notwithstanding anything to the contrary in section 3.4.8 (Evaluation 
+License), if the Product is an evaluation version of Stylus Studio, then the 
+Product is licensed on a single named user basis and is subject to the 
+additional restriction that it be used by you solely for evaluation of software 
+applications, and not in conjunction with the development or deployment of such 
+software applications. You must purchase a license for Stylus Studio for the 
+development and testing of software applications. Evaluation includes the use 
+of Products in performance benchmarking. We update the Product regularly and 
+benchmarking data for the Product is subject to change. Benchmark tests on 
+prior versions of the Product may yield results that are not reflective of the 
+performance of the current version of the Product. The most current version of 
+the Product is available at www.stylusstudio.com. YOU UNDERSTAND AND 
+ACKNOWLEDGE THAT THE EVALUATION VERSION OF STYLUS STUDIO CONTAINS A DISABLING 
+DEVICE THAT WILL AUTOMATICALLY DISABLE THE PRODUCT FIFTEEN (15) DAYS FROM 
+INSTALLATION. NOTWITHSTANDING ANYTHING TO THE CONTRARY IN SECTION 1.9 
+(WARRANTIES), THE EVALUATION VERSION OF STYLUS STUDIO IS PROVIDED "AS IS" 
+WITHOUT WARRANTY OF ANY KIND. WE MAKE NO WARRANTIES WITH RESPECT TO THE 
+EVALUATION VERSION OF STYLUS STUDIO, EXPRESS, IMPLIED, OR ARISING BY CUSTOM OR 
+TRADE USAGE, AND SPECIFICALLY MAKE NO WARRANTY OF MERCHANTABILITY OR OF FITNESS 
+FOR ANY PARTICULAR PURPOSE OR NONINFRINGEMENT.
+4.3.4.4. If you ordered or obtained the Product license from an Authorized 
+Reseller, then, in addition to the terms and conditions of this EULA, your use 
+of the Product may be subject to additional scope of license terms and 
+conditions (if any) specified in the Order between you and the Authorized 
+Reseller, including, without limitation, a restriction that you limit your use 
+of the Product to use solely in conjunction with the Authorized Reseller's 
+software product(s) licensed by the Authorized Reseller to you. In the event of 
+conflict between the terms and conditions specified in the Order between you 
+and the Authorized Reseller and the terms of this EULA, the order of precedence 
+will be as set forth in section 1.2.8 (Order of Precedence between EULA and 
+Order).  
+4.3.4.5. The Product may contain programs that perform automated collection of 
+system data and transmit said data to equipment owned by us or under our 
+control in order to (i) register your activation of the Product, (ii) perform 
+automated updating services for the Product, and/or (iii) validate whether you 
+are entitled to use the Product. System data collected through such programs 
+may be used by us for the purpose of providing you with remote system services 
+and/or for the purpose of enforcing the terms and conditions of this EULA.
+4.3.4.6. Notwithstanding anything to the contrary in this EULA, maintenance and 
+support for Stylus Studio products is only available online via the Stylus 
+Studio Developer Network (SSDN).
+4.3.5. Progress OpenAccess Development Product.  If the Product licensed to you 
+is a Progress OpenAccess Development Product the following additional 
+requirements apply: Except as expressly permitted pursuant to this EULA, 
+neither the Progress OpenAccess Development Product nor any part thereof may be 
+(i) embedded in another software program or application or (ii) used in 
+connection with the operation of a software program or application in a 
+production environment. Any use by you of the Progress OpenAccess Runtime 
+Components included in the Progress OpenAccess Development Product must be 
+limited to use solely for the purpose of developing and testing the operation 
+of the Custom Driver in a development environment, and under no circumstances 
+may such Progress OpenAccess Runtime Components be used or deployed for 
+productive use. You must purchase a separate deployment license for the 
+Progress OpenAccess Runtime Product (as defined above) in order to use and 
+deploy said Progress OpenAccess Runtime Components in a production environment.
+4.3.6. Progress OpenAccess Runtime Product.  If the Product licensed to you is 
+a Progress OpenAccess Runtime Product the following additional requirements 
+apply:
+4.3.6.1. You are permitted to make and deploy copies of the Progress OpenAccess 
+Runtime Product strictly on an internal deployment basis for use in conjunction 
+with the User Interface Provider to create a Custom Driver where such Custom 
+Driver is used solely by you in an internal testing and/or production 
+environment. If the Progress OpenAccess Runtime Product licensed to you is 
+restricted to use for a specific application in accordance with section 3.4.5 
+(Application Specific License), then your use of the Custom Driver and Progress 
+OpenAccess Runtime Product is limited to use in connection with the designated 
+application. You are further subject to the license terms of the appropriate 
+license model for the Progress OpenAccess Runtime Product as identified in the 
+Order and as described in this EULA.
+4.3.6.2. NOTWITHSTANDING THE PROVISIONS OF SECTION 1.9 (WARRANTIES), YOU 
+UNDERSTAND AND ACKNOWLEDGE THAT THE PROGRESS OPENACCESS RUNTIME COMPONENTS 
+DEPLOYED BY YOU IN CONJUNCTION WITH THE CUSTOM DRIVER ARE PROVIDED "AS IS" 
+WITHOUT WARRANTY OF ANY KIND, WHETHER EXPRESS, IMPLIED OR ARISING BY CUSTOM OR 
+TRADE USAGE AND WE SPECIFICALLY MAKES NO WARRANTY OF MERCHANTABILITY OR OF 
+FITNESS FOR ANY PARTICULAR PURPOSE OR NONINFRINGEMENT.
+4.3.7. Progress Hybrid Data Pipeline Product.  If the Product licensed to you 
+is the Progress Hybrid Data Pipeline Product the following additional 
+requirements apply:
+4.3.7.1. The Product consists of four main parts: (1) the Hybrid Data Pipeline 
+Server, (2) the Hybrid Data Pipeline client libraries (e.g., ODBC and/or JDBC), 
+(3) the Hybrid Data Pipeline data source connectors and (4) the Hybrid Data 
+Pipeline on-premises connector. The Product is licensed under a Core license 
+model; however, the Core license unit quantity limitation specified in the 
+Order will apply only to the Hybrid Data Pipeline Server portion of the 
+Product. You may install and use the Hybrid Data Pipeline client libraries and 
+Hybrid Data Pipeline data source connectors designated in the Order and, 
+subject to subsection 4.3.7.3 below, the Hybrid Data Pipeline on-premises 
+connector on an unlimited number of Servers with any number of Cores.
+4.3.7.2. The Order will designate each Hybrid Data Pipeline client library 
+licensed to you (e.g., ODBC, JDBC and/or OData). The Order will also identify a 
+Hybrid Data Pipeline data source connector for each data source supported by us 
+and that you are authorized to use the Product to connect to. Each license to 
+the Product includes Hybrid Data Pipeline data source connectors for up to 
+three (3) supported data sources to be selected by you and identified in the 
+Order. For each data source identified in the Order, you may utilize the 
+applicable Hybrid Data Pipeline data source connector and, subject to 
+subsection 4.3.7.3 below, the Hybrid Data Pipeline on-premises connector to 
+access and transmit data to and from an unlimited number of database instances 
+of that data source. You may purchase a license for additional Hybrid Data 
+Pipeline data source connectors to access additional supported data sources at 
+our then-current pricing.
+4.3.7.3. The Hybrid Data Pipeline on-premises connector will be included in the 
+license to the Progress Hybrid Data Pipeline Product unless expressly excluded 
+in the applicable Order.
+4.3.7.4. The Hybrid Data Pipeline data source connectors and the Hybrid Data 
+Pipeline on-premises connector (if applicable in accordance with subsection 
+4.3.7.3 above) may only be used in conjunction with the operation of the Hybrid 
+Data Pipeline Server.
+4.3.7.5. The Product licensed and delivered to you may include on the media or 
+in the electronically delivered files, as applicable, Hybrid Data Pipeline data 
+source connectors enabling connectivity to data source(s) other than those 
+identified in the applicable Order and/or the Hybrid Data Pipeline on-premises 
+connector despite its express exclusion in the applicable Order. You may only 
+use the Progress Hybrid Data Pipeline data source connectors to connect to the 
+data sources that are listed in the applicable Order and may not use the Hybrid 
+Data Pipeline on-premises connector if it has been expressly excluded in the 
+applicable Order.
+
+
+
+
+Rev. TMPLT06JAN2020DC&I06JAN2020
+	 
+
+
+
