@@ -26,6 +26,10 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         },
     }
 
+    @property
+    def pip_cache_path(self) -> str:
+        return f"{self.CACHE_DIR_PATH}/pip"
+
     def install_cdk_system_dependencies(self) -> Callable:
         def get_nltk_data_dir() -> dagger.Directory:
             """Returns a dagger directory containing the nltk data.
@@ -67,7 +71,7 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             - nltk data
             """
             container = with_tesseract_and_poppler(container)
-            container = container.with_exec(["mkdir", self.nltk_data_path], skip_entrypoint=True).with_directory(
+            container = container.with_exec(["mkdir", "-p", "755", self.nltk_data_path], skip_entrypoint=True).with_directory(
                 self.nltk_data_path, get_nltk_data_dir()
             )
             return container
@@ -90,9 +94,8 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
         return (
             self.get_base_container(platform)
-            .with_mounted_cache("/root/.cache/pip", pip_cache_volume)
-            # Set the timezone to UTC
-            .with_exec(["ln", "-snf", "/usr/share/zoneinfo/Etc/UTC", "/etc/localtime"])
+            .with_mounted_cache(self.pip_cache_path, pip_cache_volume, owner=self.USER)
+            .with_env_variable("PIP_CACHE_DIR", self.pip_cache_path)
             # Upgrade pip to the expected version
             .with_exec(["pip", "install", "--upgrade", "pip==24.0", "setuptools==70.0.0"])
             # Declare poetry specific environment variables
@@ -100,8 +103,6 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             .with_env_variable("POETRY_VIRTUALENVS_IN_PROJECT", "false")
             .with_env_variable("POETRY_NO_INTERACTION", "1")
             .with_exec(["pip", "install", "poetry==1.6.1"], skip_entrypoint=True)
-            # Install socat 1.7.4.4
-            .with_exec(["sh", "-c", "apt update && apt-get install -y socat=1.7.4.4-2"])
             # Install CDK system dependencies
             .with_(self.install_cdk_system_dependencies())
         )
@@ -119,6 +120,12 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         await base_sanity_checks.check_a_command_is_available_using_version_option(container, "bash")
         await python_sanity_checks.check_python_version(container, "3.9.19")
         await python_sanity_checks.check_pip_version(container, "24.0")
+        await base_sanity_checks.check_user_exists(container, self.USER, expected_uid=self.USER_ID, expected_gid=self.USER_ID)
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.nltk_data_path)
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.CACHE_DIR_PATH)
+        await base_sanity_checks.check_user_can_write_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
+        await base_sanity_checks.check_user_cant_write_dir(container, self.USER, self.CACHE_DIR_PATH)
         await python_sanity_checks.check_poetry_version(container, "1.6.1")
         await python_sanity_checks.check_python_image_has_expected_env_vars(container)
         await base_sanity_checks.check_a_command_is_available_using_version_option(container, "socat", "-V")

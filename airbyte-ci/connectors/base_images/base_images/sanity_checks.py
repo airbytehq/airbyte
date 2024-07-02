@@ -99,3 +99,84 @@ async def check_socat_version(container: dagger.Container, expected_socat_versio
             raise errors.SanityCheckError(f"unexpected socat version: {version_number}")
     else:
         raise errors.SanityCheckError(f"Could not find the socat version in the version output: {socat_version_line}")
+
+
+async def check_user_exists(container: dagger.Container, user: str, expected_uid: int, expected_gid: int):
+    """Check that a user exists in the container, can be impersonated and has the expected user id and group id.
+
+    Args:
+        container (dagger.Container): The container on which the sanity checks should run.
+        user (str): The user to impersonate.
+        expected_uid (int): The expected user id.
+        expected_gid (int): The expected group id.
+
+    Raises:
+        errors.SanityCheckError: Raised if the id command could not be executed or if the user does not exist.
+    """
+    container = container.with_user(user)
+    try:
+        whoami_output = (await container.with_exec(["whoami"], skip_entrypoint=True).stdout()).strip()
+    except dagger.ExecError as e:
+        raise errors.SanityCheckError(e)
+    if whoami_output != user:
+        raise errors.SanityCheckError(f"The user {user} does not exist in the container.")
+    user_id = (await container.with_exec(["id", "-u"], skip_entrypoint=True).stdout()).strip()
+    if int(user_id) != expected_uid:
+        raise errors.SanityCheckError(f"Unexpected user id: {user_id}")
+    group_id = (await container.with_exec(["id", "-g"], skip_entrypoint=True).stdout()).strip()
+    if int(group_id) != expected_gid:
+        raise errors.SanityCheckError(f"Unexpected group id: {group_id}")
+
+
+async def check_user_can_read_dir(container: dagger.Container, user: str, dir_path: str):
+    """Check that the given user has read permissions on files in a given directory.
+
+    Args:
+        container (dagger.Container): The container on which the sanity checks should run.
+        user (str): The user to impersonate.
+        dir_path (str): The directory path to check.
+
+    Raises:
+        errors.SanityCheckError: Raised if the given user could not read a file created in the given directory.
+    """
+    try:
+        await container.with_exec(["touch", f"{dir_path}/foo.txt"], skip_entrypoint=True).with_user(user).with_exec(
+            ["cat", f"{dir_path}/foo.txt"], skip_entrypoint=True
+        )
+    except dagger.ExecError:
+        raise errors.SanityCheckError(f"{dir_path} is not readable by the {user}.")
+
+
+async def check_user_cant_write_dir(container: dagger.Container, user: str, dir_path: str):
+    """Check that the given user can't write files to a given directory.
+
+    Args:
+        container (dagger.Container): The container on which the sanity checks should run.
+        user (str): The user to impersonate.
+        dir_path (str): The directory path to check.
+
+    Raises:
+        errors.SanityCheckError: Raised if the user could write a file in the given directory.
+    """
+    try:
+        await container.with_user(user).with_exec(["touch", f"{dir_path}/foo.txt"], skip_entrypoint=True)
+    except dagger.ExecError:
+        return
+    raise errors.SanityCheckError(f"{dir_path} is writable by the {user}.")
+
+
+async def check_user_can_write_dir(container: dagger.Container, user: str, dir_path: str):
+    """Check that the given user has write permissions on files in a given directory.
+
+    Args:
+        container (dagger.Container): The container on which the sanity checks should run.
+        user (str): The user to impersonate.
+        dir_path (str): The directory path to check.
+
+    Raises:
+        errors.SanityCheckError: Raised if the user could write a file in the given directory.
+    """
+    try:
+        await container.with_user(user).with_exec(["touch", f"{dir_path}/foo.txt"], skip_entrypoint=True)
+    except dagger.ExecError:
+        raise errors.SanityCheckError(f"{dir_path} is not writable by the {user}.")
