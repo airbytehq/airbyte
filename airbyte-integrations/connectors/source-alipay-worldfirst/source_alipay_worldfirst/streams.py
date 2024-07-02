@@ -105,9 +105,8 @@ class StatementList(AlipayWorldfirstStream):
         body = {
             "startTime": "",
             "endTime": "",
-            "pageSize": 100,
-            "pageNumber": self.page_index,
-            "transactionTypeList": ["COLLECTION", "TRANSFER"],
+            "pageSize": 10,
+            "pageNumber": self.page_index
         }
         if self.period_in_days is not None:
             days = self.period_in_days
