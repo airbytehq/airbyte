@@ -20,6 +20,8 @@ import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.TransientErrorTraceEmitterIterator;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -92,7 +94,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final Instant emittedAt,
                                                                              final boolean decorateWithStartedStatus,
-                                                                             final boolean decorateWithCompletedStatus) {
+                                                                             final boolean decorateWithCompletedStatus,
+                                                                             final boolean decorateWithTransientError) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -114,6 +117,12 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         }
       }
     }
+    // The transient error should not be thrown if there are no streams for initial load - as this indicates that the initia load has finished
+    // completely.
+    if (!catalog.getStreams().isEmpty() && decorateWithTransientError) {
+      iteratorList.add(
+          new TransientErrorTraceEmitterIterator(new TransientErrorException("Forcing an additional sync since initial load has completed.")));
+    }
     return iteratorList;
   }
 
@@ -134,7 +143,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         .collect(Collectors.toList());
     final AutoCloseableIterator<AirbyteRecordData> queryStream =
         new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-            Long.min(calculateChunkSize(tableSizeInfoMap.get(pair), pair), MAX_CHUNK_SIZE), isCompositePrimaryKey(airbyteStream));
+            Long.min(calculateChunkSize(tableSizeInfoMap.get(pair), pair), MAX_CHUNK_SIZE), isCompositePrimaryKey(airbyteStream), emittedAt);
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
