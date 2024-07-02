@@ -42,8 +42,7 @@ class SourceAlipayWorldfirst(AbstractSource):
             "startTime": start_time,
             "endTime": end_time,
             "pageSize": 10,
-            "pageNumber": 1,
-            "transactionTypeList": ["COLLECTION", "TRANSFER"],
+            "pageNumber": 1
         }
         body_str = str(json.dumps(body, separators=(",", ":")))
         res = get_authorization_header_str(method, path, client_id, private_key, date_time, body_str)
