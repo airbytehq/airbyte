@@ -30,7 +30,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
-REPORTS_API_VERSION = "2020-09-04"
+REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 FINANCES_API_VERSION = "v0"
@@ -289,16 +289,23 @@ class ReportsAmazonSPStream(Stream, ABC):
             data=json_lib.dumps(report_data),
         )
         report_response = self._send_request(create_report_request)
-        return report_response.json()[self.data_field]
+        
+        #return report_response.json()[self.data_field]
+        # update to api 2021-06-30
+        return report_response.json()
 
     def _retrieve_report(self, report_id: str) -> Mapping[str, Any]:
         request_headers = self.request_headers()
+        path = f"{self.path_prefix}/reports/{report_id}"
         retrieve_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports/{report_id}",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
         )
         retrieve_report_response = self._send_request(retrieve_report_request)
-        report_payload = retrieve_report_response.json().get(self.data_field, {})
+
+        #report_payload = retrieve_report_response.json().get(self.data_field, {})
+        # update to api 2021-06-30
+        report_payload = retrieve_report_response.json()
         return report_payload
 
     @staticmethod
@@ -322,17 +329,22 @@ class ReportsAmazonSPStream(Stream, ABC):
         raise Exception([{"message": "Only AES decryption is implemented."}])
 
     def parse_response(self, response: requests.Response) -> Iterable[Mapping]:
-        payload = response.json().get(self.data_field, {})
+        #payload = response.json().get(self.data_field, {})
+        payload = response.json()
+
         document = ""
         
         # deal with xlxs file
         if self.name == "ReferralFeeDiscountsReport":
             
-            decrypted = self.decrypt_aes(
-                requests.get(payload.get("url")).content,
-                payload.get("encryptionDetails", {}).get("key"),
-                payload.get("encryptionDetails", {}).get("initializationVector"),
-            )
+            # decrypted = self.decrypt_aes(
+            #     requests.get(payload.get("url")).content,
+            #     payload.get("encryptionDetails", {}).get("key"),
+            #     payload.get("encryptionDetails", {}).get("initializationVector"),
+            # )
+            # update to api 2021-06-30
+            decrypted = requests.get(payload.get("url")).content
+            
             df = pd.read_excel(BytesIO(decrypted), engine="openpyxl", skiprows=2)
             for index, row in df.iterrows():
                 col_index = 0
@@ -345,26 +357,18 @@ class ReportsAmazonSPStream(Stream, ABC):
                     else:
                         document += "\n"
         else:
-            document = self.decrypt_report_document(
-                payload.get("url"),
-                payload.get("encryptionDetails", {}).get("initializationVector"),
-                payload.get("encryptionDetails", {}).get("key"),
-                payload.get("encryptionDetails", {}).get("standard"),
-                payload,
-            )
-
+            # document = self.decrypt_report_document(
+            #     payload.get("url"),
+            #     payload.get("encryptionDetails", {}).get("initializationVector"),
+            #     payload.get("encryptionDetails", {}).get("key"),
+            #     payload.get("encryptionDetails", {}).get("standard"),
+            #     payload,
+            # )
+            # update to api 2021-06-30
+            document = requests.get(payload.get("url")).content.decode("iso-8859-1")
+            
         results = []
-        """
-        if self.name == "GET_SALES_AND_TRAFFIC_REPORT":
-            result_json = json.loads(document)
-            result_json["source_name"] = self.source_name
-            results.append(result_json)
-        else:
-            document_records = self.parse_document(document)
-            for item in document_records:
-                item["source_name"] = self.source_name
-                results.append(item)
-        """
+
         document_records = self.parse_document(document)
         for item in document_records:
             item["source_name"] = self.source_name
@@ -399,11 +403,13 @@ class ReportsAmazonSPStream(Stream, ABC):
         # create and retrieve the report
         while not is_processed and seconds_waited < self.max_wait_seconds:
             report_payload = self._retrieve_report(report_id=report_id)
+            
             seconds_waited = (pendulum.now("utc") - start_time).seconds
             is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
             is_done = report_payload.get("processingStatus") == "DONE"
             is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
             is_fatal = report_payload.get("processingStatus") == "FATAL"
+                
             time.sleep(self.sleep_seconds)
 
         if is_done:
