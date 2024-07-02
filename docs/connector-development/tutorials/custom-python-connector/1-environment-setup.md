@@ -14,13 +14,23 @@ cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
-Select Python-source Set name to survey-monkey-demo
+Select Python CDK Source Set name to survey-monkey-demo
 
-Next change your working directory to the new connector module. Then create an initial python
-environment and install the dependencies required to run an API Source connector:
+Next change your working directory to the new connector module. Also change airbyte-cdk version
+to the one used for this tutorial in `pyproject.toml`:
 
 ```bash
 cd ../../connectors/source-survey-monkey-demo
+```
+
+```toml
+airbyte-cdk = "0.78.1"
+```
+
+Then create an initial python environment and install the dependencies required to run an API Source connector:
+
+```bash
+poetry lock
 poetry install --with dev
 ```
 
