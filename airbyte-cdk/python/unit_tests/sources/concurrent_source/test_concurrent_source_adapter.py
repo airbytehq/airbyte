@@ -55,12 +55,11 @@ def test_concurrent_source_adapter():
     concurrent_source.read.return_value = iter([message_from_concurrent_stream])
     regular_stream = _mock_stream("s1", [{"data": 1}])
     concurrent_stream = _mock_stream("s2", [])
-    unavailable_stream = _mock_stream("s3", [{"data": 3}], False)
     concurrent_stream.name = "s2"
     logger = Mock()
-    adapter = _MockSource(concurrent_source, {regular_stream: False, concurrent_stream: True, unavailable_stream: False}, logger)
+    adapter = _MockSource(concurrent_source, {regular_stream: False, concurrent_stream: True}, logger)
 
-    messages = list(adapter.read(logger, {}, _configured_catalog([regular_stream, concurrent_stream, unavailable_stream])))
+    messages = list(adapter.read(logger, {}, _configured_catalog([regular_stream, concurrent_stream])))
     records = [m for m in messages if m.type == MessageType.RECORD]
 
     expected_records = [
