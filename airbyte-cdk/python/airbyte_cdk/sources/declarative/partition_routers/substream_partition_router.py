@@ -6,7 +6,9 @@ from dataclasses import InitVar, dataclass
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
 import dpath
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.models import AirbyteMessage
+from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -131,40 +133,39 @@ class SubstreamPartitionRouter(PartitionRouter):
                 parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore # parent_key is always casted to an interpolated string
                 partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
                 incremental_dependency = parent_stream_config.incremental_dependency
-                for parent_stream_slice in parent_stream.stream_slices(
-                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
-                ):
-                    parent_partition = parent_stream_slice.partition if parent_stream_slice else {}
 
-                    # we need to read all records for slice to update the parent stream cursor
-                    stream_slices_for_parent = []
+                connector_state_manager = (
+                    ConnectorStateManager(stream_instance_map={parent_stream.name: parent_stream}) if incremental_dependency else None
+                )
 
-                    # only stream_slice param is used in the declarative stream, stream state is set in PerPartitionCursor set_initial_state
-                    for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
-                    ):
-                        # Skip non-records (eg AirbyteLogMessage)
-                        if isinstance(parent_record, AirbyteMessage):
-                            if parent_record.type == Type.RECORD:
-                                parent_record = parent_record.record.data
-                            else:
-                                continue
-                        elif isinstance(parent_record, Record):
-                            parent_record = parent_record.data
-                        try:
-                            partition_value = dpath.get(parent_record, parent_field)
-                        except KeyError:
-                            pass
+                stream_slices_for_parent = []
+                for parent_record in parent_stream.read_stateless(connector_state_manager=connector_state_manager):
+                    parent_partition = None
+                    # Skip non-records (eg AirbyteLogMessage)
+                    if isinstance(parent_record, AirbyteMessage):
+                        if parent_record.type == MessageType.RECORD:
+                            parent_record = parent_record.record.data
                         else:
-                            stream_slices_for_parent.append(
-                                StreamSlice(partition={partition_field: partition_value, "parent_slice": parent_partition}, cursor_slice={})
+                            continue
+                    elif isinstance(parent_record, Record):
+                        parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
+                        parent_record = parent_record.data
+                    try:
+                        partition_value = dpath.get(parent_record, parent_field)
+                    except KeyError:
+                        pass
+                    else:
+                        stream_slices_for_parent.append(
+                            StreamSlice(
+                                partition={partition_field: partition_value, "parent_slice": parent_partition or {}}, cursor_slice={}
                             )
+                        )
 
-                    # update the parent state, as parent stream read all record for current slice and state is already updated
-                    if incremental_dependency:
-                        self._parent_state[parent_stream.name] = parent_stream.state
+                # update the parent state, as parent stream read all record for current slice and state is already updated
+                if incremental_dependency:
+                    self._parent_state[parent_stream.name] = parent_stream.state
 
-                    yield from stream_slices_for_parent
+                yield from stream_slices_for_parent
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
