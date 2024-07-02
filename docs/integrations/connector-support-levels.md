@@ -39,7 +39,7 @@ high quality bar. It is production ready.
 
 ## Marketplace
 
-A **Marketplace** connector is maintained by the Airbyte community until it becomes an Integration. Airbyte
+A **Marketplace** connector is maintained by the community members until it becomes an official Integration. Airbyte
 has over 800 code contributors and 15,000 people in the Slack community to help. The Airbyte team is
 continually reviewing Marketplace connectors as usage grows to determine when a Marketplace connector should become an Airbyte Integration. Marketplace connectors are not maintained
 by Airbyte and  we do not offer support SLAs around them. We encourage caution when using them in
