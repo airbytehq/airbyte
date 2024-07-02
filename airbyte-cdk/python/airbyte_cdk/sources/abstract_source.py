@@ -109,6 +109,7 @@ class AbstractSource(Source, ABC):
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
+                is_stream_exist = True
                 try:
                     if not stream_instance:
                         if not self.raise_exception_on_missing_stream:
@@ -122,6 +123,7 @@ class AbstractSource(Source, ABC):
 
                         # Use configured_stream as stream_instance to support references in error handling.
                         stream_instance = configured_stream.stream
+                        is_stream_exist = False
 
                         raise AirbyteTracedException(
                             message="A stream listed in your configuration was not found in the source. Please check the logs for more "
@@ -177,9 +179,12 @@ class AbstractSource(Source, ABC):
                         logger.info(f"{self.name} does not support continuing syncs on error from stream {configured_stream.stream.name}")
                         break
                 finally:
-                    timer.finish_event()
-                    logger.info(f"Finished syncing {configured_stream.stream.name}")
-                    logger.info(timer.report())
+                    # Finish read event only if the stream instance exists;
+                    # otherwise, there's no need as it never started
+                    if is_stream_exist:
+                        timer.finish_event()
+                        logger.info(f"Finished syncing {configured_stream.stream.name}")
+                        logger.info(timer.report())
 
         if len(stream_name_to_exception) > 0:
             error_message = generate_failed_streams_error_message({key: [value] for key, value in stream_name_to_exception.items()})  # type: ignore  # for some reason, mypy can't figure out the types for key and value
