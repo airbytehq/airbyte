@@ -270,7 +270,6 @@ constructor(
                 createTableSql(stream.id.finalNamespace, finalTableIdentifier, stream.columns)
             )
         }
-
         val dropTableStep =
             dslContext.dropTableIfExists(
                 DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier)
@@ -551,7 +550,7 @@ constructor(
         return commitTransaction() + ";"
     }
 
-    private fun deleteFromFinalTable(
+    protected open fun deleteFromFinalTable(
         schemaName: String,
         tableName: String,
         primaryKeys: List<ColumnId>,
@@ -584,7 +583,7 @@ constructor(
             .getSQL(ParamType.INLINED)
     }
 
-    private fun checkpointRawTable(
+    protected fun checkpointRawTable(
         schemaName: String,
         tableName: String,
         minRawTimestamp: Optional<Instant>

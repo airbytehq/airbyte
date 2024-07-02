@@ -263,7 +263,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 ))
     }
 
-    private fun getV2MessageConsumer(
+    protected fun getV2MessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
         outputRecordCollector: Consumer<AirbyteMessage>,

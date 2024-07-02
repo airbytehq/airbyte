@@ -54,6 +54,8 @@ class DestinationConfig private constructor() {
             initialize(root, false)
         }
 
+        @JvmStatic
+        @VisibleForTesting
         fun initialize(root: JsonNode?, isV2Destination: Boolean) {
             if (config == null) {
                 requireNotNull(root) { "Cannot create DestinationConfig from null." }
