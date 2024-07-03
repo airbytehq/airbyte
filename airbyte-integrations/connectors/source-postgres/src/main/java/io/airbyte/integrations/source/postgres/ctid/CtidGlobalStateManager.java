@@ -147,7 +147,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
   @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     // Only incremental streams can be transformed into the next phase.
-    if (!resumableFullRefreshStreams.contains(pair)) {
+    if (!resumableFullRefreshStreams.contains(pair) && !nonResumableFullRefreshStreams.contains(pair)) {
       streamsThatHaveCompletedSnapshot.add(pair);
     }
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
