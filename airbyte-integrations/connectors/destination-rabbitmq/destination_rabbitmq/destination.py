@@ -4,10 +4,10 @@
 
 
 import json
+import logging
 from typing import Any, Iterable, Mapping
 
 import pika
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 from pika.adapters.blocking_connection import BlockingConnection
@@ -66,7 +66,7 @@ class DestinationRabbitmq(Destination):
         finally:
             connection.close()
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             connection = create_connection(config=config)
         except Exception as e:

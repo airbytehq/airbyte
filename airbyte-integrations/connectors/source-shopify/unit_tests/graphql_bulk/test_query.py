@@ -187,7 +187,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                                         fields=[
                                             '__typename',
                                             'id',
-                                            Query(
+                                            Field(
                                                 name="inventoryLevels", 
                                                 arguments=[
                                                     Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
@@ -206,7 +206,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                                                                   "deactivationAlert",
                                                                   "updatedAt",
                                                                   Field(name="item", fields=[Field(name="inventoryHistoryUrl", alias="inventory_history_url"), Field(name="id", alias="inventory_item_id"), Field(name="locationsCount", alias="locations_count", fields=["count"])]),
-                                                                  Query(
+                                                                  Field(
                                                                         name="quantities", 
                                                                         arguments=[
                                                                             Argument(name="names", value=['"available"', '"incoming"', '"committed"', '"damaged"', '"on_hand"', '"quality_control"', '"reserved"', '"safety_stock"'])

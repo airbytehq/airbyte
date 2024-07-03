@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import MagicMock, Mock, patch
 
 from airbyte.strategies import WriteStrategy
-from airbyte_cdk import AirbyteLogger
+import logging
 from airbyte_cdk.models import ConnectorSpecification, Status
 
 from destination_snowflake_cortex.config import ConfigModel
@@ -29,7 +29,7 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)
-        self.logger = AirbyteLogger()
+        self.logger = logging.getLogger("airbyte")
 
     def test_spec(self):
         destination = DestinationSnowflakeCortex()
