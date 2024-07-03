@@ -67,36 +67,6 @@
         "order": 8,
         "oneOf": [
           {
-            "title": "Basic Authentication",
-            "required": [
-              "auth_type",
-              "personal_access_token",
-              "username",
-              "password"
-            ],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "BASIC",
-                "order": 0
-              },
-              "personal_access_token": {
-                "type": "string",
-                "airbyte_secret": true,
-                "order": 1
-              },
-              "username": {
-                "type": "string",
-                "order": 2
-              },
-              "password": {
-                "type": "string",
-                "airbyte_secret": true,
-                "order": 3
-              }
-            }
-          },
-          {
             "title": "OAuth2 (Recommended)",
             "required": ["auth_type", "client_id", "secret"],
             "properties": {
@@ -113,6 +83,22 @@
                 "type": "string",
                 "airbyte_secret": true,
                 "order": 2
+              }
+            }
+          },
+          {
+            "title": "Personal Access Token",
+            "required": ["auth_type", "personal_access_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "BASIC",
+                "order": 0
+              },
+              "personal_access_token": {
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 1
               }
             }
           }

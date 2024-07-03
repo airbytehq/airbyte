@@ -9,6 +9,8 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.commons.io.IOs
+import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
@@ -17,31 +19,31 @@ import io.airbyte.integrations.destination.databricks.DatabricksIntegrationTestU
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
+import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.concurrent.TimeUnit
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Timeout
-import org.mockito.Mockito
 
-class DatabricksTypingDedupingTest : BaseTypingDedupingTest() {
+abstract class AbstractDatabricksTypingDedupingTest(
+    private val jdbcDatabase: JdbcDatabase,
+    private val connectorConfig: DatabricksConnectorConfig,
+) : BaseTypingDedupingTest() {
     override val imageName: String
         get() = "airbyte/destination-databricks:dev"
 
     companion object {
-        private var jdbcDatabase: JdbcDatabase = Mockito.mock()
-        private var connectorConfig: DatabricksConnectorConfig = Mockito.mock()
-        @JvmStatic
-        @BeforeAll
-        @Timeout(value = 10, unit = TimeUnit.MINUTES)
-        fun setupDatabase() {
-            connectorConfig = DatabricksIntegrationTestUtils.oauthConfig
-            jdbcDatabase =
+        fun setupDatabase(
+            connectorConfigPath: String
+        ): Pair<JdbcDatabase, DatabricksConnectorConfig> {
+            val config = Jsons.deserialize(IOs.readFile(Path.of(connectorConfigPath)))
+            val connectorConfig = DatabricksConnectorConfig.deserialize(config)
+            val jdbcDatabase =
                 DefaultJdbcDatabase(
                     DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
                 )
             // This will trigger warehouse start
             jdbcDatabase.execute("SELECT 1")
+
+            return Pair(jdbcDatabase, connectorConfig)
         }
     }
 
@@ -80,7 +82,7 @@ class DatabricksTypingDedupingTest : BaseTypingDedupingTest() {
                     .executeQuery(
                         """
                         SELECT *
-                        FROM `${connectorConfig.database}`.$tableIdentifier 
+                        FROM `${connectorConfig.database}`.$tableIdentifier
                         ORDER BY ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} ASC
                     """.trimIndent(),
                     )

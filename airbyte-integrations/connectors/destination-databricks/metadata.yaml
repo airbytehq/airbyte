@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 3.1.0
+  dockerImageTag: 3.2.0
   dockerRepository: airbyte/destination-databricks
   githubIssueLabel: destination-databricks
   icon: databricks.svg
@@ -58,6 +58,11 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION_DATABRICKS_OAUTH_CONFIG
           fileName: oauth_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_DATABRICKS_PERSONAL_ACCESS_TOKEN_CONFIG
+          fileName: pat_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
