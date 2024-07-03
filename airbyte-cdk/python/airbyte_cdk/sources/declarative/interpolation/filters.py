@@ -7,6 +7,7 @@ import json
 import re
 from typing import Any, Optional
 
+
 def hash(value: Any, hash_type: str = "md5", salt: Optional[str] = None) -> str:
     """
       Implementation of a custom Jinja2 hash filter
@@ -103,6 +104,7 @@ def string(value: Any) -> str:
         return value
     ret = f'"""{json.dumps(value)}"""'
     return ret
+
 
 def regex_search(value: str, regex: str) -> str:
     """
