@@ -587,7 +587,6 @@ class LiveTests(Step):
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
         container = await self._build_test_container(await connector_under_test_container.id())
-        main_logger.info(f">>>>>>>>>>>>>>>>>>>>>>>> Built test container, running command = {self._test_command()}")
         container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
         tests_artifacts_dir = str(self.local_tests_artifacts_dir)
         path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
@@ -600,12 +599,9 @@ class LiveTests(Step):
             )
             regression_test_report = None
         else:
-            try:
-                await container.file(path_to_report).export(path_to_report)
-                with open(path_to_report, "r") as fp:
-                    regression_test_report = fp.read()
-            except Exception as exc:
-                main_logger.exception(f"EXCEPTION READING REPORT >>>>>>>>>>>>>>>>>>. {exc}")
+            await container.file(path_to_report).export(path_to_report)
+            with open(path_to_report, "r") as fp:
+                regression_test_report = fp.read()
 
         return StepResult(
             step=self,
