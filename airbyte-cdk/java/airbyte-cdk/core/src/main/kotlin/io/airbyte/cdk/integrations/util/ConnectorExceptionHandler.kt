@@ -152,11 +152,4 @@ abstract class ConnectorExceptionHandler {
         return false
     }
 
-    fun isTransientError(e: Throwable?): Boolean {
-        return (e is TransientErrorException) || checkErrorType(e, "transient")
-    }
-
-    fun isConfigError(e: Throwable?): Boolean {
-        return  (e is ConfigErrorException)  ||  checkErrorType(e, "config")
-    }
 }
