@@ -43,6 +43,7 @@ async def test_read(
     - Appropriate stream status messages are emitted for each stream
     - If a primary key exists for the stream, it is present in the records emitted
     """
+    raise ValueError("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     has_records = False
     errors = []
     warnings = []
