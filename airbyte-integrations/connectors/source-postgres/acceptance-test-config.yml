@@ -36,8 +36,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_view.json"
-        setup_teardown_config:
-          setup_teardown_dockerfile_path: "integration_tests/Dockerfile"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          setup_command:
+            - "./script.sh"
       - config_path: "secrets/config_cdc.json"
   basic_read:
     tests:

@@ -1,12 +1,14 @@
-# Use the official PostgreSQL image from the Docker Hub
-FROM postgres:latest
+# Use a base image with PostgreSQL client
+FROM ubuntu:latest
 
-# Set environment variables for the PostgreSQL database
-ENV POSTGRES_USER=myuser
-ENV POSTGRES_PASSWORD=mypassword
-ENV POSTGRES_DB=mydatabase
+# Install any additional packages if needed
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y postgresql-contrib
+# Copy the script to the container
+COPY script.sh .
+COPY init.sql .
 
-# Copy your SQL script into the container
-COPY ./seed/init.sql /docker-entrypoint-initdb.d/
+# Give execution rights to the script
+RUN chmod +x script.sh
