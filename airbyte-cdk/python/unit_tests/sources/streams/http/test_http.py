@@ -11,10 +11,10 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -473,38 +473,25 @@ class AutoFailTrueHttpStream(StubBasicReadHttpStream):
         return True
 
 
-def test_http_stream_adapter_http_status_error_handler_should_retry_true(mocker):
-    stream = AutoFailTrueHttpStream()
-    res = requests.Response()
-    error_handler = stream.get_error_handler()
-    error_resolution = error_handler.interpret_response(res)
-    assert error_resolution.response_action == ResponseAction.RETRY
-
-
-def test_http_stream_adapter_http_status_error_handler_should_retry_false(mocker):
-    stream = AutoFailTrueHttpStream()
-    mocker.patch.object(stream, "should_retry", return_value=False)
-    res = requests.Response()
-    res.status_code = 200
-    error_handler = stream.get_error_handler()
-    error_resolution = error_handler.interpret_response(res)
-    assert error_resolution.response_action == ResponseAction.SUCCESS
-
-
 @pytest.mark.parametrize(
-    "raise_on_http_errors, expected_response_action",
+    "response_status_code,should_retry, raise_on_http_errors, expected_response_action",
     [
-        (True, ResponseAction.FAIL),
-        (False, ResponseAction.IGNORE)
+        (300, True, True, ResponseAction.RETRY),
+        (200, False, True, ResponseAction.SUCCESS),
+        (503, False,True, ResponseAction.FAIL),
+        (503,False,False, ResponseAction.IGNORE)
     ]
 )
-def test_http_stream_adapter_http_status_error_handler_should_retry_false_raise_on_http_errors(mocker, raise_on_http_errors: bool,
+def test_http_stream_adapter_http_status_error_handler_should_retry_false_raise_on_http_errors(mocker,
+                                                                                               response_status_code: int,
+                                                                                               should_retry: bool,
+                                                                                               raise_on_http_errors: bool,
                                                                                                expected_response_action: ResponseAction):
     stream = AutoFailTrueHttpStream()
-    mocker.patch.object(stream, "should_retry", return_value=False)
+    mocker.patch.object(stream, "should_retry", return_value=should_retry)
     mocker.patch.object(stream, "raise_on_http_errors", raise_on_http_errors)
     res = requests.Response()
-    res.status_code = 503
+    res.status_code = response_status_code
     error_handler = stream.get_error_handler()
     error_resolution = error_handler.interpret_response(res)
     assert error_resolution.response_action == expected_response_action
