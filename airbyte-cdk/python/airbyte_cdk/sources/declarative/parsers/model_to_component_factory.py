@@ -818,10 +818,8 @@ class ModelToComponentFactory:
             action = ResponseAction(model.action.value)
         else:
             action = None
-        if model.failure_type:
-            failure_type = FailureType(model.failure_type.value)
-        else:
-            failure_type = None
+
+        failure_type = FailureType(model.failure_type.value) if model.failure_type else None
 
         http_codes = (
             set(model.http_codes) if model.http_codes else set()

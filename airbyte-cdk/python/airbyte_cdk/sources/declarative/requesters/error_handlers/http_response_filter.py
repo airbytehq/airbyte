@@ -21,9 +21,11 @@ class HttpResponseFilter:
     Filter to select a response based on its HTTP status code, error message or a predicate.
     If a response matches the filter, the response action, failure_type, and error message are returned as an ErrorResolution object.
     For http_codes declared in the filter, the failure_type will default to `system_error`.
+    To override default failure_type use configured failure_type with ResponseAction.FAIL.
 
     Attributes:
         action (Union[ResponseAction, str]): action to execute if a request matches
+        failure_type (Union[ResponseAction, str]): failure type of traced exception if a response matches the filter
         http_codes (Set[int]): http code of matching requests
         error_message_contains (str): error substring of matching requests
         predicate (str): predicate to apply to determine if a request is matching
@@ -72,10 +74,12 @@ class HttpResponseFilter:
                 error_message = self._create_error_message(response_or_exception)
             error_message = error_message or default_error_message
 
-            if self.failure_type:
+            if self.failure_type and filter_action == ResponseAction.FAIL:
                 failure_type = self.failure_type
+            elif default_mapped_error_resolution:
+                failure_type = default_mapped_error_resolution.failure_type
             else:
-                failure_type = default_mapped_error_resolution.failure_type if default_mapped_error_resolution else FailureType.system_error
+                failure_type = FailureType.system_error
 
             return ErrorResolution(
                 response_action=filter_action,
