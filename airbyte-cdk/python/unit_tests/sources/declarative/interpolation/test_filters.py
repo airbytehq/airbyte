@@ -80,22 +80,25 @@ def test_base64decode(input_string: str, expected_string: str) -> None:
     assert filter_base64decode == expected_string
 
 
-def test_regex_search_valid():
+def test_regex_search_valid() -> None:
     expression_with_regex = "{{ '<https://this-is-test-link.com/?page=2>; rel=\"next\"' | regex_search('<(.*)>; rel=.*') }}"
 
     val = interpolation.eval(expression_with_regex, {})
     assert val == "https://this-is-test-link.com/?page=2"
 
-def test_regex_search_no_match_group():
+
+def test_regex_search_no_match_group() -> None:
     # If no group is set in the regular expression, the result will be an empty string
     expression_with_regex = "{{ '<https://this-is-test-link.com/?page=2>; rel=\"next\"' | regex_search('<.*>; rel=.*') }}"
 
     val = interpolation.eval(expression_with_regex, {})
-    assert val == None
+    assert val is None
 
-def test_regex_search_no_match():
+
+def test_regex_search_no_match() -> None:
     # If no group is set in the regular expression, the result will be an empty string
     expression_with_regex = "{{ '<https://this-is-test-link.com/?page=2>; rel=\"next\"' | regex_search('WATWATWAT') }}"
 
     val = interpolation.eval(expression_with_regex, {})
-    assert val == None
+
+    assert val is None
