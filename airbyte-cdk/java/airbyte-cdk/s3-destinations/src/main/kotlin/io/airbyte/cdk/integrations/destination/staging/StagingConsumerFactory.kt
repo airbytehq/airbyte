@@ -19,7 +19,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
-import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
