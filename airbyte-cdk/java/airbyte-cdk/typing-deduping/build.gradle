@@ -13,6 +13,7 @@ compileTestFixturesKotlin {
 dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-destinations')
 
     implementation 'commons-codec:commons-codec:1.16.0'
 

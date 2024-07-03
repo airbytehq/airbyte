@@ -3,6 +3,7 @@ compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
 dependencies {
     api 'org.apache.commons:commons-csv:1.10.0'
+    api project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-destinations')
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
