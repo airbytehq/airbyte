@@ -7,7 +7,12 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
-from source_google_analytics_data_api.config_migrations import MigrateCustomReports, MigrateCustomReportsCohortSpec, MigratePropertyID
+from source_google_analytics_data_api.config_migrations import (
+    MigrateCustomReports,
+    MigrateCustomReportsCohortSpec,
+    MigratePropertyID,
+    MigrateAuth,
+)
 
 
 def run():
@@ -15,4 +20,5 @@ def run():
     MigratePropertyID.migrate(sys.argv[1:], source)
     MigrateCustomReports.migrate(sys.argv[1:], source)
     MigrateCustomReportsCohortSpec.migrate(sys.argv[1:], source)
+    MigrateAuth.migrate(sys.argv[1:], source)
     launch(source, sys.argv[1:])

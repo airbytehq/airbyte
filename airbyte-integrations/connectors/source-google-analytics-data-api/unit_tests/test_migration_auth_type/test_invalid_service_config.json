@@ -1,0 +1,9 @@
+{
+  "credentials": {
+    "credentials_json": ""
+  },
+  "date_ranges_start_date": "2023-09-01",
+  "window_in_days": 30,
+  "property_ids": "314186564",
+  "custom_reports_array": []
+}

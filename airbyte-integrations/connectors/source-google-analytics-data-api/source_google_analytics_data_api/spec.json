@@ -4,7 +4,7 @@
     "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Google Analytics (Data API) Spec",
     "type": "object",
-    "required": ["property_ids"],
+    "required": ["credentials", "property_ids"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -16,7 +16,7 @@
           {
             "title": "Authenticate via Google (Oauth)",
             "type": "object",
-            "required": ["client_id", "client_secret", "refresh_token"],
+            "required": ["auth_type", "client_id", "client_secret", "refresh_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -55,7 +55,7 @@
           {
             "type": "object",
             "title": "Service Account Key Authentication",
-            "required": ["credentials_json"],
+            "required": ["auth_type", "credentials_json"],
             "properties": {
               "auth_type": {
                 "type": "string",

@@ -234,3 +234,67 @@ class MigrateCustomReportsCohortSpec:
                 cls._emit_control_message(
                     cls._modify_and_save(config_path, source, config),
                 )
+
+
+class MigrateAuth:
+    """
+    This class stands for migrating the config at runtime,
+    Specifically, starting from `2.4.9`; the `auth_type` property of the `credentials` field will become required.
+    """
+
+    message_repository: MessageRepository = InMemoryMessageRepository()
+
+    @classmethod
+    def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
+        """
+        This method determines whether the config should be migrated to have the `auth_type` field filled in based on the current config state.
+        Returns:
+            > True, if the transformation is necessary
+            > False, otherwise.
+        """
+
+        return "auth_type" not in config.get("credentials", {})
+
+    @classmethod
+    def _transform_custom_reports_cohort_spec(cls, config: Mapping[str, Any],) -> Mapping[str, Any]:
+        if "credentials_json" in config.get("credentials", {}):
+            config["credentials"]["auth_type"] = "Service"
+            return config
+
+        config["credentials"]["auth_type"] = "Client"
+        return config
+
+    @classmethod
+    def _modify_and_save(cls, config_path: str, source: SourceGoogleAnalyticsDataApi, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        # modify the config
+        migrated_config = cls._transform_custom_reports_cohort_spec(config)
+        # save the config
+        source.write_config(migrated_config, config_path)
+        # return modified config
+        return migrated_config
+
+    @classmethod
+    def _emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
+        # add the Airbyte Control Message to message repo
+        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
+        # emit the Airbyte Control Message from message queue to stdout
+        for message in cls.message_repository.consume_queue():
+            print(message.json(exclude_unset=True))
+
+    @classmethod
+    def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
+        """
+        This method checks the input args, should the config be migrated,
+        transform if necessary and emit the CONTROL message.
+        """
+        # get config path
+        config_path = AirbyteEntrypoint(source).extract_config(args)
+        # proceed only if `--config` arg is provided
+        if config_path:
+            # read the existing config
+            config = source.read_config(config_path)
+            # migration check
+            if cls._should_migrate(config):
+                cls._emit_control_message(
+                    cls._modify_and_save(config_path, source, config),
+                )
