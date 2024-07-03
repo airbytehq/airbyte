@@ -566,15 +566,13 @@ class LiveTests(Step):
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
-        self.test_evaluation_mode = self.context.run_step_options.get_item_or_default(options, "test-evaluation-mode", "strict")
+        self.test_evaluation_mode = self._get_test_evaluation_mode_from_options(options)
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
     def _get_test_evaluation_mode_from_options(self, options):
         mode = self.context.run_step_options.get_item_or_default(options, "test-evaluation-mode", "strict")
-        if mode == "dynamic":
-            mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
         if self.context.connector.metadata.get("supportLevel") == "certified" and mode != "strict":
-            raise ValueError("Certified connectors must be run in `strict` mode.")
+            raise ValueError("Certified connectors must run live tests in `strict` mode.")
         return mode
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
