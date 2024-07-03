@@ -1,0 +1,469 @@
+version: 0.90.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - intercom tickets
+
+definitions:
+  streams:
+    intercom tickets:
+      type: DeclarativeStream
+      name: intercom tickets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /tickets/search?
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Intercom-Version: '2.11'
+          request_body_json:
+            query:
+              value:
+                - field: created_at
+                  value: '1306054154'
+                  operator: '>'
+              operator: AND
+            pagination:
+              per_page: 1
+              starting_after: "{{ next_page_token['next_page_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tickets
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pages", {}).get("next", {}).get("starting_after",
+              {}) }}
+            stop_condition: >-
+              {{ not response.get("pages", {}).get("next",
+              {}).get("starting_after", {}) }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/intercom tickets'
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.intercom.io/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: '#/definitions/streams/intercom tickets'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    intercom tickets: true
+
+schemas:
+  intercom tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - 'null'
+      admin_assignee_id:
+        type:
+          - string
+          - 'null'
+      category:
+        type:
+          - string
+          - 'null'
+      contacts:
+        type:
+          - object
+          - 'null'
+        properties:
+          type:
+            type:
+              - string
+              - 'null'
+          contacts:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - object
+                - 'null'
+              properties:
+                type:
+                  type:
+                    - string
+                    - 'null'
+                external_id:
+                  type:
+                    - string
+                    - 'null'
+                id:
+                  type:
+                    - string
+                    - 'null'
+      created_at:
+        type:
+          - number
+          - 'null'
+      id:
+        type:
+          - string
+          - 'null'
+      is_shared:
+        type:
+          - boolean
+          - 'null'
+      linked_objects:
+        type:
+          - object
+          - 'null'
+        properties:
+          type:
+            type:
+              - string
+              - 'null'
+          data:
+            type:
+              - array
+              - 'null'
+          has_more:
+            type:
+              - boolean
+              - 'null'
+          total_count:
+            type:
+              - number
+              - 'null'
+      open:
+        type:
+          - boolean
+          - 'null'
+      team_assignee_id:
+        type:
+          - string
+          - 'null'
+      ticket_attributes:
+        type:
+          - object
+          - 'null'
+        properties:
+          Order Identifier:
+            type:
+              - number
+              - 'null'
+          Type of Order:
+            type:
+              - string
+              - 'null'
+          _default_description_:
+            type:
+              - string
+              - 'null'
+          _default_title_:
+            type:
+              - string
+              - 'null'
+      ticket_id:
+        type:
+          - string
+          - 'null'
+      ticket_parts:
+        type:
+          - object
+          - 'null'
+        properties:
+          type:
+            type:
+              - string
+              - 'null'
+          ticket_parts:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - object
+                - 'null'
+              properties:
+                type:
+                  type:
+                    - string
+                    - 'null'
+                assigned_to:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - 'null'
+                    id:
+                      type:
+                        - string
+                        - 'null'
+                attachments:
+                  type:
+                    - array
+                    - 'null'
+                author:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - 'null'
+                    email:
+                      type:
+                        - string
+                        - 'null'
+                    id:
+                      type:
+                        - string
+                        - 'null'
+                    name:
+                      type:
+                        - string
+                        - 'null'
+                body:
+                  type:
+                    - string
+                    - 'null'
+                created_at:
+                  type:
+                    - number
+                    - 'null'
+                id:
+                  type:
+                    - string
+                    - 'null'
+                part_type:
+                  type:
+                    - string
+                    - 'null'
+                previous_ticket_state:
+                  type:
+                    - string
+                    - 'null'
+                redacted:
+                  type:
+                    - boolean
+                    - 'null'
+                ticket_state:
+                  type:
+                    - string
+                    - 'null'
+                updated_at:
+                  type:
+                    - number
+                    - 'null'
+          total_count:
+            type:
+              - number
+              - 'null'
+      ticket_state:
+        type:
+          - string
+          - 'null'
+      ticket_state_external_label:
+        type:
+          - string
+          - 'null'
+      ticket_state_internal_label:
+        type:
+          - string
+          - 'null'
+      ticket_type:
+        type:
+          - object
+          - 'null'
+        properties:
+          type:
+            type:
+              - string
+              - 'null'
+          archived:
+            type:
+              - boolean
+              - 'null'
+          category:
+            type:
+              - string
+              - 'null'
+          created_at:
+            type:
+              - number
+              - 'null'
+          description:
+            type:
+              - string
+              - 'null'
+          icon:
+            type:
+              - string
+              - 'null'
+          id:
+            type:
+              - string
+              - 'null'
+          is_internal:
+            type:
+              - boolean
+              - 'null'
+          name:
+            type:
+              - string
+              - 'null'
+          ticket_type_attributes:
+            type:
+              - object
+              - 'null'
+            properties:
+              type:
+                type:
+                  - string
+                  - 'null'
+              data:
+                type:
+                  - array
+                  - 'null'
+                items:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - 'null'
+                    archived:
+                      type:
+                        - boolean
+                        - 'null'
+                    created_at:
+                      type:
+                        - number
+                        - 'null'
+                    data_type:
+                      type:
+                        - string
+                        - 'null'
+                    default:
+                      type:
+                        - boolean
+                        - 'null'
+                    description:
+                      type:
+                        - string
+                        - 'null'
+                    id:
+                      type:
+                        - string
+                        - 'null'
+                    input_options:
+                      type:
+                        - object
+                        - 'null'
+                      properties:
+                        list_options:
+                          type:
+                            - array
+                            - 'null'
+                          items:
+                            type:
+                              - object
+                              - 'null'
+                            properties:
+                              archived:
+                                type:
+                                  - boolean
+                                  - 'null'
+                              id:
+                                type:
+                                  - string
+                                  - 'null'
+                              label:
+                                type:
+                                  - string
+                                  - 'null'
+                        multiline:
+                          type:
+                            - boolean
+                            - 'null'
+                    name:
+                      type:
+                        - string
+                        - 'null'
+                    order:
+                      type:
+                        - number
+                        - 'null'
+                    required_to_create:
+                      type:
+                        - boolean
+                        - 'null'
+                    required_to_create_for_contacts:
+                      type:
+                        - boolean
+                        - 'null'
+                    ticket_type_id:
+                      type:
+                        - number
+                        - 'null'
+                    updated_at:
+                      type:
+                        - number
+                        - 'null'
+                    visible_on_create:
+                      type:
+                        - boolean
+                        - 'null'
+                    visible_to_contacts:
+                      type:
+                        - boolean
+                        - 'null'
+                    workspace_id:
+                      type:
+                        - string
+                        - 'null'
+          updated_at:
+            type:
+              - number
+              - 'null'
+          workspace_id:
+            type:
+              - string
+              - 'null'
+      updated_at:
+        type:
+          - number
+          - 'null'
