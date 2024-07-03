@@ -452,9 +452,9 @@ class Creatives(LinkedInAdsStreamSlicing):
         }
 
 
-class AdPosts(LinkedInAdsStreamSlicing):
+class Posts(LinkedInAdsStreamSlicing):
     """
-    Get AdPosts (former AdDirectSponsoredContents) data using `account_id` slicing.
+    Get Posts (former AdDirectSponsoredContents) data using `account_id` slicing.
     More info about LinkedIn Ads / Ad Posts:
     https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api?view=li-lms-2023-11&tabs=http#create-dark-posts
     """
