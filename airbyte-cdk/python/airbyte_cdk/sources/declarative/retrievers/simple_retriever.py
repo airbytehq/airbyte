@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
+import time
 from dataclasses import InitVar, dataclass, field
 from functools import partial
 from itertools import islice
@@ -314,16 +315,23 @@ class SimpleRetriever(Retriever):
         stream_state: Mapping[str, Any],
         stream_slice: StreamSlice,
     ) -> Iterable[StreamData]:
-        response = self._fetch_next_page(stream_state, stream_slice)
-        yield from records_generator_fn(response)
 
-        if not response:
-            next_page_token: Mapping[str, Any] = {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
-        else:
-            next_page_token = self._next_page_token(response) or {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
+        pagination_complete = False
+        next_page_token = None
+        # NEW
+        while not pagination_complete:
+            response = self._fetch_next_page(stream_state, stream_slice, next_page_token)
+            yield from records_generator_fn(response)
+            if not response:
+                pagination_complete = True
+            else:
+                next_page_token = self._next_page_token(response)
+                if not next_page_token:
+                    pagination_complete = True
 
         if self.cursor:
-            self.cursor.close_slice(StreamSlice(cursor_slice=next_page_token, partition=stream_slice.partition))
+            self.cursor.close_slice(StreamSlice(cursor_slice={FULL_REFRESH_SYNC_COMPLETE_KEY: True}, partition=stream_slice.partition))
+
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
