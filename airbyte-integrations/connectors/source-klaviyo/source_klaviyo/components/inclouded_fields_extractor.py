@@ -50,9 +50,9 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
         else:
             field_path_str = "/".join(field_paths)  # Convert list of field paths to a single string path for dpath
             if "*" in field_path_str:
-                extracted_data = dpath.util.values(response_body, field_path_str)
+                extracted_data = dpath.values(response_body, field_path_str)
             else:
-                extracted_data = dpath.util.get(response_body, field_path_str, default=[])
+                extracted_data = dpath.get(response_body, field_path_str, default=[])
 
         # Yield extracted data as individual records
         if isinstance(extracted_data, list):

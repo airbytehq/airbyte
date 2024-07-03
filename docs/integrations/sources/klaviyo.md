@@ -75,7 +75,7 @@ Stream `Events Detailed` contains field `name` for `metric` relationship - addit
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.0   | 2024-06-28 | [40608](https://github.com/airbytehq/airbyte/pull/40608)   | Update the `events_detailed` stream to improve efficiency using the events API                                                 |
+| 2.7.3   | 2024-07-03 | [40608](https://github.com/airbytehq/airbyte/pull/40608)   | Update the `events_detailed` stream to improve efficiency using the events API                                                 |
 | 2.7.2   | 2024-06-26 | [40401](https://github.com/airbytehq/airbyte/pull/40401)   | Update dependencies                                                                                                            |
 | 2.7.1   | 2024-06-22 | [40032](https://github.com/airbytehq/airbyte/pull/40032)   | Update dependencies                                                                                                            |
 | 2.7.0   | 2024-06-08 | [39350](https://github.com/airbytehq/airbyte/pull/39350)   | Add `events_detailed` stream                                                                                                   |

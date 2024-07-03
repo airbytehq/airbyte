@@ -249,6 +249,9 @@ definitions:
         request_parameters:
           "include": "metric"
           "fields[metric]": "name"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_klaviyo.components.per_partition_state_migration.PerPartitionToSingleStateMigration
     transformations:
       - type: AddFields
         fields:
