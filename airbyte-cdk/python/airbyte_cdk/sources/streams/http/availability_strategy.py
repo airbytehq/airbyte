@@ -31,6 +31,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           for some reason and the str should describe what went wrong and how to
           resolve the unavailability, if possible.
         """
+        reason: Optional[str] = None
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamPartitionRouter)
             # Streams that don't need a stream slice will return `None` as their first stream slice.
@@ -42,7 +43,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
             return False, reason
         except HTTPError as error:
-            is_available, reason = self.handle_http_error(stream, logger, source, error)  # type: ignore # noqa
+            is_available, reason = self.handle_http_error(stream, logger, source, error)
             if not is_available:
                 reason = f"Unable to get slices for {stream.name} stream, because of error in parent stream. {reason}"
             return is_available, reason
@@ -56,7 +57,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
             return True, None
         except HTTPError as error:
-            is_available, reason = self.handle_http_error(stream, logger, source, error)  # type: ignore # noqa
+            is_available, reason = self.handle_http_error(stream, logger, source, error)
             if not is_available:
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
