@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
-import time
 from dataclasses import InitVar, dataclass, field
 from functools import partial
 from itertools import islice
