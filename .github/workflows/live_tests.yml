@@ -86,17 +86,6 @@ jobs:
             echo "USE_LOCAL_CDK_FLAG=" >> $GITHUB_ENV
           fi
 
-      - name: Setup Test Evaluation Mode using Support Level
-        if: github.event_name == 'workflow_dispatch'
-        working-directory: airbyte-integrations/connectors/${{ github.event.inputs.connector_name }}
-        run: |
-          support_level=$(awk '/supportLevel:/ {print $2}' metadata.yaml)
-          if [[ "$support_level" == "certified" ]]; then
-            echo "TEST_EVALUATION_MODE=--connector_live_tests.test-evaluation-mode=strict" >> $GITHUB_ENV
-          else
-            echo "TEST_EVALUATION_MODE=--connector_live_tests.test-evaluation-mode=diagnostic" >> $GITHUB_ENV
-          fi
-
       - name: Run Live Tests [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch' # TODO: consider using the matrix strategy (https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs). See https://github.com/airbytehq/airbyte/pull/37659#discussion_r1583380234 for details.
         uses: ./.github/actions/run-airbyte-ci
@@ -113,4 +102,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=all --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.STREAM_PARAMS }} ${{ env.TEST_EVALUATION_MODE }}
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=all --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.STREAM_PARAMS }}
