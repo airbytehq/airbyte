@@ -199,10 +199,11 @@ class CheckDocumentationHeadersOrder(CheckDocumentationContent):
         ]
 
         return generate_description(
-            "documentation_headers_check_description.md", {"ordered_headers": ordered_headers, "not_required_headers": not_required_headers}
+            "documentation_headers_check_description.md.j2",
+            {"ordered_headers": ordered_headers, "not_required_headers": not_required_headers},
         )
 
-    def not_required_headers(self, connector_name: str) -> list[str]:
+    def get_not_required_headers(self, connector_name: str) -> list[str]:
         not_required = [
             f"Set up the {connector_name} connector in Airbyte",
             "For Airbyte Cloud:",
@@ -218,7 +219,8 @@ class CheckDocumentationHeadersOrder(CheckDocumentationContent):
     def check_headers(self, connector: Connector) -> List[str]:
         """
         test_docs_structure gets all top-level headers from source documentation file and check that the order is correct.
-        The order of the headers should follow our standard template https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw.
+        The order of the headers should follow our standard template connectors_qa/checks/documentation/templates/template.md.j2,
+        which based on https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw.
         _get_template_headings returns tuple of headers as in standard template and non-required headers that might nor be in the source docs.
         CONNECTOR_SPECIFIC_HEADINGS value in list of required headers that shows a place where should be a connector specific headers,
         which can be skipped as out of standard template and depends on connector.
@@ -227,7 +229,7 @@ class CheckDocumentationHeadersOrder(CheckDocumentationContent):
 
         actual_headers = prepare_headers(DocumentationContent(connector=connector).headers)
         expected_headers = TemplateContent(connector.name_from_metadata).headers
-        not_required_headers = self.not_required_headers(connector.name_from_metadata)
+        not_required_headers = self.get_not_required_headers(connector.name_from_metadata)
 
         actual_header_len, expected_len = len(actual_headers), len(expected_headers)
         actual_header_index, expected_header_index = 0, 0
@@ -383,7 +385,7 @@ class CheckSection(CheckDocumentationContent):
         else:
             template = templates[0]
 
-        return generate_description("section_content_description.md", {"header": self.header, "template": template})
+        return generate_description("section_content_description.md.j2", {"header": self.header, "template": template})
 
     @property
     @abc.abstractmethod
@@ -449,7 +451,7 @@ class CheckSourceSectionContent(CheckDocumentationContent):
     def description(self) -> str:
         template = TemplateContent("<CONNECTOR_NAME_FROM_METADATA>").section("<CONNECTOR_NAME_FROM_METADATA>")[0]
 
-        return generate_description("section_content_description.md", {"header": "<CONNECTOR_NAME_FROM_METADATA>", "template": template})
+        return generate_description("section_content_description.md.j2", {"header": "<CONNECTOR_NAME_FROM_METADATA>", "template": template})
 
     def check_source_follows_template(self, connector: Connector) -> List[str]:
         documentation = DocumentationContent(connector=connector)
@@ -587,19 +589,3 @@ class CheckChangelogEntry(DocumentationCheck):
             )
 
         return self.pass_(connector=connector, message=f"Changelog entry found for version {connector.version}")
-
-
-ENABLED_CHECKS = [
-    CheckMigrationGuide(),
-    CheckDocumentationExists(),
-    CheckDocumentationLinks(),
-    CheckDocumentationHeadersOrder(),
-    CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec(),
-    CheckSourceSectionContent(),
-    CheckForAirbyteCloudSectionContent(),
-    CheckForAirbyteOpenSectionContent(),
-    CheckSupportedSyncModesSectionContent(),
-    CheckTutorialsSectionContent(),
-    CheckChangelogSectionContent(),
-    CheckChangelogEntry(),
-]
