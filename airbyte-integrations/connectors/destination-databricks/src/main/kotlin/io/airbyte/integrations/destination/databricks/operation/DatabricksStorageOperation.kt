@@ -42,12 +42,18 @@ class DatabricksStorageOperation(
         workspaceClient.files().upload(stagedFile, data.inputStream)
         destinationHandler.execute(
             Sql.of(
+                // schema inference sees _airbyte_generation_id as an int (int32),
+                // which can't be loaded into a bigint (int64) column.
+                // So we have to explicitly cast it to a bigint.
                 """
-                        COPY INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
-                        FROM '$stagedFile'
-                        FILEFORMAT = CSV
-                        FORMAT_OPTIONS ('header'='true', 'inferSchema'='true', 'escape'='"');
-                    """.trimIndent(),
+                COPY INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
+                FROM (
+                  SELECT _airbyte_generation_id :: bigint, * except (_airbyte_generation_id)
+                  FROM '$stagedFile'
+                )
+                FILEFORMAT = CSV
+                FORMAT_OPTIONS ('header'='true', 'inferSchema'='true', 'escape'='"');
+                """.trimIndent(),
             ),
         )
         // Databricks recommends that partners delete files in the staging directory once the data

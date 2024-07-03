@@ -148,7 +148,9 @@ class DatabricksDestination : BaseConnector(), Destination {
 
         val sqlGenerator =
             DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
-        val catalogParser = CatalogParser(sqlGenerator, connectorConfig.rawSchemaOverride)
+        val defaultNamespace = connectorConfig.schema
+        val catalogParser =
+            CatalogParser(sqlGenerator, defaultNamespace, connectorConfig.rawSchemaOverride)
         val parsedCatalog = catalogParser.parseCatalog(catalog)
         val workspaceClient =
             DatabricksConnectorClientsFactory.createWorkspaceClient(
@@ -177,7 +179,7 @@ class DatabricksDestination : BaseConnector(), Destination {
             DefaultSyncOperation(
                 parsedCatalog,
                 destinationHandler,
-                connectorConfig.schema,
+                defaultNamespace,
                 DatabricksStreamOperationFactory(storageOperations),
                 listOf()
             )
@@ -192,7 +194,7 @@ class DatabricksDestination : BaseConnector(), Destination {
             catalog = catalog,
             bufferManager =
                 BufferManager(
-                    defaultNamespace = connectorConfig.schema,
+                    defaultNamespace = defaultNamespace,
                     (Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong(),
                 ),
             airbyteMessageDeserializer = AirbyteMessageDeserializer(),
