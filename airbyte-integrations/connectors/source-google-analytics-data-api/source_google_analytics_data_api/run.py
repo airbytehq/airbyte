@@ -8,10 +8,10 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
 from source_google_analytics_data_api.config_migrations import (
+    MigrateAuth,
     MigrateCustomReports,
     MigrateCustomReportsCohortSpec,
     MigratePropertyID,
-    MigrateAuth,
 )
 
 

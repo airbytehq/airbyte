@@ -5,9 +5,9 @@
 
 import json
 import os
-import pytest
 from typing import Any, Mapping
 
+import pytest
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
 from source_google_analytics_data_api.config_migrations import MigrateAuth

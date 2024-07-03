@@ -256,7 +256,10 @@ class MigrateAuth:
         return "auth_type" not in config.get("credentials", {})
 
     @classmethod
-    def _transform_custom_reports_cohort_spec(cls, config: Mapping[str, Any],) -> Mapping[str, Any]:
+    def _transform_custom_reports_cohort_spec(
+        cls,
+        config: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
         if "credentials_json" in config.get("credentials", {}):
             config["credentials"]["auth_type"] = "Service"
             return config

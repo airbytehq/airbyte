@@ -16,7 +16,12 @@
           {
             "title": "Authenticate via Google (Oauth)",
             "type": "object",
-            "required": ["auth_type", "client_id", "client_secret", "refresh_token"],
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
             "properties": {
               "auth_type": {
                 "type": "string",
