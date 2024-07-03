@@ -592,7 +592,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             ),
         )
         assertStreamStatusTraceMessageIndex(
-            dataFromSecondBatch.size - 2,
+            dataFromSecondBatch.size - 1,
             dataFromSecondBatch,
             createAirbteStreanStatusTraceMessage(
                 modelsSchema(),

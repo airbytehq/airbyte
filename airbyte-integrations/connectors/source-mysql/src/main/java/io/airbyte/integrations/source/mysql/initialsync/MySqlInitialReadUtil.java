@@ -310,9 +310,7 @@ public class MySqlInitialReadUtil {
                   .of(
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-                      cdcStreamsEndStatusEmitters,
-                      List.of(new TransientErrorTraceEmitterIterator(
-                          new TransientErrorException("Forcing a new sync after the initial load to read the WAL"))))
+                      cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
@@ -338,7 +336,9 @@ public class MySqlInitialReadUtil {
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                       initialLoadIterator,
-                      cdcStreamsEndStatusEmitters)
+                      cdcStreamsEndStatusEmitters,
+                      List.of(new TransientErrorTraceEmitterIterator(
+                          new TransientErrorException("Forcing a new sync after the initial load to read the WAL"))))
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
