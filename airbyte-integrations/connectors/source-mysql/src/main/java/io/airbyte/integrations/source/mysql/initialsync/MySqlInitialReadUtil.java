@@ -338,9 +338,6 @@ public class MySqlInitialReadUtil {
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                       initialLoadIterator,
-                      // This is redundant - we already get the tip of the WAL and clear it here. Instead, emit the
-                      // Collections.singletonList(AutoCloseableIterators.lazyIterator(lastDbzRunIncrementalIteratorSupplier,
-                      // null)),
                       cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
