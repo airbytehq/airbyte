@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk import YamlDeclarativeSource
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into

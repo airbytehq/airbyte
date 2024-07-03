@@ -9,10 +9,9 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.resumable_full_refresh_cursor import ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import (
@@ -26,7 +25,7 @@ RequestInput = Union[str, Mapping[str, str]]
 
 
 @dataclass
-class IncrementalSingleSliceCursor(Cursor):
+class IncrementalSingleSliceCursor(ResumableFullRefreshCursor):
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
@@ -390,12 +389,6 @@ class HttpRequesterWithRateLimiter(HttpRequester):
         self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
             config=self.config, request_inputs=self.request_body_json, parameters=parameters
         )
-
-    # The RateLimiter is applied to balance the api requests.
-    @IntercomRateLimiter.balance_rate_limit()
-    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
-        # Check for response.headers to define the backoff time before the next api call
-        return super().interpret_response_status(response)
 
     def get_request_params(
         self,
