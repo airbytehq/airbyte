@@ -29,6 +29,13 @@ on:
         description: Use the local CDK when building the target connector
         default: "false"
         type: boolean
+      test_evaluation_mode:
+        type: choice
+        description: Whether to run tests in diagnostic mode, for eligible tests; select "dynamic" to use the connector's certification status to determine the test mode
+        options:
+        - strict
+        - diagnostic
+        - dynamic
 
 jobs:
   live_tests:
@@ -102,4 +109,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=all --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.STREAM_PARAMS }} --connector_live_tests.test-evaluation-mode=diagnostic
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=all --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.STREAM_PARAMS }} --connector_live_tests.test-evaluation-mode=${{ github.event.inputs.test_evaluation_mode }}
