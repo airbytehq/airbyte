@@ -17,7 +17,7 @@ include = "source_intercom"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = {path = "/Users/sherifnada/code/airbyte/airbyte-cdk/python", develop = true}
+airbyte-cdk = "^2.0.0"
 
 [tool.poetry.scripts]
 source-intercom = "source_intercom.run:run"
