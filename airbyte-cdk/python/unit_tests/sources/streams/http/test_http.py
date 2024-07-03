@@ -11,6 +11,7 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
@@ -470,6 +471,43 @@ class AutoFailTrueHttpStream(StubBasicReadHttpStream):
 
     def should_retry(self, *args, **kwargs):
         return True
+
+
+def test_http_stream_adapter_http_status_error_handler_should_retry_true(mocker):
+    stream = AutoFailTrueHttpStream()
+    res = requests.Response()
+    error_handler = stream.get_error_handler()
+    error_resolution = error_handler.interpret_response(res)
+    assert error_resolution.response_action == ResponseAction.RETRY
+
+
+def test_http_stream_adapter_http_status_error_handler_should_retry_false(mocker):
+    stream = AutoFailTrueHttpStream()
+    mocker.patch.object(stream, "should_retry", return_value=False)
+    res = requests.Response()
+    res.status_code = 200
+    error_handler = stream.get_error_handler()
+    error_resolution = error_handler.interpret_response(res)
+    assert error_resolution.response_action == ResponseAction.SUCCESS
+
+
+@pytest.mark.parametrize(
+    "raise_on_http_errors, expected_response_action",
+    [
+        (True, ResponseAction.FAIL),
+        (False, ResponseAction.IGNORE)
+    ]
+)
+def test_http_stream_adapter_http_status_error_handler_should_retry_false_raise_on_http_errors(mocker, raise_on_http_errors: bool,
+                                                                                               expected_response_action: ResponseAction):
+    stream = AutoFailTrueHttpStream()
+    mocker.patch.object(stream, "should_retry", return_value=False)
+    mocker.patch.object(stream, "raise_on_http_errors", raise_on_http_errors)
+    res = requests.Response()
+    res.status_code = 503
+    error_handler = stream.get_error_handler()
+    error_resolution = error_handler.interpret_response(res)
+    assert error_resolution.response_action == expected_response_action
 
 
 @pytest.mark.parametrize("status_code", range(400, 600))
