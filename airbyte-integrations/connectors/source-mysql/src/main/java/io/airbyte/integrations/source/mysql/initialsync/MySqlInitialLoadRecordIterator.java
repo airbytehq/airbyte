@@ -66,6 +66,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   private AutoCloseableIterator<AirbyteRecordData> currentIterator;
 
   private Optional<Duration> cdcInitialLoadTimeout;
+  private boolean isCdcSync;
 
   MySqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
@@ -89,12 +90,13 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     this.isCompositeKeyLoad = isCompositeKeyLoad;
     this.startInstant = startInstant;
     this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
+    this.isCdcSync = isCdcSync(initialLoadStateManager);
   }
 
   @CheckForNull
   @Override
   protected AirbyteRecordData computeNext() {
-    if (isCdcSync() && cdcInitialLoadTimeout.isPresent()
+    if (isCdcSync && cdcInitialLoadTimeout.isPresent()
         && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
       LOGGER.info(String.format(
           "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
@@ -212,7 +214,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     }
   }
 
-  private boolean isCdcSync() {
+  private boolean isCdcSync(MySqlInitialLoadStateManager initialLoadStateManager) {
     if (initialLoadStateManager instanceof MySqlInitialLoadGlobalStateManager) {
       LOGGER.info("Running a cdc sync");
       return true;
