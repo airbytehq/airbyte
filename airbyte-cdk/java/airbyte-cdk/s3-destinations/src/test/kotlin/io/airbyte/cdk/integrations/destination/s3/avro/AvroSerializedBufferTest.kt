@@ -121,10 +121,11 @@ class AvroSerializedBufferTest() {
                 ),
             )
         private const val STREAM: String = "stream1"
+        private const val DEFAULT_NAMESPACE: String = ""
         private val streamPair: AirbyteStreamNameNamespacePair =
             AirbyteStreamNameNamespacePair(
                 STREAM,
-                null,
+                DEFAULT_NAMESPACE,
             )
         private val message: AirbyteRecordMessage =
             AirbyteRecordMessage()
@@ -168,7 +169,7 @@ class AvroSerializedBufferTest() {
             expectedData: String
         ) {
             val outputFile: File = buffer.file
-            (AvroSerializedBuffer.createFunction(config) { buffer }
+            (AvroSerializedBuffer.createFunction(config, { buffer }, "")
                     .apply(
                         streamPair,
                         catalog,
