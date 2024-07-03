@@ -14,10 +14,10 @@ from source_linkedin_ads.source import (
     AccountUsers,
     AdCampaignAnalytics,
     AdCreativeAnalytics,
-    Posts,
     CampaignGroups,
     Campaigns,
     Creatives,
+    Posts,
     SourceLinkedinAds,
 )
 from source_linkedin_ads.streams import LINKEDIN_VERSION_API
