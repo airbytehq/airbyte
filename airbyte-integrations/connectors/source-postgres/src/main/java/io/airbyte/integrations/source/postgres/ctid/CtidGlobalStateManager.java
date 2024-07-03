@@ -68,8 +68,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
       }
 
       if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-        if (fileNodeHandler.hasFileNode(
-            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()))) {
+        if (configuredAirbyteStream.getStream().getIsResumable()) {
           this.resumableFullRefreshStreams.add(pair);
         } else {
           this.nonResumableFullRefreshStreams.add(pair);
