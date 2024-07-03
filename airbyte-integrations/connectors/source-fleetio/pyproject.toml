@@ -1,5 +1,5 @@
 [tool.poetry]
-version = "0.1.0"
+version = "0.1.1"
 name = "source-fleetio"
 description = "Source implementation for Fleetio."
 authors = ["John Michael Mizerany <jmizerany@fleetio.com>"]
@@ -13,13 +13,13 @@ include = "source_fleetio"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.67.0"
-pytest = "==6.2.5"
+airbyte-cdk = "< 3.0.0"
+pytest = "*"
 
 [tool.poetry.scripts]
 source-fleetio = "source_fleetio.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.6.1"
-responses = "^0.19.0"
-requests-mock = "^1.9.3"
+pytest-mock = "*"
+responses = "*"
+requests-mock = "*"
