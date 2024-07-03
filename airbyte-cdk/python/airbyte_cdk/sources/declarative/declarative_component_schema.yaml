@@ -2600,3 +2600,10 @@ interpolation:
       examples:
         - '{{ 1 | string }} -> "1"'
         - '{{ ["hello", "world" | string }} -> "["hello", "world"]"'
+    - title: Regex Search
+      description: Match the input string against a regular expression and return the first match.
+      arguments:
+        regex: The regular expression to search for. It must include a capture group.
+      return_type: str
+      examples:
+        - '{{ "goodbye, cruel world" | regex_search("goodbye,\s(.*)$") }} -> "cruel world"'
