@@ -1,5 +1,5 @@
 [tool.poetry]
-version = "0.1.0"
+version = "0.1.1"
 name = "source-fleetio"
 description = "Source implementation for Fleetio."
 authors = ["John Michael Mizerany <jmizerany@fleetio.com>"]
