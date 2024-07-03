@@ -2341,6 +2341,18 @@ class ProductImage(ShopifyBulkQuery):
             image["updatedAt"] = self.tools.from_iso8601_to_rfc3339(image, "updatedAt")
         return images
 
+    def _emit_complete_records(self, images: List[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+        """
+        Emit records only if they have the primary_key == `id` field,
+        otherwise the record is not fulfilled and should not be emitted (empty record)
+        Reference issue: https://github.com/airbytehq/airbyte/issues/40700
+        """
+        primary_key: str = "id"
+
+        for record in images:
+            if primary_key in record.keys():
+                yield record
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
@@ -2351,15 +2363,19 @@ class ProductImage(ShopifyBulkQuery):
         # process record components
         if record_components:
             record["images"] = self._process_component(record_components.get("Image", []))
+
             # add the product_id to each `Image`
             record["images"] = self._add_product_id(record.get("images", []), record.get("id"))
             record["images"] = self._merge_with_media(record_components)
             record.pop("record_components")
+
             # produce images records
-            if len(record.get("images", [])) > 0:
+            images = record.get("images", [])
+            if len(images) > 0:
                 # convert dates from ISO-8601 to RFC-3339
-                record["images"] = self._convert_datetime_to_rfc3339(record.get("images", []))
-                yield from record.get("images", [])
+                record["images"] = self._convert_datetime_to_rfc3339(images)
+
+                yield from self._emit_complete_records(images)
 
 
 class ProductVariant(ShopifyBulkQuery):
