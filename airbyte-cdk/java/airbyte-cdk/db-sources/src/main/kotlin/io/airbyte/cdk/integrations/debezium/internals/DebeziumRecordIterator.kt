@@ -3,8 +3,11 @@
  */
 package io.airbyte.cdk.integrations.debezium.internals
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.AbstractIterator
+import io.airbyte.cdk.db.DbAnalyticsUtils.debeziumCloseReasonMessage
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition
 import io.airbyte.commons.lang.MoreBooleans
 import io.airbyte.commons.util.AutoCloseableIterator
@@ -36,6 +39,7 @@ class DebeziumRecordIterator<T>(
     private val publisherStatusSupplier: Supplier<Boolean>,
     private val debeziumShutdownProcedure: DebeziumShutdownProcedure<ChangeEvent<String?, String?>>,
     private val firstRecordWaitTime: Duration,
+    private val config: JsonNode
 ) : AbstractIterator<ChangeEventWithMetadata>(), AutoCloseableIterator<ChangeEventWithMetadata> {
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
@@ -82,7 +86,8 @@ class DebeziumRecordIterator<T>(
                         String.format(
                             "No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
                             waitTime.seconds
-                        )
+                        ),
+                        DebeziumCloseReason.TIMEOUT
                     )
                 }
                 LOGGER.info { "no record found. polling again." }
@@ -101,12 +106,16 @@ class DebeziumRecordIterator<T>(
                 // too long
                 if (targetPosition.reachedTargetPosition(heartbeatPos)) {
                     requestClose(
-                        "Closing: Heartbeat indicates sync is done by reaching the target position"
+                        "Closing: Heartbeat indicates sync is done by reaching the target position",
+                        DebeziumCloseReason.HEARTBEAT_REACHED_TARGET_POSITION
                     )
                 } else if (
                     heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging()
                 ) {
-                    requestClose("Closing: Heartbeat indicates sync is not progressing")
+                    requestClose(
+                        "Closing: Heartbeat indicates sync is not progressing",
+                        DebeziumCloseReason.HEARTBEAT_NOT_PROGRESSING
+                    )
                 }
 
                 if (heartbeatPos != lastHeartbeatPosition) {
@@ -122,7 +131,10 @@ class DebeziumRecordIterator<T>(
             // if the last record matches the target file position, it is time to tell the producer
             // to shutdown.
             if (targetPosition.reachedTargetPosition(changeEventWithMetadata)) {
-                requestClose("Closing: Change event reached target position")
+                requestClose(
+                    "Closing: Change event reached target position",
+                    DebeziumCloseReason.CHANGE_EVENT_REACHED_TARGET_POSITION
+                )
             }
             this.tsLastHeartbeat = null
             this.receivedFirstRecord = true
@@ -175,7 +187,7 @@ class DebeziumRecordIterator<T>(
      */
     @Throws(Exception::class)
     override fun close() {
-        requestClose("Closing: Iterator closing")
+        requestClose("Closing: Iterator closing", DebeziumCloseReason.ITERATOR_CLOSE)
     }
 
     private fun isHeartbeatEvent(event: ChangeEvent<String?, String?>): Boolean {
@@ -185,23 +197,25 @@ class DebeziumRecordIterator<T>(
     }
 
     private fun heartbeatPosNotChanging(): Boolean {
-        if (this.tsLastHeartbeat == null) {
+        // Closing debezium due to heartbeat position not changing only exists as an escape hatch
+        // for
+        // testing setups. In production, we rely on the platform heartbeats to kill the sync
+        if (!isTest() || this.tsLastHeartbeat == null) {
             return false
         }
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
-        LOGGER.info {
-            "Time since last hb_pos change ${timeElapsedSinceLastHeartbeatTs.toSeconds()}s"
-        }
-        // wait time for no change in heartbeat position is half of initial waitTime
         return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
     }
 
-    private fun requestClose(closeLogMessage: String) {
+    private fun requestClose(closeLogMessage: String, closeReason: DebeziumCloseReason) {
         if (signalledDebeziumEngineShutdown) {
             return
         }
         LOGGER.info { closeLogMessage }
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(
+            debeziumCloseReasonMessage(closeReason.toString())
+        )
         debeziumShutdownProcedure.initiateShutdownProcedure()
         signalledDebeziumEngineShutdown = true
     }
@@ -210,6 +224,10 @@ class DebeziumRecordIterator<T>(
         if (!hasSnapshotFinished) {
             throw RuntimeException("Closing down debezium engine but snapshot has not finished")
         }
+    }
+
+    private fun isTest(): Boolean {
+        return config.has("is_test") && config["is_test"].asBoolean()
     }
 
     /**
@@ -244,6 +262,14 @@ class DebeziumRecordIterator<T>(
             LOGGER.info { "failed to get heartbeat source offset" }
             throw RuntimeException(e)
         }
+    }
+
+    enum class DebeziumCloseReason() {
+        TIMEOUT,
+        ITERATOR_CLOSE,
+        HEARTBEAT_REACHED_TARGET_POSITION,
+        CHANGE_EVENT_REACHED_TARGET_POSITION,
+        HEARTBEAT_NOT_PROGRESSING
     }
 
     companion object {}
