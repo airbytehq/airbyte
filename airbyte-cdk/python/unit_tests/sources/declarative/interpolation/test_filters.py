@@ -78,3 +78,24 @@ def test_base64decode(input_string: str, expected_string: str):
     filter_base64decode = interpolation.eval(s, config={})
 
     assert filter_base64decode == expected_string
+
+
+def test_regex_search_valid():
+    expression_with_regex = "{{ '<https://this-is-test-link.com/?page=2>; rel=\"next\"' | regex_search('<(.*)>; rel=.*') }}"
+
+    val = interpolation.eval(expression_with_regex, {})
+    assert val == "https://this-is-test-link.com/?page=2"
+
+def test_regex_search_no_match_group():
+    # If no group is set in the regular expression, the result will be an empty string
+    expression_with_regex = "{{ '<https://this-is-test-link.com/?page=2>; rel=\"next\"' | regex_search('<.*>; rel=.*') }}"
+
+    val = interpolation.eval(expression_with_regex, {})
+    assert val == None
+
+def test_regex_search_no_match():
+    # If no group is set in the regular expression, the result will be an empty string
+    expression_with_regex = "{{ '<https://this-is-test-link.com/?page=2>; rel=\"next\"' | regex_search('WATWATWAT') }}"
+
+    val = interpolation.eval(expression_with_regex, {})
+    assert val == None
