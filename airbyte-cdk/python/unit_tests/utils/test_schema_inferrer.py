@@ -162,7 +162,7 @@ NOW = 1234567
         pytest.param(
             [
                 {
-                    "stream": "data_with_nested_arrays", 
+                    "stream": "data_with_nested_arrays",
                     "data": {
                         "root_property_object": {
                             "property_array": [
