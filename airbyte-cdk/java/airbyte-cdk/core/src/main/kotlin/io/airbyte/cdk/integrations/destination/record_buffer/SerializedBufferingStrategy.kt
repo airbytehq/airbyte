@@ -46,7 +46,7 @@ class SerializedBufferingStrategy
     @Throws(Exception::class)
     override fun addRecord(
         stream: AirbyteStreamNameNamespacePair,
-        message: AirbyteMessage
+        message: AirbyteMessage,
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
@@ -102,8 +102,7 @@ class SerializedBufferingStrategy
         }
     }
 
-    @Throws(Exception::class)
-    override fun flushSingleBuffer(
+    private fun flushSingleBuffer(
         stream: AirbyteStreamNameNamespacePair,
         buffer: SerializableBuffer
     ) {
@@ -114,6 +113,12 @@ class SerializedBufferingStrategy
         totalBufferSizeInBytes -= buffer.byteCount
         allBuffers.remove(stream)
         LOGGER.info { "Flushing completed for ${stream.name}" }
+    }
+
+    @Throws(Exception::class)
+    override fun flushSingleStream(stream: AirbyteStreamNameNamespacePair) {
+        val buffer = allBuffers[stream]!!
+        flushSingleBuffer(stream, buffer)
     }
 
     @Throws(Exception::class)

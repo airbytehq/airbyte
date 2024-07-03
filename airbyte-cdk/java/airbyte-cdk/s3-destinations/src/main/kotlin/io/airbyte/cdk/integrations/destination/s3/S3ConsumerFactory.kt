@@ -3,17 +3,19 @@
  */
 package io.airbyte.cdk.integrations.destination.s3
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
-import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
-import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer
+import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
-import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
+import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy
+import io.airbyte.cdk.integrations.destination.s3.SerializedBufferFactory.Companion.getCreateFunction
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -25,28 +27,6 @@ import org.joda.time.DateTimeZone
 private val LOGGER = KotlinLogging.logger {}
 
 class S3ConsumerFactory {
-    fun create(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        storageOperations: BlobStorageOperations,
-        onCreateBuffer: BufferCreateFunction,
-        s3Config: S3DestinationConfig,
-        catalog: ConfiguredAirbyteCatalog
-    ): AirbyteMessageConsumer {
-        val writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog)
-        return BufferedStreamConsumer(
-            outputRecordCollector,
-            onStartFunction(storageOperations, writeConfigs),
-            SerializedBufferingStrategy(
-                onCreateBuffer,
-                catalog,
-                flushBufferFunction(storageOperations, writeConfigs, catalog)
-            ),
-            onCloseFunction(storageOperations, writeConfigs),
-            catalog,
-            { jsonNode: JsonNode? -> storageOperations.isValidData(jsonNode!!) },
-            null,
-        )
-    }
 
     private fun onStartFunction(
         storageOperations: BlobStorageOperations,
@@ -96,8 +76,9 @@ class S3ConsumerFactory {
             }
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
-                    "Message contained record from a stream %s that was not in the catalog. \ncatalog: %s",
-                    pair,
+                    "Message contained record from a stream [namespace=\"%s\", name=\"%s\"] that was not in the catalog. \ncatalog: %s",
+                    pair.namespace,
+                    pair.name,
                     Jsons.serialize(catalog)
                 )
             }
@@ -138,6 +119,46 @@ class S3ConsumerFactory {
                 LOGGER.info { "Cleaning up destination completed." }
             }
         }
+    }
+
+    fun createAsync(
+        outputRecordCollector: Consumer<AirbyteMessage>,
+        storageOps: S3StorageOperations,
+        s3Config: S3DestinationConfig,
+        catalog: ConfiguredAirbyteCatalog
+    ): SerializedAirbyteMessageConsumer? {
+        val writeConfigs = createWriteConfigs(storageOps, s3Config, catalog)
+        // Buffer creation function: yields a file buffer that converts
+        // incoming data to the correct format for the destination.
+        val createFunction =
+            getCreateFunction(
+                s3Config,
+                Function<String, BufferStorage> { fileExtension: String ->
+                    FileBuffer(fileExtension)
+                }
+            )
+        return AsyncStreamConsumer(
+            outputRecordCollector,
+            onStartFunction(storageOps, writeConfigs),
+            onCloseFunction(storageOps, writeConfigs),
+            S3DestinationFlushFunction(
+                // Ensure the file buffer is always larger than the memory buffer,
+                // as the file buffer will be flushed at the end of the memory flush.
+                optimalBatchSizeBytes = (FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES * 0.9).toLong()
+            ) {
+                // Yield a new BufferingStrategy every time we flush (for thread-safety).
+                SerializedBufferingStrategy(
+                    createFunction,
+                    catalog,
+                    flushBufferFunction(storageOps, writeConfigs, catalog)
+                )
+            },
+            catalog,
+            // S3 has no concept of default namespace
+            // In the "namespace from destination case", the namespace
+            // is simply omitted from the path.
+            BufferManager(defaultNamespace = null)
+        )
     }
 
     companion object {
