@@ -13,7 +13,7 @@ from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import ClassVar, List, Optional, Set
+from typing import Any, ClassVar, Dict, List, Optional, Set
 
 import requests  # type: ignore
 import semver
@@ -513,7 +513,9 @@ class LiveTests(Step):
             command_options += ["--should-read-with-state", self.should_read_with_state]
         if self.test_evaluation_mode:
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
-        return command_options + ["--stream", self.selected_streams] if self.selected_streams else []
+        if self.selected_streams:
+            command_options += ["--stream", self.selected_streams]
+        return command_options
 
     def _run_command_with_proxy(self, command: str) -> List[str]:
         """
@@ -566,7 +568,7 @@ class LiveTests(Step):
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
-        self.test_evaluation_mode = self.context.run_step_options.get_item_or_default(options, "test-evaluation-mode", "strict")
+        self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
