@@ -222,11 +222,12 @@ class HttpStream(Stream, ABC):
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         """
-        Used to initialize Adapter to avoid breaking changes;
+        Used to initialize Adapter to avoid breaking changes.
+        If Stream has a `backoff_time` method implementation, we know this stream uses old (pre-HTTPClient) backoff handlers and thus an adapter is needed.
+
         Override to provide custom BackoffStrategy
         :return Optional[BackoffStrategy]:
         """
-        # if self._is_method_overridden('backoff_time'):
         if hasattr(self, "backoff_time"):
             return HttpStreamAdapterBackoffStrategy(self)
         else:
@@ -234,7 +235,9 @@ class HttpStream(Stream, ABC):
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
         """
-        Used to initialize Adapter to avoid breaking changes;
+        Used to initialize Adapter to avoid breaking changes.
+        If Stream has a `should_retry` method implementation, we know this stream uses old (pre-HTTPClient) error handlers and thus an adapter is needed.
+
         Override to provide custom ErrorHandler
         :return Optional[ErrorHandler]:
         """
