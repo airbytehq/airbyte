@@ -21,10 +21,10 @@ import org.junit.jupiter.api.Timeout
 // Even though this looks like a unit test, it needs to be an integration test
 // because it uses secrets, which are not available when running unit tests
 // Plus, it does connect to S3, which makes it an integration test anyways
-class S3DestinationAssumeRoleTest {
+class S3DestinationAsyncAssumeRoleTest {
     @Test
     fun testFailsWithNoEnvCredentials() {
-        val dest = S3Destination(S3DestinationConfigFactory(), emptyMap<String, String>())
+        val dest = S3DestinationAsync(S3DestinationConfigFactory(), emptyMap<String, String>())
         Assertions.assertEquals(
             AirbyteConnectionStatus.Status.FAILED,
             dest.check(S3DestinationTestUtils.assumeRoleConfig)!!.status
@@ -34,7 +34,7 @@ class S3DestinationAssumeRoleTest {
     @Test
     fun testPassesWithAllCredentials() {
         val dest =
-            S3Destination(
+            S3DestinationAsync(
                 S3DestinationConfigFactory(),
                 S3DestinationTestUtils.assumeRoleInternalCredentials
             )
@@ -49,7 +49,7 @@ class S3DestinationAssumeRoleTest {
         val envWithBadExternalId: MutableMap<String, String> =
             HashMap(S3DestinationTestUtils.assumeRoleInternalCredentials)
         envWithBadExternalId["AWS_ASSUME_ROLE_EXTERNAL_ID"] = "dummyValue"
-        val dest = S3Destination(S3DestinationConfigFactory(), envWithBadExternalId)
+        val dest = S3DestinationAsync(S3DestinationConfigFactory(), envWithBadExternalId)
         Assertions.assertEquals(
             AirbyteConnectionStatus.Status.FAILED,
             dest.check(S3DestinationTestUtils.assumeRoleConfig)!!.status
@@ -163,7 +163,7 @@ class S3DestinationAssumeRoleTest {
                                                          
                                                          """.trimIndent()
         private val POLICY_NAME_PREFIX =
-            S3DestinationAssumeRoleTest::class.java.simpleName + "Policy-"
+            S3DestinationAsyncAssumeRoleTest::class.java.simpleName + "Policy-"
         private const val ASSUMED_ROLE_NAME = "s3_acceptance_test_iam_assume_role_role"
     }
 }

@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
-class S3DestinationStrictEncryptTest {
+class S3DestinationAsyncStrictEncryptTest {
     private var s3: AmazonS3 = mock()
     private var factoryConfig: S3DestinationConfigFactory = mock()
 
@@ -61,8 +61,8 @@ class S3DestinationStrictEncryptTest {
     /** Test that checks if user is using a connection that is HTTPS only */
     @Test
     fun checksCustomEndpointIsHttpsOnly() {
-        val destinationWithHttpsOnlyEndpoint: S3Destination =
-            S3DestinationStrictEncrypt(factoryConfig, emptyMap<String, String>())
+        val destinationWithHttpsOnlyEndpoint: S3DestinationAsync =
+            S3DestinationAsyncStrictEncrypt(factoryConfig, emptyMap<String, String>())
         val status = destinationWithHttpsOnlyEndpoint.check(emptyObject())
         Assertions.assertEquals(
             AirbyteConnectionStatus.Status.SUCCEEDED,
@@ -79,8 +79,8 @@ class S3DestinationStrictEncryptTest {
      */
     @Test
     fun checksCustomEndpointIsNotHttpsOnly() {
-        val destinationWithStandardUnsecuredEndpoint: S3Destination =
-            S3DestinationStrictEncrypt(
+        val destinationWithStandardUnsecuredEndpoint: S3DestinationAsync =
+            S3DestinationAsyncStrictEncrypt(
                 object : S3DestinationConfigFactory() {
                     override fun getS3DestinationConfig(
                         config: JsonNode,

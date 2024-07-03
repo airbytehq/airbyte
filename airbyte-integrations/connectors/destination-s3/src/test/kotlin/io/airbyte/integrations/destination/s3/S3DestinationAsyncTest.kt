@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
-class S3DestinationTest {
+class S3DestinationAsyncTest {
     private var s3: AmazonS3 = mock()
     private var config: S3DestinationConfig? = null
     private var factoryConfig: S3DestinationConfigFactory = mock()
@@ -70,7 +70,7 @@ class S3DestinationTest {
     @Test
     /** Test that check will fail if IAM user does not have listObjects permission */
     fun checksS3WithoutListObjectPermission() {
-        val destinationFail = S3Destination(factoryConfig, emptyMap<String, String>())
+        val destinationFail = S3DestinationAsync(factoryConfig, emptyMap<String, String>())
         Mockito.doThrow(AmazonS3Exception("Access Denied"))
             .`when`(s3)
             .listObjects(ArgumentMatchers.any(ListObjectsRequest::class.java))
@@ -89,7 +89,7 @@ class S3DestinationTest {
     @Test
     /** Test that check will succeed when IAM user has all required permissions */
     fun checksS3WithListObjectPermission() {
-        val destinationSuccess = S3Destination(factoryConfig, emptyMap<String, String>())
+        val destinationSuccess = S3DestinationAsync(factoryConfig, emptyMap<String, String>())
         val status = destinationSuccess.check(emptyObject())
         Assertions.assertEquals(
             AirbyteConnectionStatus.Status.SUCCEEDED,

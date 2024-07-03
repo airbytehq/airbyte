@@ -89,7 +89,8 @@ class AvroSerializedBuffer(
 
         fun createFunction(
             config: UploadAvroFormatConfig,
-            createStorageFunction: Callable<BufferStorage>
+            createStorageFunction: Callable<BufferStorage>,
+            defaultNamespace: String
         ): BufferCreateFunction {
             val codecFactory = config.codecFactory
             return BufferCreateFunction {
@@ -102,7 +103,7 @@ class AvroSerializedBuffer(
                             .filter { s: ConfiguredAirbyteStream ->
                                 s.stream.name == stream.name &&
                                     StringUtils.equals(
-                                        s.stream.namespace,
+                                        s.stream.namespace ?: defaultNamespace,
                                         stream.namespace,
                                     )
                             }

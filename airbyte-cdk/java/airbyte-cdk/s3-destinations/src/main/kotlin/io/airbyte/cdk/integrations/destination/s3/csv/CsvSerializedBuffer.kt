@@ -115,7 +115,8 @@ class CsvSerializedBuffer(
         @Suppress("DEPRECATION")
         fun createFunction(
             config: UploadCsvFormatConfig?,
-            createStorageFunction: Callable<BufferStorage>
+            createStorageFunction: Callable<BufferStorage>,
+            defaultNamespace: String,
         ): BufferCreateFunction {
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,
@@ -133,7 +134,7 @@ class CsvSerializedBuffer(
                             .filter { s: ConfiguredAirbyteStream ->
                                 s.stream.name == stream.name &&
                                     StringUtils.equals(
-                                        s.stream.namespace,
+                                        s.stream.namespace ?: defaultNamespace,
                                         stream.namespace,
                                     )
                             }

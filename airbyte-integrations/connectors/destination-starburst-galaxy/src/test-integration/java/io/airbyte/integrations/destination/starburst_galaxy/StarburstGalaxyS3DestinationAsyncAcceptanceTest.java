@@ -24,10 +24,10 @@ import java.util.HashSet;
 import java.util.List;
 import org.slf4j.Logger;
 
-public class StarburstGalaxyS3DestinationAcceptanceTest
+public class StarburstGalaxyS3DestinationAsyncAcceptanceTest
     extends StarburstGalaxyDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = getLogger(StarburstGalaxyS3DestinationAcceptanceTest.class);
+  private static final Logger LOGGER = getLogger(StarburstGalaxyS3DestinationAsyncAcceptanceTest.class);
   private static final String SECRETS_CONFIG_JSON = "secrets/config.json";
 
   @Override

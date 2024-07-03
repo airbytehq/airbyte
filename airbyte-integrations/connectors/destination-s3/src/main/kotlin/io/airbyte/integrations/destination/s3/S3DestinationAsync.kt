@@ -9,7 +9,7 @@ import io.airbyte.cdk.integrations.destination.s3.BaseS3Destination
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfigFactory
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider
 
-open class S3Destination : BaseS3Destination {
+open class S3DestinationAsync : BaseS3Destination {
     constructor()
 
     @VisibleForTesting
@@ -26,7 +26,7 @@ open class S3Destination : BaseS3Destination {
         @Throws(Exception::class)
         @JvmStatic
         fun main(args: Array<String>) {
-            IntegrationRunner(S3Destination()).run(args)
+            IntegrationRunner(S3DestinationAsync()).run(args)
         }
     }
 }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.BaseConnector
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.Destination
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
@@ -63,17 +64,19 @@ protected constructor(
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
+        throw UnsupportedOperationException("getConsumer is not supported in S3 async destinations")
+    }
+
+    override fun getSerializedMessageConsumer(
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
+        outputRecordCollector: Consumer<AirbyteMessage>
+    ): SerializedAirbyteMessageConsumer? {
         val s3Config = configFactory.getS3DestinationConfig(config, storageProvider(), environment)
         return S3ConsumerFactory()
-            .create(
+            .createAsync(
                 outputRecordCollector,
                 S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
-                getCreateFunction(
-                    s3Config,
-                    Function<String, BufferStorage> { fileExtension: String ->
-                        FileBuffer(fileExtension)
-                    }
-                ),
                 s3Config,
                 catalog
             )

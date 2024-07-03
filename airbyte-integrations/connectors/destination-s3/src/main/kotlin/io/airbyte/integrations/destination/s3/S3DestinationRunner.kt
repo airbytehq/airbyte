@@ -10,8 +10,8 @@ object S3DestinationRunner {
     @JvmStatic
     fun main(args: Array<String>) {
         baseOnEnv()
-            .withOssDestination { S3Destination() }
-            .withCloudDestination { S3DestinationStrictEncrypt() }
+            .withOssDestination { S3DestinationAsync() }
+            .withCloudDestination { S3DestinationAsync() }
             .run(args)
     }
 }

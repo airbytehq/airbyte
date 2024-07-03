@@ -9,7 +9,7 @@ import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.testCustomEndpoin
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfigFactory
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 
-class S3DestinationStrictEncrypt : S3Destination {
+class S3DestinationAsyncStrictEncrypt : S3DestinationAsync {
     constructor() : super()
 
     @VisibleForTesting

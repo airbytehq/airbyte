@@ -3,17 +3,20 @@
  */
 package io.airbyte.cdk.integrations.destination.s3
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
-import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
-import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer
+import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
+import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy
+import io.airbyte.cdk.integrations.destination.s3.SerializedBufferFactory.Companion.getCreateFunction
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -25,28 +28,7 @@ import org.joda.time.DateTimeZone
 private val LOGGER = KotlinLogging.logger {}
 
 class S3ConsumerFactory {
-    fun create(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        storageOperations: BlobStorageOperations,
-        onCreateBuffer: BufferCreateFunction,
-        s3Config: S3DestinationConfig,
-        catalog: ConfiguredAirbyteCatalog
-    ): AirbyteMessageConsumer {
-        val writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog)
-        return BufferedStreamConsumer(
-            outputRecordCollector,
-            onStartFunction(storageOperations, writeConfigs),
-            SerializedBufferingStrategy(
-                onCreateBuffer,
-                catalog,
-                flushBufferFunction(storageOperations, writeConfigs, catalog)
-            ),
-            onCloseFunction(storageOperations, writeConfigs),
-            catalog,
-            { jsonNode: JsonNode? -> storageOperations.isValidData(jsonNode!!) },
-            null,
-        )
-    }
+    private val DEFAULT_NAMESPACE = ""
 
     private fun onStartFunction(
         storageOperations: BlobStorageOperations,
@@ -84,9 +66,10 @@ class S3ConsumerFactory {
     private fun flushBufferFunction(
         storageOperations: BlobStorageOperations,
         writeConfigs: List<WriteConfig>,
-        catalog: ConfiguredAirbyteCatalog?
+        catalog: ConfiguredAirbyteCatalog?,
+        defaultNamespace: String
     ): FlushBufferFunction {
-        val pairToWriteConfig = writeConfigs.associateBy { toNameNamespacePair(it) }
+        val pairToWriteConfig = writeConfigs.associateBy { toNameNamespacePair(it, defaultNamespace) }
 
         return FlushBufferFunction {
             pair: AirbyteStreamNameNamespacePair,
@@ -140,6 +123,39 @@ class S3ConsumerFactory {
         }
     }
 
+    fun createAsync(
+        outputRecordCollector: Consumer<AirbyteMessage>,
+        storageOps: S3StorageOperations,
+        s3Config: S3DestinationConfig,
+        catalog: ConfiguredAirbyteCatalog
+    ): SerializedAirbyteMessageConsumer? {
+        val writeConfigs = createWriteConfigs(storageOps, s3Config, catalog)
+        val createFunction = getCreateFunction(
+            s3Config,
+            Function<String, BufferStorage> { fileExtension: String ->
+                FileBuffer(fileExtension)
+            },
+            DEFAULT_NAMESPACE
+        )
+        return AsyncStreamConsumer(
+            outputRecordCollector,
+            onStartFunction(storageOps, writeConfigs),
+            onCloseFunction(storageOps, writeConfigs),
+            S3DestinationFlushFunction(
+                optimalBatchSizeBytes = FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES,
+                {
+                    SerializedBufferingStrategy(
+                        createFunction,
+                        catalog,
+                        flushBufferFunction(storageOps, writeConfigs, catalog, DEFAULT_NAMESPACE)
+                    )
+                },
+                DEFAULT_NAMESPACE),
+            catalog,
+            BufferManager(DEFAULT_NAMESPACE)
+        )
+    }
+
     companion object {
 
         private val SYNC_DATETIME: DateTime = DateTime.now(DateTimeZone.UTC)
@@ -188,8 +204,8 @@ class S3ConsumerFactory {
             }
         }
 
-        private fun toNameNamespacePair(config: WriteConfig): AirbyteStreamNameNamespacePair {
-            return AirbyteStreamNameNamespacePair(config.streamName, config.namespace)
+        private fun toNameNamespacePair(config: WriteConfig, defaultNamespace: String): AirbyteStreamNameNamespacePair {
+            return AirbyteStreamNameNamespacePair(config.streamName, config.namespace ?: defaultNamespace)
         }
     }
 }
