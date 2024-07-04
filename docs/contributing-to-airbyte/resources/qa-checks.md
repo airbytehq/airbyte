@@ -47,7 +47,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 This check expects the following order of headers in the documentation:
 
@@ -126,7 +126,7 @@ _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
 The user facing connector documentation should update `Prerequisites` section with description for all required fields from source specification. Having described all required fields in a one place helps Airbyte users easily set up the source connector. 
-If spec has required credentials/access_token/refresh_toke etc, check searches for one of ["account", "auth", "credentials", "access", "client"] words. No need to add credentials/access_token/refresh_toke etc to the section
+If spec has required credentials/access_token/refresh_token etc, check searches for one of ["account", "auth", "credentials", "access", "client"] words. No need to add credentials/access_token/refresh_token etc to the section
 
 ### Main Source Section of the documentation follows our guidelines
 
@@ -136,7 +136,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that <CONNECTOR_NAME_FROM_METADATA> header section content follows standard template:
 
@@ -159,7 +159,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that For Airbyte Cloud: header section content follows standard template:
 
@@ -180,7 +180,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that For Airbyte Open Source: header section content follows standard template:
 
@@ -198,7 +198,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Supported sync modes header section content follows standard template:
 
@@ -217,7 +217,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Tutorials header section content follows standard template:
 
@@ -236,7 +236,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Changelog header section content follows standard template:
 
