@@ -9,8 +9,8 @@ import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
-from datetime import timedelta
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -22,6 +22,7 @@ class KlaviyoStreamLatest(HttpStream, ABC):
     url_base = "https://a.klaviyo.com/api/"
     primary_key = "id"
     page_size = 100
+    include = None
 
     def __init__(self, api_key: str, **kwargs):
         super().__init__(**kwargs)
@@ -37,7 +38,7 @@ class KlaviyoStreamLatest(HttpStream, ABC):
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Revision": "2023-02-22",
+            "Revision": "2024-05-15",
             "Authorization": "Klaviyo-API-Key " + self._api_key,
         }
 
@@ -65,8 +66,12 @@ class KlaviyoStreamLatest(HttpStream, ABC):
         # If next_page_token is set, all of the parameters are already provided
         if next_page_token:
             return next_page_token
-        else:
-            return {"page[size]": self.page_size}
+        params = {}
+        if self.page_size:
+            params["page[size]"] = self.page_size
+        if self.include:
+            params["include"] = self.include
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """:return an iterable containing each record in the response"""
@@ -87,6 +92,10 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         super().__init__(**kwargs)
         self._start_ts = start_date
 
+    def map_record(self, record: Mapping):
+        record[self.cursor_field] = record["attributes"][self.cursor_field]
+        return record
+
     @property
     @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
@@ -96,7 +105,12 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         :return str: The name of the cursor field.
         """
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs):
         """Add incremental filters"""
 
         stream_state = stream_state or {}
@@ -122,17 +136,63 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         return {self.cursor_field: latest_cursor.isoformat()}
 
 
+class IncrementalKlaviyoStreamLatestWithArchivedRecords(IncrementalKlaviyoStreamLatest, ABC):
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [{"archived": value} for value in [False, True]]
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        archived = latest_record.get("attributes", {}).get("archived", False)
+        if archived:
+            current_stream_cursor_value = current_stream_state.get("archived", {}).get(self.cursor_field, self._start_ts)
+            latest_record_cursor_value = latest_record[self.cursor_field]
+            latest_cursor = max(pendulum.parse(latest_record_cursor_value), pendulum.parse(current_stream_cursor_value))
+            current_stream_state["archived"] = {self.cursor_field: str(latest_cursor)}
+            return current_stream_state
+        else:
+            return super().get_updated_state(current_stream_state, latest_record)
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs):
+        current_stream_state = stream_state
+        if stream_state.get("archived"):
+            current_stream_state = stream_state.get("archived", {})
+        params = super().request_params(current_stream_state, stream_slice, next_page_token)
+        archived = stream_slice.get("archived", False)
+        if archived:
+            archived_filter = "equals(archived,true)"
+            if "filter" in params and archived_filter not in params["filter"]:
+                params["filter"] = f"and({params['filter']},{archived_filter})"
+            elif "filter" not in params:
+                params["filter"] = archived_filter
+        return params
+
+
 class Profiles(IncrementalKlaviyoStreamLatest):
     """Docs: https://developers.klaviyo.com/en/reference/get_profiles"""
 
     cursor_field = "updated"
+    page_size = 100
 
     def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "profiles"
 
-    def map_record(self, record: Mapping):
-        record[self.cursor_field] = record["attributes"][self.cursor_field]
-        return record
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs):
+        """Add incremental filters"""
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["additional-fields[profile]"] = "predictive_analytics,subscriptions"
+        return params
 
 
 class KlaviyoStreamV1(HttpStream, ABC):
@@ -275,7 +335,7 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         decoded_response = response.json()
         if decoded_response.get("next"):
             return {"since": decoded_response["next"]}
-        
+
         data = decoded_response.get("data", [{}]) or [{}]
         self.logger.info("Last timestamp -> " + str(data[-1].get("timestamp", "No timestamp")))
 
@@ -357,35 +417,105 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
             yield record
 
 
-class Campaigns(KlaviyoStreamV1):
+class Campaigns(IncrementalKlaviyoStreamLatest):
     """Docs: https://developers.klaviyo.com/en/reference/get-campaigns"""
 
-    def path(self, **kwargs) -> str:
+    cursor_field = "updated_at"
+    page_size = None
+    current_channel = None
+
+    def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "campaigns"
 
+    def stream_slices(
+            self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        archived_flags = [False, True]
+        message_channels = ["email", "sms"]
+        return [{"archived": flag, "channel": channel} for flag in archived_flags for channel in message_channels]
 
-class Lists(KlaviyoStreamV1):
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        archived = latest_record.get("attributes", {}).get("archived", False)
+        updated_state = super().get_updated_state(current_stream_state, latest_record)
+        if archived:
+            current_stream_cursor_value = current_stream_state.get("archived", {}).get(self.cursor_field, self._start_ts)
+            latest_record_cursor_value = latest_record[self.cursor_field]
+            latest_cursor = max(pendulum.parse(latest_record_cursor_value), pendulum.parse(current_stream_cursor_value))
+            current_stream_state["archived"] = {self.current_channel: {self.cursor_field: latest_cursor}}
+        else:
+            current_stream_state[self.current_channel] = updated_state
+        return current_stream_state
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs):
+        archived = stream_slice.get("archived", False)
+        channel = stream_slice.get("channel", False)
+        if archived:
+            current_stream_state = stream_state.get("archived", {}).get(channel, {})
+        else:
+            current_stream_state = stream_state.get(channel, {})
+        params = super().request_params(current_stream_state, stream_slice, next_page_token)
+
+        self.current_channel = channel
+        channel_filter = f"equals(messages.channel,'{channel}')"
+        if "filter" in params and channel_filter not in params["filter"]:
+            params["filter"] = f"{params['filter']},{channel_filter}"
+        elif "filter" not in params:
+            params["filter"] = channel_filter
+
+        if archived:
+            archived_filter = "equals(archived,true)"
+            if "filter" in params and archived_filter not in params["filter"]:
+                params["filter"] = f"{params['filter']},{archived_filter}"
+            elif "filter" not in params:
+                params["filter"] = archived_filter
+        return params
+
+
+class Lists(IncrementalKlaviyoStreamLatest):
     """Docs: https://developers.klaviyo.com/en/reference/get-lists"""
 
+    cursor_field = "updated"
     max_retries = 10
+    page_size = None
+    include = "tags"
 
     def path(self, **kwargs) -> str:
         return "lists"
 
 
-class GlobalExclusions(ReverseIncrementalKlaviyoStreamV1):
+class GlobalExclusions(Profiles):
     """Docs: https://developers.klaviyo.com/en/reference/get-global-exclusions"""
+    suppression_fields = ["attributes", "subscriptions", "email", "marketing", "suppression"]
 
-    page_size = 5000  # the maximum value allowed by API
-    cursor_field = "timestamp"
-    primary_key = "email"
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """:return an iterable containing each record in the response"""
+        response_json = response.json()
+        for record in response_json.get("data", []):  # API returns records in a container array "data"
+            record = self.map_record(record)
+            if record:
+                yield record
 
-    def path(self, **kwargs) -> str:
-        return "people/exclusions"
+    def map_record(self, record: Mapping):
+        nested_record = record
+        for field in self.suppression_fields:
+            if field not in nested_record:
+                return None
+            nested_record = nested_record[field]
+        if not nested_record:
+            return None
+
+        record[self.cursor_field] = record["attributes"][self.cursor_field]
+        return record
 
 
-class Metrics(KlaviyoStreamV1):
+class Metrics(KlaviyoStreamLatest):
     """Docs: https://developers.klaviyo.com/en/reference/get-metrics"""
+    page_size = None
 
     def path(self, **kwargs) -> str:
         return "metrics"
@@ -410,72 +540,100 @@ def process_record(record):
     return processed_record
 
 
-class Events(IncrementalKlaviyoStreamV1):
+class Events(IncrementalKlaviyoStreamLatest):
     """Docs: https://developers.klaviyo.com/en/reference/metrics-timeline"""
 
-    cursor_field = "timestamp"
+    cursor_field = "datetime"
+    page_size = None
+    include = "attributions,metric,profile"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.last_next_token = None
 
-    @property
-    def look_back_window_in_seconds(self) -> Optional[int]:
-        return timedelta(minutes=30).seconds
-
     def path(self, **kwargs) -> str:
-        return "metrics/timeline"
+        return "events"
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return 5000
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """:return an iterable containing each record in the response"""
 
         response_json = response.json()
         for record in response_json.get("data", []):
-            flow = record["event_properties"].get("$flow")
-            flow_message_id = record["event_properties"].get("$message")
+            attributes = record["attributes"]
+            flow = attributes.get("$flow")
+            flow_message_id = attributes.get("$message")
 
             record["flow_id"] = flow
             record["flow_message_id"] = flow_message_id
             record["campaign_id"] = flow_message_id if not flow else None
+            record[self.cursor_field] = attributes[self.cursor_field]
 
             yield process_record(record)
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        super_state = super().get_updated_state(current_stream_state, latest_record)
-        super_state["last_next_token"] = self.last_next_token
-        return super_state
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        decoded_response = response.json()
-        if decoded_response.get("next"):
-            next_token = decoded_response["next"]
-            self.last_next_token = next_token
-            return {"since": next_token}
+class Flows(IncrementalKlaviyoStreamLatestWithArchivedRecords):
+    cursor_field = "updated"
+    page_size = None
+    include = "flow-actions,tags"
 
-        self.last_next_token = None
-        data = decoded_response.get("data", [{}]) or [{}]
-        self.logger.info("Last timestamp -> " + str(data[-1].get("timestamp", "No timestamp")))
-
-        return None
-
-class Flows(ReverseIncrementalKlaviyoStreamV1):
-    cursor_field = "created"
-
-    def path(self, **kwargs) -> str:
+    def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "flows"
 
 
-class EmailTemplates(KlaviyoStreamV1):
+class EmailTemplates(IncrementalKlaviyoStreamLatest):
     """
     Docs: https://developers.klaviyo.com/en/v1-2/reference/get-templates
     """
 
+    page_size = None
+    cursor_field = "updated"
+
     def path(self, **kwargs) -> str:
-        return "email-templates"
+        return "templates"
+
+
+class Segments(IncrementalKlaviyoStreamLatest):
+    """
+    Docs: https://developers.klaviyo.com/en/v1-2/reference/get-templates
+    """
+
+    page_size = None
+    cursor_field = "updated"
+
+    def path(self, **kwargs) -> str:
+        return "segments"
+
+
+class SegmentsProfiles(KlaviyoStreamLatest):
+    parent_id: str = "id"
+    page_size = 100
+
+    def __init__(self, start_date: str, **kwargs):
+        super().__init__(**kwargs)
+        self._start_ts = start_date
+
+    def stream_slices(
+            self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream = Segments(api_key=self._api_key, start_date=self._start_ts)
+        slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for _slice in slices:
+            yield from parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs):
+        """Add incremental filters"""
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["additional-fields[profile]"] = "subscriptions,predictive_analytics"
+        return params
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"segments/{stream_slice[self.parent_id]}/profiles"

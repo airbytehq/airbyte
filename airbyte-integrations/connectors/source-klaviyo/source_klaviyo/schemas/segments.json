@@ -1,0 +1,213 @@
+{
+    "type": "object",
+    "additionalProperties": true,
+    "properties":
+    {
+        "type":
+        {
+            "type":
+            [
+                "null",
+                "string"
+            ]
+        },
+        "id":
+        {
+            "type": "string"
+        },
+        "updated":
+        {
+            "type":
+            [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "attributes":
+        {
+            "additionalProperties": true,
+            "type":
+            [
+                "null",
+                "object"
+            ],
+            "properties":
+            {
+                "name":
+                {
+                    "type": "string"
+                },
+                "additionalProperties": true,
+                "is_active":
+                {
+                    "type": "boolean"
+                },
+                "is_processing":
+                {
+                    "type": "boolean"
+                },
+                "is_started":
+                {
+                    "type": "boolean"
+                },
+                "created":
+                {
+                    "type":
+                    [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "updated":
+                {
+                    "type":
+                    [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                }
+            }
+        },
+        "links":
+        {
+            "type":
+            [
+                "null",
+                "object"
+            ],
+            "additionalProperties": true,
+            "properties":
+            {
+                "self":
+                {
+                    "type": "string"
+                }
+            }
+        },
+        "relationships":
+        {
+            "type":
+            [
+                "null",
+                "object"
+            ],
+            "properties":
+            {
+                "profiles":
+                {
+                    "type":
+                    [
+                        "null",
+                        "object"
+                    ],
+                    "properties":
+                    {
+                        "links":
+                        {
+                            "type":
+                            [
+                                "null",
+                                "object"
+                            ],
+                            "properties":
+                            {
+                                "self":
+                                {
+                                    "type": "string"
+                                },
+                                "related":
+                                {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags":
+                {
+                    "type":
+                    [
+                        "null",
+                        "object"
+                    ],
+                    "date":
+                    {
+                        "type":
+                        {
+                            "type": "string"
+                        },
+                        "id":
+                        {
+                            "type": "string"
+                        }
+                    },
+                    "links":
+                    {
+                        "type":
+                        [
+                            "null",
+                            "object"
+                        ],
+                        "properties":
+                        {
+                            "self":
+                            {
+                                "type": "string"
+                            },
+                            "related":
+                            {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "included":
+        {
+            "type":
+            {
+                "type": "string"
+            },
+            "id":
+            {
+                "type": "string"
+            },
+            "attributes":
+            {
+                "type":
+                [
+                    "null",
+                    "object"
+                ],
+                "additionalProperties": true,
+                "properties":
+                {
+                    "name":
+                    {
+                        "type": "string"
+                    }
+                }
+            },
+            "links":
+            {
+                "type":
+                [
+                    "null",
+                    "objects"
+                ],
+                "properties":
+                {
+                    "additionalProperties": true,
+                    "self":
+                    {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

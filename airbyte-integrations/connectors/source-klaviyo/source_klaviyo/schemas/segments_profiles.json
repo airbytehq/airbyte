@@ -1,0 +1,153 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "type": {"type": ["null", "string"]},
+    "id": {"type": "string"},
+    "attributes": {
+      "email": {"type": ["null", "string"]},
+      "phone_number": {"type": ["null", "string"]},
+      "external_id" : {"type": ["null", "string"]},
+      "first_name": {"type": ["null", "string"]},
+      "last_name": {"type": ["null", "string"]},
+      "organization": {"type": ["null", "string"]},
+      "title": {"type": ["null", "string"]},
+      "image": {"type": ["null", "string"]},
+      "updated": {"type": ["null", "string"], "format": "date-time"},
+      "created": {"type": ["null", "string"], "format": "date-time"},
+      "last_event_date": {"type": ["null", "string"], "format": "date-time"},
+      "joined_group_at": {"type": ["null", "string"], "format": "date-time"},
+      "location": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "address1": {"type": ["null", "string"]},
+          "address2": {"type": ["null", "string"]},
+          "city": {"type": ["null", "string"]},
+          "country": {"type": ["null", "string"]},
+          "latitude": {"type": ["null", "string"]},
+          "longitude": {"type": ["null", "string"]},
+          "region": {"type": ["null", "string"]},
+          "zip": {"type": ["null", "string"]},
+          "timezone": {"type": ["null", "string"]},
+          "ip": {"type": ["null", "string"]}
+        },
+        "subscriptions": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "email": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "marketing": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "can_receive_email_marketing": {"type": "boolean"},
+                    "consent": {"type": ["null", "string"]},
+                    "consent_timestamp": {"type": ["null", "string"], "format": "date-time"},
+                    "last_updated": {"type": ["null", "string"], "format": "date-time"},
+                    "method":  {"type": ["null", "string"]},
+                    "method_details":  {"type": ["null", "string"]},
+                    "custom_method_detail":  {"type": ["null", "string"]},
+                    "double_optin" : {"type": ["null", "string"]},
+                    "suppression": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "reason" : {"type" : ["null", "string"]},
+                          "timestamp" : {"type" : ["null", "string"], "format" : "date-time"}
+                        }
+                      }
+                    },
+                    "list_suppressions": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "list_id" : {"type" : ["null", "string"]},
+                          "reason" : {"type" : ["null", "string"]},
+                          "timestamp" : {"type" : ["null", "string"], "format" : "date-time"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "sms": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "marketing": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "can_receive_sms_marketing": {"type": "boolean"},
+                    "consent": {"type": ["null", "string"]},
+                    "consent_timestamp": {"type": ["null", "string"], "format": "date-time"},
+                    "method":  {"type": ["null", "string"]},
+                    "method_details":  {"type": ["null", "string"]},
+                    "last_updated": {"type": ["null", "string"], "format": "date-time"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "predictive_analytics": {
+          "historic_clv": {"type":  ["null", "number"]},
+          "predicted_clv": {"type":  ["null", "number"]},
+          "total_clv": {"type":  ["null", "number"]},
+          "historic_number_of_orders": {"type":  ["null", "number"]},
+          "predicted_number_of_orders": {"type":  ["null", "number"]},
+          "average_days_between_orders": {"type":  ["null", "number"]},
+          "average_order_value": {"type":  ["null", "number"]},
+          "churn_probability": {"type":  ["null", "number"]},
+          "expected_date_of_next_order": {"type": ["null", "string"], "format": "date-time"}
+        },
+        "links": {
+          "type": ["null", "object"],
+          "properties": {
+            "self": { "type": "string" },
+            "related": { "type": "string" }
+          }
+        },
+        "relationships": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "lists": {
+              "type": ["null", "object"],
+              "properties" : {
+                "links": {
+                  "type" : ["null", "object"],
+                  "properties" : {
+                    "self": {"type" : "string"},
+                    "related": {"type" : "string"}
+                  }
+                }
+              }
+            },
+            "segments": {
+              "type": ["null", "object"],
+              "properties" : {
+                "links": {
+                  "type" : ["null", "object"],
+                  "properties" : {
+                    "self": {"type" : "string"},
+                    "related": {"type" : "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

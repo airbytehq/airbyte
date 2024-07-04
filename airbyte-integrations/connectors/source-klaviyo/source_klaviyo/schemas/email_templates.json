@@ -1,27 +1,79 @@
 {
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "additionalProperties": true,
     "properties": {
-        "object": {
+      "type": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "updated": {
+        "type": [
+          "null",
+          "string"
+        ],
+        "format": "date-time"
+      },
+      "attributes": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "name": {
             "type": "string"
-        },
-        "id": {
+          },
+          "editor_type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "html": {
             "type": "string"
-        },
-        "name": {
-            "type": ["null", "string"]
-        },
-        "html": {
-            "type": ["null", "string"]
-        },
-        "is_writeable": {
-            "type": ["null", "boolean"]
-        },
-        "created": {
-             "type": "string", "format": "date-time" 
-        },
-        "updated": {
-            "type": "string", "format": "date-time" 
+          },
+          "text": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "created": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "updated": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "company_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
         }
+      },
+      "links": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        }
+      }
     }
-}
+  }
