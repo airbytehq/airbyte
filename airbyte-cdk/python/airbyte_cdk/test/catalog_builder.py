@@ -53,7 +53,10 @@ class CatalogBuilder:
         ...
 
     def with_stream(
-        self, name: Union[str, ConfiguredAirbyteStreamBuilder], sync_mode: Union[SyncMode, None] = None, json_schema: Dict[str, Any] = None
+        self,
+        name: Union[str, ConfiguredAirbyteStreamBuilder],
+        sync_mode: Union[SyncMode, None] = None,
+        json_schema: Union[Dict[str, Any], None] = None,
     ) -> "CatalogBuilder":
         # As we are introducing a fully fledge ConfiguredAirbyteStreamBuilder, we would like to deprecate the previous interface
         # with_stream(str, SyncMode)
