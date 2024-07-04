@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2fed2292-5586-480c-af92-9944e39fe12d
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-shortio
   githubIssueLabel: source-shortio
   icon: shortio.svg

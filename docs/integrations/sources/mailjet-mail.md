@@ -37,6 +37,9 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.1.7 | 2024-07-02 | [40257](https://github.com/airbytehq/airbyte/pull/40257) | Make compatible with builder                      |
+| 0.1.6 | 2024-06-25 | [40415](https://github.com/airbytehq/airbyte/pull/40415) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40065](https://github.com/airbytehq/airbyte/pull/40065) | Update dependencies |
 | 0.1.4 | 2024-06-04 | [38939](https://github.com/airbytehq/airbyte/pull/38939) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-05-21 | [38483](https://github.com/airbytehq/airbyte/pull/38483) | [autopull] base image + poetry + up_to_date |
 | 0.1.2   | 2022-12-18 | [#30924](https://github.com/airbytehq/airbyte/pull/30924) | Adds Subject field to `message` stream         |

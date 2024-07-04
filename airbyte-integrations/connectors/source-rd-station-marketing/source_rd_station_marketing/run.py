@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_rd_station_marketing import SourceRDStationMarketing
+
+from .source import SourceRDStationMarketing
 
 
 def run():
