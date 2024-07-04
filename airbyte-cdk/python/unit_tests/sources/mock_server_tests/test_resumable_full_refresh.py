@@ -9,7 +9,7 @@ from unittest import TestCase
 import freezegun
 from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.entrypoint_wrapper import get_catalog, read
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
@@ -186,6 +186,7 @@ class ResumableFullRefreshStreamTest(TestCase):
             }
         }
         catalog = _create_catalog_with_configured_schema([("justice_songs", SyncMode.full_refresh, json_schema)])
+        assert catalog.streams[0].stream.json_schema == json_schema
         actual_messages = read(source, config=config, catalog=catalog)
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
@@ -199,8 +200,6 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob()
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 0.0
 
-        entrypoint_catalog = get_catalog(config=config ,catalog=catalog)
-        assert entrypoint_catalog["streams"][0]["stream"]["json_schema"] == json_schema
 
     @HttpMocker()
     def test_resumable_full_refresh_second_attempt(self, http_mocker):

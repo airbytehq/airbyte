@@ -22,7 +22,6 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, List, Mapping, Optional, Union
 
-from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
@@ -144,30 +143,6 @@ def _run_command(source: Source, args: List[str], expecting_exception: bool = Fa
     parent_logger.removeHandler(stream_handler)
 
     return EntrypointOutput(messages + captured_logs, uncaught_exception)
-
-
-def _get_catalog(args: List[str]) -> Mapping[str, Any]:
-    try:
-        catalog = AirbyteEntrypoint.extract_catalog(args)
-        return BaseConnector.read_config(catalog)
-    except Exception as exception:
-        print("Printing unexpected error from entrypoint_wrapper")
-        print("".join(traceback.format_exception(None, exception, exception.__traceback__)))
-
-
-def get_catalog(config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog):
-    with tempfile.TemporaryDirectory() as tmp_directory:
-        tmp_directory_path = Path(tmp_directory)
-        config_file = make_file(tmp_directory_path / "config.json", config)
-        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.json())
-        args = [
-            "read",
-            "--config",
-            config_file,
-            "--catalog",
-            catalog_file,
-        ]
-        return _get_catalog(args)
 
 
 def discover(
