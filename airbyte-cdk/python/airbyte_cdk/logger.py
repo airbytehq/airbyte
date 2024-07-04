@@ -28,6 +28,7 @@ LOGGING_CONFIG = {
     },
 }
 
+print("triggering test")
 
 def init_logger(name: Optional[str] = None) -> logging.Logger:
     """Initial set up of logger"""
